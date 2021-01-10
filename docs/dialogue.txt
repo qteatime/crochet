@@ -1,0 +1,42 @@
+Dialogue system
+===============
+
+The dialogue system is based on a small algebra for flow-layouting with some
+interaction semantics sprinkled on top. We want a more flexible flow-layouting
+semantics rather than a pure text-based one so dialogues can embed pauses,
+skips, and images in a principled manner.
+
+
+## The language
+
+We use the following abstract language:
+
+  t in text
+  n in name
+  i in number
+  b in boolean
+
+  expr e ::
+    e e                           -- flow concatenation
+    n(e ...)                      -- application
+    n                             -- load
+    e.n                           -- projection
+    t | i | b                     -- primitives
+
+
+## The algebra
+
+The following algebra is used for the runtime:
+
+  Element e ::
+    Text t                    -- primitive text
+    Concatenate e e           -- flow concatenation
+    Pause n                   -- pauses for N time portions (N must be time-typed)
+    Wait                      -- pauses until the player interacts to continue
+
+
+## Interpretation
+
+We want to support a system where the user can decide how fast the text is
+displayed (in a letter-by-letter typing), as well as that can support pauses
+in this display.
