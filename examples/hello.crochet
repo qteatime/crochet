@@ -1,0 +1,24 @@
+# crochet
+
+@command go to Scene = Jump(Scene)
+@command say Phrase = Jay(Phrase)
+@command wait Time seconds = Wait(Time)
+@command wait Time second = Wait(Time)
+@command show Image on top of everything = ShowFront(Image)
+
+%% The game starts here
+@scene start {
+  say "This is the start of the game.";
+  wait 1 second;
+  say "And now to our announcers.";
+  go to announcement;
+}
+
+@scene announcement {
+  show "announcement.png" on top of everything;
+  say "See?";
+}
+
+@do {
+  go to start;
+}
