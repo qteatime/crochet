@@ -1,0 +1,91 @@
+Crochet {
+  Program =
+    | header Declaration* end
+
+  Declaration =
+    | CommandDeclaration
+    | DoDeclaration
+    | SceneDeclaration
+    
+  DoDeclaration =
+    | do_ StatementBlock
+
+  SceneDeclaration =
+    | scene_ Atom StatementBlock
+
+  CommandDeclaration =
+    | command_ CommandSignature "=" Name "(" ListOf<Name, ","> ")"  -- ffi
+    | command_ CommandSignature StatementBlock                      -- local
+
+  CommandSignature =
+    | Atom SignatureSegment+
+  
+  SignatureSegment =
+    | Atom      -- static
+    | Name      -- variable
+
+  Statement =
+    | Expression ";"
+
+  StatementBlock =
+    | "{" Statement* "}"
+
+  Expression =
+    | Atom UseSegment*   -- command
+    | PrimaryExpression
+
+  UseSegment =
+    | Atom                -- static
+    | PrimaryExpression   -- variable
+
+  PrimaryExpression =
+    | Text
+    | Number
+    | Boolean
+    | Name                -- variable
+    | "(" Expression ")"  -- group
+
+  Text = text
+  Number = Integer | Float
+  Integer = integer
+  Float = float
+  Boolean = boolean
+  Name = name
+  Atom = atom
+
+  // -- Lexical rules -------------------------------------------------
+  header = "#" hs* "crochet" nl
+  hs = " " | "\t"
+  nl = "\n" | "\r"
+  comment = "%" (~nl any)* nl
+  spaces += comment
+
+  atom_start = "a".."z"
+  atom_rest = letter | digit | "-"
+  atom = atom_start atom_rest*
+
+  name_start = "A".."Z" | "_"
+  name_rest = letter | digit | "-"
+  name = name_start name_rest*
+
+  text_character =
+    | "\\" "\""   -- escape
+    | ~"\"" any   -- regular
+  text = "\"" text_character* "\""
+
+  dec_digit = "0".."9" | "_"
+  integer = dec_digit+
+  float = dec_digit+ "." dec_digit+
+
+  boolean =
+    | kw<"true">  -- true
+    | kw<"false"> -- false
+
+  kw<word> = word ~atom_rest
+
+  true_ = kw<"true">
+  false_ = kw<"false">
+  scene_ = kw<"@scene">
+  command_ = kw<"@command">
+  do_ = kw<"@do">
+}

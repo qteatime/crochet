@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "build": "tsc",
-    "start": "npm run build && node build/runtime/main.js"
+    "build": "tsc"
   },
   "dependencies": {
     "@types/node": "^14.14.20",
