@@ -21,6 +21,7 @@ const vm = new CrochetVM(ffi);
 ffi.add("Jump", 1, (vm: CrochetVM, activation, name) => {
   vm.assert_text(activation, name);
   console.log(`[Jump to ${name.value}]`);
+  activation.push(nothing);
   const scene = vm.get_scene(activation, name.value);
   return vm.make_scene_activation(activation, scene);
 });
@@ -28,18 +29,21 @@ ffi.add("Jump", 1, (vm: CrochetVM, activation, name) => {
 ffi.add("Say", 1, (vm: CrochetVM, activation, phrase) => {
   vm.assert_text(activation, phrase);
   console.log(">>", phrase.value);
+  activation.push(nothing);
   return activation;
 });
 
 ffi.add("Wait", 1, (vm: CrochetVM, activation, time) => {
   vm.assert_integer(activation, time);
   console.log(`[Wait ${time.value}]`);
+  activation.push(nothing);
   return activation;
 });
 
 ffi.add("ShowFront", 1, (vm: CrochetVM, activation, image) => {
   vm.assert_text(activation, image);
   console.log(`[Show ${image.value}]`);
+  activation.push(nothing);
   return activation;
 });
 

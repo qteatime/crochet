@@ -118,6 +118,12 @@ export class CrochetVM {
     const operation = activation.current;
     this.trace_operation(activation, operation);
     switch (operation.tag) {
+      case "drop": {
+        activation.pop();
+        activation.next();
+        return activation;
+      }
+
       case "halt": {
         return null;
       }
@@ -176,6 +182,7 @@ export class CrochetVM {
         const parent = activation.parent;
         if (parent != null) {
           parent.push(result);
+          parent.next();
           return parent;
         } else {
           throw new Error(`RETURN with no parent activation`);

@@ -64,13 +64,14 @@ export abstract class AbstractOperation extends IRNode {
 }
 
 export type Operation =
+  | Drop
+  | Invoke
   | PushInteger
   | PushFloat
   | PushText
   | PushLocal
   | PushBoolean
   | PushNothing
-  | Invoke
   | Return
   | Halt;
 
@@ -128,6 +129,10 @@ export class Invoke extends AbstractOperation {
 
 export class Return extends AbstractOperation {
   readonly tag = "return";
+}
+
+export class Drop extends AbstractOperation {
+  readonly tag = "drop";
 }
 
 export class Halt extends AbstractOperation {

@@ -3,7 +3,10 @@
 @command go to Scene = Jump(Scene)
 @command say Phrase = Say(Phrase)
 @command wait Time seconds = Wait(Time)
-@command wait Time second = Wait(Time)
+@command wait Time second {
+  wait Time seconds;
+  @return @nothing;
+}
 @command show Image on top of everything = ShowFront(Image)
 
 %% The game starts here
