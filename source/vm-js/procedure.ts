@@ -1,4 +1,3 @@
-import { timeStamp } from "console";
 import { Operation } from "../ir/operations";
 import { Activation, Environment } from "./environment";
 import { CrochetValue } from "./intrinsics";
