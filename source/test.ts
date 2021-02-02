@@ -18,14 +18,6 @@ console.log(show(ir));
 const ffi = new ForeignInterface();
 const vm = new CrochetVM(ffi);
 
-ffi.add("Jump", 1, (vm: CrochetVM, activation, name) => {
-  vm.assert_text(activation, name);
-  console.log(`[Jump to ${name.value}]`);
-  activation.push(nothing);
-  const scene = vm.get_scene(activation, name.value);
-  return vm.make_scene_activation(activation, scene);
-});
-
 ffi.add("Say", 1, (vm: CrochetVM, activation, phrase) => {
   vm.assert_text(activation, phrase);
   console.log(">>", phrase.value);

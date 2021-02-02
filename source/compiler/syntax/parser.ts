@@ -16,6 +16,7 @@ import {
   Expression,
   Program,
   SExpression,
+  SGoto,
   Signature,
   SReturn,
   UseSignature,
@@ -118,6 +119,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   ReturnStatement_naked(_return: x, _semi: x) {
     return new SReturn(new ENothing());
+  },
+
+  GotoStatement(_goto: x, scene: Node, _semi: x) {
+    return new SGoto(scene.toAST());
   },
 
   StatementBlock(_l: x, stmts: Node, _r: x) {

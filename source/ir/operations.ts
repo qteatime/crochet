@@ -65,6 +65,7 @@ export abstract class AbstractOperation extends IRNode {
 
 export type Operation =
   | Drop
+  | Goto
   | Invoke
   | PushInteger
   | PushFloat
@@ -137,4 +138,12 @@ export class Drop extends AbstractOperation {
 
 export class Halt extends AbstractOperation {
   readonly tag = "halt";
+}
+
+export class Goto extends AbstractOperation {
+  readonly tag = "goto";
+
+  constructor(readonly name: string) {
+    super();
+  }
 }

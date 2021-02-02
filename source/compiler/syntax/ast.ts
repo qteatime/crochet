@@ -107,6 +107,16 @@ export class SExpression extends Statement {
   }
 }
 
+export class SGoto extends Statement {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.Goto(this.name);
+  }
+}
+
 export class SReturn extends Statement {
   constructor(readonly value: Expression) {
     super();

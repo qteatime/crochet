@@ -26,11 +26,15 @@ Crochet {
 
   Statement =
     | ReturnStatement
+    | GotoStatement
     | Expression ";"   -- expr
 
   ReturnStatement =
     | return_ Expression ";"  -- with_value
     | return_ ";"             -- naked
+
+  GotoStatement =
+    | goto_ Atom ";"
 
   StatementBlock =
     | "{" Statement* "}"
@@ -100,4 +104,5 @@ Crochet {
   command_ = kw<"@command">
   do_ = kw<"@do">
   return_ = kw<"@return">
+  goto_ = kw<"@goto">
 }
