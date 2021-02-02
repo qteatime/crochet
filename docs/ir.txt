@@ -1,0 +1,16 @@
+Declaration :
+  | define-scene Name Predicate Block
+  | do Block
+  | define-command Name Block
+  | define-ffi-command Name Name Parameters
+
+Block : Operation list
+
+Operation :
+  | push-integer Value
+  | push-float Value
+  | push-text Value
+  | push-boolean Value
+  | push-local Name
+  | invoke Name Arity
+  | return

@@ -1,6 +1,6 @@
 import * as Fs from "fs";
 import * as Util from "util";
-import { parse } from "./syntax/parser"
+import { parse } from "./compiler/syntax/parser"
 
 function show(obj: any) {
   return Util.inspect(obj, false, null, true);
