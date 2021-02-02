@@ -128,6 +128,11 @@ export class CrochetVM {
         return null;
       }
 
+      case "goto": {
+        const scene = this.get_scene(activation, operation.name);
+        return this.make_scene_activation(activation, scene);
+      }
+
       case "invoke": {
         const procedure = this.get_procedure(activation, operation.name);
         if (procedure.arity !== operation.arity) {

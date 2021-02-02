@@ -1,6 +1,5 @@
 # crochet
 
-@command go to Scene = Jump(Scene)
 @command say Phrase = Say(Phrase)
 @command wait Time seconds = Wait(Time)
 @command wait Time second {
@@ -14,7 +13,7 @@
   say "This is the start of the game.";
   wait 1 second;
   say "And now to our announcers.";
-  go to "announcement";
+  @goto announcement;
 }
 
 @scene announcement {
@@ -23,5 +22,5 @@
 }
 
 @do {
-  go to "start";
+  @goto start;
 }
