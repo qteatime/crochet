@@ -20,7 +20,7 @@ import {
   UseSignature,
 } from "./ast";
 
-const grammarFile = Path.join(__dirname, "../../grammar/crochet.ohm");
+const grammarFile = Path.join(__dirname, "../../../grammar/crochet.ohm");
 const grammar = Ohm.grammar(Fs.readFileSync(grammarFile, "utf-8"));
 
 export function parse(source: string): Program {
