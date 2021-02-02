@@ -17,10 +17,15 @@ export class Program extends Node {
     super();
   }
 
-  *compile() {
+  compile() {
+    return new IR.Module([...this._compile()]);
+  }
+
+  private *_compile() {
     for (const declaration of this.declarations) {
-      yield declaration.compile();
+      yield* declaration.compile();
     }
+    yield new IR.Halt();
   }
 }
 
@@ -182,12 +187,13 @@ export class EVariable extends Expression {
 }
 
 //== Utilities
-function to_list<A>(xss: Generator<A>[]): A[] {
+function to_list(xss: Generator<IR.Operation>[]): IR.Operation[] {
   const result = [];
   for (const xs of xss) {
     for (const x of xs) {
       result.push(x);
     }
   }
+  result.push(new IR.Halt());
   return result;
 }

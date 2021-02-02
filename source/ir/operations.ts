@@ -1,7 +1,13 @@
-export abstract class IRNode { }
+export abstract class IRNode {}
+
+export class Module extends IRNode {
+  constructor(readonly declarations: Declaration[]) {
+    super();
+  }
+}
 
 //== Declaration
-export abstract class Declaration extends IRNode { }
+export abstract class Declaration extends IRNode {}
 
 export class DefineScene extends Declaration {
   constructor(readonly name: string, readonly body: Operation[]) {
@@ -16,19 +22,28 @@ export class Do extends Declaration {
 }
 
 export class DefineCommand extends Declaration {
-  constructor(readonly name: string, readonly parameters: string[], readonly body: Operation[]) {
+  constructor(
+    readonly name: string,
+    readonly parameters: string[],
+    readonly body: Operation[]
+  ) {
     super();
   }
 }
 
 export class DefineForeignCommand extends Declaration {
-  constructor(readonly name: string, readonly parameters: string[], readonly foreign_name: string, readonly args: number[]) {
+  constructor(
+    readonly name: string,
+    readonly parameters: string[],
+    readonly foreign_name: string,
+    readonly args: number[]
+  ) {
     super();
   }
 }
 
 //== Operation
-export abstract class Operation extends IRNode { }
+export abstract class Operation extends IRNode {}
 
 export class PushInteger extends Operation {
   constructor(readonly value: bigint) {
@@ -66,4 +81,6 @@ export class Invoke extends Operation {
   }
 }
 
-export class Return extends Operation { }
+export class Return extends Operation {}
+
+export class Halt extends Operation {}
