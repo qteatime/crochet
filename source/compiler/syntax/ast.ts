@@ -103,6 +103,7 @@ export class SExpression extends Statement {
 
   *compile() {
     yield* this.expr.compile();
+    yield new IR.Drop();
   }
 }
 
