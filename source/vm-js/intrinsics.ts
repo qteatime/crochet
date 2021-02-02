@@ -1,4 +1,4 @@
-export abstract class CrochetValue { }
+export abstract class CrochetValue {}
 
 export class CrochetText extends CrochetValue {
   constructor(readonly value: string) {
@@ -24,3 +24,5 @@ export class CrochetBoolean extends CrochetValue {
   }
 }
 
+export class CrochetNothing extends CrochetValue {}
+export const nothing = new CrochetNothing();

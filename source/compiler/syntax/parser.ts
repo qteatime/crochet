@@ -10,6 +10,7 @@ import {
   EFloat,
   EInteger,
   EInvoke,
+  ENothing,
   EText,
   EVariable,
   Expression,
@@ -23,12 +24,13 @@ import {
 const grammarFile = Path.join(__dirname, "../../../grammar/crochet.ohm");
 const grammar = Ohm.grammar(Fs.readFileSync(grammarFile, "utf-8"));
 
-export function parse(source: string): Program {
+export function parse(filename: string, source: string): Program {
   const match = grammar.match(source);
   if (match.failed()) {
     throw new Error(match.message);
   } else {
-    return toAST(match).toAST();
+    const declarations = toAST(match).toAST();
+    return new Program(filename, declarations);
   }
 }
 
@@ -36,7 +38,7 @@ type x = unknown;
 type Node = Ohm.Node;
 
 class AtomSegment {
-  constructor(readonly name: string) { }
+  constructor(readonly name: string) {}
 
   toStaticPart() {
     return this.name;
@@ -44,7 +46,7 @@ class AtomSegment {
 }
 
 class VariableSegment {
-  constructor(readonly name: string) { }
+  constructor(readonly name: string) {}
 
   toStaticPart() {
     return "_";
@@ -52,16 +54,16 @@ class VariableSegment {
 }
 
 class ExprSegment {
-  constructor(readonly expr: Expression) { }
+  constructor(readonly expr: Expression) {}
 
   toStaticPart() {
     return "_";
   }
 }
 
-const toAST = grammar.createSemantics().addOperation("toAST", {
+const toAST = grammar.createSemantics().addOperation("toAST()", {
   Program(_header: x, decls: Node, _eof: x) {
-    return new Program(decls.toAST());
+    return decls.toAST();
   },
 
   DoDeclaration(_do: x, body: Node) {
@@ -165,6 +167,10 @@ const toAST = grammar.createSemantics().addOperation("toAST", {
     return new EBoolean(node.toAST());
   },
 
+  Nothing(_: x) {
+    return new ENothing();
+  },
+
   Name(node: Node) {
     return node.toAST();
   },
@@ -219,5 +225,5 @@ const toAST = grammar.createSemantics().addOperation("toAST", {
 
   name(_1: x, _2: x) {
     return this.sourceString;
-  }
+  },
 });

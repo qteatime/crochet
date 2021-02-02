@@ -89,7 +89,7 @@ export class Activation {
       throw new Error(`pop() on an empty stack`);
     }
     const result = this.stack.slice(-size);
-    result.length -= size;
+    this.stack.length -= size;
     return result;
   }
 }

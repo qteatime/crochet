@@ -49,6 +49,7 @@ Crochet {
     | Text
     | Number
     | Boolean
+    | Nothing
     | Name                -- variable
     | "(" Expression ")"  -- group
 
@@ -59,6 +60,7 @@ Crochet {
   Boolean = boolean
   Name = name
   Atom = atom
+  Nothing = nothing_
 
   // -- Lexical rules -------------------------------------------------
   header = "#" hs* "crochet" nl
@@ -85,13 +87,14 @@ Crochet {
   float = dec_digit+ "." dec_digit+
 
   boolean =
-    | kw<"true">  -- true
-    | kw<"false"> -- false
+    | true_  -- true
+    | false_ -- false
 
   kw<word> = word ~atom_rest
 
-  true_ = kw<"true">
-  false_ = kw<"false">
+  true_ = kw<"@true">
+  false_ = kw<"@false">
+  nothing_ = kw<"@nothing">
   scene_ = kw<"@scene">
   command_ = kw<"@command">
   do_ = kw<"@do">

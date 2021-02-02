@@ -11,7 +11,7 @@
   say "This is the start of the game.";
   wait 1 second;
   say "And now to our announcers.";
-  go to announcement;
+  go to "announcement";
 }
 
 @scene announcement {
@@ -20,5 +20,5 @@
 }
 
 @do {
-  go to start;
+  go to "start";
 }
