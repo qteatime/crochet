@@ -29,7 +29,8 @@ Crochet {
     | Expression ";"   -- expr
 
   ReturnStatement =
-    | return_ Expression ";"
+    | return_ Expression ";"  -- with_value
+    | return_ ";"             -- naked
 
   StatementBlock =
     | "{" Statement* "}"

@@ -5,7 +5,7 @@
 @command wait Time seconds = Wait(Time)
 @command wait Time second {
   wait Time seconds;
-  @return @nothing;
+  @return;
 }
 @command show Image on top of everything = ShowFront(Image)
 

@@ -112,8 +112,12 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new SExpression(expr.toAST());
   },
 
-  ReturnStatement(_return: x, expr: Node, _semi: x) {
+  ReturnStatement_with_value(_return: x, expr: Node, _semi: x) {
     return new SReturn(expr.toAST());
+  },
+
+  ReturnStatement_naked(_return: x, _semi: x) {
+    return new SReturn(new ENothing());
   },
 
   StatementBlock(_l: x, stmts: Node, _r: x) {
