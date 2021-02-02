@@ -7,21 +7,35 @@ export class Module extends IRNode {
 }
 
 //== Declaration
-export abstract class Declaration extends IRNode {}
+export abstract class AbstractDeclaration extends IRNode {
+  abstract tag: string;
+}
 
-export class DefineScene extends Declaration {
+export type Declaration =
+  | DefineScene
+  | Do
+  | DefineCommand
+  | DefineForeignCommand;
+
+export class DefineScene extends AbstractDeclaration {
+  readonly tag = "define-scene";
+
   constructor(readonly name: string, readonly body: Operation[]) {
     super();
   }
 }
 
-export class Do extends Declaration {
+export class Do extends AbstractDeclaration {
+  readonly tag = "do";
+
   constructor(readonly body: Operation[]) {
     super();
   }
 }
 
-export class DefineCommand extends Declaration {
+export class DefineCommand extends AbstractDeclaration {
+  readonly tag = "define-command";
+
   constructor(
     readonly name: string,
     readonly parameters: string[],
@@ -31,7 +45,9 @@ export class DefineCommand extends Declaration {
   }
 }
 
-export class DefineForeignCommand extends Declaration {
+export class DefineForeignCommand extends AbstractDeclaration {
+  readonly tag = "define-foreign-command";
+
   constructor(
     readonly name: string,
     readonly parameters: string[],
@@ -43,44 +59,72 @@ export class DefineForeignCommand extends Declaration {
 }
 
 //== Operation
-export abstract class Operation extends IRNode {}
+export abstract class AbstractOperation extends IRNode {
+  abstract tag: string;
+}
 
-export class PushInteger extends Operation {
+export type Operation =
+  | PushInteger
+  | PushFloat
+  | PushText
+  | PushLocal
+  | PushBoolean
+  | Invoke
+  | Return
+  | Halt;
+
+export class PushInteger extends AbstractOperation {
+  readonly tag = "push-integer";
+
   constructor(readonly value: bigint) {
     super();
   }
 }
 
-export class PushFloat extends Operation {
+export class PushFloat extends AbstractOperation {
+  readonly tag = "push-float";
+
   constructor(readonly value: number) {
     super();
   }
 }
 
-export class PushText extends Operation {
+export class PushText extends AbstractOperation {
+  readonly tag = "push-text";
+
   constructor(readonly value: string) {
     super();
   }
 }
 
-export class PushBoolean extends Operation {
+export class PushBoolean extends AbstractOperation {
+  readonly tag = "push-boolean";
+
   constructor(readonly value: boolean) {
     super();
   }
 }
 
-export class PushLocal extends Operation {
+export class PushLocal extends AbstractOperation {
+  readonly tag = "push-local";
+
   constructor(readonly name: string) {
     super();
   }
 }
 
-export class Invoke extends Operation {
+export class Invoke extends AbstractOperation {
+  readonly tag = "invoke";
+
   constructor(readonly name: string, readonly arity: number) {
     super();
   }
 }
 
-export class Return extends Operation {}
+export class Return extends AbstractOperation {
+  readonly tag = "return";
+}
 
-export class Halt extends Operation {}
+export class Halt extends AbstractOperation {
+  readonly tag = "halt";
+}

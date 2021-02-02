@@ -6,7 +6,7 @@ export class Environment {
   private bindings = new Map<string, CrochetValue>();
   private procedures = new Map<string, ICrochetProcedure>();
 
-  constructor(readonly parent: Environment | null) { }
+  constructor(readonly parent: Environment | null) {}
 
   lookup_procedure(name: string): ICrochetProcedure | null {
     const value = this.procedures.get(name);
@@ -53,20 +53,24 @@ export class Activation {
   private current_index: number;
   private stack: CrochetValue[];
 
-  constructor(readonly parent: Activation | null, readonly env: Environment, readonly block: IR.Operation[]) {
+  constructor(
+    readonly parent: Activation | null,
+    readonly env: Environment,
+    readonly block: IR.Operation[]
+  ) {
     this.current_index = 0;
     this.stack = [];
   }
 
   get current() {
     if (this.current_index < 0 || this.current_index >= this.block.length) {
-      throw new RangeError(`Operation out of range ${this.current_index}`);
+      return new IR.Halt();
     }
     return this.block[this.current_index];
   }
 
   next() {
-
+    this.current_index += 1;
   }
 
   push(value: CrochetValue) {
@@ -77,7 +81,7 @@ export class Activation {
     if (this.stack.length === 0) {
       throw new Error(`pop() on an empty stack`);
     }
-    return this.stack.pop();
+    return this.stack.pop()!;
   }
 
   pop_many(size: number) {

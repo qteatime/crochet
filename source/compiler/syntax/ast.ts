@@ -3,14 +3,14 @@ import * as IR from "../../ir/operations";
 type Name = string;
 
 export class Signature {
-  constructor(readonly name: Name, readonly parameters: Name[]) { }
+  constructor(readonly name: Name, readonly parameters: Name[]) {}
 }
 
 export class UseSignature {
-  constructor(readonly name: Name, readonly args: Expression[]) { }
+  constructor(readonly name: Name, readonly args: Expression[]) {}
 }
 
-export abstract class Node { }
+export abstract class Node {}
 
 export class Program extends Node {
   constructor(readonly declarations: Declaration[]) {
@@ -25,7 +25,6 @@ export class Program extends Node {
     for (const declaration of this.declarations) {
       yield* declaration.compile();
     }
-    yield new IR.Halt();
   }
 }
 
