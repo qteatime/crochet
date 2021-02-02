@@ -44,7 +44,7 @@ export class CrochetVM {
 
   load_module(module: Module) {
     for (const declaration of module.declarations) {
-      this.load_declaration(this.root_env, declaration);
+      this.load_declaration(module, this.root_env, declaration);
     }
   }
 
@@ -209,10 +209,19 @@ export class CrochetVM {
   }
 
   //== Declaration evaluation
-  private load_declaration(env: Environment, declaration: Declaration) {
+  private load_declaration(
+    module: Module,
+    env: Environment,
+    declaration: Declaration
+  ) {
     switch (declaration.tag) {
       case "define-scene": {
-        const scene = new Scene(declaration.name, env, declaration.body);
+        const scene = new Scene(
+          module,
+          declaration.name,
+          env,
+          declaration.body
+        );
         this.add_scene(scene);
         break;
       }
