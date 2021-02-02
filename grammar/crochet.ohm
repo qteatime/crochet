@@ -25,14 +25,21 @@ Crochet {
     | Name      -- variable
 
   Statement =
-    | Expression ";"
+    | ReturnStatement
+    | Expression ";"   -- expr
+
+  ReturnStatement =
+    | return_ Expression ";"
 
   StatementBlock =
     | "{" Statement* "}"
 
   Expression =
-    | Atom UseSegment*   -- command
+    | UseSignature        -- command
     | PrimaryExpression
+
+  UseSignature =
+    | Atom UseSegment*
 
   UseSegment =
     | Atom                -- static
@@ -88,4 +95,5 @@ Crochet {
   scene_ = kw<"@scene">
   command_ = kw<"@command">
   do_ = kw<"@do">
+  return_ = kw<"@return">
 }
