@@ -1,7 +1,7 @@
 # crochet
 
 @command go to Scene = Jump(Scene)
-@command say Phrase = Jay(Phrase)
+@command say Phrase = Say(Phrase)
 @command wait Time seconds = Wait(Time)
 @command wait Time second = Wait(Time)
 @command show Image on top of everything = ShowFront(Image)
