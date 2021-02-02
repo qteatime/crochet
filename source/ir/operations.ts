@@ -1,7 +1,7 @@
 export abstract class IRNode {}
 
 export class Module extends IRNode {
-  constructor(readonly declarations: Declaration[]) {
+  constructor(readonly filename: string, readonly declarations: Declaration[]) {
     super();
   }
 }
@@ -69,6 +69,7 @@ export type Operation =
   | PushText
   | PushLocal
   | PushBoolean
+  | PushNothing
   | Invoke
   | Return
   | Halt;
@@ -103,6 +104,10 @@ export class PushBoolean extends AbstractOperation {
   constructor(readonly value: boolean) {
     super();
   }
+}
+
+export class PushNothing extends AbstractOperation {
+  readonly tag = "push-nothing";
 }
 
 export class PushLocal extends AbstractOperation {

@@ -13,12 +13,12 @@ export class UseSignature {
 export abstract class Node {}
 
 export class Program extends Node {
-  constructor(readonly declarations: Declaration[]) {
+  constructor(readonly filename: string, readonly declarations: Declaration[]) {
     super();
   }
 
   compile() {
-    return new IR.Module([...this._compile()]);
+    return new IR.Module(this.filename, [...this._compile()]);
   }
 
   private *_compile() {
@@ -172,6 +172,12 @@ export class EBoolean extends Expression {
 
   *compile() {
     yield new IR.PushBoolean(this.value);
+  }
+}
+
+export class ENothing extends Expression {
+  *compile() {
+    yield new IR.PushNothing();
   }
 }
 

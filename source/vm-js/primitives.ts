@@ -1,6 +1,12 @@
+import { Activation } from "./environment";
 import { CrochetValue } from "./intrinsics";
+import { CrochetVM } from "./vm";
 
-type Fn = (...args: CrochetValue[]) => CrochetValue;
+type Fn = (
+  vm: CrochetVM,
+  activation: Activation,
+  ...args: CrochetValue[]
+) => Activation | null;
 
 export class ForeignFunction {
   constructor(readonly arity: number, readonly fn: Fn) {}

@@ -11,12 +11,14 @@ import { Activation, Environment } from "./environment";
 import { ForeignInterface } from "./primitives";
 import { CrochetForeignProcedure, CrochetProcedure } from "./procedure";
 import { Scene } from "./scene";
-import { unreachable } from "../utils/exhaustive";
+import { show, unreachable } from "../utils/utils";
 import {
   CrochetBoolean,
   CrochetFloat,
   CrochetInteger,
   CrochetText,
+  CrochetValue,
+  nothing,
 } from "./intrinsics";
 
 export class CrochetVM {
@@ -24,9 +26,11 @@ export class CrochetVM {
   private queue: Activation[] = [];
   private scenes = new Map<string, Scene>();
   private running = false;
+  private tracing = false;
 
   constructor(private ffi: ForeignInterface) {}
 
+  //== Public operations
   async run() {
     if (this.running) {
       throw new Error(`Trying to run the VM twice.`);
@@ -38,15 +42,81 @@ export class CrochetVM {
     }
   }
 
+  load_module(module: Module) {
+    for (const declaration of module.declarations) {
+      this.load_declaration(this.root_env, declaration);
+    }
+  }
+
+  get_scene(activation: Activation, name: string) {
+    const scene = this.scenes.get(name);
+    if (scene == null) {
+      throw new Error(`Undefined scene ${name}`);
+    }
+    return scene;
+  }
+
+  make_scene_activation(activation0: Activation, scene: Scene) {
+    const new_env = new Environment(scene.env);
+    const activation = new Activation(activation0, new_env, scene.body);
+    return activation;
+  }
+
+  assert_text(
+    activation: Activation,
+    value: CrochetValue
+  ): asserts value is CrochetText {
+    if (!(value instanceof CrochetText)) {
+      throw new Error(`Expected a Text, got ${value}`);
+    }
+  }
+
+  assert_integer(
+    activation: Activation,
+    value: CrochetValue
+  ): asserts value is CrochetInteger {
+    if (!(value instanceof CrochetInteger)) {
+      throw new Error(`Expected an Integer, got ${value}`);
+    }
+  }
+
+  //== Tracing and debugging
+  trace(value: boolean) {
+    this.tracing = value;
+  }
+
+  private trace_operation(activation: Activation, op: Operation) {
+    if (this.tracing) {
+      console.log(`[TRACE]`, show(op));
+    }
+  }
+
+  private trace_activation(activation: Activation) {
+    if (this.tracing) {
+      console.log(
+        "[TRACE]",
+        show({
+          parent: activation.parent != null,
+          current: [(activation as any).current_index, activation.current],
+          block: activation.block,
+          stack: (activation as any).stack,
+        })
+      );
+    }
+  }
+
+  //== Running
   private async run_next() {
     let activation: Activation | null = await this.next_activation();
     while (activation != null) {
+      this.trace_activation(activation);
       activation = await this.step(activation);
     }
   }
 
   private async step(activation: Activation): Promise<Activation | null> {
     const operation = activation.current;
+    this.trace_operation(activation, operation);
     switch (operation.tag) {
       case "halt": {
         return null;
@@ -60,7 +130,7 @@ export class CrochetVM {
           );
         }
         const args = activation.pop_many(operation.arity);
-        return procedure.invoke(activation, args);
+        return procedure.invoke(this, activation, args);
       }
 
       case "push-boolean": {
@@ -84,6 +154,12 @@ export class CrochetVM {
       case "push-local": {
         const value = this.get_local(activation, operation.name);
         activation.push(value);
+        activation.next();
+        return activation;
+      }
+
+      case "push-nothing": {
+        activation.push(nothing);
         activation.next();
         return activation;
       }
@@ -118,12 +194,6 @@ export class CrochetVM {
       throw new Error(`next_activation() on an empty queue`);
     }
     return this.queue.shift()!;
-  }
-
-  load_module(module: Module) {
-    for (const declaration of module.declarations) {
-      this.load_declaration(this.root_env, declaration);
-    }
   }
 
   //== Declaration evaluation
