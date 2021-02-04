@@ -73,8 +73,11 @@ Crochet {
     | SearchExpression
 
   SearchExpression =
-    | search_ SearchSegment+    -- search
+    | search_ NonemptyListOf<SearchRelation, ",">    -- search
     | UseInfix
+
+  SearchRelation =
+    | SearchSegment+
 
   SearchSegment =
     | TypeName                -- type

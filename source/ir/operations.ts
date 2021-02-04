@@ -113,20 +113,25 @@ export abstract class AbstractOperation extends IRNode {
 }
 
 export type Operation =
-  | Drop
-  | Goto
-  | InsertFact
   | Instantiate
+  // Commands and environment
   | Invoke
+  | Return
   | Let
+  // Stack operations
+  | Drop
   | PushInteger
   | PushFloat
   | PushText
   | PushLocal
   | PushBoolean
   | PushNothing
-  | Return
+  // Search
+  | InsertFact
+  | RefineSearch
   | Search
+  // Other control-flow
+  | Goto
   | Halt;
 
 export class PushInteger extends AbstractOperation {
@@ -228,6 +233,14 @@ export class Instantiate extends AbstractOperation {
 // Note: this will change a lot :')
 export class Search extends AbstractOperation {
   readonly tag = "search";
+
+  constructor(readonly name: string, readonly patterns: Pattern[]) {
+    super();
+  }
+}
+
+export class RefineSearch extends AbstractOperation {
+  readonly tag = "refine-search";
 
   constructor(readonly name: string, readonly patterns: Pattern[]) {
     super();

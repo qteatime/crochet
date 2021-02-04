@@ -294,22 +294,39 @@ export class ENew extends Expression {
 }
 
 export class ESearch extends Expression {
-  constructor(readonly name: string, readonly patterns: Pattern[]) {
+  constructor(readonly relations: SearchRelation[]) {
     super();
   }
 
   get arity() {
-    return this.patterns
-      .map((x) => x.to_pattern_op())
-      .map((x) => x.arity as number)
-      .reduce((x, y) => x + y, 0);
+    return sum(this.relations.map((x) => x.arity));
   }
 
   *compile() {
+    if (this.relations.length === 0) {
+      throw new Error(`Empty search`);
+    }
+
+    const [head, ...tail] = this.relations;
+    yield* head.compile(IR.Search);
+    for (const relation of tail) {
+      yield* relation.compile(IR.RefineSearch);
+    }
+  }
+}
+
+export class SearchRelation {
+  constructor(readonly name: string, readonly patterns: Pattern[]) {}
+
+  get arity() {
+    return sum(this.patterns.map((x) => x.to_pattern_op()).map((x) => x.arity));
+  }
+
+  *compile(IRNode: typeof IR.Search | typeof IR.RefineSearch) {
     for (const pattern of this.patterns) {
       yield* pattern.compile();
     }
-    yield new IR.Search(
+    yield new IRNode(
       this.name,
       this.patterns.map((x) => x.to_pattern_op())
     );
@@ -442,4 +459,8 @@ function to_list(
   }
   result.push.apply(result, tail);
   return result;
+}
+
+function sum(xs: number[]) {
+  return xs.reduce((x, y) => x + y, 0);
 }
