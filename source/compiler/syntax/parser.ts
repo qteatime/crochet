@@ -29,7 +29,6 @@ import {
   Program,
   PText,
   PType,
-  PValue,
   PVariable,
   RelationComponent,
   RelationSignature,
@@ -331,10 +330,6 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   SearchSegment_nothing(_: x) {
     return new PatternSegment(new PNothing());
-  },
-
-  SearchSegment_value(_at: x, value: Node) {
-    return new PatternSegment(new PValue(value.toAST()));
   },
 
   SearchSegment_variable(name: Node) {

@@ -247,16 +247,49 @@ export class RefineSearch extends AbstractOperation {
   }
 }
 
-export type Pattern = ValuePattern | VariablePattern | TypePattern;
+export type Pattern =
+  | IntegerPattern
+  | FloatPattern
+  | BooleanPattern
+  | TextPattern
+  | NothingPattern
+  | VariablePattern
+  | TypePattern;
 
 export abstract class AbstractPattern {
   abstract tag: string;
-  abstract arity: number;
 }
 
-export class ValuePattern extends AbstractPattern {
-  readonly tag = "value-pattern";
-  readonly arity = 1;
+export class IntegerPattern extends AbstractPattern {
+  readonly tag = "integer-pattern";
+  constructor(readonly value: bigint) {
+    super();
+  }
+}
+
+export class FloatPattern extends AbstractPattern {
+  readonly tag = "float-pattern";
+  constructor(readonly value: number) {
+    super();
+  }
+}
+
+export class BooleanPattern extends AbstractPattern {
+  readonly tag = "boolean-pattern";
+  constructor(readonly value: boolean) {
+    super();
+  }
+}
+
+export class TextPattern extends AbstractPattern {
+  readonly tag = "text-pattern";
+  constructor(readonly value: string) {
+    super();
+  }
+}
+
+export class NothingPattern extends AbstractPattern {
+  readonly tag = "nothing-pattern";
 }
 
 export class TypePattern extends AbstractPattern {

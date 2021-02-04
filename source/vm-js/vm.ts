@@ -302,9 +302,24 @@ export class CrochetVM {
         return new Logic.TypePattern(type);
       }
 
-      case "value-pattern": {
-        const value = activation.pop();
-        return new Logic.ValuePattern(value);
+      case "integer-pattern": {
+        return new Logic.ValuePattern(new CrochetInteger(pattern.value));
+      }
+
+      case "float-pattern": {
+        return new Logic.ValuePattern(new CrochetFloat(pattern.value));
+      }
+
+      case "boolean-pattern": {
+        return new Logic.ValuePattern(new CrochetBoolean(pattern.value));
+      }
+
+      case "nothing-pattern": {
+        return new Logic.ValuePattern(nothing);
+      }
+
+      case "text-pattern": {
+        return new Logic.ValuePattern(new CrochetText(pattern.value));
       }
 
       case "variable-pattern": {
