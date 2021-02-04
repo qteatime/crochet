@@ -23,6 +23,9 @@ DO:
 
   say "Who's Mari?";
   show (SEARCH Who name is "Mari");
+
+  say "Is anyone named?";
+  show (SEARCH _ name is _);
 END
 
 COMMAND show Object = Show(Object);
