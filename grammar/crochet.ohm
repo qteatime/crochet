@@ -6,12 +6,28 @@ Crochet {
     | CommandDeclaration
     | DoDeclaration
     | SceneDeclaration
+    | TypeDeclaration
+    | RelationDeclaration
     
   DoDeclaration =
     | do_ StatementBlock
 
   SceneDeclaration =
     | scene_ Atom StatementBlock
+
+  TypeDeclaration =
+    | type_ TypeName ";"
+
+  RelationDeclaration =
+    | relation_ RelationSignature ";"
+
+  RelationSignature =
+    | RelationSignatureSegment+
+
+  RelationSignatureSegment =
+    | Atom      -- static
+    | Name "*"  -- many
+    | Name      -- one
 
   CommandDeclaration =
     | command_ CommandSignature "=" Name "(" ListOf<Name, ","> ")" ";"  -- ffi
@@ -30,6 +46,7 @@ Crochet {
     | ReturnStatement
     | GotoStatement
     | LetStatement
+    | FactStatement
     | Expression ";"   -- expr
 
   ReturnStatement =
@@ -41,6 +58,13 @@ Crochet {
 
   LetStatement =
     | let_ Name "=" Expression ";"
+
+  FactStatement =
+    | fact_ FactSegment+ ";"
+
+  FactSegment =
+    | Atom                -- static
+    | PrimaryExpression   -- variable
 
   StatementBlock =
     | ":" Statement* end_
@@ -65,9 +89,13 @@ Crochet {
     | Number
     | Boolean
     | Nothing
+    | NewType
     | Atom                -- atom
     | Name                -- variable
     | "(" Expression ")"  -- group
+
+  NewType =
+    | new_ TypeName
 
   Text = text
   Number = Integer | Float
@@ -76,6 +104,7 @@ Crochet {
   Boolean = boolean
   Name = ~reserved name
   Atom = atom
+  TypeName = type_name
   Nothing = nothing_
 
   // -- Lexical rules -------------------------------------------------
@@ -88,6 +117,8 @@ Crochet {
   atom_start = "a".."z"
   atom_rest = letter | digit | "-"
   atom = atom_start atom_rest*
+
+  type_name = "#" atom
 
   name_start = "A".."Z" | "_"
   name_rest = letter | digit | "-"
@@ -121,8 +152,13 @@ Crochet {
   goto_ = kw<"GOTO">
   let_ = kw<"LET">
   end_ = kw<"END">
+  type_ = kw<"TYPE">
+  new_ = kw<"NEW">
+  relation_ = kw<"RELATION">
+  fact_ = kw<"FACT">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
+    | type_ | new_ | relation_ | fact_
 }

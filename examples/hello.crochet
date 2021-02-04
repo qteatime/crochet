@@ -1,10 +1,26 @@
 # crochet
 
+TYPE #player;
+RELATION Type* name Name;
+  
 DO:
+  LET Player = NEW #player;
+  LET Mari = NEW #player;
+END
+
+DO:
+  FACT Player name "Player";
+  show database;
+  FACT Player name "Ollie";
+  show database;
+  FACT Mari name "Mari";
+  show database;
   LET X = 1;
   say ("We gonna: " + X as text);
   GOTO start;
 END
+
+COMMAND show database = ShowDb();
 
 COMMAND X + Y = Concat(X, Y);
 

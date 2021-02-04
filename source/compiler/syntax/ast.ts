@@ -102,6 +102,52 @@ export class DLocalCommand extends Declaration {
   }
 }
 
+export class DType extends Declaration {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.DefineType(this.name);
+  }
+}
+
+export class DRelation extends Declaration {
+  constructor(readonly signature: RelationSignature) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.DefineRelation(
+      this.signature.name,
+      this.signature.components.map((x) => x.compile())
+    );
+  }
+}
+
+export class RelationSignature {
+  constructor(
+    readonly name: string,
+    readonly components: RelationComponent[]
+  ) {}
+}
+
+export abstract class RelationComponent {
+  abstract compile(): IR.RelationComponent;
+}
+export class OneComponent {
+  constructor(readonly name: string) {}
+  compile() {
+    return new IR.OneRelation(this.name);
+  }
+}
+export class ManyComponent {
+  constructor(readonly name: string) {}
+  compile() {
+    return new IR.ManyRelation(this.name);
+  }
+}
+
 //== Statement
 export abstract class Statement extends Node {
   abstract compile(): Generator<IR.Operation>;
@@ -136,6 +182,19 @@ export class SReturn extends Statement {
   *compile() {
     yield* this.value.compile();
     yield new IR.Return();
+  }
+}
+
+export class SFact extends Statement {
+  constructor(readonly name: string, readonly values: Expression[]) {
+    super();
+  }
+
+  *compile() {
+    for (const value of this.values) {
+      yield* value.compile();
+    }
+    yield new IR.InsertFact(this.name, this.values.length);
   }
 }
 
@@ -221,6 +280,16 @@ export class ELet extends Expression {
   *compile() {
     yield* this.value.compile();
     yield new IR.Let(this.name);
+  }
+}
+
+export class ENew extends Expression {
+  constructor(readonly type_name: string) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.Instantiate(this.type_name);
   }
 }
 

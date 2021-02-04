@@ -16,10 +16,13 @@ import {
   CrochetBoolean,
   CrochetFloat,
   CrochetInteger,
+  CrochetObject,
   CrochetText,
+  CrochetType,
   CrochetValue,
   nothing,
 } from "./intrinsics";
+import { Database, RelationType } from "./logic";
 
 export class CrochetVM {
   private root_env = new Environment(null);
@@ -27,6 +30,7 @@ export class CrochetVM {
   private scenes = new Map<string, Scene>();
   private running = false;
   private tracing = false;
+  readonly database = new Database();
 
   constructor(private ffi: ForeignInterface) {}
 
@@ -131,6 +135,27 @@ export class CrochetVM {
       case "goto": {
         const scene = this.get_scene(activation, operation.name);
         return this.make_scene_activation(activation, scene);
+      }
+
+      case "instantiate": {
+        const type = this.get_type(activation, operation.type_name);
+        const value = new CrochetObject(type);
+        activation.push(value);
+        activation.next();
+        return activation;
+      }
+
+      case "insert-fact": {
+        const relation = this.get_relation(activation, operation.name);
+        if (relation.arity !== operation.arity) {
+          throw new Error(
+            `Invalid arity for relation ${relation.name}. Expected ${relation.arity}, got ${operation.arity}`
+          );
+        }
+        const values = activation.pop_many(operation.arity);
+        relation.insert(values);
+        activation.next();
+        return activation;
       }
 
       case "invoke": {
@@ -260,6 +285,26 @@ export class CrochetVM {
         break;
       }
 
+      case "define-type": {
+        const type = new CrochetType(declaration.name);
+        env.define_type(type.name, type);
+        break;
+      }
+
+      case "define-relation": {
+        const components = declaration.components;
+        if (components.length === 0) {
+          throw new Error(`Relation ${declaration.name} has no components`);
+        }
+        const relation = new RelationType(
+          declaration.name,
+          components.length,
+          components.map((x) => x.evaluate())
+        );
+        this.database.add(relation);
+        break;
+      }
+
       default: {
         unreachable(declaration, `Unknown declaration`);
       }
@@ -326,6 +371,24 @@ export class CrochetVM {
       throw new Error(`Undefined local ${name}`);
     } else {
       return local;
+    }
+  }
+
+  private get_type(activation: Activation, name: string) {
+    const type = activation.env.lookup_type(name);
+    if (type == null) {
+      throw new Error(`Undefined type #${name}`);
+    } else {
+      return type;
+    }
+  }
+
+  private get_relation(activation: Activation, name: string) {
+    const relation = this.database.lookup(name);
+    if (relation == null) {
+      throw new Error(`Undefined relation ${name}`);
+    } else {
+      return relation;
     }
   }
 }

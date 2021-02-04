@@ -5,18 +5,26 @@ import {
   DDo,
   DFFICommand,
   DLocalCommand,
+  DRelation,
   DScene,
+  DType,
   EBoolean,
   EFloat,
   EInteger,
   EInvoke,
   ELet,
+  ENew,
   ENothing,
   EText,
   EVariable,
   Expression,
+  ManyComponent,
+  OneComponent,
   Program,
+  RelationComponent,
+  RelationSignature,
   SExpression,
+  SFact,
   SGoto,
   Signature,
   SReturn,
@@ -39,27 +47,59 @@ export function parse(filename: string, source: string): Program {
 type x = unknown;
 type Node = Ohm.Node;
 
-class AtomSegment {
+interface ISegment {
+  to_static_part(): string;
+}
+
+class AtomSegment implements ISegment {
   constructor(readonly name: string) {}
 
-  toStaticPart() {
+  to_static_part() {
     return this.name;
   }
+
+  to_relation_signature(): RelationComponent {
+    throw new Error(`Atom cannot be made into a component`);
+  }
 }
 
-class VariableSegment {
+class VariableSegment implements ISegment {
   constructor(readonly name: string) {}
 
-  toStaticPart() {
+  to_static_part() {
     return "_";
   }
 }
 
-class ExprSegment {
+class ExprSegment implements ISegment {
   constructor(readonly expr: Expression) {}
 
-  toStaticPart() {
+  to_static_part() {
     return "_";
+  }
+}
+
+class OneRelationSegment implements ISegment {
+  constructor(readonly name: string) {}
+
+  to_static_part() {
+    return "_";
+  }
+
+  to_relation_signature() {
+    return new OneComponent(this.name);
+  }
+}
+
+class ManyRelationSegment implements ISegment {
+  constructor(readonly name: string) {}
+
+  to_static_part() {
+    return "_";
+  }
+
+  to_relation_signature() {
+    return new ManyComponent(this.name);
   }
 }
 
@@ -74,6 +114,39 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   SceneDeclaration(_scene: x, name: Node, body: Node) {
     return new DScene(name.toAST(), body.toAST());
+  },
+
+  TypeDeclaration(_type: x, name: Node, _semi: x) {
+    return new DType(name.toAST());
+  },
+
+  RelationDeclaration(_relation: x, sig: Node, _semi: x) {
+    return new DRelation(sig.toAST());
+  },
+
+  RelationSignature(segments0: Node) {
+    const segments: (
+      | AtomSegment
+      | OneRelationSegment
+      | ManyRelationSegment
+    )[] = segments0.toAST();
+    const name = segments.map((x) => x.to_static_part()).join(" ");
+    const args = segments
+      .filter((x) => !(x instanceof AtomSegment))
+      .map((x) => x.to_relation_signature());
+    return new RelationSignature(name, args);
+  },
+
+  RelationSignatureSegment_static(name: Node) {
+    return new AtomSegment(name.toAST());
+  },
+
+  RelationSignatureSegment_many(name: Node, _star: x) {
+    return new ManyRelationSegment(name.toAST());
+  },
+
+  RelationSignatureSegment_one(name: Node) {
+    return new OneRelationSegment(name.toAST());
   },
 
   CommandDeclaration_ffi(
@@ -103,7 +176,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
       head,
       ...segments0.toAST(),
     ];
-    const name = segments.map((x) => x.toStaticPart());
+    const name = segments.map((x) => x.to_static_part());
     const params = segments
       .filter((x) => x instanceof VariableSegment)
       .map((x) => x.name);
@@ -145,6 +218,23 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new ELet(name.toAST(), expr.toAST());
   },
 
+  FactStatement(_fact: x, segments0: Node, _semi: x) {
+    const segments: (AtomSegment | ExprSegment)[] = segments0.toAST();
+    const name = segments.map((x) => x.to_static_part()).join(" ");
+    const args = segments
+      .filter((x) => x instanceof ExprSegment)
+      .map((x) => ((x as any) as ExprSegment).expr);
+    return new SFact(name, args);
+  },
+
+  FactSegment_static(name: Node) {
+    return new AtomSegment(name.toAST());
+  },
+
+  FactSegment_variable(expr: Node) {
+    return new ExprSegment(expr.toAST());
+  },
+
   StatementBlock(_l: x, stmts: Node, _r: x) {
     return stmts.toAST();
   },
@@ -163,7 +253,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
       head,
       ...segments0.toAST(),
     ];
-    const name = segments.map((x) => x.toStaticPart());
+    const name = segments.map((x) => x.to_static_part());
     const args = segments
       .filter((x) => x instanceof ExprSegment)
       .map((x) => ((x as any) as ExprSegment).expr);
@@ -189,6 +279,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   PrimaryExpression_group(_l: x, expr: Node, _r: x) {
     return expr.toAST();
+  },
+
+  NewType(_new: x, name: Node) {
+    return new ENew(name.toAST());
   },
 
   Text(node: Node) {
@@ -261,6 +355,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   atom(_1: x, _2: x) {
     return this.sourceString;
+  },
+
+  type_name(_sharp: x, name: Node) {
+    return name.toAST();
   },
 
   name(_1: x, _2: x) {
