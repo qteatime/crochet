@@ -110,6 +110,13 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new Signature(name.join(" "), params);
   },
 
+  CommandSignature_infix(left: Node, symbol: Node, right: Node) {
+    return new Signature(`_ ${symbol.toAST()} _`, [
+      left.toAST(),
+      right.toAST(),
+    ]);
+  },
+
   SignatureSegment_static(name: Node) {
     return new AtomSegment(name.toAST());
   },
@@ -142,16 +149,15 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return stmts.toAST();
   },
 
-  Expression_command(sig0: Node) {
-    const sig: UseSignature = sig0.toAST();
+  UseInfix_infix(left: Node, symbol: Node, right: Node) {
+    const sig = new UseSignature(`_ ${symbol.toAST()} _`, [
+      left.toAST(),
+      right.toAST(),
+    ]);
     return new EInvoke(sig);
   },
 
-  UseSignature_single(head: Node) {
-    return new UseSignature(head.toAST(), []);
-  },
-
-  UseSignature_multi(head0: Node, segments0: Node) {
+  UseMixfix_multi(head0: Node, segments0: Node) {
     const head: AtomSegment | ExprSegment = head0.toAST();
     const segments: (AtomSegment | ExprSegment)[] = [
       head,
@@ -161,7 +167,8 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     const args = segments
       .filter((x) => x instanceof ExprSegment)
       .map((x) => ((x as any) as ExprSegment).expr);
-    return new UseSignature(name.join(" "), args);
+    const sig = new UseSignature(name.join(" "), args);
+    return new EInvoke(sig);
   },
 
   UseSegment_static(name: Node) {
@@ -170,6 +177,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   UseSegment_variable(expr: Node) {
     return new ExprSegment(expr.toAST());
+  },
+
+  PrimaryExpression_atom(head: Node) {
+    return new EInvoke(new UseSignature(head.toAST(), []));
   },
 
   PrimaryExpression_variable(name: Node) {
