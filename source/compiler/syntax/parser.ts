@@ -33,6 +33,7 @@ import {
   PVariable,
   RelationComponent,
   RelationSignature,
+  SearchRelation,
   SExpression,
   SFact,
   SGoto,
@@ -295,13 +296,17 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new ExprSegment(expr.toAST());
   },
 
-  SearchExpression_search(_search: x, segments0: Node) {
+  SearchExpression_search(_search: x, relations: Node) {
+    return new ESearch(relations.toAST());
+  },
+
+  SearchRelation(segments0: Node) {
     const segments: (AtomSegment | PatternSegment)[] = segments0.toAST();
     const name = segments.map((x) => x.to_static_part()).join(" ");
     const patterns = segments
       .filter((x) => x instanceof PatternSegment)
       .map((x) => x.to_pattern());
-    return new ESearch(name, patterns);
+    return new SearchRelation(name, patterns);
   },
 
   SearchSegment_type(name: Node) {

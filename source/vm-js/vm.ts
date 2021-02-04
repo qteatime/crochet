@@ -88,6 +88,24 @@ export class CrochetVM {
     }
   }
 
+  assert_stream(
+    activation: Activation,
+    value: CrochetValue
+  ): asserts value is CrochetStream {
+    if (!(value instanceof CrochetStream)) {
+      throw new Error(`Expected a Stream, got ${value.type}`);
+    }
+  }
+
+  assert_record(
+    activation: Activation,
+    value: CrochetValue
+  ): asserts value is CrochetRecord {
+    if (!(value instanceof CrochetRecord)) {
+      throw new Error(`Expected a Record, got ${value.type}`);
+    }
+  }
+
   //== Tracing and debugging
   trace(value: boolean) {
     this.tracing = value;
@@ -235,9 +253,27 @@ export class CrochetVM {
         const patterns = operation.patterns.map((x) =>
           this.evaluate_pattern(activation, x)
         );
-        const results = relation
-          .search(patterns)
-          .map((x) => new CrochetRecord(x.bound_values));
+        const env = new Logic.UnificationEnvironment();
+        const results = this.search_relation(relation, patterns, env);
+        activation.push(new CrochetStream(results));
+        activation.next();
+        return activation;
+      }
+
+      case "refine-search": {
+        const envs0 = activation.pop();
+        this.assert_stream(activation, envs0);
+        const envs = envs0.values.map((x) => {
+          this.assert_record(activation, x);
+          return Logic.UnificationEnvironment.from_map(x.values);
+        });
+        const relation = this.get_relation(activation, operation.name);
+        const patterns = operation.patterns.map((x) =>
+          this.evaluate_pattern(activation, x)
+        );
+        const results = envs.flatMap((env) => {
+          return this.search_relation(relation, patterns, env);
+        });
         activation.push(new CrochetStream(results));
         activation.next();
         return activation;
@@ -247,6 +283,16 @@ export class CrochetVM {
         throw unreachable(operation, `Unknown operation`);
       }
     }
+  }
+
+  private search_relation(
+    relation: RelationType,
+    patterns: Logic.Pattern[],
+    env: Logic.UnificationEnvironment
+  ) {
+    return relation
+      .search(patterns, env)
+      .map((x) => new CrochetRecord(x.bound_values));
   }
 
   private evaluate_pattern(activation: Activation, pattern: IR.Pattern) {

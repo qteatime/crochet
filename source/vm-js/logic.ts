@@ -184,8 +184,10 @@ export class RelationType {
     this.tree.insert(values);
   }
 
-  search(patterns: Pattern[]): UnificationEnvironment[] {
-    const env = new UnificationEnvironment();
+  search(
+    patterns: Pattern[],
+    env: UnificationEnvironment
+  ): UnificationEnvironment[] {
     return this.tree.search(env, patterns);
   }
 }
@@ -230,12 +232,16 @@ function build_tree_structure(components: Component[]): () => RelationNode {
 export class UnificationEnvironment {
   private bindings = new Map<string, CrochetValue>();
 
-  clone() {
+  static from_map(map: Map<string, CrochetValue>) {
     const new_env = new UnificationEnvironment();
-    for (const [k, v] of this.bindings) {
+    for (const [k, v] of map) {
       new_env.bindings.set(k, v);
     }
     return new_env;
+  }
+
+  clone() {
+    return UnificationEnvironment.from_map(this.bindings);
   }
 
   add(name: string, value: CrochetValue) {
