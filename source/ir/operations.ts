@@ -1,3 +1,5 @@
+import { Component, Many, One, VariablePattern } from "../vm-js/logic";
+
 export abstract class IRNode {}
 
 export class Module extends IRNode {
@@ -12,16 +14,63 @@ export abstract class AbstractDeclaration extends IRNode {
 }
 
 export type Declaration =
-  | DefineScene
-  | Do
   | DefineCommand
-  | DefineForeignCommand;
+  | DefineForeignCommand
+  | DefineRelation
+  | DefineScene
+  | DefineType
+  | Do;
 
 export class DefineScene extends AbstractDeclaration {
   readonly tag = "define-scene";
 
   constructor(readonly name: string, readonly body: Operation[]) {
     super();
+  }
+}
+
+export class DefineType extends AbstractDeclaration {
+  readonly tag = "define-type";
+
+  constructor(readonly name: string) {
+    super();
+  }
+}
+
+export class DefineRelation extends AbstractDeclaration {
+  readonly tag = "define-relation";
+
+  constructor(readonly name: string, readonly components: RelationComponent[]) {
+    super();
+  }
+}
+
+export abstract class RelationComponent {
+  abstract tag: string;
+  abstract evaluate(): Component;
+}
+
+export class OneRelation extends RelationComponent {
+  readonly tag = "one";
+
+  constructor(readonly name: string) {
+    super();
+  }
+
+  evaluate() {
+    return new Component(new One(), new VariablePattern(this.name));
+  }
+}
+
+export class ManyRelation extends RelationComponent {
+  readonly tag = "many";
+
+  constructor(readonly name: string) {
+    super();
+  }
+
+  evaluate() {
+    return new Component(new Many(), new VariablePattern(this.name));
   }
 }
 
@@ -66,6 +115,8 @@ export abstract class AbstractOperation extends IRNode {
 export type Operation =
   | Drop
   | Goto
+  | InsertFact
+  | Instantiate
   | Invoke
   | Let
   | PushInteger
@@ -153,6 +204,22 @@ export class Let extends AbstractOperation {
   readonly tag = "let";
 
   constructor(readonly name: string) {
+    super();
+  }
+}
+
+export class InsertFact extends AbstractOperation {
+  readonly tag = "insert-fact";
+
+  constructor(readonly name: string, readonly arity: number) {
+    super();
+  }
+}
+
+export class Instantiate extends AbstractOperation {
+  readonly tag = "instantiate";
+
+  constructor(readonly type_name: string) {
     super();
   }
 }

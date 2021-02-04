@@ -6,7 +6,10 @@ import { ForeignInterface } from "./vm-js/primitives";
 import { CrochetVM } from "./vm-js/vm";
 
 const [file, trace] = process.argv.slice(2);
-const source = Fs.readFileSync(file, "utf-8");
+const source = Fs.readFileSync(
+  file || __dirname + "../examples/hello.crochet",
+  "utf-8"
+);
 const ast = parse(file, source);
 console.log(`${file}\n${"-".repeat(file.length)}`);
 console.log(show(ast));
@@ -22,6 +25,12 @@ ffi.add("Concat", 2, (vm: CrochetVM, activation, x, y) => {
   vm.assert_text(activation, x);
   vm.assert_text(activation, y);
   activation.push(new CrochetText(x.value + y.value));
+  return activation;
+});
+
+ffi.add("ShowDb", 0, (vm: CrochetVM, activation) => {
+  console.log(show(vm.database));
+  activation.push(nothing);
   return activation;
 });
 

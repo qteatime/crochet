@@ -1,10 +1,11 @@
 import * as IR from "../ir/operations";
-import { CrochetValue } from "./intrinsics";
+import { CrochetValue, CrochetType } from "./intrinsics";
 import { ICrochetProcedure } from "./procedure";
 
 export class Environment {
   private bindings = new Map<string, CrochetValue>();
   private procedures = new Map<string, ICrochetProcedure>();
+  private types = new Map<string, CrochetType>();
 
   constructor(readonly parent: Environment | null) {}
 
@@ -22,6 +23,26 @@ export class Environment {
   define_procedure(name: string, procedure: ICrochetProcedure) {
     if (!this.procedures.has(name)) {
       this.procedures.set(name, procedure);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  lookup_type(name: string): CrochetType | null {
+    const value = this.types.get(name);
+    if (value != null) {
+      return value;
+    } else if (this.parent != null) {
+      return this.parent.lookup_type(name);
+    } else {
+      return null;
+    }
+  }
+
+  define_type(name: string, type: CrochetType) {
+    if (!this.types.has(name)) {
+      this.types.set(name, type);
       return true;
     } else {
       return false;

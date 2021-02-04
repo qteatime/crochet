@@ -6,5 +6,6 @@
     "module": "commonjs",
     "target": "ESNext",
     "lib": ["ESNext", "DOM"]
-  }
+  },
+  "include": ["source/**/*.ts"]
 }
