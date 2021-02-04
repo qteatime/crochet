@@ -298,10 +298,6 @@ export class ESearch extends Expression {
     super();
   }
 
-  get arity() {
-    return sum(this.relations.map((x) => x.arity));
-  }
-
   *compile() {
     if (this.relations.length === 0) {
       throw new Error(`Empty search`);
@@ -318,24 +314,16 @@ export class ESearch extends Expression {
 export class SearchRelation {
   constructor(readonly name: string, readonly patterns: Pattern[]) {}
 
-  get arity() {
-    return sum(this.patterns.map((x) => x.to_pattern_op()).map((x) => x.arity));
-  }
-
   *compile(IRNode: typeof IR.Search | typeof IR.RefineSearch) {
-    for (const pattern of this.patterns) {
-      yield* pattern.compile();
-    }
     yield new IRNode(
       this.name,
-      this.patterns.map((x) => x.to_pattern_op())
+      this.patterns.map((x) => x.compile())
     );
   }
 }
 
 export abstract class Pattern {
-  abstract compile(): Generator<IR.Operation>;
-  abstract to_pattern_op(): IR.Pattern;
+  abstract compile(): IR.Pattern;
 }
 
 export class PType extends Pattern {
@@ -343,9 +331,7 @@ export class PType extends Pattern {
     super();
   }
 
-  *compile() {}
-
-  to_pattern_op() {
+  compile() {
     return new IR.TypePattern(this.type_name);
   }
 }
@@ -355,12 +341,8 @@ export class PInteger extends Pattern {
     super();
   }
 
-  *compile() {
-    yield* this.value.compile();
-  }
-
-  to_pattern_op() {
-    return new IR.ValuePattern();
+  compile() {
+    return new IR.IntegerPattern(this.value.value);
   }
 }
 
@@ -369,12 +351,8 @@ export class PFloat extends Pattern {
     super();
   }
 
-  *compile() {
-    yield* this.value.compile();
-  }
-
-  to_pattern_op() {
-    return new IR.ValuePattern();
+  compile() {
+    return new IR.FloatPattern(this.value.value);
   }
 }
 
@@ -383,12 +361,8 @@ export class PText extends Pattern {
     super();
   }
 
-  *compile() {
-    yield* this.value.compile();
-  }
-
-  to_pattern_op() {
-    return new IR.ValuePattern();
+  compile() {
+    return new IR.TextPattern(this.value.value);
   }
 }
 
@@ -397,12 +371,8 @@ export class PBoolean extends Pattern {
     super();
   }
 
-  *compile() {
-    yield* this.value.compile();
-  }
-
-  to_pattern_op() {
-    return new IR.ValuePattern();
+  compile() {
+    return new IR.BooleanPattern(this.value.value);
   }
 }
 
@@ -411,26 +381,8 @@ export class PNothing extends Pattern {
     super();
   }
 
-  *compile() {
-    yield new IR.PushNothing();
-  }
-
-  to_pattern_op() {
-    return new IR.ValuePattern();
-  }
-}
-
-export class PValue extends Pattern {
-  constructor(readonly value: Expression) {
-    super();
-  }
-
-  *compile() {
-    yield* this.value.compile();
-  }
-
-  to_pattern_op() {
-    return new IR.ValuePattern();
+  compile() {
+    return new IR.NothingPattern();
   }
 }
 
@@ -439,9 +391,7 @@ export class PVariable extends Pattern {
     super();
   }
 
-  *compile() {}
-
-  to_pattern_op() {
+  compile() {
     return new IR.VariablePattern(this.name);
   }
 }

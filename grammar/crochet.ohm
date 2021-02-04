@@ -86,7 +86,6 @@ Crochet {
     | Text                    -- text
     | Boolean                 -- boolean
     | Nothing                 -- nothing
-    | "@" PrimaryExpression   -- value
     | Name                    -- variable
     | Atom                    -- static
 
