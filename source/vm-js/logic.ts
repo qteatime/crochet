@@ -16,11 +16,61 @@ export class Database {
   }
 }
 
-export abstract class Pattern {}
+export abstract class Pattern {
+  abstract unify(
+    env: UnificationEnvironment,
+    value: CrochetValue
+  ): UnificationEnvironment | null;
+}
+
+export class ValuePattern extends Pattern {
+  constructor(readonly value: CrochetValue) {
+    super();
+  }
+
+  unify(env: UnificationEnvironment, value: CrochetValue) {
+    if (this.value.equals(value)) {
+      return env;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class TypePattern extends Pattern {
+  constructor(readonly type: CrochetType) {
+    super();
+  }
+
+  unify(env: UnificationEnvironment, value: CrochetValue) {
+    if (this.type.hasInstance(value)) {
+      return env;
+    } else {
+      return null;
+    }
+  }
+}
 
 export class VariablePattern extends Pattern {
   constructor(readonly name: string) {
     super();
+  }
+
+  unify(env: UnificationEnvironment, value: CrochetValue) {
+    const bound = env.lookup(this.name);
+    if (bound == null) {
+      if (this.name === "_") {
+        return env;
+      } else {
+        const new_env = env.clone();
+        new_env.add(this.name, value);
+        return new_env;
+      }
+    } else if (value.equals(bound)) {
+      return env;
+    } else {
+      return null;
+    }
   }
 }
 
@@ -30,10 +80,25 @@ export class Pair {
 
 export abstract class RelationNode {
   abstract insert(values: CrochetValue[]): void;
+  abstract search(
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[];
 }
 
 export class EndNode extends RelationNode {
-  insert(_: CrochetValue[]) {}
+  insert(values: CrochetValue[]) {
+    if (values.length !== 0) {
+      throw new Error(`Insert with extraneous values`);
+    }
+  }
+
+  search(env: UnificationEnvironment, patterns: Pattern[]) {
+    if (patterns.length !== 0) {
+      throw new Error(`Search with extraneous patterns`);
+    }
+    return [env];
+  }
 }
 
 export class ManyNode extends RelationNode {
@@ -57,6 +122,19 @@ export class ManyNode extends RelationNode {
     this.trees.push(new Pair(head, sub_tree));
     sub_tree.insert(tail);
   }
+
+  search(env: UnificationEnvironment, patterns: Pattern[]) {
+    const [head, ...tail] = patterns;
+
+    return this.trees.flatMap((pair) => {
+      const new_env = head.unify(env, pair.value);
+      if (new_env === null) {
+        return [];
+      } else {
+        return pair.tree.search(new_env, tail);
+      }
+    });
+  }
 }
 
 export class SingleNode extends RelationNode {
@@ -72,6 +150,17 @@ export class SingleNode extends RelationNode {
     this.value = head;
     this.sub_tree = this.new_tree();
     this.sub_tree.insert(tail);
+  }
+
+  search(env: UnificationEnvironment, patterns: Pattern[]) {
+    const [head, ...tail] = patterns;
+
+    const new_env = head.unify(env, this.value);
+    if (new_env == null) {
+      return [];
+    } else {
+      return this.sub_tree.search(new_env, tail);
+    }
   }
 }
 
@@ -94,6 +183,11 @@ export class RelationType {
     }
     this.tree.insert(values);
   }
+
+  search(patterns: Pattern[]): UnificationEnvironment[] {
+    const env = new UnificationEnvironment();
+    return this.tree.search(env, patterns);
+  }
 }
 
 export abstract class Multiplicity {
@@ -113,7 +207,7 @@ export class Many extends Multiplicity {
 }
 
 export class Component {
-  constructor(readonly multiplicity: Multiplicity, readonly pattern: Pattern) {}
+  constructor(readonly multiplicity: Multiplicity, readonly name: string) {}
 
   to_tree(subtree: () => RelationNode) {
     return this.multiplicity.to_tree(subtree);
@@ -130,5 +224,29 @@ function build_tree_structure(components: Component[]): () => RelationNode {
       },
       () => new EndNode()
     );
+  }
+}
+
+export class UnificationEnvironment {
+  private bindings = new Map<string, CrochetValue>();
+
+  clone() {
+    const new_env = new UnificationEnvironment();
+    for (const [k, v] of this.bindings) {
+      new_env.bindings.set(k, v);
+    }
+    return new_env;
+  }
+
+  add(name: string, value: CrochetValue) {
+    this.bindings.set(name, value);
+  }
+
+  lookup(name: string) {
+    return this.bindings.get(name) ?? null;
+  }
+
+  get bound_values() {
+    return this.bindings;
   }
 }

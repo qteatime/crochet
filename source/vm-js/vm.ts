@@ -7,6 +7,7 @@ import {
   Module,
   Operation,
 } from "../ir/operations";
+import * as IR from "../ir/operations";
 import { Activation, Environment } from "./environment";
 import { ForeignInterface } from "./primitives";
 import { CrochetForeignProcedure, CrochetProcedure } from "./procedure";
@@ -17,12 +18,15 @@ import {
   CrochetFloat,
   CrochetInteger,
   CrochetObject,
+  CrochetRecord,
+  CrochetStream,
   CrochetText,
   CrochetType,
   CrochetValue,
   nothing,
 } from "./intrinsics";
 import { Database, RelationType } from "./logic";
+import * as Logic from "./logic";
 
 export class CrochetVM {
   private root_env = new Environment(null);
@@ -226,9 +230,43 @@ export class CrochetVM {
         }
       }
 
+      case "search": {
+        const relation = this.get_relation(activation, operation.name);
+        const patterns = operation.patterns.map((x) =>
+          this.evaluate_pattern(activation, x)
+        );
+        const results = relation
+          .search(patterns)
+          .map((x) => new CrochetRecord(x.bound_values));
+        activation.push(new CrochetStream(results));
+        activation.next();
+        return activation;
+      }
+
       default: {
-        unreachable(operation, `Unknown operation`);
-        return null;
+        throw unreachable(operation, `Unknown operation`);
+      }
+    }
+  }
+
+  private evaluate_pattern(activation: Activation, pattern: IR.Pattern) {
+    switch (pattern.tag) {
+      case "type-pattern": {
+        const type = this.get_type(activation, pattern.type_name);
+        return new Logic.TypePattern(type);
+      }
+
+      case "value-pattern": {
+        const value = activation.pop();
+        return new Logic.ValuePattern(value);
+      }
+
+      case "variable-pattern": {
+        return new Logic.VariablePattern(pattern.name);
+      }
+
+      default: {
+        throw unreachable(pattern, `Unknown pattern`);
       }
     }
   }

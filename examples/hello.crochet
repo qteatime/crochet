@@ -1,7 +1,7 @@
 # crochet
 
 TYPE #player;
-RELATION Type* name Name;
+RELATION Type* name is Name;
   
 DO:
   LET Player = NEW #player;
@@ -9,16 +9,20 @@ DO:
 END
 
 DO:
-  FACT Player name "Player";
-  show database;
-  FACT Player name "Ollie";
-  show database;
-  FACT Mari name "Mari";
-  show database;
-  LET X = 1;
-  say ("We gonna: " + X as text);
-  GOTO start;
+  say "FACT Player name is \"Player\"";
+  FACT Player name is "Player";
+  show (SEARCH _ name is Name);
+
+  say "FACT Player name is \"Ollie\"";
+  FACT Player name is "Ollie";
+  show (SEARCH _ name is Name);
+
+  say "FACT Mari name is \"Mari\"";
+  FACT Mari name is "Mari";
+  show (SEARCH _ name is Name);
 END
+
+COMMAND show Object = Show(Object);
 
 COMMAND show database = ShowDb();
 

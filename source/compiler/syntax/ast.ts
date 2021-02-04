@@ -293,6 +293,142 @@ export class ENew extends Expression {
   }
 }
 
+export class ESearch extends Expression {
+  constructor(readonly name: string, readonly patterns: Pattern[]) {
+    super();
+  }
+
+  get arity() {
+    return this.patterns
+      .map((x) => x.to_pattern_op())
+      .map((x) => x.arity as number)
+      .reduce((x, y) => x + y, 0);
+  }
+
+  *compile() {
+    for (const pattern of this.patterns) {
+      yield* pattern.compile();
+    }
+    yield new IR.Search(
+      this.name,
+      this.patterns.map((x) => x.to_pattern_op())
+    );
+  }
+}
+
+export abstract class Pattern {
+  abstract compile(): Generator<IR.Operation>;
+  abstract to_pattern_op(): IR.Pattern;
+}
+
+export class PType extends Pattern {
+  constructor(readonly type_name: string) {
+    super();
+  }
+
+  *compile() {}
+
+  to_pattern_op() {
+    return new IR.TypePattern(this.type_name);
+  }
+}
+
+export class PInteger extends Pattern {
+  constructor(readonly value: EInteger) {
+    super();
+  }
+
+  *compile() {
+    yield* this.value.compile();
+  }
+
+  to_pattern_op() {
+    return new IR.ValuePattern();
+  }
+}
+
+export class PFloat extends Pattern {
+  constructor(readonly value: EFloat) {
+    super();
+  }
+
+  *compile() {
+    yield* this.value.compile();
+  }
+
+  to_pattern_op() {
+    return new IR.ValuePattern();
+  }
+}
+
+export class PText extends Pattern {
+  constructor(readonly value: EText) {
+    super();
+  }
+
+  *compile() {
+    yield* this.value.compile();
+  }
+
+  to_pattern_op() {
+    return new IR.ValuePattern();
+  }
+}
+
+export class PBoolean extends Pattern {
+  constructor(readonly value: EBoolean) {
+    super();
+  }
+
+  *compile() {
+    yield* this.value.compile();
+  }
+
+  to_pattern_op() {
+    return new IR.ValuePattern();
+  }
+}
+
+export class PNothing extends Pattern {
+  constructor() {
+    super();
+  }
+
+  *compile() {
+    yield new IR.PushNothing();
+  }
+
+  to_pattern_op() {
+    return new IR.ValuePattern();
+  }
+}
+
+export class PValue extends Pattern {
+  constructor(readonly value: Expression) {
+    super();
+  }
+
+  *compile() {
+    yield* this.value.compile();
+  }
+
+  to_pattern_op() {
+    return new IR.ValuePattern();
+  }
+}
+
+export class PVariable extends Pattern {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  *compile() {}
+
+  to_pattern_op() {
+    return new IR.VariablePattern(this.name);
+  }
+}
+
 //== Utilities
 function to_list(
   xss: Generator<IR.Operation>[],
