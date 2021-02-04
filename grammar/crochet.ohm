@@ -70,7 +70,22 @@ Crochet {
     | ":" Statement* end_
 
   Expression =
+    | SearchExpression
+
+  SearchExpression =
+    | search_ SearchSegment+    -- search
     | UseInfix
+
+  SearchSegment =
+    | TypeName                -- type
+    | Integer                 -- integer
+    | Float                   -- float
+    | Text                    -- text
+    | Boolean                 -- boolean
+    | Nothing                 -- nothing
+    | "@" PrimaryExpression   -- value
+    | Name                    -- variable
+    | Atom                    -- static
 
   UseInfix =
     | UseMixfix infix_symbol UseMixfix  -- infix
@@ -133,8 +148,8 @@ Crochet {
   text = "\"" text_character* "\""
 
   dec_digit = "0".."9" | "_"
-  integer = dec_digit+
-  float = dec_digit+ "." dec_digit+
+  integer = ~"_" dec_digit+
+  float = ~"_" dec_digit+ "." dec_digit+
 
   boolean =
     | true_  -- true
@@ -156,9 +171,10 @@ Crochet {
   new_ = kw<"NEW">
   relation_ = kw<"RELATION">
   fact_ = kw<"FACT">
+  search_ = kw<"SEARCH">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
-    | type_ | new_ | relation_ | fact_
+    | type_ | new_ | relation_ | fact_ | search_
 }

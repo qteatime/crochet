@@ -1,4 +1,4 @@
-import { Component, Many, One, VariablePattern } from "../vm-js/logic";
+import * as Logic from "../vm-js/logic";
 
 export abstract class IRNode {}
 
@@ -47,7 +47,7 @@ export class DefineRelation extends AbstractDeclaration {
 
 export abstract class RelationComponent {
   abstract tag: string;
-  abstract evaluate(): Component;
+  abstract evaluate(): Logic.Component;
 }
 
 export class OneRelation extends RelationComponent {
@@ -58,7 +58,7 @@ export class OneRelation extends RelationComponent {
   }
 
   evaluate() {
-    return new Component(new One(), new VariablePattern(this.name));
+    return new Logic.Component(new Logic.One(), this.name);
   }
 }
 
@@ -70,7 +70,7 @@ export class ManyRelation extends RelationComponent {
   }
 
   evaluate() {
-    return new Component(new Many(), new VariablePattern(this.name));
+    return new Logic.Component(new Logic.Many(), this.name);
   }
 }
 
@@ -126,6 +126,7 @@ export type Operation =
   | PushBoolean
   | PushNothing
   | Return
+  | Search
   | Halt;
 
 export class PushInteger extends AbstractOperation {
@@ -223,3 +224,42 @@ export class Instantiate extends AbstractOperation {
     super();
   }
 }
+
+// Note: this will change a lot :')
+export class Search extends AbstractOperation {
+  readonly tag = "search";
+
+  constructor(readonly name: string, readonly patterns: Pattern[]) {
+    super();
+  }
+}
+
+export type Pattern = ValuePattern | VariablePattern | TypePattern;
+
+export abstract class AbstractPattern {
+  abstract tag: string;
+  abstract arity: number;
+}
+
+export class ValuePattern extends AbstractPattern {
+  readonly tag = "value-pattern";
+  readonly arity = 1;
+}
+
+export class TypePattern extends AbstractPattern {
+  readonly tag = "type-pattern";
+  readonly arity = 0;
+  constructor(readonly type_name: string) {
+    super();
+  }
+}
+
+export class VariablePattern extends AbstractPattern {
+  readonly tag = "variable-pattern";
+  readonly arity = 0;
+  constructor(readonly name: string) {
+    super();
+  }
+}
+
+// Search name [pattern...]

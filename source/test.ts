@@ -28,6 +28,12 @@ ffi.add("Concat", 2, (vm: CrochetVM, activation, x, y) => {
   return activation;
 });
 
+ffi.add("Show", 1, (vm: CrochetVM, activation, value) => {
+  console.log(show(value.to_js()));
+  activation.push(nothing);
+  return activation;
+});
+
 ffi.add("ShowDb", 0, (vm: CrochetVM, activation) => {
   console.log(show(vm.database));
   activation.push(nothing);

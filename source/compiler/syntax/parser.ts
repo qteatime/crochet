@@ -15,12 +15,22 @@ import {
   ELet,
   ENew,
   ENothing,
+  ESearch,
   EText,
   EVariable,
   Expression,
   ManyComponent,
   OneComponent,
+  Pattern,
+  PBoolean,
+  PFloat,
+  PInteger,
+  PNothing,
   Program,
+  PText,
+  PType,
+  PValue,
+  PVariable,
   RelationComponent,
   RelationSignature,
   SExpression,
@@ -61,6 +71,10 @@ class AtomSegment implements ISegment {
   to_relation_signature(): RelationComponent {
     throw new Error(`Atom cannot be made into a component`);
   }
+
+  to_pattern(): Pattern {
+    throw new Error(`Atom cannot be made into a pattern`);
+  }
 }
 
 class VariableSegment implements ISegment {
@@ -100,6 +114,18 @@ class ManyRelationSegment implements ISegment {
 
   to_relation_signature() {
     return new ManyComponent(this.name);
+  }
+}
+
+class PatternSegment implements ISegment {
+  constructor(readonly pattern: Pattern) {}
+
+  to_static_part() {
+    return "_";
+  }
+
+  to_pattern() {
+    return this.pattern;
   }
 }
 
@@ -267,6 +293,51 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   UseSegment_variable(expr: Node) {
     return new ExprSegment(expr.toAST());
+  },
+
+  SearchExpression_search(_search: x, segments0: Node) {
+    const segments: (AtomSegment | PatternSegment)[] = segments0.toAST();
+    const name = segments.map((x) => x.to_static_part()).join(" ");
+    const patterns = segments
+      .filter((x) => x instanceof PatternSegment)
+      .map((x) => x.to_pattern());
+    return new ESearch(name, patterns);
+  },
+
+  SearchSegment_type(name: Node) {
+    return new PatternSegment(new PType(name.toAST()));
+  },
+
+  SearchSegment_integer(value: Node) {
+    return new PatternSegment(new PInteger(value.toAST()));
+  },
+
+  SearchSegment_float(value: Node) {
+    return new PatternSegment(new PFloat(value.toAST()));
+  },
+
+  SearchSegment_text(value: Node) {
+    return new PatternSegment(new PText(value.toAST()));
+  },
+
+  SearchSegment_boolean(value: Node) {
+    return new PatternSegment(new PBoolean(value.toAST()));
+  },
+
+  SearchSegment_nothing(_: x) {
+    return new PatternSegment(new PNothing());
+  },
+
+  SearchSegment_value(_at: x, value: Node) {
+    return new PatternSegment(new PValue(value.toAST()));
+  },
+
+  SearchSegment_variable(name: Node) {
+    return new PatternSegment(new PVariable(name.toAST()));
+  },
+
+  SearchSegment_static(name: Node) {
+    return new AtomSegment(name.toAST());
   },
 
   PrimaryExpression_atom(head: Node) {
