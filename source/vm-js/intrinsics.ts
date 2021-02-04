@@ -146,7 +146,11 @@ export class CrochetRecord extends CrochetValue {
   }
 
   to_js() {
-    return this.values;
+    const result = new Map();
+    for (const [k, v] of this.values) {
+      result.set(k, v.to_js());
+    }
+    return result;
   }
 }
 
@@ -173,7 +177,7 @@ export class CrochetStream extends CrochetValue {
   }
 
   to_js() {
-    return this.values;
+    return this.values.map((x) => x.to_js());
   }
 }
 
