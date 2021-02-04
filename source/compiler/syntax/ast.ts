@@ -202,6 +202,17 @@ export class EVariable extends Expression {
   }
 }
 
+export class ELet extends Expression {
+  constructor(readonly name: Name, readonly value: Expression) {
+    super();
+  }
+
+  *compile() {
+    yield* this.value.compile();
+    yield new IR.Let(this.name);
+  }
+}
+
 //== Utilities
 function to_list(xss: Generator<IR.Operation>[]): IR.Operation[] {
   const result = [];

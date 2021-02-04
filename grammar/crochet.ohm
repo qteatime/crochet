@@ -14,11 +14,12 @@ Crochet {
     | scene_ Atom StatementBlock
 
   CommandDeclaration =
-    | command_ CommandSignature "=" Name "(" ListOf<Name, ","> ")"  -- ffi
-    | command_ CommandSignature StatementBlock                      -- local
+    | command_ CommandSignature "=" Name "(" ListOf<Name, ","> ")" ";"  -- ffi
+    | command_ CommandSignature StatementBlock                          -- local
 
   CommandSignature =
-    | Atom SignatureSegment+
+    | SignatureSegment SignatureSegment+    -- multi
+    | Atom                                  -- single
   
   SignatureSegment =
     | Atom      -- static
@@ -27,6 +28,7 @@ Crochet {
   Statement =
     | ReturnStatement
     | GotoStatement
+    | LetStatement
     | Expression ";"   -- expr
 
   ReturnStatement =
@@ -36,15 +38,19 @@ Crochet {
   GotoStatement =
     | goto_ Atom ";"
 
+  LetStatement =
+    | let_ Name "=" Expression ";"
+
   StatementBlock =
-    | "{" Statement* "}"
+    | ":" Statement* end_
 
   Expression =
     | UseSignature        -- command
     | PrimaryExpression
 
   UseSignature =
-    | Atom UseSegment*
+    | UseSegment UseSegment+  -- multi
+    | Atom                    -- single
 
   UseSegment =
     | Atom                -- static
@@ -97,12 +103,14 @@ Crochet {
 
   kw<word> = word ~atom_rest
 
-  true_ = kw<"@true">
-  false_ = kw<"@false">
-  nothing_ = kw<"@nothing">
-  scene_ = kw<"@scene">
-  command_ = kw<"@command">
-  do_ = kw<"@do">
-  return_ = kw<"@return">
-  goto_ = kw<"@goto">
+  true_ = kw<"TRUE">
+  false_ = kw<"FALSE">
+  nothing_ = kw<"NOTHING">
+  scene_ = kw<"SCENE">
+  command_ = kw<"COMMAND">
+  do_ = kw<"DO">
+  return_ = kw<"RETURN">
+  goto_ = kw<"GOTO">
+  let_ = kw<"LET">
+  end_ = kw<"END">
 }

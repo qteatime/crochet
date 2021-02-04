@@ -10,6 +10,7 @@ import {
   EFloat,
   EInteger,
   EInvoke,
+  ELet,
   ENothing,
   EText,
   EVariable,
@@ -82,7 +83,8 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     name: Node,
     _1: x,
     params: Node,
-    _2: x
+    _2: x,
+    _semi: x
   ) {
     return new DFFICommand(sig.toAST(), name.toAST(), params.toAST());
   },
@@ -91,10 +93,17 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DLocalCommand(sig.toAST(), body.toAST());
   },
 
-  CommandSignature(head0: Node, segments0: Node) {
-    const head: string = head0.toAST();
-    const segments: (AtomSegment | VariableSegment)[] = segments0.toAST();
-    const name = [head, ...segments.map((x) => x.toStaticPart())];
+  CommandSignature_single(head: Node) {
+    return new Signature(head.toAST(), []);
+  },
+
+  CommandSignature_multi(head0: Node, segments0: Node) {
+    const head: AtomSegment | VariableSegment = head0.toAST();
+    const segments: (AtomSegment | VariableSegment)[] = [
+      head,
+      ...segments0.toAST(),
+    ];
+    const name = segments.map((x) => x.toStaticPart());
     const params = segments
       .filter((x) => x instanceof VariableSegment)
       .map((x) => x.name);
@@ -125,6 +134,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new SGoto(scene.toAST());
   },
 
+  LetStatement(_let: x, name: Node, _eq: x, expr: Node, _semi: x) {
+    return new ELet(name.toAST(), expr.toAST());
+  },
+
   StatementBlock(_l: x, stmts: Node, _r: x) {
     return stmts.toAST();
   },
@@ -134,10 +147,17 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EInvoke(sig);
   },
 
-  UseSignature(head0: Node, segments0: Node) {
-    const head: string = head0.toAST();
-    const segments: (AtomSegment | ExprSegment)[] = segments0.toAST();
-    const name = [head, ...segments.map((x) => x.toStaticPart())];
+  UseSignature_single(head: Node) {
+    return new UseSignature(head.toAST(), []);
+  },
+
+  UseSignature_multi(head0: Node, segments0: Node) {
+    const head: AtomSegment | ExprSegment = head0.toAST();
+    const segments: (AtomSegment | ExprSegment)[] = [
+      head,
+      ...segments0.toAST(),
+    ];
+    const name = segments.map((x) => x.toStaticPart());
     const args = segments
       .filter((x) => x instanceof ExprSegment)
       .map((x) => ((x as any) as ExprSegment).expr);
