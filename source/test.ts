@@ -1,7 +1,7 @@
 import * as Fs from "fs";
 import { parse } from "./compiler/syntax/parser";
 import { show } from "./utils/utils";
-import { nothing } from "./vm-js/intrinsics";
+import { CrochetInteger, CrochetText, nothing } from "./vm-js/intrinsics";
 import { ForeignInterface } from "./vm-js/primitives";
 import { CrochetVM } from "./vm-js/vm";
 
@@ -17,6 +17,15 @@ console.log(show(ir));
 
 const ffi = new ForeignInterface();
 const vm = new CrochetVM(ffi);
+
+ffi.add("ToText", 1, (vm: CrochetVM, activation, value) => {
+  if (value instanceof CrochetInteger) {
+    activation.push(new CrochetText(value.value.toString()));
+    return activation;
+  } else {
+    throw new Error(`Invalid type: ${value.type}`);
+  }
+});
 
 ffi.add("Say", 1, (vm: CrochetVM, activation, phrase) => {
   vm.assert_text(activation, phrase);

@@ -1,26 +1,33 @@
 # crochet
 
-@command say Phrase = Say(Phrase)
-@command wait Time seconds = Wait(Time)
-@command wait Time second {
-  wait Time seconds;
-  @return;
-}
-@command show Image on top of everything = ShowFront(Image)
+DO:
+  LET X = 1;
+  say "We gonna!";
+  say (X as text);
+  GOTO start;
+END
 
-%% The game starts here
-@scene start {
+COMMAND say Phrase = Say(Phrase);
+
+COMMAND wait Time seconds = Wait(Time);
+
+COMMAND Value as text = ToText(Value);
+
+COMMAND wait Time second:
+  wait Time seconds;
+  RETURN;
+END
+
+COMMAND show Image on top of everything = ShowFront(Image);
+
+SCENE start:
   say "This is the start of the game.";
   wait 1 second;
   say "And now to our announcers.";
-  @goto announcement;
-}
+  GOTO announcement;
+END
 
-@scene announcement {
+SCENE announcement:
   show "announcement.png" on top of everything;
   say "See?";
-}
-
-@do {
-  @goto start;
-}
+END

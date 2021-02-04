@@ -67,6 +67,7 @@ export type Operation =
   | Drop
   | Goto
   | Invoke
+  | Let
   | PushInteger
   | PushFloat
   | PushText
@@ -142,6 +143,14 @@ export class Halt extends AbstractOperation {
 
 export class Goto extends AbstractOperation {
   readonly tag = "goto";
+
+  constructor(readonly name: string) {
+    super();
+  }
+}
+
+export class Let extends AbstractOperation {
+  readonly tag = "let";
 
   constructor(readonly name: string) {
     super();

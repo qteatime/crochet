@@ -67,7 +67,7 @@ export class CrochetVM {
     value: CrochetValue
   ): asserts value is CrochetText {
     if (!(value instanceof CrochetText)) {
-      throw new Error(`Expected a Text, got ${value}`);
+      throw new Error(`Expected a Text, got ${value.type}`);
     }
   }
 
@@ -76,7 +76,7 @@ export class CrochetVM {
     value: CrochetValue
   ): asserts value is CrochetInteger {
     if (!(value instanceof CrochetInteger)) {
-      throw new Error(`Expected an Integer, got ${value}`);
+      throw new Error(`Expected an Integer, got ${value.type}`);
     }
   }
 
@@ -142,6 +142,13 @@ export class CrochetVM {
         }
         const args = activation.pop_many(operation.arity);
         return procedure.invoke(this, activation, args);
+      }
+
+      case "let": {
+        const value = activation.pop();
+        activation.env.define(operation.name, value);
+        activation.next();
+        return activation;
       }
 
       case "push-boolean": {
