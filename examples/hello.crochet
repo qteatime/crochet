@@ -16,7 +16,6 @@ COMMAND Value as text = ToText(Value);
 
 COMMAND wait Time second:
   wait Time seconds;
-  RETURN;
 END
 
 COMMAND show Image on top of everything = ShowFront(Image);

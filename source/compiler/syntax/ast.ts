@@ -41,7 +41,10 @@ export class DScene extends Declaration {
   *compile() {
     yield new IR.DefineScene(
       this.name,
-      to_list(this.body.map((x) => x.compile()))
+      to_list(
+        this.body.map((x) => x.compile()),
+        [new IR.Halt()]
+      )
     );
   }
 }
@@ -52,7 +55,12 @@ export class DDo extends Declaration {
   }
 
   *compile() {
-    yield new IR.Do(to_list(this.body.map((x) => x.compile())));
+    yield new IR.Do(
+      to_list(
+        this.body.map((x) => x.compile()),
+        [new IR.Halt()]
+      )
+    );
   }
 }
 
@@ -86,7 +94,10 @@ export class DLocalCommand extends Declaration {
     yield new IR.DefineCommand(
       this.signature.name,
       this.signature.parameters,
-      to_list(this.body.map((x) => x.compile()))
+      to_list(
+        this.body.map((x) => x.compile()),
+        [new IR.PushNothing(), new IR.Return()]
+      )
     );
   }
 }
@@ -214,13 +225,16 @@ export class ELet extends Expression {
 }
 
 //== Utilities
-function to_list(xss: Generator<IR.Operation>[]): IR.Operation[] {
+function to_list(
+  xss: Generator<IR.Operation>[],
+  tail: IR.Operation[]
+): IR.Operation[] {
   const result = [];
   for (const xs of xss) {
     for (const x of xs) {
       result.push(x);
     }
   }
-  result.push(new IR.Halt());
+  result.push.apply(result, tail);
   return result;
 }
