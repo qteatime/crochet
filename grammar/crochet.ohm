@@ -18,6 +18,7 @@ Crochet {
     | command_ CommandSignature StatementBlock                          -- local
 
   CommandSignature =
+    | Name infix_symbol Name                -- infix
     | SignatureSegment SignatureSegment+    -- multi
     | Atom                                  -- single
   
@@ -45,12 +46,15 @@ Crochet {
     | ":" Statement* end_
 
   Expression =
-    | UseSignature        -- command
-    | PrimaryExpression
+    | UseInfix
 
-  UseSignature =
-    | UseSegment UseSegment+  -- multi
-    | Atom                    -- single
+  UseInfix =
+    | UseMixfix infix_symbol UseMixfix  -- infix
+    | UseMixfix
+
+  UseMixfix =
+    | UseSegment UseSegment+            -- multi
+    | PrimaryExpression
 
   UseSegment =
     | Atom                -- static
@@ -61,6 +65,7 @@ Crochet {
     | Number
     | Boolean
     | Nothing
+    | Atom                -- atom
     | Name                -- variable
     | "(" Expression ")"  -- group
 
@@ -69,7 +74,7 @@ Crochet {
   Integer = integer
   Float = float
   Boolean = boolean
-  Name = name
+  Name = ~reserved name
   Atom = atom
   Nothing = nothing_
 
@@ -87,6 +92,9 @@ Crochet {
   name_start = "A".."Z" | "_"
   name_rest = letter | digit | "-"
   name = name_start name_rest*
+
+  symbol_char = "+" | "/" | "&" | "^" | "~" | "*" | "-" | "<" | ">" | "=" | "."
+  infix_symbol = symbol_char+
 
   text_character =
     | "\\" "\""   -- escape
@@ -113,4 +121,8 @@ Crochet {
   goto_ = kw<"GOTO">
   let_ = kw<"LET">
   end_ = kw<"END">
+
+  reserved =
+    | true_ | false_ | nothing_ 
+    | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
 }

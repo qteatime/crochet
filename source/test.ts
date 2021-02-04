@@ -18,6 +18,13 @@ console.log(show(ir));
 const ffi = new ForeignInterface();
 const vm = new CrochetVM(ffi);
 
+ffi.add("Concat", 2, (vm: CrochetVM, activation, x, y) => {
+  vm.assert_text(activation, x);
+  vm.assert_text(activation, y);
+  activation.push(new CrochetText(x.value + y.value));
+  return activation;
+});
+
 ffi.add("ToText", 1, (vm: CrochetVM, activation, value) => {
   if (value instanceof CrochetInteger) {
     activation.push(new CrochetText(value.value.toString()));

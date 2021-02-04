@@ -2,10 +2,11 @@
 
 DO:
   LET X = 1;
-  say "We gonna!";
-  say (X as text);
+  say ("We gonna: " + X as text);
   GOTO start;
 END
+
+COMMAND X + Y = Concat(X, Y);
 
 COMMAND say Phrase = Say(Phrase);
 
