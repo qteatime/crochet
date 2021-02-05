@@ -345,10 +345,11 @@ export class CrochetVM {
   ) {
     switch (declaration.tag) {
       case "define-scene": {
+        const scene_env = new Environment(env);
         const scene = new Scene(
           module,
           declaration.name,
-          env,
+          scene_env,
           declaration.body
         );
         this.add_scene(scene);
@@ -356,7 +357,8 @@ export class CrochetVM {
       }
 
       case "do": {
-        const activation = new Activation(null, env, declaration.body);
+        const do_env = new Environment(env);
+        const activation = new Activation(null, do_env, declaration.body);
         this.queue.push(activation);
         break;
       }
