@@ -6,7 +6,7 @@ Crochet {
     | CommandDeclaration
     | DoDeclaration
     | SceneDeclaration
-    | TypeDeclaration
+    | ActorDeclaration
     | RelationDeclaration
     
   DoDeclaration =
@@ -15,8 +15,8 @@ Crochet {
   SceneDeclaration =
     | scene_ Atom StatementBlock
 
-  TypeDeclaration =
-    | type_ TypeName ";"
+  ActorDeclaration =
+    | actor_ ActorName ";"
 
   RelationDeclaration =
     | relation_ RelationSignature ";"
@@ -80,7 +80,7 @@ Crochet {
     | SearchSegment+
 
   SearchSegment =
-    | TypeName                -- type
+    | ActorName                -- actor
     | Integer                 -- integer
     | Float                   -- float
     | Text                    -- text
@@ -106,13 +106,10 @@ Crochet {
     | Number
     | Boolean
     | Nothing
-    | NewType
+    | ActorName           -- actor
     | Atom                -- atom
     | Name                -- variable
     | "(" Expression ")"  -- group
-
-  NewType =
-    | new_ TypeName
 
   Text = text
   Number = Integer | Float
@@ -121,7 +118,7 @@ Crochet {
   Boolean = boolean
   Name = ~reserved name
   Atom = atom
-  TypeName = type_name
+  ActorName = actor_name
   Nothing = nothing_
 
   // -- Lexical rules -------------------------------------------------
@@ -135,7 +132,7 @@ Crochet {
   atom_rest = letter | digit | "-"
   atom = atom_start atom_rest*
 
-  type_name = "#" atom
+  actor_name = "#" atom
 
   name_start = "A".."Z" | "_"
   name_rest = letter | digit | "-"
@@ -169,8 +166,7 @@ Crochet {
   goto_ = kw<"GOTO">
   let_ = kw<"LET">
   end_ = kw<"END">
-  type_ = kw<"TYPE">
-  new_ = kw<"NEW">
+  actor_ = kw<"ACTOR">
   relation_ = kw<"RELATION">
   fact_ = kw<"FACT">
   search_ = kw<"SEARCH">
@@ -178,5 +174,5 @@ Crochet {
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
-    | type_ | new_ | relation_ | fact_ | search_
+    | actor_ | relation_ | fact_ | search_
 }

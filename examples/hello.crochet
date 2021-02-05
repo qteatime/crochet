@@ -1,26 +1,22 @@
 # crochet
 
-TYPE #player;
+ACTOR #player;
+ACTOR #mari;
 RELATION Type* name is Name;
 RELATION Type* is angry;
 RELATION Type* is an adult;
   
 DO:
-  LET Player = NEW #player;
-  LET Mari = NEW #player;
-END
-
-DO:
   say "FACT Player's name is 'Player'";
-  FACT Player name is "Player";
+  FACT #player name is "Player";
   show (SEARCH _ name is Name);
 
   say "FACT Player's name is 'Ollie'";
-  FACT Player name is "Ollie";
+  FACT #player name is "Ollie";
   show (SEARCH _ name is Name);
 
   say "FACT Mari's name is 'Mari'";
-  FACT Mari name is "Mari";
+  FACT #mari name is "Mari";
   show (SEARCH _ name is Name);
 
 
@@ -31,11 +27,11 @@ DO:
   show (SEARCH _ name is _);
 
   say "FACT Player is angry";
-  FACT Player is angry;
+  FACT #player is angry;
   
   say "FACT Mari is angry and an adult";
-  FACT Mari is angry;
-  FACT Mari is an adult;
+  FACT #mari is angry;
+  FACT #mari is an adult;
 
   say "Who's angry?";
   show (SEARCH X is angry, X name is Name);

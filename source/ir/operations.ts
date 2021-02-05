@@ -18,7 +18,7 @@ export type Declaration =
   | DefineForeignCommand
   | DefineRelation
   | DefineScene
-  | DefineType
+  | DefineActor
   | Do;
 
 export class DefineScene extends AbstractDeclaration {
@@ -29,8 +29,8 @@ export class DefineScene extends AbstractDeclaration {
   }
 }
 
-export class DefineType extends AbstractDeclaration {
-  readonly tag = "define-type";
+export class DefineActor extends AbstractDeclaration {
+  readonly tag = "define-actor";
 
   constructor(readonly name: string) {
     super();
@@ -113,7 +113,6 @@ export abstract class AbstractOperation extends IRNode {
 }
 
 export type Operation =
-  | Instantiate
   // Commands and environment
   | Invoke
   | Return
@@ -126,6 +125,7 @@ export type Operation =
   | PushLocal
   | PushBoolean
   | PushNothing
+  | PushActor
   // Search
   | InsertFact
   | RefineSearch
@@ -178,6 +178,14 @@ export class PushLocal extends AbstractOperation {
   }
 }
 
+export class PushActor extends AbstractOperation {
+  readonly tag = "push-actor";
+
+  constructor(readonly name: string) {
+    super();
+  }
+}
+
 export class Invoke extends AbstractOperation {
   readonly tag = "invoke";
 
@@ -222,14 +230,6 @@ export class InsertFact extends AbstractOperation {
   }
 }
 
-export class Instantiate extends AbstractOperation {
-  readonly tag = "instantiate";
-
-  constructor(readonly type_name: string) {
-    super();
-  }
-}
-
 // Note: this will change a lot :')
 export class Search extends AbstractOperation {
   readonly tag = "search";
@@ -254,7 +254,7 @@ export type Pattern =
   | TextPattern
   | NothingPattern
   | VariablePattern
-  | TypePattern;
+  | ActorPattern;
 
 export abstract class AbstractPattern {
   abstract tag: string;
@@ -292,10 +292,10 @@ export class NothingPattern extends AbstractPattern {
   readonly tag = "nothing-pattern";
 }
 
-export class TypePattern extends AbstractPattern {
-  readonly tag = "type-pattern";
+export class ActorPattern extends AbstractPattern {
+  readonly tag = "actor-pattern";
   readonly arity = 0;
-  constructor(readonly type_name: string) {
+  constructor(readonly actor_name: string) {
     super();
   }
 }

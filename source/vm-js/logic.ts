@@ -1,4 +1,4 @@
-import { CrochetValue, CrochetType } from "./intrinsics";
+import { CrochetValue, CrochetActor } from "./intrinsics";
 
 export class Database {
   private relations = new Map<string, RelationType>();
@@ -37,13 +37,13 @@ export class ValuePattern extends Pattern {
   }
 }
 
-export class TypePattern extends Pattern {
-  constructor(readonly type: CrochetType) {
+export class ActorPattern extends Pattern {
+  constructor(readonly type: CrochetActor) {
     super();
   }
 
   unify(env: UnificationEnvironment, value: CrochetValue) {
-    if (this.type.hasInstance(value)) {
+    if (this.type.equals(value)) {
       return env;
     } else {
       return null;
