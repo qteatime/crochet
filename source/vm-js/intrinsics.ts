@@ -80,32 +80,10 @@ export class CrochetNothing extends CrochetValue {
   }
 }
 
-export class CrochetType extends CrochetValue {
-  readonly type = "Type";
+export class CrochetActor extends CrochetValue {
+  readonly type = "Actor";
 
   constructor(readonly name: string) {
-    super();
-  }
-
-  hasInstance(value: CrochetValue) {
-    return (
-      value === this || (value instanceof CrochetObject && value.klass === this)
-    );
-  }
-
-  equals(x: CrochetValue): boolean {
-    return x === this;
-  }
-
-  to_js() {
-    return this;
-  }
-}
-
-export class CrochetObject extends CrochetValue {
-  readonly type = "Object";
-
-  constructor(readonly klass: CrochetType) {
     super();
   }
 
@@ -119,7 +97,7 @@ export class CrochetObject extends CrochetValue {
 }
 
 export class CrochetRecord extends CrochetValue {
-  readonly type = "record";
+  readonly type = "Record";
 
   constructor(readonly values: Map<string, CrochetValue>) {
     super();

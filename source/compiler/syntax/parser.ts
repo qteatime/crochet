@@ -7,13 +7,12 @@ import {
   DLocalCommand,
   DRelation,
   DScene,
-  DType,
+  DActor,
   EBoolean,
   EFloat,
   EInteger,
   EInvoke,
   ELet,
-  ENew,
   ENothing,
   ESearch,
   EText,
@@ -28,7 +27,7 @@ import {
   PNothing,
   Program,
   PText,
-  PType,
+  PActor,
   PVariable,
   RelationComponent,
   RelationSignature,
@@ -39,6 +38,7 @@ import {
   Signature,
   SReturn,
   UseSignature,
+  EActor,
 } from "./ast";
 
 const grammarFile = Path.join(__dirname, "../../../grammar/crochet.ohm");
@@ -142,8 +142,8 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DScene(name.toAST(), body.toAST());
   },
 
-  TypeDeclaration(_type: x, name: Node, _semi: x) {
-    return new DType(name.toAST());
+  ActorDeclaration(_actor: x, name: Node, _semi: x) {
+    return new DActor(name.toAST());
   },
 
   RelationDeclaration(_relation: x, sig: Node, _semi: x) {
@@ -308,8 +308,8 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new SearchRelation(name, patterns);
   },
 
-  SearchSegment_type(name: Node) {
-    return new PatternSegment(new PType(name.toAST()));
+  SearchSegment_actor(name: Node) {
+    return new PatternSegment(new PActor(name.toAST()));
   },
 
   SearchSegment_integer(value: Node) {
@@ -348,12 +348,12 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EVariable(name.toAST());
   },
 
-  PrimaryExpression_group(_l: x, expr: Node, _r: x) {
-    return expr.toAST();
+  PrimaryExpression_actor(name: Node) {
+    return new EActor(name.toAST());
   },
 
-  NewType(_new: x, name: Node) {
-    return new ENew(name.toAST());
+  PrimaryExpression_group(_l: x, expr: Node, _r: x) {
+    return expr.toAST();
   },
 
   Text(node: Node) {
@@ -428,7 +428,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return this.sourceString;
   },
 
-  type_name(_sharp: x, name: Node) {
+  actor_name(_sharp: x, name: Node) {
     return name.toAST();
   },
 

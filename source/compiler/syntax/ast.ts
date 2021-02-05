@@ -102,13 +102,13 @@ export class DLocalCommand extends Declaration {
   }
 }
 
-export class DType extends Declaration {
+export class DActor extends Declaration {
   constructor(readonly name: string) {
     super();
   }
 
   *compile() {
-    yield new IR.DefineType(this.name);
+    yield new IR.DefineActor(this.name);
   }
 }
 
@@ -272,6 +272,16 @@ export class EVariable extends Expression {
   }
 }
 
+export class EActor extends Expression {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.PushActor(this.name);
+  }
+}
+
 export class ELet extends Expression {
   constructor(readonly name: Name, readonly value: Expression) {
     super();
@@ -280,16 +290,6 @@ export class ELet extends Expression {
   *compile() {
     yield* this.value.compile();
     yield new IR.Let(this.name);
-  }
-}
-
-export class ENew extends Expression {
-  constructor(readonly type_name: string) {
-    super();
-  }
-
-  *compile() {
-    yield new IR.Instantiate(this.type_name);
   }
 }
 
@@ -326,13 +326,13 @@ export abstract class Pattern {
   abstract compile(): IR.Pattern;
 }
 
-export class PType extends Pattern {
-  constructor(readonly type_name: string) {
+export class PActor extends Pattern {
+  constructor(readonly actor_name: string) {
     super();
   }
 
   compile() {
-    return new IR.TypePattern(this.type_name);
+    return new IR.ActorPattern(this.actor_name);
   }
 }
 

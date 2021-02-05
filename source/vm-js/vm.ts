@@ -17,11 +17,10 @@ import {
   CrochetBoolean,
   CrochetFloat,
   CrochetInteger,
-  CrochetObject,
   CrochetRecord,
   CrochetStream,
   CrochetText,
-  CrochetType,
+  CrochetActor,
   CrochetValue,
   nothing,
 } from "./intrinsics";
@@ -159,14 +158,6 @@ export class CrochetVM {
         return this.make_scene_activation(activation, scene);
       }
 
-      case "instantiate": {
-        const type = this.get_type(activation, operation.type_name);
-        const value = new CrochetObject(type);
-        activation.push(value);
-        activation.next();
-        return activation;
-      }
-
       case "insert-fact": {
         const relation = this.get_relation(activation, operation.name);
         if (relation.arity !== operation.arity) {
@@ -194,6 +185,13 @@ export class CrochetVM {
       case "let": {
         const value = activation.pop();
         activation.env.define(operation.name, value);
+        activation.next();
+        return activation;
+      }
+
+      case "push-actor": {
+        const actor = this.get_actor(activation, operation.name);
+        activation.push(actor);
         activation.next();
         return activation;
       }
@@ -297,9 +295,9 @@ export class CrochetVM {
 
   private evaluate_pattern(activation: Activation, pattern: IR.Pattern) {
     switch (pattern.tag) {
-      case "type-pattern": {
-        const type = this.get_type(activation, pattern.type_name);
-        return new Logic.TypePattern(type);
+      case "actor-pattern": {
+        const actor = this.get_actor(activation, pattern.actor_name);
+        return new Logic.ActorPattern(actor);
       }
 
       case "integer-pattern": {
@@ -384,9 +382,9 @@ export class CrochetVM {
         break;
       }
 
-      case "define-type": {
-        const type = new CrochetType(declaration.name);
-        env.define_type(type.name, type);
+      case "define-actor": {
+        const actor = new CrochetActor(declaration.name);
+        env.define_actor(actor.name, actor);
         break;
       }
 
@@ -473,12 +471,12 @@ export class CrochetVM {
     }
   }
 
-  private get_type(activation: Activation, name: string) {
-    const type = activation.env.lookup_type(name);
-    if (type == null) {
-      throw new Error(`Undefined type #${name}`);
+  private get_actor(activation: Activation, name: string) {
+    const actor = activation.env.lookup_actor(name);
+    if (actor == null) {
+      throw new Error(`Undefined actor #${name}`);
     } else {
-      return type;
+      return actor;
     }
   }
 
