@@ -1,0 +1,29 @@
+# crochet
+
+ACTOR #apple;
+ACTOR #orange;
+ACTOR #mari;
+
+RELATION Person* likes Thing*;
+
+COMMAND say X = Say(X);
+COMMAND show X = Show(X);
+
+DO:
+  say "What mari likes?";
+  FACT #mari likes #apple;
+  FACT #mari likes #orange;
+  show (SEARCH #mari likes Thing);
+
+  say "What about now?";
+  FORGET #mari likes #orange;
+  show (SEARCH #mari likes Thing);
+
+  say "And now?";
+  FORGET #mari likes #apple;
+  show (SEARCH #mari likes Thing);
+
+  say "This can't be true?";
+  FACT #mari likes #apple;
+  show (SEARCH #mari likes Thing);
+END
