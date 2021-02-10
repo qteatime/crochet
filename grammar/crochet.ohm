@@ -47,6 +47,7 @@ Crochet {
     | GotoStatement
     | LetStatement
     | FactStatement
+    | ForgetStatement
     | Expression ";"   -- expr
 
   ReturnStatement =
@@ -60,7 +61,13 @@ Crochet {
     | let_ Name "=" Expression ";"
 
   FactStatement =
-    | fact_ FactSegment+ ";"
+    | fact_ FactUseSignature ";"
+
+  ForgetStatement =
+    | forget_ FactUseSignature ";"
+
+  FactUseSignature =
+    | FactSegment+
 
   FactSegment =
     | Atom                -- static
@@ -169,10 +176,11 @@ Crochet {
   actor_ = kw<"ACTOR">
   relation_ = kw<"RELATION">
   fact_ = kw<"FACT">
+  forget_ = kw<"FORGET">
   search_ = kw<"SEARCH">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
-    | actor_ | relation_ | fact_ | search_
+    | actor_ | relation_ | fact_ | search_ | forget_
 }

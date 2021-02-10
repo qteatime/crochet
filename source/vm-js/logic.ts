@@ -80,6 +80,7 @@ export class Pair {
 
 export abstract class RelationNode {
   abstract insert(values: CrochetValue[]): void;
+  abstract remove(values: CrochetValue[]): RelationNode | null;
   abstract search(
     env: UnificationEnvironment,
     patterns: Pattern[]
@@ -91,6 +92,13 @@ export class EndNode extends RelationNode {
     if (values.length !== 0) {
       throw new Error(`Insert with extraneous values`);
     }
+  }
+
+  remove(values: CrochetValue[]) {
+    if (values.length !== 0) {
+      throw new Error(`Remove with extraneous values`);
+    }
+    return null;
   }
 
   search(env: UnificationEnvironment, patterns: Pattern[]) {
@@ -106,6 +114,29 @@ export class ManyNode extends RelationNode {
 
   constructor(readonly new_tree: () => RelationNode) {
     super();
+  }
+
+  remove(values: CrochetValue[]) {
+    const [head, ...tail] = values;
+
+    this.trees = this.trees.flatMap((pair) => {
+      if (pair.value.equals(head)) {
+        const result = pair.tree.remove(tail);
+        if (result == null) {
+          return [];
+        } else {
+          return [new Pair(pair.value, result)];
+        }
+      } else {
+        return [pair];
+      }
+    });
+
+    if (this.trees.length === 0) {
+      return null;
+    } else {
+      return this;
+    }
   }
 
   insert(values: CrochetValue[]) {
@@ -152,6 +183,21 @@ export class SingleNode extends RelationNode {
     this.sub_tree.insert(tail);
   }
 
+  remove(values: CrochetValue[]) {
+    const [head, ...tail] = values;
+    if (head.equals(this.value)) {
+      const result = this.sub_tree.remove(tail);
+      if (result == null) {
+        return null;
+      } else {
+        this.sub_tree = result;
+        return this;
+      }
+    } else {
+      return this;
+    }
+  }
+
   search(env: UnificationEnvironment, patterns: Pattern[]) {
     const [head, ...tail] = patterns;
 
@@ -182,6 +228,15 @@ export class RelationType {
       );
     }
     this.tree.insert(values);
+  }
+
+  remove(values: CrochetValue[]) {
+    const result = this.tree.remove(values);
+    if (result == null) {
+      this.tree = build_tree_structure(this.components)();
+    } else {
+      this.tree = result;
+    }
   }
 
   search(
@@ -221,7 +276,7 @@ function build_tree_structure(components: Component[]): () => RelationNode {
     throw new Error(`empty components`);
   } else {
     return components.reduceRight(
-      (subtree, component) => {
+      (subtree: () => RelationNode, component: Component) => {
         return () => component.to_tree(subtree);
       },
       () => new EndNode()

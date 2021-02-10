@@ -185,16 +185,33 @@ export class SReturn extends Statement {
   }
 }
 
+export class FactSignature {
+  constructor(readonly name: string, readonly values: Expression[]) {}
+}
+
 export class SFact extends Statement {
-  constructor(readonly name: string, readonly values: Expression[]) {
+  constructor(readonly sig: FactSignature) {
     super();
   }
 
   *compile() {
-    for (const value of this.values) {
+    for (const value of this.sig.values) {
       yield* value.compile();
     }
-    yield new IR.InsertFact(this.name, this.values.length);
+    yield new IR.InsertFact(this.sig.name, this.sig.values.length);
+  }
+}
+
+export class SForget extends Statement {
+  constructor(readonly sig: FactSignature) {
+    super();
+  }
+
+  *compile() {
+    for (const value of this.sig.values) {
+      yield* value.compile();
+    }
+    yield new IR.RemoveFact(this.sig.name, this.sig.values.length);
   }
 }
 

@@ -1,11 +1,15 @@
 # crochet
 
+ACTOR #game;
 ACTOR #player;
 ACTOR #mari;
+
 RELATION Type* name is Name;
 RELATION Type* is angry;
 RELATION Type* is an adult;
-  
+
+RELATION Game turn Actor;
+
 DO:
   say "FACT Player's name is 'Player'";
   FACT #player name is "Player";

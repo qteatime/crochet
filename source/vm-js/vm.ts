@@ -233,6 +233,19 @@ export class CrochetVM {
         return activation;
       }
 
+      case "remove-fact": {
+        const relation = this.get_relation(activation, operation.name);
+        if (relation.arity !== operation.arity) {
+          throw new Error(
+            `Invalid arity for relation ${relation.name}. Expected ${relation.arity}, got ${operation.arity}`
+          );
+        }
+        const values = activation.pop_many(operation.arity);
+        relation.remove(values);
+        activation.next();
+        return activation;
+      }
+
       case "return": {
         const result = activation.pop();
         activation.next();
