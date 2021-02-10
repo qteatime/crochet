@@ -39,6 +39,8 @@ import {
   SReturn,
   UseSignature,
   EActor,
+  FactSignature,
+  SForget,
 } from "./ast";
 
 const grammarFile = Path.join(__dirname, "../../../grammar/crochet.ohm");
@@ -244,13 +246,21 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new ELet(name.toAST(), expr.toAST());
   },
 
-  FactStatement(_fact: x, segments0: Node, _semi: x) {
+  FactStatement(_fact: x, sig: Node, _semi: x) {
+    return new SFact(sig.toAST());
+  },
+
+  ForgetStatement(_forget: x, sig: Node, _semi: x) {
+    return new SForget(sig.toAST());
+  },
+
+  FactUseSignature(segments0: Node) {
     const segments: (AtomSegment | ExprSegment)[] = segments0.toAST();
     const name = segments.map((x) => x.to_static_part()).join(" ");
     const args = segments
       .filter((x) => x instanceof ExprSegment)
       .map((x) => ((x as any) as ExprSegment).expr);
-    return new SFact(name, args);
+    return new FactSignature(name, args);
   },
 
   FactSegment_static(name: Node) {

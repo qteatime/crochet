@@ -128,6 +128,7 @@ export type Operation =
   | PushActor
   // Search
   | InsertFact
+  | RemoveFact
   | RefineSearch
   | Search
   // Other control-flow
@@ -224,6 +225,14 @@ export class Let extends AbstractOperation {
 
 export class InsertFact extends AbstractOperation {
   readonly tag = "insert-fact";
+
+  constructor(readonly name: string, readonly arity: number) {
+    super();
+  }
+}
+
+export class RemoveFact extends AbstractOperation {
+  readonly tag = "remove-fact";
 
   constructor(readonly name: string, readonly arity: number) {
     super();
