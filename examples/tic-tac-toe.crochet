@@ -184,7 +184,7 @@ context show-board {
   } 
 }
 
-command mark: X {
+command X mark {
   return
     if X === #empty then
       "_"

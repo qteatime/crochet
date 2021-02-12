@@ -5,6 +5,7 @@ export abstract class CrochetValue {
   abstract type: string;
   abstract equals(value: CrochetValue): boolean;
   abstract to_js(): any;
+  abstract to_text(): any;
 }
 
 export class CrochetText extends CrochetValue {
@@ -19,6 +20,10 @@ export class CrochetText extends CrochetValue {
   }
 
   to_js() {
+    return this.value;
+  }
+
+  to_text() {
     return this.value;
   }
 }
@@ -37,6 +42,10 @@ export class CrochetInteger extends CrochetValue {
   to_js() {
     return this.value;
   }
+
+  to_text() {
+    return this.value.toString();
+  }
 }
 
 export class CrochetFloat extends CrochetValue {
@@ -52,6 +61,10 @@ export class CrochetFloat extends CrochetValue {
 
   to_js() {
     return this.value;
+  }
+
+  to_text() {
+    return this.value.toString();
   }
 }
 
@@ -69,6 +82,10 @@ export class CrochetBoolean extends CrochetValue {
   to_js() {
     return this.value;
   }
+
+  to_text() {
+    return this.value.toString();
+  }
 }
 
 export class CrochetNothing extends CrochetValue {
@@ -80,6 +97,10 @@ export class CrochetNothing extends CrochetValue {
 
   to_js() {
     return null;
+  }
+
+  to_text() {
+    return "<nothing>";
   }
 }
 
@@ -100,6 +121,10 @@ export class CrochetActor extends CrochetValue {
 
   to_js() {
     return this;
+  }
+
+  to_text() {
+    return `#${this.name}`;
   }
 }
 
@@ -137,6 +162,13 @@ export class CrochetRecord extends CrochetValue {
     }
     return result;
   }
+
+  to_text() {
+    const pairs = [...this.values.entries()].map(
+      ([k, v]) => `${k} => ${v.to_text()}`
+    );
+    return `{${pairs.join(", ")}}`;
+  }
 }
 
 export class CrochetStream extends CrochetValue {
@@ -164,6 +196,10 @@ export class CrochetStream extends CrochetValue {
   to_js() {
     return this.values.map((x) => x.to_js());
   }
+
+  to_text() {
+    return `[${this.values.map((x) => x.to_text()).join(", ")}]`;
+  }
 }
 
 export class CrochetBlock extends CrochetValue {
@@ -183,6 +219,10 @@ export class CrochetBlock extends CrochetValue {
 
   to_js() {
     return this;
+  }
+
+  to_text() {
+    return `<block {...}>`;
   }
 }
 

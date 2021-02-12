@@ -353,6 +353,43 @@ export class EVariable extends Expression {
   }
 }
 
+export class EInterpolateText extends Expression {
+  constructor(readonly parts: InterpolatePart[]) {
+    super();
+  }
+
+  *compile() {
+    for (const part of this.parts) {
+      yield* part.compile();
+    }
+    yield new IR.Interpolate(this.parts.length);
+  }
+}
+
+export abstract class InterpolatePart {
+  abstract compile(): Generator<IR.Operation>;
+}
+
+export class InterpolateStatic extends InterpolatePart {
+  constructor(readonly text: string) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.PushText(this.text);
+  }
+}
+
+export class InterpolateDynamic extends InterpolatePart {
+  constructor(readonly expr: Expression) {
+    super();
+  }
+
+  *compile() {
+    yield* this.expr.compile();
+  }
+}
+
 export class EActor extends Expression {
   constructor(readonly name: string) {
     super();

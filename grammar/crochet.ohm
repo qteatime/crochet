@@ -159,7 +159,7 @@ Crochet {
     | PrimaryExpression
 
   PrimaryExpression =
-    | Text
+    | InterpolateText
     | Number
     | Boolean
     | Nothing
@@ -178,6 +178,14 @@ Crochet {
   Keyword = keyword
   ActorName = actor_name
   Nothing = nothing_
+
+  interpolateTextPart =
+    | #"\\" #any             -- escape
+    | #"[" #Expression "]"   -- interpolate
+    | ~#"\"" #any            -- character
+
+  InterpolateText =
+    | #"\"" interpolateTextPart* #"\""
 
   // -- Lexical rules -------------------------------------------------
   header = "%" hs* "crochet" nl
@@ -204,14 +212,16 @@ Crochet {
     | "<" | ">" | "<=" | ">="
     | "===" | "=/="
 
-  text_character =
-    | "\\" "\""   -- escape
-    | ~"\"" any   -- regular
-  text = "\"" text_character* "\""
-
   dec_digit = "0".."9" | "_"
   integer = ~"_" dec_digit+
   float = ~"_" dec_digit+ "." dec_digit+
+
+
+  text_character =
+    | "\\" "\""     -- escape
+    | ~"\"" any     -- regular
+  text =
+    | "\"" text_character* "\""
 
   boolean =
     | true_  -- true
