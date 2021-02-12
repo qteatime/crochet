@@ -158,7 +158,7 @@ do {
 }
 
 scene game {
-  choose action;
+  trigger action;
   trigger show-board;
   trigger check-winning-condition;
   trigger next-turn;

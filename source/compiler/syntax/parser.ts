@@ -33,7 +33,7 @@ import {
   FactSignature,
   SForget,
   DAction,
-  SChooseAction,
+  STriggerAction,
   DContext,
   Hook,
   STrigger,
@@ -137,39 +137,39 @@ class Pair<T> {
 }
 
 const toAST = grammar.createSemantics().addOperation("toAST()", {
-  Program(_header: x, decls: Node, _eof: x) {
+  program(_header: x, decls: Node, _sp1: x, _eof: x) {
     return decls.toAST();
   },
 
-  DoDeclaration(_do: x, body: Node) {
+  doDeclaration(_do: x, body: Node) {
     return new DDo(body.toAST());
   },
 
-  SceneDeclaration(_scene: x, name: Node, body: Node) {
+  sceneDeclaration(_scene: x, name: Node, body: Node) {
     return new DScene(name.toAST(), body.toAST());
   },
 
-  ActorDeclaration_roles(_actor: x, name: Node, _: x, roles: Node, _semi: x) {
+  actorDeclaration_roles(_actor: x, name: Node, _: x, roles: Node, _semi: x) {
     return new DActor(name.toAST(), roles.toAST());
   },
 
-  ActorDeclaration_no_roles(_actor: x, name: Node, _semi: x) {
+  actorDeclaration_no_roles(_actor: x, name: Node, _semi: x) {
     return new DActor(name.toAST(), []);
   },
 
-  ContextDeclaration(_context: x, name: Node, _l: x, hooks: Node, _r: x) {
+  contextDeclaration(_context: x, name: Node, _l: x, hooks: Node, _r: x) {
     return new DContext(name.toAST(), hooks.toAST());
   },
 
-  HookDeclaration(_when: x, pred: Node, body: Node) {
+  hookDeclaration(_when: x, pred: Node, body: Node) {
     return new Hook(pred.toAST(), body.toAST());
   },
 
-  RelationDeclaration(_relation: x, sig: Node, _semi: x) {
+  relationDeclaration(_relation: x, sig: Node, _semi: x) {
     return new DRelation(sig.toAST());
   },
 
-  RelationSignature(segments0: Node) {
+  relationSignature(segments0: Node) {
     const segments: (
       | AtomSegment
       | OneRelationSegment
@@ -182,69 +182,69 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new RelationSignature(name, args);
   },
 
-  RelationSignatureSegment_static(name: Node) {
+  relationSignatureSegment_static(name: Node) {
     return new AtomSegment(name.toAST());
   },
 
-  RelationSignatureSegment_many(name: Node, _star: x) {
+  relationSignatureSegment_many(name: Node, _star: x) {
     return new ManyRelationSegment(name.toAST());
   },
 
-  RelationSignatureSegment_one(name: Node) {
+  relationSignatureSegment_one(name: Node) {
     return new OneRelationSegment(name.toAST());
   },
 
-  ActionDeclaration(_action: x, name: Node, _when: x, pred: Node, block: Node) {
+  actionDeclaration(_action: x, name: Node, _when: x, pred: Node, block: Node) {
     return new DAction(name.toAST(), pred.toAST(), block.toAST());
   },
 
-  Predicate_constrained(relations0: Node, _if: x, constraint: Node) {
+  predicate_constrained(relations0: Node, _if: x, constraint: Node) {
     const relations: IR.PredicateRelation[] = relations0.toAST();
     return new IR.Predicate(relations, constraint.toAST());
   },
 
-  Predicate_unconstrained(relations0: Node) {
+  predicate_unconstrained(relations0: Node) {
     const relations: IR.PredicateRelation[] = relations0.toAST();
     return new IR.Predicate(relations, new IR.CBoolean(true));
   },
 
-  Constraint_conjunction(left: Node, _and: x, right: Node) {
+  constraint_conjunction(left: Node, _and: x, right: Node) {
     return new IR.CAnd(left.toAST(), right.toAST());
   },
 
-  Constraint_disjunction(left: Node, _or: x, right: Node) {
+  constraint_disjunction(left: Node, _or: x, right: Node) {
     return new IR.COr(left.toAST(), right.toAST());
   },
 
-  Constraint_negate(_not: x, value: Node) {
+  constraint_negate(_not: x, value: Node) {
     return new IR.CNot(value.toAST());
   },
 
-  ConstraintEq_eq(left: Node, _eq: x, right: Node) {
+  constraintEq_eq(left: Node, _eq: x, right: Node) {
     return new IR.CEqual(left.toAST(), right.toAST());
   },
 
-  ConstraintEq_neq(left: Node, _eq: x, right: Node) {
+  constraintEq_neq(left: Node, _eq: x, right: Node) {
     return new IR.CNotEqual(left.toAST(), right.toAST());
   },
 
-  ConstraintEq_role(expr: Node, _sym: x, role: Node) {
+  constraintEq_role(expr: Node, _sym: x, role: Node) {
     return new IR.CRole(expr.toAST(), role.toAST());
   },
 
-  ConstraintPrimary_variable(name: Node) {
+  constraintPrimary_variable(name: Node) {
     return new IR.CVariable(name.toAST());
   },
 
-  ConstraintPrimary_actor(name: Node) {
+  constraintPrimary_actor(name: Node) {
     return new IR.CActor(name.toAST());
   },
 
-  ConstraintPrimary_group(_l: x, expr: Node, _r: x) {
+  constraintPrimary_group(_l: x, expr: Node, _r: x) {
     return expr.toAST();
   },
 
-  CommandDeclaration_ffi(
+  commandDeclaration_ffi(
     _command: x,
     sig: Node,
     _eq: x,
@@ -257,76 +257,76 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DFFICommand(sig.toAST(), name.toAST(), params.toAST());
   },
 
-  CommandDeclaration_local(_command: x, sig: Node, body: Node) {
+  commandDeclaration_local(_command: x, sig: Node, body: Node) {
     return new DLocalCommand(sig.toAST(), body.toAST());
   },
 
-  CommandSignature_self(self: Node, pairs0: Node) {
+  commandSignature_self(self: Node, pairs0: Node) {
     const pairs: Pair<string>[] = pairs0.toAST();
     const kws = pairs.map((x) => x.keyword);
     const args = [self.toAST(), ...pairs.map((x) => x.value)];
     return new Signature("_ " + kws.join(""), args);
   },
 
-  CommandSignature_unary(self: Node, name: Node) {
+  commandSignature_unary(self: Node, name: Node) {
     return new Signature("_ " + name.toAST(), [self.toAST()]);
   },
 
-  CommandSignature_prefix(pairs0: Node) {
+  commandSignature_prefix(pairs0: Node) {
     const pairs: Pair<string>[] = pairs0.toAST();
     const kws = pairs.map((x) => x.keyword);
     const args = pairs.map((x) => x.value);
     return new Signature(kws.join(""), args);
   },
 
-  CommandSignature_nullary(name: Node) {
+  commandSignature_nullary(name: Node) {
     return new Signature(name.toAST(), []);
   },
 
-  CommandSignature_infix(left: Node, symbol: Node, right: Node) {
+  commandSignature_infix(left: Node, symbol: Node, right: Node) {
     return new Signature(`_ ${symbol.toAST()} _`, [
       left.toAST(),
       right.toAST(),
     ]);
   },
 
-  KeywordSignaturePair(kw: Node, value: Node) {
+  keywordSignaturePair(kw: Node, value: Node) {
     return new Pair<unknown>(kw.toAST(), value.toAST());
   },
 
-  Statement_expr(expr: Node, _semi: x) {
+  statement_expr(expr: Node, _semi: x) {
     return new SExpression(expr.toAST());
   },
 
-  ReturnStatement_with_value(_return: x, expr: Node, _semi: x) {
+  returnStatement_with_value(_return: x, expr: Node, _semi: x) {
     return new SReturn(expr.toAST());
   },
 
-  ReturnStatement_naked(_return: x, _semi: x) {
+  returnStatement_naked(_return: x, _semi: x) {
     return new SReturn(new ENothing());
   },
 
-  GotoStatement(_goto: x, scene: Node, _semi: x) {
+  gotoStatement(_goto: x, scene: Node, _semi: x) {
     return new SGoto(scene.toAST());
   },
 
-  LetStatement(_let: x, name: Node, _eq: x, expr: Node, _semi: x) {
+  letStatement(_let: x, name: Node, _eq: x, expr: Node, _semi: x) {
     return new ELet(name.toAST(), expr.toAST());
   },
 
-  FactStatement(_fact: x, sig: Node, _semi: x) {
+  factStatement(_fact: x, sig: Node, _semi: x) {
     return new SFact(sig.toAST());
   },
 
-  ForgetStatement(_forget: x, sig: Node, _semi: x) {
+  forgetStatement(_forget: x, sig: Node, _semi: x) {
     return new SForget(sig.toAST());
   },
 
-  TriggerStatement(_trigger: x, name: Node, _semi: x) {
+  triggerStatement(_trigger: x, name: Node, _semi: x) {
     return new STrigger(name.toAST());
   },
 
-  FactUseSignature(segments0: Node) {
+  factUseSignature(segments0: Node) {
     const segments: (AtomSegment | ExprSegment)[] = segments0.toAST();
     const name = segments.map((x) => x.to_static_part()).join(" ");
     const args = segments
@@ -335,23 +335,23 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new FactSignature(name, args);
   },
 
-  FactSegment_static(name: Node) {
+  factSegment_static(name: Node) {
     return new AtomSegment(name.toAST());
   },
 
-  FactSegment_variable(expr: Node) {
+  factSegment_variable(expr: Node) {
     return new ExprSegment(expr.toAST());
   },
 
-  ChooseAction(_choose: x, _action: x, _semi: x) {
-    return new SChooseAction();
+  triggerAction(_choose: x, _action: x, _semi: x) {
+    return new STriggerAction();
   },
 
-  StatementBlock(_l: x, stmts: Node, _r: x) {
+  statementBlock(_l: x, stmts: Node, _r: x) {
     return stmts.toAST();
   },
 
-  InvokeInfix_infix(left: Node, symbol: Node, right: Node) {
+  invokeInfix_infix(left: Node, symbol: Node, right: Node) {
     const sig = new UseSignature(`_ ${symbol.toAST()} _`, [
       left.toAST(),
       right.toAST(),
@@ -359,33 +359,33 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EInvoke(sig);
   },
 
-  InvokeMixfix_self(self: Node, pairs0: Node) {
+  invokeMixfix_self(self: Node, pairs0: Node) {
     const pairs: Pair<Expression>[] = pairs0.toAST();
     const kws = pairs.map((x) => x.keyword);
     const args = [self.toAST(), ...pairs.map((x) => x.value)];
     return new EInvoke(new UseSignature("_ " + kws.join(""), args));
   },
 
-  InvokeMixfix_prefix(pairs0: Node) {
+  invokeMixfix_prefix(pairs0: Node) {
     const pairs: Pair<Expression>[] = pairs0.toAST();
     const kws = pairs.map((x) => x.keyword);
     const args = pairs.map((x) => x.value);
     return new EInvoke(new UseSignature(kws.join(""), args));
   },
 
-  InvokePair(kw: Node, expr: Node) {
+  invokePair(kw: Node, expr: Node) {
     return new Pair<Expression>(kw.toAST(), expr.toAST());
   },
 
-  InvokePostfix_postfix(self: Node, name: Node) {
+  invokePostfix_postfix(self: Node, name: Node) {
     return new EInvoke(new UseSignature("_ " + name.toAST(), [self.toAST()]));
   },
 
-  SearchExpression_search(_search: x, predicate: Node) {
+  searchExpression_search(_search: x, predicate: Node) {
     return new ESearch(predicate.toAST());
   },
 
-  SearchRelation(segments0: Node) {
+  searchRelation(segments0: Node) {
     const segments: (AtomSegment | PatternSegment)[] = segments0.toAST();
     const name = segments.map((x) => x.to_static_part()).join(" ");
     const patterns = segments
@@ -394,55 +394,55 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new IR.PredicateRelation(name, patterns);
   },
 
-  SearchSegment_actor(name: Node) {
+  searchSegment_actor(name: Node) {
     return new PatternSegment(new IR.ActorPattern(name.toAST()));
   },
 
-  SearchSegment_integer(value: Node) {
+  searchSegment_integer(value: Node) {
     return new PatternSegment(new IR.IntegerPattern(value.toAST()));
   },
 
-  SearchSegment_float(value: Node) {
+  searchSegment_float(value: Node) {
     return new PatternSegment(new IR.FloatPattern(value.toAST()));
   },
 
-  SearchSegment_text(value: Node) {
+  searchSegment_text(value: Node) {
     return new PatternSegment(new IR.TextPattern(value.toAST()));
   },
 
-  SearchSegment_boolean(value: Node) {
+  searchSegment_boolean(value: Node) {
     return new PatternSegment(new IR.BooleanPattern(value.toAST()));
   },
 
-  SearchSegment_nothing(_: x) {
+  searchSegment_nothing(_: x) {
     return new PatternSegment(new IR.NothingPattern());
   },
 
-  SearchSegment_variable(name: Node) {
+  searchSegment_variable(name: Node) {
     return new PatternSegment(new IR.VariablePattern(name.toAST()));
   },
 
-  SearchSegment_static(name: Node) {
+  searchSegment_static(name: Node) {
     return new AtomSegment(name.toAST());
   },
 
-  PrimaryExpression_atom(head: Node) {
+  primaryExpression_atom(head: Node) {
     return new EInvoke(new UseSignature(head.toAST(), []));
   },
 
-  PrimaryExpression_variable(name: Node) {
+  primaryExpression_variable(name: Node) {
     return new EVariable(name.toAST());
   },
 
-  PrimaryExpression_actor(name: Node) {
+  primaryExpression_actor(name: Node) {
     return new EActor(name.toAST());
   },
 
-  PrimaryExpression_group(_l: x, expr: Node, _r: x) {
+  primaryExpression_group(_l: x, expr: Node, _r: x) {
     return expr.toAST();
   },
 
-  IfExpression(
+  ifExpression(
     _if: x,
     test: Node,
     _then: x,
@@ -453,60 +453,64 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EIf(test.toAST(), consequent.toAST(), alternate.toAST());
   },
 
-  Text(node: Node) {
+  text(node: Node) {
     return new EText(node.toAST());
   },
 
-  Integer(node: Node) {
+  integer(node: Node) {
     return new EInteger(node.toAST());
   },
 
-  Float(node: Node) {
+  float(node: Node) {
     return new EFloat(node.toAST());
   },
 
-  Boolean(node: Node) {
+  boolean(node: Node) {
     return new EBoolean(node.toAST());
   },
 
-  Nothing(_: x) {
+  nothing(_: x) {
     return new ENothing();
   },
 
-  Name(node: Node) {
+  name(node: Node) {
     return node.toAST();
   },
 
-  Atom(node: Node) {
+  atom(_sp1: x, node: Node) {
     return node.toAST();
   },
 
-  Keyword(node: Node) {
+  keyword(node: Node) {
     return node.toAST();
   },
 
-  InterpolateTextPart_escape(_x: x, value: Node) {
+  interpolateTextPart_escape(_x: x, value: Node) {
     return new InterpolateStatic(value.toAST());
   },
 
-  InterpolateTextPart_interpolate(_l: x, value: Node, _r: x) {
+  interpolateTextPart_interpolate(_l: x, value: Node, _r: x) {
     return new InterpolateDynamic(value.toAST());
   },
 
-  InterpolateTextPart_character(value: Node) {
+  interpolateTextPart_character(value: Node) {
     return new InterpolateStatic(value.toAST());
   },
 
-  InterpolateText(_l: x, parts: Node, _r: x) {
+  interpolateText(_l: x, parts: Node, _r: x) {
     return new EInterpolateText(parts.toAST());
   },
 
-  EmptyListOf() {
+  emptyListOf() {
     return [];
   },
 
-  NonemptyListOf(head: Node, _sep: x, rest: Node) {
+  nonemptyListOf(head: Node, _sep: x, rest: Node) {
     return [head.toAST(), ...rest.toAST()];
+  },
+
+  s(_space: x, node: Node) {
+    return node.toAST();
   },
 
   _terminal() {
@@ -517,43 +521,43 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return { language: "en", version: 1 };
   },
 
-  text(_l: x, chars: x, _r: x) {
+  t_text(_l: x, chars: x, _r: x) {
     return JSON.parse(this.sourceString as any);
   },
 
-  boolean(node: Node) {
+  t_boolean(node: Node) {
     return node.toAST();
   },
 
-  boolean_true(_: x) {
+  t_boolean_true(_: x) {
     return true;
   },
 
-  boolean_false(_: x) {
+  t_boolean_false(_: x) {
     return false;
   },
 
-  integer(x: Node) {
+  t_integer(x: Node) {
     return BigInt(this.sourceString as any);
   },
 
-  float(_1: x, _2: x, _3: x) {
+  t_float(_1: x, _2: x, _3: x) {
     return Number(this.sourceString as any);
   },
 
-  atom(_1: x, _2: x) {
+  t_atom(_1: x, _2: x) {
     return this.sourceString;
   },
 
-  keyword(_1: x, _2: x) {
+  t_keyword(_1: x, _2: x) {
     return this.sourceString;
   },
 
-  actor_name(_sharp: x, name: Node) {
+  t_actor_name(_sharp: x, name: Node) {
     return name.toAST();
   },
 
-  name(_1: x, _2: x) {
+  t_name(_1: x, _2: x) {
     return this.sourceString;
   },
 });
