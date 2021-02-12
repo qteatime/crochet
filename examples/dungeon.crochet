@@ -1,0 +1,73 @@
+% crochet
+
+actor #player :: player;
+
+actor #entrance :: room;
+actor #living-room :: room;
+
+actor #coat :: thing;
+
+relation Room* name is Name;
+relation Room* description is Description;
+relation Room* Direction* lays Room;
+
+relation Actor* at Room;
+relation Actor* wears Clothing*;
+
+command say: X = say(X);
+command X + Y = concat(X, Y);
+command X first = first(X);
+command X at: K = at(X, K);
+
+command describe: Room {
+  let Env = (search X name is Name, X description is Description if X === Room) first;
+  let Name = Env at: "Name";
+  let Description = Env at: "Description";
+  say: ("You're at " + Name);
+  say: Description;
+}
+
+do {
+  fact #entrance name is "Entrance";
+  fact #entrance "south" lays #living-room;
+  fact #entrance description is "The entrance of the apartment is small. There's a coat hanger here.";
+
+  fact #living-room name is "Living room";
+  fact #living-room "north" lays #entrance;
+  fact #living-room description is "The minimalistic living room. There's nothing here.";
+
+  fact #player at #entrance;
+  fact #player wears #coat;
+
+  describe: #entrance;
+  goto game;
+}
+
+scene game {
+  choose action;
+  goto game;
+}
+  
+scene ending {
+  say: "The end.";
+}
+
+action "Go [Direction]"
+when
+  #player at Room,
+  Room Direction lays Target
+{
+  say: ("You go " + Direction);
+  fact #player at Target;
+  describe: Target;
+}
+
+action "Hang coat"
+when
+  #player at #entrance,
+  #player wears #coat
+{
+  say: "You hang your coat in the hanger.";
+  forget #player wears #coat;
+  goto ending;
+}
