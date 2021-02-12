@@ -232,7 +232,6 @@ export type Operation =
   | ChooseAction
   | InsertFact
   | RemoveFact
-  | RefineSearch
   | Search
   // Other control-flow
   | Goto
@@ -350,15 +349,7 @@ export class ChooseAction extends AbstractOperation {
 export class Search extends AbstractOperation {
   readonly tag = "search";
 
-  constructor(readonly name: string, readonly patterns: Pattern[]) {
-    super();
-  }
-}
-
-export class RefineSearch extends AbstractOperation {
-  readonly tag = "refine-search";
-
-  constructor(readonly name: string, readonly patterns: Pattern[]) {
+  constructor(readonly predicate: Predicate) {
     super();
   }
 }

@@ -338,105 +338,12 @@ export class ELet extends Expression {
 }
 
 export class ESearch extends Expression {
-  constructor(readonly relations: SearchRelation[]) {
+  constructor(readonly predicate: IR.Predicate) {
     super();
   }
 
   *compile() {
-    if (this.relations.length === 0) {
-      throw new Error(`Empty search`);
-    }
-
-    const [head, ...tail] = this.relations;
-    yield* head.compile(IR.Search);
-    for (const relation of tail) {
-      yield* relation.compile(IR.RefineSearch);
-    }
-  }
-}
-
-export class SearchRelation {
-  constructor(readonly name: string, readonly patterns: Pattern[]) {}
-
-  *compile(IRNode: typeof IR.Search | typeof IR.RefineSearch) {
-    yield new IRNode(
-      this.name,
-      this.patterns.map((x) => x.compile())
-    );
-  }
-}
-
-export abstract class Pattern {
-  abstract compile(): IR.Pattern;
-}
-
-export class PActor extends Pattern {
-  constructor(readonly actor_name: string) {
-    super();
-  }
-
-  compile() {
-    return new IR.ActorPattern(this.actor_name);
-  }
-}
-
-export class PInteger extends Pattern {
-  constructor(readonly value: EInteger) {
-    super();
-  }
-
-  compile() {
-    return new IR.IntegerPattern(this.value.value);
-  }
-}
-
-export class PFloat extends Pattern {
-  constructor(readonly value: EFloat) {
-    super();
-  }
-
-  compile() {
-    return new IR.FloatPattern(this.value.value);
-  }
-}
-
-export class PText extends Pattern {
-  constructor(readonly value: EText) {
-    super();
-  }
-
-  compile() {
-    return new IR.TextPattern(this.value.value);
-  }
-}
-
-export class PBoolean extends Pattern {
-  constructor(readonly value: EBoolean) {
-    super();
-  }
-
-  compile() {
-    return new IR.BooleanPattern(this.value.value);
-  }
-}
-
-export class PNothing extends Pattern {
-  constructor() {
-    super();
-  }
-
-  compile() {
-    return new IR.NothingPattern();
-  }
-}
-
-export class PVariable extends Pattern {
-  constructor(readonly name: string) {
-    super();
-  }
-
-  compile() {
-    return new IR.VariablePattern(this.name);
+    yield new IR.Search(this.predicate);
   }
 }
 

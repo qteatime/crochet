@@ -111,7 +111,7 @@ Crochet {
     | SearchExpression
 
   SearchExpression =
-    | search_ NonemptyListOf<SearchRelation, ",">    -- search
+    | search_ Predicate   -- search
     | InvokeInfix
 
   SearchRelation =

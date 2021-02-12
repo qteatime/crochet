@@ -20,18 +20,9 @@ import {
   Expression,
   ManyComponent,
   OneComponent,
-  Pattern,
-  PBoolean,
-  PFloat,
-  PInteger,
-  PNothing,
   Program,
-  PText,
-  PActor,
-  PVariable,
   RelationComponent,
   RelationSignature,
-  SearchRelation,
   SExpression,
   SFact,
   SGoto,
@@ -77,7 +68,7 @@ class AtomSegment implements ISegment {
     throw new Error(`Atom cannot be made into a component`);
   }
 
-  to_pattern(): Pattern {
+  to_pattern(): IR.Pattern {
     throw new Error(`Atom cannot be made into a pattern`);
   }
 }
@@ -123,7 +114,7 @@ class ManyRelationSegment implements ISegment {
 }
 
 class PatternSegment implements ISegment {
-  constructor(readonly pattern: Pattern) {}
+  constructor(readonly pattern: IR.Pattern) {}
 
   to_static_part() {
     return "_";
@@ -193,31 +184,13 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
   },
 
   Predicate_constrained(relations0: Node, _if: x, constraint: Node) {
-    const relations: SearchRelation[] = relations0.toAST();
-    return new IR.Predicate(
-      relations.map(
-        (x) =>
-          new IR.PredicateRelation(
-            x.name,
-            x.patterns.map((x) => x.compile())
-          )
-      ),
-      constraint.toAST()
-    );
+    const relations: IR.PredicateRelation[] = relations0.toAST();
+    return new IR.Predicate(relations, constraint.toAST());
   },
 
   Predicate_unconstrained(relations0: Node) {
-    const relations: SearchRelation[] = relations0.toAST();
-    return new IR.Predicate(
-      relations.map(
-        (x) =>
-          new IR.PredicateRelation(
-            x.name,
-            x.patterns.map((x) => x.compile())
-          )
-      ),
-      new IR.CBoolean(true)
-    );
+    const relations: IR.PredicateRelation[] = relations0.toAST();
+    return new IR.Predicate(relations, new IR.CBoolean(true));
   },
 
   Constraint_conjunction(left: Node, _and: x, right: Node) {
@@ -389,8 +362,8 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EInvoke(new UseSignature("_ " + name.toAST(), [self.toAST()]));
   },
 
-  SearchExpression_search(_search: x, relations: Node) {
-    return new ESearch(relations.toAST());
+  SearchExpression_search(_search: x, predicate: Node) {
+    return new ESearch(predicate.toAST());
   },
 
   SearchRelation(segments0: Node) {
@@ -399,35 +372,35 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     const patterns = segments
       .filter((x) => x instanceof PatternSegment)
       .map((x) => x.to_pattern());
-    return new SearchRelation(name, patterns);
+    return new IR.PredicateRelation(name, patterns);
   },
 
   SearchSegment_actor(name: Node) {
-    return new PatternSegment(new PActor(name.toAST()));
+    return new PatternSegment(new IR.ActorPattern(name.toAST()));
   },
 
   SearchSegment_integer(value: Node) {
-    return new PatternSegment(new PInteger(value.toAST()));
+    return new PatternSegment(new IR.IntegerPattern(value.toAST()));
   },
 
   SearchSegment_float(value: Node) {
-    return new PatternSegment(new PFloat(value.toAST()));
+    return new PatternSegment(new IR.FloatPattern(value.toAST()));
   },
 
   SearchSegment_text(value: Node) {
-    return new PatternSegment(new PText(value.toAST()));
+    return new PatternSegment(new IR.TextPattern(value.toAST()));
   },
 
   SearchSegment_boolean(value: Node) {
-    return new PatternSegment(new PBoolean(value.toAST()));
+    return new PatternSegment(new IR.BooleanPattern(value.toAST()));
   },
 
   SearchSegment_nothing(_: x) {
-    return new PatternSegment(new PNothing());
+    return new PatternSegment(new IR.NothingPattern());
   },
 
   SearchSegment_variable(name: Node) {
-    return new PatternSegment(new PVariable(name.toAST()));
+    return new PatternSegment(new IR.VariablePattern(name.toAST()));
   },
 
   SearchSegment_static(name: Node) {
