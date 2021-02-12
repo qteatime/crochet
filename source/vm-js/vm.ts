@@ -398,7 +398,10 @@ export class CrochetVM {
       }
 
       case "define-actor": {
-        const actor = new CrochetActor(declaration.name);
+        const actor = new CrochetActor(
+          declaration.name,
+          new Set(declaration.roles)
+        );
         env.define_actor(actor.name, actor);
         break;
       }

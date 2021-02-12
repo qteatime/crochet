@@ -32,7 +32,7 @@ export class DefineScene extends AbstractDeclaration {
 export class DefineActor extends AbstractDeclaration {
   readonly tag = "define-actor";
 
-  constructor(readonly name: string) {
+  constructor(readonly name: string, readonly roles: string[]) {
     super();
   }
 }

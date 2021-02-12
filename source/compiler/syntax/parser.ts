@@ -131,6 +131,10 @@ class PatternSegment implements ISegment {
   }
 }
 
+class Pair<T> {
+  constructor(readonly keyword: string, readonly value: T) {}
+}
+
 const toAST = grammar.createSemantics().addOperation("toAST()", {
   Program(_header: x, decls: Node, _eof: x) {
     return decls.toAST();
@@ -144,8 +148,12 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DScene(name.toAST(), body.toAST());
   },
 
-  ActorDeclaration(_actor: x, name: Node, _semi: x) {
-    return new DActor(name.toAST());
+  ActorDeclaration_roles(_actor: x, name: Node, _: x, roles: Node, _semi: x) {
+    return new DActor(name.toAST(), roles.toAST());
+  },
+
+  ActorDeclaration_no_roles(_actor: x, name: Node, _semi: x) {
+    return new DActor(name.toAST(), []);
   },
 
   RelationDeclaration(_relation: x, sig: Node, _semi: x) {
@@ -194,21 +202,26 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DLocalCommand(sig.toAST(), body.toAST());
   },
 
-  CommandSignature_single(head: Node) {
-    return new Signature(head.toAST(), []);
+  CommandSignature_self(self: Node, pairs0: Node) {
+    const pairs: Pair<string>[] = pairs0.toAST();
+    const kws = pairs.map((x) => x.keyword);
+    const args = [self.toAST(), ...pairs.map((x) => x.value)];
+    return new Signature("_ " + kws.join(""), args);
   },
 
-  CommandSignature_multi(head0: Node, segments0: Node) {
-    const head: AtomSegment | VariableSegment = head0.toAST();
-    const segments: (AtomSegment | VariableSegment)[] = [
-      head,
-      ...segments0.toAST(),
-    ];
-    const name = segments.map((x) => x.to_static_part());
-    const params = segments
-      .filter((x) => x instanceof VariableSegment)
-      .map((x) => x.name);
-    return new Signature(name.join(" "), params);
+  CommandSignature_unary(self: Node, name: Node) {
+    return new Signature("_ " + name.toAST(), self.toAST());
+  },
+
+  CommandSignature_prefix(pairs0: Node) {
+    const pairs: Pair<string>[] = pairs0.toAST();
+    const kws = pairs.map((x) => x.keyword);
+    const args = pairs.map((x) => x.value);
+    return new Signature(kws.join(""), args);
+  },
+
+  CommandSignature_nullary(name: Node) {
+    return new Signature(name.toAST(), []);
   },
 
   CommandSignature_infix(left: Node, symbol: Node, right: Node) {
@@ -218,12 +231,8 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     ]);
   },
 
-  SignatureSegment_static(name: Node) {
-    return new AtomSegment(name.toAST());
-  },
-
-  SignatureSegment_variable(name: Node) {
-    return new VariableSegment(name.toAST());
+  KeywordSignaturePair(kw: Node, value: Node) {
+    return new Pair<unknown>(kw.toAST(), value.toAST());
   },
 
   Statement_expr(expr: Node, _semi: x) {
@@ -275,7 +284,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return stmts.toAST();
   },
 
-  UseInfix_infix(left: Node, symbol: Node, right: Node) {
+  InvokeInfix_infix(left: Node, symbol: Node, right: Node) {
     const sig = new UseSignature(`_ ${symbol.toAST()} _`, [
       left.toAST(),
       right.toAST(),
@@ -283,26 +292,26 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EInvoke(sig);
   },
 
-  UseMixfix_multi(head0: Node, segments0: Node) {
-    const head: AtomSegment | ExprSegment = head0.toAST();
-    const segments: (AtomSegment | ExprSegment)[] = [
-      head,
-      ...segments0.toAST(),
-    ];
-    const name = segments.map((x) => x.to_static_part());
-    const args = segments
-      .filter((x) => x instanceof ExprSegment)
-      .map((x) => ((x as any) as ExprSegment).expr);
-    const sig = new UseSignature(name.join(" "), args);
-    return new EInvoke(sig);
+  InvokeMixfix_self(self: Node, pairs0: Node) {
+    const pairs: Pair<Expression>[] = pairs0.toAST();
+    const kws = pairs.map((x) => x.keyword);
+    const args = [self.toAST(), ...pairs.map((x) => x.value)];
+    return new EInvoke(new UseSignature("_ " + kws.join(""), args));
   },
 
-  UseSegment_static(name: Node) {
-    return new AtomSegment(name.toAST());
+  InvokeMixfix_prefix(pairs0: Node) {
+    const pairs: Pair<Expression>[] = pairs0.toAST();
+    const kws = pairs.map((x) => x.keyword);
+    const args = pairs.map((x) => x.value);
+    return new EInvoke(new UseSignature(kws.join(""), args));
   },
 
-  UseSegment_variable(expr: Node) {
-    return new ExprSegment(expr.toAST());
+  InvokePair(kw: Node, expr: Node) {
+    return new Pair<Expression>(kw.toAST(), expr.toAST());
+  },
+
+  InvokePostfix_postfix(self: Node, name: Node) {
+    return new EInvoke(new UseSignature("_ " + name.toAST(), [self.toAST()]));
   },
 
   SearchExpression_search(_search: x, relations: Node) {
@@ -394,6 +403,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return node.toAST();
   },
 
+  Keyword(node: Node) {
+    return node.toAST();
+  },
+
   EmptyListOf() {
     return [];
   },
@@ -435,6 +448,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
   },
 
   atom(_1: x, _2: x) {
+    return this.sourceString;
+  },
+
+  keyword(_1: x, _2: x) {
     return this.sourceString;
   },
 

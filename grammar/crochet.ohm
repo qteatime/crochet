@@ -16,7 +16,8 @@ Crochet {
     | scene_ Atom StatementBlock
 
   ActorDeclaration =
-    | actor_ ActorName ";"
+    | actor_ ActorName "::" NonemptyListOf<Atom, ","> ";"   -- roles
+    | actor_ ActorName ";"                                  -- no_roles
 
   RelationDeclaration =
     | relation_ RelationSignature ";"
@@ -30,17 +31,18 @@ Crochet {
     | Name      -- one
 
   CommandDeclaration =
-    | command_ CommandSignature "=" Name "(" ListOf<Name, ","> ")" ";"  -- ffi
+    | command_ CommandSignature "=" Atom "(" ListOf<Name, ","> ")" ";"  -- ffi
     | command_ CommandSignature StatementBlock                          -- local
 
   CommandSignature =
-    | Name infix_symbol Name                -- infix
-    | SignatureSegment SignatureSegment+    -- multi
-    | Atom                                  -- single
+    | Name infix_symbol Name           -- infix
+    | Name KeywordSignaturePair+       -- self
+    | Name Atom                        -- unary
+    | KeywordSignaturePair+            -- prefix
+    | Atom                             -- nullary
   
-  SignatureSegment =
-    | Atom      -- static
-    | Name      -- variable
+  KeywordSignaturePair =
+    | Keyword Name
 
   Statement =
     | ReturnStatement
@@ -74,14 +76,14 @@ Crochet {
     | PrimaryExpression   -- variable
 
   StatementBlock =
-    | ":" Statement* end_
+    | "{" Statement* "}"
 
   Expression =
     | SearchExpression
 
   SearchExpression =
     | search_ NonemptyListOf<SearchRelation, ",">    -- search
-    | UseInfix
+    | InvokeInfix
 
   SearchRelation =
     | SearchSegment+
@@ -96,17 +98,21 @@ Crochet {
     | Name                    -- variable
     | Atom                    -- static
 
-  UseInfix =
-    | UseMixfix infix_symbol UseMixfix  -- infix
-    | UseMixfix
+  InvokeInfix =
+    | InvokeMixfix infix_symbol InvokeMixfix  -- infix
+    | InvokeMixfix
 
-  UseMixfix =
-    | UseSegment UseSegment+            -- multi
+  InvokeMixfix =
+    | InvokePostfix InvokePair+         -- self
+    | InvokePair+                       -- prefix
+    | InvokePostfix
+
+  InvokePair =
+    | Keyword InvokePostfix
+
+  InvokePostfix =
+    | InvokePostfix Atom        -- postfix
     | PrimaryExpression
-
-  UseSegment =
-    | Atom                -- static
-    | PrimaryExpression   -- variable
 
   PrimaryExpression =
     | Text
@@ -123,21 +129,24 @@ Crochet {
   Integer = integer
   Float = float
   Boolean = boolean
-  Name = ~reserved name
-  Atom = atom
+  Name = name
+  Atom = ~reserved atom
+  Keyword = keyword
   ActorName = actor_name
   Nothing = nothing_
 
   // -- Lexical rules -------------------------------------------------
-  header = "#" hs* "crochet" nl
+  header = "%" hs* "crochet" nl
   hs = " " | "\t"
   nl = "\n" | "\r"
-  comment = "%" (~nl any)* nl
+  comment = "//" (~nl any)* nl
   spaces += comment
 
   atom_start = "a".."z"
   atom_rest = letter | digit | "-"
   atom = atom_start atom_rest*
+
+  keyword = atom ":"
 
   actor_name = "#" atom
 
@@ -163,21 +172,21 @@ Crochet {
 
   kw<word> = word ~atom_rest
 
-  true_ = kw<"TRUE">
-  false_ = kw<"FALSE">
-  nothing_ = kw<"NOTHING">
-  scene_ = kw<"SCENE">
-  command_ = kw<"COMMAND">
-  do_ = kw<"DO">
-  return_ = kw<"RETURN">
-  goto_ = kw<"GOTO">
-  let_ = kw<"LET">
-  end_ = kw<"END">
-  actor_ = kw<"ACTOR">
-  relation_ = kw<"RELATION">
-  fact_ = kw<"FACT">
-  forget_ = kw<"FORGET">
-  search_ = kw<"SEARCH">
+  true_ = kw<"true">
+  false_ = kw<"false">
+  nothing_ = kw<"nothing">
+  scene_ = kw<"scene">
+  command_ = kw<"command">
+  do_ = kw<"do">
+  return_ = kw<"return">
+  goto_ = kw<"goto">
+  let_ = kw<"let">
+  end_ = kw<"end">
+  actor_ = kw<"actor">
+  relation_ = kw<"relation">
+  fact_ = kw<"fact">
+  forget_ = kw<"forget">
+  search_ = kw<"search">
 
   reserved =
     | true_ | false_ | nothing_ 

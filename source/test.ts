@@ -40,26 +40,26 @@ if (argv["show-ir"]) {
 const ffi = new ForeignInterface();
 const vm = new CrochetVM(ffi);
 
-ffi.add("Concat", 2, (vm: CrochetVM, activation, x, y) => {
+ffi.add("concat", 2, (vm: CrochetVM, activation, x, y) => {
   vm.assert_text(activation, x);
   vm.assert_text(activation, y);
   activation.push(new CrochetText(x.value + y.value));
   return activation;
 });
 
-ffi.add("Show", 1, (vm: CrochetVM, activation, value) => {
+ffi.add("show", 1, (vm: CrochetVM, activation, value) => {
   console.log(show(value.to_js()));
   activation.push(nothing);
   return activation;
 });
 
-ffi.add("ShowDb", 0, (vm: CrochetVM, activation) => {
+ffi.add("show-db", 0, (vm: CrochetVM, activation) => {
   console.log(show(vm.database));
   activation.push(nothing);
   return activation;
 });
 
-ffi.add("ToText", 1, (vm: CrochetVM, activation, value) => {
+ffi.add("to-text", 1, (vm: CrochetVM, activation, value) => {
   if (value instanceof CrochetInteger) {
     activation.push(new CrochetText(value.value.toString()));
     return activation;
@@ -68,21 +68,21 @@ ffi.add("ToText", 1, (vm: CrochetVM, activation, value) => {
   }
 });
 
-ffi.add("Say", 1, (vm: CrochetVM, activation, phrase) => {
+ffi.add("say", 1, (vm: CrochetVM, activation, phrase) => {
   vm.assert_text(activation, phrase);
   console.log(">>", phrase.value);
   activation.push(nothing);
   return activation;
 });
 
-ffi.add("Wait", 1, (vm: CrochetVM, activation, time) => {
+ffi.add("wait", 1, (vm: CrochetVM, activation, time) => {
   vm.assert_integer(activation, time);
   console.log(`[Wait ${time.value}]`);
   activation.push(nothing);
   return activation;
 });
 
-ffi.add("ShowFront", 1, (vm: CrochetVM, activation, image) => {
+ffi.add("show-front", 1, (vm: CrochetVM, activation, image) => {
   vm.assert_text(activation, image);
   console.log(`[Show ${image.value}]`);
   activation.push(nothing);

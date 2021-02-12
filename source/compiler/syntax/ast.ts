@@ -103,12 +103,12 @@ export class DLocalCommand extends Declaration {
 }
 
 export class DActor extends Declaration {
-  constructor(readonly name: string) {
+  constructor(readonly name: string, readonly roles: string[]) {
     super();
   }
 
   *compile() {
-    yield new IR.DefineActor(this.name);
+    yield new IR.DefineActor(this.name, this.roles);
   }
 }
 
