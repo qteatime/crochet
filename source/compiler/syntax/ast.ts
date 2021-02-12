@@ -115,7 +115,7 @@ export class DActor extends Declaration {
 export class DAction extends Declaration {
   constructor(
     readonly title: string,
-    readonly predicate: Predicate,
+    readonly predicate: IR.Predicate,
     readonly body: Statement[]
   ) {
     super();
@@ -124,30 +124,11 @@ export class DAction extends Declaration {
   *compile() {
     yield new IR.DefineAction(
       this.title,
-      this.predicate.compile(),
+      this.predicate,
       to_list(
         this.body.map((x) => x.compile()),
         [new IR.PushNothing(), new IR.Return()]
       )
-    );
-  }
-}
-
-export class Predicate {
-  constructor(readonly relations: PredicateRelation[]) {}
-
-  compile() {
-    return new IR.Predicate(this.relations.map((x) => x.compile()));
-  }
-}
-
-export class PredicateRelation {
-  constructor(readonly name: string, readonly patterns: Pattern[]) {}
-
-  compile() {
-    return new IR.PredicateRelation(
-      this.name,
-      this.patterns.map((x) => x.compile())
     );
   }
 }
