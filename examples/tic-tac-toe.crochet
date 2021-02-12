@@ -122,7 +122,7 @@ context check-winning-condition {
   when
     #line1 X1 x x, #line1 x X2 x, #line1 x x X3,
     #line2 X4 x x, #line2 x X5 x, #line2 x x X6,
-    #line3 X7 x x, #line3 x x8 x, #line3 x x x9
+    #line3 X7 x x, #line3 x X8 x, #line3 x x X9
     if X1 =/= #empty and
        X2 =/= #empty and
        X3 =/= #empty and
@@ -137,9 +137,6 @@ context check-winning-condition {
   }
 }
 
-// The game ending conditions are currently weird, as Crochet does
-// not have a proper "halt" command. So what we do is jump to a
-// scene that does not jump/call anything.
 command win: Player {
   say: "[Player] won!";
   goto ending;
