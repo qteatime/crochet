@@ -2,7 +2,12 @@ import * as Fs from "fs";
 import * as Yargs from "yargs";
 import { parse } from "./compiler/syntax/parser";
 import { show } from "./utils/utils";
-import { CrochetInteger, CrochetText, nothing } from "./vm-js/intrinsics";
+import {
+  CrochetBoolean,
+  CrochetInteger,
+  CrochetText,
+  nothing,
+} from "./vm-js/intrinsics";
 import { ForeignInterface } from "./vm-js/primitives";
 import { CrochetVM } from "./vm-js/vm";
 
@@ -92,6 +97,10 @@ ffi.add("at", 2, async (vm: CrochetVM, activation, x, k) => {
     throw new Error(`Invalid key ${k.value}`);
   }
   return value;
+});
+
+ffi.add("equals", 2, async (_, __, x, y) => {
+  return new CrochetBoolean(x.equals(y));
 });
 
 console.log("-".repeat(72));

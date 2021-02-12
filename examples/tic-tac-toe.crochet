@@ -1,0 +1,197 @@
+% crochet
+
+command say: X = say(X);
+command X === Y = equals(X, Y);
+
+
+// A small game about two girls playing tic-tac-toe against each other.
+actor #erin :: player, mark;
+actor #saga :: player, mark;
+actor #empty :: mark;
+
+// A tic-tac-toe board has the following structure:
+//
+//     _|_|_  (#line1)
+//     _|_|_  (#line2)
+//     _|_|_  (#line3)
+//
+// Here we're representing the lines as actors, and the columns as relations.
+actor #line1 :: line;
+actor #line2 :: line;
+actor #line3 :: line;
+
+// Note the multiplicity: each relation can hold multiple lines, but for
+// each line only one Mark can be placed at a particular column.
+relation Line* Mark x x;
+relation Line* x Mark x;
+relation Line* x x Mark;
+
+do {
+  fact #line1 #empty x x;
+  fact #line1 x #empty x;
+  fact #line1 x x #empty;
+
+  fact #line2 #empty x x;
+  fact #line2 x #empty x;
+  fact #line2 x x #empty;
+  
+  fact #line3 #empty x x;
+  fact #line3 x #empty x;
+  fact #line3 x x #empty;
+}
+
+// A tic-tac-toe is a turn-based game, and we need to represent that.
+// Again, we use a relation for this. And again the multiplicity here
+// is one, as only one actor can act at a time.
+relation Player turn;
+
+// Crochet does not currently have any simple ordered structure, so we
+// make do with explicitly moving turns forward.
+context next-turn {
+  when #erin turn
+  {
+    fact #saga turn;
+  }
+
+  when #saga turn
+  {
+    fact #erin turn;
+  }
+}
+
+// Now at each turn the players can choose one of the empty marks and place
+// their own there. We'll not concern ourselves with having the players make
+// *good* moves, only choosing a possible one.
+action "Place mark at c1"
+when
+  Player turn,
+  Line #empty x x
+{
+  fact Line Player x x;
+  say: "[Player] marks [Line]'s first column";
+}
+
+action "Place mark at c2"
+when
+  Player turn,
+  Line x #empty x
+{
+  fact Line x Player x;
+  say: "[Player] marks [Line]'s second column";
+}
+
+action "Place mark at c3"
+when
+  Player turn,
+  Line x x #empty
+{
+  fact Line x x Player;
+  say: "[Player] marks [Line]'s third column";
+}
+
+// We also need to check the winning condition.
+context check-winning-condition {
+  when
+    Line X x x, Line x X x, Line x x X
+    if X =/= #empty
+  {
+    win: X;
+  }
+
+  when
+    #line1 X x x, #line2 X x x, #line3 X x x
+    if X =/= #empty
+  {
+    win: X;
+  }
+
+  when
+    #line1 x X x, #line2 x X x, #line3 x X x
+    if X =/= #empty
+  {
+    win: X;
+  }
+
+  when
+    #line1 x x X, #line2 x x X, #line3 x x X
+    if X =/= #empty
+  {
+    win: X;
+  }
+
+  when
+    #line1 X1 x x, #line1 x X2 x, #line1 x x X3,
+    #line2 X4 x x, #line2 x X5 x, #line2 x x X6,
+    #line3 X7 x x, #line3 x x8 x, #line3 x x x9
+    if X1 =/= #empty and
+       X2 =/= #empty and
+       X3 =/= #empty and
+       X4 =/= #empty and
+       X5 =/= #empty and
+       X6 =/= #empty and
+       X7 =/= #empty and
+       X8 =/= #empty and
+       X9 =/= #empty
+  {
+    goto draw;
+  }
+}
+
+// The game ending conditions are currently weird, as Crochet does
+// not have a proper "halt" command. So what we do is jump to a
+// scene that does not jump/call anything.
+command win: Player {
+  say: "[Player] won!";
+  goto ending;
+}
+
+scene ending {}
+
+scene draw {
+  say: "It's a draw";
+}
+
+// Currently we need to write a sort of game-loop for Crochet.
+do {
+  fact #erin turn;
+  goto game;
+}
+
+scene game {
+  choose action;
+  trigger show-board;
+  trigger check-winning-condition;
+  trigger next-turn;
+  goto game;
+}
+
+// Finally, we have a small function to display the board visually
+context show-board {
+  when 
+    #line1 L1C1 x x,
+    #line1 x L1C2 x,
+    #line1 x x L1C3,
+    #line2 L2C1 x x,
+    #line2 x L2C2 x,
+    #line2 x x L2C3,
+    #line3 L3C1 x x,
+    #line3 x L3C2 x,
+    #line3 x x L3C3
+  {
+    say: "[L1C1 mark]|[L1C2 mark]|[L1C3 mark]";
+    say: "[L2C1 mark]|[L2C2 mark]|[L2C3 mark]";
+    say: "[L3C1 mark]|[L3C2 mark]|[L3C3 mark]";
+  } 
+}
+
+command mark: X {
+  return
+    if X === #empty then
+      "_"
+    else if X === #erin then
+      "O"
+    else if X === #saga then
+      "X"
+    else
+      "?";
+}

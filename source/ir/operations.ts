@@ -228,11 +228,6 @@ export abstract class AbstractOperation extends IRNode {
 }
 
 export type Operation =
-  // Commands and environment
-  | TriggerContext
-  | Invoke
-  | Return
-  | Let
   // Stack operations
   | Drop
   | PushInteger
@@ -243,11 +238,17 @@ export type Operation =
   | PushNothing
   | PushActor
   // Search
+  | TriggerContext
   | ChooseAction
   | InsertFact
   | RemoveFact
   | Search
-  // Other control-flow
+  // Environment & Control-flow
+  | Let
+  | Invoke
+  | Return
+  | Branch
+  | Block
   | Goto
   | Halt;
 
@@ -372,6 +373,22 @@ export class TriggerContext extends AbstractOperation {
   readonly tag = "trigger-context";
 
   constructor(readonly name: string) {
+    super();
+  }
+}
+
+export class Branch extends AbstractOperation {
+  readonly tag = "branch";
+
+  constructor() {
+    super();
+  }
+}
+
+export class Block extends AbstractOperation {
+  readonly tag = "block";
+
+  constructor(readonly parameters: string[], readonly body: Operation[]) {
     super();
   }
 }

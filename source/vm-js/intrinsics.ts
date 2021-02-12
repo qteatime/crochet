@@ -1,3 +1,6 @@
+import { Operation } from "../ir/operations";
+import { Activation, Environment } from "./environment";
+
 export abstract class CrochetValue {
   abstract type: string;
   abstract equals(value: CrochetValue): boolean;
@@ -160,6 +163,26 @@ export class CrochetStream extends CrochetValue {
 
   to_js() {
     return this.values.map((x) => x.to_js());
+  }
+}
+
+export class CrochetBlock extends CrochetValue {
+  readonly type = "block";
+
+  constructor(
+    readonly env: Environment,
+    readonly parameters: string[],
+    readonly body: Operation[]
+  ) {
+    super();
+  }
+
+  equals(x: CrochetValue): boolean {
+    return x === this;
+  }
+
+  to_js() {
+    return this;
   }
 }
 

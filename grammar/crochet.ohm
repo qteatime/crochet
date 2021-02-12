@@ -120,6 +120,10 @@ Crochet {
 
   Expression =
     | SearchExpression
+    | IfExpression
+
+  IfExpression =
+    | if_ InvokeInfix then_ Expression else_ Expression
 
   SearchExpression =
     | search_ Predicate   -- search
@@ -179,8 +183,9 @@ Crochet {
   header = "%" hs* "crochet" nl
   hs = " " | "\t"
   nl = "\n" | "\r"
-  comment = "//" (~nl any)* nl
-  spaces += comment
+  line = (~nl any)*
+  comment = "//" line
+  space += comment
 
   atom_start = "a".."z"
   atom_rest = letter | digit | "-"
@@ -194,8 +199,10 @@ Crochet {
   name_rest = letter | digit | "-"
   name = name_start name_rest*
 
-  symbol_char = "+" | "/" | "&" | "^" | "~" | "*" | "-" | "<" | ">" | "=" | "."
-  infix_symbol = symbol_char+
+  infix_symbol =
+    | "+" | "-" | "*" | "/"
+    | "<" | ">" | "<=" | ">="
+    | "===" | "=/="
 
   text_character =
     | "\\" "\""   -- escape
@@ -236,10 +243,13 @@ Crochet {
   not_ = kw<"not">
   context_ = kw<"context">
   trigger_ = kw<"trigger">
+  then_ = kw<"then">
+  else_ = kw<"else">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
     | actor_ | relation_ | fact_ | search_ | forget_ | action_
     | when_ | choose_ | if_ | and_ | or_ | not_ | context_ | trigger_
+    | then_ | else_
 }

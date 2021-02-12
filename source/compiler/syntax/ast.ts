@@ -384,6 +384,23 @@ export class ESearch extends Expression {
   }
 }
 
+export class EIf extends Expression {
+  constructor(
+    readonly test: Expression,
+    readonly consequent: Expression,
+    readonly alternate: Expression
+  ) {
+    super();
+  }
+
+  *compile() {
+    yield* this.test.compile();
+    yield new IR.Block([], [...this.consequent.compile(), new IR.Return()]);
+    yield new IR.Block([], [...this.alternate.compile(), new IR.Return()]);
+    yield new IR.Branch();
+  }
+}
+
 //== Utilities
 function to_list(
   xss: Generator<IR.Operation>[],
