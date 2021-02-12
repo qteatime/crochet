@@ -11,8 +11,8 @@ import * as IR from "../ir/operations";
 import { Activation, Environment } from "./environment";
 import { ForeignInterface } from "./primitives";
 import { CrochetForeignProcedure, CrochetProcedure } from "./procedure";
-import { Scene } from "./scene";
-import { show, unreachable } from "../utils/utils";
+import { Action, Scene } from "./scene";
+import { pick, show, unreachable } from "../utils/utils";
 import {
   CrochetBoolean,
   CrochetFloat,
@@ -33,6 +33,8 @@ export class CrochetVM {
   private scenes = new Map<string, Scene>();
   private running = false;
   private tracing = false;
+  private traced_activation: Activation | null = null;
+  private actions: Action[] = [];
   readonly database = new Database();
 
   constructor(private ffi: ForeignInterface) {}
@@ -118,6 +120,11 @@ export class CrochetVM {
 
   private trace_activation(activation: Activation) {
     if (this.tracing) {
+      if (activation === this.traced_activation) {
+        return;
+      }
+      this.traced_activation = activation;
+
       console.log(
         "[TRACE]",
         show({
@@ -143,6 +150,26 @@ export class CrochetVM {
     const operation = activation.current;
     this.trace_operation(activation, operation);
     switch (operation.tag) {
+      case "choose-action": {
+        const chosen = this.pick_action(activation);
+        if (chosen != null) {
+          const { action, bindings } = chosen;
+          const new_env = new Environment(action.env);
+          for (const [k, v] of bindings.bound_values.entries()) {
+            new_env.define(k, v);
+          }
+          const new_activation = new Activation(
+            activation,
+            new_env,
+            action.body
+          );
+          return new_activation;
+        } else {
+          activation.next();
+          return activation;
+        }
+      }
+
       case "drop": {
         activation.pop();
         activation.next();
@@ -397,6 +424,19 @@ export class CrochetVM {
         break;
       }
 
+      case "define-action": {
+        const action_env = new Environment(env);
+        const action = new Action(
+          module,
+          declaration.title,
+          action_env,
+          declaration.predicate,
+          declaration.body
+        );
+        this.actions.push(action);
+        break;
+      }
+
       case "define-actor": {
         const actor = new CrochetActor(
           declaration.name,
@@ -505,5 +545,39 @@ export class CrochetVM {
     } else {
       return relation;
     }
+  }
+
+  // Actions and turns
+  private pick_action(activation: Activation) {
+    const available = this.actions.flatMap((x) =>
+      this.actions_available(activation, x)
+    );
+    return pick(available);
+  }
+
+  private actions_available(activation: Activation, action: Action) {
+    const results = this.search(activation, action.predicate);
+    return results.map((x) => ({ action, bindings: x }));
+  }
+
+  private search(activation: Activation, predicate: IR.Predicate) {
+    return predicate.relations.reduce(
+      (envs, pred) => {
+        return envs.flatMap((env) => this.refine_search(activation, env, pred));
+      },
+      [new Logic.UnificationEnvironment()]
+    );
+  }
+
+  private refine_search(
+    activation: Activation,
+    env: Logic.UnificationEnvironment,
+    predicate: IR.PredicateRelation
+  ) {
+    const relation = this.get_relation(activation, predicate.name);
+    const patterns = predicate.patterns.map((x) =>
+      this.evaluate_pattern(activation, x)
+    );
+    return relation.search(patterns, env);
   }
 }

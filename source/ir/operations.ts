@@ -19,6 +19,7 @@ export type Declaration =
   | DefineRelation
   | DefineScene
   | DefineActor
+  | DefineAction
   | Do;
 
 export class DefineScene extends AbstractDeclaration {
@@ -35,6 +36,26 @@ export class DefineActor extends AbstractDeclaration {
   constructor(readonly name: string, readonly roles: string[]) {
     super();
   }
+}
+
+export class DefineAction extends AbstractDeclaration {
+  readonly tag = "define-action";
+
+  constructor(
+    readonly title: string,
+    readonly predicate: Predicate,
+    readonly body: Operation[]
+  ) {
+    super();
+  }
+}
+
+export class Predicate {
+  constructor(readonly relations: PredicateRelation[]) {}
+}
+
+export class PredicateRelation {
+  constructor(readonly name: string, readonly patterns: Pattern[]) {}
 }
 
 export class DefineRelation extends AbstractDeclaration {
@@ -127,6 +148,7 @@ export type Operation =
   | PushNothing
   | PushActor
   // Search
+  | ChooseAction
   | InsertFact
   | RemoveFact
   | RefineSearch
@@ -239,6 +261,10 @@ export class RemoveFact extends AbstractOperation {
   }
 }
 
+export class ChooseAction extends AbstractOperation {
+  readonly tag = "choose-action";
+}
+
 // Note: this will change a lot :')
 export class Search extends AbstractOperation {
   readonly tag = "search";
@@ -303,7 +329,6 @@ export class NothingPattern extends AbstractPattern {
 
 export class ActorPattern extends AbstractPattern {
   readonly tag = "actor-pattern";
-  readonly arity = 0;
   constructor(readonly actor_name: string) {
     super();
   }
@@ -311,7 +336,6 @@ export class ActorPattern extends AbstractPattern {
 
 export class VariablePattern extends AbstractPattern {
   readonly tag = "variable-pattern";
-  readonly arity = 0;
   constructor(readonly name: string) {
     super();
   }

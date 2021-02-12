@@ -112,6 +112,46 @@ export class DActor extends Declaration {
   }
 }
 
+export class DAction extends Declaration {
+  constructor(
+    readonly title: string,
+    readonly predicate: Predicate,
+    readonly body: Statement[]
+  ) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.DefineAction(
+      this.title,
+      this.predicate.compile(),
+      to_list(
+        this.body.map((x) => x.compile()),
+        [new IR.PushNothing(), new IR.Return()]
+      )
+    );
+  }
+}
+
+export class Predicate {
+  constructor(readonly relations: PredicateRelation[]) {}
+
+  compile() {
+    return new IR.Predicate(this.relations.map((x) => x.compile()));
+  }
+}
+
+export class PredicateRelation {
+  constructor(readonly name: string, readonly patterns: Pattern[]) {}
+
+  compile() {
+    return new IR.PredicateRelation(
+      this.name,
+      this.patterns.map((x) => x.compile())
+    );
+  }
+}
+
 export class DRelation extends Declaration {
   constructor(readonly signature: RelationSignature) {
     super();
@@ -212,6 +252,12 @@ export class SForget extends Statement {
       yield* value.compile();
     }
     yield new IR.RemoveFact(this.sig.name, this.sig.values.length);
+  }
+}
+
+export class SChooseAction extends Statement {
+  *compile() {
+    yield new IR.ChooseAction();
   }
 }
 

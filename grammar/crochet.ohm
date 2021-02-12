@@ -8,6 +8,7 @@ Crochet {
     | SceneDeclaration
     | ActorDeclaration
     | RelationDeclaration
+    | ActionDeclaration
     
   DoDeclaration =
     | do_ StatementBlock
@@ -44,13 +45,23 @@ Crochet {
   KeywordSignaturePair =
     | Keyword Name
 
+  ActionDeclaration =
+    | action_ Text when_ Predicate StatementBlock
+
+  Predicate =
+    | NonemptyListOf<SearchRelation, ",">
+
   Statement =
     | ReturnStatement
     | GotoStatement
     | LetStatement
     | FactStatement
     | ForgetStatement
+    | ChooseAction
     | Expression ";"   -- expr
+
+  ChooseAction =
+    | choose_ action_ ";"
 
   ReturnStatement =
     | return_ Expression ";"  -- with_value
@@ -187,9 +198,13 @@ Crochet {
   fact_ = kw<"fact">
   forget_ = kw<"forget">
   search_ = kw<"search">
+  action_ = kw<"action">
+  when_ = kw<"when">
+  choose_ = kw<"choose">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
-    | actor_ | relation_ | fact_ | search_ | forget_
+    | actor_ | relation_ | fact_ | search_ | forget_ | action_
+    | when_ | choose_
 }
