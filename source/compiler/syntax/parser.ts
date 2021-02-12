@@ -41,6 +41,10 @@ import {
   EActor,
   FactSignature,
   SForget,
+  DAction,
+  PredicateRelation,
+  Predicate,
+  SChooseAction,
 } from "./ast";
 
 const grammarFile = Path.join(__dirname, "../../../grammar/crochet.ohm");
@@ -185,6 +189,17 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new OneRelationSegment(name.toAST());
   },
 
+  ActionDeclaration(_action: x, name: Node, _when: x, pred: Node, block: Node) {
+    return new DAction(name.toAST(), pred.toAST(), block.toAST());
+  },
+
+  Predicate(relations0: Node) {
+    const relations: SearchRelation[] = relations0.toAST();
+    return new Predicate(
+      relations.map((x) => new PredicateRelation(x.name, x.patterns))
+    );
+  },
+
   CommandDeclaration_ffi(
     _command: x,
     sig: Node,
@@ -278,6 +293,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   FactSegment_variable(expr: Node) {
     return new ExprSegment(expr.toAST());
+  },
+
+  ChooseAction(_choose: x, _action: x, _semi: x) {
+    return new SChooseAction();
   },
 
   StatementBlock(_l: x, stmts: Node, _r: x) {
