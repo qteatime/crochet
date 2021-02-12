@@ -305,31 +305,8 @@ export class CrochetVM {
       }
 
       case "search": {
-        const relation = this.get_relation(activation, operation.name);
-        const patterns = operation.patterns.map((x) =>
-          this.evaluate_pattern(activation, x)
-        );
-        const env = new Logic.UnificationEnvironment();
-        const results = this.search_relation(relation, patterns, env);
-        activation.push(new CrochetStream(results));
-        activation.next();
-        return activation;
-      }
-
-      case "refine-search": {
-        const envs0 = activation.pop();
-        this.assert_stream(activation, envs0);
-        const envs = envs0.values.map((x) => {
-          this.assert_record(activation, x);
-          return Logic.UnificationEnvironment.from_map(x.values);
-        });
-        const relation = this.get_relation(activation, operation.name);
-        const patterns = operation.patterns.map((x) =>
-          this.evaluate_pattern(activation, x)
-        );
-        const results = envs.flatMap((env) => {
-          return this.search_relation(relation, patterns, env);
-        });
+        const results0 = this.search(activation, operation.predicate);
+        const results = results0.map((x) => new CrochetRecord(x.bound_values));
         activation.push(new CrochetStream(results));
         activation.next();
         return activation;
