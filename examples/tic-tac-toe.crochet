@@ -137,6 +137,8 @@ context check-winning-condition {
   }
 }
 
+// Because Crochet does not yet have an explicit Halt command,
+// we rely on the implicit halting semantics of scenes to end the game.
 command win: Player {
   say: "[Player] won!";
   goto ending;
