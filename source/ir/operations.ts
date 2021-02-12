@@ -241,7 +241,7 @@ export type Operation =
   | Interpolate
   // Search
   | TriggerContext
-  | ChooseAction
+  | TriggerAction
   | InsertFact
   | RemoveFact
   | Search
@@ -358,7 +358,7 @@ export class RemoveFact extends AbstractOperation {
   }
 }
 
-export class ChooseAction extends AbstractOperation {
+export class TriggerAction extends AbstractOperation {
   readonly tag = "choose-action";
 }
 

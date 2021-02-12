@@ -263,9 +263,9 @@ export class SForget extends Statement {
   }
 }
 
-export class SChooseAction extends Statement {
+export class STriggerAction extends Statement {
   *compile() {
-    yield new IR.ChooseAction();
+    yield new IR.TriggerAction();
   }
 }
 

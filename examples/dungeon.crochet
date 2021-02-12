@@ -44,7 +44,7 @@ do {
 }
 
 scene game {
-  choose action;
+  trigger action;
   goto game;
 }
   

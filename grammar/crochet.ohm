@@ -1,233 +1,235 @@
 Crochet {
-  Program =
-    | header Declaration* end
+  program =
+    | header declaration* space* end
 
-  Declaration =
-    | CommandDeclaration
-    | DoDeclaration
-    | SceneDeclaration
-    | ActorDeclaration
-    | RelationDeclaration
-    | ActionDeclaration
-    | ContextDeclaration
+  declaration =
+    | commandDeclaration
+    | doDeclaration
+    | sceneDeclaration
+    | actorDeclaration
+    | relationDeclaration
+    | actionDeclaration
+    | contextDeclaration
     
-  DoDeclaration =
-    | do_ StatementBlock
+  doDeclaration =
+    | do_ statementBlock
 
-  SceneDeclaration =
-    | scene_ Atom StatementBlock
+  sceneDeclaration =
+    | scene_ atom statementBlock
 
-  ContextDeclaration =
-    | context_ Atom "{" HookDeclaration+ "}"
+  contextDeclaration =
+    | context_ atom s<"{"> hookDeclaration+ s<"}">
 
-  HookDeclaration =
-    | when_ Predicate StatementBlock
+  hookDeclaration =
+    | when_ predicate statementBlock
 
-  ActorDeclaration =
-    | actor_ ActorName "::" NonemptyListOf<Atom, ","> ";"   -- roles
-    | actor_ ActorName ";"                                  -- no_roles
+  actorDeclaration =
+    | actor_ actorName s<"::"> nonemptyListOf<atom, s<",">> s<";">   -- roles
+    | actor_ actorName s<";">                                        -- no_roles
 
-  RelationDeclaration =
-    | relation_ RelationSignature ";"
+  relationDeclaration =
+    | relation_ relationSignature s<";">
 
-  RelationSignature =
-    | RelationSignatureSegment+
+  relationSignature =
+    | relationSignatureSegment+
 
-  RelationSignatureSegment =
-    | Atom      -- static
-    | Name "*"  -- many
-    | Name      -- one
+  relationSignatureSegment =
+    | atom         -- static
+    | name s<"*">  -- many
+    | name         -- one
 
-  CommandDeclaration =
-    | command_ CommandSignature "=" Atom "(" ListOf<Name, ","> ")" ";"  -- ffi
-    | command_ CommandSignature StatementBlock                          -- local
+  commandDeclaration =
+    | command_ commandSignature s<"="> atom s<"("> listOf<name, s<",">> s<")"> s<";">  -- ffi
+    | command_ commandSignature statementBlock                                         -- local
 
-  CommandSignature =
-    | Name infix_symbol Name           -- infix
-    | Name KeywordSignaturePair+       -- self
-    | Name Atom                        -- unary
-    | KeywordSignaturePair+            -- prefix
-    | Atom                             -- nullary
+  commandSignature =
+    | name infix_symbol name           -- infix
+    | name keywordSignaturePair+       -- self
+    | name atom                        -- unary
+    | keywordSignaturePair+            -- prefix
+    | atom                             -- nullary
   
-  KeywordSignaturePair =
-    | Keyword Name
+  keywordSignaturePair =
+    | keyword name
 
-  ActionDeclaration =
-    | action_ Text when_ Predicate StatementBlock
+  actionDeclaration =
+    | action_ text when_ predicate statementBlock
 
-  Predicate =
-    | NonemptyListOf<SearchRelation, ","> if_ Constraint    -- constrained
-    | NonemptyListOf<SearchRelation, ",">                   -- unconstrained
+  predicate =
+    | nonemptyListOf<searchRelation, s<",">> if_ constraint    -- constrained
+    | nonemptyListOf<searchRelation, s<",">>                   -- unconstrained
 
-  Constraint =
-    | Constraint and_ Constraint    -- conjunction
-    | Constraint or_ Constraint     -- disjunction
-    | not_ Constraint               -- negate
-    | ConstraintEq
+  constraint =
+    | constraint and_ constraint    -- conjunction
+    | constraint or_ constraint     -- disjunction
+    | not_ constraint               -- negate
+    | constraintEq
 
-  ConstraintEq =
-    | ConstraintPrimary "===" ConstraintPrimary   -- eq
-    | ConstraintPrimary "=/=" ConstraintPrimary   -- neq
-    | ConstraintPrimary "::" Atom                 -- role
-    | ConstraintPrimary
+  constraintEq =
+    | constraintPrimary s<"==="> constraintPrimary   -- eq
+    | constraintPrimary s<"=/="> constraintPrimary   -- neq
+    | constraintPrimary s<"::"> atom                 -- role
+    | constraintPrimary
 
-  ConstraintPrimary =
-    | Name                  -- variable
-    | ActorName             -- actor
-    | "(" Constraint ")"    -- group
+  constraintPrimary =
+    | name                        -- variable
+    | actorName                   -- actor
+    | s<"("> constraint s<")">    -- group
 
-  Statement =
-    | ReturnStatement
-    | GotoStatement
-    | LetStatement
-    | FactStatement
-    | ForgetStatement
-    | ChooseAction
-    | TriggerStatement
-    | Expression ";"   -- expr
+  statement =
+    | returnStatement
+    | gotoStatement
+    | letStatement
+    | factStatement
+    | forgetStatement
+    | triggerAction
+    | triggerStatement
+    | expression s<";">   -- expr
 
-  ChooseAction =
-    | choose_ action_ ";"
+  triggerAction =
+    | trigger_ action_ s<";">
 
-  TriggerStatement =
-    | trigger_ Atom ";"
+  triggerStatement =
+    | trigger_ atom s<";">
 
-  ReturnStatement =
-    | return_ Expression ";"  -- with_value
-    | return_ ";"             -- naked
+  returnStatement =
+    | return_ expression s<";">  -- with_value
+    | return_ s<";">             -- naked
 
-  GotoStatement =
-    | goto_ Atom ";"
+  gotoStatement =
+    | goto_ atom s<";">
 
-  LetStatement =
-    | let_ Name "=" Expression ";"
+  letStatement =
+    | let_ name s<"="> expression s<";">
 
-  FactStatement =
-    | fact_ FactUseSignature ";"
+  factStatement =
+    | fact_ factUseSignature s<";">
 
-  ForgetStatement =
-    | forget_ FactUseSignature ";"
+  forgetStatement =
+    | forget_ factUseSignature s<";">
 
-  FactUseSignature =
-    | FactSegment+
+  factUseSignature =
+    | factSegment+
 
-  FactSegment =
-    | Atom                -- static
-    | PrimaryExpression   -- variable
+  factSegment =
+    | atom                -- static
+    | primaryExpression   -- variable
 
-  StatementBlock =
-    | "{" Statement* "}"
+  statementBlock =
+    | s<"{"> statement* s<"}">
 
-  Expression =
-    | SearchExpression
-    | IfExpression
+  expression =
+    | searchExpression
+    | ifExpression
 
-  IfExpression =
-    | if_ InvokeInfix then_ Expression else_ Expression
+  ifExpression =
+    | if_ invokeInfix then_ expression else_ expression
 
-  SearchExpression =
-    | search_ Predicate   -- search
-    | InvokeInfix
+  searchExpression =
+    | search_ predicate   -- search
+    | invokeInfix
 
-  SearchRelation =
-    | SearchSegment+
+  searchRelation =
+    | searchSegment+
 
-  SearchSegment =
-    | ActorName               -- actor
-    | Integer                 -- integer
-    | Float                   -- float
-    | Text                    -- text
-    | Boolean                 -- boolean
-    | Nothing                 -- nothing
-    | Name                    -- variable
-    | Atom                    -- static
+  searchSegment =
+    | actorName               -- actor
+    | integer                 -- integer
+    | float                   -- float
+    | text                    -- text
+    | boolean                 -- boolean
+    | nothing                 -- nothing
+    | name                    -- variable
+    | atom                    -- static
 
-  InvokeInfix =
-    | InvokeMixfix infix_symbol InvokeMixfix  -- infix
-    | InvokeMixfix
+  invokeInfix =
+    | invokeMixfix infix_symbol invokeMixfix  -- infix
+    | invokeMixfix
 
-  InvokeMixfix =
-    | InvokePostfix InvokePair+         -- self
-    | InvokePair+                       -- prefix
-    | InvokePostfix
+  invokeMixfix =
+    | invokePostfix invokePair+         -- self
+    | invokePair+                       -- prefix
+    | invokePostfix
 
-  InvokePair =
-    | Keyword InvokePostfix
+  invokePair =
+    | keyword invokePostfix
 
-  InvokePostfix =
-    | InvokePostfix Atom        -- postfix
-    | PrimaryExpression
+  invokePostfix =
+    | invokePostfix atom        -- postfix
+    | primaryExpression
 
-  PrimaryExpression =
-    | InterpolateText
-    | Number
-    | Boolean
-    | Nothing
-    | ActorName           -- actor
-    | Atom                -- atom
-    | Name                -- variable
-    | "(" Expression ")"  -- group
+  primaryExpression =
+    | interpolateText
+    | number
+    | boolean
+    | nothing
+    | actorName                 -- actor
+    | atom                      -- atom
+    | name                      -- variable
+    | s<"("> expression s<")">  -- group
 
-  Text = text
-  Number = Integer | Float
-  Integer = integer
-  Float = float
-  Boolean = boolean
-  Name = name
-  Atom = ~reserved atom ~":"
-  Keyword = keyword
-  ActorName = actor_name
-  Nothing = nothing_
+  number = integer | float
+  text = s<t_text>
+  integer = s<t_integer>
+  float = s<t_float>
+  boolean = t_boolean
+  name = s<t_name>
+  atom = space* ~reserved t_atom ~":"
+  keyword = s<t_keyword>
+  actorName = s<t_actor_name>
+  nothing = nothing_
+  infix_symbol = s<t_infix_symbol>
 
   interpolateTextPart =
-    | #"\\" #any             -- escape
-    | #"[" #Expression "]"   -- interpolate
-    | ~#"\"" #any            -- character
+    | "\\" any                   -- escape
+    | "[" s<expression> s<"]">   -- interpolate
+    | ~"\"" any                  -- character
 
-  InterpolateText =
-    | #"\"" interpolateTextPart* #"\""
+  interpolateText (a text with interpolation) =
+    | s<"\""> interpolateTextPart* "\""
 
+  s<p> = space* p
   // -- Lexical rules -------------------------------------------------
-  header = "%" hs* "crochet" nl
+  header (a file header) = "%" hs* "crochet" nl
   hs = " " | "\t"
   nl = "\n" | "\r"
   line = (~nl any)*
-  comment = "//" line
+  comment (a comment) = "//" line
   space += comment
 
   atom_start = "a".."z"
   atom_rest = letter | digit | "-"
-  atom = atom_start atom_rest*
+  t_atom (an atom) = atom_start atom_rest*
 
-  keyword = atom ":"
+  t_keyword (a keyword) = t_atom ":"
 
-  actor_name = "#" atom
+  t_actor_name (an actor name) = "#" t_atom
 
   name_start = "A".."Z" | "_"
   name_rest = letter | digit | "-"
-  name = name_start name_rest*
+  t_name (a name) = name_start name_rest*
 
-  infix_symbol =
+  t_infix_symbol =
     | "+" | "-" | "*" | "/"
     | "<" | ">" | "<=" | ">="
     | "===" | "=/="
 
   dec_digit = "0".."9" | "_"
-  integer = ~"_" dec_digit+
-  float = ~"_" dec_digit+ "." dec_digit+
+  t_integer (an integer) = ~"_" dec_digit+
+  t_float (a floating-point number) = ~"_" dec_digit+ "." dec_digit+
 
 
   text_character =
     | "\\" "\""     -- escape
     | ~"\"" any     -- regular
-  text =
+  t_text (a text) =
     | "\"" text_character* "\""
 
-  boolean =
+  t_boolean (a boolean) =
     | true_  -- true
     | false_ -- false
 
-  kw<word> = word ~atom_rest
+  kw<word> = s<word> ~atom_rest
 
   true_ = kw<"true">
   false_ = kw<"false">
