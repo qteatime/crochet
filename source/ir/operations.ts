@@ -20,6 +20,7 @@ export type Declaration =
   | DefineScene
   | DefineActor
   | DefineAction
+  | DefineContext
   | Do;
 
 export class DefineScene extends AbstractDeclaration {
@@ -48,6 +49,18 @@ export class DefineAction extends AbstractDeclaration {
   ) {
     super();
   }
+}
+
+export class DefineContext extends AbstractDeclaration {
+  readonly tag = "define-context";
+
+  constructor(readonly name: string, readonly hooks: HookDefinition[]) {
+    super();
+  }
+}
+
+export class HookDefinition {
+  constructor(readonly predicate: Predicate, readonly body: Operation[]) {}
 }
 
 export class Predicate {
@@ -216,6 +229,7 @@ export abstract class AbstractOperation extends IRNode {
 
 export type Operation =
   // Commands and environment
+  | TriggerContext
   | Invoke
   | Return
   | Let
@@ -350,6 +364,14 @@ export class Search extends AbstractOperation {
   readonly tag = "search";
 
   constructor(readonly predicate: Predicate) {
+    super();
+  }
+}
+
+export class TriggerContext extends AbstractOperation {
+  readonly tag = "trigger-context";
+
+  constructor(readonly name: string) {
     super();
   }
 }

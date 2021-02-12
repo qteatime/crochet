@@ -34,6 +34,9 @@ import {
   SForget,
   DAction,
   SChooseAction,
+  DContext,
+  Hook,
+  STrigger,
 } from "./ast";
 import * as IR from "../../ir/operations";
 
@@ -148,6 +151,14 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   ActorDeclaration_no_roles(_actor: x, name: Node, _semi: x) {
     return new DActor(name.toAST(), []);
+  },
+
+  ContextDeclaration(_context: x, name: Node, _l: x, hooks: Node, _r: x) {
+    return new DContext(name.toAST(), hooks.toAST());
+  },
+
+  HookDeclaration(_when: x, pred: Node, body: Node) {
+    return new Hook(pred.toAST(), body.toAST());
   },
 
   RelationDeclaration(_relation: x, sig: Node, _semi: x) {
@@ -305,6 +316,10 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   ForgetStatement(_forget: x, sig: Node, _semi: x) {
     return new SForget(sig.toAST());
+  },
+
+  TriggerStatement(_trigger: x, name: Node, _semi: x) {
+    return new STrigger(name.toAST());
   },
 
   FactUseSignature(segments0: Node) {
