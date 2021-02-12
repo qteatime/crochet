@@ -252,6 +252,7 @@ export type Operation =
   | Branch
   | Block
   | Goto
+  | Yield
   | Halt;
 
 export class PushInteger extends AbstractOperation {
@@ -359,7 +360,7 @@ export class RemoveFact extends AbstractOperation {
 }
 
 export class TriggerAction extends AbstractOperation {
-  readonly tag = "choose-action";
+  readonly tag = "trigger-action";
 }
 
 // Note: this will change a lot :')
@@ -401,6 +402,10 @@ export class Interpolate extends AbstractOperation {
   constructor(readonly arity: number) {
     super();
   }
+}
+
+export class Yield extends AbstractOperation {
+  readonly tag = "yield";
 }
 
 export type Pattern =

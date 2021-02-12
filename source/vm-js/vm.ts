@@ -28,6 +28,8 @@ import {
 import { Database, RelationType } from "./logic";
 import * as Logic from "./logic";
 
+class Halt {}
+
 export class CrochetVM {
   private root_env = new Environment(null);
   private queue: Activation[] = [];
@@ -36,7 +38,6 @@ export class CrochetVM {
   private actions: Action[] = [];
   private running = false;
   private tracing = false;
-  private traced_activation: Activation | null = null;
   readonly database = new Database();
 
   constructor(private ffi: ForeignInterface) {}
@@ -49,7 +50,11 @@ export class CrochetVM {
 
     this.running = true;
     while (this.queue.length !== 0) {
-      await this.run_next();
+      const result = await this.run_next();
+      if (result instanceof Halt) {
+        this.running = false;
+        break;
+      }
     }
   }
 
@@ -169,13 +174,16 @@ export class CrochetVM {
     }
   }
 
-  private trace_activation(activation: Activation) {
+  private trace_activation(activation: Activation | null | Halt) {
     if (this.tracing) {
-      if (activation === this.traced_activation) {
+      if (activation instanceof Halt) {
+        console.log("[TRACE] Halt");
         return;
       }
-      this.traced_activation = activation;
-
+      if (activation == null) {
+        console.log("[TRACE] Yield");
+        return;
+      }
       console.log(
         "[TRACE]",
         show({
@@ -193,11 +201,25 @@ export class CrochetVM {
     let activation: Activation | null = await this.next_activation();
     while (activation != null) {
       this.trace_activation(activation);
-      activation = await this.step(activation);
+      const new_activation: Activation | Halt | null = await this.step(
+        activation
+      );
+
+      if (new_activation !== activation) {
+        this.trace_activation(new_activation);
+      }
+
+      if (new_activation instanceof Halt) {
+        return new_activation;
+      } else {
+        activation = new_activation;
+      }
     }
   }
 
-  private async step(activation: Activation): Promise<Activation | null> {
+  private async step(
+    activation: Activation
+  ): Promise<Activation | Halt | null> {
     const operation = activation.current;
     this.trace_operation(activation, operation);
     switch (operation.tag) {
@@ -229,26 +251,6 @@ export class CrochetVM {
         return new_activation;
       }
 
-      case "choose-action": {
-        const chosen = this.pick_action(activation);
-        if (chosen != null) {
-          const { action, bindings } = chosen;
-          const new_env = new Environment(action.env);
-          for (const [k, v] of bindings.bound_values.entries()) {
-            new_env.define(k, v);
-          }
-          const new_activation = new Activation(
-            activation,
-            new_env,
-            action.body
-          );
-          return new_activation;
-        } else {
-          activation.next();
-          return activation;
-        }
-      }
-
       case "drop": {
         activation.pop();
         activation.next();
@@ -256,7 +258,7 @@ export class CrochetVM {
       }
 
       case "halt": {
-        return null;
+        return new Halt();
       }
 
       case "goto": {
@@ -295,6 +297,7 @@ export class CrochetVM {
           );
         }
         const args = activation.pop_many(operation.arity);
+        activation.next();
         return procedure.invoke(this, activation, args);
       }
 
@@ -368,10 +371,9 @@ export class CrochetVM {
         const parent = activation.parent;
         if (parent != null) {
           parent.push(result);
-          parent.next();
           return parent;
         } else {
-          throw new Error(`RETURN with no parent activation`);
+          return null;
         }
       }
 
@@ -381,6 +383,25 @@ export class CrochetVM {
         activation.push(new CrochetStream(results));
         activation.next();
         return activation;
+      }
+
+      case "trigger-action": {
+        const chosen = this.pick_action(activation);
+        if (chosen != null) {
+          const { action, bindings } = chosen;
+          const new_env = new Environment(action.env);
+          for (const [k, v] of bindings.bound_values.entries()) {
+            new_env.define(k, v);
+          }
+          const new_activation = new Activation(null, new_env, action.body);
+          activation.next();
+          this.schedule(new_activation);
+          this.schedule(activation);
+          return null;
+        } else {
+          activation.next();
+          return activation;
+        }
       }
 
       case "trigger-context": {
@@ -394,20 +415,15 @@ export class CrochetVM {
         return null;
       }
 
+      case "yield": {
+        activation.next();
+        return null;
+      }
+
       default: {
         throw unreachable(operation, `Unknown operation`);
       }
     }
-  }
-
-  private search_relation(
-    relation: RelationType,
-    patterns: Logic.Pattern[],
-    env: Logic.UnificationEnvironment
-  ) {
-    return relation
-      .search(patterns, env)
-      .map((x) => new CrochetRecord(x.bound_values));
   }
 
   private evaluate_pattern(activation: Activation, pattern: IR.Pattern) {
@@ -662,7 +678,7 @@ export class CrochetVM {
         for (const [k, v] of env.bound_values) {
           new_env.define(k, v);
         }
-        return new Activation(activation0, new_env, hook.body);
+        return new Activation(null, new_env, hook.body);
       });
     });
   }
@@ -681,22 +697,24 @@ export class CrochetVM {
   }
 
   private search(activation: Activation, predicate: IR.Predicate) {
-    return predicate.relations.reduce(
-      (envs, pred) => {
-        return envs
-          .flatMap((env) => this.refine_search(activation, env, pred))
-          .filter((uenv) => {
-            const valid = this.evaluate_constraint(
-              activation,
-              uenv,
-              predicate.constraint
-            );
-            this.assert_boolean(activation, valid);
-            return valid.value;
-          });
-      },
-      [new Logic.UnificationEnvironment()]
-    );
+    return predicate.relations
+      .reduce(
+        (envs, pred) => {
+          return envs.flatMap((env) =>
+            this.refine_search(activation, env, pred)
+          );
+        },
+        [new Logic.UnificationEnvironment()]
+      )
+      .filter((uenv) => {
+        const valid = this.evaluate_constraint(
+          activation,
+          uenv,
+          predicate.constraint
+        );
+        this.assert_boolean(activation, valid);
+        return valid.value;
+      });
   }
 
   private refine_search(

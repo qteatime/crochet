@@ -58,7 +58,7 @@ export class DDo extends Declaration {
     yield new IR.Do(
       to_list(
         this.body.map((x) => x.compile()),
-        [new IR.Halt()]
+        [new IR.Yield()]
       )
     );
   }
@@ -127,7 +127,7 @@ export class DAction extends Declaration {
       this.predicate,
       to_list(
         this.body.map((x) => x.compile()),
-        [new IR.PushNothing(), new IR.Return()]
+        [new IR.Yield()]
       )
     );
   }
@@ -154,7 +154,7 @@ export class Hook {
       this.predicate,
       to_list(
         this.body.map((x) => x.compile()),
-        [new IR.Halt()]
+        [new IR.Yield()]
       )
     );
   }

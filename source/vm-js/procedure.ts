@@ -54,7 +54,6 @@ export class CrochetForeignProcedure implements ICrochetProcedure {
     const actual_args = this.args.map((x) => args[x]);
     const result = await code(vm, activation, ...actual_args);
     activation.push(result);
-    activation.next();
     return activation;
   }
 }
