@@ -237,6 +237,8 @@ export type Operation =
   | PushBoolean
   | PushNothing
   | PushActor
+  // Text operations
+  | Interpolate
   // Search
   | TriggerContext
   | ChooseAction
@@ -389,6 +391,14 @@ export class Block extends AbstractOperation {
   readonly tag = "block";
 
   constructor(readonly parameters: string[], readonly body: Operation[]) {
+    super();
+  }
+}
+
+export class Interpolate extends AbstractOperation {
+  readonly tag = "interpolate";
+
+  constructor(readonly arity: number) {
     super();
   }
 }

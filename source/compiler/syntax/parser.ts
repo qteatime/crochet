@@ -38,6 +38,9 @@ import {
   Hook,
   STrigger,
   EIf,
+  InterpolateStatic,
+  InterpolateDynamic,
+  EInterpolateText,
 } from "./ast";
 import * as IR from "../../ir/operations";
 
@@ -480,6 +483,22 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   Keyword(node: Node) {
     return node.toAST();
+  },
+
+  InterpolateTextPart_escape(_x: x, value: Node) {
+    return new InterpolateStatic(value.toAST());
+  },
+
+  InterpolateTextPart_interpolate(_l: x, value: Node, _r: x) {
+    return new InterpolateDynamic(value.toAST());
+  },
+
+  InterpolateTextPart_character(value: Node) {
+    return new InterpolateStatic(value.toAST());
+  },
+
+  InterpolateText(_l: x, parts: Node, _r: x) {
+    return new EInterpolateText(parts.toAST());
   },
 
   EmptyListOf() {

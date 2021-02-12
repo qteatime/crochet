@@ -277,6 +277,16 @@ export class CrochetVM {
         return activation;
       }
 
+      case "interpolate": {
+        const values = activation.pop_many(operation.arity);
+        const text = values.reduce((x, y) => {
+          return x + y.to_text();
+        }, "");
+        activation.push(new CrochetText(text));
+        activation.next();
+        return activation;
+      }
+
       case "invoke": {
         const procedure = this.get_procedure(activation, operation.name);
         if (procedure.arity !== operation.arity) {
