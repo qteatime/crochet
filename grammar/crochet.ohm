@@ -49,7 +49,25 @@ Crochet {
     | action_ Text when_ Predicate StatementBlock
 
   Predicate =
-    | NonemptyListOf<SearchRelation, ",">
+    | NonemptyListOf<SearchRelation, ","> if_ Constraint    -- constrained
+    | NonemptyListOf<SearchRelation, ",">                   -- unconstrained
+
+  Constraint =
+    | Constraint and_ Constraint    -- conjunction
+    | Constraint or_ Constraint     -- disjunction
+    | not_ Constraint               -- negate
+    | ConstraintEq
+
+  ConstraintEq =
+    | ConstraintPrimary "===" ConstraintPrimary   -- eq
+    | ConstraintPrimary "=/=" ConstraintPrimary   -- neq
+    | ConstraintPrimary "::" Atom                 -- role
+    | ConstraintPrimary
+
+  ConstraintPrimary =
+    | Name                  -- variable
+    | ActorName             -- actor
+    | "(" Constraint ")"    -- group
 
   Statement =
     | ReturnStatement
@@ -100,7 +118,7 @@ Crochet {
     | SearchSegment+
 
   SearchSegment =
-    | ActorName                -- actor
+    | ActorName               -- actor
     | Integer                 -- integer
     | Float                   -- float
     | Text                    -- text
@@ -141,7 +159,7 @@ Crochet {
   Float = float
   Boolean = boolean
   Name = name
-  Atom = ~reserved atom
+  Atom = ~reserved atom ~":"
   Keyword = keyword
   ActorName = actor_name
   Nothing = nothing_
@@ -201,10 +219,14 @@ Crochet {
   action_ = kw<"action">
   when_ = kw<"when">
   choose_ = kw<"choose">
+  if_ = kw<"if">
+  and_ = kw<"and">
+  or_ = kw<"or">
+  not_ = kw<"not">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
     | actor_ | relation_ | fact_ | search_ | forget_ | action_
-    | when_ | choose_
+    | when_ | choose_ | if_ | and_ | or_ | not_
 }

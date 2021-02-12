@@ -8,7 +8,7 @@ export interface ICrochetProcedure {
     vm: CrochetVM,
     activation: Activation,
     args: CrochetValue[]
-  ): Activation | null;
+  ): Promise<Activation | null>;
   arity: number;
 }
 
@@ -24,7 +24,7 @@ export class CrochetProcedure implements ICrochetProcedure {
     return this.parameters.length;
   }
 
-  invoke(vm: CrochetVM, activation: Activation, args: CrochetValue[]) {
+  async invoke(vm: CrochetVM, activation: Activation, args: CrochetValue[]) {
     const new_env = new Environment(this.env);
     this.parameters.forEach((k, i) => new_env.define(k, args[i]));
 
@@ -42,18 +42,19 @@ export class CrochetForeignProcedure implements ICrochetProcedure {
       vm: CrochetVM,
       activation: Activation,
       ...args: CrochetValue[]
-    ) => Activation | null
+    ) => Promise<CrochetValue>
   ) {}
 
   get arity() {
     return this.parameters.length;
   }
 
-  invoke(vm: CrochetVM, activation: Activation, args: CrochetValue[]) {
+  async invoke(vm: CrochetVM, activation: Activation, args: CrochetValue[]) {
     const code = this.code;
     const actual_args = this.args.map((x) => args[x]);
-    const result = code(vm, activation, ...actual_args);
+    const result = await code(vm, activation, ...actual_args);
+    activation.push(result);
     activation.next();
-    return result;
+    return activation;
   }
 }

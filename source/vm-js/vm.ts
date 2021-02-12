@@ -107,6 +107,24 @@ export class CrochetVM {
     }
   }
 
+  assert_boolean(
+    activation: Activation,
+    value: CrochetValue
+  ): asserts value is CrochetBoolean {
+    if (!(value instanceof CrochetBoolean)) {
+      throw new Error(`Expected a Boolean, got ${value.type}`);
+    }
+  }
+
+  assert_actor(
+    activation: Activation,
+    value: CrochetValue
+  ): asserts value is CrochetActor {
+    if (!(value instanceof CrochetActor)) {
+      throw new Error(`Expected an Actor, got ${value.type}`);
+    }
+  }
+
   //== Tracing and debugging
   trace(value: boolean) {
     this.tracing = value;
@@ -563,7 +581,17 @@ export class CrochetVM {
   private search(activation: Activation, predicate: IR.Predicate) {
     return predicate.relations.reduce(
       (envs, pred) => {
-        return envs.flatMap((env) => this.refine_search(activation, env, pred));
+        return envs
+          .flatMap((env) => this.refine_search(activation, env, pred))
+          .filter((uenv) => {
+            const valid = this.evaluate_constraint(
+              activation,
+              uenv,
+              predicate.constraint
+            );
+            this.assert_boolean(activation, valid);
+            return valid.value;
+          });
       },
       [new Logic.UnificationEnvironment()]
     );
@@ -579,5 +607,113 @@ export class CrochetVM {
       this.evaluate_pattern(activation, x)
     );
     return relation.search(patterns, env);
+  }
+
+  private evaluate_constraint(
+    activation: Activation,
+    uenv: Logic.UnificationEnvironment,
+    constraint: IR.Constraint
+  ): CrochetValue {
+    switch (constraint.tag) {
+      case "actor": {
+        return this.get_actor(activation, constraint.name);
+      }
+
+      case "and": {
+        const left = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.left
+        );
+        const right = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.right
+        );
+        this.assert_boolean(activation, left);
+        this.assert_boolean(activation, right);
+        return new CrochetBoolean(left.value && right.value);
+      }
+
+      case "boolean": {
+        return new CrochetBoolean(constraint.value);
+      }
+
+      case "equal": {
+        const left = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.left
+        );
+        const right = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.right
+        );
+        return new CrochetBoolean(left.equals(right));
+      }
+
+      case "not": {
+        const value = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.expr
+        );
+        this.assert_boolean(activation, value);
+        return new CrochetBoolean(!value.value);
+      }
+
+      case "not-equal": {
+        const left = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.left
+        );
+        const right = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.right
+        );
+        return new CrochetBoolean(!left.equals(right));
+      }
+
+      case "or": {
+        const left = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.left
+        );
+        const right = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.right
+        );
+        this.assert_boolean(activation, left);
+        this.assert_boolean(activation, right);
+        return new CrochetBoolean(left.value || right.value);
+      }
+
+      case "role": {
+        const value = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.expr
+        );
+        this.assert_actor(activation, value);
+        return new CrochetBoolean(value.has_role(constraint.role));
+      }
+
+      case "variable": {
+        const local = uenv.bound_values.get(constraint.name);
+        if (local != null) {
+          return local;
+        } else {
+          return this.get_local(activation, constraint.name);
+        }
+      }
+
+      default:
+        throw unreachable(constraint, "Unknown constraint");
+    }
   }
 }

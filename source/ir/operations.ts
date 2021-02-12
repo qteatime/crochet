@@ -51,11 +51,92 @@ export class DefineAction extends AbstractDeclaration {
 }
 
 export class Predicate {
-  constructor(readonly relations: PredicateRelation[]) {}
+  constructor(
+    readonly relations: PredicateRelation[],
+    readonly constraint: Constraint
+  ) {}
 }
 
 export class PredicateRelation {
   constructor(readonly name: string, readonly patterns: Pattern[]) {}
+}
+
+export type Constraint =
+  | CAnd
+  | COr
+  | CNot
+  | CEqual
+  | CNotEqual
+  | CVariable
+  | CActor
+  | CRole
+  | CBoolean;
+
+export abstract class AbstractConstraint {
+  abstract tag: string;
+}
+
+export class CAnd extends AbstractConstraint {
+  readonly tag = "and";
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
+}
+
+export class COr extends AbstractConstraint {
+  readonly tag = "or";
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
+}
+
+export class CNot extends AbstractConstraint {
+  readonly tag = "not";
+  constructor(readonly expr: Constraint) {
+    super();
+  }
+}
+
+export class CEqual extends AbstractConstraint {
+  readonly tag = "equal";
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
+}
+
+export class CNotEqual extends AbstractConstraint {
+  readonly tag = "not-equal";
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
+}
+
+export class CVariable extends AbstractConstraint {
+  readonly tag = "variable";
+  constructor(readonly name: string) {
+    super();
+  }
+}
+
+export class CBoolean extends AbstractConstraint {
+  readonly tag = "boolean";
+  constructor(readonly value: boolean) {
+    super();
+  }
+}
+
+export class CActor extends AbstractConstraint {
+  readonly tag = "actor";
+  constructor(readonly name: string) {
+    super();
+  }
+}
+
+export class CRole extends AbstractConstraint {
+  readonly tag = "role";
+  constructor(readonly expr: Constraint, readonly role: string) {
+    super();
+  }
 }
 
 export class DefineRelation extends AbstractDeclaration {

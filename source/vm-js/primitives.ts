@@ -6,7 +6,7 @@ type Fn = (
   vm: CrochetVM,
   activation: Activation,
   ...args: CrochetValue[]
-) => Activation | null;
+) => Promise<CrochetValue>;
 
 export class ForeignFunction {
   constructor(readonly arity: number, readonly fn: Fn) {}

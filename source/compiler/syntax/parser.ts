@@ -42,10 +42,9 @@ import {
   FactSignature,
   SForget,
   DAction,
-  PredicateRelation,
-  Predicate,
   SChooseAction,
 } from "./ast";
+import * as IR from "../../ir/operations";
 
 const grammarFile = Path.join(__dirname, "../../../grammar/crochet.ohm");
 const grammar = Ohm.grammar(Fs.readFileSync(grammarFile, "utf-8"));
@@ -193,11 +192,68 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DAction(name.toAST(), pred.toAST(), block.toAST());
   },
 
-  Predicate(relations0: Node) {
+  Predicate_constrained(relations0: Node, _if: x, constraint: Node) {
     const relations: SearchRelation[] = relations0.toAST();
-    return new Predicate(
-      relations.map((x) => new PredicateRelation(x.name, x.patterns))
+    return new IR.Predicate(
+      relations.map(
+        (x) =>
+          new IR.PredicateRelation(
+            x.name,
+            x.patterns.map((x) => x.compile())
+          )
+      ),
+      constraint.toAST()
     );
+  },
+
+  Predicate_unconstrained(relations0: Node) {
+    const relations: SearchRelation[] = relations0.toAST();
+    return new IR.Predicate(
+      relations.map(
+        (x) =>
+          new IR.PredicateRelation(
+            x.name,
+            x.patterns.map((x) => x.compile())
+          )
+      ),
+      new IR.CBoolean(true)
+    );
+  },
+
+  Constraint_conjunction(left: Node, _and: x, right: Node) {
+    return new IR.CAnd(left.toAST(), right.toAST());
+  },
+
+  Constraint_disjunction(left: Node, _or: x, right: Node) {
+    return new IR.COr(left.toAST(), right.toAST());
+  },
+
+  Constraint_negate(_not: x, value: Node) {
+    return new IR.CNot(value.toAST());
+  },
+
+  ConstraintEq_eq(left: Node, _eq: x, right: Node) {
+    return new IR.CEqual(left.toAST(), right.toAST());
+  },
+
+  ConstraintEq_neq(left: Node, _eq: x, right: Node) {
+    return new IR.CNotEqual(left.toAST(), right.toAST());
+  },
+
+  ConstraintEq_role(expr: Node, _sym: x, role: Node) {
+    return new IR.CRole(expr.toAST(), role.toAST());
+  },
+
+  ConstraintPrimary_variable(name: Node) {
+    return new IR.CVariable(name.toAST());
+  },
+
+  ConstraintPrimary_actor(name: Node) {
+    return new IR.CActor(name.toAST());
+  },
+
+  ConstraintPrimary_group(_l: x, expr: Node, _r: x) {
+    return expr.toAST();
   },
 
   CommandDeclaration_ffi(
@@ -225,7 +281,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
   },
 
   CommandSignature_unary(self: Node, name: Node) {
-    return new Signature("_ " + name.toAST(), self.toAST());
+    return new Signature("_ " + name.toAST(), [self.toAST()]);
   },
 
   CommandSignature_prefix(pairs0: Node) {
