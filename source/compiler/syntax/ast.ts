@@ -133,6 +133,33 @@ export class DAction extends Declaration {
   }
 }
 
+export class DContext extends Declaration {
+  constructor(readonly name: string, readonly hooks: Hook[]) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.DefineContext(
+      this.name,
+      this.hooks.map((x) => x.compile())
+    );
+  }
+}
+
+export class Hook {
+  constructor(readonly predicate: IR.Predicate, readonly body: Statement[]) {}
+
+  compile() {
+    return new IR.HookDefinition(
+      this.predicate,
+      to_list(
+        this.body.map((x) => x.compile()),
+        [new IR.Halt()]
+      )
+    );
+  }
+}
+
 export class DRelation extends Declaration {
   constructor(readonly signature: RelationSignature) {
     super();
@@ -239,6 +266,16 @@ export class SForget extends Statement {
 export class SChooseAction extends Statement {
   *compile() {
     yield new IR.ChooseAction();
+  }
+}
+
+export class STrigger extends Statement {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  *compile() {
+    yield new IR.TriggerContext(this.name);
   }
 }
 

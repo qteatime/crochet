@@ -11,7 +11,7 @@ import * as IR from "../ir/operations";
 import { Activation, Environment } from "./environment";
 import { ForeignInterface } from "./primitives";
 import { CrochetForeignProcedure, CrochetProcedure } from "./procedure";
-import { Action, Scene } from "./scene";
+import { Action, Context, Hook, Scene } from "./scene";
 import { pick, show, unreachable } from "../utils/utils";
 import {
   CrochetBoolean,
@@ -31,10 +31,11 @@ export class CrochetVM {
   private root_env = new Environment(null);
   private queue: Activation[] = [];
   private scenes = new Map<string, Scene>();
+  private contexts = new Map<string, Context>();
+  private actions: Action[] = [];
   private running = false;
   private tracing = false;
   private traced_activation: Activation | null = null;
-  private actions: Action[] = [];
   readonly database = new Database();
 
   constructor(private ffi: ForeignInterface) {}
@@ -69,6 +70,10 @@ export class CrochetVM {
     const new_env = new Environment(scene.env);
     const activation = new Activation(activation0, new_env, scene.body);
     return activation;
+  }
+
+  schedule(activation: Activation) {
+    this.queue.push(activation);
   }
 
   assert_text(
@@ -312,6 +317,17 @@ export class CrochetVM {
         return activation;
       }
 
+      case "trigger-context": {
+        const context = this.get_context(activation, operation.name);
+        const hooks = this.get_active_hooks(activation, context);
+        for (const hook of hooks) {
+          this.schedule(hook);
+        }
+        activation.next();
+        this.schedule(activation);
+        return null;
+      }
+
       default: {
         throw unreachable(operation, `Unknown operation`);
       }
@@ -441,6 +457,15 @@ export class CrochetVM {
         break;
       }
 
+      case "define-context": {
+        const hooks = declaration.hooks.map((x) => {
+          return new Hook(module, new Environment(env), x.predicate, x.body);
+        });
+        const context = new Context(declaration.name, hooks);
+        this.define_context(context);
+        break;
+      }
+
       case "define-relation": {
         const components = declaration.components;
         if (components.length === 0) {
@@ -459,6 +484,13 @@ export class CrochetVM {
         unreachable(declaration, `Unknown declaration`);
       }
     }
+  }
+
+  define_context(context: Context) {
+    if (this.contexts.has(context.name)) {
+      throw new Error(`Duplicated context ${context.name}`);
+    }
+    this.contexts.set(context.name, context);
   }
 
   add_scene(scene: Scene) {
@@ -540,6 +572,33 @@ export class CrochetVM {
     } else {
       return relation;
     }
+  }
+
+  private get_context(activation: Activation, name: string) {
+    const context = this.contexts.get(name);
+    if (context == null) {
+      throw new Error(`Undefined context ${name}`);
+    } else {
+      return context;
+    }
+  }
+
+  private get_active_hooks(activation0: Activation, context: Context) {
+    return context.hooks.flatMap((hook) => {
+      const search_activation = new Activation(
+        activation0,
+        hook.env,
+        hook.body
+      );
+      const results = this.search(search_activation, hook.predicate);
+      return results.map((env) => {
+        const new_env = new Environment(hook.env);
+        for (const [k, v] of env.bound_values) {
+          new_env.define(k, v);
+        }
+        return new Activation(activation0, new_env, hook.body);
+      });
+    });
   }
 
   // Actions and turns

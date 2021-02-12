@@ -9,12 +9,19 @@ Crochet {
     | ActorDeclaration
     | RelationDeclaration
     | ActionDeclaration
+    | ContextDeclaration
     
   DoDeclaration =
     | do_ StatementBlock
 
   SceneDeclaration =
     | scene_ Atom StatementBlock
+
+  ContextDeclaration =
+    | context_ Atom "{" HookDeclaration+ "}"
+
+  HookDeclaration =
+    | when_ Predicate StatementBlock
 
   ActorDeclaration =
     | actor_ ActorName "::" NonemptyListOf<Atom, ","> ";"   -- roles
@@ -76,10 +83,14 @@ Crochet {
     | FactStatement
     | ForgetStatement
     | ChooseAction
+    | TriggerStatement
     | Expression ";"   -- expr
 
   ChooseAction =
     | choose_ action_ ";"
+
+  TriggerStatement =
+    | trigger_ Atom ";"
 
   ReturnStatement =
     | return_ Expression ";"  -- with_value
@@ -223,10 +234,12 @@ Crochet {
   and_ = kw<"and">
   or_ = kw<"or">
   not_ = kw<"not">
+  context_ = kw<"context">
+  trigger_ = kw<"trigger">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
     | actor_ | relation_ | fact_ | search_ | forget_ | action_
-    | when_ | choose_ | if_ | and_ | or_ | not_
+    | when_ | choose_ | if_ | and_ | or_ | not_ | context_ | trigger_
 }

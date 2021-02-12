@@ -19,3 +19,16 @@ export class Action {
     readonly body: Operation[]
   ) {}
 }
+
+export class Hook {
+  constructor(
+    readonly module: Module,
+    readonly env: Environment,
+    readonly predicate: Predicate,
+    readonly body: Operation[]
+  ) {}
+}
+
+export class Context {
+  constructor(readonly name: string, readonly hooks: Hook[]) {}
+}
