@@ -1,0 +1,7 @@
+% crochet
+
+command say: Phrase = say(Phrase);
+
+do {
+  say: "Hello, world!";
+}

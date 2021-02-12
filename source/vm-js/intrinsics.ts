@@ -83,12 +83,16 @@ export class CrochetNothing extends CrochetValue {
 export class CrochetActor extends CrochetValue {
   readonly type = "Actor";
 
-  constructor(readonly name: string) {
+  constructor(readonly name: string, readonly roles: Set<string>) {
     super();
   }
 
   equals(x: CrochetValue): boolean {
     return x === this;
+  }
+
+  has_role(x: string): boolean {
+    return this.roles.has(x);
   }
 
   to_js() {
