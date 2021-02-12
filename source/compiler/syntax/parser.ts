@@ -37,6 +37,7 @@ import {
   DContext,
   Hook,
   STrigger,
+  EIf,
 } from "./ast";
 import * as IR from "../../ir/operations";
 
@@ -436,6 +437,17 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   PrimaryExpression_group(_l: x, expr: Node, _r: x) {
     return expr.toAST();
+  },
+
+  IfExpression(
+    _if: x,
+    test: Node,
+    _then: x,
+    consequent: Node,
+    _else: x,
+    alternate: Node
+  ) {
+    return new EIf(test.toAST(), consequent.toAST(), alternate.toAST());
   },
 
   Text(node: Node) {

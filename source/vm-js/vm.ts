@@ -23,6 +23,7 @@ import {
   CrochetActor,
   CrochetValue,
   nothing,
+  CrochetBlock,
 } from "./intrinsics";
 import { Database, RelationType } from "./logic";
 import * as Logic from "./logic";
@@ -130,6 +131,33 @@ export class CrochetVM {
     }
   }
 
+  assert_block(
+    activation: Activation,
+    value: CrochetValue
+  ): asserts value is CrochetBlock {
+    if (!(value instanceof CrochetBlock)) {
+      throw new Error(`Expected a Block, got ${value.type}`);
+    }
+  }
+
+  make_block_activation(
+    activation: Activation,
+    block: CrochetBlock,
+    args: CrochetValue[]
+  ) {
+    if (args.length !== block.parameters.length) {
+      throw new Error(
+        `Invalid arity. Expected ${block.parameters.length}, got ${args.length}`
+      );
+    }
+    const new_env = new Environment(block.env);
+    for (let i = 0; i < block.parameters.length; ++i) {
+      new_env.define(block.parameters[i], args[i]);
+    }
+    const new_activation = new Activation(activation, new_env, block.body);
+    return new_activation;
+  }
+
   //== Tracing and debugging
   trace(value: boolean) {
     this.tracing = value;
@@ -173,6 +201,34 @@ export class CrochetVM {
     const operation = activation.current;
     this.trace_operation(activation, operation);
     switch (operation.tag) {
+      case "block": {
+        const value = new CrochetBlock(
+          activation.env,
+          operation.parameters,
+          operation.body
+        );
+        activation.push(value);
+        activation.next();
+        return activation;
+      }
+
+      case "branch": {
+        const ifFalse = activation.pop();
+        const ifTrue = activation.pop();
+        const test = activation.pop();
+        this.assert_boolean(activation, test);
+        this.assert_block(activation, ifFalse);
+        this.assert_block(activation, ifTrue);
+        const block = test.value ? ifTrue : ifFalse;
+        const new_activation = this.make_block_activation(
+          activation,
+          block,
+          []
+        );
+        activation.next();
+        return new_activation;
+      }
+
       case "choose-action": {
         const chosen = this.pick_action(activation);
         if (chosen != null) {
