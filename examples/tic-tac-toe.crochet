@@ -1,8 +1,5 @@
 % crochet
 
-command say: X = say(X);
-
-
 // A small game about two girls playing tic-tac-toe against each other.
 actor #erin :: player, mark;
 actor #saga :: player, mark;
@@ -151,6 +148,11 @@ scene draw {
 
 // Currently we need to write a sort of game-loop for Crochet.
 do {
+  "Tic-Tac-Toe" title show;
+  "A small turn-based game" text show;
+  divider show;
+  wait: 3;
+
   fact #erin turn;
   goto game;
 }
@@ -159,6 +161,7 @@ scene game {
   trigger action;
   trigger show-board;
   trigger check-winning-condition;
+  wait: 2;
   trigger next-turn;
   goto game;
 }
@@ -176,9 +179,10 @@ context show-board {
     #line3 x L3C2 x,
     #line3 x x L3C3
   {
-    say: "[L1C1 mark]|[L1C2 mark]|[L1C3 mark]";
-    say: "[L2C1 mark]|[L2C2 mark]|[L2C3 mark]";
-    say: "[L3C1 mark]|[L3C2 mark]|[L3C3 mark]";
+"[L1C1 mark]|[L1C2 mark]|[L1C3 mark]
+[L2C1 mark]|[L2C2 mark]|[L2C3 mark]
+[L3C1 mark]|[L3C2 mark]|[L3C3 mark]
+" monospaced-text show;
   } 
 }
 

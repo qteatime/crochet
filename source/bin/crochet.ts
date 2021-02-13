@@ -3,6 +3,7 @@ import * as Compiler from "../compiler";
 import * as Fs from "fs";
 import * as Path from "path";
 import { show } from "../utils/utils";
+import { Packager } from "../packager/api";
 
 const argv = Yargs.command(
   "compile <file>",
@@ -31,6 +32,15 @@ const argv = Yargs.command(
         });
     }
   )
+  .command(
+    "package <project>",
+    "Packages a project from a package description",
+    (Yargs) => {
+      Yargs.positional("project", {
+        description: "Path to the crochet.json file.",
+      });
+    }
+  )
   .demandCommand(1).argv;
 
 const [command] = argv._;
@@ -38,8 +48,7 @@ switch (command) {
   case "compile": {
     const file = argv.file as string;
     const output = argv.output as string | null;
-    const ast = Compiler.parse(file);
-    const ir = Compiler.compile(ast);
+    const ir = Compiler.compile_file(file);
     const text = JSON.stringify(ir, null, 2);
     if (output == null) {
       console.log(text);
@@ -64,6 +73,14 @@ switch (command) {
       console.log("-".repeat(72));
       console.log(show(ir));
     }
+    break;
+  }
+
+  case "package": {
+    const file = argv.project as string;
+    const json = JSON.parse(Fs.readFileSync(file, "utf8"));
+    const pkg = Packager.fromJson(json);
+    pkg.run(Path.dirname(file));
     break;
   }
 

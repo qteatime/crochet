@@ -17,3 +17,7 @@ export function compile(ast: Program) {
 export function serialise(module: Module) {
   return JSON.stringify(module.toJSON());
 }
+
+export function compile_file(filename: string) {
+  return compile(parse(filename));
+}
