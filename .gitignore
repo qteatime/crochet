@@ -4,3 +4,4 @@ build/
 www/
 !www/crochet.css
 !www/index.html
+examples/*/www
