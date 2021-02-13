@@ -25,6 +25,7 @@ import {
   nothing,
   CrochetBlock,
   CrochetNothing,
+  CrochetBox,
 } from "./intrinsics";
 import { Database, RelationType } from "./logic";
 import * as Logic from "./logic";
@@ -877,6 +878,12 @@ export class CrochetVMInterface {
     this.vm.assert_block(this.activation, x);
   }
 
+  assert_box(x: CrochetValue): asserts x is CrochetBox {
+    if (!(x instanceof CrochetBox)) {
+      throw new Error(`Expected a Box, got ${x.type}`);
+    }
+  }
+
   // Constructors
   get nothing() {
     return nothing;
@@ -904,5 +911,9 @@ export class CrochetVMInterface {
 
   stream(x: CrochetValue[]) {
     return new CrochetStream(x);
+  }
+
+  box(x: any) {
+    return new CrochetBox(x);
   }
 }

@@ -270,4 +270,24 @@ export class CrochetBlock extends CrochetValue {
   }
 }
 
+export class CrochetBox extends CrochetValue {
+  readonly type = "Box";
+
+  constructor(readonly value: any) {
+    super();
+  }
+
+  equals(x: CrochetValue): boolean {
+    return this === x;
+  }
+
+  to_js() {
+    return this.value;
+  }
+
+  to_text() {
+    return `<box>`;
+  }
+}
+
 export const nothing = new CrochetNothing();

@@ -195,7 +195,8 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
   },
 
   actionDeclaration(_action: x, name: Node, _when: x, pred: Node, block: Node) {
-    return new DAction(name.toAST(), pred.toAST(), block.toAST());
+    const text: EText = name.toAST();
+    return new DAction(text.value, pred.toAST(), block.toAST());
   },
 
   predicate_constrained(relations0: Node, _if: x, constraint: Node) {

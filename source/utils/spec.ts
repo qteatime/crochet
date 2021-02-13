@@ -154,7 +154,7 @@ export function spec<A extends Record<string, AnySpec<any>>, B>(
       const entries = collect(
         Object.entries(type).map(([k, f]: [string, any]) => {
           if (k in value) {
-            return f(value[k]).chain((v: any) => new Ok([k, v]));
+            return toSpec(f)(value[k]).chain((v: any) => new Ok([k, v]));
           } else {
             return new Err(new ENoKey(k));
           }
