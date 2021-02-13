@@ -1,3 +1,6 @@
 node_modules/
 build/
 .vscode/
+www/
+!www/crochet.css
+!www/index.html

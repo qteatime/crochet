@@ -1,7 +1,7 @@
 import { Operation } from "../ir/operations";
 import { Activation, Environment } from "./environment";
 import { CrochetValue } from "./intrinsics";
-import { CrochetVM } from "./vm";
+import { CrochetVM, CrochetVMInterface } from "./vm";
 
 export interface ICrochetProcedure {
   invoke(
@@ -39,10 +39,9 @@ export class CrochetForeignProcedure implements ICrochetProcedure {
     readonly parameters: string[],
     readonly args: number[],
     readonly code: (
-      vm: CrochetVM,
-      activation: Activation,
+      vm: CrochetVMInterface,
       ...args: CrochetValue[]
-    ) => Promise<CrochetValue>
+    ) => Promise<CrochetValue> | CrochetValue
   ) {}
 
   get arity() {
@@ -52,7 +51,8 @@ export class CrochetForeignProcedure implements ICrochetProcedure {
   async invoke(vm: CrochetVM, activation: Activation, args: CrochetValue[]) {
     const code = this.code;
     const actual_args = this.args.map((x) => args[x]);
-    const result = await code(vm, activation, ...actual_args);
+    const vmi = new CrochetVMInterface(vm, activation);
+    const result = await code(vmi, ...actual_args);
     activation.push(result);
     return activation;
   }

@@ -19,6 +19,10 @@ export class CrochetText extends CrochetValue {
     return x instanceof CrochetText && x.value === this.value;
   }
 
+  concat(x: CrochetText) {
+    return new CrochetText(this.value + x.value);
+  }
+
   to_js() {
     return this.value;
   }
@@ -37,6 +41,34 @@ export class CrochetInteger extends CrochetValue {
 
   equals(x: CrochetValue): boolean {
     return x instanceof CrochetInteger && x.value === this.value;
+  }
+
+  less_than(x: CrochetInteger) {
+    return new CrochetBoolean(this.value < x.value);
+  }
+
+  greater_than(x: CrochetInteger) {
+    return new CrochetBoolean(this.value > x.value);
+  }
+
+  add(x: CrochetInteger) {
+    return new CrochetInteger(this.value + x.value);
+  }
+
+  subtract(x: CrochetInteger) {
+    return new CrochetInteger(this.value - x.value);
+  }
+
+  multiply(x: CrochetInteger) {
+    return new CrochetInteger(this.value * x.value);
+  }
+
+  divide(x: CrochetInteger) {
+    return new CrochetInteger(this.value / x.value);
+  }
+
+  remainder(x: CrochetInteger) {
+    return new CrochetInteger(this.value % x.value);
   }
 
   to_js() {
@@ -77,6 +109,18 @@ export class CrochetBoolean extends CrochetValue {
 
   equals(x: CrochetValue): boolean {
     return x instanceof CrochetBoolean && x.value === this.value;
+  }
+
+  and(x: CrochetBoolean) {
+    return new CrochetBoolean(this.value && x.value);
+  }
+
+  or(x: CrochetBoolean) {
+    return new CrochetBoolean(this.value || x.value);
+  }
+
+  not() {
+    return new CrochetBoolean(!this.value);
   }
 
   to_js() {

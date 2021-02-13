@@ -15,7 +15,6 @@ relation Actor* at Room;
 relation Actor* wears Clothing*;
 
 command say: X = say(X);
-command X + Y = concat(X, Y);
 command X first = first(X);
 command X at: K = at(X, K);
 

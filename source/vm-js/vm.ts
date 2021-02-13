@@ -24,6 +24,7 @@ import {
   CrochetValue,
   nothing,
   CrochetBlock,
+  CrochetNothing,
 } from "./intrinsics";
 import { Database, RelationType } from "./logic";
 import * as Logic from "./logic";
@@ -31,7 +32,7 @@ import * as Logic from "./logic";
 class Halt {}
 
 export class CrochetVM {
-  private root_env = new Environment(null);
+  readonly root_env = new Environment(null);
   private queue: Activation[] = [];
   private scenes = new Map<string, Scene>();
   private contexts = new Map<string, Context>();
@@ -835,5 +836,73 @@ export class CrochetVM {
       default:
         throw unreachable(constraint, "Unknown constraint");
     }
+  }
+}
+
+export class CrochetVMInterface {
+  constructor(private vm: CrochetVM, private activation: Activation) {}
+
+  // Assertions
+  assert_text(x: CrochetValue): asserts x is CrochetText {
+    this.vm.assert_text(this.activation, x);
+  }
+
+  assert_integer(x: CrochetValue): asserts x is CrochetInteger {
+    this.vm.assert_integer(this.activation, x);
+  }
+
+  assert_boolean(x: CrochetValue): asserts x is CrochetBoolean {
+    this.vm.assert_boolean(this.activation, x);
+  }
+
+  assert_nothing(x: CrochetValue): asserts x is CrochetNothing {
+    if (!(x instanceof CrochetNothing)) {
+      throw new Error(`Expected Nothing, got ${x.type}`);
+    }
+  }
+
+  assert_actor(x: CrochetValue): asserts x is CrochetActor {
+    this.vm.assert_actor(this.activation, x);
+  }
+
+  assert_record(x: CrochetValue): asserts x is CrochetRecord {
+    this.vm.assert_record(this.activation, x);
+  }
+
+  assert_stream(x: CrochetValue): asserts x is CrochetStream {
+    this.vm.assert_stream(this.activation, x);
+  }
+
+  assert_block(x: CrochetValue): asserts x is CrochetBlock {
+    this.vm.assert_block(this.activation, x);
+  }
+
+  // Constructors
+  get nothing() {
+    return nothing;
+  }
+
+  text(x: string) {
+    return new CrochetText(x);
+  }
+
+  integer(x: bigint) {
+    return new CrochetInteger(x);
+  }
+
+  float(x: number) {
+    return new CrochetFloat(x);
+  }
+
+  boolean(x: boolean) {
+    return new CrochetBoolean(x);
+  }
+
+  record(x: Map<string, CrochetValue>) {
+    return new CrochetRecord(x);
+  }
+
+  stream(x: CrochetValue[]) {
+    return new CrochetStream(x);
   }
 }
