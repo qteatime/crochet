@@ -16,3 +16,7 @@ export function pick<A>(xs: A[]): A | null {
     return xs[Math.floor(Math.random() * xs.length)];
   }
 }
+
+export function delay(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+}

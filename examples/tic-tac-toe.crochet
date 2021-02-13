@@ -1,7 +1,6 @@
 % crochet
 
 command say: X = say(X);
-command X === Y = equals(X, Y);
 
 
 // A small game about two girls playing tic-tac-toe against each other.

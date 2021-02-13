@@ -9,7 +9,8 @@ import {
   nothing,
 } from "./vm-js/intrinsics";
 import { ForeignInterface } from "./vm-js/primitives";
-import { CrochetVM } from "./vm-js/vm";
+import { CrochetVM, CrochetVMInterface } from "./vm-js/vm";
+import { add_prelude } from "./stdlib";
 
 const argv = Yargs.option("show-ast", {
   type: "boolean",
@@ -44,63 +45,41 @@ if (argv["show-ir"]) {
 
 const ffi = new ForeignInterface();
 const vm = new CrochetVM(ffi);
+add_prelude(vm, ffi);
 
-ffi.add("concat", 2, async (vm: CrochetVM, activation, x, y) => {
-  vm.assert_text(activation, x);
-  vm.assert_text(activation, y);
-  return new CrochetText(x.value + y.value);
-});
-
-ffi.add("show", 1, async (vm: CrochetVM, activation, value) => {
+ffi.add("show", 1, (vm, value) => {
   console.log(show(value.to_js()));
   return nothing;
 });
 
-ffi.add("show-db", 0, async (vm: CrochetVM, activation) => {
-  console.log(show(vm.database));
-  return nothing;
-});
-
-ffi.add("to-text", 1, async (vm: CrochetVM, activation, value) => {
-  if (value instanceof CrochetInteger) {
-    return new CrochetText(value.value.toString());
-  } else {
-    throw new Error(`Invalid type: ${value.type}`);
-  }
-});
-
-ffi.add("say", 1, async (vm: CrochetVM, activation, phrase) => {
-  vm.assert_text(activation, phrase);
+ffi.add("say", 1, (vm: CrochetVMInterface, phrase) => {
+  vm.assert_text(phrase);
   console.log(">>", phrase.value);
   return nothing;
 });
 
-ffi.add("wait", 1, async (vm: CrochetVM, activation, time) => {
-  vm.assert_integer(activation, time);
+ffi.add("wait", 1, (vm: CrochetVMInterface, time) => {
+  vm.assert_integer(time);
   console.log(`[Wait ${time.value}]`);
   return nothing;
 });
 
-ffi.add("first", 1, async (vm: CrochetVM, activation, x) => {
-  vm.assert_stream(activation, x);
+ffi.add("first", 1, (vm: CrochetVMInterface, x) => {
+  vm.assert_stream(x);
   if (x.values.length === 0) {
     throw new Error(`Empty stream`);
   }
   return x.values[0];
 });
 
-ffi.add("at", 2, async (vm: CrochetVM, activation, x, k) => {
-  vm.assert_record(activation, x);
-  vm.assert_text(activation, k);
+ffi.add("at", 2, (vm: CrochetVMInterface, x, k) => {
+  vm.assert_record(x);
+  vm.assert_text(k);
   const value = x.values.get(k.value);
   if (value == null) {
     throw new Error(`Invalid key ${k.value}`);
   }
   return value;
-});
-
-ffi.add("equals", 2, async (_, __, x, y) => {
-  return new CrochetBoolean(x.equals(y));
 });
 
 console.log("-".repeat(72));

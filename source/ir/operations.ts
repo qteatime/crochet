@@ -25,7 +25,6 @@ export class Module extends IRNode {
   static get spec() {
     return spec(
       {
-        tag: equal("module"),
         filename: string,
         declarations: array(AbstractDeclaration),
       },
@@ -36,7 +35,7 @@ export class Module extends IRNode {
   }
 
   static fromJson(x: any) {
-    return parse(x, Module);
+    return parse(x, Module) as Module;
   }
 }
 
