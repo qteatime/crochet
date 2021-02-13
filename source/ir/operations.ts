@@ -1,16 +1,61 @@
 import * as Logic from "../vm-js/logic";
+import {
+  array,
+  equal,
+  spec,
+  string,
+  anyOf,
+  parse,
+  boolean,
+  number,
+  bigint_string,
+} from "../utils/spec";
 
-export abstract class IRNode {}
+export abstract class IRNode {
+  toJSON(): any {
+    return { ...this };
+  }
+}
 
 export class Module extends IRNode {
   constructor(readonly filename: string, readonly declarations: Declaration[]) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("module"),
+        filename: string,
+        declarations: array(AbstractDeclaration),
+      },
+      (x) => {
+        return new Module(x.filename, x.declarations);
+      }
+    );
+  }
+
+  static fromJson(x: any) {
+    return parse(x, Module);
   }
 }
 
 //== Declaration
 export abstract class AbstractDeclaration extends IRNode {
   abstract tag: string;
+
+  static get spec(): any {
+    return anyOf([
+      DefineCommand,
+      DefineForeignCommand,
+      DefineRelation,
+      DefineScene,
+      DefineActor,
+      DefineAction,
+      DefineContext,
+      Do,
+    ]);
+  }
 }
 
 export type Declaration =
@@ -29,6 +74,17 @@ export class DefineScene extends AbstractDeclaration {
   constructor(readonly name: string, readonly body: Operation[]) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("define-scene"),
+        name: string,
+        body: array(AbstractOperation),
+      },
+      (x) => new DefineScene(x.name, x.body)
+    );
+  }
 }
 
 export class DefineActor extends AbstractDeclaration {
@@ -36,6 +92,17 @@ export class DefineActor extends AbstractDeclaration {
 
   constructor(readonly name: string, readonly roles: string[]) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("define-actor"),
+        name: string,
+        roles: array(string),
+      },
+      (x) => new DefineActor(x.name, x.roles)
+    );
   }
 }
 
@@ -49,6 +116,18 @@ export class DefineAction extends AbstractDeclaration {
   ) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("define-action"),
+        title: string,
+        predicate: Predicate,
+        body: array(AbstractOperation),
+      },
+      (x) => new DefineAction(x.title, x.predicate, x.body)
+    );
+  }
 }
 
 export class DefineContext extends AbstractDeclaration {
@@ -57,10 +136,35 @@ export class DefineContext extends AbstractDeclaration {
   constructor(readonly name: string, readonly hooks: HookDefinition[]) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("define-context"),
+        name: string,
+        hooks: array(HookDefinition),
+      },
+      (x) => new DefineContext(x.name, x.hooks)
+    );
+  }
 }
 
 export class HookDefinition {
   constructor(readonly predicate: Predicate, readonly body: Operation[]) {}
+
+  static get spec() {
+    return spec(
+      {
+        predicate: Predicate,
+        body: array(AbstractOperation),
+      },
+      (x) => new HookDefinition(x.predicate, x.body)
+    );
+  }
+
+  toJSON(): any {
+    return { ...this };
+  }
 }
 
 export class Predicate {
@@ -68,10 +172,38 @@ export class Predicate {
     readonly relations: PredicateRelation[],
     readonly constraint: Constraint
   ) {}
+
+  static get spec() {
+    return spec(
+      {
+        relations: array(PredicateRelation),
+        constraint: AbstractConstraint,
+      },
+      (x) => new Predicate(x.relations, x.constraint)
+    );
+  }
+
+  toJSON(): any {
+    return { ...this };
+  }
 }
 
 export class PredicateRelation {
   constructor(readonly name: string, readonly patterns: Pattern[]) {}
+
+  static get spec() {
+    return spec(
+      {
+        name: string,
+        patterns: array(AbstractPattern),
+      },
+      (x) => new PredicateRelation(x.name, x.patterns)
+    );
+  }
+
+  toJSON(): any {
+    return { ...this };
+  }
 }
 
 export type Constraint =
@@ -87,12 +219,41 @@ export type Constraint =
 
 export abstract class AbstractConstraint {
   abstract tag: string;
+
+  static get spec(): any {
+    return anyOf([
+      CAnd,
+      COr,
+      CNot,
+      CEqual,
+      CNotEqual,
+      CVariable,
+      CActor,
+      CRole,
+      CBoolean,
+    ]);
+  }
+
+  toJSON(): any {
+    return { ...this };
+  }
 }
 
 export class CAnd extends AbstractConstraint {
   readonly tag = "and";
   constructor(readonly left: Constraint, readonly right: Constraint) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("and"),
+        left: AbstractConstraint,
+        right: AbstractConstraint,
+      },
+      (x) => new CAnd(x.left, x.right)
+    );
   }
 }
 
@@ -101,12 +262,33 @@ export class COr extends AbstractConstraint {
   constructor(readonly left: Constraint, readonly right: Constraint) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("or"),
+        left: AbstractConstraint,
+        right: AbstractConstraint,
+      },
+      (x) => new COr(x.left, x.right)
+    );
+  }
 }
 
 export class CNot extends AbstractConstraint {
   readonly tag = "not";
   constructor(readonly expr: Constraint) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("not"),
+        expr: AbstractConstraint,
+      },
+      (x) => new CNot(x.expr)
+    );
   }
 }
 
@@ -115,12 +297,34 @@ export class CEqual extends AbstractConstraint {
   constructor(readonly left: Constraint, readonly right: Constraint) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("equal"),
+        left: AbstractConstraint,
+        right: AbstractConstraint,
+      },
+      (x) => new CEqual(x.left, x.right)
+    );
+  }
 }
 
 export class CNotEqual extends AbstractConstraint {
   readonly tag = "not-equal";
   constructor(readonly left: Constraint, readonly right: Constraint) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("not-equal"),
+        left: AbstractConstraint,
+        right: AbstractConstraint,
+      },
+      (x) => new CNotEqual(x.left, x.right)
+    );
   }
 }
 
@@ -129,12 +333,32 @@ export class CVariable extends AbstractConstraint {
   constructor(readonly name: string) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("variable"),
+        name: string,
+      },
+      (x) => new CVariable(x.name)
+    );
+  }
 }
 
 export class CBoolean extends AbstractConstraint {
   readonly tag = "boolean";
   constructor(readonly value: boolean) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("boolean"),
+        value: boolean,
+      },
+      (x) => new CBoolean(x.value)
+    );
   }
 }
 
@@ -143,12 +367,33 @@ export class CActor extends AbstractConstraint {
   constructor(readonly name: string) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("actor"),
+        name: string,
+      },
+      (x) => new CActor(x.name)
+    );
+  }
 }
 
 export class CRole extends AbstractConstraint {
   readonly tag = "role";
   constructor(readonly expr: Constraint, readonly role: string) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("role"),
+        expr: AbstractConstraint,
+        role: string,
+      },
+      (x) => new CRole(x.expr, x.role)
+    );
   }
 }
 
@@ -158,11 +403,30 @@ export class DefineRelation extends AbstractDeclaration {
   constructor(readonly name: string, readonly components: RelationComponent[]) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("define-relation"),
+        name: string,
+        components: array(RelationComponent),
+      },
+      (x) => new DefineRelation(x.name, x.components)
+    );
+  }
 }
 
 export abstract class RelationComponent {
   abstract tag: string;
   abstract evaluate(): Logic.Component;
+
+  static get spec(): any {
+    return anyOf([OneRelation, ManyRelation]);
+  }
+
+  toJSON(): any {
+    return { ...this };
+  }
 }
 
 export class OneRelation extends RelationComponent {
@@ -174,6 +438,16 @@ export class OneRelation extends RelationComponent {
 
   evaluate() {
     return new Logic.Component(new Logic.One(), this.name);
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("one"),
+        name: string,
+      },
+      (x) => new OneRelation(x.name)
+    );
   }
 }
 
@@ -187,6 +461,16 @@ export class ManyRelation extends RelationComponent {
   evaluate() {
     return new Logic.Component(new Logic.Many(), this.name);
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("many"),
+        name: string,
+      },
+      (x) => new ManyRelation(x.name)
+    );
+  }
 }
 
 export class Do extends AbstractDeclaration {
@@ -194,6 +478,16 @@ export class Do extends AbstractDeclaration {
 
   constructor(readonly body: Operation[]) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("do"),
+        body: array(AbstractOperation),
+      },
+      (x) => new Do(x.body)
+    );
   }
 }
 
@@ -206,6 +500,18 @@ export class DefineCommand extends AbstractDeclaration {
     readonly body: Operation[]
   ) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("define-command"),
+        name: string,
+        parameters: array(string),
+        body: array(AbstractOperation),
+      },
+      (x) => new DefineCommand(x.name, x.parameters, x.body)
+    );
   }
 }
 
@@ -220,11 +526,52 @@ export class DefineForeignCommand extends AbstractDeclaration {
   ) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("define-foreign-command"),
+        name: string,
+        parameters: array(string),
+        foreign_name: string,
+        args: array(number),
+      },
+      (x) =>
+        new DefineForeignCommand(x.name, x.parameters, x.foreign_name, x.args)
+    );
+  }
 }
 
 //== Operation
 export abstract class AbstractOperation extends IRNode {
   abstract tag: string;
+
+  static get spec(): any {
+    return anyOf([
+      Drop,
+      PushInteger,
+      PushFloat,
+      PushText,
+      PushLocal,
+      PushBoolean,
+      PushNothing,
+      PushActor,
+      Interpolate,
+      TriggerContext,
+      TriggerAction,
+      InsertFact,
+      RemoveFact,
+      Search,
+      Let,
+      Invoke,
+      Return,
+      Branch,
+      Block,
+      Goto,
+      Yield,
+      Halt,
+    ]);
+  }
 }
 
 export type Operation =
@@ -261,6 +608,23 @@ export class PushInteger extends AbstractOperation {
   constructor(readonly value: bigint) {
     super();
   }
+
+  toJSON(): any {
+    return {
+      tag: this.tag,
+      value: this.value.toString(),
+    };
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("push-integer"),
+        value: bigint_string,
+      },
+      (x) => new PushInteger(x.value)
+    );
+  }
 }
 
 export class PushFloat extends AbstractOperation {
@@ -268,6 +632,16 @@ export class PushFloat extends AbstractOperation {
 
   constructor(readonly value: number) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("push-float"),
+        value: number,
+      },
+      (x) => new PushFloat(x.value)
+    );
   }
 }
 
@@ -277,6 +651,16 @@ export class PushText extends AbstractOperation {
   constructor(readonly value: string) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("push-text"),
+        value: string,
+      },
+      (x) => new PushText(x.value)
+    );
+  }
 }
 
 export class PushBoolean extends AbstractOperation {
@@ -285,10 +669,29 @@ export class PushBoolean extends AbstractOperation {
   constructor(readonly value: boolean) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("push-boolean"),
+        value: boolean,
+      },
+      (x) => new PushBoolean(x.value)
+    );
+  }
 }
 
 export class PushNothing extends AbstractOperation {
   readonly tag = "push-nothing";
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("push-nothing"),
+      },
+      (x) => new PushNothing()
+    );
+  }
 }
 
 export class PushLocal extends AbstractOperation {
@@ -296,6 +699,16 @@ export class PushLocal extends AbstractOperation {
 
   constructor(readonly name: string) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("push-local"),
+        name: string,
+      },
+      (x) => new PushLocal(x.name)
+    );
   }
 }
 
@@ -305,6 +718,16 @@ export class PushActor extends AbstractOperation {
   constructor(readonly name: string) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("push-actor"),
+        name: string,
+      },
+      (x) => new PushActor(x.name)
+    );
+  }
 }
 
 export class Invoke extends AbstractOperation {
@@ -313,18 +736,56 @@ export class Invoke extends AbstractOperation {
   constructor(readonly name: string, readonly arity: number) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("invoke"),
+        name: string,
+        arity: number,
+      },
+      (x) => new Invoke(x.name, x.arity)
+    );
+  }
 }
 
 export class Return extends AbstractOperation {
   readonly tag = "return";
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("return"),
+      },
+      (x) => new Return()
+    );
+  }
 }
 
 export class Drop extends AbstractOperation {
   readonly tag = "drop";
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("drop"),
+      },
+      (x) => new Drop()
+    );
+  }
 }
 
 export class Halt extends AbstractOperation {
   readonly tag = "halt";
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("halt"),
+      },
+      (x) => new Halt()
+    );
+  }
 }
 
 export class Goto extends AbstractOperation {
@@ -332,6 +793,16 @@ export class Goto extends AbstractOperation {
 
   constructor(readonly name: string) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("goto"),
+        name: string,
+      },
+      (x) => new Goto(x.name)
+    );
   }
 }
 
@@ -341,6 +812,16 @@ export class Let extends AbstractOperation {
   constructor(readonly name: string) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("let"),
+        name: string,
+      },
+      (x) => new Let(x.name)
+    );
+  }
 }
 
 export class InsertFact extends AbstractOperation {
@@ -348,6 +829,17 @@ export class InsertFact extends AbstractOperation {
 
   constructor(readonly name: string, readonly arity: number) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("insert-fact"),
+        name: string,
+        arity: number,
+      },
+      (x) => new InsertFact(x.name, x.arity)
+    );
   }
 }
 
@@ -357,18 +849,47 @@ export class RemoveFact extends AbstractOperation {
   constructor(readonly name: string, readonly arity: number) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("remove-fact"),
+        name: string,
+        arity: number,
+      },
+      (x) => new RemoveFact(x.name, x.arity)
+    );
+  }
 }
 
 export class TriggerAction extends AbstractOperation {
   readonly tag = "trigger-action";
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("trigger-action"),
+      },
+      (x) => new TriggerAction()
+    );
+  }
 }
 
-// Note: this will change a lot :')
 export class Search extends AbstractOperation {
   readonly tag = "search";
 
   constructor(readonly predicate: Predicate) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("search"),
+        predicate: Predicate,
+      },
+      (x) => new Search(x.predicate)
+    );
   }
 }
 
@@ -378,6 +899,16 @@ export class TriggerContext extends AbstractOperation {
   constructor(readonly name: string) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("trigger-context"),
+        name: string,
+      },
+      (x) => new TriggerContext(x.name)
+    );
+  }
 }
 
 export class Branch extends AbstractOperation {
@@ -385,6 +916,15 @@ export class Branch extends AbstractOperation {
 
   constructor() {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("branch"),
+      },
+      (x) => new Branch()
+    );
   }
 }
 
@@ -394,6 +934,17 @@ export class Block extends AbstractOperation {
   constructor(readonly parameters: string[], readonly body: Operation[]) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("block"),
+        parameters: array(string),
+        body: array(AbstractOperation),
+      },
+      (x) => new Block(x.parameters, x.body)
+    );
+  }
 }
 
 export class Interpolate extends AbstractOperation {
@@ -402,10 +953,29 @@ export class Interpolate extends AbstractOperation {
   constructor(readonly arity: number) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("interpolate"),
+        arity: number,
+      },
+      (x) => new Interpolate(x.arity)
+    );
+  }
 }
 
 export class Yield extends AbstractOperation {
   readonly tag = "yield";
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("yield"),
+      },
+      (x) => new Yield()
+    );
+  }
 }
 
 export type Pattern =
@@ -419,12 +989,38 @@ export type Pattern =
 
 export abstract class AbstractPattern {
   abstract tag: string;
+
+  static get spec(): any {
+    return anyOf([
+      IntegerPattern,
+      FloatPattern,
+      BooleanPattern,
+      TextPattern,
+      NothingPattern,
+      VariablePattern,
+      ActorPattern,
+    ]);
+  }
+
+  toJSON(): any {
+    return { ...this };
+  }
 }
 
 export class IntegerPattern extends AbstractPattern {
   readonly tag = "integer-pattern";
   constructor(readonly value: bigint) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("integer-pattern"),
+        value: bigint_string,
+      },
+      (x) => new IntegerPattern(x.value)
+    );
   }
 }
 
@@ -433,12 +1029,32 @@ export class FloatPattern extends AbstractPattern {
   constructor(readonly value: number) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("float-pattern"),
+        value: number,
+      },
+      (x) => new FloatPattern(x.value)
+    );
+  }
 }
 
 export class BooleanPattern extends AbstractPattern {
   readonly tag = "boolean-pattern";
   constructor(readonly value: boolean) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("boolean-pattern"),
+        value: boolean,
+      },
+      (x) => new BooleanPattern(x.value)
+    );
   }
 }
 
@@ -447,16 +1063,45 @@ export class TextPattern extends AbstractPattern {
   constructor(readonly value: string) {
     super();
   }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("text-pattern"),
+        value: string,
+      },
+      (x) => new TextPattern(x.value)
+    );
+  }
 }
 
 export class NothingPattern extends AbstractPattern {
   readonly tag = "nothing-pattern";
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("nothing-pattern"),
+      },
+      (x) => new NothingPattern()
+    );
+  }
 }
 
 export class ActorPattern extends AbstractPattern {
   readonly tag = "actor-pattern";
   constructor(readonly actor_name: string) {
     super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("actor-pattern"),
+        actor_name: string,
+      },
+      (x) => new ActorPattern(x.actor_name)
+    );
   }
 }
 
@@ -465,6 +1110,14 @@ export class VariablePattern extends AbstractPattern {
   constructor(readonly name: string) {
     super();
   }
-}
 
-// Search name [pattern...]
+  static get spec() {
+    return spec(
+      {
+        tag: equal("variable-pattern"),
+        name: string,
+      },
+      (x) => new VariablePattern(x.name)
+    );
+  }
+}
