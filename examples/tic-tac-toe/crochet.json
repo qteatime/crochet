@@ -1,0 +1,6 @@
+{
+  "package": "web",
+  "title": "Tic-Tac-Toe",
+  "source": "tic-tac-toe.crochet",
+  "output_directory": "www"
+}
