@@ -65,17 +65,21 @@ export class PkgApi {
     Fs.copyFileSync(this.from_path(filename), this.to_path(filename));
   }
 
-  template(filename: string, env: { [key: string]: string }) {
+  copy_template(filename: string, env: { [key: string]: string }) {
     this.ensure_directory(filename);
     console.log(`Copying ${filename}`);
     const source = Fs.readFileSync(
       this.from_path(filename + ".template"),
       "utf8"
     );
-    const target = source.replace(/{{([a-z_]+)}}/g, (_, key) => {
+    const target = this.template(source, env);
+    Fs.writeFileSync(this.to_path(filename), target);
+  }
+
+  template(text: string, env: { [key: string]: string }) {
+    return text.replace(/{{([a-z_]+)}}/g, (_, key) => {
       return env[key] || `(missing ${key})`;
     });
-    Fs.writeFileSync(this.to_path(filename), target);
   }
 }
 

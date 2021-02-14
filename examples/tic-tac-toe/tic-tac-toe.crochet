@@ -1,5 +1,7 @@
 % crochet
 
+command choose-player = choose-player();
+
 // A small game about two girls playing tic-tac-toe against each other.
 actor #erin :: player, mark;
 actor #saga :: player, mark;
@@ -41,17 +43,24 @@ do {
 // is one, as only one actor can act at a time.
 relation Player turn;
 
+relation No turns;
+do {
+  fact 0 turns;
+}
+
 // Crochet does not currently have any simple ordered structure, so we
 // make do with explicitly moving turns forward.
 context next-turn {
-  when #erin turn
-  {
+  when #erin turn {
     fact #saga turn;
   }
 
-  when #saga turn
-  {
+  when #saga turn {
     fact #erin turn;
+  }
+
+  when No turns {
+    fact (No + 1) turns;
   }
 }
 
@@ -151,7 +160,9 @@ do {
   "Tic-Tac-Toe" title show;
   "A small turn-based game" text show;
   divider show;
-  wait: 3;
+
+  say: "Pick a character to play as:";
+  choose-player;
 
   fact #erin turn;
   goto game;
@@ -197,3 +208,14 @@ command X mark {
     else
       "?";
 }
+
+// As a little extra, we can have Saga say random things every now and then.
+// action "Random thoughts"
+// when
+//   #saga turn,
+//   No turns
+//   if No turns > 2
+// {
+//   trigger saga-wisdom;
+//   trigger action;
+// }

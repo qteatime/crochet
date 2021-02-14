@@ -75,3 +75,36 @@ body {
   width: 100%;
   height: 100%;
 }
+
+.crochet-menu {
+  display: flex;
+  margin: 2em 1em 2em 2em;
+  flex-direction: column;
+  justify-content: flex-end;
+  animation: 200ms ease-out show;
+}
+
+.crochet-button {
+  width: 80%;
+  cursor: pointer;
+  padding: 0.3em 1em;
+  margin-bottom: 0.5em;
+  border-bottom: 1px solid #ddd;
+  transition: all 250ms ease-out;
+}
+
+.crochet-button:hover,
+.crochet-button[data-selected="true"] {
+  padding-left: 2em;
+  font-weight: bold;
+  background: #f3f3f3;
+}
+
+.crochet-menu[data-selected="true"]
+  > :not(.crochet-button[data-selected="true"]) {
+  height: 0px;
+  opacity: 0;
+  margin: 0;
+  padding: 0 1em;
+  overflow: hidden;
+}

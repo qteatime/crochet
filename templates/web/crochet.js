@@ -962,28 +962,57 @@ exports.VariablePattern = VariablePattern;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Display = void 0;
+const utils_1 = require("../utils/utils");
 const html_1 = require("./html");
 class Display {
     constructor(canvas) {
         this.canvas = canvas;
     }
-    append(x) {
+    async show(x) {
         this.canvas.appendChild(x);
         x.scrollIntoView();
     }
-    show_error(error) {
+    async show_error(error) {
         console.error(error);
         const element = html_1.h("div", { class: "crochet-error" }, error);
         this.canvas.appendChild(element);
     }
-    show_text(text) {
-        const element = html_1.h("div", { class: "crochet-text" }, text);
-        this.append(element);
+    text(text) {
+        return html_1.h("div", { class: "crochet-text" }, text);
+    }
+    monospaced_text(text) {
+        return html_1.h("div", { class: "crochet-mono" }, text);
+    }
+    title(text) {
+        return html_1.h("div", { class: "crochet-title" }, text);
+    }
+    divider() {
+        return html_1.h("div", { class: "crochet-divider" });
+    }
+    button(text, on_click) {
+        const element = html_1.h("div", { class: "crochet-button" }, text);
+        element.addEventListener("click", (_) => {
+            element.setAttribute("data-selected", "true");
+            on_click();
+        });
+        return element;
+    }
+    menu(options, on_selected) {
+        const element = html_1.h("div", { class: "crochet-menu" }, ...options.map((x) => this.button(x.title, () => {
+            element.setAttribute("data-selected", "true");
+            on_selected(x.value);
+        })));
+        return element;
+    }
+    async show_menu(options) {
+        const deferred = utils_1.defer();
+        this.show(this.menu(options, (selection) => deferred.resolve(selection)));
+        return deferred.promise;
     }
 }
 exports.Display = Display;
 
-},{"./html":5}],5:[function(require,module,exports){
+},{"../utils/utils":15,"./html":5}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.h = void 0;
@@ -1027,7 +1056,7 @@ const primitives_1 = require("../vm-js/primitives");
 const display_1 = require("./display");
 const primitives_2 = require("./primitives");
 const loader_1 = require("./loader");
-async function run(selector, programs) {
+async function run(selector, programs, extension) {
     const ffi = new primitives_1.ForeignInterface();
     const vm = new vm_1.CrochetVM(ffi);
     Stdlib.add_prelude(vm, ffi);
@@ -1043,6 +1072,9 @@ async function run(selector, programs) {
         const module = await loader_1.load_program(program);
         vm.load_module(module);
     }
+    if (extension != null) {
+        extension(vm, ffi, display);
+    }
     await vm.run().catch((error) => {
         console.error(error);
         display.show_error(error.message);
@@ -1055,7 +1087,6 @@ exports.run = run;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Primitives = exports.add_primitives = void 0;
 const utils_1 = require("../utils/utils");
-const html_1 = require("./html");
 function add_primitives(vm, ffi, primitives) {
     const root = vm.root_env;
     ffi.add("crochet.player:say", 1, primitives.say);
@@ -1079,7 +1110,7 @@ class Primitives {
         this.display = display;
         this.say = async (vm, text) => {
             vm.assert_text(text);
-            this.display.show_text(text.value);
+            this.display.show(this.display.text(text.value));
             return vm.nothing;
         };
         this.wait = async (vm, time) => {
@@ -1089,7 +1120,7 @@ class Primitives {
         };
         this.text = async (vm, text) => {
             vm.assert_text(text);
-            return vm.box(html_1.h("div", { class: "crochet-text" }, text.value));
+            return vm.box(this.display.text(text.value));
         };
         this.show = async (vm, value) => {
             vm.assert_box(value);
@@ -1097,25 +1128,25 @@ class Primitives {
             if (!(element instanceof Element)) {
                 throw new Error(`Expected an HTMLElement`);
             }
-            this.display.append(element);
+            this.display.show(element);
             return vm.nothing;
         };
         this.monospaced_text = async (vm, text) => {
             vm.assert_text(text);
-            return vm.box(html_1.h("div", { class: "crochet-mono" }, text.value));
+            return vm.box(this.display.monospaced_text(text.value));
         };
         this.title = async (vm, text) => {
             vm.assert_text(text);
-            return vm.box(html_1.h("h2", { class: "crochet-title" }, text.value));
+            return vm.box(this.display.title(text.value));
         };
         this.divider = async (vm) => {
-            return vm.box(html_1.h("hr", { class: "crochet-divider" }));
+            return vm.box(this.display.divider());
         };
     }
 }
 exports.Primitives = Primitives;
 
-},{"../utils/utils":15,"./html":5}],9:[function(require,module,exports){
+},{"../utils/utils":15}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.not = exports.or = exports.and = void 0;
@@ -1272,7 +1303,7 @@ exports.concat = concat;
 },{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parse = exports.spec = exports.anyOf = exports.equal = exports.array = exports.nothing = exports.boolean = exports.number = exports.bigint_string = exports.bigint = exports.string = exports.EAnyOf = exports.ENotEqual = exports.ENoKey = exports.EType = exports.Err = exports.Ok = void 0;
+exports.parse = exports.optional = exports.spec = exports.anyOf = exports.equal = exports.array = exports.nothing = exports.boolean = exports.number = exports.bigint_string = exports.bigint = exports.string = exports.EAnyOf = exports.ENotEqual = exports.ENoKey = exports.EType = exports.Err = exports.Ok = void 0;
 class Ok {
     constructor(value) {
         this.value = value;
@@ -1454,6 +1485,12 @@ function spec(type, parser) {
     };
 }
 exports.spec = spec;
+function optional(spec, default_value) {
+    return (value) => {
+        return toSpec(spec)(value).recover((_) => new Ok(default_value));
+    };
+}
+exports.optional = optional;
 function parse(x, spec) {
     const result = toSpec(spec)(x);
     if (result instanceof Ok) {
@@ -1469,7 +1506,7 @@ exports.parse = parse;
 },{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.delay = exports.pick = exports.show = exports.unreachable = void 0;
+exports.defer = exports.delay = exports.pick = exports.show = exports.unreachable = void 0;
 const Util = require("util");
 function unreachable(x, message) {
     console.error(message, x);
@@ -1493,6 +1530,15 @@ function delay(ms) {
     return new Promise((resolve) => setTimeout(() => resolve(), ms));
 }
 exports.delay = delay;
+function defer() {
+    const deferred = Object.create(null);
+    deferred.promise = new Promise((resolve, reject) => {
+        deferred.resolve = resolve;
+        deferred.reject = reject;
+    });
+    return deferred;
+}
+exports.defer = defer;
 
 },{"util":42}],16:[function(require,module,exports){
 "use strict";
@@ -2269,6 +2315,7 @@ exports.Context = Context;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrochetVMInterface = exports.CrochetVM = void 0;
+const IR = require("../ir/operations");
 const environment_1 = require("./environment");
 const procedure_1 = require("./procedure");
 const scene_1 = require("./scene");
@@ -2289,8 +2336,18 @@ class CrochetVM {
         this.running = false;
         this.tracing = false;
         this.database = new logic_1.Database();
+        this._pick = async (activation, options) => {
+            return utils_1.pick(options);
+        };
+    }
+    //== Hooks
+    on_pick(fn) {
+        this._pick = (activation, options) => fn(new CrochetVMInterface(this, activation), options);
     }
     //== Public operations
+    get global() {
+        return new CrochetVMInterface(this, new environment_1.Activation(null, this.root_env, [new IR.Halt()]));
+    }
     async run() {
         if (this.running) {
             throw new Error(`Trying to run the VM twice.`);
@@ -2549,7 +2606,7 @@ class CrochetVM {
                 return activation;
             }
             case "trigger-action": {
-                const chosen = this.pick_action(activation);
+                const chosen = await this.pick_action(activation);
                 if (chosen != null) {
                     const { action, bindings } = chosen;
                     const new_env = new environment_1.Environment(action.env);
@@ -2690,11 +2747,13 @@ class CrochetVM {
         this.scenes.set(scene.name, scene);
     }
     add_foreign_command(env, name, parameters, args, foreign_name) {
-        const fun = this.ffi.get(foreign_name);
-        if (fun.arity !== args.length) {
-            throw new Error(`Foreign function ${foreign_name} has arity ${fun.arity}, but was defined with ${args.length} arguments`);
-        }
-        const procedure = new procedure_1.CrochetForeignProcedure(name, parameters, args, fun.fn);
+        const procedure = new procedure_1.CrochetForeignProcedure(name, parameters, args, async (...realArgs) => {
+            const fun = this.ffi.get(foreign_name);
+            if (fun.arity !== args.length) {
+                throw new Error(`Foreign function ${foreign_name} has arity ${fun.arity}, but was defined with ${args.length} arguments`);
+            }
+            return fun.fn(...realArgs);
+        });
         if (!env.define_procedure(name, procedure)) {
             throw new Error(`Command ${name} is already defined`);
         }
@@ -2788,7 +2847,7 @@ class CrochetVM {
     // Actions and turns
     pick_action(activation) {
         const available = this.actions.flatMap((x) => this.actions_available(activation, x));
-        return utils_1.pick(available);
+        return this._pick(activation, available);
     }
     actions_available(activation, action) {
         const results = this.search(activation, action.predicate);
@@ -2933,10 +2992,26 @@ class CrochetVMInterface {
     box(x) {
         return new intrinsics_1.CrochetBox(x);
     }
+    // Accessors
+    get_actor(name) {
+        return this.vm.get_actor(this.activation, name);
+    }
+    // Operations
+    search(name, patterns) {
+        const relation = this.vm.get_relation(this.activation, name);
+        const env = new Logic.UnificationEnvironment();
+        return relation.search(patterns, env).map((x) => x.bound_values);
+    }
+    pvar(name) {
+        return new Logic.VariablePattern(name);
+    }
+    pval(value) {
+        return new Logic.ValuePattern(value);
+    }
 }
 exports.CrochetVMInterface = CrochetVMInterface;
 
-},{"../utils/utils":15,"./environment":16,"./intrinsics":17,"./logic":18,"./procedure":20,"./scene":21}],23:[function(require,module,exports){
+},{"../ir/operations":3,"../utils/utils":15,"./environment":16,"./intrinsics":17,"./logic":18,"./procedure":20,"./scene":21}],23:[function(require,module,exports){
 
 /**
  * Array#filter.

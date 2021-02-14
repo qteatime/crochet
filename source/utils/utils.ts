@@ -20,3 +20,18 @@ export function pick<A>(xs: A[]): A | null {
 export function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 }
+
+export type Deferred<T> = {
+  resolve: (value: T) => void;
+  reject: (reason: any) => void;
+  promise: Promise<T>;
+};
+
+export function defer<T>() {
+  const deferred: Deferred<T> = Object.create(null);
+  deferred.promise = new Promise((resolve, reject) => {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+  return deferred;
+}

@@ -1,4 +1,4 @@
-import { spec, equal, array, string } from "../utils/spec";
+import { spec, equal, array, string, optional } from "../utils/spec";
 import { IPackager, PkgApi } from "./api";
 import * as Compiler from "../compiler";
 import * as Path from "path";
@@ -7,7 +7,9 @@ export class WebPackage implements IPackager {
   constructor(
     readonly api: PkgApi,
     readonly title: string,
-    readonly source: string
+    readonly source: string,
+    readonly html: string | null,
+    readonly assets: string[]
   ) {}
 
   name = "Web";
@@ -20,10 +22,21 @@ export class WebPackage implements IPackager {
     pkg.write_file("game.json", json);
     pkg.copy("crochet.css");
     pkg.copy("crochet.js");
-    pkg.template("index.html", {
+
+    const env = {
       title: this.title,
       files: JSON.stringify(["game.json"]),
-    });
+    };
+    if (this.html == null) {
+      pkg.copy_template("index.html", env);
+    } else {
+      const data = pkg.template(pkg.read_project_file(this.html), env);
+      pkg.write_file("index.html", data);
+    }
+
+    for (const asset of this.assets) {
+      pkg.write_file(asset, pkg.read_project_file(asset));
+    }
   }
 
   static get template_dir() {
@@ -36,11 +49,13 @@ export class WebPackage implements IPackager {
         package: equal("web"),
         title: string,
         source: string,
-        output_directory: string,
+        output_directory: optional(string, "www"),
+        html: optional<string | null>(string, null),
+        assets: optional(array(string), []),
       },
       (x) => {
         const api = new PkgApi("", x.output_directory, WebPackage.template_dir);
-        return new WebPackage(api, x.title, x.source);
+        return new WebPackage(api, x.title, x.source, x.html, x.assets);
       }
     );
   }

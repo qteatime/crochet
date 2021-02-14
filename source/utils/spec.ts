@@ -173,6 +173,12 @@ export function spec<A extends Record<string, AnySpec<any>>, B>(
   };
 }
 
+export function optional<A>(spec: AnySpec<A>, default_value: A) {
+  return (value: any) => {
+    return toSpec(spec)(value).recover((_) => new Ok(default_value));
+  };
+}
+
 export function parse<A>(x: any, spec: AnySpec<A>): A {
   const result = toSpec(spec)(x);
   if (result instanceof Ok) {
