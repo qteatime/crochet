@@ -243,6 +243,10 @@ export class Predicate {
     readonly constraint: Constraint
   ) {}
 
+  variables() {
+    return this.relations.flatMap((x) => x.variables());
+  }
+
   static get spec() {
     return spec(
       {
@@ -260,6 +264,10 @@ export class Predicate {
 
 export class PredicateRelation {
   constructor(readonly name: string, readonly patterns: Pattern[]) {}
+
+  variables() {
+    return this.patterns.flatMap((x) => x.variables());
+  }
 
   static get spec() {
     return spec(
@@ -640,6 +648,8 @@ export abstract class AbstractOperation extends IRNode {
       Goto,
       Yield,
       Halt,
+      Project,
+      Match,
     ]);
   }
 }
@@ -662,7 +672,10 @@ export type Operation =
   | InsertFact
   | RemoveFact
   | Search
+  // Records and Streams
+  | Project
   // Environment & Control-flow
+  | Match
   | Let
   | Invoke
   | Return
@@ -1048,6 +1061,82 @@ export class Yield extends AbstractOperation {
   }
 }
 
+export class Project extends AbstractOperation {
+  readonly tag = "project";
+  constructor(readonly name: string) {
+    super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("project"),
+        name: string,
+      },
+      (x) => new Project(x.name)
+    );
+  }
+}
+
+export class Match extends AbstractOperation {
+  readonly tag = "match";
+  constructor(readonly clauses: MatchClause[]) {
+    super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("match"),
+        clauses: array(AbstractMatchClause),
+      },
+      (x) => new Match(x.clauses)
+    );
+  }
+}
+
+export type MatchClause = MatchPredicate | MatchDefault;
+
+export abstract class AbstractMatchClause {
+  abstract tag: string;
+  static get spec(): any {
+    return anyOf([MatchPredicate, MatchDefault]);
+  }
+}
+
+export class MatchPredicate extends AbstractMatchClause {
+  readonly tag = "predicate";
+  constructor(readonly predicate: Predicate) {
+    super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("predicate"),
+        predicate: Predicate,
+      },
+      (x) => new MatchPredicate(x.predicate)
+    );
+  }
+}
+
+export class MatchDefault extends AbstractMatchClause {
+  readonly tag = "default";
+  constructor() {
+    super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("default"),
+      },
+      (x) => new MatchDefault()
+    );
+  }
+}
+
 export type Pattern =
   | IntegerPattern
   | FloatPattern
@@ -1059,6 +1148,10 @@ export type Pattern =
 
 export abstract class AbstractPattern {
   abstract tag: string;
+
+  variables(): string[] {
+    return [];
+  }
 
   static get spec(): any {
     return anyOf([
@@ -1179,6 +1272,10 @@ export class VariablePattern extends AbstractPattern {
   readonly tag = "variable-pattern";
   constructor(readonly name: string) {
     super();
+  }
+
+  variables() {
+    return [this.name];
   }
 
   static get spec() {

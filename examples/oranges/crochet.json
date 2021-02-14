@@ -2,5 +2,7 @@
   "package": "web",
   "title": "It Tasted Like Oranges...",
   "source": "orange.crochet",
-  "output_directory": "www"
+  "output_directory": "www",
+  "html": "index.html.template",
+  "assets": ["ui.js"]
 }

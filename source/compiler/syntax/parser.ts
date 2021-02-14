@@ -41,6 +41,10 @@ import {
   InterpolateStatic,
   InterpolateDynamic,
   EInterpolateText,
+  EProject,
+  EMatch,
+  MatchPredicate,
+  MatchDefault,
 } from "./ast";
 import * as IR from "../../ir/operations";
 
@@ -381,6 +385,11 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EInvoke(new UseSignature("_ " + name.toAST(), [self.toAST()]));
   },
 
+  memberExpression_project(self: Node, _dot: x, name0: Node) {
+    const name: EText = name0.toAST();
+    return new EProject(self.toAST(), name.value);
+  },
+
   searchExpression_search(_search: x, predicate: Node) {
     return new ESearch(predicate.toAST());
   },
@@ -440,6 +449,18 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
 
   primaryExpression_group(_l: x, expr: Node, _r: x) {
     return expr.toAST();
+  },
+
+  matchExpression(_match: x, _l: x, clauses: Node, _r: x) {
+    return new EMatch(clauses.toAST());
+  },
+
+  matchClause_when(_when: x, pred: Node, body: Node) {
+    return new MatchPredicate(pred.toAST(), body.toAST());
+  },
+
+  matchClause_default(_default: x, body: Node) {
+    return new MatchDefault(body.toAST());
   },
 
   ifExpression(

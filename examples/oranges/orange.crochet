@@ -1,5 +1,99 @@
 % crochet
 
-do {
-  say: "Hello, world!";
+actor #lin;
+actor #awra;
+actor #player;
+
+relation Who turn;
+relation Who player;
+relation Who* pronouns are Personal Possessive;
+relation Who* name is Name NamePossessive;
+relation Who* verb Infinitive Conjugated;
+
+command choose-player = choose-player();
+command Actor as-player = get-player(Actor);
+
+command Who she {
+  let Actor = Who as-player;
+  return ((search X pronouns are Pronoun _ if Actor === X) first)."Pronoun";
 }
+
+command Who her {
+  let Actor = Who as-player;
+  return ((search X pronouns are _ Pronoun if Actor === X) first)."Pronoun";
+}
+
+command Who name-is {
+  let Actor = Who as-player;
+  return ((search X name is _ Name if Actor === X) first)."Name";
+}
+
+command Who name {
+  let Actor = Who as-player;
+  return ((search X name is Name _ if Actor === X) first)."Name";
+}
+
+command Verb conjugate: Who {
+  return
+    match {
+      when X player, #player verb Inf Form if Inf === Verb and X === Who {
+        return Form;
+      }
+      else {
+        return Verb;
+      }
+    };
+}
+
+do {
+  fact #awra name is "Awra" "Awra's";
+  fact #awra pronouns are "she" "her";
+
+  fact #lin name is "Lin" "Lin's";
+  fact #lin pronouns are "she" "her";
+
+  fact #player name is "you" "your";
+  fact #player pronouns are "you" "your";
+
+  fact #player verb "was" "were";
+
+  "It Tasted Like Oranges..." title show;
+  "A short experiment in generative narratives." text show;
+
+  say: "Choose your point of view:";
+  let Player = choose-player;
+  fact Player turn;
+  fact Player player;
+
+  divider show;
+
+  goto prologue;
+}
+
+scene prologue {
+  say:
+    "There were a few things that clearly marked the end of the
+    long winter season in Ewyg. The noticeably longer days.
+    The warming weather. But for those who spent most of their
+    time indoors at the Church, these weren't exactly the first
+    things that would come to mind.";
+
+  say:
+    "When [#awra name] woke [#lin name] up that morning [#awra she] seemed more
+    enthusiastic than usual. With a wide smile on [#awra her] face [#awra she]
+    had pulled [#lin name-is] blankets while shouting [#lin her] name.
+    \"Lin!\"";
+
+  say:
+    "Still half asleep, [#lin name] tried turning the other way and continue
+    [#lin her] forays into dream-land.";
+
+  say:
+    "In vain, of course. February mornings were much too chilly in the Church
+    dormitory to dare sleep without a blanket.";
+
+  say:
+    "[#lin name title-case] ["was" conjugate: #lin] awake now.
+    And grumpy, yes. But that part was not unusual.";
+}
+

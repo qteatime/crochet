@@ -459,6 +459,74 @@ export class EIf extends Expression {
   }
 }
 
+export class EProject extends Expression {
+  constructor(readonly expr: Expression, readonly name: string) {
+    super();
+  }
+
+  *compile() {
+    yield* this.expr.compile();
+    yield new IR.Project(this.name);
+  }
+}
+
+export class EMatch extends Expression {
+  constructor(readonly clauses: MatchClause[]) {
+    super();
+  }
+
+  *compile() {
+    for (const clause of this.clauses) {
+      yield* clause.compile_body();
+    }
+    yield new IR.Match(this.clauses.map((x) => x.compile()));
+  }
+}
+
+export abstract class MatchClause {
+  abstract compile_body(): Generator<IR.Operation>;
+  abstract compile(): IR.MatchClause;
+}
+export class MatchPredicate extends MatchClause {
+  constructor(readonly predicate: IR.Predicate, readonly body: Statement[]) {
+    super();
+  }
+
+  *compile_body() {
+    yield new IR.Block(
+      this.predicate.variables(),
+      to_list(
+        this.body.map((x) => x.compile()),
+        [new IR.PushNothing(), new IR.Return()]
+      )
+    );
+  }
+
+  compile() {
+    return new IR.MatchPredicate(this.predicate);
+  }
+}
+
+export class MatchDefault extends MatchClause {
+  constructor(readonly body: Statement[]) {
+    super();
+  }
+
+  *compile_body() {
+    yield new IR.Block(
+      [],
+      to_list(
+        this.body.map((x) => x.compile()),
+        [new IR.PushNothing(), new IR.Return()]
+      )
+    );
+  }
+
+  compile() {
+    return new IR.MatchDefault();
+  }
+}
+
 //== Utilities
 function to_list(
   xss: Generator<IR.Operation>[],

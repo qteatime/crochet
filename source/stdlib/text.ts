@@ -10,3 +10,8 @@ export function concat(
   vm.assert_text(y);
   return x.concat(y);
 }
+
+export function title_case(vm: CrochetVMInterface, x: CrochetValue) {
+  vm.assert_text(x);
+  return new CrochetText(x.value.replace(/^[a-z]/, (m) => m.toUpperCase()));
+}
