@@ -27,7 +27,7 @@ export async function run(
     throw new Error(`No element ${selector}`);
   }
 
-  const display = new Display(canvas);
+  const display = new Display(canvas as HTMLElement);
 
   const primitives = new Primitives(display);
   add_primitives(vm, ffi, primitives);

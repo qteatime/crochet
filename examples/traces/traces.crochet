@@ -1,0 +1,123 @@
+% crochet
+
+command wait-click = wait-click();
+
+
+actor #dear;
+
+relation Person* pronouns She Her Hers;
+
+actor #prologue;
+actor #main;
+
+relation Chapter chapter;
+
+do {
+  goto prologue;
+}
+
+command she {
+  return
+    match {
+      when #dear pronouns P _ _ {
+        return P;
+      }
+    };
+}
+
+command her {
+  return
+    match {
+      when #dear pronouns _ P _ {
+        return P;
+      }
+    };
+}
+
+command hers {
+  return
+    match {
+      when #dear pronouns _ _ P {
+        return P;
+      }
+    };
+}
+
+scene prologue {
+  fact #prologue chapter;
+
+  "Traces" title show;
+
+  say:
+    "You had no memory of how all of this started. All you knew at that point
+    was that you were alive. And that, at some point, you had met someone very,
+    very dear to you.";
+
+  trigger action;
+
+  say:
+    "[she title-case] was very dear to you.";
+
+  wait-click;
+
+  say:
+    "Was.";
+
+  say:
+    "In the dimly lit cabin, your mind tried reminiscing the days
+    [she] was with you. In a far away place. A long, long time ago.";
+  
+  wait-click;
+
+  say:
+    "In vain.";
+
+  say:
+    "All you knew at that point was that you were alive. And that you
+    had met [her]. And that [she] was very dear to you.";
+
+  say:
+    "You didn't know why. Or how.";
+
+  wait-click;
+
+  say:
+    "There was a certain point in the day---you didn't keep track of the
+    hours anymore, time remained constant in the cabin. There was a certain
+    point in the day where you would get up from the sofa and go through
+    all of the things laying about.";
+
+  say:
+    "Maybe, this time, you could piece things together in a way that made sense.";
+}
+
+action "He was very kind..."
+when #prologue chapter {
+  say:
+    "Yes, he was a very kind person. Of that you were fairly certain.
+    Although no examples of what his kindness meant came to mind at
+    the moment.";
+
+  fact #dear pronouns "he" "him" "his";
+}
+
+action "Her smile was what kept me going..."
+when #prologue chapter {
+  say:
+    "You had this feeling that the reason you were still here today was
+    because of her. You weren't quite sure how, or why, but her sweet
+    smile wouldn't leave your mind.";
+  
+  fact #dear pronouns "she" "her" "hers";
+}
+
+action "They smelled like strawberries..."
+when #prologue chapter {
+  say:
+    "Strawberries! Yes, that's the scent that wouldn't leave your mind.
+    You weren't quite sure which cosmetics they used, but even now the
+    thought of that smell alone was enough to make you relax.";
+
+  fact #dear pronouns "they" "them" "their";
+}
+
