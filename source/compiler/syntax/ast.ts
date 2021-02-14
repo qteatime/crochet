@@ -115,6 +115,7 @@ export class DActor extends Declaration {
 export class DAction extends Declaration {
   constructor(
     readonly title: EInterpolateText,
+    readonly tags: string[],
     readonly predicate: IR.Predicate,
     readonly body: Statement[]
   ) {
@@ -124,6 +125,7 @@ export class DAction extends Declaration {
   *compile() {
     yield new IR.DefineAction(
       this.title.compile_simple(),
+      this.tags,
       this.predicate,
       to_list(
         this.body.map((x) => x.compile()),

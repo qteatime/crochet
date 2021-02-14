@@ -105,9 +105,10 @@ class DefineActor extends AbstractDeclaration {
 }
 exports.DefineActor = DefineActor;
 class DefineAction extends AbstractDeclaration {
-    constructor(title, predicate, body) {
+    constructor(title, tags, predicate, body) {
         super();
         this.title = title;
+        this.tags = tags;
         this.predicate = predicate;
         this.body = body;
         this.tag = "define-action";
@@ -116,9 +117,10 @@ class DefineAction extends AbstractDeclaration {
         return spec_1.spec({
             tag: spec_1.equal("define-action"),
             title: SimpleInterpolation,
+            tags: spec_1.array(spec_1.string),
             predicate: Predicate,
             body: spec_1.array(AbstractOperation),
-        }, (x) => new DefineAction(x.title, x.predicate, x.body));
+        }, (x) => new DefineAction(x.title, x.tags, x.predicate, x.body));
     }
 }
 exports.DefineAction = DefineAction;
@@ -1120,7 +1122,6 @@ class Display {
                 this.mark = children.item(children.length - 1);
             }
             deferred.resolve();
-            return false;
         }, { once: true });
         return deferred.promise;
     }
@@ -1153,7 +1154,6 @@ class Display {
             ev.preventDefault();
             element.setAttribute("data-selected", "true");
             on_click();
-            return false;
         }, { once: true });
         return element;
     }
@@ -2517,9 +2517,10 @@ class Scene {
 }
 exports.Scene = Scene;
 class Action {
-    constructor(module, title, env, predicate, body) {
+    constructor(module, title, tags, env, predicate, body) {
         this.module = module;
         this.title = title;
+        this.tags = tags;
         this.env = env;
         this.predicate = predicate;
         this.body = body;
@@ -2953,7 +2954,7 @@ class CrochetVM {
             }
             case "define-action": {
                 const action_env = new environment_1.Environment(env);
-                const action = new scene_1.Action(module, declaration.title, action_env, declaration.predicate, declaration.body);
+                const action = new scene_1.Action(module, declaration.title, new Set(declaration.tags), action_env, declaration.predicate, declaration.body);
                 this.actions.push(action);
                 break;
             }

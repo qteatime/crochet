@@ -576,6 +576,7 @@ export class CrochetVM {
         const action = new Action(
           module,
           declaration.title,
+          new Set(declaration.tags),
           action_env,
           declaration.predicate,
           declaration.body

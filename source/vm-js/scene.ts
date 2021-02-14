@@ -19,6 +19,7 @@ export class Action {
   constructor(
     readonly module: Module,
     readonly title: SimpleInterpolation,
+    readonly tags: Set<string>,
     readonly env: Environment,
     readonly predicate: Predicate,
     readonly body: Operation[]
