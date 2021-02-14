@@ -685,6 +685,35 @@ export class CrochetVM {
     });
   }
 
+  private simple_interpolate(
+    activation: Activation,
+    action: Action,
+    bindings: Map<string, CrochetValue>
+  ) {
+    return action.title.parts
+      .map((x) => {
+        switch (x.tag) {
+          case "static":
+            return x.text;
+          case "variable": {
+            const value = bindings.get(x.name);
+            if (value != null) {
+              return value.to_text();
+            } else {
+              throw new Error(
+                `Unbound variable ${
+                  x.name
+                } evaluating action ${action.title.static_text()}`
+              );
+            }
+          }
+          default:
+            throw unreachable(x, "Unknown interpolation part");
+        }
+      })
+      .join("");
+  }
+
   // Actions and turns
   private pick_action(activation: Activation) {
     const available = this.actions.flatMap((x) =>
@@ -695,7 +724,11 @@ export class CrochetVM {
 
   private actions_available(activation: Activation, action: Action) {
     const results = this.search(activation, action.predicate);
-    return results.map((x) => ({ action, bindings: x }));
+    return results.map((x) => ({
+      action,
+      bindings: x,
+      title: this.simple_interpolate(activation, action, x.bound_values),
+    }));
   }
 
   private search(activation: Activation, predicate: IR.Predicate) {

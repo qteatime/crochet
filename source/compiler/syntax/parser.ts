@@ -195,8 +195,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
   },
 
   actionDeclaration(_action: x, name: Node, _when: x, pred: Node, block: Node) {
-    const text: EText = name.toAST();
-    return new DAction(text.value, pred.toAST(), block.toAST());
+    return new DAction(name.toAST(), pred.toAST(), block.toAST());
   },
 
   predicate_constrained(relations0: Node, _if: x, constraint: Node) {
@@ -431,7 +430,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new EInvoke(new UseSignature(head.toAST(), []));
   },
 
-  primaryExpression_variable(name: Node) {
+  variable(name: Node) {
     return new EVariable(name.toAST());
   },
 
@@ -499,7 +498,7 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
   },
 
   interpolateText(_l: x, parts: Node, _r: x) {
-    return new EInterpolateText(parts.toAST());
+    return new EInterpolateText(this.sourceString as any, parts.toAST());
   },
 
   emptyListOf() {

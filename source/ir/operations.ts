@@ -109,7 +109,7 @@ export class DefineAction extends AbstractDeclaration {
   readonly tag = "define-action";
 
   constructor(
-    readonly title: string,
+    readonly title: SimpleInterpolation,
     readonly predicate: Predicate,
     readonly body: Operation[]
   ) {
@@ -120,11 +120,82 @@ export class DefineAction extends AbstractDeclaration {
     return spec(
       {
         tag: equal("define-action"),
-        title: string,
+        title: SimpleInterpolation,
         predicate: Predicate,
         body: array(AbstractOperation),
       },
       (x) => new DefineAction(x.title, x.predicate, x.body)
+    );
+  }
+}
+
+export class SimpleInterpolation {
+  constructor(readonly parts: SimpleInterpolationPart[]) {}
+
+  static_text() {
+    return this.parts.map((x) => x.static_text()).join("");
+  }
+
+  static get spec() {
+    return spec(
+      {
+        parts: array(AbstractSimpleInterpolationPart),
+      },
+      (x) => new SimpleInterpolation(x.parts)
+    );
+  }
+}
+
+export type SimpleInterpolationPart =
+  | SimpleInterpolationStatic
+  | SimpleInterpolationVariable;
+
+export abstract class AbstractSimpleInterpolationPart {
+  abstract tag: string;
+  abstract static_text(): string;
+  static get spec(): any {
+    return anyOf([SimpleInterpolationStatic, SimpleInterpolationVariable]);
+  }
+}
+
+export class SimpleInterpolationStatic extends AbstractSimpleInterpolationPart {
+  readonly tag = "static";
+  constructor(readonly text: string) {
+    super();
+  }
+
+  static_text() {
+    return this.text;
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("static"),
+        text: string,
+      },
+      (x) => new SimpleInterpolationStatic(x.text)
+    );
+  }
+}
+
+export class SimpleInterpolationVariable extends AbstractSimpleInterpolationPart {
+  readonly tag = "variable";
+  constructor(readonly name: string) {
+    super();
+  }
+
+  static_text() {
+    return "_";
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("variable"),
+        name: string,
+      },
+      (x) => new SimpleInterpolationVariable(x.name)
     );
   }
 }

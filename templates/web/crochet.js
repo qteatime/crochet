@@ -27,8 +27,8 @@ exports.fromJson = fromJson;
 },{"./operations":3}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Yield = exports.Interpolate = exports.Block = exports.Branch = exports.TriggerContext = exports.Search = exports.TriggerAction = exports.RemoveFact = exports.InsertFact = exports.Let = exports.Goto = exports.Halt = exports.Drop = exports.Return = exports.Invoke = exports.PushActor = exports.PushLocal = exports.PushNothing = exports.PushBoolean = exports.PushText = exports.PushFloat = exports.PushInteger = exports.AbstractOperation = exports.DefineForeignCommand = exports.DefineCommand = exports.Do = exports.ManyRelation = exports.OneRelation = exports.RelationComponent = exports.DefineRelation = exports.CRole = exports.CActor = exports.CBoolean = exports.CVariable = exports.CNotEqual = exports.CEqual = exports.CNot = exports.COr = exports.CAnd = exports.AbstractConstraint = exports.PredicateRelation = exports.Predicate = exports.HookDefinition = exports.DefineContext = exports.DefineAction = exports.DefineActor = exports.DefineScene = exports.AbstractDeclaration = exports.Module = exports.IRNode = void 0;
-exports.VariablePattern = exports.ActorPattern = exports.NothingPattern = exports.TextPattern = exports.BooleanPattern = exports.FloatPattern = exports.IntegerPattern = exports.AbstractPattern = void 0;
+exports.TriggerContext = exports.Search = exports.TriggerAction = exports.RemoveFact = exports.InsertFact = exports.Let = exports.Goto = exports.Halt = exports.Drop = exports.Return = exports.Invoke = exports.PushActor = exports.PushLocal = exports.PushNothing = exports.PushBoolean = exports.PushText = exports.PushFloat = exports.PushInteger = exports.AbstractOperation = exports.DefineForeignCommand = exports.DefineCommand = exports.Do = exports.ManyRelation = exports.OneRelation = exports.RelationComponent = exports.DefineRelation = exports.CRole = exports.CActor = exports.CBoolean = exports.CVariable = exports.CNotEqual = exports.CEqual = exports.CNot = exports.COr = exports.CAnd = exports.AbstractConstraint = exports.PredicateRelation = exports.Predicate = exports.HookDefinition = exports.DefineContext = exports.SimpleInterpolationVariable = exports.SimpleInterpolationStatic = exports.AbstractSimpleInterpolationPart = exports.SimpleInterpolation = exports.DefineAction = exports.DefineActor = exports.DefineScene = exports.AbstractDeclaration = exports.Module = exports.IRNode = void 0;
+exports.VariablePattern = exports.ActorPattern = exports.NothingPattern = exports.TextPattern = exports.BooleanPattern = exports.FloatPattern = exports.IntegerPattern = exports.AbstractPattern = exports.Yield = exports.Interpolate = exports.Block = exports.Branch = void 0;
 const Logic = require("../vm-js/logic");
 const spec_1 = require("../utils/spec");
 class IRNode {
@@ -115,13 +115,67 @@ class DefineAction extends AbstractDeclaration {
     static get spec() {
         return spec_1.spec({
             tag: spec_1.equal("define-action"),
-            title: spec_1.string,
+            title: SimpleInterpolation,
             predicate: Predicate,
             body: spec_1.array(AbstractOperation),
         }, (x) => new DefineAction(x.title, x.predicate, x.body));
     }
 }
 exports.DefineAction = DefineAction;
+class SimpleInterpolation {
+    constructor(parts) {
+        this.parts = parts;
+    }
+    static_text() {
+        return this.parts.map((x) => x.static_text()).join("");
+    }
+    static get spec() {
+        return spec_1.spec({
+            parts: spec_1.array(AbstractSimpleInterpolationPart),
+        }, (x) => new SimpleInterpolation(x.parts));
+    }
+}
+exports.SimpleInterpolation = SimpleInterpolation;
+class AbstractSimpleInterpolationPart {
+    static get spec() {
+        return spec_1.anyOf([SimpleInterpolationStatic, SimpleInterpolationVariable]);
+    }
+}
+exports.AbstractSimpleInterpolationPart = AbstractSimpleInterpolationPart;
+class SimpleInterpolationStatic extends AbstractSimpleInterpolationPart {
+    constructor(text) {
+        super();
+        this.text = text;
+        this.tag = "static";
+    }
+    static_text() {
+        return this.text;
+    }
+    static get spec() {
+        return spec_1.spec({
+            tag: spec_1.equal("static"),
+            text: spec_1.string,
+        }, (x) => new SimpleInterpolationStatic(x.text));
+    }
+}
+exports.SimpleInterpolationStatic = SimpleInterpolationStatic;
+class SimpleInterpolationVariable extends AbstractSimpleInterpolationPart {
+    constructor(name) {
+        super();
+        this.name = name;
+        this.tag = "variable";
+    }
+    static_text() {
+        return "_";
+    }
+    static get spec() {
+        return spec_1.spec({
+            tag: spec_1.equal("variable"),
+            name: spec_1.string,
+        }, (x) => new SimpleInterpolationVariable(x.name));
+    }
+}
+exports.SimpleInterpolationVariable = SimpleInterpolationVariable;
 class DefineContext extends AbstractDeclaration {
     constructor(name, hooks) {
         super();
@@ -2710,6 +2764,27 @@ class CrochetVM {
             });
         });
     }
+    simple_interpolate(activation, action, bindings) {
+        return action.title.parts
+            .map((x) => {
+            switch (x.tag) {
+                case "static":
+                    return x.text;
+                case "variable": {
+                    const value = bindings.get(x.name);
+                    if (value != null) {
+                        return value.to_text();
+                    }
+                    else {
+                        throw new Error(`Unbound variable ${x.name} evaluating action ${action.title.static_text()}`);
+                    }
+                }
+                default:
+                    throw utils_1.unreachable(x, "Unknown interpolation part");
+            }
+        })
+            .join("");
+    }
     // Actions and turns
     pick_action(activation) {
         const available = this.actions.flatMap((x) => this.actions_available(activation, x));
@@ -2717,7 +2792,11 @@ class CrochetVM {
     }
     actions_available(activation, action) {
         const results = this.search(activation, action.predicate);
-        return results.map((x) => ({ action, bindings: x }));
+        return results.map((x) => ({
+            action,
+            bindings: x,
+            title: this.simple_interpolate(activation, action, x.bound_values),
+        }));
     }
     search(activation, predicate) {
         return predicate.relations

@@ -1,4 +1,9 @@
-import { Module, Operation, Predicate } from "../ir/operations";
+import {
+  Module,
+  Operation,
+  Predicate,
+  SimpleInterpolation,
+} from "../ir/operations";
 import { Environment } from "./environment";
 
 export class Scene {
@@ -13,7 +18,7 @@ export class Scene {
 export class Action {
   constructor(
     readonly module: Module,
-    readonly title: string,
+    readonly title: SimpleInterpolation,
     readonly env: Environment,
     readonly predicate: Predicate,
     readonly body: Operation[]

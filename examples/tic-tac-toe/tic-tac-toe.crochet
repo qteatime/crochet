@@ -58,7 +58,7 @@ context next-turn {
 // Now at each turn the players can choose one of the empty marks and place
 // their own there. We'll not concern ourselves with having the players make
 // *good* moves, only choosing a possible one.
-action "Place mark at c1"
+action "Place mark at [Line] c1"
 when
   Player turn,
   Line #empty x x
@@ -67,7 +67,7 @@ when
   say: "[Player] marks [Line]'s first column";
 }
 
-action "Place mark at c2"
+action "Place mark at [Line] c2"
 when
   Player turn,
   Line x #empty x
@@ -76,7 +76,7 @@ when
   say: "[Player] marks [Line]'s second column";
 }
 
-action "Place mark at c3"
+action "Place mark at [Line] c3"
 when
   Player turn,
   Line x x #empty
