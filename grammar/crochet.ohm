@@ -53,7 +53,7 @@ Crochet {
     | keyword name
 
   actionDeclaration =
-    | action_ text when_ predicate statementBlock
+    | action_ interpolateText<variable> when_ predicate statementBlock
 
   predicate =
     | nonemptyListOf<searchRelation, s<",">> if_ constraint    -- constrained
@@ -159,14 +159,16 @@ Crochet {
     | primaryExpression
 
   primaryExpression =
-    | interpolateText
+    | interpolateText<expression>
     | number
     | boolean
     | nothing
-    | actorName                 -- actor
+    | variable
     | atom                      -- atom
-    | name                      -- variable
+    | actorName                 -- actor
     | s<"("> expression s<")">  -- group
+
+  variable = name
 
   number = integer | float
   text = s<t_text>
@@ -180,13 +182,13 @@ Crochet {
   nothing = nothing_
   infix_symbol = s<t_infix_symbol>
 
-  interpolateTextPart =
+  interpolateTextPart<p> =
     | "\\" any                   -- escape
-    | "[" s<expression> s<"]">   -- interpolate
+    | "[" s<p> s<"]">            -- interpolate
     | ~"\"" any                  -- character
 
-  interpolateText (a text with interpolation) =
-    | s<"\""> interpolateTextPart* "\""
+  interpolateText<p> (a text with interpolation) =
+    | s<"\""> interpolateTextPart<p>* "\""
 
   s<p> = space* p
   // -- Lexical rules -------------------------------------------------

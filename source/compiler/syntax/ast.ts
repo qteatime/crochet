@@ -114,7 +114,7 @@ export class DActor extends Declaration {
 
 export class DAction extends Declaration {
   constructor(
-    readonly title: string,
+    readonly title: EInterpolateText,
     readonly predicate: IR.Predicate,
     readonly body: Statement[]
   ) {
@@ -123,7 +123,7 @@ export class DAction extends Declaration {
 
   *compile() {
     yield new IR.DefineAction(
-      this.title,
+      this.title.compile_simple(),
       this.predicate,
       to_list(
         this.body.map((x) => x.compile()),
@@ -354,8 +354,14 @@ export class EVariable extends Expression {
 }
 
 export class EInterpolateText extends Expression {
-  constructor(readonly parts: InterpolatePart[]) {
+  constructor(readonly source: string, readonly parts: InterpolatePart[]) {
     super();
+  }
+
+  compile_simple() {
+    return new IR.SimpleInterpolation(
+      this.parts.map((x) => x.compile_simple())
+    );
   }
 
   *compile() {
@@ -368,11 +374,16 @@ export class EInterpolateText extends Expression {
 
 export abstract class InterpolatePart {
   abstract compile(): Generator<IR.Operation>;
+  abstract compile_simple(): IR.SimpleInterpolationPart;
 }
 
 export class InterpolateStatic extends InterpolatePart {
   constructor(readonly text: string) {
     super();
+  }
+
+  compile_simple() {
+    return new IR.SimpleInterpolationStatic(this.text);
   }
 
   *compile() {
@@ -383,6 +394,16 @@ export class InterpolateStatic extends InterpolatePart {
 export class InterpolateDynamic extends InterpolatePart {
   constructor(readonly expr: Expression) {
     super();
+  }
+
+  compile_simple() {
+    const expr = this.expr;
+    if (expr instanceof EVariable) {
+      return new IR.SimpleInterpolationVariable(expr.name);
+    } else {
+      console.error(expr);
+      throw new Error(`Non variable in simple interpolation`);
+    }
   }
 
   *compile() {
