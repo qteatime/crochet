@@ -2,10 +2,16 @@
 
 command wait-click = wait-click();
 
+command page {
+  wait-click;
+  new-page;
+}
+
 
 actor #dear;
 
 relation Person* pronouns She Her Hers;
+relation Infinitive* for Pronoun* conjugated Conjugated;
 
 actor #prologue;
 actor #main;
@@ -13,7 +19,26 @@ actor #main;
 relation Chapter chapter;
 
 do {
+  fact "was" for "they" conjugated "were";
+
   goto prologue;
+}
+
+command Form conjugate {
+  return
+    match {
+      when
+        #dear pronouns Pronoun _ _,
+        Inf for Pronoun conjugated Verb
+        if Inf === Form
+      {
+        return Verb;
+      }
+
+      else {
+        return Form;
+      }
+    };
 }
 
 command she {
@@ -56,16 +81,19 @@ scene prologue {
   trigger action;
 
   say:
-    "[she title-case] was very dear to you.";
+    "[she title-case] ["was" conjugate] very dear to you.";
 
   wait-click;
 
   say:
-    "Was.";
+    "["was" conjugate title-case].";
+
+  page;
 
   say:
     "In the dimly lit cabin, your mind tried reminiscing the days
-    [she] was with you. In a far away place. A long, long time ago.";
+    [she] ["was" conjugate] with you. In a far away place.
+    A long, long time ago.";
   
   wait-click;
 
@@ -74,12 +102,12 @@ scene prologue {
 
   say:
     "All you knew at that point was that you were alive. And that you
-    had met [her]. And that [she] was very dear to you.";
+    had met [her]. And that [she] ["was" conjugate] very dear to you.";
 
   say:
     "You didn't know why. Or how.";
 
-  wait-click;
+  page;
 
   say:
     "There was a certain point in the day---you didn't keep track of the
