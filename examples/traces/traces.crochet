@@ -17,6 +17,11 @@ actor #prologue;
 actor #main;
 
 relation Chapter chapter;
+relation turn Number;
+relation flag Flag*;
+
+actor #flag-looked-around;
+actor #flag-can-go-outside;
 
 do {
   fact "was" for "they" conjugated "were";
@@ -117,6 +122,8 @@ scene prologue {
 
   say:
     "Maybe, this time, you could piece things together in a way that made sense.";
+
+  goto main;
 }
 
 action "He was very kind..."
@@ -152,3 +159,112 @@ when #prologue chapter {
   fact #dear pronouns "they" "them" "their";
 }
 
+//== Main
+scene main {
+  fact #main chapter;
+  fact turn 0;
+  goto main-loop;
+}
+
+scene main-loop {
+  trigger action;
+  trigger next-turn;
+  goto main-loop;
+}
+
+context next-turn {
+  when turn Number {
+    fact turn (Number + 1);
+  }
+}
+
+scene ending {
+  say: "(The end)";
+}
+
+action "Go outside"
+when
+  #main chapter
+{
+  say:
+    "You turn the doorknob. The door opens.";
+
+  say:
+    "You pull the door slowly and take a peek outside.";
+
+  say:
+    "What awaits you is a sea of whiteness. The old log cabin seems to float
+    in the void. There's nowhere you could escape to, if you wanted.";
+
+  say:
+    "Still, you find this sensation surprisingly comforting.";
+
+  say:
+    "Your feet carries you outside before you could think twice. Though your
+    feet isn't touching anything, you don't fall. Nothing seems to pull you
+    downwards.";
+
+  say:
+    "\"Ah...\"";
+  
+  say:
+    "You remember now. Not everything. Not even most things. But you remember
+    enough.";
+
+  say:
+    "You don't know how it all started. All you knew at that point was that
+    you had met someone very, very dear to you. And that you loved [her] with
+    all your heart. And that [she] ["was" conjugate] alive.";
+
+  goto ending;
+}
+
+action "Look around"
+when
+  #main chapter,
+  not flag #flag-looked-around
+{
+  say:
+    "The old log cabin is much too dim to see things clearly. But by now your
+    eyes were already used to the darkness. You could navigate the small room
+    on your instincts alone.";
+
+  say:
+    "Behind you there was a large sofa. You had been spending copious amounts
+    of time on it. Doing nothing in particular.";
+
+  say:
+    "In front of the sofa there was a fire-place. Although there was no wood
+    to burn, it wasn't so cold inside that you would *need* it to keep yourself
+    warm.";
+
+  say:
+    "To your right, the entire wall was filled by a bookshelf. Opposite of it,
+    a small bar divided the living room and the small kitchen.";
+
+  fact flag #flag-looked-around;
+}
+
+action "Examine bookshelf"
+when
+  #main chapter,
+  flag #flag-looked-around
+{
+
+}
+
+action "Examine bar"
+when
+  #main chapter,
+  flag #flag-looked-around
+{
+
+}
+
+action "Examine kitchen"
+when
+  #main chapter,
+  flag #flag-looked-around
+{
+
+}
