@@ -1,4 +1,4 @@
-import { CrochetValue, CrochetActor } from "./intrinsics";
+import { CrochetValue, CrochetActor, nothing } from "./intrinsics";
 
 export class Database {
   private relations = new Map<string, RelationType>();
@@ -13,6 +13,13 @@ export class Database {
 
   lookup(name: string): RelationType | null {
     return this.relations.get(name) ?? null;
+  }
+
+  all_facts() {
+    return [...this.relations.values()].map((x) => ({
+      relation: x.name,
+      facts: x.all_facts(),
+    }));
   }
 }
 
@@ -85,6 +92,7 @@ export abstract class RelationNode {
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[];
+  abstract all_facts(): CrochetValue[][];
 }
 
 export class EndNode extends RelationNode {
@@ -106,6 +114,10 @@ export class EndNode extends RelationNode {
       throw new Error(`Search with extraneous patterns`);
     }
     return [env];
+  }
+
+  all_facts() {
+    return [[nothing]];
   }
 }
 
@@ -166,11 +178,17 @@ export class ManyNode extends RelationNode {
       }
     });
   }
+
+  all_facts() {
+    return this.trees.flatMap((pair) => {
+      return pair.tree.all_facts().map((xs) => [pair.value, ...xs]);
+    });
+  }
 }
 
 export class SingleNode extends RelationNode {
   private value!: CrochetValue;
-  private sub_tree!: RelationNode;
+  private sub_tree: RelationNode | null = null;
 
   constructor(readonly new_tree: () => RelationNode) {
     super();
@@ -184,6 +202,10 @@ export class SingleNode extends RelationNode {
   }
 
   remove(values: CrochetValue[]) {
+    if (this.sub_tree == null) {
+      return null;
+    }
+
     const [head, ...tail] = values;
     if (head.equals(this.value)) {
       const result = this.sub_tree.remove(tail);
@@ -199,6 +221,10 @@ export class SingleNode extends RelationNode {
   }
 
   search(env: UnificationEnvironment, patterns: Pattern[]) {
+    if (this.sub_tree == null) {
+      return [];
+    }
+
     const [head, ...tail] = patterns;
 
     const new_env = head.unify(env, this.value);
@@ -206,6 +232,14 @@ export class SingleNode extends RelationNode {
       return [];
     } else {
       return this.sub_tree.search(new_env, tail);
+    }
+  }
+
+  all_facts() {
+    if (this.sub_tree == null) {
+      return [];
+    } else {
+      return this.sub_tree.all_facts().map((xs) => [this.value, ...xs]);
     }
   }
 }
@@ -244,6 +278,10 @@ export class RelationType {
     env: UnificationEnvironment
   ): UnificationEnvironment[] {
     return this.tree.search(env, patterns);
+  }
+
+  all_facts() {
+    return this.tree.all_facts();
   }
 }
 

@@ -72,6 +72,7 @@ Crochet {
     | constraintPrimary
 
   constraintPrimary =
+    | integer                     -- integer
     | name                        -- variable
     | actorName                   -- actor
     | s<"("> constraint s<")">    -- group
@@ -130,7 +131,8 @@ Crochet {
     | invokeInfix
 
   searchRelation =
-    | searchSegment+
+    | not_ searchSegment+     -- negated
+    | searchSegment+          -- has
 
   searchSegment =
     | actorName               -- actor

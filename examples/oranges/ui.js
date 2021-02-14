@@ -26,17 +26,38 @@ window.OrangesUI = (vm, ffi, display) => {
 
   ffi.add("get-player", 1, get_player);
 
+  async function pause(vmi) {
+    await display.show_menu([{ title: "Continue...", value: null }]);
+    return vmi.nothing;
+  }
+
+  ffi.add("pause", 0, pause);
+
+  async function show_database(vmi) {
+    console.log(vm.database.all_facts());
+    return vmi.nothing;
+  }
+
+  ffi.add("show-database", 0, show_database);
+
   // Hooks
   async function pick(vmi, actions) {
+    if (actions.length === 0) {
+      return null;
+    }
+
     const [env] = vmi.search("_ turn", [vmi.pvar("Actor")]);
     const actor = env.get("Actor");
+    let chosen;
     if (actor === player) {
-      return await display.show_menu(
+      chosen = await display.show_menu(
         actions.map((x) => ({ title: x.title, value: x }))
       );
     } else {
-      return actions[Math.floor(Math.random() * actions.length)];
+      chosen = actions[Math.floor(Math.random() * actions.length)];
     }
+    console.log("[action chosen]", actor.name, chosen.title);
+    return chosen;
   }
 
   vm.on_pick(pick);

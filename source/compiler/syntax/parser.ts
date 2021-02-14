@@ -236,6 +236,11 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new IR.CRole(expr.toAST(), role.toAST());
   },
 
+  constraintPrimary_integer(value0: Node) {
+    const value: EInteger = value0.toAST();
+    return new IR.CInteger(value.value);
+  },
+
   constraintPrimary_variable(name: Node) {
     return new IR.CVariable(name.toAST());
   },
@@ -394,33 +399,46 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new ESearch(predicate.toAST());
   },
 
-  searchRelation(segments0: Node) {
+  searchRelation_negated(_not: x, segments0: Node) {
     const segments: (AtomSegment | PatternSegment)[] = segments0.toAST();
     const name = segments.map((x) => x.to_static_part()).join(" ");
     const patterns = segments
       .filter((x) => x instanceof PatternSegment)
       .map((x) => x.to_pattern());
-    return new IR.PredicateRelation(name, patterns);
+    return new IR.PredicateRelation(name, patterns, true);
+  },
+
+  searchRelation_has(segments0: Node) {
+    const segments: (AtomSegment | PatternSegment)[] = segments0.toAST();
+    const name = segments.map((x) => x.to_static_part()).join(" ");
+    const patterns = segments
+      .filter((x) => x instanceof PatternSegment)
+      .map((x) => x.to_pattern());
+    return new IR.PredicateRelation(name, patterns, false);
   },
 
   searchSegment_actor(name: Node) {
     return new PatternSegment(new IR.ActorPattern(name.toAST()));
   },
 
-  searchSegment_integer(value: Node) {
-    return new PatternSegment(new IR.IntegerPattern(value.toAST()));
+  searchSegment_integer(value0: Node) {
+    const value: EInteger = value0.toAST();
+    return new PatternSegment(new IR.IntegerPattern(value.value));
   },
 
-  searchSegment_float(value: Node) {
-    return new PatternSegment(new IR.FloatPattern(value.toAST()));
+  searchSegment_float(value0: Node) {
+    const value: EFloat = value0.toAST();
+    return new PatternSegment(new IR.FloatPattern(value.value));
   },
 
-  searchSegment_text(value: Node) {
-    return new PatternSegment(new IR.TextPattern(value.toAST()));
+  searchSegment_text(value0: Node) {
+    const value: EText = value0.toAST();
+    return new PatternSegment(new IR.TextPattern(value.value));
   },
 
-  searchSegment_boolean(value: Node) {
-    return new PatternSegment(new IR.BooleanPattern(value.toAST()));
+  searchSegment_boolean(value0: Node) {
+    const value: EBoolean = value0.toAST();
+    return new PatternSegment(new IR.BooleanPattern(value.value));
   },
 
   searchSegment_nothing(_: x) {
