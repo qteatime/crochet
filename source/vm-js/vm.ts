@@ -868,7 +868,12 @@ export class CrochetVM {
     const patterns = predicate.patterns.map((x) =>
       this.evaluate_pattern(activation, x)
     );
-    return relation.search(patterns, env);
+    const result = relation.search(patterns, env);
+    if (predicate.negated) {
+      return result.length === 0 ? [env] : [];
+    } else {
+      return result;
+    }
   }
 
   private evaluate_constraint(
@@ -913,6 +918,10 @@ export class CrochetVM {
           constraint.right
         );
         return new CrochetBoolean(left.equals(right));
+      }
+
+      case "integer": {
+        return new CrochetInteger(constraint.value);
       }
 
       case "not": {

@@ -27,8 +27,8 @@ exports.fromJson = fromJson;
 },{"./operations":3}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TriggerContext = exports.Search = exports.TriggerAction = exports.RemoveFact = exports.InsertFact = exports.Let = exports.Goto = exports.Halt = exports.Drop = exports.Return = exports.Invoke = exports.PushActor = exports.PushLocal = exports.PushNothing = exports.PushBoolean = exports.PushText = exports.PushFloat = exports.PushInteger = exports.AbstractOperation = exports.DefineForeignCommand = exports.DefineCommand = exports.Do = exports.ManyRelation = exports.OneRelation = exports.RelationComponent = exports.DefineRelation = exports.CRole = exports.CActor = exports.CBoolean = exports.CVariable = exports.CNotEqual = exports.CEqual = exports.CNot = exports.COr = exports.CAnd = exports.AbstractConstraint = exports.PredicateRelation = exports.Predicate = exports.HookDefinition = exports.DefineContext = exports.SimpleInterpolationVariable = exports.SimpleInterpolationStatic = exports.AbstractSimpleInterpolationPart = exports.SimpleInterpolation = exports.DefineAction = exports.DefineActor = exports.DefineScene = exports.AbstractDeclaration = exports.Module = exports.IRNode = void 0;
-exports.VariablePattern = exports.ActorPattern = exports.NothingPattern = exports.TextPattern = exports.BooleanPattern = exports.FloatPattern = exports.IntegerPattern = exports.AbstractPattern = exports.MatchDefault = exports.MatchPredicate = exports.AbstractMatchClause = exports.Match = exports.Project = exports.Yield = exports.Interpolate = exports.Block = exports.Branch = void 0;
+exports.Search = exports.TriggerAction = exports.RemoveFact = exports.InsertFact = exports.Let = exports.Goto = exports.Halt = exports.Drop = exports.Return = exports.Invoke = exports.PushActor = exports.PushLocal = exports.PushNothing = exports.PushBoolean = exports.PushText = exports.PushFloat = exports.PushInteger = exports.AbstractOperation = exports.DefineForeignCommand = exports.DefineCommand = exports.Do = exports.ManyRelation = exports.OneRelation = exports.RelationComponent = exports.DefineRelation = exports.CInteger = exports.CRole = exports.CActor = exports.CBoolean = exports.CVariable = exports.CNotEqual = exports.CEqual = exports.CNot = exports.COr = exports.CAnd = exports.AbstractConstraint = exports.PredicateRelation = exports.Predicate = exports.HookDefinition = exports.DefineContext = exports.SimpleInterpolationVariable = exports.SimpleInterpolationStatic = exports.AbstractSimpleInterpolationPart = exports.SimpleInterpolation = exports.DefineAction = exports.DefineActor = exports.DefineScene = exports.AbstractDeclaration = exports.Module = exports.IRNode = void 0;
+exports.VariablePattern = exports.ActorPattern = exports.NothingPattern = exports.TextPattern = exports.BooleanPattern = exports.FloatPattern = exports.IntegerPattern = exports.AbstractPattern = exports.MatchDefault = exports.MatchPredicate = exports.AbstractMatchClause = exports.Match = exports.Project = exports.Yield = exports.Interpolate = exports.Block = exports.Branch = exports.TriggerContext = void 0;
 const Logic = require("../vm-js/logic");
 const spec_1 = require("../utils/spec");
 class IRNode {
@@ -228,18 +228,25 @@ class Predicate {
 }
 exports.Predicate = Predicate;
 class PredicateRelation {
-    constructor(name, patterns) {
+    constructor(name, patterns, negated) {
         this.name = name;
         this.patterns = patterns;
+        this.negated = negated;
     }
     variables() {
-        return this.patterns.flatMap((x) => x.variables());
+        if (this.negated) {
+            return [];
+        }
+        else {
+            return this.patterns.flatMap((x) => x.variables());
+        }
     }
     static get spec() {
         return spec_1.spec({
             name: spec_1.string,
             patterns: spec_1.array(AbstractPattern),
-        }, (x) => new PredicateRelation(x.name, x.patterns));
+            negated: spec_1.boolean,
+        }, (x) => new PredicateRelation(x.name, x.patterns, x.negated));
     }
     toJSON() {
         return { ...this };
@@ -258,6 +265,7 @@ class AbstractConstraint {
             CActor,
             CRole,
             CBoolean,
+            CInteger,
         ]);
     }
     toJSON() {
@@ -401,6 +409,26 @@ class CRole extends AbstractConstraint {
     }
 }
 exports.CRole = CRole;
+class CInteger extends AbstractConstraint {
+    constructor(value) {
+        super();
+        this.value = value;
+        this.tag = "integer";
+    }
+    static get spec() {
+        return spec_1.spec({
+            tag: spec_1.equal("integer"),
+            value: spec_1.bigint_string,
+        }, (x) => new CInteger(x.value));
+    }
+    toJSON() {
+        return {
+            tag: this.tag,
+            value: this.value.toString(),
+        };
+    }
+}
+exports.CInteger = CInteger;
 class DefineRelation extends AbstractDeclaration {
     constructor(name, components) {
         super();
@@ -943,6 +971,12 @@ class IntegerPattern extends AbstractPattern {
             tag: spec_1.equal("integer-pattern"),
             value: spec_1.bigint_string,
         }, (x) => new IntegerPattern(x.value));
+    }
+    toJSON() {
+        return {
+            tag: this.tag,
+            value: this.value.toString(),
+        };
     }
 }
 exports.IntegerPattern = IntegerPattern;
@@ -2014,6 +2048,7 @@ exports.nothing = new CrochetNothing();
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnificationEnvironment = exports.Component = exports.Many = exports.One = exports.Multiplicity = exports.RelationType = exports.SingleNode = exports.ManyNode = exports.EndNode = exports.RelationNode = exports.Pair = exports.VariablePattern = exports.ActorPattern = exports.ValuePattern = exports.Pattern = exports.Database = void 0;
+const intrinsics_1 = require("./intrinsics");
 class Database {
     constructor() {
         this.relations = new Map();
@@ -2028,6 +2063,12 @@ class Database {
     }
     lookup(name) {
         return this.relations.get(name) ?? null;
+    }
+    all_facts() {
+        return [...this.relations.values()].map((x) => ({
+            relation: x.name,
+            facts: x.all_facts(),
+        }));
     }
 }
 exports.Database = Database;
@@ -2118,6 +2159,9 @@ class EndNode extends RelationNode {
         }
         return [env];
     }
+    all_facts() {
+        return [[intrinsics_1.nothing]];
+    }
 }
 exports.EndNode = EndNode;
 class ManyNode extends RelationNode {
@@ -2173,12 +2217,18 @@ class ManyNode extends RelationNode {
             }
         });
     }
+    all_facts() {
+        return this.trees.flatMap((pair) => {
+            return pair.tree.all_facts().map((xs) => [pair.value, ...xs]);
+        });
+    }
 }
 exports.ManyNode = ManyNode;
 class SingleNode extends RelationNode {
     constructor(new_tree) {
         super();
         this.new_tree = new_tree;
+        this.sub_tree = null;
     }
     insert(values) {
         const [head, ...tail] = values;
@@ -2187,6 +2237,9 @@ class SingleNode extends RelationNode {
         this.sub_tree.insert(tail);
     }
     remove(values) {
+        if (this.sub_tree == null) {
+            return null;
+        }
         const [head, ...tail] = values;
         if (head.equals(this.value)) {
             const result = this.sub_tree.remove(tail);
@@ -2203,6 +2256,9 @@ class SingleNode extends RelationNode {
         }
     }
     search(env, patterns) {
+        if (this.sub_tree == null) {
+            return [];
+        }
         const [head, ...tail] = patterns;
         const new_env = head.unify(env, this.value);
         if (new_env == null) {
@@ -2210,6 +2266,14 @@ class SingleNode extends RelationNode {
         }
         else {
             return this.sub_tree.search(new_env, tail);
+        }
+    }
+    all_facts() {
+        if (this.sub_tree == null) {
+            return [];
+        }
+        else {
+            return this.sub_tree.all_facts().map((xs) => [this.value, ...xs]);
         }
     }
 }
@@ -2238,6 +2302,9 @@ class RelationType {
     }
     search(patterns, env) {
         return this.tree.search(env, patterns);
+    }
+    all_facts() {
+        return this.tree.all_facts();
     }
 }
 exports.RelationType = RelationType;
@@ -2302,7 +2369,7 @@ class UnificationEnvironment {
 }
 exports.UnificationEnvironment = UnificationEnvironment;
 
-},{}],20:[function(require,module,exports){
+},{"./intrinsics":18}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ForeignInterface = exports.ForeignFunction = void 0;
@@ -3037,7 +3104,13 @@ class CrochetVM {
     refine_search(activation, env, predicate) {
         const relation = this.get_relation(activation, predicate.name);
         const patterns = predicate.patterns.map((x) => this.evaluate_pattern(activation, x));
-        return relation.search(patterns, env);
+        const result = relation.search(patterns, env);
+        if (predicate.negated) {
+            return result.length === 0 ? [env] : [];
+        }
+        else {
+            return result;
+        }
     }
     evaluate_constraint(activation, uenv, constraint) {
         switch (constraint.tag) {
@@ -3058,6 +3131,9 @@ class CrochetVM {
                 const left = this.evaluate_constraint(activation, uenv, constraint.left);
                 const right = this.evaluate_constraint(activation, uenv, constraint.right);
                 return new intrinsics_1.CrochetBoolean(left.equals(right));
+            }
+            case "integer": {
+                return new intrinsics_1.CrochetInteger(constraint.value);
             }
             case "not": {
                 const value = this.evaluate_constraint(activation, uenv, constraint.expr);

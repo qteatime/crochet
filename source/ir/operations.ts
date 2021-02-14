@@ -263,10 +263,18 @@ export class Predicate {
 }
 
 export class PredicateRelation {
-  constructor(readonly name: string, readonly patterns: Pattern[]) {}
+  constructor(
+    readonly name: string,
+    readonly patterns: Pattern[],
+    readonly negated: boolean
+  ) {}
 
   variables() {
-    return this.patterns.flatMap((x) => x.variables());
+    if (this.negated) {
+      return [];
+    } else {
+      return this.patterns.flatMap((x) => x.variables());
+    }
   }
 
   static get spec() {
@@ -274,8 +282,9 @@ export class PredicateRelation {
       {
         name: string,
         patterns: array(AbstractPattern),
+        negated: boolean,
       },
-      (x) => new PredicateRelation(x.name, x.patterns)
+      (x) => new PredicateRelation(x.name, x.patterns, x.negated)
     );
   }
 
@@ -293,7 +302,8 @@ export type Constraint =
   | CVariable
   | CActor
   | CRole
-  | CBoolean;
+  | CBoolean
+  | CInteger;
 
 export abstract class AbstractConstraint {
   abstract tag: string;
@@ -309,6 +319,7 @@ export abstract class AbstractConstraint {
       CActor,
       CRole,
       CBoolean,
+      CInteger,
     ]);
   }
 
@@ -472,6 +483,30 @@ export class CRole extends AbstractConstraint {
       },
       (x) => new CRole(x.expr, x.role)
     );
+  }
+}
+
+export class CInteger extends AbstractConstraint {
+  readonly tag = "integer";
+  constructor(readonly value: bigint) {
+    super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("integer"),
+        value: bigint_string,
+      },
+      (x) => new CInteger(x.value)
+    );
+  }
+
+  toJSON() {
+    return {
+      tag: this.tag,
+      value: this.value.toString(),
+    };
   }
 }
 
@@ -1184,6 +1219,13 @@ export class IntegerPattern extends AbstractPattern {
       },
       (x) => new IntegerPattern(x.value)
     );
+  }
+
+  toJSON() {
+    return {
+      tag: this.tag,
+      value: this.value.toString(),
+    };
   }
 }
 
