@@ -1075,6 +1075,7 @@ const html_1 = require("./html");
 class Display {
     constructor(canvas) {
         this.canvas = canvas;
+        this.history = html_1.h("div", { class: "crochet-history" });
         this.mark = null;
     }
     async wait_mark(x) {
@@ -1098,6 +1099,11 @@ class Display {
             this.mark = x;
         }
     }
+    async new_page() {
+        for (const child of Array.from(this.canvas.children)) {
+            this.history.appendChild(child);
+        }
+    }
     async click_to_continue(x) {
         await utils_1.delay(100);
         const deferred = utils_1.defer();
@@ -1114,6 +1120,7 @@ class Display {
                 this.mark = children.item(children.length - 1);
             }
             deferred.resolve();
+            return false;
         }, { once: true });
         return deferred.promise;
     }
@@ -1146,6 +1153,7 @@ class Display {
             ev.preventDefault();
             element.setAttribute("data-selected", "true");
             on_click();
+            return false;
         }, { once: true });
         return element;
     }
@@ -1255,6 +1263,8 @@ function add_primitives(vm, ffi, primitives) {
     vm.add_foreign_command(root, "_ text", ["Element"], [0], "crochet.player:text");
     ffi.add("crochet.player:divider", 0, primitives.divider);
     vm.add_foreign_command(root, "divider", [], [], "crochet.player:divider");
+    ffi.add("crochet.player:new-page", 0, primitives.new_page);
+    vm.add_foreign_command(root, "new-page", [], [], "crochet.player:new-page");
 }
 exports.add_primitives = add_primitives;
 class Primitives {
@@ -1293,6 +1303,10 @@ class Primitives {
         };
         this.divider = async (vm) => {
             return vm.box(this.display.divider());
+        };
+        this.new_page = async (vm) => {
+            this.display.new_page();
+            return vm.nothing;
         };
     }
 }

@@ -1,3 +1,4 @@
+import { visitParameterList } from "typescript";
 import { delay } from "../utils/utils";
 import { CrochetValue } from "../vm-js/intrinsics";
 import { ForeignInterface } from "../vm-js/primitives";
@@ -64,6 +65,9 @@ export function add_primitives(
 
   ffi.add("crochet.player:divider", 0, primitives.divider);
   vm.add_foreign_command(root, "divider", [], [], "crochet.player:divider");
+
+  ffi.add("crochet.player:new-page", 0, primitives.new_page);
+  vm.add_foreign_command(root, "new-page", [], [], "crochet.player:new-page");
 }
 
 export class Primitives {
@@ -108,5 +112,10 @@ export class Primitives {
 
   divider = async (vm: VMI) => {
     return vm.box(this.display.divider());
+  };
+
+  new_page = async (vm: VMI) => {
+    this.display.new_page();
+    return vm.nothing;
   };
 }

@@ -7,6 +7,7 @@ type Item<A> = {
 };
 
 export class Display {
+  private history: HTMLElement = h("div", { class: "crochet-history" });
   private mark: null | HTMLElement = null;
 
   constructor(private canvas: HTMLElement) {}
@@ -32,6 +33,12 @@ export class Display {
     if (bottom - markTop > height) {
       await this.click_to_continue();
       this.mark = x;
+    }
+  }
+
+  async new_page() {
+    for (const child of Array.from(this.canvas.children)) {
+      this.history.appendChild(child);
     }
   }
 
