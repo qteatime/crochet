@@ -71,7 +71,7 @@ export class Primitives {
 
   say = async (vm: VMI, text: Value) => {
     vm.assert_text(text);
-    this.display.show(this.display.text(text.value));
+    await this.display.show(this.display.text(text.value));
     return vm.nothing;
   };
 
@@ -89,10 +89,10 @@ export class Primitives {
   show = async (vm: VMI, value: Value) => {
     vm.assert_box(value);
     const element = value.to_js();
-    if (!(element instanceof Element)) {
+    if (!(element instanceof HTMLElement)) {
       throw new Error(`Expected an HTMLElement`);
     }
-    this.display.show(element);
+    await this.display.show(element);
     return vm.nothing;
   };
 

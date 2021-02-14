@@ -32,6 +32,24 @@ body {
   scroll-behavior: smooth;
   overflow: auto;
   height: 100%;
+  position: relative;
+}
+
+#crochet[data-wait="true"]::after {
+  content: "(Click to continue)";
+  font-size: 14px;
+  font-family: sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  position: fixed;
+  background: #fafafa;
+  text-align: center;
+  width: 100%;
+  bottom: 2em;
+  left: 0px;
+  padding: 0.5em 0;
+  font-weight: bold;
+  color: #999;
 }
 
 .crochet-text {
