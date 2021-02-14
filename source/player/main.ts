@@ -6,7 +6,17 @@ import { Display } from "./display";
 import { add_primitives, Primitives } from "./primitives";
 import { load_program } from "./loader";
 
-export async function run(selector: string, programs: string[]) {
+export type Extension = (
+  vm: CrochetVM,
+  ffi: ForeignInterface,
+  display: Display
+) => void;
+
+export async function run(
+  selector: string,
+  programs: string[],
+  extension?: Extension
+) {
   const ffi = new ForeignInterface();
   const vm = new CrochetVM(ffi);
   Stdlib.add_prelude(vm, ffi);
@@ -25,6 +35,10 @@ export async function run(selector: string, programs: string[]) {
   for (const program of programs) {
     const module = await load_program(program);
     vm.load_module(module);
+  }
+
+  if (extension != null) {
+    extension(vm, ffi, display);
   }
 
   await vm.run().catch((error) => {

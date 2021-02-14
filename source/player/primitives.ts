@@ -71,7 +71,7 @@ export class Primitives {
 
   say = async (vm: VMI, text: Value) => {
     vm.assert_text(text);
-    this.display.show_text(text.value);
+    this.display.show(this.display.text(text.value));
     return vm.nothing;
   };
 
@@ -83,7 +83,7 @@ export class Primitives {
 
   text = async (vm: VMI, text: Value) => {
     vm.assert_text(text);
-    return vm.box(h("div", { class: "crochet-text" }, text.value));
+    return vm.box(this.display.text(text.value));
   };
 
   show = async (vm: VMI, value: Value) => {
@@ -92,21 +92,21 @@ export class Primitives {
     if (!(element instanceof Element)) {
       throw new Error(`Expected an HTMLElement`);
     }
-    this.display.append(element);
+    this.display.show(element);
     return vm.nothing;
   };
 
   monospaced_text = async (vm: VMI, text: Value) => {
     vm.assert_text(text);
-    return vm.box(h("div", { class: "crochet-mono" }, text.value));
+    return vm.box(this.display.monospaced_text(text.value));
   };
 
   title = async (vm: VMI, text: Value) => {
     vm.assert_text(text);
-    return vm.box(h("h2", { class: "crochet-title" }, text.value));
+    return vm.box(this.display.title(text.value));
   };
 
   divider = async (vm: VMI) => {
-    return vm.box(h("hr", { class: "crochet-divider" }));
+    return vm.box(this.display.divider());
   };
 }

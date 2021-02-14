@@ -32,6 +32,12 @@ import * as Logic from "./logic";
 
 class Halt {}
 
+export type ActionOption = {
+  title: string;
+  bindings: Logic.UnificationEnvironment;
+  action: Action;
+};
+
 export class CrochetVM {
   readonly root_env = new Environment(null);
   private queue: Activation[] = [];
@@ -42,9 +48,31 @@ export class CrochetVM {
   private tracing = false;
   readonly database = new Database();
 
+  private _pick = async (activation: Activation, options: ActionOption[]) => {
+    return pick(options);
+  };
+
   constructor(private ffi: ForeignInterface) {}
 
+  //== Hooks
+  on_pick(
+    fn: (
+      vm: CrochetVMInterface,
+      options: ActionOption[]
+    ) => Promise<ActionOption | null>
+  ) {
+    this._pick = (activation, options) =>
+      fn(new CrochetVMInterface(this, activation), options);
+  }
+
   //== Public operations
+  get global() {
+    return new CrochetVMInterface(
+      this,
+      new Activation(null, this.root_env, [new IR.Halt()])
+    );
+  }
+
   async run() {
     if (this.running) {
       throw new Error(`Trying to run the VM twice.`);
@@ -388,7 +416,7 @@ export class CrochetVM {
       }
 
       case "trigger-action": {
-        const chosen = this.pick_action(activation);
+        const chosen = await this.pick_action(activation);
         if (chosen != null) {
           const { action, bindings } = chosen;
           const new_env = new Environment(action.env);
@@ -592,17 +620,20 @@ export class CrochetVM {
     args: number[],
     foreign_name: string
   ) {
-    const fun = this.ffi.get(foreign_name);
-    if (fun.arity !== args.length) {
-      throw new Error(
-        `Foreign function ${foreign_name} has arity ${fun.arity}, but was defined with ${args.length} arguments`
-      );
-    }
     const procedure = new CrochetForeignProcedure(
       name,
       parameters,
       args,
-      fun.fn
+      async (...realArgs) => {
+        const fun = this.ffi.get(foreign_name);
+        if (fun.arity !== args.length) {
+          throw new Error(
+            `Foreign function ${foreign_name} has arity ${fun.arity}, but was defined with ${args.length} arguments`
+          );
+        }
+
+        return fun.fn(...realArgs);
+      }
     );
     if (!env.define_procedure(name, procedure)) {
       throw new Error(`Command ${name} is already defined`);
@@ -622,7 +653,7 @@ export class CrochetVM {
   }
 
   //== Operation evaluation
-  private get_procedure(activation: Activation, name: string) {
+  get_procedure(activation: Activation, name: string) {
     const procedure = activation.env.lookup_procedure(name);
     if (procedure == null) {
       throw new Error(`Undefined procedure ${name}`);
@@ -631,7 +662,7 @@ export class CrochetVM {
     }
   }
 
-  private get_local(activation: Activation, name: string) {
+  get_local(activation: Activation, name: string) {
     const local = activation.env.lookup(name);
     if (local == null) {
       throw new Error(`Undefined local ${name}`);
@@ -640,7 +671,7 @@ export class CrochetVM {
     }
   }
 
-  private get_actor(activation: Activation, name: string) {
+  get_actor(activation: Activation, name: string) {
     const actor = activation.env.lookup_actor(name);
     if (actor == null) {
       throw new Error(`Undefined actor #${name}`);
@@ -649,7 +680,7 @@ export class CrochetVM {
     }
   }
 
-  private get_relation(activation: Activation, name: string) {
+  get_relation(activation: Activation, name: string) {
     const relation = this.database.lookup(name);
     if (relation == null) {
       throw new Error(`Undefined relation ${name}`);
@@ -658,7 +689,7 @@ export class CrochetVM {
     }
   }
 
-  private get_context(activation: Activation, name: string) {
+  get_context(activation: Activation, name: string) {
     const context = this.contexts.get(name);
     if (context == null) {
       throw new Error(`Undefined context ${name}`);
@@ -667,7 +698,7 @@ export class CrochetVM {
     }
   }
 
-  private get_active_hooks(activation0: Activation, context: Context) {
+  get_active_hooks(activation0: Activation, context: Context) {
     return context.hooks.flatMap((hook) => {
       const search_activation = new Activation(
         activation0,
@@ -719,7 +750,7 @@ export class CrochetVM {
     const available = this.actions.flatMap((x) =>
       this.actions_available(activation, x)
     );
-    return pick(available);
+    return this._pick(activation, available);
   }
 
   private actions_available(activation: Activation, action: Action) {
@@ -948,5 +979,25 @@ export class CrochetVMInterface {
 
   box(x: any) {
     return new CrochetBox(x);
+  }
+
+  // Accessors
+  get_actor(name: string) {
+    return this.vm.get_actor(this.activation, name);
+  }
+
+  // Operations
+  search(name: string, patterns: Logic.Pattern[]) {
+    const relation = this.vm.get_relation(this.activation, name);
+    const env = new Logic.UnificationEnvironment();
+    return relation.search(patterns, env).map((x) => x.bound_values);
+  }
+
+  pvar(name: string) {
+    return new Logic.VariablePattern(name);
+  }
+
+  pval(value: CrochetValue) {
+    return new Logic.ValuePattern(value);
   }
 }

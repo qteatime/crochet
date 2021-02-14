@@ -2,5 +2,7 @@
   "package": "web",
   "title": "Tic-Tac-Toe",
   "source": "tic-tac-toe.crochet",
-  "output_directory": "www"
+  "output_directory": "www",
+  "html": "index.html.template",
+  "assets": ["ui.js"]
 }
