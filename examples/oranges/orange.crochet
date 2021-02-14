@@ -106,7 +106,7 @@ scene prologue {
     "When [#awra name] woke [#lin name] up that morning [#awra she] seemed more
     enthusiastic than usual. With a wide smile on [#awra her] face [#awra she]
     had pulled [#lin name-is] blankets while shouting [#lin her] name.
-    \"Lin!\"";
+    <<Lin!>>";
 
   fact #flag prologue blanket pulled;
   act;
@@ -125,11 +125,11 @@ scene prologue {
   act;
 
   say:
-    "\"Why, thank you,\" [#lin name] complained.";
+    "<<Why, thank you,>> [#lin name] complained.";
 
   say:
-    "\"I love you too,\" [#awra name] teased [#lin name]. \"And I'd like to ask
-    a favour...\"";
+    "<<I love you too,>> [#awra name] teased [#lin name]. <<And I'd like to ask
+    a favour...>>";
 
   divider show;
 
@@ -194,6 +194,7 @@ scene main-loop {
   goto main-loop;
 }
 
+relation disable Thing*;
 actor #topic-help;
 actor #topic-cookies;
 actor #topic-lin-loves-orange-cookies;
@@ -202,7 +203,7 @@ action "Ask what you can help with"
 when
   #lin turn,
   #main chapter,
-  not #topic-help topic aged _
+  not disable #topic-help
 {
   say:
     "<<Is...>>, [#lin name] started saying something, but [#lin her] voice
@@ -215,14 +216,14 @@ when
     "<<Is there anything I can help with?>> [#lin name] managed, at last.";
 
   fact #topic-help topic aged 0;
+  fact disable #topic-help;
 }
 
 action "Explain what you're baking"
 when
   #awra turn,
   #main chapter,
-  not #topic-help topic aged _,
-  not #topic-cookies
+  not disable #topic-cookies
 {
   say:
     "<<I'm glad the head nun allowed me to use the kitchen today.>>
@@ -230,19 +231,22 @@ when
     cookies!>>";
 
   fact #topic-cookies topic aged 0;
+  fact disable #topic-cookies;
 }
 
 action "\"I love orange chocolate cookies!\""
 when
   #lin turn,
   #main chapter,
-  #topic-cookies topic aged Age
+  #topic-cookies topic aged Age,
+  not disable #topic-lin-loves-orange-cookies
   if Age === 0 or Age === 1 or Age === 2
 {
   say:
     "<<I love orange chocolate cookies!>> [#lin name] says, effusively.";
 
   fact #topic-lin-loves-orange-cookies topic aged 0;
+  fact disable #topic-lin-loves-orange-cookies;
 }
 
 context next-turn {
@@ -255,7 +259,7 @@ context next-turn {
   }
 
   when Topic topic aged 10 {
-    forget Topic topic aged _;
+    forget Topic topic aged 10;
   }
 
   when Topic topic aged No {
