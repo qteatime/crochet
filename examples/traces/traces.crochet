@@ -120,6 +120,7 @@ scene prologue {
 }
 
 action "He was very kind..."
+:: sticky
 when #prologue chapter {
   say:
     "Yes, he was a very kind person. Of that you were fairly certain.
@@ -130,6 +131,7 @@ when #prologue chapter {
 }
 
 action "Her smile was what kept me going..."
+:: sticky
 when #prologue chapter {
   say:
     "You had this feeling that the reason you were still here today was
@@ -140,6 +142,7 @@ when #prologue chapter {
 }
 
 action "They smelled like strawberries..."
+:: sticky
 when #prologue chapter {
   say:
     "Strawberries! Yes, that's the scent that wouldn't leave your mind.

@@ -198,8 +198,23 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new OneRelationSegment(name.toAST());
   },
 
-  actionDeclaration(_action: x, name: Node, _when: x, pred: Node, block: Node) {
-    return new DAction(name.toAST(), pred.toAST(), block.toAST());
+  actionDeclaration(
+    _action: x,
+    name: Node,
+    tags: Node,
+    _when: x,
+    pred: Node,
+    block: Node
+  ) {
+    return new DAction(name.toAST(), tags.toAST(), pred.toAST(), block.toAST());
+  },
+
+  actionTags_tagged(_: x, tags: Node) {
+    return tags.toAST();
+  },
+
+  actionTags_untagged() {
+    return [];
   },
 
   predicate_constrained(relations0: Node, _if: x, constraint: Node) {

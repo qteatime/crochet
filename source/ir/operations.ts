@@ -110,6 +110,7 @@ export class DefineAction extends AbstractDeclaration {
 
   constructor(
     readonly title: SimpleInterpolation,
+    readonly tags: string[],
     readonly predicate: Predicate,
     readonly body: Operation[]
   ) {
@@ -121,10 +122,11 @@ export class DefineAction extends AbstractDeclaration {
       {
         tag: equal("define-action"),
         title: SimpleInterpolation,
+        tags: array(string),
         predicate: Predicate,
         body: array(AbstractOperation),
       },
-      (x) => new DefineAction(x.title, x.predicate, x.body)
+      (x) => new DefineAction(x.title, x.tags, x.predicate, x.body)
     );
   }
 }
