@@ -12,7 +12,7 @@ import { Activation, Environment } from "./environment";
 import { ForeignInterface } from "./primitives";
 import { CrochetForeignProcedure, CrochetProcedure } from "./procedure";
 import { Action, Context, Hook, Scene } from "./scene";
-import { pick, show, unreachable } from "../utils/utils";
+import { pick, show, unreachable, zip } from "../utils/utils";
 import {
   CrochetBoolean,
   CrochetFloat,
@@ -334,6 +334,30 @@ export class CrochetVM {
       case "let": {
         const value = activation.pop();
         activation.env.define(operation.name, value);
+        activation.next();
+        return activation;
+      }
+
+      case "match": {
+        const blocks = activation.pop_many(operation.clauses.length);
+        for (const [block, clause] of zip(blocks, operation.clauses)) {
+          this.assert_block(activation, block);
+          const new_activation = this.evaluate_clause(
+            activation,
+            clause,
+            block
+          );
+          if (new_activation != null) {
+            activation.next();
+            return new_activation;
+          }
+        }
+        throw new Error(`No clause matched`);
+      }
+
+      case "project": {
+        const value = activation.pop();
+        activation.push(this.project(activation, value, operation.name));
         activation.next();
         return activation;
       }
@@ -716,6 +740,16 @@ export class CrochetVM {
     });
   }
 
+  project(activation: Activation, value: CrochetValue, name: string) {
+    this.assert_record(activation, value);
+    const result = value.values.get(name);
+    if (result == null) {
+      throw new Error(`Undefined field ${name}`);
+    } else {
+      return result;
+    }
+  }
+
   private simple_interpolate(
     activation: Activation,
     action: Action,
@@ -746,6 +780,48 @@ export class CrochetVM {
   }
 
   // Actions and turns
+  private apply_block(
+    activation: Activation,
+    block: CrochetBlock,
+    args: CrochetValue[]
+  ) {
+    const new_env = new Environment(block.env);
+    const new_activation = new Activation(activation, new_env, block.body);
+    for (const [name, value] of zip(block.parameters, args)) {
+      new_env.define(name, value);
+    }
+    return new_activation;
+  }
+
+  private evaluate_clause(
+    activation: Activation,
+    clause: IR.MatchClause,
+    block: CrochetBlock
+  ) {
+    switch (clause.tag) {
+      case "predicate": {
+        const results = this.search(activation, clause.predicate);
+        if (results.length === 0) {
+          return null;
+        } else {
+          if (results.length !== 1) {
+            throw new Error(`Not supported: multiple results in match`);
+          }
+          const [bound] = results.map((x) => x.bound_values);
+          const args = block.parameters.map((x) => bound.get(x)!);
+          return this.make_block_activation(activation, block, args);
+        }
+      }
+
+      case "default": {
+        return this.make_block_activation(activation, block, []);
+      }
+
+      default:
+        throw unreachable(clause, "Unknown clause");
+    }
+  }
+
   private pick_action(activation: Activation) {
     const available = this.actions.flatMap((x) =>
       this.actions_available(activation, x)

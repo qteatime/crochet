@@ -35,3 +35,12 @@ export function defer<T>() {
   });
   return deferred;
 }
+
+export function* zip<A, B>(xs: A[], ys: B[]): Generator<[A, B]> {
+  if (xs.length !== ys.length) {
+    throw new Error(`Can't zip lists of different lengths`);
+  }
+  for (let i = 0; i < xs.length; ++i) {
+    yield [xs[i], ys[i]];
+  }
+}

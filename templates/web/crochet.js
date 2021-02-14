@@ -28,7 +28,7 @@ exports.fromJson = fromJson;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TriggerContext = exports.Search = exports.TriggerAction = exports.RemoveFact = exports.InsertFact = exports.Let = exports.Goto = exports.Halt = exports.Drop = exports.Return = exports.Invoke = exports.PushActor = exports.PushLocal = exports.PushNothing = exports.PushBoolean = exports.PushText = exports.PushFloat = exports.PushInteger = exports.AbstractOperation = exports.DefineForeignCommand = exports.DefineCommand = exports.Do = exports.ManyRelation = exports.OneRelation = exports.RelationComponent = exports.DefineRelation = exports.CRole = exports.CActor = exports.CBoolean = exports.CVariable = exports.CNotEqual = exports.CEqual = exports.CNot = exports.COr = exports.CAnd = exports.AbstractConstraint = exports.PredicateRelation = exports.Predicate = exports.HookDefinition = exports.DefineContext = exports.SimpleInterpolationVariable = exports.SimpleInterpolationStatic = exports.AbstractSimpleInterpolationPart = exports.SimpleInterpolation = exports.DefineAction = exports.DefineActor = exports.DefineScene = exports.AbstractDeclaration = exports.Module = exports.IRNode = void 0;
-exports.VariablePattern = exports.ActorPattern = exports.NothingPattern = exports.TextPattern = exports.BooleanPattern = exports.FloatPattern = exports.IntegerPattern = exports.AbstractPattern = exports.Yield = exports.Interpolate = exports.Block = exports.Branch = void 0;
+exports.VariablePattern = exports.ActorPattern = exports.NothingPattern = exports.TextPattern = exports.BooleanPattern = exports.FloatPattern = exports.IntegerPattern = exports.AbstractPattern = exports.MatchDefault = exports.MatchPredicate = exports.AbstractMatchClause = exports.Match = exports.Project = exports.Yield = exports.Interpolate = exports.Block = exports.Branch = void 0;
 const Logic = require("../vm-js/logic");
 const spec_1 = require("../utils/spec");
 class IRNode {
@@ -213,6 +213,9 @@ class Predicate {
         this.relations = relations;
         this.constraint = constraint;
     }
+    variables() {
+        return this.relations.flatMap((x) => x.variables());
+    }
     static get spec() {
         return spec_1.spec({
             relations: spec_1.array(PredicateRelation),
@@ -228,6 +231,9 @@ class PredicateRelation {
     constructor(name, patterns) {
         this.name = name;
         this.patterns = patterns;
+    }
+    variables() {
+        return this.patterns.flatMap((x) => x.variables());
     }
     static get spec() {
         return spec_1.spec({
@@ -532,6 +538,8 @@ class AbstractOperation extends IRNode {
             Goto,
             Yield,
             Halt,
+            Project,
+            Match,
         ]);
     }
 }
@@ -844,7 +852,70 @@ class Yield extends AbstractOperation {
     }
 }
 exports.Yield = Yield;
+class Project extends AbstractOperation {
+    constructor(name) {
+        super();
+        this.name = name;
+        this.tag = "project";
+    }
+    static get spec() {
+        return spec_1.spec({
+            tag: spec_1.equal("project"),
+            name: spec_1.string,
+        }, (x) => new Project(x.name));
+    }
+}
+exports.Project = Project;
+class Match extends AbstractOperation {
+    constructor(clauses) {
+        super();
+        this.clauses = clauses;
+        this.tag = "match";
+    }
+    static get spec() {
+        return spec_1.spec({
+            tag: spec_1.equal("match"),
+            clauses: spec_1.array(AbstractMatchClause),
+        }, (x) => new Match(x.clauses));
+    }
+}
+exports.Match = Match;
+class AbstractMatchClause {
+    static get spec() {
+        return spec_1.anyOf([MatchPredicate, MatchDefault]);
+    }
+}
+exports.AbstractMatchClause = AbstractMatchClause;
+class MatchPredicate extends AbstractMatchClause {
+    constructor(predicate) {
+        super();
+        this.predicate = predicate;
+        this.tag = "predicate";
+    }
+    static get spec() {
+        return spec_1.spec({
+            tag: spec_1.equal("predicate"),
+            predicate: Predicate,
+        }, (x) => new MatchPredicate(x.predicate));
+    }
+}
+exports.MatchPredicate = MatchPredicate;
+class MatchDefault extends AbstractMatchClause {
+    constructor() {
+        super();
+        this.tag = "default";
+    }
+    static get spec() {
+        return spec_1.spec({
+            tag: spec_1.equal("default"),
+        }, (x) => new MatchDefault());
+    }
+}
+exports.MatchDefault = MatchDefault;
 class AbstractPattern {
+    variables() {
+        return [];
+    }
     static get spec() {
         return spec_1.anyOf([
             IntegerPattern,
@@ -949,6 +1020,9 @@ class VariablePattern extends AbstractPattern {
         this.name = name;
         this.tag = "variable-pattern";
     }
+    variables() {
+        return [this.name];
+    }
     static get spec() {
         return spec_1.spec({
             tag: spec_1.equal("variable-pattern"),
@@ -958,7 +1032,7 @@ class VariablePattern extends AbstractPattern {
 }
 exports.VariablePattern = VariablePattern;
 
-},{"../utils/spec":14,"../vm-js/logic":18}],4:[function(require,module,exports){
+},{"../utils/spec":15,"../vm-js/logic":19}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Display = void 0;
@@ -1012,7 +1086,7 @@ class Display {
 }
 exports.Display = Display;
 
-},{"../utils/utils":15,"./html":5}],5:[function(require,module,exports){
+},{"../utils/utils":16,"./html":5}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.h = void 0;
@@ -1082,7 +1156,7 @@ async function run(selector, programs, extension) {
 }
 exports.run = run;
 
-},{"../stdlib":11,"../vm-js/primitives":19,"../vm-js/vm":22,"./display":4,"./loader":6,"./primitives":8}],8:[function(require,module,exports){
+},{"../stdlib":11,"../vm-js/primitives":20,"../vm-js/vm":23,"./display":4,"./loader":6,"./primitives":8}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Primitives = exports.add_primitives = void 0;
@@ -1146,7 +1220,7 @@ class Primitives {
 }
 exports.Primitives = Primitives;
 
-},{"../utils/utils":15}],9:[function(require,module,exports){
+},{"../utils/utils":16}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.not = exports.or = exports.and = void 0;
@@ -1193,6 +1267,7 @@ const boolean_1 = require("./boolean");
 const core_1 = require("./core");
 const numeric_1 = require("./numeric");
 const text_1 = require("./text");
+const stream_1 = require("./stream");
 function add_prelude(vm, ffi) {
     const root = vm.root_env;
     ffi.add("builtin:equals", 2, core_1.equals);
@@ -1221,16 +1296,20 @@ function add_prelude(vm, ffi) {
     vm.add_foreign_command(root, "_ remainder-of-dividing-by:", ["This", "That"], [0, 1], "builtin:remainder");
     ffi.add("builtin:concat", 2, text_1.concat);
     vm.add_foreign_command(root, "_ ++ _", ["This", "That"], [0, 1], "builtin:concat");
+    ffi.add("builtin:title-case", 1, text_1.title_case);
+    vm.add_foreign_command(root, "_ title-case", ["This"], [0], "builtin:title-case");
     ffi.add("builtin:and", 2, boolean_1.and);
     vm.add_foreign_command(root, "_ and:", ["This", "That"], [0, 1], "builtin:and");
     ffi.add("builtin:or", 2, boolean_1.or);
     vm.add_foreign_command(root, "_ or:", ["This", "That"], [0, 1], "builtin:or");
     ffi.add("builtin:not", 1, boolean_1.not);
     vm.add_foreign_command(root, "_ bnot", ["This"], [0], "builtin:not");
+    ffi.add("builtin:first", 1, stream_1.first);
+    vm.add_foreign_command(root, "_ first", ["Stream"], [0], "builtin:first");
 }
 exports.add_prelude = add_prelude;
 
-},{"./boolean":9,"./core":10,"./numeric":12,"./text":13}],12:[function(require,module,exports){
+},{"./boolean":9,"./core":10,"./numeric":12,"./stream":13,"./text":14}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.remainder = exports.divide = exports.multiply = exports.subtract = exports.add = exports.greater_than_or_equal = exports.less_than_or_equal = exports.greater_than = exports.less_than = void 0;
@@ -1292,15 +1371,34 @@ exports.remainder = remainder;
 },{}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.concat = void 0;
+exports.first = void 0;
+function first(vm, stream) {
+    vm.assert_stream(stream);
+    if (stream.values.length === 0) {
+        throw new Error(`Empty stream`);
+    }
+    return stream.values[0];
+}
+exports.first = first;
+
+},{}],14:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.title_case = exports.concat = void 0;
+const intrinsics_1 = require("../vm-js/intrinsics");
 function concat(vm, x, y) {
     vm.assert_text(x);
     vm.assert_text(y);
     return x.concat(y);
 }
 exports.concat = concat;
+function title_case(vm, x) {
+    vm.assert_text(x);
+    return new intrinsics_1.CrochetText(x.value.replace(/^[a-z]/, (m) => m.toUpperCase()));
+}
+exports.title_case = title_case;
 
-},{}],14:[function(require,module,exports){
+},{"../vm-js/intrinsics":18}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = exports.optional = exports.spec = exports.anyOf = exports.equal = exports.array = exports.nothing = exports.boolean = exports.number = exports.bigint_string = exports.bigint = exports.string = exports.EAnyOf = exports.ENotEqual = exports.ENoKey = exports.EType = exports.Err = exports.Ok = void 0;
@@ -1503,10 +1601,10 @@ function parse(x, spec) {
 }
 exports.parse = parse;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defer = exports.delay = exports.pick = exports.show = exports.unreachable = void 0;
+exports.zip = exports.defer = exports.delay = exports.pick = exports.show = exports.unreachable = void 0;
 const Util = require("util");
 function unreachable(x, message) {
     console.error(message, x);
@@ -1539,8 +1637,17 @@ function defer() {
     return deferred;
 }
 exports.defer = defer;
+function* zip(xs, ys) {
+    if (xs.length !== ys.length) {
+        throw new Error(`Can't zip lists of different lengths`);
+    }
+    for (let i = 0; i < xs.length; ++i) {
+        yield [xs[i], ys[i]];
+    }
+}
+exports.zip = zip;
 
-},{"util":42}],16:[function(require,module,exports){
+},{"util":43}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Activation = exports.Environment = void 0;
@@ -1654,7 +1761,7 @@ class Activation {
 }
 exports.Activation = Activation;
 
-},{"../ir/operations":3}],17:[function(require,module,exports){
+},{"../ir/operations":3}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nothing = exports.CrochetBox = exports.CrochetBlock = exports.CrochetStream = exports.CrochetRecord = exports.CrochetActor = exports.CrochetNothing = exports.CrochetBoolean = exports.CrochetFloat = exports.CrochetInteger = exports.CrochetText = exports.CrochetValue = void 0;
@@ -1903,7 +2010,7 @@ class CrochetBox extends CrochetValue {
 exports.CrochetBox = CrochetBox;
 exports.nothing = new CrochetNothing();
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnificationEnvironment = exports.Component = exports.Many = exports.One = exports.Multiplicity = exports.RelationType = exports.SingleNode = exports.ManyNode = exports.EndNode = exports.RelationNode = exports.Pair = exports.VariablePattern = exports.ActorPattern = exports.ValuePattern = exports.Pattern = exports.Database = void 0;
@@ -2195,7 +2302,7 @@ class UnificationEnvironment {
 }
 exports.UnificationEnvironment = UnificationEnvironment;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ForeignInterface = exports.ForeignFunction = void 0;
@@ -2226,7 +2333,7 @@ class ForeignInterface {
 }
 exports.ForeignInterface = ForeignInterface;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrochetForeignProcedure = exports.CrochetProcedure = void 0;
@@ -2271,7 +2378,7 @@ class CrochetForeignProcedure {
 }
 exports.CrochetForeignProcedure = CrochetForeignProcedure;
 
-},{"./environment":16,"./vm":22}],21:[function(require,module,exports){
+},{"./environment":17,"./vm":23}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Context = exports.Hook = exports.Action = exports.Scene = void 0;
@@ -2311,7 +2418,7 @@ class Context {
 }
 exports.Context = Context;
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrochetVMInterface = exports.CrochetVM = void 0;
@@ -2536,6 +2643,24 @@ class CrochetVM {
             case "let": {
                 const value = activation.pop();
                 activation.env.define(operation.name, value);
+                activation.next();
+                return activation;
+            }
+            case "match": {
+                const blocks = activation.pop_many(operation.clauses.length);
+                for (const [block, clause] of utils_1.zip(blocks, operation.clauses)) {
+                    this.assert_block(activation, block);
+                    const new_activation = this.evaluate_clause(activation, clause, block);
+                    if (new_activation != null) {
+                        activation.next();
+                        return new_activation;
+                    }
+                }
+                throw new Error(`No clause matched`);
+            }
+            case "project": {
+                const value = activation.pop();
+                activation.push(this.project(activation, value, operation.name));
                 activation.next();
                 return activation;
             }
@@ -2823,6 +2948,16 @@ class CrochetVM {
             });
         });
     }
+    project(activation, value, name) {
+        this.assert_record(activation, value);
+        const result = value.values.get(name);
+        if (result == null) {
+            throw new Error(`Undefined field ${name}`);
+        }
+        else {
+            return result;
+        }
+    }
     simple_interpolate(activation, action, bindings) {
         return action.title.parts
             .map((x) => {
@@ -2845,6 +2980,37 @@ class CrochetVM {
             .join("");
     }
     // Actions and turns
+    apply_block(activation, block, args) {
+        const new_env = new environment_1.Environment(block.env);
+        const new_activation = new environment_1.Activation(activation, new_env, block.body);
+        for (const [name, value] of utils_1.zip(block.parameters, args)) {
+            new_env.define(name, value);
+        }
+        return new_activation;
+    }
+    evaluate_clause(activation, clause, block) {
+        switch (clause.tag) {
+            case "predicate": {
+                const results = this.search(activation, clause.predicate);
+                if (results.length === 0) {
+                    return null;
+                }
+                else {
+                    if (results.length !== 1) {
+                        throw new Error(`Not supported: multiple results in match`);
+                    }
+                    const [bound] = results.map((x) => x.bound_values);
+                    const args = block.parameters.map((x) => bound.get(x));
+                    return this.make_block_activation(activation, block, args);
+                }
+            }
+            case "default": {
+                return this.make_block_activation(activation, block, []);
+            }
+            default:
+                throw utils_1.unreachable(clause, "Unknown clause");
+        }
+    }
     pick_action(activation) {
         const available = this.actions.flatMap((x) => this.actions_available(activation, x));
         return this._pick(activation, available);
@@ -3011,7 +3177,7 @@ class CrochetVMInterface {
 }
 exports.CrochetVMInterface = CrochetVMInterface;
 
-},{"../ir/operations":3,"../utils/utils":15,"./environment":16,"./intrinsics":17,"./logic":18,"./procedure":20,"./scene":21}],23:[function(require,module,exports){
+},{"../ir/operations":3,"../utils/utils":16,"./environment":17,"./intrinsics":18,"./logic":19,"./procedure":21,"./scene":22}],24:[function(require,module,exports){
 
 /**
  * Array#filter.
@@ -3038,7 +3204,7 @@ module.exports = function (arr, fn, self) {
 
 var hasOwn = Object.prototype.hasOwnProperty;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3063,7 +3229,7 @@ module.exports = function availableTypedArrays() {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"array-filter":23}],25:[function(require,module,exports){
+},{"array-filter":24}],26:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -3080,7 +3246,7 @@ module.exports = function callBoundIntrinsic(name, allowMissing) {
 	return intrinsic;
 };
 
-},{"./":26,"get-intrinsic":31}],26:[function(require,module,exports){
+},{"./":27,"get-intrinsic":32}],27:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -3129,7 +3295,7 @@ if ($defineProperty) {
 	module.exports.apply = applyBind;
 }
 
-},{"function-bind":30,"get-intrinsic":31}],27:[function(require,module,exports){
+},{"function-bind":31,"get-intrinsic":32}],28:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -3146,7 +3312,7 @@ if ($gOPD) {
 
 module.exports = $gOPD;
 
-},{"get-intrinsic":31}],28:[function(require,module,exports){
+},{"get-intrinsic":32}],29:[function(require,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -3170,7 +3336,7 @@ module.exports = function forEach (obj, fn, ctx) {
 };
 
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 /* eslint no-invalid-this: 1 */
@@ -3224,14 +3390,14 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":29}],31:[function(require,module,exports){
+},{"./implementation":30}],32:[function(require,module,exports){
 'use strict';
 
 var undefined;
@@ -3563,7 +3729,7 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	return value;
 };
 
-},{"function-bind":30,"has":34,"has-symbols":32}],32:[function(require,module,exports){
+},{"function-bind":31,"has":35,"has-symbols":33}],33:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3580,7 +3746,7 @@ module.exports = function hasNativeSymbols() {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./shams":33}],33:[function(require,module,exports){
+},{"./shams":34}],34:[function(require,module,exports){
 'use strict';
 
 /* eslint complexity: [2, 18], max-statements: [2, 33] */
@@ -3624,14 +3790,14 @@ module.exports = function hasSymbols() {
 	return true;
 };
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":30}],35:[function(require,module,exports){
+},{"function-bind":31}],36:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -3660,7 +3826,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 'use strict';
 
 var hasToStringTag = typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol';
@@ -3695,7 +3861,7 @@ isStandardArguments.isLegacyArguments = isLegacyArguments; // for tests
 
 module.exports = supportsStandardArguments ? isStandardArguments : isLegacyArguments;
 
-},{"call-bind/callBound":25}],37:[function(require,module,exports){
+},{"call-bind/callBound":26}],38:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -3729,7 +3895,7 @@ module.exports = function isGeneratorFunction(fn) {
 	return getProto && getProto(fn) === GeneratorFunction;
 };
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3794,7 +3960,7 @@ module.exports = function isTypedArray(value) {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":24,"call-bind/callBound":25,"es-abstract/helpers/getOwnPropertyDescriptor":27,"foreach":28,"has-symbols":32}],39:[function(require,module,exports){
+},{"available-typed-arrays":25,"call-bind/callBound":26,"es-abstract/helpers/getOwnPropertyDescriptor":28,"foreach":29,"has-symbols":33}],40:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -3980,14 +4146,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 // Currently in sync with Node.js lib/internal/util/types.js
 // https://github.com/nodejs/node/commit/112cc7c27551254aa2b17098fb774867f05ed0d9
 
@@ -4321,7 +4487,7 @@ exports.isAnyArrayBuffer = isAnyArrayBuffer;
   });
 });
 
-},{"is-arguments":36,"is-generator-function":37,"is-typed-array":38,"which-typed-array":43}],42:[function(require,module,exports){
+},{"is-arguments":37,"is-generator-function":38,"is-typed-array":39,"which-typed-array":44}],43:[function(require,module,exports){
 (function (process){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -5040,7 +5206,7 @@ function callbackify(original) {
 exports.callbackify = callbackify;
 
 }).call(this)}).call(this,require('_process'))
-},{"./support/isBuffer":40,"./support/types":41,"_process":39,"inherits":35}],43:[function(require,module,exports){
+},{"./support/isBuffer":41,"./support/types":42,"_process":40,"inherits":36}],44:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -5100,5 +5266,5 @@ module.exports = function whichTypedArray(value) {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":24,"call-bind/callBound":25,"es-abstract/helpers/getOwnPropertyDescriptor":27,"foreach":28,"has-symbols":32,"is-typed-array":38}]},{},[7])(7)
+},{"available-typed-arrays":25,"call-bind/callBound":26,"es-abstract/helpers/getOwnPropertyDescriptor":28,"foreach":29,"has-symbols":33,"is-typed-array":39}]},{},[7])(7)
 });

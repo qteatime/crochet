@@ -68,7 +68,9 @@ body {
   text-align: center;
   display: flex;
   align-items: center;
+  justify-content: center;
   color: #d35;
+  background: rgba(255, 255, 255, 0.9);
   position: absolute;
   top: 0;
   left: 0;

@@ -13,7 +13,8 @@ import {
   remainder,
   subtract,
 } from "./numeric";
-import { concat } from "./text";
+import { concat, title_case } from "./text";
+import { first } from "./stream";
 
 export function add_prelude(vm: CrochetVM, ffi: ForeignInterface) {
   const root = vm.root_env;
@@ -129,6 +130,15 @@ export function add_prelude(vm: CrochetVM, ffi: ForeignInterface) {
     "builtin:concat"
   );
 
+  ffi.add("builtin:title-case", 1, title_case);
+  vm.add_foreign_command(
+    root,
+    "_ title-case",
+    ["This"],
+    [0],
+    "builtin:title-case"
+  );
+
   ffi.add("builtin:and", 2, and);
   vm.add_foreign_command(
     root,
@@ -143,4 +153,7 @@ export function add_prelude(vm: CrochetVM, ffi: ForeignInterface) {
 
   ffi.add("builtin:not", 1, not);
   vm.add_foreign_command(root, "_ bnot", ["This"], [0], "builtin:not");
+
+  ffi.add("builtin:first", 1, first);
+  vm.add_foreign_command(root, "_ first", ["Stream"], [0], "builtin:first");
 }
