@@ -45,6 +45,7 @@ import {
   EMatch,
   MatchPredicate,
   MatchDefault,
+  InterpolatePart,
 } from "./ast";
 import * as IR from "../../ir/operations";
 
@@ -556,8 +557,25 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new InterpolateStatic(value.toAST());
   },
 
-  interpolateText(_l: x, parts: Node, _r: x) {
-    return new EInterpolateText(this.sourceString as any, parts.toAST());
+  interpolateText(_l: x, parts0: Node, _r: x) {
+    const parts1: InterpolatePart[] = parts0.toAST();
+    const parts = parts1.reduce((xs, x) => {
+      if (xs.length === 0) {
+        return [x];
+      } else {
+        const last = xs[xs.length - 1];
+        if (
+          x instanceof InterpolateStatic &&
+          last instanceof InterpolateStatic
+        ) {
+          (last as any).text = last.text + x.text;
+        } else {
+          xs.push(x);
+        }
+        return xs;
+      }
+    }, [] as InterpolatePart[]);
+    return new EInterpolateText(this.sourceString as any, parts);
   },
 
   emptyListOf() {
