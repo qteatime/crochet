@@ -1,0 +1,204 @@
+% crochet
+
+relation Item* short-name: Name;
+relation Item* name: Name;
+relation Item* description: Description;
+relation Item* on: Place;
+
+relation Room* to: Direction* lays: Room;
+relation Room* times-disturbed: N;
+
+relation Player* visited: Room*;
+relation Player* at: Room;
+
+
+actor #foyer :: room {
+  name: "Foyer of the Opera House";
+  short-name: "foyer";
+  description:
+    "You are standing in a spacious hall, splendidly decorated in red and gold,
+    with glittering chanedliers overhead. The entrance from the street is to
+    the north, and there are doorways south and west.";
+
+  to: "south" lays: #bar;
+  to: "west" lays: #cloakroom;
+}
+
+actor #cloakroom :: room {
+  name: "Cloakroom";
+  short-name: "cloakroom";
+  description:
+    "The walls of this small room were clearly once lined with hooks,
+    though now only one remains. The exit is a door to the east.";
+
+  to: "east" lays: #foyer;
+}
+
+actor #hook :: place {
+  name: "Small Brass Hook";
+  short-name: "hook";
+  description:
+    "It's just a small brass hook, screwed to the wall.";
+
+  on: #cloakroom;
+}
+
+actor #bar :: room {
+  name: "Foyer Bar";
+  short-name: "bar";
+  description:
+    "The bar, much rougher than you'd have guessed after the opulence of the
+    foyer to the north, is completely empty. There seems to be some sort of
+    message scrawled in sawdust on the floor.";
+
+  to: "north" lays: #foyer;
+  times-disturbed: 0;
+}
+
+actor #cloak :: item, wearable {
+  name: "Velvet Cloak";
+  short-name: "cloak";
+  description:
+    "A handsome cloak, of velvet trimmed with satin, and slightly spattered with
+    raindrops. Its blackness is so deep that it almost seems to suck light from
+    the room.";
+
+  on: #player;
+}
+
+actor #player :: player {
+  at: #foyer;
+}
+
+command Room describe {
+  match {
+    when #cloak on: #player if Room === #bar {
+      say: "It's pitch dark here. You can't see a thing.";
+    }
+
+    when #player visited: R, R short-name: Name if R === Room {
+      say: "You're back at the [Name]";
+    }
+
+    when R name: Name, R description: Description if R === Room {
+      say: Name;
+      say: Description;
+      fact #player visited: R;
+    }
+  };
+}
+
+
+do {
+  goto main;
+}
+
+scene main {
+  "Cloak of Darkness" title show;
+  
+  say:
+  "Hurrying through the rainswept November night, you're glad to see the
+  bright lights of the Opera House. It's surprising that there aren't
+  more people about but, hey, what do you expect in a cheap demo game...?";
+
+  #foyer describe;
+
+  goto main-loop;
+}
+
+scene main-loop {
+  trigger action;
+  goto main-loop;
+}
+
+
+repeatable action "Go [Direction]"
+when
+  #player at: Room,
+  Room to: Direction lays: Target,
+  not #player visited: Target
+{
+  Target describe;
+  fact #player at: Target;
+}
+
+repeatable action "Go [Direction], to the [Name]"
+when
+  #player at: Room,
+  Room to: Direction lays: Target,
+  Target short-name: Name,
+  #player visited: Target
+{
+  fact #player at: Target;
+  Target describe;
+}
+
+repeatable action "Go north, to the street"
+when
+  #player at: #foyer
+{
+  say:
+  "You've only just arrived, and besides, the weather outside seems to be
+  getting worse.";
+}
+
+// Bar actions
+repeatable action "Look around"
+when
+  #player at: #bar,
+  #cloak on: #player,
+  #bar times-disturbed: N
+{
+  say:
+    "In the dark? You could easily disturb something!";
+
+  fact #bar times-disturbed: (N + 1);
+}
+
+action "Examine the message"
+when
+  #player at: #bar,
+  not #cloak on: #player,
+  #bar times-disturbed: N
+{
+  if N < 2 then
+    say: "The message, neatly marked in the sawdust reads... 'you won'"
+  else
+    say:
+      "The message has been carelessly trampled, making it difficult to read.
+      You can just distinguish the words... 'you have lost'";
+  
+  goto ending;
+}
+
+// Cloakroom actions
+repeatable action "Place cloak on the [Name]"
+when
+  #player at: #cloakroom,
+  #cloak on: #player,
+  Thing on: #cloakroom,
+  Thing short-name: Name
+  if Thing :: place
+{
+  say:
+    "You place your cloak on [Name].";
+
+  fact #cloak on: Thing;
+}
+
+repeatable action "Take cloak from the [Name]"
+when
+  #player at: #cloakroom,
+  Thing on: #cloakroom,
+  #cloak on: Thing,
+  Thing short-name: Name
+  if Thing :: place
+{
+  say:
+    "You take your cloak from [Name].";
+
+  fact #cloak on: #player;
+}
+
+
+scene ending {}
