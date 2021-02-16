@@ -151,11 +151,11 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
   },
 
   relationVariable_many(name: Node, _: x) {
-    return new OneComponent(name.toAST());
+    return new ManyComponent(name.toAST());
   },
 
   relationVariable_one(name: Node) {
-    return new ManyComponent(name.toAST());
+    return new OneComponent(name.toAST());
   },
 
   relationSignaturePair(kw: Node, name: Node) {
