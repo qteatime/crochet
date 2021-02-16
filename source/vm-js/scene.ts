@@ -16,14 +16,25 @@ export class Scene {
 }
 
 export class Action {
+  public enabled: boolean = true;
+
   constructor(
     readonly module: Module,
+    readonly repeatable: boolean,
     readonly title: SimpleInterpolation,
     readonly tags: Set<string>,
     readonly env: Environment,
     readonly predicate: Predicate,
     readonly body: Operation[]
   ) {}
+
+  disable() {
+    this.enabled = false;
+  }
+
+  enable() {
+    this.enabled = true;
+  }
 }
 
 export class Hook {

@@ -443,6 +443,9 @@ export class CrochetVM {
         const chosen = await this.pick_action(activation);
         if (chosen != null) {
           const { action, bindings } = chosen;
+          if (!action.repeatable) {
+            this.actions = this.actions.filter((x) => x !== action);
+          }
           const new_env = new Environment(action.env);
           for (const [k, v] of bindings.bound_values.entries()) {
             new_env.define(k, v);
@@ -575,6 +578,7 @@ export class CrochetVM {
         const action_env = new Environment(env);
         const action = new Action(
           module,
+          declaration.repeatable,
           declaration.title,
           new Set(declaration.tags),
           action_env,
@@ -831,12 +835,16 @@ export class CrochetVM {
   }
 
   private actions_available(activation: Activation, action: Action) {
+    if (action.enabled) {
     const results = this.search(activation, action.predicate);
     return results.map((x) => ({
       action,
       bindings: x,
       title: this.simple_interpolate(activation, action, x.bound_values),
     }));
+    } else {
+      return [];
+  }
   }
 
   private search(activation: Activation, predicate: IR.Predicate) {

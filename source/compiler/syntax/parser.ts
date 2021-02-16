@@ -198,7 +198,16 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new OneRelationSegment(name.toAST());
   },
 
+  repeatableMark_mark(_: x) {
+    return true;
+  },
+
+  repeatableMark_no_mark() {
+    return false;
+  },
+
   actionDeclaration(
+    repeatable: Node,
     _action: x,
     name: Node,
     tags: Node,
@@ -206,7 +215,13 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     pred: Node,
     block: Node
   ) {
-    return new DAction(name.toAST(), tags.toAST(), pred.toAST(), block.toAST());
+    return new DAction(
+      repeatable.toAST(),
+      name.toAST(),
+      tags.toAST(),
+      pred.toAST(),
+      block.toAST()
+    );
   },
 
   actionTags_tagged(_: x, tags: Node) {
