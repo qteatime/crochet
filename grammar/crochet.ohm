@@ -53,7 +53,11 @@ Crochet {
     | keyword name
 
   actionDeclaration =
-    | action_ interpolateText<variable> actionTags when_ predicate statementBlock
+    | repeatableMark action_ interpolateText<variable> actionTags when_ predicate statementBlock
+
+  repeatableMark =
+    | repeatable_     -- mark
+    |                 -- no_mark
 
   actionTags =
     | s<"::"> nonemptyListOf<atom, ",">    -- tagged
@@ -72,6 +76,10 @@ Crochet {
   constraintEq =
     | constraintPrimary s<"==="> constraintPrimary   -- eq
     | constraintPrimary s<"=/="> constraintPrimary   -- neq
+    | constraintPrimary s<">"> constraintPrimary     -- gt
+    | constraintPrimary s<">="> constraintPrimary    -- gte
+    | constraintPrimary s<"<"> constraintPrimary     -- lt
+    | constraintPrimary s<"<="> constraintPrimary    -- lte
     | constraintPrimary s<"::"> atom                 -- role
     | constraintPrimary
 
