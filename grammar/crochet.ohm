@@ -31,12 +31,15 @@ Crochet {
     | relation_ relationSignature s<";">
 
   relationSignature =
-    | relationSignatureSegment+
+    | relationVariable relationSignaturePair+   -- keyword
+    | relationVariable atom                     -- unary
 
-  relationSignatureSegment =
-    | atom         -- static
+  relationVariable =
     | name s<"*">  -- many
     | name         -- one
+
+  relationSignaturePair =
+    | keyword relationVariable
 
   commandDeclaration =
     | command_ commandSignature s<"="> atom s<"("> listOf<name, s<",">> s<")"> s<";">  -- ffi
@@ -122,11 +125,11 @@ Crochet {
     | forget_ factUseSignature s<";">
 
   factUseSignature =
-    | factSegment+
+    | primaryExpression factSignaturePair+    -- keyword
+    | primaryExpression atom                  -- unary
 
-  factSegment =
-    | atom                -- static
-    | primaryExpression   -- variable
+  factSignaturePair =
+    | keyword primaryExpression
 
   statementBlock =
     | s<"{"> statement* s<"}">
@@ -143,8 +146,15 @@ Crochet {
     | invokeInfix
 
   searchRelation =
-    | not_ searchSegment+     -- negated
-    | searchSegment+          -- has
+    | not_ searchSignature     -- negated
+    | searchSignature          -- has
+
+  searchSignature =
+    | searchSegment searchSignaturePair+  -- keyword
+    | searchSegment atom                  -- unary
+
+  searchSignaturePair =
+    | keyword searchSegment
 
   searchSegment =
     | actorName               -- actor
@@ -154,7 +164,6 @@ Crochet {
     | boolean                 -- boolean
     | nothing                 -- nothing
     | name                    -- variable
-    | atom                    -- static
 
   invokeInfix =
     | invokeMixfix infix_symbol invokeMixfix  -- infix
