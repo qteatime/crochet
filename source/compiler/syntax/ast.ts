@@ -103,12 +103,17 @@ export class DLocalCommand extends Declaration {
 }
 
 export class DActor extends Declaration {
-  constructor(readonly name: string, readonly roles: string[]) {
+  constructor(
+    readonly name: string,
+    readonly roles: string[],
+    readonly initialisation: SFact[]
+  ) {
     super();
   }
 
   *compile() {
     yield new IR.DefineActor(this.name, this.roles);
+    yield* new DDo(this.initialisation).compile();
   }
 }
 

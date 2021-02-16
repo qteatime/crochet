@@ -85,12 +85,45 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DScene(name.toAST(), body.toAST());
   },
 
-  actorDeclaration_roles(_actor: x, name: Node, _: x, roles: Node, _semi: x) {
-    return new DActor(name.toAST(), roles.toAST());
+  actorDeclaration(_actor: x, name0: Node, roles: Node, init: Node) {
+    const name = name0.toAST();
+    const self = new EActor(name);
+    return new DActor(name, roles.toAST(), init.toAST()(self));
   },
 
-  actorDeclaration_no_roles(_actor: x, name: Node, _semi: x) {
-    return new DActor(name.toAST(), []);
+  actorRoles_roles(_: x, roles: Node) {
+    return roles.toAST();
+  },
+
+  actorRoles_no_roles() {
+    return [];
+  },
+
+  actorInitialisation_init(_l: x, facts: Node, _r: x) {
+    return (self: Expression) => facts.toAST().map((f: Function) => f(self));
+  },
+
+  actorInitialisation_no_init(_semi: x) {
+    return (self: Expression) => [];
+  },
+
+  actorFact(fact: Node) {
+    return (self: Expression) => new SFact(fact.toAST()(self));
+  },
+
+  actorFact_keyword(pairs0: Node, _semi: x) {
+    return (self: Expression) => {
+      const pairs: Pair<Expression>[] = pairs0.toAST();
+      const name = pairs.map((x) => x.keyword);
+      const args = [self, ...pairs.map((x) => x.value)];
+      return new FactSignature("_ " + name.join(""), args);
+    };
+  },
+
+  actorFact_unary(name: Node, _semi: x) {
+    return (self: Expression) => {
+      return new FactSignature("_ " + name.toAST(), [self]);
+    };
   },
 
   contextDeclaration(_context: x, name: Node, _l: x, hooks: Node, _r: x) {

@@ -24,8 +24,19 @@ Crochet {
     | when_ predicate statementBlock
 
   actorDeclaration =
-    | actor_ actorName s<"::"> nonemptyListOf<atom, s<",">> s<";">   -- roles
-    | actor_ actorName s<";">                                        -- no_roles
+    | actor_ actorName actorRoles actorInitialisation
+
+  actorRoles =
+    | s<"::"> nonemptyListOf<atom, s<",">>    -- roles
+    |                                         -- no_roles
+
+  actorInitialisation =
+    | s<"{"> actorFact+ s<"}">     -- init
+    | ";"                          -- no_init
+
+  actorFact =
+    | factSignaturePair+ s<";">    -- keyword
+    | atom s<";">                  -- unary
 
   relationDeclaration =
     | relation_ relationSignature s<";">
