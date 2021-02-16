@@ -262,6 +262,32 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new IR.CNotEqual(left.toAST(), right.toAST());
   },
 
+  constraintEq_gt(left: Node, _s: x, right: Node) {
+    return new IR.CGreaterThan(left.toAST(), right.toAST());
+  },
+
+  constraintEq_gte(left0: Node, _s: x, right0: Node) {
+    const left = left0.toAST();
+    const right = right0.toAST();
+    return new IR.COr(
+      new IR.CEqual(left, right),
+      new IR.CGreaterThan(left, right)
+    );
+  },
+
+  constraintEq_lt(left: Node, _s: x, right: Node) {
+    return new IR.CLessThan(left.toAST(), right.toAST());
+  },
+
+  constraintEq_lte(left0: Node, _s: x, right0: Node) {
+    const left = left0.toAST();
+    const right = right0.toAST();
+    return new IR.COr(
+      new IR.CEqual(left, right),
+      new IR.CLessThan(left, right)
+    );
+  },
+
   constraintEq_role(expr: Node, _sym: x, role: Node) {
     return new IR.CRole(expr.toAST(), role.toAST());
   },

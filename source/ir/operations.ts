@@ -304,6 +304,8 @@ export type Constraint =
   | CNot
   | CEqual
   | CNotEqual
+  | CLessThan
+  | CGreaterThan
   | CVariable
   | CActor
   | CRole
@@ -320,6 +322,8 @@ export abstract class AbstractConstraint {
       CNot,
       CEqual,
       CNotEqual,
+      CLessThan,
+      CGreaterThan,
       CVariable,
       CActor,
       CRole,
@@ -418,6 +422,42 @@ export class CNotEqual extends AbstractConstraint {
         right: AbstractConstraint,
       },
       (x) => new CNotEqual(x.left, x.right)
+    );
+  }
+}
+
+export class CLessThan extends AbstractConstraint {
+  readonly tag = "less-than";
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("less-than"),
+        left: AbstractConstraint,
+        right: AbstractConstraint,
+      },
+      (x) => new CLessThan(x.left, x.right)
+    );
+  }
+}
+
+export class CGreaterThan extends AbstractConstraint {
+  readonly tag = "greater-than";
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
+
+  static get spec() {
+    return spec(
+      {
+        tag: equal("greater-than"),
+        left: AbstractConstraint,
+        right: AbstractConstraint,
+      },
+      (x) => new CGreaterThan(x.left, x.right)
     );
   }
 }

@@ -836,15 +836,15 @@ export class CrochetVM {
 
   private actions_available(activation: Activation, action: Action) {
     if (action.enabled) {
-    const results = this.search(activation, action.predicate);
-    return results.map((x) => ({
-      action,
-      bindings: x,
-      title: this.simple_interpolate(activation, action, x.bound_values),
-    }));
+      const results = this.search(activation, action.predicate);
+      return results.map((x) => ({
+        action,
+        bindings: x,
+        title: this.simple_interpolate(activation, action, x.bound_values),
+      }));
     } else {
       return [];
-  }
+    }
   }
 
   private search(activation: Activation, predicate: IR.Predicate) {
@@ -929,8 +929,40 @@ export class CrochetVM {
         return new CrochetBoolean(left.equals(right));
       }
 
+      case "greater-than": {
+        const left = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.left
+        );
+        const right = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.right
+        );
+        this.assert_integer(activation, left);
+        this.assert_integer(activation, right);
+        return left.greater_than(right);
+      }
+
       case "integer": {
         return new CrochetInteger(constraint.value);
+      }
+
+      case "less-than": {
+        const left = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.left
+        );
+        const right = this.evaluate_constraint(
+          activation,
+          uenv,
+          constraint.right
+        );
+        this.assert_integer(activation, left);
+        this.assert_integer(activation, right);
+        return left.less_than(right);
       }
 
       case "not": {
