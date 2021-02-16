@@ -278,11 +278,12 @@ Crochet {
   then_ = kw<"then">
   else_ = kw<"else">
   match_ = kw<"match">
+  repeatable_ = kw<"repeatable">
 
   reserved =
     | true_ | false_ | nothing_ 
     | scene_ | command_ | do_ | return_ | goto_ | let_ | end_
     | actor_ | relation_ | fact_ | search_ | forget_ | action_
     | when_ | choose_ | if_ | and_ | or_ | not_ | context_ | trigger_
-    | then_ | else_ | match_
+    | then_ | else_ | match_ | repeatable_
 }

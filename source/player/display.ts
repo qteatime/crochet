@@ -124,9 +124,9 @@ export class Display {
 
   async show_menu<A>(options: Item<A>[]) {
     const deferred = defer<A>();
-    await this.show(
-      this.menu(options, (selection) => deferred.resolve(selection))
-    );
+    const menu = this.menu(options, (selection) => deferred.resolve(selection));
+    await this.show(menu);
+    this.mark = menu;
     return deferred.promise;
   }
 }
