@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/crochet.css" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .crochet-divider {
+        background: #fafafa;
+        height: 3em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="crochet"></div>
+    <script src="/crochet.js"></script>
+    <script src="/ui.js"></script>
+    <script>
+      Crochet.run("#crochet", {{files}}, OrangesUI);
+    </script>
+  </body>
+</html>
