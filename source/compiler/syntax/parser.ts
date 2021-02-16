@@ -64,76 +64,8 @@ export function parse(filename: string, source: string): Program {
 type x = unknown;
 type Node = Ohm.Node;
 
-interface ISegment {
-  to_static_part(): string;
-}
-
-class AtomSegment implements ISegment {
-  constructor(readonly name: string) {}
-
-  to_static_part() {
-    return this.name;
-  }
-
-  to_relation_signature(): RelationComponent {
-    throw new Error(`Atom cannot be made into a component`);
-  }
-
-  to_pattern(): IR.Pattern {
-    throw new Error(`Atom cannot be made into a pattern`);
-  }
-}
-
-class VariableSegment implements ISegment {
-  constructor(readonly name: string) {}
-
-  to_static_part() {
-    return "_";
-  }
-}
-
-class ExprSegment implements ISegment {
-  constructor(readonly expr: Expression) {}
-
-  to_static_part() {
-    return "_";
-  }
-}
-
-class OneRelationSegment implements ISegment {
-  constructor(readonly name: string) {}
-
-  to_static_part() {
-    return "_";
-  }
-
-  to_relation_signature() {
-    return new OneComponent(this.name);
-  }
-}
-
-class ManyRelationSegment implements ISegment {
-  constructor(readonly name: string) {}
-
-  to_static_part() {
-    return "_";
-  }
-
-  to_relation_signature() {
-    return new ManyComponent(this.name);
-  }
-}
-
-class PatternSegment implements ISegment {
-  constructor(readonly pattern: IR.Pattern) {}
-
-  to_static_part() {
-    return "_";
-  }
-
-  to_pattern() {
-    return this.pattern;
-  }
+class SearchSignature {
+  constructor(readonly name: string, readonly patterns: IR.Pattern[]) {}
 }
 
 class Pair<T> {
@@ -173,29 +105,27 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new DRelation(sig.toAST());
   },
 
-  relationSignature(segments0: Node) {
-    const segments: (
-      | AtomSegment
-      | OneRelationSegment
-      | ManyRelationSegment
-    )[] = segments0.toAST();
-    const name = segments.map((x) => x.to_static_part()).join(" ");
-    const args = segments
-      .filter((x) => !(x instanceof AtomSegment))
-      .map((x) => x.to_relation_signature());
-    return new RelationSignature(name, args);
+  relationSignature_unary(self: Node, name: Node) {
+    return new RelationSignature("_ " + name.toAST(), [self.toAST()]);
   },
 
-  relationSignatureSegment_static(name: Node) {
-    return new AtomSegment(name.toAST());
+  relationSignature_keyword(self: Node, pairs0: Node) {
+    const pairs: Pair<RelationComponent>[] = pairs0.toAST();
+    const name = pairs.map((x) => x.keyword);
+    const args = [self.toAST(), ...pairs.map((x) => x.value)];
+    return new RelationSignature("_ " + name.join(""), args);
   },
 
-  relationSignatureSegment_many(name: Node, _star: x) {
-    return new ManyRelationSegment(name.toAST());
+  relationVariable_many(name: Node, _: x) {
+    return new OneComponent(name.toAST());
   },
 
-  relationSignatureSegment_one(name: Node) {
-    return new OneRelationSegment(name.toAST());
+  relationVariable_one(name: Node) {
+    return new ManyComponent(name.toAST());
+  },
+
+  relationSignaturePair(kw: Node, name: Node) {
+    return new Pair<unknown>(kw.toAST(), name.toAST());
   },
 
   repeatableMark_mark(_: x) {
@@ -391,21 +321,19 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new STrigger(name.toAST());
   },
 
-  factUseSignature(segments0: Node) {
-    const segments: (AtomSegment | ExprSegment)[] = segments0.toAST();
-    const name = segments.map((x) => x.to_static_part()).join(" ");
-    const args = segments
-      .filter((x) => x instanceof ExprSegment)
-      .map((x) => ((x as any) as ExprSegment).expr);
-    return new FactSignature(name, args);
+  factUseSignature_unary(self: Node, name: Node) {
+    return new FactSignature("_ " + name.toAST(), [self.toAST()]);
   },
 
-  factSegment_static(name: Node) {
-    return new AtomSegment(name.toAST());
+  factUseSignature_keyword(self: Node, pairs0: Node) {
+    const pairs: Pair<Expression>[] = pairs0.toAST();
+    const name = pairs.map((x) => x.keyword);
+    const args = [self.toAST(), ...pairs.map((x) => x.value)];
+    return new FactSignature("_ " + name.join(""), args);
   },
 
-  factSegment_variable(expr: Node) {
-    return new ExprSegment(expr.toAST());
+  factSignaturePair(kw: Node, expr: Node) {
+    return new Pair<unknown>(kw.toAST(), expr.toAST());
   },
 
   triggerAction(_choose: x, _action: x, _semi: x) {
@@ -455,58 +383,61 @@ const toAST = grammar.createSemantics().addOperation("toAST()", {
     return new ESearch(predicate.toAST());
   },
 
-  searchRelation_negated(_not: x, segments0: Node) {
-    const segments: (AtomSegment | PatternSegment)[] = segments0.toAST();
-    const name = segments.map((x) => x.to_static_part()).join(" ");
-    const patterns = segments
-      .filter((x) => x instanceof PatternSegment)
-      .map((x) => x.to_pattern());
-    return new IR.PredicateRelation(name, patterns, true);
+  searchRelation_negated(_not: x, sig0: Node) {
+    const sig: SearchSignature = sig0.toAST();
+    return new IR.PredicateRelation(sig.name, sig.patterns, true);
   },
 
-  searchRelation_has(segments0: Node) {
-    const segments: (AtomSegment | PatternSegment)[] = segments0.toAST();
-    const name = segments.map((x) => x.to_static_part()).join(" ");
-    const patterns = segments
-      .filter((x) => x instanceof PatternSegment)
-      .map((x) => x.to_pattern());
-    return new IR.PredicateRelation(name, patterns, false);
+  searchRelation_has(sig0: Node) {
+    const sig: SearchSignature = sig0.toAST();
+    return new IR.PredicateRelation(sig.name, sig.patterns, false);
+  },
+
+  searchSignature_unary(self: Node, name: Node) {
+    return new SearchSignature("_ " + name.toAST(), [self.toAST()]);
+  },
+
+  searchSignature_keyword(self: Node, pairs0: Node) {
+    const pairs: Pair<IR.Pattern>[] = pairs0.toAST();
+    const name = pairs.map((x) => x.keyword);
+    const args = [self.toAST(), ...pairs.map((x) => x.value)];
+    return new SearchSignature("_ " + name.join(""), args);
+  },
+
+  searchSignaturePair(kw: Node, arg: Node) {
+    return new Pair<unknown>(kw.toAST(), arg.toAST());
   },
 
   searchSegment_actor(name: Node) {
-    return new PatternSegment(new IR.ActorPattern(name.toAST()));
+    return new IR.ActorPattern(name.toAST());
   },
 
   searchSegment_integer(value0: Node) {
     const value: EInteger = value0.toAST();
-    return new PatternSegment(new IR.IntegerPattern(value.value));
+    return new IR.IntegerPattern(value.value);
   },
 
   searchSegment_float(value0: Node) {
     const value: EFloat = value0.toAST();
-    return new PatternSegment(new IR.FloatPattern(value.value));
+    return new IR.FloatPattern(value.value);
   },
 
   searchSegment_text(value0: Node) {
     const value: EText = value0.toAST();
-    return new PatternSegment(new IR.TextPattern(value.value));
+    return new IR.TextPattern(value.value);
   },
 
   searchSegment_boolean(value0: Node) {
     const value: EBoolean = value0.toAST();
-    return new PatternSegment(new IR.BooleanPattern(value.value));
+    return new IR.BooleanPattern(value.value);
   },
 
   searchSegment_nothing(_: x) {
-    return new PatternSegment(new IR.NothingPattern());
+    return new IR.NothingPattern();
   },
 
   searchSegment_variable(name: Node) {
-    return new PatternSegment(new IR.VariablePattern(name.toAST()));
-  },
-
-  searchSegment_static(name: Node) {
-    return new AtomSegment(name.toAST());
+    return new IR.VariablePattern(name.toAST());
   },
 
   primaryExpression_atom(head: Node) {
