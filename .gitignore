@@ -1,7 +1,7 @@
 node_modules/
 build/
 .vscode/
-www/
-!www/crochet.css
-!www/index.html
+templates/web/
+!templates/web/crochet.css
+!templates/web/index.html
 examples/*/www
