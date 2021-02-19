@@ -1,5 +1,0 @@
-% crochet
-
-do {
-  say: "Hello, world!";
-}
