@@ -1,6 +1,0 @@
-{
-  "package": "web",
-  "title": "Hello, world!",
-  "source": "hello-world.crochet",
-  "output_directory": "www"
-}

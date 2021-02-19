@@ -1,8 +1,0 @@
-{
-  "package": "web",
-  "title": "Traces",
-  "source": "traces.crochet",
-  "output_directory": "www",
-  "html": "index.html.template",
-  "assets": ["ui.js"]
-}

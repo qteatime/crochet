@@ -20,22 +20,22 @@ actor #line3 :: line;
 
 // Note the multiplicity: each relation can hold multiple lines, but for
 // each line only one Mark can be placed at a particular column.
-relation Line* Mark x x;
-relation Line* x Mark x;
-relation Line* x x Mark;
+relation Line* c1: Mark;
+relation Line* c2: Mark;
+relation Line* c3: Mark;
 
 do {
-  fact #line1 #empty x x;
-  fact #line1 x #empty x;
-  fact #line1 x x #empty;
+  fact #line1 c1: #empty;
+  fact #line1 c2: #empty;
+  fact #line1 c3: #empty;
 
-  fact #line2 #empty x x;
-  fact #line2 x #empty x;
-  fact #line2 x x #empty;
+  fact #line2 c1: #empty;
+  fact #line2 c2: #empty;
+  fact #line2 c3: #empty;
   
-  fact #line3 #empty x x;
-  fact #line3 x #empty x;
-  fact #line3 x x #empty;
+  fact #line3 c1: #empty;
+  fact #line3 c2: #empty;
+  fact #line3 c3: #empty;
 }
 
 // A tic-tac-toe is a turn-based game, and we need to represent that.
@@ -67,67 +67,67 @@ context next-turn {
 // Now at each turn the players can choose one of the empty marks and place
 // their own there. We'll not concern ourselves with having the players make
 // *good* moves, only choosing a possible one.
-action "Place mark at [Line] c1"
+repeatable action "Place mark at [Line] c1"
 when
   Player turn,
-  Line #empty x x
+  Line c1: #empty
 {
-  fact Line Player x x;
+  fact Line c1: Player;
   say: "[Player] marks [Line]'s first column";
 }
 
-action "Place mark at [Line] c2"
+repeatable action "Place mark at [Line] c2"
 when
   Player turn,
-  Line x #empty x
+  Line c2: #empty
 {
-  fact Line x Player x;
+  fact Line c2: Player;
   say: "[Player] marks [Line]'s second column";
 }
 
-action "Place mark at [Line] c3"
+repeatable action "Place mark at [Line] c3"
 when
   Player turn,
-  Line x x #empty
+  Line c3: #empty
 {
-  fact Line x x Player;
+  fact Line c3: Player;
   say: "[Player] marks [Line]'s third column";
 }
 
 // We also need to check the winning condition.
 context check-winning-condition {
   when
-    Line X x x, Line x X x, Line x x X
+    Line c1: X, Line c2: X, Line c3: X
     if X =/= #empty
   {
     win: X;
   }
 
   when
-    #line1 X x x, #line2 X x x, #line3 X x x
+    #line1 c1: X, #line2 c1: X, #line3 c1: X
     if X =/= #empty
   {
     win: X;
   }
 
   when
-    #line1 x X x, #line2 x X x, #line3 x X x
+    #line1 c2: X, #line2 c2: X, #line3 c2: X
     if X =/= #empty
   {
     win: X;
   }
 
   when
-    #line1 x x X, #line2 x x X, #line3 x x X
+    #line1 c3: X, #line2 c3: X, #line3 c3: X
     if X =/= #empty
   {
     win: X;
   }
 
   when
-    #line1 X1 x x, #line1 x X2 x, #line1 x x X3,
-    #line2 X4 x x, #line2 x X5 x, #line2 x x X6,
-    #line3 X7 x x, #line3 x X8 x, #line3 x x X9
+    #line1 c1: X1, #line1 c2: X2, #line1 c3: X3,
+    #line2 c1: X4, #line2 c2: X5, #line2 c3: X6,
+    #line3 c1: X7, #line3 c2: X8, #line3 c3: X9
     if X1 =/= #empty and
        X2 =/= #empty and
        X3 =/= #empty and
@@ -180,15 +180,15 @@ scene game {
 // Finally, we have a small function to display the board visually
 context show-board {
   when 
-    #line1 L1C1 x x,
-    #line1 x L1C2 x,
-    #line1 x x L1C3,
-    #line2 L2C1 x x,
-    #line2 x L2C2 x,
-    #line2 x x L2C3,
-    #line3 L3C1 x x,
-    #line3 x L3C2 x,
-    #line3 x x L3C3
+    #line1 c1: L1C1,
+    #line1 c2: L1C2,
+    #line1 c3: L1C3,
+    #line2 c1: L2C1,
+    #line2 c2: L2C2,
+    #line2 c3: L2C3,
+    #line3 c1: L3C1,
+    #line3 c2: L3C2,
+    #line3 c3: L3C3
   {
 "[L1C1 mark]|[L1C2 mark]|[L1C3 mark]
 [L2C1 mark]|[L2C2 mark]|[L2C3 mark]
@@ -208,14 +208,3 @@ command X mark {
     else
       "?";
 }
-
-// As a little extra, we can have Saga say random things every now and then.
-// action "Random thoughts"
-// when
-//   #saga turn,
-//   No turns
-//   if No turns > 2
-// {
-//   trigger saga-wisdom;
-//   trigger action;
-// }
