@@ -224,15 +224,12 @@ let builtinVisitors =
     return children.map((x: any) => x.toAST());
   },
 
-  listOf(node: Ohm.Node): any {
-    if (node.children.length === 0) {
-      return [];
-    } else if (node.children.length === 1) {
-      return [node.children[0].toAST()];
-    } else {
-      const [first, _, rest] = node.children;
-      return [first.toAST(), ...rest.toAST()];
-    }
+  nonemptyListOf(first: Ohm.Node, _: Ohm.Node, rest: Ohm.Node): any {
+    return [first.toAST(), ...rest.toAST()];
+  },
+
+  emptyListOf(): any {
+    return [];
   },
 
   NonemptyListOf(first: Ohm.Node, _: Ohm.Node, rest: Ohm.Node): any {

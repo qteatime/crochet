@@ -190,12 +190,12 @@ let private primParser: obj  =
     """
     Linguist {
       TypeDecl =
-        | type_ Name Formals "(" NonemptyListOf<TypeField, ","> ")" -- alt0
+        | type_ Name Formals "(" ListOf<TypeField, ","> ")" -- alt0
         | type_ Name Formals "=" "|"? NonemptyListOf<TypeVariant, "|"> -- alt1
               
       
       TypeVariant =
-        | Name "(" NonemptyListOf<TypeField, ","> ")" -- alt0
+        | Name "(" ListOf<TypeField, ","> ")" -- alt0
               
       
       TypeField =
@@ -249,7 +249,7 @@ let private primParser: obj  =
               
       
       Action =
-        | ActionProject "(" NonemptyListOf<Action, ","> ")" -- alt0
+        | ActionProject "(" ListOf<Action, ","> ")" -- alt0
         | ActionProject -- alt1
               
       
