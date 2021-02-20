@@ -12,13 +12,13 @@ let parseString (s:string) =
 
 Linguist : Grammar {
   TypeDecl =
-    | type_ n:Name f:Formals "(" p:NonemptyListOf<TypeField, ","> ")"
+    | type_ n:Name f:Formals "(" p:ListOf<TypeField, ","> ")"
       %[ TRecord(n, f, p) ]%
     | type_ n:Name f:Formals "=" "|"? p:NonemptyListOf<TypeVariant, "|"> 
       %[ TUnion(n, f, p) ]%
 
   TypeVariant =
-    | n:Name "(" p:NonemptyListOf<TypeField, ","> ")"
+    | n:Name "(" p:ListOf<TypeField, ","> ")"
       %[ Variant(n, p) ]%
   
   TypeField =
@@ -76,7 +76,7 @@ Linguist : Grammar {
       %[ BUnbound(t) ]%
 
   Action =
-    | e:ActionProject "(" xs:NonemptyListOf<Action, ","> ")"
+    | e:ActionProject "(" xs:ListOf<Action, ","> ")"
       %[ AMake(e, xs) ]%
     | ActionProject
 
