@@ -1,3 +1,5 @@
+import { Union } from "./types";
+
 export class Ok<A, B> {
   constructor(readonly value: A) {}
   chain<C>(f: (_: A) => Result<C, B>): Result<C, B> {
@@ -28,6 +30,13 @@ function collect<A>(xs: Valid<A>[]): Valid<A[]> {
   }, new Ok([]));
 }
 
+export type SpecType<T> =
+  T extends AnySpec<infer U> ? U : never;
+
+export type RecordSpecType<R> = 
+  R extends Record<infer K, infer T> ? { [K0 in K]: SpecType<R[K0]> }
+: never;
+
 type Result<A, B> = Ok<A, B> | Err<A, B>;
 
 export class EType {
@@ -50,12 +59,22 @@ type Errors = EType | ENoKey | ENotEqual | EAnyOf;
 
 type Valid<A> = Result<A, Errors>;
 
+export class LazySpec<A> {
+  constructor(readonly thunk: () => AnySpec<A>) {}
+}
+
 export type SpecFun<A> = (_: any) => Valid<A>;
-export type SpecContainer<A> = { spec: SpecFun<A> };
-export type AnySpec<A> = SpecFun<A> | SpecContainer<A>;
+export type SpecContainer<A> = { spec: AnySpec<A> };
+export type AnySpec<A> = SpecFun<A> | SpecContainer<A> | LazySpec<A>;
+
+export function lazy<A>(x: () => AnySpec<A>) {
+  return new LazySpec(x);
+}
 
 function toSpec<A>(x: AnySpec<A>): SpecFun<A> {
-  if (typeof (x as any).spec === "function") {
+  if (x instanceof LazySpec) {
+    return toSpec(x.thunk());
+  } else if (typeof (x as any).spec === "function") {
     return (x as any).spec;
   } else {
     return x as any;
@@ -112,7 +131,7 @@ export function nothing(x: any): Valid<null> {
   }
 }
 
-export function array<A>(f0: AnySpec<A>) {
+export function array<A>(f0: AnySpec<A>): SpecFun<A[]> {
   const f = toSpec(f0);
   return (xs: any) => {
     if (Array.isArray(xs)) {
@@ -133,7 +152,7 @@ export function equal<A>(x: A): SpecFun<A> {
   };
 }
 
-export function anyOf(fs: AnySpec<any>[]) {
+export function anyOf<T extends AnySpec<any>[]>(fs: T): SpecFun<Union<T>> {
   return (value: any) => {
     return fs.map(toSpec).reduce((r: Result<any, EAnyOf>, f: SpecFun<any>) => {
       return r.recover((rs: EAnyOf) => {
@@ -147,8 +166,8 @@ export function anyOf(fs: AnySpec<any>[]) {
 
 export function spec<A extends Record<string, AnySpec<any>>, B>(
   type: A,
-  parser: (_: Record<keyof A, any>) => B
-) {
+  parser: (_: RecordSpecType<A>) => B
+): SpecFun<B> {
   return (value: any) => {
     if (value !== null && typeof value === "object") {
       const entries = collect(
@@ -173,7 +192,7 @@ export function spec<A extends Record<string, AnySpec<any>>, B>(
   };
 }
 
-export function optional<A>(spec: AnySpec<A>, default_value: A) {
+export function optional<A>(spec: AnySpec<A>, default_value: A): SpecFun<A> {
   return (value: any) => {
     return toSpec(spec)(value).recover((_) => new Ok(default_value));
   };

@@ -9,6 +9,7 @@ import {
   boolean,
   number,
   bigint_string,
+  SpecFun,
 } from "../utils/spec";
 
 export abstract class IRNode {
@@ -43,7 +44,7 @@ export class Module extends IRNode {
 export abstract class AbstractDeclaration extends IRNode {
   abstract tag: string;
 
-  static get spec(): any {
+  static get spec(): SpecFun<Declaration> {
     return anyOf([
       DefineCommand,
       DefineForeignCommand,
@@ -158,7 +159,7 @@ export type SimpleInterpolationPart =
 export abstract class AbstractSimpleInterpolationPart {
   abstract tag: string;
   abstract static_text(): string;
-  static get spec(): any {
+  static get spec(): SpecFun<SimpleInterpolationPart> {
     return anyOf([SimpleInterpolationStatic, SimpleInterpolationVariable]);
   }
 }
@@ -315,7 +316,7 @@ export type Constraint =
 export abstract class AbstractConstraint {
   abstract tag: string;
 
-  static get spec(): any {
+  static get spec(): SpecFun<Constraint> {
     return anyOf([
       CAnd,
       COr,
@@ -578,7 +579,7 @@ export abstract class RelationComponent {
   abstract tag: string;
   abstract evaluate(): Logic.Component;
 
-  static get spec(): any {
+  static get spec(): SpecFun<OneRelation | ManyRelation> {
     return anyOf([OneRelation, ManyRelation]);
   }
 
@@ -704,7 +705,7 @@ export class DefineForeignCommand extends AbstractDeclaration {
 export abstract class AbstractOperation extends IRNode {
   abstract tag: string;
 
-  static get spec(): any {
+  static get spec(): SpecFun<Operation> {
     return anyOf([
       Drop,
       PushInteger,
@@ -1179,7 +1180,7 @@ export type MatchClause = MatchPredicate | MatchDefault;
 
 export abstract class AbstractMatchClause {
   abstract tag: string;
-  static get spec(): any {
+  static get spec(): SpecFun<MatchClause> {
     return anyOf([MatchPredicate, MatchDefault]);
   }
 }
@@ -1233,7 +1234,7 @@ export abstract class AbstractPattern {
     return [];
   }
 
-  static get spec(): any {
+  static get spec(): SpecFun<Pattern> {
     return anyOf([
       IntegerPattern,
       FloatPattern,
