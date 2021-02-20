@@ -175,7 +175,7 @@ let private visitor =
        TParens t 
               
     "ruleDescr_alt0" ==> fun (meta:Meta) _0 d _2 ->
-       d 
+       String.concat "" d 
               
     "terminal_alt0" ==> fun (meta:Meta) t ->
        parseString t 
