@@ -1,5 +1,5 @@
 import * as Ohm from 'ohm-js';
-export const grammar = Ohm.grammar("Crochet {\n  program =\n    | header declaration* space* end\n\n  declaration =\n    | commandDeclaration\n    | doDeclaration\n    | sceneDeclaration\n    | actorDeclaration\n    | relationDeclaration\n    | actionDeclaration\n    | contextDeclaration\n    \n  doDeclaration =\n    | do_ statementBlock\n\n  sceneDeclaration =\n    | scene_ atom statementBlock\n\n  contextDeclaration =\n    | context_ atom s<\"{\"> hookDeclaration+ s<\"}\">\n\n  hookDeclaration =\n    | when_ predicate statementBlock\n\n  actorDeclaration =\n    | actor_ actorName actorRoles actorInitialisation\n\n  actorRoles =\n    | s<\"::\"> nonemptyListOf<atom, s<\",\">>    -- roles\n    |                                         -- no_roles\n\n  actorInitialisation =\n    | s<\"{\"> actorFact+ s<\"}\">     -- init\n    | \";\"                          -- no_init\n\n  actorFact =\n    | factSignaturePair+ s<\";\">    -- keyword\n    | atom s<\";\">                  -- unary\n\n  relationDeclaration =\n    | relation_ relationSignature s<\";\">\n\n  relationSignature =\n    | relationVariable relationSignaturePair+   -- keyword\n    | relationVariable atom                     -- unary\n\n  relationVariable =\n    | name s<\"*\">  -- many\n    | name         -- one\n\n  relationSignaturePair =\n    | keyword relationVariable\n\n  commandDeclaration =\n    | command_ commandSignature s<\"=\"> atom s<\"(\"> listOf<name, s<\",\">> s<\")\"> s<\";\">  -- ffi\n    | command_ commandSignature statementBlock                                         -- local\n\n  commandSignature =\n    | name infix_symbol name           -- infix\n    | name keywordSignaturePair+       -- self\n    | name atom                        -- unary\n    | keywordSignaturePair+            -- prefix\n    | atom                             -- nullary\n  \n  keywordSignaturePair =\n    | keyword name\n\n  actionDeclaration =\n    | repeatableMark action_ interpolateText<variable> actionTags when_ predicate statementBlock\n\n  repeatableMark =\n    | repeatable_     -- mark\n    |                 -- no_mark\n\n  actionTags =\n    | s<\"::\"> nonemptyListOf<atom, \",\">    -- tagged\n    |                                   -- untagged\n\n  predicate =\n    | nonemptyListOf<searchRelation, s<\",\">> if_ constraint    -- constrained\n    | nonemptyListOf<searchRelation, s<\",\">>                   -- unconstrained\n\n  constraint =\n    | constraint and_ constraint    -- conjunction\n    | constraint or_ constraint     -- disjunction\n    | not_ constraint               -- negate\n    | constraintEq\n\n  constraintEq =\n    | constraintPrimary s<\"===\"> constraintPrimary   -- eq\n    | constraintPrimary s<\"=/=\"> constraintPrimary   -- neq\n    | constraintPrimary s<\">\"> constraintPrimary     -- gt\n    | constraintPrimary s<\">=\"> constraintPrimary    -- gte\n    | constraintPrimary s<\"<\"> constraintPrimary     -- lt\n    | constraintPrimary s<\"<=\"> constraintPrimary    -- lte\n    | constraintPrimary s<\"::\"> atom                 -- role\n    | constraintPrimary\n\n  constraintPrimary =\n    | integer                     -- integer\n    | name                        -- variable\n    | actorName                   -- actor\n    | s<\"(\"> constraint s<\")\">    -- group\n\n  statement =\n    | returnStatement\n    | gotoStatement\n    | letStatement\n    | factStatement\n    | forgetStatement\n    | triggerAction\n    | triggerStatement\n    | expression s<\";\">   -- expr\n\n  triggerAction =\n    | trigger_ action_ s<\";\">\n\n  triggerStatement =\n    | trigger_ atom s<\";\">\n\n  returnStatement =\n    | return_ expression s<\";\">  -- with_value\n    | return_ s<\";\">             -- naked\n\n  gotoStatement =\n    | goto_ atom s<\";\">\n\n  letStatement =\n    | let_ name s<\"=\"> expression s<\";\">\n\n  factStatement =\n    | fact_ factUseSignature s<\";\">\n\n  forgetStatement =\n    | forget_ factUseSignature s<\";\">\n\n  factUseSignature =\n    | primaryExpression factSignaturePair+    -- keyword\n    | primaryExpression atom                  -- unary\n\n  factSignaturePair =\n    | keyword primaryExpression\n\n  statementBlock =\n    | s<\"{\"> statement* s<\"}\">\n\n  expression =\n    | searchExpression\n    | ifExpression\n\n  ifExpression =\n    | if_ invokeInfix then_ expression else_ expression\n\n  searchExpression =\n    | search_ predicate   -- search\n    | invokeInfix\n\n  searchRelation =\n    | not_ searchSignature     -- negated\n    | searchSignature          -- has\n\n  searchSignature =\n    | searchSegment searchSignaturePair+  -- keyword\n    | searchSegment atom                  -- unary\n\n  searchSignaturePair =\n    | keyword searchSegment\n\n  searchSegment =\n    | actorName               -- actor\n    | integer                 -- integer\n    | float                   -- float\n    | text                    -- text\n    | boolean                 -- boolean\n    | nothing                 -- nothing\n    | name                    -- variable\n\n  invokeInfix =\n    | invokeMixfix infix_symbol invokeMixfix  -- infix\n    | invokeMixfix\n\n  invokeMixfix =\n    | invokePostfix invokePair+         -- self\n    | invokePair+                       -- prefix\n    | invokePostfix\n\n  invokePair =\n    | keyword invokePostfix\n\n  invokePostfix =\n    | invokePostfix atom        -- postfix\n    | memberExpression\n\n  memberExpression =\n    | memberExpression \".\" text   -- project\n    | primaryExpression\n\n  primaryExpression =\n    | matchExpression\n    | interpolateText<expression>\n    | number\n    | boolean\n    | nothing\n    | variable\n    | atom                      -- atom\n    | actorName                 -- actor\n    | s<\"(\"> expression s<\")\">  -- group\n\n  matchExpression =\n    | match_ s<\"{\"> matchClause+ s<\"}\">\n\n  matchClause =\n    | when_ predicate statementBlock  -- when\n    | else_ statementBlock            -- default\n\n  variable = name\n\n  number = integer | float\n  text = s<t_text>\n  integer = s<t_integer>\n  float = s<t_float>\n  boolean = t_boolean\n  name = s<t_name>\n  atom = space* ~reserved t_atom ~\":\"\n  keyword = s<t_keyword>\n  actorName = s<t_actor_name>\n  nothing = nothing_\n  infix_symbol = s<t_infix_symbol>\n\n  interpolateTextPart<p> =\n    | \"\\\\\" any                   -- escape\n    | \"[\" s<p> s<\"]\">            -- interpolate\n    | ~\"\\\"\" any                  -- character\n\n  interpolateText<p> (a text with interpolation) =\n    | s<\"\\\"\"> interpolateTextPart<p>* \"\\\"\"\n\n  s<p> = space* p\n  // -- Lexical rules -------------------------------------------------\n  header (a file header) = \"%\" hs* \"crochet\" nl\n  hs = \" \" | \"\\t\"\n  nl = \"\\n\" | \"\\r\"\n  line = (~nl any)*\n  comment (a comment) = \"//\" line\n  space += comment\n\n  atom_start = \"a\"..\"z\"\n  atom_rest = letter | digit | \"-\"\n  t_atom (an atom) = atom_start atom_rest*\n\n  t_keyword (a keyword) = t_atom \":\"\n\n  t_actor_name (an actor name) = \"#\" t_atom\n\n  name_start = \"A\"..\"Z\" | \"_\"\n  name_rest = letter | digit | \"-\"\n  t_name (a name) = name_start name_rest*\n\n  t_infix_symbol =\n    | \"+\" | \"-\" | \"*\" | \"/\"\n    | \"<\" | \">\" | \"<=\" | \">=\"\n    | \"===\" | \"=/=\"\n\n  dec_digit = \"0\"..\"9\" | \"_\"\n  t_integer (an integer) = ~\"_\" dec_digit+\n  t_float (a floating-point number) = ~\"_\" dec_digit+ \".\" dec_digit+\n\n\n  text_character =\n    | \"\\\\\" \"\\\"\"     -- escape\n    | ~\"\\\"\" any     -- regular\n  t_text (a text) =\n    | \"\\\"\" text_character* \"\\\"\"\n\n  t_boolean (a boolean) =\n    | true_  -- true\n    | false_ -- false\n\n  kw<word> = s<word> ~atom_rest\n\n  true_ = kw<\"true\">\n  false_ = kw<\"false\">\n  nothing_ = kw<\"nothing\">\n  scene_ = kw<\"scene\">\n  command_ = kw<\"command\">\n  do_ = kw<\"do\">\n  return_ = kw<\"return\">\n  goto_ = kw<\"goto\">\n  let_ = kw<\"let\">\n  end_ = kw<\"end\">\n  actor_ = kw<\"actor\">\n  relation_ = kw<\"relation\">\n  fact_ = kw<\"fact\">\n  forget_ = kw<\"forget\">\n  search_ = kw<\"search\">\n  action_ = kw<\"action\">\n  when_ = kw<\"when\">\n  choose_ = kw<\"choose\">\n  if_ = kw<\"if\">\n  and_ = kw<\"and\">\n  or_ = kw<\"or\">\n  not_ = kw<\"not\">\n  context_ = kw<\"context\">\n  trigger_ = kw<\"trigger\">\n  then_ = kw<\"then\">\n  else_ = kw<\"else\">\n  match_ = kw<\"match\">\n  repeatable_ = kw<\"repeatable\">\n\n  reserved =\n    | true_ | false_ | nothing_ \n    | scene_ | command_ | do_ | return_ | goto_ | let_ | end_\n    | actor_ | relation_ | fact_ | search_ | forget_ | action_\n    | when_ | choose_ | if_ | and_ | or_ | not_ | context_ | trigger_\n    | then_ | else_ | match_ | repeatable_\n}");
+export const grammar = Ohm.grammar("Crochet {\n  program =\n    | header declaration* space* end\n\n  declaration =\n    | doDeclaration\n\n  doDeclaration =\n    | do_ block<statement>\n\n  statement =\n    | returnStatement\n    | expression        -- expression\n\n  returnStatement =\n    | return_ expression\n  \n  expression =\n    | primaryExpression\n\n  primaryExpression =\n    | literal   -- expression\n    | variable\n  \n  literal =\n    | text\n    | boolean\n\n\n  block<t> =\n    | s<\"{\"> nonemptyListOf<t, s<\";\">> s<\";\"> s<\"}\">\n\n/*\n  declaration =\n    | commandDeclaration\n    | doDeclaration\n    | sceneDeclaration\n    | actorDeclaration\n    | relationDeclaration\n    | actionDeclaration\n    | contextDeclaration\n    \n  doDeclaration =\n    | do_ statementBlock\n\n  sceneDeclaration =\n    | scene_ atom statementBlock\n\n  contextDeclaration =\n    | context_ atom s<\"{\"> hookDeclaration+ s<\"}\">\n\n  hookDeclaration =\n    | when_ predicate statementBlock\n\n  actorDeclaration =\n    | actor_ actorName actorRoles actorInitialisation\n\n  actorRoles =\n    | s<\"::\"> nonemptyListOf<atom, s<\",\">>    -- roles\n    |                                         -- no_roles\n\n  actorInitialisation =\n    | s<\"{\"> actorFact+ s<\"}\">     -- init\n    | \";\"                          -- no_init\n\n  actorFact =\n    | factSignaturePair+ s<\";\">    -- keyword\n    | atom s<\";\">                  -- unary\n\n  relationDeclaration =\n    | relation_ relationSignature s<\";\">\n\n  relationSignature =\n    | relationVariable relationSignaturePair+   -- keyword\n    | relationVariable atom                     -- unary\n\n  relationVariable =\n    | name s<\"*\">  -- many\n    | name         -- one\n\n  relationSignaturePair =\n    | keyword relationVariable\n\n  commandDeclaration =\n    | command_ commandSignature s<\"=\"> atom s<\"(\"> listOf<name, s<\",\">> s<\")\"> s<\";\">  -- ffi\n    | command_ commandSignature statementBlock                                         -- local\n\n  commandSignature =\n    | name infix_symbol name           -- infix\n    | name keywordSignaturePair+       -- self\n    | name atom                        -- unary\n    | keywordSignaturePair+            -- prefix\n    | atom                             -- nullary\n  \n  keywordSignaturePair =\n    | keyword name\n\n  actionDeclaration =\n    | repeatableMark action_ interpolateText<variable> actionTags when_ predicate statementBlock\n\n  repeatableMark =\n    | repeatable_     -- mark\n    |                 -- no_mark\n\n  actionTags =\n    | s<\"::\"> nonemptyListOf<atom, \",\">    -- tagged\n    |                                   -- untagged\n\n  predicate =\n    | nonemptyListOf<searchRelation, s<\",\">> if_ constraint    -- constrained\n    | nonemptyListOf<searchRelation, s<\",\">>                   -- unconstrained\n\n  constraint =\n    | constraint and_ constraint    -- conjunction\n    | constraint or_ constraint     -- disjunction\n    | not_ constraint               -- negate\n    | constraintEq\n\n  constraintEq =\n    | constraintPrimary s<\"===\"> constraintPrimary   -- eq\n    | constraintPrimary s<\"=/=\"> constraintPrimary   -- neq\n    | constraintPrimary s<\">\"> constraintPrimary     -- gt\n    | constraintPrimary s<\">=\"> constraintPrimary    -- gte\n    | constraintPrimary s<\"<\"> constraintPrimary     -- lt\n    | constraintPrimary s<\"<=\"> constraintPrimary    -- lte\n    | constraintPrimary s<\"::\"> atom                 -- role\n    | constraintPrimary\n\n  constraintPrimary =\n    | integer                     -- integer\n    | name                        -- variable\n    | actorName                   -- actor\n    | s<\"(\"> constraint s<\")\">    -- group\n\n  statement =\n    | returnStatement\n    | gotoStatement\n    | letStatement\n    | factStatement\n    | forgetStatement\n    | triggerAction\n    | triggerStatement\n    | expression s<\";\">   -- expr\n\n  triggerAction =\n    | trigger_ action_ s<\";\">\n\n  triggerStatement =\n    | trigger_ atom s<\";\">\n\n  returnStatement =\n    | return_ expression s<\";\">  -- with_value\n    | return_ s<\";\">             -- naked\n\n  gotoStatement =\n    | goto_ atom s<\";\">\n\n  letStatement =\n    | let_ name s<\"=\"> expression s<\";\">\n\n  factStatement =\n    | fact_ factUseSignature s<\";\">\n\n  forgetStatement =\n    | forget_ factUseSignature s<\";\">\n\n  factUseSignature =\n    | primaryExpression factSignaturePair+    -- keyword\n    | primaryExpression atom                  -- unary\n\n  factSignaturePair =\n    | keyword primaryExpression\n\n  statementBlock =\n    | s<\"{\"> statement* s<\"}\">\n\n  expression =\n    | searchExpression\n    | ifExpression\n\n  ifExpression =\n    | if_ invokeInfix then_ expression else_ expression\n\n  searchExpression =\n    | search_ predicate   -- search\n    | invokeInfix\n\n  searchRelation =\n    | not_ searchSignature     -- negated\n    | searchSignature          -- has\n\n  searchSignature =\n    | searchSegment searchSignaturePair+  -- keyword\n    | searchSegment atom                  -- unary\n\n  searchSignaturePair =\n    | keyword searchSegment\n\n  searchSegment =\n    | actorName               -- actor\n    | integer                 -- integer\n    | float                   -- float\n    | text                    -- text\n    | boolean                 -- boolean\n    | nothing                 -- nothing\n    | name                    -- variable\n\n  invokeInfix =\n    | invokeMixfix infix_symbol invokeMixfix  -- infix\n    | invokeMixfix\n\n  invokeMixfix =\n    | invokePostfix invokePair+         -- self\n    | invokePair+                       -- prefix\n    | invokePostfix\n\n  invokePair =\n    | keyword invokePostfix\n\n  invokePostfix =\n    | invokePostfix atom        -- postfix\n    | memberExpression\n\n  memberExpression =\n    | memberExpression \".\" text   -- project\n    | primaryExpression\n\n  primaryExpression =\n    | matchExpression\n    | interpolateText<expression>\n    | number\n    | boolean\n    | nothing\n    | variable\n    | atom                      -- atom\n    | actorName                 -- actor\n    | s<\"(\"> expression s<\")\">  -- group\n\n  matchExpression =\n    | match_ s<\"{\"> matchClause+ s<\"}\">\n\n  matchClause =\n    | when_ predicate statementBlock  -- when\n    | else_ statementBlock            -- default\n\n*/\n\n  variable = name\n\n  number = integer | float\n  text = s<t_text>\n  integer = s<t_integer>\n  float = s<t_float>\n  boolean = t_boolean\n  name = s<t_name>\n  atom = space* ~reserved t_atom ~\":\"\n  keyword = s<t_keyword>\n  actorName = s<t_actor_name>\n  nothing = nothing_\n  infix_symbol = s<t_infix_symbol>\n\n  interpolateTextPart<p> =\n    | \"\\\\\" any                   -- escape\n    | \"[\" s<p> s<\"]\">            -- interpolate\n    | ~\"\\\"\" any                  -- character\n\n  interpolateText<p> (a text with interpolation) =\n    | s<\"\\\"\"> interpolateTextPart<p>* \"\\\"\"\n\n  s<p> = space* p\n\n\n  // -- Lexical rules -------------------------------------------------\n  header (a file header) = \"%\" hs* \"crochet\" nl\n  hs = \" \" | \"\\t\"\n  nl = \"\\n\" | \"\\r\"\n  line = (~nl any)*\n  comment (a comment) = \"//\" line\n  space += comment\n\n  atom_start = \"a\"..\"z\"\n  atom_rest = letter | digit | \"-\"\n  t_atom (an atom) = atom_start atom_rest*\n\n  t_keyword (a keyword) = t_atom \":\"\n\n  t_actor_name (an actor name) = \"#\" t_atom\n\n  name_start = \"A\"..\"Z\" | \"_\"\n  name_rest = letter | digit | \"-\"\n  t_name (a name) = name_start name_rest*\n\n  t_infix_symbol =\n    | \"+\" | \"-\" | \"*\" | \"/\"\n    | \"<\" | \">\" | \"<=\" | \">=\"\n    | \"===\" | \"=/=\"\n\n  dec_digit = \"0\"..\"9\" | \"_\"\n  t_integer (an integer) = ~\"_\" dec_digit+\n  t_float (a floating-point number) = ~\"_\" dec_digit+ \".\" dec_digit+\n\n\n  text_character =\n    | \"\\\\\" \"\\\"\"     -- escape\n    | ~\"\\\"\" any     -- regular\n  t_text (a text) =\n    | \"\\\"\" text_character* \"\\\"\"\n\n  t_boolean (a boolean) =\n    | true_  -- true\n    | false_ -- false\n\n  kw<word> = s<word> ~atom_rest\n\n  true_ = kw<\"true\">\n  false_ = kw<\"false\">\n  nothing_ = kw<\"nothing\">\n  scene_ = kw<\"scene\">\n  command_ = kw<\"command\">\n  do_ = kw<\"do\">\n  return_ = kw<\"return\">\n  goto_ = kw<\"goto\">\n  let_ = kw<\"let\">\n  end_ = kw<\"end\">\n  actor_ = kw<\"actor\">\n  relation_ = kw<\"relation\">\n  fact_ = kw<\"fact\">\n  forget_ = kw<\"forget\">\n  search_ = kw<\"search\">\n  action_ = kw<\"action\">\n  when_ = kw<\"when\">\n  choose_ = kw<\"choose\">\n  if_ = kw<\"if\">\n  and_ = kw<\"and\">\n  or_ = kw<\"or\">\n  not_ = kw<\"not\">\n  context_ = kw<\"context\">\n  trigger_ = kw<\"trigger\">\n  then_ = kw<\"then\">\n  else_ = kw<\"else\">\n  match_ = kw<\"match\">\n  repeatable_ = kw<\"repeatable\">\n\n  reserved =\n    | true_ | false_ | nothing_ \n    | scene_ | command_ | do_ | return_ | goto_ | let_ | end_\n    | actor_ | relation_ | fact_ | search_ | forget_ | action_\n    | when_ | choose_ | if_ | and_ | or_ | not_ | context_ | trigger_\n    | then_ | else_ | match_ | repeatable_\n}");
 const unimplemented = {};
 
 export interface Wrapper<A, B> {
@@ -61,808 +61,544 @@ semantics.addOperation('visit(visitor, context)', <any>{
   },
   emptyListOf() { return []; },
   listOf(alt: any) { return alt.visit(this.args.visitor, this.args.context) },
-  ListOf(alt: any) { return alt.visit(this.args.visitor, this.args.context) }
+  ListOf(alt: any) { return alt.visit(this.args.visitor, this.args.context) },
+  "program": function(_0: any, _1: any, _2: any, _3: any) {
+    const { visitor, context } = this.args;
+    return visitor["program"](this, [_0, _1, _2, _3], context);
+  },
+  "declaration": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["declaration"](this, [_0], context);
+  },
+  "doDeclaration": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["doDeclaration"](this, [_0, _1], context);
+  },
+  "statement_expression": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["statement_expression"](this, [_0], context);
+  },
+  "statement": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["statement"](this, [_0], context);
+  },
+  "returnStatement": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["returnStatement"](this, [_0, _1], context);
+  },
+  "expression": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["expression"](this, [_0], context);
+  },
+  "primaryExpression_expression": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["primaryExpression_expression"](this, [_0], context);
+  },
+  "primaryExpression": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["primaryExpression"](this, [_0], context);
+  },
+  "literal": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["literal"](this, [_0], context);
+  },
+  "block": function(_0: any, _1: any, _2: any, _3: any) {
+    const { visitor, context } = this.args;
+    return visitor["block"](this, [_0, _1, _2, _3], context);
+  },
+  "variable": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["variable"](this, [_0], context);
+  },
+  "number": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["number"](this, [_0], context);
+  },
+  "text": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["text"](this, [_0], context);
+  },
+  "integer": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["integer"](this, [_0], context);
+  },
+  "float": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["float"](this, [_0], context);
+  },
+  "boolean": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["boolean"](this, [_0], context);
+  },
+  "name": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["name"](this, [_0], context);
+  },
+  "atom": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["atom"](this, [_0, _1], context);
+  },
+  "keyword": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["keyword"](this, [_0], context);
+  },
+  "actorName": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["actorName"](this, [_0], context);
+  },
+  "nothing": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["nothing"](this, [_0], context);
+  },
+  "infix_symbol": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["infix_symbol"](this, [_0], context);
+  },
+  "interpolateTextPart_escape": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["interpolateTextPart_escape"](this, [_0, _1], context);
+  },
+  "interpolateTextPart_interpolate": function(_0: any, _1: any, _2: any) {
+    const { visitor, context } = this.args;
+    return visitor["interpolateTextPart_interpolate"](this, [_0, _1, _2], context);
+  },
+  "interpolateTextPart_character": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["interpolateTextPart_character"](this, [_0], context);
+  },
+  "interpolateTextPart": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["interpolateTextPart"](this, [_0], context);
+  },
+  "interpolateText": function(_0: any, _1: any, _2: any) {
+    const { visitor, context } = this.args;
+    return visitor["interpolateText"](this, [_0, _1, _2], context);
+  },
+  "s": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["s"](this, [_0, _1], context);
+  },
+  "header": function(_0: any, _1: any, _2: any, _3: any) {
+    const { visitor, context } = this.args;
+    return visitor["header"](this, [_0, _1, _2, _3], context);
+  },
+  "hs": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["hs"](this, [_0], context);
+  },
+  "nl": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["nl"](this, [_0], context);
+  },
+  "line": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["line"](this, [_0], context);
+  },
+  "comment": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["comment"](this, [_0, _1], context);
+  },
+  "atom_start": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["atom_start"](this, [_0], context);
+  },
+  "atom_rest": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["atom_rest"](this, [_0], context);
+  },
+  "t_atom": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_atom"](this, [_0, _1], context);
+  },
+  "t_keyword": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_keyword"](this, [_0, _1], context);
+  },
+  "t_actor_name": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_actor_name"](this, [_0, _1], context);
+  },
+  "name_start": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["name_start"](this, [_0], context);
+  },
+  "name_rest": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["name_rest"](this, [_0], context);
+  },
+  "t_name": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_name"](this, [_0, _1], context);
+  },
+  "t_infix_symbol": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_infix_symbol"](this, [_0], context);
+  },
+  "dec_digit": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["dec_digit"](this, [_0], context);
+  },
+  "t_integer": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_integer"](this, [_0], context);
+  },
+  "t_float": function(_0: any, _1: any, _2: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_float"](this, [_0, _1, _2], context);
+  },
+  "text_character_escape": function(_0: any, _1: any) {
+    const { visitor, context } = this.args;
+    return visitor["text_character_escape"](this, [_0, _1], context);
+  },
+  "text_character_regular": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["text_character_regular"](this, [_0], context);
+  },
+  "text_character": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["text_character"](this, [_0], context);
+  },
+  "t_text": function(_0: any, _1: any, _2: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_text"](this, [_0, _1, _2], context);
+  },
+  "t_boolean_true": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_boolean_true"](this, [_0], context);
+  },
+  "t_boolean_false": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_boolean_false"](this, [_0], context);
+  },
+  "t_boolean": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["t_boolean"](this, [_0], context);
+  },
+  "kw": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["kw"](this, [_0], context);
+  },
+  "true_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["true_"](this, [_0], context);
+  },
+  "false_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["false_"](this, [_0], context);
+  },
+  "nothing_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["nothing_"](this, [_0], context);
+  },
+  "scene_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["scene_"](this, [_0], context);
+  },
+  "command_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["command_"](this, [_0], context);
+  },
+  "do_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["do_"](this, [_0], context);
+  },
+  "return_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["return_"](this, [_0], context);
+  },
+  "goto_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["goto_"](this, [_0], context);
+  },
+  "let_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["let_"](this, [_0], context);
+  },
+  "end_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["end_"](this, [_0], context);
+  },
+  "actor_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["actor_"](this, [_0], context);
+  },
+  "relation_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["relation_"](this, [_0], context);
+  },
+  "fact_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["fact_"](this, [_0], context);
+  },
+  "forget_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["forget_"](this, [_0], context);
+  },
+  "search_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["search_"](this, [_0], context);
+  },
+  "action_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["action_"](this, [_0], context);
+  },
+  "when_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["when_"](this, [_0], context);
+  },
+  "choose_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["choose_"](this, [_0], context);
+  },
+  "if_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["if_"](this, [_0], context);
+  },
+  "and_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["and_"](this, [_0], context);
+  },
+  "or_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["or_"](this, [_0], context);
+  },
+  "not_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["not_"](this, [_0], context);
+  },
+  "context_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["context_"](this, [_0], context);
+  },
+  "trigger_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["trigger_"](this, [_0], context);
+  },
+  "then_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["then_"](this, [_0], context);
+  },
+  "else_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["else_"](this, [_0], context);
+  },
+  "match_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["match_"](this, [_0], context);
+  },
+  "repeatable_": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["repeatable_"](this, [_0], context);
+  },
+  "reserved": function(_0: any) {
+    const { visitor, context } = this.args;
+    return visitor["reserved"](this, [_0], context);
+  }
 });
 
 
 export abstract class AbstractProtoBuiltInRulesVisitor<A, B> {
-  any<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
 
-  end<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  caseInsensitive<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  lower<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  upper<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  unicodeLtmo<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  spaces<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  space<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
 }
 
 export abstract class AbstractBuiltInRulesVisitor<A, B> extends AbstractProtoBuiltInRulesVisitor<A, B> {
-  alnum<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
 
-  letter<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  digit<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  hexDigit<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
 }
 
 export abstract class AbstractCrochetVisitor<A, B> extends AbstractBuiltInRulesVisitor<A, B> {
-  program<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract program<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T], context: A): B;
 
-  declaration<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract declaration<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  doDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract doDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  sceneDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  contextDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  hookDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorRoles_roles<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorRoles_no_roles<T extends Wrapper<A, B>>(node: T, children: [], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorRoles<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorInitialisation_init<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorInitialisation_no_init<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorInitialisation<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorFact_keyword<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorFact_unary<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actorFact<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationSignature_keyword<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationSignature_unary<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationSignature<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationVariable_many<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationVariable_one<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationVariable<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  relationSignaturePair<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandDeclaration_ffi<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T, T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandDeclaration_local<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandDeclaration<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandSignature_infix<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandSignature_self<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandSignature_unary<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandSignature_prefix<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandSignature_nullary<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  commandSignature<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  keywordSignaturePair<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actionDeclaration<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  repeatableMark_mark<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  repeatableMark_no_mark<T extends Wrapper<A, B>>(node: T, children: [], context: A): B {
-    return <any>unimplemented;
-  }
-
-  repeatableMark<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actionTags_tagged<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actionTags_untagged<T extends Wrapper<A, B>>(node: T, children: [], context: A): B {
-    return <any>unimplemented;
-  }
-
-  actionTags<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  predicate_constrained<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  predicate_unconstrained<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  predicate<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraint_conjunction<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraint_disjunction<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraint_negate<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraint<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq_eq<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq_neq<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq_gt<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq_gte<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq_lt<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq_lte<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq_role<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintEq<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintPrimary_integer<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintPrimary_variable<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintPrimary_actor<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintPrimary_group<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  constraintPrimary<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  statement_expr<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract statement_expression<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   statement<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  triggerAction<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract returnStatement<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  triggerStatement<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract expression<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  returnStatement_with_value<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  returnStatement_naked<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  returnStatement<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  gotoStatement<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  letStatement<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  factStatement<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  forgetStatement<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  factUseSignature_keyword<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  factUseSignature_unary<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  factUseSignature<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  factSignaturePair<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  statementBlock<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  expression<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  ifExpression<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchExpression_search<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchExpression<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchRelation_negated<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchRelation_has<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchRelation<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSignature_keyword<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSignature_unary<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSignature<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSignaturePair<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment_actor<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment_integer<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment_float<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment_text<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment_boolean<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment_nothing<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment_variable<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  searchSegment<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokeInfix_infix<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokeInfix<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokeMixfix_self<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokeMixfix_prefix<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokeMixfix<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokePair<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokePostfix_postfix<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  invokePostfix<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  memberExpression_project<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  memberExpression<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  primaryExpression_atom<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  primaryExpression_actor<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  primaryExpression_group<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract primaryExpression_expression<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   primaryExpression<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  matchExpression<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T], context: A): B {
-    return <any>unimplemented;
+  literal<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
+    return children[0].visit(<any>this, context);
   }
 
-  matchClause_when<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract block<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T], context: A): B;
 
-  matchClause_default<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  matchClause<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  variable<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract variable<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   number<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  text<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract text<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  integer<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract integer<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  float<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract float<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  boolean<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract boolean<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  name<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract name<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  atom<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract atom<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  keyword<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract keyword<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  actorName<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract actorName<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  nothing<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract nothing<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  infix_symbol<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract infix_symbol<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  interpolateTextPart_escape<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract interpolateTextPart_escape<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  interpolateTextPart_interpolate<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract interpolateTextPart_interpolate<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B;
 
-  interpolateTextPart_character<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract interpolateTextPart_character<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   interpolateTextPart<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  interpolateText<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract interpolateText<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B;
 
-  s<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract s<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  header<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract header<T extends Wrapper<A, B>>(node: T, children: [T, T, T, T], context: A): B;
 
   hs<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
   nl<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  line<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract line<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  comment<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract comment<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  space<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
-
-  atom_start<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract atom_start<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   atom_rest<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  t_atom<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_atom<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  t_keyword<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_keyword<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  t_actor_name<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_actor_name<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
   name_start<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
   name_rest<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  t_name<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_name<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
   t_infix_symbol<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
   dec_digit<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  t_integer<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_integer<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  t_float<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_float<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B;
 
-  text_character_escape<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract text_character_escape<T extends Wrapper<A, B>>(node: T, children: [T, T], context: A): B;
 
-  text_character_regular<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract text_character_regular<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   text_character<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  t_text<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_text<T extends Wrapper<A, B>>(node: T, children: [T, T, T], context: A): B;
 
-  t_boolean_true<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_boolean_true<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  t_boolean_false<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract t_boolean_false<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   t_boolean<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 
-  kw<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract kw<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  true_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract true_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  false_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract false_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  nothing_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract nothing_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  scene_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract scene_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  command_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract command_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  do_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract do_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  return_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract return_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  goto_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract goto_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  let_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract let_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  end_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract end_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  actor_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract actor_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  relation_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract relation_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  fact_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract fact_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  forget_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract forget_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  search_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract search_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  action_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract action_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  when_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract when_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  choose_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract choose_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  if_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract if_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  and_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract and_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  or_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract or_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  not_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract not_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  context_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract context_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  trigger_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract trigger_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  then_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract then_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  else_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract else_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  match_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract match_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
-  repeatable_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
-  }
+  abstract repeatable_<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B;
 
   reserved<T extends Wrapper<A, B>>(node: T, children: [T], context: A): B {
-    return <any>unimplemented;
+    return children[0].visit(<any>this, context);
   }
 }

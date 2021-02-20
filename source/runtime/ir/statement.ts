@@ -1,9 +1,9 @@
 import { bfalse, CrochetStream } from "../primitives";
-import { Machine, run_all, _push, _return } from "../run";
+import { ErrVariableAlreadyBound, Machine, run_all, _mark, _push, _return, _throw } from "../run";
 import { Environment, World } from "../world";
 import { Expression } from "./expression";
 
-export type Statement = SFact | SForget | SExpression | SReturn;
+export type Statement = SFact | SForget | SExpression | SReturn | SLet;
 
 interface IStatement {
   evaluate(world: World, env: Environment): Machine;
@@ -43,6 +43,21 @@ export class SReturn implements IStatement {
     const value = yield _push(this.expr.evaluate(world, env));
     yield _return(value);
     return bfalse;
+  }
+}
+
+export class SLet implements IStatement {
+  constructor(readonly name: string, readonly expr: Expression) {
+    
+  }
+  
+  async *evaluate(world: World, env: Environment) {
+    let value = yield _push(this.expr.evaluate(world, env));
+    if (env.has(this.name)) {
+      value = yield _throw(new ErrVariableAlreadyBound(this.name));
+    }
+    env.define(this.name, value);
+    return value;
   }
 }
 

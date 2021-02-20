@@ -8,6 +8,10 @@ export class Environment {
     
   }
 
+  has(name: string): boolean {
+    return this.bindings.has(name);
+  }
+
   lookup(name: string): CrochetValue | null {
     const result = this.bindings.get(name);
     if (result != null) {
@@ -23,7 +27,7 @@ export class Environment {
     if (this.bindings.has(name)) {
       throw new Error(`Duplicate binding ${name}`);
     }
-    
+
     this.bindings.set(name, value);
   }
 }

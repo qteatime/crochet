@@ -1,7 +1,7 @@
 import * as rt from "./runtime";
 import { CrochetText, Environment, run, UnificationEnvironment } from "./runtime";
-import { ESearch, EText } from "./runtime/ir/expression";
-import { SBlock, SFact, SReturn } from "./runtime/ir/statement";
+import { EVariable, ESearch, EText } from "./runtime/ir/expression";
+import { SBlock, SExpression, SFact, SLet, SReturn } from "./runtime/ir/statement";
 import { World } from "./runtime/world";
 
 function to_js(x: UnificationEnvironment) {
@@ -105,6 +105,8 @@ world.add_relation("likes", likes.tree.type);
 world.add_predicate("kiss", kiss);
 
 const Program = new SBlock([
+  new SLet("X", new EText("Hello")),
+  new SExpression(new EVariable("X")),
   new SFact("at", [new EText("Lielle"), new EText("foyer")]),
   new SFact("at", [new EText("Kristine"), new EText("foyer")]),
   new SFact("likes", [new EText("Lielle"), new EText("Kristine")]),

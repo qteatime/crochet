@@ -1,8 +1,27 @@
 import { unreachable } from "../utils/utils";
 import { bfalse, CrochetStream, CrochetValue } from "./primitives";
 
+// Error types
+export type MachineError = ErrUndefinedVariable | ErrVariableAlreadyBound;
+
+export class ErrUndefinedVariable {
+  constructor(readonly name: string) {}
+
+  format() {
+    return `undefined-variable: Undefined variable ${this.name}`;
+  }
+}
+
+export class ErrVariableAlreadyBound {
+  constructor(readonly name: string) {}
+
+  format() {
+    return `variable-already-bound: The variable ${this.name} is already bound`;
+  }
+}
+
 // Yield types
-export type Yield = Push | Mark | Return;
+export type Yield = Push | Mark | Return | Throw;
 
 export class Push {
   readonly tag = "push";
@@ -11,7 +30,7 @@ export class Push {
 
 export class Mark {
   readonly tag = "mark";
-  constructor(readonly machine: Machine, readonly k: Machine) {}
+  constructor(readonly name: string, readonly machine: Machine, readonly k: Machine) {}
 }
 
 export class Return {
@@ -19,29 +38,43 @@ export class Return {
   constructor(readonly value: CrochetValue) {}
 }
 
+export class Throw {
+  readonly tag = "throw";
+  constructor(readonly error: MachineError) {}
+}
+
 export function _push(machine: Machine) {
   return new Push(machine);
 }
 
-export function _mark(machine: Machine, k: Machine)  {
-  return new Mark(machine, k);
+export function _mark(name: string, machine: Machine, k: Machine)  {
+  return new Mark(name, machine, k);
 }
 
 export function _return(v: CrochetValue) {
   return new Return(v);
 }
 
-// Frame types
-export type Frame = FMachine | FContinuation;
+export function _throw(error: MachineError) {
+  return new Throw(error);
+}
 
-export class FMachine {
+// Frame types
+type Frame = FMachine | FContinuation;
+
+class FMachine {
   readonly tag = "machine";
   constructor(readonly machine: Machine) {}
 }
 
-export class FContinuation {
+class FContinuation {
   readonly tag = "continuation";
-  constructor(readonly k: Machine) {}
+  constructor(readonly location: string, readonly k: Machine) {}
+}
+
+class FProcedure {
+  readonly tag = "procedure";
+  constructor(readonly location: string, readonly machine: Machine) {}
 }
 
 // Machine execution
@@ -89,7 +122,7 @@ export async function run(machine0: Machine) {
         }
 
         case "mark": {
-          stack.push(new FContinuation(value.k));
+          stack.push(new FContinuation(value.name, value.k));
           machine = value.machine;
           input = bfalse;
           continue;
@@ -105,6 +138,16 @@ export async function run(machine0: Machine) {
             continue;
           }
         }
+
+        case "throw": {
+          const error = value.error;
+          const trace = get_trace(stack);
+          console.error(format_error(error, trace));
+          throw error;
+        }
+
+        default:
+          throw unreachable(value, "Unknown yield");
       }
     }
   }
@@ -121,6 +164,24 @@ function get_continuation(frames: Frame[]) {
       continue;
     }
   }
+}
+
+function get_trace(frames: Frame[]) {
+  const trace = [];
+  let n = 10;
+  for (let i = frames.length - 1; i > 0 && n > 0; --i) {
+    const frame = frames[i];
+    if (frame instanceof FContinuation) {
+      trace.push(frame.location);
+      n--;
+    }
+  }
+  return trace;
+}
+
+function format_error(error: MachineError, trace: string[]) {
+  const trace_string = trace.map(x => `  - ${x}`).join("\n");
+  return `${error.format()}\n\n${trace_string}`
 }
 
 export async function* run_all(machines: Machine[]): Machine {
