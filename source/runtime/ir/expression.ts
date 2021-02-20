@@ -1,6 +1,6 @@
 import { Predicate } from "../logic";
 import { bfalse, btrue, CrochetRecord, CrochetStream, CrochetText } from "../primitives";
-import { Machine } from "../run";
+import { ErrUndefinedVariable, Machine, _throw } from "../run";
 import { Environment, World } from "../world";
 
 export type Expression = EFalse | ETrue | EVariable | EText | ESearch;
@@ -26,10 +26,10 @@ export class EVariable implements IExpression {
   async *evaluate(world: World, env: Environment) {
     const value = env.lookup(this.name);
     if (value == null) {
-      throw new Error(`Undefined variable ${this.name}`);
+      return yield _throw(new ErrUndefinedVariable(this.name));
+    } else {
+      return value;
     }
-
-    return value;
   }
 }
 
