@@ -56,7 +56,7 @@ and Field =
 
 and TypeApp =
   | TAName of name:string
-  | TAApply of name:string * args:TypeApp[]
+  | TAApply of TypeApp * args:TypeApp[]
   | TAProject of TypeApp * field:string
   | TAList of TypeApp
   | TAMaybe of TypeApp

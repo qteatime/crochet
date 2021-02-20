@@ -26,10 +26,10 @@ let rec genTypeApp t =
   | TAName n -> n
   | TAApply (n, ps) ->
       if Array.isEmpty ps then
-        n
+        genTypeApp n
       else
         let ps = Seq.map genTypeApp ps |> String.concat ", "
-        $"{n}<{ps}>"
+        $"{genTypeApp n}<{ps}>"
   | TAProject (t, f) ->
       $"{genTypeApp t}.{f}"
   | TAList t ->
@@ -51,25 +51,21 @@ let rec generateType t =
   match t with
   | TRecord (n, ps, fs) -> genRecord n ps fs
   | TUnion (n, ps, vs) ->
-      let ps = genParams ps
-      let variantGetters = Seq.map (genVariantGetter ps) vs
+      let variantGetters = Seq.map (genVariantGetter n ps) vs
       let variants = Seq.map (genVariant n ps) vs
       $"""
-      const {n} = function() {{
-        abstract class {n}{ps} extends Node {{
-          abstract tag: string;
-          {String.concat "\n" variantGetters}
-          
-          static has_instance(x: any) {{
-            return x instanceof {n};
-          }}
+      export abstract class {n}{genParams ps} extends Node {{
+        abstract tag: string;
+        {String.concat "\n" variantGetters}
+
+        static has_instance(x: any) {{
+          return x instanceof {n};
         }}
-   
+      }}
+ 
+      const ${n} = {{
         {String.concat "\n\n" variants}
-
-
-        return {n};
-      }}();
+      }};
       """
 
 and genRecord n ps fs =
@@ -79,7 +75,7 @@ and genRecord n ps fs =
 
     constructor({genFieldInit fs}) {{
       super();
-      {genInitAsserts fs}
+      {genInitAsserts ps fs}
     }}
 
     static has_instance(x: any) {{
@@ -90,45 +86,48 @@ and genRecord n ps fs =
 
 and genVariant p ps (Variant (n, fs)) =
   $"""
-  class {n}{ps} extends {p} {{
+  {n}: class {n}{genParams ps} extends {p}{genParams ps} {{
     readonly tag = "{n}";
 
     constructor({genFieldInit fs}) {{
       super();
-      {genInitAsserts fs}
+      {genInitAsserts ps fs}
     }}
 
     static has_instance(x: any) {{
       return x instanceof {n};
     }}
-  }}
+  }},
   """
 
-and genVariantGetter ps (Variant (n, fs)) =
+and genVariantGetter p ps (Variant (n, fs)) =
   $"""
-  get {n}() {{
-    return {n}
+  static get {n}() {{
+    return ${p}.{n}
   }}
   """
 
-and genInitAsserts fs =
-  Seq.map genInitAssert fs |> String.concat "; "
+and genInitAsserts ps fs =
+  Seq.map (genInitAssert (Set.ofSeq ps)) fs |> String.concat "; "
 
-and genInitAssert (Field (n, t)) =
-  genAssert n t
+and genInitAssert ps (Field (n, t)) =
+  genAssert ps n t
 
-and genAssert x t =
-  $"""($assert_type<{genTypeApp t}>({x}, "{genTypeApp t}", {genTypeAssert t}))"""
+and genAssert ps x t =
+  match t with
+  | TAName z when Set.contains z ps -> ""
+  | _ ->
+      $"""($assert_type<{genTypeApp t}>({x}, "{genTypeApp t}", {genTypeAssert t}))"""
 
 and genTypeAssert t =
   match t with
-  | TAName "string" -> """$is_primitive("string")"""
-  | TAName "number" -> """$is_primitive("number")"""
-  | TAName "bigint" -> """$is_primitive("bigint")"""
-  | TAName "boolean" -> """$is_primitive("boolean")"""
+  | TAName "string" -> """$is_type("string")"""
+  | TAName "number" -> """$is_type("number")"""
+  | TAName "bigint" -> """$is_type("bigint")"""
+  | TAName "boolean" -> """$is_type("boolean")"""
   | TAName "null" -> """$is_null"""
   | TAName name -> name
-  | TAApply (t, _) -> t
+  | TAApply (t, _) -> genTypeAssert t
   | TAProject (t, f) -> $"{genTypeAssert t}.{f}"
   | TAList t -> $"$is_array({genTypeAssert t})"
   | TAMaybe t -> $"$is_maybe({genTypeAssert t})"
@@ -164,7 +163,7 @@ let rec genTerm t =
       if Array.isEmpty ps then
         t
       else
-        $"""{t}<{String.concat ", " (Seq.map genTerm ps)}"""
+        $"""{t}<{String.concat ", " (Seq.map genTerm ps)}>"""
   | TRange (a, b) ->
       $"{toString a}..{toString b}"
   | TTerminal t ->
@@ -179,7 +178,7 @@ let genBinder b =
 
 let genBody (n: int, b:RuleBody) =
   let s = Seq.map genBinder b.Terms |> String.concat " "
-  $"{s}  -- alt{n}"
+  $"{s}  -- alt{n}\n"
 
 let genBodies b =
   Seq.map genBody (enumerate b) |> String.concat " | "
@@ -199,7 +198,7 @@ let generateRules rules =
 let generateGrammar (g:Grammar) =
   let rules = generateRules g.Rules
   $"""
-  grammar {g.Name} {{
+  {g.Name} {{
     {String.concat "\n\n" rules}
   }}
   """
@@ -210,23 +209,22 @@ let topType (g:Grammar) =
 // == Visitor semantics
 let builtinVisitors =
   """
-  _terminal() {
+  _terminal(this: Ohm.Node): any {
     return this.primitiveValue
   },
 
-  _iter(children) {
+  _iter(this: any, children: Ohm.Node): any {
     if (this._node.isOptional()) {
       if (this.numChildren === 0) {
         return null;
       } else {
         return children[0].toAST();
       }
-
-      return children.map(x => x.toAST());
     }
+    return children.map((x: any) => x.toAST());
   },
 
-  listOf(node) {
+  listOf(node: Ohm.Node): any {
     if (node.children.length === 0) {
       return [];
     } else if (node.children.length === 1) {
@@ -237,22 +235,30 @@ let builtinVisitors =
     }
   },
 
-  NonemptyListOf(first, _, rest) {
+  NonemptyListOf(first: Ohm.Node, _: Ohm.Node, rest: Ohm.Node): any {
     return [first.toAST(), ...rest.toAST()];
   },
 
-  EmptyListOf() {
+  EmptyListOf(): any {
     return [];
   },
   """
 
+let isImmaterial t =
+  match t with
+  | TNot _ -> true
+  | TLookahead _ -> true
+  | _ -> false
+
 let genVisitorBinder (n, b) =
   match b with
-  | BBound (name, _) -> $"{name}$0: Ohm.Node"
-  | BUnbound (_) -> $"_{n}: Ohm.Node"
+  | BBound (_, t) when isImmaterial t -> []
+  | BUnbound t when isImmaterial t -> []
+  | BBound (name, _) -> [$"{name}$0: Ohm.Node"]
+  | BUnbound (_) -> [$"_{n}: Ohm.Node"]
 
 let genVisitorParams binders =
-  Seq.map genVisitorBinder (enumerate binders)
+  Seq.collect genVisitorBinder (enumerate binders)
   |> String.concat ", "
 
 let resolveVisitorBinder b =
@@ -301,19 +307,19 @@ let isSingletonRule (b:RuleBody) =
 let genAltVisitor tk n (i, b:RuleBody) =
   if tk then
     $"""
-    {n}_alt{i}({genVisitorParams b.Terms}) {{
+    {n}_alt{i}(this: Ohm.Node, {genVisitorParams b.Terms}): any {{
       return this.sourceString;
     }},
     """
   else if isSingletonRule b then
     $"""
-    {n}_alt{i}({genVisitorParams b.Terms}) {{
+    {n}_alt{i}(this: Ohm.Node, {genVisitorParams b.Terms}): any {{
       return this.children[0].toAST();
     }},
     """
   else
     $"""
-    {n}_alt{i}({genVisitorParams b.Terms}) {{
+    {n}_alt{i}(this: Ohm.Node, {genVisitorParams b.Terms}): any {{
       {resolveVisitorBinders b.Terms}
       return {genVisitorEffect n b.Expr}
     }},
@@ -321,7 +327,7 @@ let genAltVisitor tk n (i, b:RuleBody) =
 
 let genRuleVisitor tk n b =
   $"""
-  {n}(x: Ohm.Node) {{
+  {n}(x: Ohm.Node): any {{
     return x.toAST();
   }},
   """
@@ -352,34 +358,39 @@ type Result<A> =
   { ok: true, value: A }
 | { ok: false, error: string };
 
-type Meta = {
-  source: string;
-  position: {
-    start_index: number
-    end_index: number
+export abstract class Node {}
+
+export class Meta {
+  constructor(
+    readonly source: string,
+    readonly position: { start_index: number, end_index: number }
+  ) {}
+
+  static has_instance(x: any) {
+    return x instanceof Meta;
   }
 };
 
 function $meta(x: Ohm.Node): Meta {
-  return {
-    source: x.sourceString,
-    position: {
+  return new Meta(
+    x.sourceString,
+    {
       start_index: x.source.startIdx,
       end_index: x.source.endIdx
     }
-  };
+  );
 }
 
 type Typed =
-  (_: x) => boolean
+  ((_: any) => boolean)
 | { has_instance(x: any): boolean };
 
 function $check_type(f: Typed) {
   return (x: any) => {
-    if (typeof f.has_instance === "function") {
-      return f.has_instance(x);
+    if (typeof (f as any).has_instance === "function") {
+      return (f as any).has_instance(x);
     } else {
-      return f(x);
+      return (f as any)(x);
     }
   }
 }
@@ -390,7 +401,7 @@ function $is_type(t: string) {
   };
 }
 
-function $is_array_of(f: Typed) {
+function $is_array(f: Typed) {
   return (x: any) => {
     return Array.isArray(x) && x.every($check_type(f));
   };
@@ -407,7 +418,7 @@ function $is_null(x: any) {
 }
 
 function $assert_type<T>(x: any, t: string, f: Typed): asserts x is T {
-  if (!$check_type(f)(t)) {
+  if (!$check_type(f)(x)) {
     throw new TypeError(`Expected ${t}, but got ${x}`);
   }
 }
@@ -424,21 +435,21 @@ let generate (g:Grammar) =
   {generateTypes g.Types}
 
   // == Grammar definition ============================================
-  const grammar = Ohm.grammar({toString (generateGrammar g)})
+  export const grammar = Ohm.grammar({toString (generateGrammar g)})
 
   // == Parsing =======================================================
-  function parse(source: string, rule: string): Result<{topType g}> {{
+  export function parse(source: string, rule: string): Result<{topType g}> {{
     const result = grammar.match(source, rule);
     if (result.failed()) {{
-      return {{ ok: false, error: result.message }};
+      return {{ ok: false, error: result.message as string }};
     }} else {{
       const ast = toAst(result);
-      {genAssert "ast" g.Top}
+      {genAssert (Set.empty) "ast" g.Top}
       return {{ ok: true, value: toAst(result) }};
     }}
   }}
 
-  const semantics = grammar.createSemantics();
+  export const semantics = grammar.createSemantics();
   const toAstVisitor = ({generateAstVisitor g});
   semantics.addOperation("toAST()", toAstVisitor);
 
