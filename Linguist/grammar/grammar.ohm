@@ -1,0 +1,221 @@
+%[
+open Fable.Core
+open Linguist.AST
+
+[<Emit("JSON.parse($0)")>]
+let parseJson s : string = jsNative
+
+let parseString (s:string) =
+  parseJson ((s.Replace("\r\n", "\\n")).Replace("\n", "\\n"))
+
+]%
+
+Linguist : Grammar {
+  TypeDecl =
+    | type_ n:Name f:Formals "(" p:NonemptyListOf<TypeField, ","> ")"
+      %[ TRecord(n, f, p) ]%
+    | type_ n:Name f:Formals "=" "|"? p:NonemptyListOf<TypeVariant, "|"> 
+      %[ TUnion(n, f, p) ]%
+
+  TypeVariant =
+    | n:Name "(" p:NonemptyListOf<TypeField, ","> ")"
+      %[ Variant(n, p) ]%
+  
+  TypeField =
+    | n:Name ":" t:TypeApp
+      %[ Field(n, t) ]%
+
+  TypeApp =
+    | t:TypeApp2 "[]"     %[ TAList t ]%
+    | t:TypeApp2 "?"      %[ TAMaybe t ]%
+    | TypeApp2
+
+  TypeApp2 =
+    | t:TypeApp3 "<" ps:NonemptyListOf<TypeApp, ","> ">"
+      %[ TAApply(t, ps) ]%
+    | t:TypeApp3
+
+  TypeApp3 =
+    | t:TypeApp3 "." n:Name   %[ TAProject(t, n) ]%
+    | t:TypeApp4
+
+  TypeApp4 =
+    | n:Name              %[ TAName n ]%
+    | "(" t:TypeApp ")"   %[ t ]%
+
+
+
+  Grammar =
+    | ts:TypeDecl* grammar_ n:Name ":" t:TypeApp "{" rs:Rule* "}"
+      %[ grammar n rs t ts ]%
+
+  Rule =
+    | token_ r:Rule
+      %[ makeToken r ]%
+    | n:ident p:Formals d:ruleDescr? "="  b:RuleBody
+      %[ RDefine(false, n, p, d, b) ]%
+    | n:ident p:Formals ":=" b:RuleBody
+      %[ ROverride(false, n, p, b) ]%
+    | n:ident p:Formals? "+=" b:RuleBody
+      %[ RExtend(false, n, p, b) ]%
+
+  RuleBody =
+    | "|"? bs:NonemptyListOf<TopLevelTerm, "|">
+      %[ bs ]%
+
+  TopLevelTerm =
+    | t:Binder* "->" e:Action
+      %[ body t (Some e) ]%
+    | t:Binder*
+      %[ body t None ]%
+
+  Binder =
+    | n:Name ":" t:Iter
+      %[ BBound(n, t) ]%
+    | t:Iter
+      %[ BUnbound(t) ]%
+
+  Action =
+    | e:ActionProject "(" xs:NonemptyListOf<Action, ","> ")"
+      %[ AMake(e, xs) ]%
+    | ActionProject
+
+  ActionProject =
+    | a:ActionProject "." n:Name  %[ AProject(a, n) ]%
+    | ActionPrimary
+
+  ActionPrimary =
+    | meta_             %[ AMeta ]%
+    | n:Name            %[ AVar n ]%
+    | null_             %[ ANull ]%
+    | ActionList
+    | "(" x:Action ")"  %[ x ]%
+
+  ActionList =
+    | "[" xs:NonemptyListOf<Action, ","> "," "..." x:Action "]"
+      %[ ACons(xs, x) ]%
+    | "[" xs:ListOf<Action, ","> "]"
+      %[ AList xs ]%
+
+  Formals =
+    | "<" xs:ListOf<ident, ","> ">"
+      %[ xs ]%
+    | 
+      %[ [||] ]%
+
+  Params =
+    | "<" xs:ListOf<Seq, ","> ">"
+      %[ xs ]%
+    |
+      %[ [||] ]%
+
+  Alt
+    = xs:NonemptyListOf<Seq, "|">
+      %[ TAlt xs ]%
+
+  Seq
+    = xs:Iter*
+      %[ TSeq xs ]%
+
+  Iter
+    = t:Pred "*"  %[ TStar t ]%
+    | t:Pred "+"  %[ TPlus t ]%
+    | t:Pred "?"  %[ TOpt t ]%
+    | Pred
+
+  Pred
+    = "~" t:Lex  %[ TNot t ]%
+    | "&" t:Lex  %[ TLookahead t ]%
+    | Lex
+
+  Lex
+    = "#" t:Base  %[ TLex t ]%
+    | Base
+
+  Base
+    = ~reserved n:ident p:Params ~(ruleDescr? "=" | ":=" | "+=")
+      %[ TApply(n, p) ]%
+    | l:oneCharTerminal ".." e:oneCharTerminal
+      %[ TRange(l, e) ]%
+    | t:terminal
+      %[ TTerminal t ]%
+    | "(" t:Alt ")"
+      %[ TParens t ]%
+
+  ruleDescr  (a rule description)
+    = "(" d:ruleDescrText ")"
+      %[ d ]%
+
+  ruleDescrText
+    = (~")" any)*
+
+  name  (a name)
+    = nameFirst nameRest*
+
+  nameFirst
+    = "_"
+    | letter
+
+  nameRest
+    = "_"
+    | alnum
+
+  ident  (an identifier)
+    = name
+
+  terminal =
+    | t:t_terminal
+      %[ parseString t ]%
+
+  t_terminal
+    = "\"" terminalChar* "\""
+
+  oneCharTerminal =
+    | t:t_oneCharTerminal
+      %[ parseString t ]%
+
+  t_oneCharTerminal
+    = "\"" terminalChar "\""
+      
+
+  terminalChar
+    = escapeChar
+    | ~"\\" ~"\"" ~"\n" any
+
+  escapeChar  (an escape sequence)
+    = "\\\\"                                     
+    | "\\\""                                     
+    | "\\b"                                      
+    | "\\n"                                      
+    | "\\r"                                      
+    | "\\t"                                      
+    | "\\u" hexDigit hexDigit hexDigit hexDigit  
+    | "\\x" hexDigit hexDigit                    
+
+  space
+   += comment
+
+  comment
+    = "//" (~"\n" any)* "\n"  
+    | "/*" (~"*/" any)* "*/"  
+
+  tokens = token*
+
+  token = comment | ident | operator | punctuation | terminal | any
+
+  operator = "<:" | "=" | ":=" | "+=" | "*" | "+" | "?" | "~" | "&"
+
+  punctuation = "<" | ">" | "," | "--"
+
+  kw<k> = k ~nameRest
+
+  type_ = kw<"type">
+  grammar_ = kw<"grammar">
+  meta_ = kw<"meta">
+  null_ = kw<"null">
+  token_ = kw<"token">
+
+  reserved = type_ | grammar_ | meta_ | null_ | token_
+
+  Name = ~reserved name
+}
