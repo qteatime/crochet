@@ -416,7 +416,7 @@ function $is_null(x: any) {
 
 function $assert_type<T>(x: any, t: string, f: Typed): asserts x is T {
   if (!$check_type(f)(x)) {
-    throw new TypeError(`Expected ${t}, but got ${x}`);
+    throw new TypeError(`Expected ${t}, but got ${$inspect(x)}`);
   }
 }
   """
@@ -425,6 +425,7 @@ let generate (g:Grammar) =
   $"""
   // This file is generated from Linguist
   import * as Ohm from "ohm-js";
+  import {{ inspect as $inspect }} from "util";
 
   {prelude}
 
