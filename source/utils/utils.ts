@@ -44,3 +44,12 @@ export function* zip<A, B>(xs: A[], ys: B[]): Generator<[A, B]> {
     yield [xs[i], ys[i]];
   }
 }
+
+export function every<A>(xs: Iterable<A>, pred: (_: A) => boolean): boolean {
+  for (const x of xs) {
+    if (!(pred(x))) {
+      return false;
+    }
+  }
+  return true;
+}
