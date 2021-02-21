@@ -44,7 +44,10 @@ command (X is integer) hello {
 
 do {
   let X = search lielle kisses: (Who :: actor) at: (Where :: room);
-  lielle hello;
+  [ Hello -> lielle hello,
+    Integer -> [1 hello, 2 id],
+    Search -> X,
+  ];
 }
 `;
 

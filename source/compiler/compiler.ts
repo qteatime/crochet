@@ -268,6 +268,19 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.ENewVariant(type.name, variant.name);
     },
 
+    List(_, values) {
+      return new IR.EList(values.map(compileExpression));
+    },
+
+    Record(_, pairs) {
+      return new IR.ERecord(
+        pairs.map((x) => ({
+          key: x.key.name,
+          value: compileExpression(x.value),
+        }))
+      );
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },
