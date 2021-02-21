@@ -226,12 +226,21 @@ export function compileExpression(expr: Expression): IR.Expression {
     Search(_, pred) {
       return new IR.ESearch(compilePredicate(pred));
     },
+
+    Invoke(_, sig) {
+      const name = signatureName(sig);
+      const args = signatureValues(sig).map(compileExpression);
+      return new IR.EInvoke(name, args);
+    },
+
     Variable(_, name) {
       return new IR.EVariable(name.name);
     },
+
     Parens(_, value) {
       return compileExpression(value);
     },
+
     Lit(lit) {
       return literalToExpression(lit);
     },
@@ -266,7 +275,6 @@ export function compileStatement(stmt: Statement) {
 }
 
 // -- Declaration
-
 export function compileTypeApp(x: TypeApp): rt.DispatchType {
   return x.match<rt.DispatchType>({
     Named(_, name) {
