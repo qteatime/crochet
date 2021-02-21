@@ -1,19 +1,20 @@
 import { PredicateProcedure, TreeType } from "../logic";
-import {
-  CrochetProcedure,
-  DispatchType,
-  NativeProcedure,
-} from "../primitives/procedure";
+import { CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
+import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
 import { Machine } from "../run";
 import { Environment, World } from "../world";
 import { SBlock, Statement } from "./statement";
+import { Type } from "./type";
 
 export type Declaration =
   | DDo
   | DPredicate
   | DRelation
   | DForeignCommand
-  | DCrochetCommand;
+  | DCrochetCommand
+  | DRole
+  | DType
+  | DEnum;
 
 interface IDeclaration {
   apply(world: World): void;
@@ -48,7 +49,7 @@ export class DDo implements IDeclaration {
 export class DForeignCommand implements IDeclaration {
   constructor(
     readonly name: string,
-    readonly types: DispatchType[],
+    readonly types: Type[],
     readonly foreign_name: string,
     readonly args: number[]
   ) {}
@@ -56,7 +57,7 @@ export class DForeignCommand implements IDeclaration {
   apply(world: World) {
     world.add_foreign_procedure(
       this.name,
-      this.types,
+      this.types.map((x) => x.realise(world)),
       new NativeProcedure(this.name, this.args, this.foreign_name)
     );
   }
@@ -66,7 +67,7 @@ export class DCrochetCommand implements IDeclaration {
   constructor(
     readonly name: string,
     readonly parameters: string[],
-    readonly types: DispatchType[],
+    readonly types: Type[],
     readonly body: Statement[]
   ) {}
 
@@ -79,6 +80,45 @@ export class DCrochetCommand implements IDeclaration {
       this.parameters,
       this.body
     );
-    world.add_crochet_procedure(this.name, this.types, code);
+    world.add_crochet_procedure(
+      this.name,
+      this.types.map((x) => x.realise(world)),
+      code
+    );
+  }
+}
+
+export class DRole implements IDeclaration {
+  constructor(readonly name: string) {}
+
+  apply(world: World) {
+    const role = new CrochetRole(this.name);
+    world.add_role(this.name, role);
+  }
+}
+
+export class DType implements IDeclaration {
+  constructor(readonly name: string, readonly roles: string[]) {}
+
+  apply(world: World) {
+    const roles = this.roles.map((x) => world.get_role(x));
+    const type = new TCrochetType(this.name, roles);
+    world.add_type(this.name, type);
+  }
+}
+
+export type Variant = { name: string; roles: string[] };
+
+export class DEnum implements IDeclaration {
+  constructor(readonly name: string, readonly variants: Variant[]) {}
+
+  apply(world: World) {
+    const type = new TCrochetEnum(this.name);
+    for (const x of this.variants) {
+      type.add_variant(
+        x.name,
+        x.roles.map((z) => world.get_role(z))
+      );
+    }
   }
 }

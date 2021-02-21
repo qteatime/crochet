@@ -1,23 +1,27 @@
 import { every, zip } from "../../utils/utils";
+import {
+  CrochetRole,
+  CrochetType,
+  TCrochetEnum,
+  TCrochetType,
+  tFalse,
+  tInteger,
+  tRecord,
+  tStream,
+  tText,
+  tTrue,
+} from "./types";
 
 export abstract class CrochetValue {
-  abstract type_name: string;
+  abstract type: CrochetType;
   abstract equals(other: CrochetValue): boolean;
   abstract as_bool(): boolean;
   abstract to_js(): any;
 }
 
-export type CrochetType =
-  | typeof True
-  | typeof False
-  | typeof CrochetInteger
-  | typeof CrochetText
-  | typeof CrochetRecord
-  | typeof CrochetStream;
-
 export class True extends CrochetValue {
-  get type_name() {
-    return "True";
+  get type() {
+    return tTrue;
   }
 
   equals(other: CrochetValue): boolean {
@@ -34,8 +38,8 @@ export class True extends CrochetValue {
 }
 
 export class False extends CrochetValue {
-  get type_name() {
-    return "False";
+  get type() {
+    return tFalse;
   }
 
   equals(other: CrochetValue): boolean {
@@ -52,8 +56,8 @@ export class False extends CrochetValue {
 }
 
 export class CrochetText extends CrochetValue {
-  get type_name() {
-    return "Text";
+  get type() {
+    return tText;
   }
 
   constructor(readonly value: string) {
@@ -74,8 +78,8 @@ export class CrochetText extends CrochetValue {
 }
 
 export class CrochetInteger extends CrochetValue {
-  get type_name() {
-    return "Integer";
+  get type() {
+    return tInteger;
   }
 
   constructor(readonly value: bigint) {
@@ -96,8 +100,8 @@ export class CrochetInteger extends CrochetValue {
 }
 
 export class CrochetStream extends CrochetValue {
-  get type_name() {
-    return "Stream";
+  get type() {
+    return tStream;
   }
 
   constructor(readonly values: CrochetValue[]) {
@@ -122,8 +126,8 @@ export class CrochetStream extends CrochetValue {
 }
 
 export class CrochetRecord extends CrochetValue {
-  get type_name() {
-    return "Record";
+  get type() {
+    return tRecord;
   }
 
   constructor(readonly values: Map<string, CrochetValue>) {
@@ -160,6 +164,46 @@ export class CrochetRecord extends CrochetValue {
 
   as_bool() {
     return true;
+  }
+}
+
+export class CrochetInstance extends CrochetValue {
+  constructor(readonly type: TCrochetType) {
+    super();
+  }
+
+  equals(other: CrochetValue): boolean {
+    return <any>other === this;
+  }
+  as_bool(): boolean {
+    return true;
+  }
+  to_js() {
+    return this;
+  }
+}
+
+export class CrochetVariant extends CrochetValue {
+  constructor(
+    readonly type: TCrochetEnum,
+    readonly tag: string,
+    readonly roles: CrochetRole[]
+  ) {
+    super();
+  }
+
+  equals(other: CrochetValue): boolean {
+    return (
+      other instanceof CrochetVariant &&
+      other.type === this.type &&
+      other.tag === this.tag
+    );
+  }
+  as_bool(): boolean {
+    return true;
+  }
+  to_js() {
+    return this;
   }
 }
 

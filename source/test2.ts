@@ -20,11 +20,11 @@ command What id {
   What;
 }
 
-command (X is #integer) hello {
+command (X is integer) hello {
   "hello integer" id;
 }
 
-command (X is #text) hello {
+command (X is text) hello {
   "hello text" id;
 }
 
@@ -51,6 +51,8 @@ console.log(show(ast));
 
 const ir = compileProgram(ast);
 const world2 = new World(new ForeignInterface());
+world2.add_type("integer", rt.tInteger);
+world2.add_type("text", rt.tText);
 world2.load_declarations(ir);
 world2.run().then((result) => {
   console.log(">>>", show(world2));

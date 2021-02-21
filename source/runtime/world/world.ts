@@ -8,16 +8,18 @@ import {
 } from "../logic";
 import {
   CrochetProcedure,
-  DispatchType,
   NativeProcedure,
   Procedure,
 } from "../primitives/procedure";
+import { CrochetRole, CrochetType } from "../primitives/types";
 import { Machine, run } from "../run";
 import { ForeignInterface } from "./foreign";
 
 export class World {
   private database = new Database();
   private procedures = new Map<string, Procedure>();
+  private types = new Map<string, CrochetType>();
+  private roles = new Map<string, CrochetRole>();
   private queue: Machine[] = [];
 
   constructor(readonly ffi: ForeignInterface) {}
@@ -36,7 +38,7 @@ export class World {
     if (relation instanceof ConcreteRelation) {
       return relation.tree;
     } else {
-      throw new Error(`Undefined relation ${name}`);
+      throw new Error(`internal: undefined relation ${name}`);
     }
   }
 
@@ -44,10 +46,43 @@ export class World {
     return this.database.search(predicate);
   }
 
+  // -- Types
+  get_type(name: string) {
+    const type = this.types.get(name);
+    if (type == null) {
+      throw new Error(`internal: undefined type ${name}`);
+    }
+
+    return type;
+  }
+
+  add_type(name: string, type: CrochetType) {
+    if (this.types.has(name)) {
+      throw new Error(`internal: duplicated type ${name}`);
+    }
+    this.types.set(name, type);
+  }
+
+  get_role(name: string) {
+    const role = this.roles.get(name);
+    if (role == null) {
+      throw new Error(`internal: undefined role ${name}`);
+    }
+
+    return role;
+  }
+
+  add_role(name: string, role: CrochetRole) {
+    if (this.types.has(name)) {
+      throw new Error(`internal: duplicated role ${name}`);
+    }
+    this.roles.set(name, role);
+  }
+
   // -- Commands
   add_foreign_procedure(
     name: string,
-    types: DispatchType[],
+    types: CrochetType[],
     native: NativeProcedure
   ) {
     const procedure =
@@ -58,7 +93,7 @@ export class World {
 
   add_crochet_procedure(
     name: string,
-    types: DispatchType[],
+    types: CrochetType[],
     code: CrochetProcedure
   ) {
     const procedure =
@@ -70,7 +105,7 @@ export class World {
   get_procedure(name: string) {
     const procedure = this.procedures.get(name);
     if (procedure == null) {
-      throw new Error(`Undefined procedure ${name}`);
+      throw new Error(`internal: undefined procedure ${name}`);
     } else {
       return procedure;
     }
@@ -79,7 +114,7 @@ export class World {
   get_native_procedure(name: string) {
     const procedure = this.ffi.lookup(name);
     if (procedure == null) {
-      throw new Error(`Undefined native procedure ${name}`);
+      throw new Error(`internal: undefined native procedure ${name}`);
     } else {
       return procedure;
     }

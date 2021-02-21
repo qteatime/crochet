@@ -6,6 +6,11 @@ type Declaration =
   | Do(pos: Meta, body: Statement[])
   | ForeignCommand(pos: Meta, signature: Signature<Parameter>, foreign_name: Namespace, args: Name[])
   | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[])
+  | Role(pos: Meta, name: Name)
+  | Type(pos: Meta, name: Name, roles: Name[])
+  | Enum(pos: Meta, name: Name, values: Variant[])
+
+type Variant(pos: Meta, name: Name, roles: Name[])
 
 type Parameter =
   | Untyped(pos: Meta, name: Name)
@@ -92,6 +97,9 @@ grammar Crochet : Program {
     | predicateDeclaration
     | doDeclaration
     | commandDeclaration
+    | roleDeclaration
+    | typeDeclaration
+    | enumDeclaration
 
   relationDeclaration =
     | relation_ s:logicSignature<relationPart> s<";">
@@ -126,13 +134,30 @@ grammar Crochet : Program {
     | typeAppUnion
 
   typeAppUnion =
-    | l:typeAppNamed s<"|"> r:typeAppUnion  -> TypeApp.Union(meta, l, r)
-    | typeAppNamed
+    | l:typeAppPrimary s<"|"> r:typeAppUnion  -> TypeApp.Union(meta, l, r)
+    | typeAppPrimary
 
-  typeAppNamed =
-    | s<"#"> t:atom             -> TypeApp.Named(meta, t)
+  typeAppPrimary =
+    | t:atom                    -> TypeApp.Named(meta, t)
     | s<"("> t:typeApp s<")">   -> TypeApp.Parens(meta, t)
-    
+
+  typeDeclaration =
+    | type_ n:atom r:roles s<";">   -> Declaration.Type(meta, n, r)
+
+  roleDeclaration =
+    | role_ n:atom s<";">           -> Declaration.Role(meta, n)
+
+  enumDeclaration =
+    | enum_ n:atom s<"="> s<"|">? vs:nonemptyListOf<variant, s<"|">> s<";">
+      -> Declaration.Enum(meta, n, vs)
+
+  variant =
+    | n:atom r:roles  -> Variant(meta, n, r)
+
+  roles =
+    | "::" r:nonemptyListOf<atom, s<",">>   -> r
+    |                                       -> []
+
 
   // -- Logic
   predicate =
@@ -314,6 +339,9 @@ grammar Crochet : Program {
   when_ = kw<"when">
   do_ = kw<"do">
   command_ = kw<"command">
+  type_ = kw<"type">
+  role_ = kw<"role">
+  enum_ = kw<"enum">
 
   let_ = kw<"let">
   return_ = kw<"return">
@@ -331,7 +359,7 @@ grammar Crochet : Program {
   is_ = kw<"is">
 
   reserved =
-    | relation_ | predicate_ | when_ | do_ | command_
+    | relation_ | predicate_ | when_ | do_ | command_ | type_ | role_ | enum_
     | let_ | return_ | fact_ | forget_
     | search_ | if_
     | true_ | false_ | not_ | and_ | or_ | is_
