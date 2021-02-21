@@ -1,8 +1,12 @@
 import { unreachable } from "../utils/utils";
 import { bfalse, CrochetStream, CrochetValue } from "./primitives";
+import { Procedure } from "./primitives/procedure";
 
 // Error types
-export type MachineError = ErrUndefinedVariable | ErrVariableAlreadyBound;
+export type MachineError =
+  | ErrUndefinedVariable
+  | ErrVariableAlreadyBound
+  | ErrNoBranchMatched;
 
 export class ErrUndefinedVariable {
   constructor(readonly name: string) {}
@@ -20,6 +24,16 @@ export class ErrVariableAlreadyBound {
   }
 }
 
+export class ErrNoBranchMatched {
+  constructor(readonly procedure: Procedure, readonly args: CrochetValue[]) {}
+
+  format() {
+    return `no-branch-matched: No branches of ${
+      this.procedure.name
+    } match the signature (${this.args.map((x) => x.type_name).join(", ")})`;
+  }
+}
+
 // Yield types
 export type Yield = Push | Mark | Return | Throw;
 
@@ -30,7 +44,11 @@ export class Push {
 
 export class Mark {
   readonly tag = "mark";
-  constructor(readonly name: string, readonly machine: Machine, readonly k: Machine) {}
+  constructor(
+    readonly name: string,
+    readonly machine: Machine,
+    readonly k: Machine | null
+  ) {}
 }
 
 export class Return {
@@ -47,7 +65,11 @@ export function _push(machine: Machine) {
   return new Push(machine);
 }
 
-export function _mark(name: string, machine: Machine, k: Machine)  {
+export function _mark(
+  name: string,
+  machine: Machine,
+  k: Machine | null = null
+) {
   return new Mark(name, machine, k);
 }
 
@@ -60,21 +82,16 @@ export function _throw(error: MachineError) {
 }
 
 // Frame types
-type Frame = FMachine | FContinuation;
+type Frame = FMachine | FProcedure;
 
 class FMachine {
   readonly tag = "machine";
   constructor(readonly machine: Machine) {}
 }
 
-class FContinuation {
+class FProcedure {
   readonly tag = "continuation";
   constructor(readonly location: string, readonly k: Machine) {}
-}
-
-class FProcedure {
-  readonly tag = "procedure";
-  constructor(readonly location: string, readonly machine: Machine) {}
 }
 
 // Machine execution
@@ -84,7 +101,7 @@ export async function run(machine0: Machine) {
   const stack: Frame[] = [];
   let machine: Machine = machine0;
   let input: CrochetValue = bfalse;
-  
+
   while (true) {
     const result = await machine.next(input);
     // Return
@@ -110,7 +127,7 @@ export async function run(machine0: Machine) {
             throw unreachable(newFrame, "Unknown frame");
         }
       }
-    // Yield
+      // Yield
     } else {
       const value = result.value;
       switch (value.tag) {
@@ -122,7 +139,7 @@ export async function run(machine0: Machine) {
         }
 
         case "mark": {
-          stack.push(new FContinuation(value.name, value.k));
+          stack.push(new FProcedure(value.name, value.k ?? machine));
           machine = value.machine;
           input = bfalse;
           continue;
@@ -158,7 +175,7 @@ function get_continuation(frames: Frame[]) {
     const frame = frames.pop();
     if (frame == null) {
       return null;
-    } else if (frame instanceof FContinuation) {
+    } else if (frame instanceof FProcedure) {
       return frame;
     } else {
       continue;
@@ -171,7 +188,7 @@ function get_trace(frames: Frame[]) {
   let n = 10;
   for (let i = frames.length - 1; i > 0 && n > 0; --i) {
     const frame = frames[i];
-    if (frame instanceof FContinuation) {
+    if (frame instanceof FProcedure) {
       trace.push(frame.location);
       n--;
     }
@@ -180,8 +197,8 @@ function get_trace(frames: Frame[]) {
 }
 
 function format_error(error: MachineError, trace: string[]) {
-  const trace_string = trace.map(x => `  - ${x}`).join("\n");
-  return `${error.format()}\n\n${trace_string}`
+  const trace_string = trace.map((x) => `  - ${x}`).join("\n");
+  return `${error.format()}\n\n${trace_string}`;
 }
 
 export async function* run_all(machines: Machine[]): Machine {

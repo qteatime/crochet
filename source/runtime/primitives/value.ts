@@ -1,12 +1,24 @@
 import { every, zip } from "../../utils/utils";
 
 export abstract class CrochetValue {
+  abstract type_name: string;
   abstract equals(other: CrochetValue): boolean;
   abstract as_bool(): boolean;
   abstract to_js(): any;
 }
 
+export type CrochetType =
+  | typeof True
+  | typeof False
+  | typeof CrochetText
+  | typeof CrochetRecord
+  | typeof CrochetStream;
+
 export class True extends CrochetValue {
+  get type_name() {
+    return "True";
+  }
+
   equals(other: CrochetValue): boolean {
     return !(other instanceof False);
   }
@@ -21,6 +33,10 @@ export class True extends CrochetValue {
 }
 
 export class False extends CrochetValue {
+  get type_name() {
+    return "False";
+  }
+
   equals(other: CrochetValue): boolean {
     return other instanceof False;
   }
@@ -35,6 +51,10 @@ export class False extends CrochetValue {
 }
 
 export class CrochetText extends CrochetValue {
+  get type_name() {
+    return "Text";
+  }
+
   constructor(readonly value: string) {
     super();
   }
@@ -53,6 +73,10 @@ export class CrochetText extends CrochetValue {
 }
 
 export class CrochetStream extends CrochetValue {
+  get type_name() {
+    return "Stream";
+  }
+
   constructor(readonly values: CrochetValue[]) {
     super();
   }
@@ -70,11 +94,15 @@ export class CrochetStream extends CrochetValue {
   }
 
   to_js() {
-    return this.values.map(x => x.to_js());
+    return this.values.map((x) => x.to_js());
   }
 }
 
 export class CrochetRecord extends CrochetValue {
+  get type_name() {
+    return "Record";
+  }
+
   constructor(readonly values: Map<string, CrochetValue>) {
     super();
   }

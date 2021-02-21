@@ -8,8 +8,7 @@ interface IConstraint {
 }
 
 export class And implements IConstraint {
-  constructor(readonly left: Constraint, readonly right: Constraint) {
-  }
+  constructor(readonly left: Constraint, readonly right: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return and(this.left.evaluate(env), this.right.evaluate(env));
@@ -17,8 +16,7 @@ export class And implements IConstraint {
 }
 
 export class Or implements IConstraint {
-  constructor(readonly left: Constraint, readonly right: Constraint) {
-  }
+  constructor(readonly left: Constraint, readonly right: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return or(this.left.evaluate(env), this.right.evaluate(env));
@@ -26,8 +24,7 @@ export class Or implements IConstraint {
 }
 
 export class Not implements IConstraint {
-  constructor(readonly constraint: Constraint) {
-  }
+  constructor(readonly constraint: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return not(this.constraint.evaluate(env));
@@ -48,9 +45,7 @@ export class Variable implements IConstraint {
 }
 
 export class Equals implements IConstraint {
-  constructor(readonly left: Constraint, readonly right: Constraint) {
-
-  }
+  constructor(readonly left: Constraint, readonly right: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return from_bool(this.left.evaluate(env).equals(this.right.evaluate(env)));
@@ -58,9 +53,7 @@ export class Equals implements IConstraint {
 }
 
 export class Value implements IConstraint {
-  constructor(readonly value: CrochetValue) {
-    
-  }
+  constructor(readonly value: CrochetValue) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return this.value;

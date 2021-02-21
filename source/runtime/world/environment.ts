@@ -4,9 +4,7 @@ import { World } from "./world";
 export class Environment {
   readonly bindings = new Map<string, CrochetValue>();
 
-  constructor(readonly parent: Environment | null, readonly world: World) {
-    
-  }
+  constructor(readonly parent: Environment | null, readonly world: World) {}
 
   has(name: string): boolean {
     return this.bindings.has(name);

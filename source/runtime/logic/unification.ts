@@ -32,16 +32,17 @@ export class UnificationEnvironment {
   }
 }
 
-
 export type Pattern = ValuePattern | VariablePattern | WildcardPattern;
 
 interface IPattern {
-  unify(env: UnificationEnvironment, value: CrochetValue): UnificationEnvironment | null;
+  unify(
+    env: UnificationEnvironment,
+    value: CrochetValue
+  ): UnificationEnvironment | null;
 }
 
 export class ValuePattern implements IPattern {
-  constructor(readonly value: CrochetValue) {
-  }
+  constructor(readonly value: CrochetValue) {}
 
   unify(env: UnificationEnvironment, value: CrochetValue) {
     if (value.equals(this.value)) {
@@ -72,5 +73,5 @@ export class VariablePattern implements IPattern {
 export class WildcardPattern implements IPattern {
   unify(env: UnificationEnvironment, _value: CrochetValue) {
     return env;
-  }  
+  }
 }

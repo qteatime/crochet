@@ -4,4 +4,4 @@ export * from "./database";
 export * from "./predicate";
 export * from "./unification";
 export * from "./tree";
-export { Constraint, Effect }
+export { Constraint, Effect };
