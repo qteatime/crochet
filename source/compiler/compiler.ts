@@ -252,6 +252,10 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.EGlobal(name.name);
     },
 
+    Self(_) {
+      return new IR.ESelf();
+    },
+
     New(_, type) {
       return new IR.ENew(type.name);
     },
@@ -320,6 +324,13 @@ export function compileParameter(x: Parameter) {
       return {
         type: compileTypeApp(type),
         parameter: name.name,
+      };
+    },
+
+    TypedOnly(_, type) {
+      return {
+        type: compileTypeApp(type),
+        parameter: "_",
       };
     },
 

@@ -4,7 +4,11 @@ import { World } from "./world";
 export class Environment {
   readonly bindings = new Map<string, CrochetValue>();
 
-  constructor(readonly parent: Environment | null, readonly world: World) {}
+  constructor(
+    readonly parent: Environment | null,
+    readonly world: World,
+    readonly receiver: CrochetValue
+  ) {}
 
   has(name: string): boolean {
     return this.bindings.has(name);
@@ -22,6 +26,10 @@ export class Environment {
   }
 
   define(name: string, value: CrochetValue) {
+    if (name === "_") {
+      return;
+    }
+
     if (this.bindings.has(name)) {
       throw new Error(`Duplicate binding ${name}`);
     }

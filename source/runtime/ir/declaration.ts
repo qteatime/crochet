@@ -1,5 +1,5 @@
 import { PredicateProcedure, TreeType } from "../logic";
-import { CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
+import { bfalse, CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
 import { cvalue, Machine, run } from "../run";
 import { Environment, World } from "../world";
@@ -42,7 +42,7 @@ export class DDo implements IDeclaration {
   constructor(readonly body: Statement[]) {}
 
   apply(world: World) {
-    const env = new Environment(null, world);
+    const env = new Environment(null, world, bfalse);
     const block = new SBlock(this.body);
     world.schedule(block.evaluate(world, env));
   }
@@ -74,7 +74,7 @@ export class DCrochetCommand implements IDeclaration {
   ) {}
 
   apply(world: World) {
-    const env = new Environment(null, world);
+    const env = new Environment(null, world, bfalse);
     const code = new CrochetProcedure(
       env,
       world,
@@ -128,7 +128,7 @@ export class DEnum implements IDeclaration {
 export class DDefine implements IDeclaration {
   constructor(readonly name: string, readonly value: Expression) {}
   async apply(world: World) {
-    const env = new Environment(null, world);
+    const env = new Environment(null, world, bfalse);
     const value = cvalue(await run(this.value.evaluate(world, env)));
     world.add_global(this.name, value);
   }

@@ -36,7 +36,8 @@ export type Expression =
   | EInvoke
   | ENew
   | ENewVariant
-  | EGlobal;
+  | EGlobal
+  | ESelf;
 
 interface IExpression {
   evaluate(world: World, env: Environment): Machine;
@@ -138,5 +139,11 @@ export class EGlobal implements IExpression {
 
   async *evaluate(world: World, env: Environment) {
     return world.get_global(this.name);
+  }
+}
+
+export class ESelf implements IExpression {
+  async *evaluate(world: World, env: Environment) {
+    return env.receiver;
   }
 }

@@ -18,6 +18,7 @@ type Variant(pos: Meta, name: Name, roles: Name[])
 type Parameter =
   | Untyped(pos: Meta, name: Name)
   | Typed(pos: Meta, name: Name, typ: TypeApp)
+  | TypedOnly(pos: Meta, typ: TypeApp)
 
 type TypeApp =
   | Union(pos: Meta, left: TypeApp, right: TypeApp)
@@ -45,6 +46,7 @@ type Expression =
   | Invoke(pos: Meta, signature: Signature<Expression>)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
+  | Self(pos: Meta)
   | Search(pos: Meta, predicate: Predicate)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
@@ -140,6 +142,7 @@ grammar Crochet : Program {
   parameter =
     | n:name                              -> Parameter.Untyped(meta, n)
     | s<"("> n:name is_ t:typeApp s<")">  -> Parameter.Typed(meta, n, t)
+    | t:atom                              -> Parameter.TypedOnly(meta, TypeApp.Named(meta, t))
 
   typeApp =
     | typeAppUnion
@@ -270,6 +273,7 @@ grammar Crochet : Program {
   primaryExpression =
     | newExpression
     | literalExpression
+    | self_                       -> Expression.Self(meta)
     | n:atom                      -> Expression.Global(meta, n)
     | n:name                      -> Expression.Variable(meta, n)
     | s<"("> e:expression s<")">  -> Expression.Parens(meta, e)
@@ -399,10 +403,11 @@ grammar Crochet : Program {
   and_ = kw<"and">
   or_ = kw<"or">
   is_ = kw<"is">
+  self_ = kw<"self">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_
     | type_ | role_ | enum_ | define_ | singleton_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_
-    | true_ | false_ | not_ | and_ | or_ | is_
+    | true_ | false_ | not_ | and_ | or_ | is_ | self_
 }
