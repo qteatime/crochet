@@ -33,9 +33,10 @@ type Statement =
   | Expr(value: Expression)
 
 type Expression =
-  | Parens(pos: Meta, value: Expression)
+  | Invoke(pos: Meta, signature: Signature<Expression>)
   | Variable(pos: Meta, name: Name)
   | Search(pos: Meta, predicate: Predicate)
+  | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
 type Literal =
@@ -183,11 +184,11 @@ grammar Crochet : Program {
       -> Statement.Let(meta, n, e)
   
   factStatement =
-    | fact_ s:logicSignature<expression> 
+    | fact_ s:logicSignature<invokePostfix> 
       -> Statement.Fact(meta, s)
   
   forgetStatement =
-    | fact_ s:logicSignature<expression>
+    | fact_ s:logicSignature<invokePostfix>
       -> Statement.Forget(meta, s)
 
   returnStatement =
@@ -198,11 +199,26 @@ grammar Crochet : Program {
   // -- Expressions
   expression =
     | searchExpression
-    | primaryExpression
+    | invokeInfixExpression
 
   searchExpression =
     | search_ p:predicate
       -> Expression.Search(meta, p)
+
+  invokeInfixExpression =
+    | l:invokeMixfix op:infix_symbol r:invokeInfixExpression
+      -> Expression.Invoke(meta, Signature.Binary(meta, op, l, r))
+    | invokeMixfix
+
+  invokeMixfix =
+    | s:invokePostfix ps:signaturePair<invokePostfix>
+      -> Expression.Invoke(meta, Signature.Keyword(meta, s, ps))
+    | invokePostfix
+
+  invokePostfix =
+    | s:invokePostfix n:atom
+      -> Expression.Invoke(meta, Signature.Unary(meta, s, n))
+    | primaryExpression
 
   primaryExpression =
     | l:literal             -> Expression.Lit(l)
@@ -213,6 +229,7 @@ grammar Crochet : Program {
   // -- Literals
   literal =
     | text
+    | integer
     | boolean
 
   boolean =
@@ -226,7 +243,7 @@ grammar Crochet : Program {
     | x:s<t_integer>        -> Literal.Integer(meta, x)
 
   // -- Token -> Rule & Basics
-  atom = x:s<t_atom>                          -> Name(meta, x)
+  atom = ~reserved x:s<t_atom> ~":"           -> Name(meta, x)
   name = x:s<t_name>                          -> Name(meta, x)
   keyword = x:s<t_keyword>                    -> Name(meta, x)
   infix_symbol = x:s<t_infix_symbol>          -> Name(meta, x)
@@ -246,7 +263,7 @@ grammar Crochet : Program {
     | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
     | l:t op:infix_symbol r:t         -> Signature.Binary(meta, op, l, r)
     | s:t n:atom                      -> Signature.Unary(meta, s, n)
-    | n:not s:T                       -> Signature.Unary(meta, s, n)
+    | n:not s:t                       -> Signature.Unary(meta, s, n)
 
   statementBlock<t> =
     | s<"{"> xs:listOf<t, s<";">> s<";">? s<"}"> -> xs
@@ -302,6 +319,7 @@ grammar Crochet : Program {
   predicate_ = kw<"predicate">
   when_ = kw<"when">
   do_ = kw<"do">
+  command_ = kw<"command">
 
   let_ = kw<"let">
   return_ = kw<"return">
@@ -316,10 +334,11 @@ grammar Crochet : Program {
   not_ = kw<"not">
   and_ = kw<"and">
   or_ = kw<"or">
+  is_ = kw<"is">
 
   reserved =
-    | relation_ | predicate_ | when_ | do_
+    | relation_ | predicate_ | when_ | do_ | command_
     | let_ | return_ | fact_ | forget_
     | search_ | if_
-    | true_ | false_ | not_ | and_ | or_
+    | true_ | false_ | not_ | and_ | or_ | is_
 }

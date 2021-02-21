@@ -1,12 +1,25 @@
 import * as rt from "./runtime";
-import { btrue, CrochetText, Environment, run, UnificationEnvironment } from "./runtime";
+import {
+  btrue,
+  CrochetText,
+  Environment,
+  run,
+  UnificationEnvironment,
+} from "./runtime";
 import { EVariable, ESearch, EText } from "./runtime/ir/expression";
-import { SBlock, SExpression, SFact, SLet, SReturn } from "./runtime/ir/statement";
+import {
+  SBlock,
+  SExpression,
+  SFact,
+  SLet,
+  SReturn,
+} from "./runtime/ir/statement";
 import { World } from "./runtime/world";
 import { show } from "./utils/utils";
 import { parse } from "./compiler";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 import { compileProgram } from "./compiler/compiler";
+import { ForeignInterface } from "./runtime/world/foreign";
 
 function to_js(x: UnificationEnvironment) {
   const bindings = x.boundValues;
@@ -100,7 +113,6 @@ function to_js(x: UnificationEnvironment) {
 
 // console.log(show(result));
 
-
 // const world = new World();
 // const env = new Environment(null, world);
 
@@ -133,14 +145,26 @@ predicate Who kisses: Whom at: Where {
   when Who at: Where, Whom at: Where, Who likes: Whom;
 }
 
+command What id {
+  return What;
+}
+
+command (X is #integer) hello {
+  return "hello integer" id;
+}
+
+command (X is #text) hello {
+  return "hello text" id;
+}
+
 do {
   fact "Lielle" at: "foyer";
   fact "Kristine" at: "foyer";
   fact "Lielle" likes: "Kristine";
   let X = search "Lielle" kisses: Who at: Where;
-  return X;
+  return "Lielle" hello;
 }
-`
+`;
 
 function parse1(x: string) {
   try {
@@ -155,10 +179,10 @@ const ast = parse1(programStr);
 console.log(show(ast));
 
 const ir = compileProgram(ast);
-const world2 = new World();
+const world2 = new World(new ForeignInterface());
 world2.load_declarations(ir);
-world2.run().then(result => {
+world2.run().then((result) => {
   console.log(">>>", show(world2));
   console.log(">>>", show(result?.to_js()));
-  debugger;  
-})
+  debugger;
+});
