@@ -83,7 +83,7 @@ export class TCrochetUnion extends CrochetType {
 }
 
 export class TCrochetType extends CrochetType {
-  constructor(readonly name: string, readonly roles: CrochetRole[]) {
+  constructor(readonly name: string, readonly roles: Set<CrochetRole>) {
     super();
   }
 
@@ -107,7 +107,7 @@ export class TCrochetEnum extends CrochetType {
     if (name in this.variants) {
       throw new Error(`internal: duplicate variant ${name} in ${this.name}`);
     }
-    const variant = new CrochetVariant(this, name, roles);
+    const variant = new CrochetVariant(this, name, new Set(roles));
     this.variants[name] = variant;
   }
 
@@ -125,5 +125,15 @@ export class TCrochetEnum extends CrochetType {
 
   accepts(x: any) {
     return x instanceof CrochetVariant && x.type === this;
+  }
+}
+
+export function type_name(x: any) {
+  if (x instanceof CrochetValue) {
+    return x.type.type_name;
+  } else if (x instanceof CrochetType) {
+    return x.type_name;
+  } else {
+    return `<host value: ${x?.name ?? typeof x}>`;
   }
 }

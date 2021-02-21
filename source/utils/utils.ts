@@ -1,4 +1,5 @@
 import * as Util from "util";
+import { type_name } from "../runtime";
 import { AnyClass } from "./types";
 
 export function unreachable(x: never, message: string) {
@@ -26,7 +27,7 @@ export function cast<T extends AnyClass>(x: any, type: T): InstanceType<T> {
   if (x instanceof type) {
     return x as any;
   } else {
-    throw new TypeError(`internal: expected ${type.name}`);
+    throw new TypeError(`internal: expected ${type_name(type)}`);
   }
 }
 

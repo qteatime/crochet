@@ -7,11 +7,13 @@ import {
   TreeType,
 } from "../logic";
 import {
+  CrochetRole,
+  CrochetType,
+  CrochetValue,
   CrochetProcedure,
   NativeProcedure,
   Procedure,
-} from "../primitives/procedure";
-import { CrochetRole, CrochetType } from "../primitives/types";
+} from "../primitives";
 import { Machine, run } from "../run";
 import { ForeignInterface } from "./foreign";
 
@@ -20,6 +22,7 @@ export class World {
   private procedures = new Map<string, Procedure>();
   private types = new Map<string, CrochetType>();
   private roles = new Map<string, CrochetRole>();
+  private globals = new Map<string, CrochetValue>();
   private queue: Machine[] = [];
 
   constructor(readonly ffi: ForeignInterface) {}
@@ -43,10 +46,26 @@ export class World {
   }
 
   search(predicate: Predicate) {
-    return this.database.search(predicate);
+    return this.database.search(this, predicate);
   }
 
   // -- Types
+  get_global(name: string) {
+    const value = this.globals.get(name);
+    if (value == null) {
+      throw new Error(`internal: undefined global ${name}`);
+    }
+
+    return value;
+  }
+
+  add_global(name: string, value: CrochetValue) {
+    if (this.globals.has(name)) {
+      throw new Error(`internal: duplicated global ${name}`);
+    }
+    this.globals.set(name, value);
+  }
+
   get_type(name: string) {
     const type = this.types.get(name);
     if (type == null) {
@@ -73,7 +92,7 @@ export class World {
   }
 
   add_role(name: string, role: CrochetRole) {
-    if (this.types.has(name)) {
+    if (this.roles.has(name)) {
       throw new Error(`internal: duplicated role ${name}`);
     }
     this.roles.set(name, role);
@@ -125,9 +144,9 @@ export class World {
     this.queue.push(machine);
   }
 
-  load_declarations(xs: Declaration[]) {
+  async load_declarations(xs: Declaration[]) {
     for (const x of xs) {
-      x.apply(this);
+      await x.apply(this);
     }
   }
 

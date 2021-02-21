@@ -15,11 +15,13 @@ import {
   Signature,
   Statement,
   TypeApp,
+  TypeDef,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
 import * as IR from "../runtime/ir";
 import * as Logic from "../runtime/logic";
+import { cast } from "../utils/utils";
 
 // -- Utilities
 function parseInteger(x: string): bigint {
@@ -98,10 +100,26 @@ export function compileRelationTypes(types: RelationPart[]): Logic.TreeType {
   }, new Logic.TTEnd() as Logic.TreeType);
 }
 
-export function compilePattern(p: Pattern) {
+export function compilePattern(p: Pattern): Logic.Pattern {
   return p.match<Logic.Pattern>({
+    HasRole(_, type, name) {
+      return new Logic.RolePattern(compilePattern(name), type.name);
+    },
+
+    HasType(_, type, name) {
+      return new Logic.TypePattern(compilePattern(name), compileTypeApp(type));
+    },
+
+    Variant(_, type, variant) {
+      return new Logic.VariantPattern(type.name, variant.name);
+    },
+
     Lit(lit) {
       return new Logic.ValuePattern(literalToValue(lit));
+    },
+
+    Global(_, name) {
+      return new Logic.GlobalPattern(name.name);
     },
 
     Variable(_, name) {
@@ -230,6 +248,18 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.EVariable(name.name);
     },
 
+    Global(_, name) {
+      return new IR.EGlobal(name.name);
+    },
+
+    New(_, type) {
+      return new IR.ENew(type.name);
+    },
+
+    NewVariant(_, type, variant) {
+      return new IR.ENewVariant(type.name, variant.name);
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },
@@ -310,10 +340,17 @@ export function compileParameters(xs0: Parameter[]) {
   };
 }
 
-export function compileDeclaration(d: Declaration) {
-  return d.match<IR.Declaration>({
+export function compileTypeDef(t: TypeDef) {
+  return new IR.DType(
+    t.name.name,
+    t.roles.map((x) => x.name)
+  );
+}
+
+export function compileDeclaration(d: Declaration): IR.Declaration[] {
+  return d.match<IR.Declaration[]>({
     Do(_, body) {
-      return new IR.DDo(body.map(compileStatement));
+      return [new IR.DDo(body.map(compileStatement))];
     },
 
     Predicate(_, sig, clauses) {
@@ -324,60 +361,78 @@ export function compileDeclaration(d: Declaration) {
         params,
         clauses.map(compilePredicateClause)
       );
-      return new IR.DPredicate(name, procedure);
+      return [new IR.DPredicate(name, procedure)];
     },
 
     Relation(_, sig) {
       const types = signatureValues(sig);
-      return new IR.DRelation(signatureName(sig), compileRelationTypes(types));
+      return [
+        new IR.DRelation(signatureName(sig), compileRelationTypes(types)),
+      ];
     },
 
     ForeignCommand(meta, sig, foreign_name, args0) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
       const args = args0.map((x) => parameters.indexOf(x.name));
-      return new IR.DForeignCommand(
-        name,
-        types,
-        compileNamespace(foreign_name),
-        args
-      );
+      return [
+        new IR.DForeignCommand(
+          name,
+          types,
+          compileNamespace(foreign_name),
+          args
+        ),
+      ];
     },
 
     Command(meta, sig, body) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
-      return new IR.DCrochetCommand(
-        name,
-        parameters,
-        types,
-        body.map(compileStatement)
-      );
+      return [
+        new IR.DCrochetCommand(
+          name,
+          parameters,
+          types,
+          body.map(compileStatement)
+        ),
+      ];
     },
 
     Role(_, name) {
-      return new IR.DRole(name.name);
+      return [new IR.DRole(name.name)];
     },
 
-    Type(_, name, roles) {
-      return new IR.DType(
-        name.name,
-        roles.map((x) => x.name)
-      );
+    // FIXME: make sure no further possible instantiations of this type exist
+    SingletonType(_, type0) {
+      const type = compileTypeDef(type0);
+      return [
+        new IR.DType(type.name, type.roles),
+        new IR.DDefine(type.name, new IR.ENew(type.name)),
+      ];
+    },
+
+    Type(_, t) {
+      return [compileTypeDef(t)];
     },
 
     Enum(_, name, variants) {
-      return new IR.DEnum(
-        name.name,
-        variants.map((x) => ({
-          name: x.name.name,
-          roles: x.roles.map((z) => z.name),
-        }))
-      );
+      return [
+        new IR.DEnum(
+          name.name,
+          variants.map((x) => ({
+            name: x.name.name,
+            roles: x.roles.map((z) => z.name),
+          }))
+        ),
+      ];
+    },
+
+    Define(_, name, value) {
+      return [new IR.DDefine(name.name, compileExpression(value))];
     },
   });
 }
 
 export function compileProgram(p: Program) {
-  return p.declarations.map(compileDeclaration);
+  return p.declarations.flatMap(compileDeclaration);
 }

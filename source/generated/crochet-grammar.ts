@@ -104,9 +104,13 @@ type $p_Declaration<$T> = {
 
   Command(pos: Meta, signature: Signature<Parameter>, body: Statement[]): $T;
 
+  Define(pos: Meta, name: Name, value: Expression): $T;
+
   Role(pos: Meta, name: Name): $T;
 
-  Type(pos: Meta, name: Name, roles: Name[]): $T;
+  SingletonType(pos: Meta, typ: TypeDef): $T;
+
+  Type(pos: Meta, typ: TypeDef): $T;
 
   Enum(pos: Meta, name: Name, values: Variant[]): $T;
 };
@@ -118,7 +122,9 @@ export abstract class Declaration extends Node {
     | "Do"
     | "ForeignCommand"
     | "Command"
+    | "Define"
     | "Role"
+    | "SingletonType"
     | "Type"
     | "Enum";
   abstract match<$T>(p: $p_Declaration<$T>): $T;
@@ -143,8 +149,16 @@ export abstract class Declaration extends Node {
     return $Declaration.Command;
   }
 
+  static get Define() {
+    return $Declaration.Define;
+  }
+
   static get Role() {
     return $Declaration.Role;
+  }
+
+  static get SingletonType() {
+    return $Declaration.SingletonType;
   }
 
   static get Type() {
@@ -160,8 +174,8 @@ export abstract class Declaration extends Node {
   }
 }
 
-const $Declaration = {
-  Relation: class Relation extends Declaration {
+const $Declaration = (function () {
+  class Relation extends Declaration {
     readonly tag = "Relation";
 
     constructor(
@@ -184,9 +198,9 @@ const $Declaration = {
     static has_instance(x: any) {
       return x instanceof Relation;
     }
-  },
+  }
 
-  Predicate: class Predicate extends Declaration {
+  class Predicate extends Declaration {
     readonly tag = "Predicate";
 
     constructor(
@@ -211,9 +225,9 @@ const $Declaration = {
     static has_instance(x: any) {
       return x instanceof Predicate;
     }
-  },
+  }
 
-  Do: class Do extends Declaration {
+  class Do extends Declaration {
     readonly tag = "Do";
 
     constructor(readonly pos: Meta, readonly body: Statement[]) {
@@ -229,9 +243,9 @@ const $Declaration = {
     static has_instance(x: any) {
       return x instanceof Do;
     }
-  },
+  }
 
-  ForeignCommand: class ForeignCommand extends Declaration {
+  class ForeignCommand extends Declaration {
     readonly tag = "ForeignCommand";
 
     constructor(
@@ -263,9 +277,9 @@ const $Declaration = {
     static has_instance(x: any) {
       return x instanceof ForeignCommand;
     }
-  },
+  }
 
-  Command: class Command extends Declaration {
+  class Command extends Declaration {
     readonly tag = "Command";
 
     constructor(
@@ -290,9 +304,32 @@ const $Declaration = {
     static has_instance(x: any) {
       return x instanceof Command;
     }
-  },
+  }
 
-  Role: class Role extends Declaration {
+  class Define extends Declaration {
+    readonly tag = "Define";
+
+    constructor(
+      readonly pos: Meta,
+      readonly name: Name,
+      readonly value: Expression
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(name, "Name", Name);
+      $assert_type<Expression>(value, "Expression", Expression);
+    }
+
+    match<$T>(p: $p_Declaration<$T>): $T {
+      return p.Define(this.pos, this.name, this.value);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Define;
+    }
+  }
+
+  class Role extends Declaration {
     readonly tag = "Role";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -308,32 +345,45 @@ const $Declaration = {
     static has_instance(x: any) {
       return x instanceof Role;
     }
-  },
+  }
 
-  Type: class Type extends Declaration {
-    readonly tag = "Type";
+  class SingletonType extends Declaration {
+    readonly tag = "SingletonType";
 
-    constructor(
-      readonly pos: Meta,
-      readonly name: Name,
-      readonly roles: Name[]
-    ) {
+    constructor(readonly pos: Meta, readonly typ: TypeDef) {
       super();
       $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-      $assert_type<Name[]>(roles, "Name[]", $is_array(Name));
+      $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
     }
 
     match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Type(this.pos, this.name, this.roles);
+      return p.SingletonType(this.pos, this.typ);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof SingletonType;
+    }
+  }
+
+  class Type extends Declaration {
+    readonly tag = "Type";
+
+    constructor(readonly pos: Meta, readonly typ: TypeDef) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
+    }
+
+    match<$T>(p: $p_Declaration<$T>): $T {
+      return p.Type(this.pos, this.typ);
     }
 
     static has_instance(x: any) {
       return x instanceof Type;
     }
-  },
+  }
 
-  Enum: class Enum extends Declaration {
+  class Enum extends Declaration {
     readonly tag = "Enum";
 
     constructor(
@@ -354,8 +404,35 @@ const $Declaration = {
     static has_instance(x: any) {
       return x instanceof Enum;
     }
-  },
-};
+  }
+
+  return {
+    Relation,
+    Predicate,
+    Do,
+    ForeignCommand,
+    Command,
+    Define,
+    Role,
+    SingletonType,
+    Type,
+    Enum,
+  };
+})();
+
+export class TypeDef extends Node {
+  readonly tag = "TypeDef";
+
+  constructor(readonly name: Name, readonly roles: Name[]) {
+    super();
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<Name[]>(roles, "Name[]", $is_array(Name));
+  }
+
+  static has_instance(x: any) {
+    return x instanceof TypeDef;
+  }
+}
 
 export class Variant extends Node {
   readonly tag = "Variant";
@@ -395,8 +472,8 @@ export abstract class Parameter extends Node {
   }
 }
 
-const $Parameter = {
-  Untyped: class Untyped extends Parameter {
+const $Parameter = (function () {
+  class Untyped extends Parameter {
     readonly tag = "Untyped";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -412,9 +489,9 @@ const $Parameter = {
     static has_instance(x: any) {
       return x instanceof Untyped;
     }
-  },
+  }
 
-  Typed: class Typed extends Parameter {
+  class Typed extends Parameter {
     readonly tag = "Typed";
 
     constructor(
@@ -435,8 +512,10 @@ const $Parameter = {
     static has_instance(x: any) {
       return x instanceof Typed;
     }
-  },
-};
+  }
+
+  return { Untyped, Typed };
+})();
 
 type $p_TypeApp<$T> = {
   Union(pos: Meta, left: TypeApp, right: TypeApp): $T;
@@ -467,8 +546,8 @@ export abstract class TypeApp extends Node {
   }
 }
 
-const $TypeApp = {
-  Union: class Union extends TypeApp {
+const $TypeApp = (function () {
+  class Union extends TypeApp {
     readonly tag = "Union";
 
     constructor(
@@ -489,9 +568,9 @@ const $TypeApp = {
     static has_instance(x: any) {
       return x instanceof Union;
     }
-  },
+  }
 
-  Named: class Named extends TypeApp {
+  class Named extends TypeApp {
     readonly tag = "Named";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -507,9 +586,9 @@ const $TypeApp = {
     static has_instance(x: any) {
       return x instanceof Named;
     }
-  },
+  }
 
-  Parens: class Parens extends TypeApp {
+  class Parens extends TypeApp {
     readonly tag = "Parens";
 
     constructor(readonly pos: Meta, readonly typ: TypeApp) {
@@ -525,8 +604,10 @@ const $TypeApp = {
     static has_instance(x: any) {
       return x instanceof Parens;
     }
-  },
-};
+  }
+
+  return { Union, Named, Parens };
+})();
 
 export class PredicateClause extends Node {
   readonly tag = "PredicateClause";
@@ -564,8 +645,8 @@ export abstract class PredicateEffect extends Node {
   }
 }
 
-const $PredicateEffect = {
-  Trivial: class Trivial extends PredicateEffect {
+const $PredicateEffect = (function () {
+  class Trivial extends PredicateEffect {
     readonly tag = "Trivial";
 
     constructor() {
@@ -579,8 +660,10 @@ const $PredicateEffect = {
     static has_instance(x: any) {
       return x instanceof Trivial;
     }
-  },
-};
+  }
+
+  return { Trivial };
+})();
 
 type $p_Statement<$T> = {
   Fact(pos: Meta, signature: Signature<Expression>): $T;
@@ -617,8 +700,8 @@ export abstract class Statement extends Node {
   }
 }
 
-const $Statement = {
-  Fact: class Fact extends Statement {
+const $Statement = (function () {
+  class Fact extends Statement {
     readonly tag = "Fact";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
@@ -638,9 +721,9 @@ const $Statement = {
     static has_instance(x: any) {
       return x instanceof Fact;
     }
-  },
+  }
 
-  Forget: class Forget extends Statement {
+  class Forget extends Statement {
     readonly tag = "Forget";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
@@ -660,9 +743,9 @@ const $Statement = {
     static has_instance(x: any) {
       return x instanceof Forget;
     }
-  },
+  }
 
-  Let: class Let extends Statement {
+  class Let extends Statement {
     readonly tag = "Let";
 
     constructor(
@@ -683,9 +766,9 @@ const $Statement = {
     static has_instance(x: any) {
       return x instanceof Let;
     }
-  },
+  }
 
-  Expr: class Expr extends Statement {
+  class Expr extends Statement {
     readonly tag = "Expr";
 
     constructor(readonly value: Expression) {
@@ -700,11 +783,19 @@ const $Statement = {
     static has_instance(x: any) {
       return x instanceof Expr;
     }
-  },
-};
+  }
+
+  return { Fact, Forget, Let, Expr };
+})();
 
 type $p_Expression<$T> = {
+  New(pos: Meta, typ: Name): $T;
+
+  NewVariant(pos: Meta, typ: Name, variant: Name): $T;
+
   Invoke(pos: Meta, signature: Signature<Expression>): $T;
+
+  Global(pos: Meta, name: Name): $T;
 
   Variable(pos: Meta, name: Name): $T;
 
@@ -716,11 +807,31 @@ type $p_Expression<$T> = {
 };
 
 export abstract class Expression extends Node {
-  abstract tag: "Invoke" | "Variable" | "Search" | "Parens" | "Lit";
+  abstract tag:
+    | "New"
+    | "NewVariant"
+    | "Invoke"
+    | "Global"
+    | "Variable"
+    | "Search"
+    | "Parens"
+    | "Lit";
   abstract match<$T>(p: $p_Expression<$T>): $T;
+
+  static get New() {
+    return $Expression.New;
+  }
+
+  static get NewVariant() {
+    return $Expression.NewVariant;
+  }
 
   static get Invoke() {
     return $Expression.Invoke;
+  }
+
+  static get Global() {
+    return $Expression.Global;
   }
 
   static get Variable() {
@@ -744,8 +855,49 @@ export abstract class Expression extends Node {
   }
 }
 
-const $Expression = {
-  Invoke: class Invoke extends Expression {
+const $Expression = (function () {
+  class New extends Expression {
+    readonly tag = "New";
+
+    constructor(readonly pos: Meta, readonly typ: Name) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(typ, "Name", Name);
+    }
+
+    match<$T>(p: $p_Expression<$T>): $T {
+      return p.New(this.pos, this.typ);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof New;
+    }
+  }
+
+  class NewVariant extends Expression {
+    readonly tag = "NewVariant";
+
+    constructor(
+      readonly pos: Meta,
+      readonly typ: Name,
+      readonly variant: Name
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(typ, "Name", Name);
+      $assert_type<Name>(variant, "Name", Name);
+    }
+
+    match<$T>(p: $p_Expression<$T>): $T {
+      return p.NewVariant(this.pos, this.typ, this.variant);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof NewVariant;
+    }
+  }
+
+  class Invoke extends Expression {
     readonly tag = "Invoke";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
@@ -765,9 +917,27 @@ const $Expression = {
     static has_instance(x: any) {
       return x instanceof Invoke;
     }
-  },
+  }
 
-  Variable: class Variable extends Expression {
+  class Global extends Expression {
+    readonly tag = "Global";
+
+    constructor(readonly pos: Meta, readonly name: Name) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(name, "Name", Name);
+    }
+
+    match<$T>(p: $p_Expression<$T>): $T {
+      return p.Global(this.pos, this.name);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Global;
+    }
+  }
+
+  class Variable extends Expression {
     readonly tag = "Variable";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -783,9 +953,9 @@ const $Expression = {
     static has_instance(x: any) {
       return x instanceof Variable;
     }
-  },
+  }
 
-  Search: class Search extends Expression {
+  class Search extends Expression {
     readonly tag = "Search";
 
     constructor(readonly pos: Meta, readonly predicate: Predicate) {
@@ -801,9 +971,9 @@ const $Expression = {
     static has_instance(x: any) {
       return x instanceof Search;
     }
-  },
+  }
 
-  Parens: class Parens extends Expression {
+  class Parens extends Expression {
     readonly tag = "Parens";
 
     constructor(readonly pos: Meta, readonly value: Expression) {
@@ -819,9 +989,9 @@ const $Expression = {
     static has_instance(x: any) {
       return x instanceof Parens;
     }
-  },
+  }
 
-  Lit: class Lit extends Expression {
+  class Lit extends Expression {
     readonly tag = "Lit";
 
     constructor(readonly value: Literal) {
@@ -836,8 +1006,10 @@ const $Expression = {
     static has_instance(x: any) {
       return x instanceof Lit;
     }
-  },
-};
+  }
+
+  return { New, NewVariant, Invoke, Global, Variable, Search, Parens, Lit };
+})();
 
 type $p_Literal<$T> = {
   False(pos: Meta): $T;
@@ -874,8 +1046,8 @@ export abstract class Literal extends Node {
   }
 }
 
-const $Literal = {
-  False: class False extends Literal {
+const $Literal = (function () {
+  class False extends Literal {
     readonly tag = "False";
 
     constructor(readonly pos: Meta) {
@@ -890,9 +1062,9 @@ const $Literal = {
     static has_instance(x: any) {
       return x instanceof False;
     }
-  },
+  }
 
-  True: class True extends Literal {
+  class True extends Literal {
     readonly tag = "True";
 
     constructor(readonly pos: Meta) {
@@ -907,9 +1079,9 @@ const $Literal = {
     static has_instance(x: any) {
       return x instanceof True;
     }
-  },
+  }
 
-  Text: class Text extends Literal {
+  class Text extends Literal {
     readonly tag = "Text";
 
     constructor(readonly pos: Meta, readonly value: string) {
@@ -925,9 +1097,9 @@ const $Literal = {
     static has_instance(x: any) {
       return x instanceof Text;
     }
-  },
+  }
 
-  Integer: class Integer extends Literal {
+  class Integer extends Literal {
     readonly tag = "Integer";
 
     constructor(readonly pos: Meta, readonly digits: string) {
@@ -943,8 +1115,10 @@ const $Literal = {
     static has_instance(x: any) {
       return x instanceof Integer;
     }
-  },
-};
+  }
+
+  return { False, True, Text, Integer };
+})();
 
 export class Predicate extends Node {
   readonly tag = "Predicate";
@@ -992,8 +1166,8 @@ export abstract class PredicateRelation extends Node {
   }
 }
 
-const $PredicateRelation = {
-  Not: class Not extends PredicateRelation {
+const $PredicateRelation = (function () {
+  class Not extends PredicateRelation {
     readonly tag = "Not";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Pattern>) {
@@ -1013,9 +1187,9 @@ const $PredicateRelation = {
     static has_instance(x: any) {
       return x instanceof Not;
     }
-  },
+  }
 
-  Has: class Has extends PredicateRelation {
+  class Has extends PredicateRelation {
     readonly tag = "Has";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Pattern>) {
@@ -1035,10 +1209,20 @@ const $PredicateRelation = {
     static has_instance(x: any) {
       return x instanceof Has;
     }
-  },
-};
+  }
+
+  return { Not, Has };
+})();
 
 type $p_Pattern<$T> = {
+  HasRole(pos: Meta, typ: Name, name: Pattern): $T;
+
+  HasType(pos: Meta, typ: TypeApp, name: Pattern): $T;
+
+  Variant(pos: Meta, typ: Name, variant: Name): $T;
+
+  Global(pos: Meta, name: Name): $T;
+
   Variable(pos: Meta, name: Name): $T;
 
   Wildcard(pos: Meta): $T;
@@ -1047,8 +1231,31 @@ type $p_Pattern<$T> = {
 };
 
 export abstract class Pattern extends Node {
-  abstract tag: "Variable" | "Wildcard" | "Lit";
+  abstract tag:
+    | "HasRole"
+    | "HasType"
+    | "Variant"
+    | "Global"
+    | "Variable"
+    | "Wildcard"
+    | "Lit";
   abstract match<$T>(p: $p_Pattern<$T>): $T;
+
+  static get HasRole() {
+    return $Pattern.HasRole;
+  }
+
+  static get HasType() {
+    return $Pattern.HasType;
+  }
+
+  static get Variant() {
+    return $Pattern.Variant;
+  }
+
+  static get Global() {
+    return $Pattern.Global;
+  }
 
   static get Variable() {
     return $Pattern.Variable;
@@ -1067,8 +1274,95 @@ export abstract class Pattern extends Node {
   }
 }
 
-const $Pattern = {
-  Variable: class Variable extends Pattern {
+const $Pattern = (function () {
+  class HasRole extends Pattern {
+    readonly tag = "HasRole";
+
+    constructor(
+      readonly pos: Meta,
+      readonly typ: Name,
+      readonly name: Pattern
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(typ, "Name", Name);
+      $assert_type<Pattern>(name, "Pattern", Pattern);
+    }
+
+    match<$T>(p: $p_Pattern<$T>): $T {
+      return p.HasRole(this.pos, this.typ, this.name);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof HasRole;
+    }
+  }
+
+  class HasType extends Pattern {
+    readonly tag = "HasType";
+
+    constructor(
+      readonly pos: Meta,
+      readonly typ: TypeApp,
+      readonly name: Pattern
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
+      $assert_type<Pattern>(name, "Pattern", Pattern);
+    }
+
+    match<$T>(p: $p_Pattern<$T>): $T {
+      return p.HasType(this.pos, this.typ, this.name);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof HasType;
+    }
+  }
+
+  class Variant extends Pattern {
+    readonly tag = "Variant";
+
+    constructor(
+      readonly pos: Meta,
+      readonly typ: Name,
+      readonly variant: Name
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(typ, "Name", Name);
+      $assert_type<Name>(variant, "Name", Name);
+    }
+
+    match<$T>(p: $p_Pattern<$T>): $T {
+      return p.Variant(this.pos, this.typ, this.variant);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Variant;
+    }
+  }
+
+  class Global extends Pattern {
+    readonly tag = "Global";
+
+    constructor(readonly pos: Meta, readonly name: Name) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(name, "Name", Name);
+    }
+
+    match<$T>(p: $p_Pattern<$T>): $T {
+      return p.Global(this.pos, this.name);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Global;
+    }
+  }
+
+  class Variable extends Pattern {
     readonly tag = "Variable";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -1084,9 +1378,9 @@ const $Pattern = {
     static has_instance(x: any) {
       return x instanceof Variable;
     }
-  },
+  }
 
-  Wildcard: class Wildcard extends Pattern {
+  class Wildcard extends Pattern {
     readonly tag = "Wildcard";
 
     constructor(readonly pos: Meta) {
@@ -1101,9 +1395,9 @@ const $Pattern = {
     static has_instance(x: any) {
       return x instanceof Wildcard;
     }
-  },
+  }
 
-  Lit: class Lit extends Pattern {
+  class Lit extends Pattern {
     readonly tag = "Lit";
 
     constructor(readonly lit: Literal) {
@@ -1118,8 +1412,10 @@ const $Pattern = {
     static has_instance(x: any) {
       return x instanceof Lit;
     }
-  },
-};
+  }
+
+  return { HasRole, HasType, Variant, Global, Variable, Wildcard, Lit };
+})();
 
 type $p_Constraint<$T> = {
   And(pos: Meta, left: Constraint, right: Constraint): $T;
@@ -1174,8 +1470,8 @@ export abstract class Constraint extends Node {
   }
 }
 
-const $Constraint = {
-  And: class And extends Constraint {
+const $Constraint = (function () {
+  class And extends Constraint {
     readonly tag = "And";
 
     constructor(
@@ -1196,9 +1492,9 @@ const $Constraint = {
     static has_instance(x: any) {
       return x instanceof And;
     }
-  },
+  }
 
-  Or: class Or extends Constraint {
+  class Or extends Constraint {
     readonly tag = "Or";
 
     constructor(
@@ -1219,9 +1515,9 @@ const $Constraint = {
     static has_instance(x: any) {
       return x instanceof Or;
     }
-  },
+  }
 
-  Not: class Not extends Constraint {
+  class Not extends Constraint {
     readonly tag = "Not";
 
     constructor(readonly pos: Meta, readonly value: Constraint) {
@@ -1237,9 +1533,9 @@ const $Constraint = {
     static has_instance(x: any) {
       return x instanceof Not;
     }
-  },
+  }
 
-  Equal: class Equal extends Constraint {
+  class Equal extends Constraint {
     readonly tag = "Equal";
 
     constructor(
@@ -1260,9 +1556,9 @@ const $Constraint = {
     static has_instance(x: any) {
       return x instanceof Equal;
     }
-  },
+  }
 
-  Variable: class Variable extends Constraint {
+  class Variable extends Constraint {
     readonly tag = "Variable";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -1278,9 +1574,9 @@ const $Constraint = {
     static has_instance(x: any) {
       return x instanceof Variable;
     }
-  },
+  }
 
-  Parens: class Parens extends Constraint {
+  class Parens extends Constraint {
     readonly tag = "Parens";
 
     constructor(readonly pos: Meta, readonly value: Constraint) {
@@ -1296,9 +1592,9 @@ const $Constraint = {
     static has_instance(x: any) {
       return x instanceof Parens;
     }
-  },
+  }
 
-  Lit: class Lit extends Constraint {
+  class Lit extends Constraint {
     readonly tag = "Lit";
 
     constructor(readonly lit: Literal) {
@@ -1313,8 +1609,10 @@ const $Constraint = {
     static has_instance(x: any) {
       return x instanceof Lit;
     }
-  },
-};
+  }
+
+  return { And, Or, Not, Equal, Variable, Parens, Lit };
+})();
 
 type $p_Signature<T, $T> = {
   Unary(pos: Meta, self: T, name: Name): $T;
@@ -1345,8 +1643,8 @@ export abstract class Signature<T> extends Node {
   }
 }
 
-const $Signature = {
-  Unary: class Unary<T> extends Signature<T> {
+const $Signature = (function () {
+  class Unary<T> extends Signature<T> {
     readonly tag = "Unary";
 
     constructor(readonly pos: Meta, readonly self: T, readonly name: Name) {
@@ -1362,9 +1660,9 @@ const $Signature = {
     static has_instance(x: any) {
       return x instanceof Unary;
     }
-  },
+  }
 
-  Binary: class Binary<T> extends Signature<T> {
+  class Binary<T> extends Signature<T> {
     readonly tag = "Binary";
 
     constructor(
@@ -1385,9 +1683,9 @@ const $Signature = {
     static has_instance(x: any) {
       return x instanceof Binary;
     }
-  },
+  }
 
-  Keyword: class Keyword<T> extends Signature<T> {
+  class Keyword<T> extends Signature<T> {
     readonly tag = "Keyword";
 
     constructor(
@@ -1407,8 +1705,10 @@ const $Signature = {
     static has_instance(x: any) {
       return x instanceof Keyword;
     }
-  },
-};
+  }
+
+  return { Unary, Binary, Keyword };
+})();
 
 type $p_RelationPart<$T> = {
   Many(pos: Meta, name: Name): $T;
@@ -1433,8 +1733,8 @@ export abstract class RelationPart extends Node {
   }
 }
 
-const $RelationPart = {
-  Many: class Many extends RelationPart {
+const $RelationPart = (function () {
+  class Many extends RelationPart {
     readonly tag = "Many";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -1450,9 +1750,9 @@ const $RelationPart = {
     static has_instance(x: any) {
       return x instanceof Many;
     }
-  },
+  }
 
-  One: class One extends RelationPart {
+  class One extends RelationPart {
     readonly tag = "One";
 
     constructor(readonly pos: Meta, readonly name: Name) {
@@ -1468,8 +1768,10 @@ const $RelationPart = {
     static has_instance(x: any) {
       return x instanceof One;
     }
-  },
-};
+  }
+
+  return { Many, One };
+})();
 
 export class Pair<K, V> extends Node {
   readonly tag = "Pair";
@@ -1514,7 +1816,7 @@ export class Namespace extends Node {
 
 // == Grammar definition ============================================
 export const grammar = Ohm.grammar(
-  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | enumDeclaration  -- alt7\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate ";"  -- alt1\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n | command_ signature<parameter> statementBlock<statement>  -- alt2\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n\n\ntypeApp  = typeAppUnion  -- alt1\n\n\ntypeAppUnion  = typeAppPrimary s<"|"> typeAppUnion  -- alt1\n | typeAppPrimary  -- alt2\n\n\ntypeAppPrimary  = atom  -- alt1\n | s<"("> typeApp s<")">  -- alt2\n\n\ntypeDeclaration  = type_ atom roles s<";">  -- alt1\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nenumDeclaration  = enum_ atom s<"="> s<"|">? nonemptyListOf<variant, s<"|">> s<";">  -- alt1\n\n\nvariant  = atom roles  -- alt1\n\n\nroles  = "::" nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\npredicate  = predicateRelations if_ constraint  -- alt1\n | predicateRelations  -- alt2\n\n\npredicateRelations  = nonemptyListOf<predicateRelation, s<",">>  -- alt1\n\n\npredicateRelation  = not_ logicSignature<pattern>  -- alt1\n | logicSignature<pattern>  -- alt2\n\n\npattern  = s<"_">  -- alt1\n | name  -- alt2\n | literal  -- alt3\n\n\nconstraint  = constraint and_ constraint  -- alt1\n | constraint or_ constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400  -- alt2\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | "(" constraint ")"  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | expression  -- alt4\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nforgetStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\ninvokeInfixExpression  = invokeMixfix infix_symbol invokeInfixExpression  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = invokePostfix signaturePair<invokePostfix>  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | primaryExpression  -- alt2\n\n\nprimaryExpression  = literal  -- alt1\n | name  -- alt2\n | "(" expression ")"  -- alt3\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = s<t_text>  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\natom  = ~reserved s<t_atom> ~":"  -- alt1\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\nsignature<t>  = t signaturePair<t>+  -- alt1\n | t infix_symbol t  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "<="  -- alt7\n | ">="  -- alt8\n | "==="  -- alt9\n | "=/="  -- alt10\n | and_  -- alt11\n | or_  -- alt12\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | type_  -- alt6\n | role_  -- alt7\n | enum_  -- alt8\n | let_  -- alt9\n | return_  -- alt10\n | fact_  -- alt11\n | forget_  -- alt12\n | search_  -- alt13\n | if_  -- alt14\n | true_  -- alt15\n | false_  -- alt16\n | not_  -- alt17\n | and_  -- alt18\n | or_  -- alt19\n | is_  -- alt20\n\r\n  }\r\n  '
+  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | enumDeclaration  -- alt7\n | defineDeclaration  -- alt8\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n | command_ signature<parameter> statementBlock<statement>  -- alt2\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n\n\ntypeApp  = typeAppUnion  -- alt1\n\n\ntypeAppUnion  = typeAppPrimary s<"|"> typeAppUnion  -- alt1\n | typeAppPrimary  -- alt2\n\n\ntypeAppPrimary  = atom  -- alt1\n | s<"("> typeApp s<")">  -- alt2\n\n\ntypeDeclaration  = singleton_ basicType  -- alt1\n | basicType  -- alt2\n\n\nbasicType  = type_ atom roles s<";">  -- alt1\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nenumDeclaration  = enum_ atom s<"="> s<"|">? nonemptyListOf<variant, s<"|">> s<";">  -- alt1\n\n\nvariant  = atom roles  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\npredicate  = predicateRelations if_ constraint  -- alt1\n | predicateRelations  -- alt2\n\n\npredicateRelations  = nonemptyListOf<predicateRelation, s<",">>  -- alt1\n\n\npredicateRelation  = not_ logicSignature<pattern>  -- alt1\n | logicSignature<pattern>  -- alt2\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom s<"."> atom  -- alt2\n | atom  -- alt3\n | literal  -- alt4\n | patternName  -- alt5\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and_ constraint  -- alt1\n | constraint or_ constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400  -- alt2\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | s<"("> constraint s<")">  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | expression  -- alt4\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nforgetStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\ninvokeInfixExpression  = invokeMixfix infix_symbol invokeInfixExpression  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = invokePostfix signaturePair<invokePostfix>  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | primaryExpression  -- alt2\n\n\nprimaryExpression  = newExpression  -- alt1\n | literalExpression  -- alt2\n | atom  -- alt3\n | name  -- alt4\n | s<"("> expression s<")">  -- alt5\n\n\nnewExpression  = new_ atom  -- alt1\n | atom s<"."> atom  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = newExpression  -- alt1\n | literalExpression  -- alt2\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = s<t_text>  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\natom  = ~reserved s<t_atom> ~":"  -- alt1\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\nsignature<t>  = t signaturePair<t>+  -- alt1\n | t infix_symbol t  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "<="  -- alt7\n | ">="  -- alt8\n | "==="  -- alt9\n | "=/="  -- alt10\n | and_  -- alt11\n | or_  -- alt12\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | type_  -- alt6\n | role_  -- alt7\n | enum_  -- alt8\n | define_  -- alt9\n | singleton_  -- alt10\n | let_  -- alt11\n | return_  -- alt12\n | fact_  -- alt13\n | forget_  -- alt14\n | new_  -- alt15\n | search_  -- alt16\n | if_  -- alt17\n | true_  -- alt18\n | false_  -- alt19\n | not_  -- alt20\n | and_  -- alt21\n | or_  -- alt22\n | is_  -- alt23\n\r\n  }\r\n  '
 );
 
 // == Parsing =======================================================
@@ -1606,6 +1908,10 @@ const toAstVisitor = {
   },
 
   declaration_alt7(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  declaration_alt8(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 
@@ -1779,7 +2085,21 @@ const toAstVisitor = {
     return x.toAST();
   },
 
-  typeDeclaration_alt1(
+  typeDeclaration_alt1(this: Ohm.Node, _1: Ohm.Node, t$0: Ohm.Node): any {
+    const t = t$0.toAST();
+    return new Declaration.SingletonType($meta(this), t);
+  },
+
+  typeDeclaration_alt2(this: Ohm.Node, t$0: Ohm.Node): any {
+    const t = t$0.toAST();
+    return new Declaration.Type($meta(this), t);
+  },
+
+  basicType(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  basicType_alt1(
     this: Ohm.Node,
     _1: Ohm.Node,
     n$0: Ohm.Node,
@@ -1788,7 +2108,7 @@ const toAstVisitor = {
   ): any {
     const n = n$0.toAST();
     const r = r$0.toAST();
-    return new Declaration.Type($meta(this), n, r);
+    return new TypeDef(n, r);
   },
 
   roleDeclaration(x: Ohm.Node): any {
@@ -1846,6 +2166,23 @@ const toAstVisitor = {
     return [];
   },
 
+  defineDeclaration(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  defineDeclaration_alt1(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    n$0: Ohm.Node,
+    _3: Ohm.Node,
+    e$0: Ohm.Node,
+    _5: Ohm.Node
+  ): any {
+    const n = n$0.toAST();
+    const e = e$0.toAST();
+    return new Declaration.Define($meta(this), n, e);
+  },
+
   predicate(x: Ohm.Node): any {
     return x.toAST();
   },
@@ -1896,18 +2233,73 @@ const toAstVisitor = {
     return x.toAST();
   },
 
-  pattern_alt1(this: Ohm.Node, _1: Ohm.Node): any {
+  pattern_alt1(this: Ohm.Node, _1: Ohm.Node, c$0: Ohm.Node, _3: Ohm.Node): any {
+    const c = c$0.toAST();
+    return c;
+  },
+
+  pattern_alt2(
+    this: Ohm.Node,
+    n$0: Ohm.Node,
+    _2: Ohm.Node,
+    v$0: Ohm.Node
+  ): any {
+    const n = n$0.toAST();
+    const v = v$0.toAST();
+    return new Pattern.Variant($meta(this), n, v);
+  },
+
+  pattern_alt3(this: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new Pattern.Global($meta(this), n);
+  },
+
+  pattern_alt4(this: Ohm.Node, l$0: Ohm.Node): any {
+    const l = l$0.toAST();
+    return new Pattern.Lit(l);
+  },
+
+  pattern_alt5(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  patternComplex(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  patternComplex_alt1(
+    this: Ohm.Node,
+    n$0: Ohm.Node,
+    _2: Ohm.Node,
+    t$0: Ohm.Node
+  ): any {
+    const n = n$0.toAST();
+    const t = t$0.toAST();
+    return new Pattern.HasType($meta(this), t, n);
+  },
+
+  patternComplex_alt2(
+    this: Ohm.Node,
+    n$0: Ohm.Node,
+    _2: Ohm.Node,
+    t$0: Ohm.Node
+  ): any {
+    const n = n$0.toAST();
+    const t = t$0.toAST();
+    return new Pattern.HasRole($meta(this), t, n);
+  },
+
+  patternName(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  patternName_alt1(this: Ohm.Node, _1: Ohm.Node): any {
     return new Pattern.Wildcard($meta(this));
   },
 
-  pattern_alt2(this: Ohm.Node, n$0: Ohm.Node): any {
+  patternName_alt2(this: Ohm.Node, n$0: Ohm.Node): any {
     const n = n$0.toAST();
     return new Pattern.Variable($meta(this), n);
-  },
-
-  pattern_alt3(this: Ohm.Node, l$0: Ohm.Node): any {
-    const l = l$0.toAST();
-    return new Pattern.Lit(l);
   },
 
   constraint(x: Ohm.Node): any {
@@ -2133,17 +2525,25 @@ const toAstVisitor = {
     return x.toAST();
   },
 
-  primaryExpression_alt1(this: Ohm.Node, l$0: Ohm.Node): any {
-    const l = l$0.toAST();
-    return new Expression.Lit(l);
+  primaryExpression_alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
   },
 
-  primaryExpression_alt2(this: Ohm.Node, n$0: Ohm.Node): any {
+  primaryExpression_alt2(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  primaryExpression_alt3(this: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new Expression.Global($meta(this), n);
+  },
+
+  primaryExpression_alt4(this: Ohm.Node, n$0: Ohm.Node): any {
     const n = n$0.toAST();
     return new Expression.Variable($meta(this), n);
   },
 
-  primaryExpression_alt3(
+  primaryExpression_alt5(
     this: Ohm.Node,
     _1: Ohm.Node,
     e$0: Ohm.Node,
@@ -2151,6 +2551,47 @@ const toAstVisitor = {
   ): any {
     const e = e$0.toAST();
     return new Expression.Parens($meta(this), e);
+  },
+
+  newExpression(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  newExpression_alt1(this: Ohm.Node, _1: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new Expression.New($meta(this), n);
+  },
+
+  newExpression_alt2(
+    this: Ohm.Node,
+    n$0: Ohm.Node,
+    _2: Ohm.Node,
+    v$0: Ohm.Node
+  ): any {
+    const n = n$0.toAST();
+    const v = v$0.toAST();
+    return new Expression.NewVariant($meta(this), n, v);
+  },
+
+  literalExpression(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  literalExpression_alt1(this: Ohm.Node, l$0: Ohm.Node): any {
+    const l = l$0.toAST();
+    return new Expression.Lit(l);
+  },
+
+  atomicExpression(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  atomicExpression_alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  atomicExpression_alt2(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
   },
 
   literal(x: Ohm.Node): any {
@@ -2651,6 +3092,22 @@ const toAstVisitor = {
     return this.children[0].toAST();
   },
 
+  define_(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  define__alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  singleton_(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  singleton__alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
   let_(x: Ohm.Node): any {
     return x.toAST();
   },
@@ -2680,6 +3137,14 @@ const toAstVisitor = {
   },
 
   forget__alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  new_(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  new__alt1(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 
@@ -2828,6 +3293,18 @@ const toAstVisitor = {
   },
 
   reserved_alt20(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  reserved_alt21(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  reserved_alt22(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  reserved_alt23(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 };

@@ -14,6 +14,7 @@ import {
 
 export abstract class CrochetValue {
   abstract type: CrochetType;
+  abstract has_role(role: CrochetRole): boolean;
   abstract equals(other: CrochetValue): boolean;
   abstract as_bool(): boolean;
   abstract to_js(): any;
@@ -22,6 +23,10 @@ export abstract class CrochetValue {
 export class True extends CrochetValue {
   get type() {
     return tTrue;
+  }
+
+  has_role(role: CrochetRole): boolean {
+    return false;
   }
 
   equals(other: CrochetValue): boolean {
@@ -40,6 +45,10 @@ export class True extends CrochetValue {
 export class False extends CrochetValue {
   get type() {
     return tFalse;
+  }
+
+  has_role(role: CrochetRole): boolean {
+    return false;
   }
 
   equals(other: CrochetValue): boolean {
@@ -64,6 +73,10 @@ export class CrochetText extends CrochetValue {
     super();
   }
 
+  has_role(role: CrochetRole): boolean {
+    return false;
+  }
+
   equals(other: CrochetValue): boolean {
     return other instanceof CrochetText && other.value === this.value;
   }
@@ -86,6 +99,10 @@ export class CrochetInteger extends CrochetValue {
     super();
   }
 
+  has_role(role: CrochetRole): boolean {
+    return false;
+  }
+
   equals(other: CrochetValue): boolean {
     return other instanceof CrochetInteger && other.value === this.value;
   }
@@ -106,6 +123,10 @@ export class CrochetStream extends CrochetValue {
 
   constructor(readonly values: CrochetValue[]) {
     super();
+  }
+
+  has_role(role: CrochetRole): boolean {
+    return false;
   }
 
   equals(other: CrochetValue): boolean {
@@ -132,6 +153,10 @@ export class CrochetRecord extends CrochetValue {
 
   constructor(readonly values: Map<string, CrochetValue>) {
     super();
+  }
+
+  has_role(role: CrochetRole): boolean {
+    return false;
   }
 
   equals(other: CrochetValue) {
@@ -172,6 +197,10 @@ export class CrochetInstance extends CrochetValue {
     super();
   }
 
+  has_role(role: CrochetRole): boolean {
+    return this.type.roles.has(role);
+  }
+
   equals(other: CrochetValue): boolean {
     return <any>other === this;
   }
@@ -187,9 +216,13 @@ export class CrochetVariant extends CrochetValue {
   constructor(
     readonly type: TCrochetEnum,
     readonly tag: string,
-    readonly roles: CrochetRole[]
+    readonly roles: Set<CrochetRole>
   ) {
     super();
+  }
+
+  has_role(role: CrochetRole): boolean {
+    return this.roles.has(role);
   }
 
   equals(other: CrochetValue): boolean {
