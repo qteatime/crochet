@@ -1,6 +1,6 @@
 import { every, zip } from "../../utils/utils";
 import { SBlock, Statement } from "../ir";
-import { Machine, _mark } from "../run";
+import { cvalue, Machine, _mark } from "../run";
 import { Environment, World } from "../world";
 import { bfalse, CrochetType, CrochetValue } from "./value";
 
@@ -92,7 +92,9 @@ export class NativeProcedure implements IProcedure {
       args.push(values[idx]);
     }
     const procedure = world.get_native_procedure(this.foreign_name);
-    const result = yield _mark(this.name, procedure(world, env, ...args));
+    const result = cvalue(
+      yield _mark(this.name, procedure(world, env, ...args))
+    );
     return result;
   }
 }
@@ -112,7 +114,9 @@ export class CrochetProcedure implements IProcedure {
       env.define(k, v);
     }
     const block = new SBlock(this.body);
-    const result = yield _mark(this.name, block.evaluate(this.world, env));
+    const result = cvalue(
+      yield _mark(this.name, block.evaluate(this.world, env))
+    );
     return result;
   }
 }

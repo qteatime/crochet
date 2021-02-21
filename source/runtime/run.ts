@@ -35,7 +35,7 @@ export class ErrNoBranchMatched {
 }
 
 // Yield types
-export type Yield = Push | Mark | Return | Throw;
+export type Yield = Push | Mark | Throw;
 
 export class Push {
   readonly tag = "push";
@@ -49,11 +49,6 @@ export class Mark {
     readonly machine: Machine,
     readonly k: Machine | null
   ) {}
-}
-
-export class Return {
-  readonly tag = "return";
-  constructor(readonly value: CrochetValue) {}
 }
 
 export class Throw {
@@ -71,10 +66,6 @@ export function _mark(
   k: Machine | null = null
 ) {
   return new Mark(name, machine, k);
-}
-
-export function _return(v: CrochetValue) {
-  return new Return(v);
 }
 
 export function _throw(error: MachineError) {
@@ -95,12 +86,12 @@ class FProcedure {
 }
 
 // Machine execution
-export type Machine = AsyncGenerator<Yield, CrochetValue, CrochetValue>;
+export type Machine = AsyncGenerator<Yield, unknown, unknown>;
 
 export async function run(machine0: Machine) {
   const stack: Frame[] = [];
   let machine: Machine = machine0;
-  let input: CrochetValue = bfalse;
+  let input: unknown = null;
 
   while (true) {
     const result = await machine.next(input);
@@ -134,26 +125,15 @@ export async function run(machine0: Machine) {
         case "push": {
           stack.push(new FMachine(machine));
           machine = value.machine;
-          input = bfalse;
+          input = null;
           continue;
         }
 
         case "mark": {
           stack.push(new FProcedure(value.name, value.k ?? machine));
           machine = value.machine;
-          input = bfalse;
+          input = null;
           continue;
-        }
-
-        case "return": {
-          const frame = get_continuation(stack);
-          if (frame == null) {
-            return value.value;
-          } else {
-            machine = frame.k;
-            input = value.value;
-            continue;
-          }
         }
 
         case "throw": {
@@ -207,5 +187,21 @@ export async function* run_all(machines: Machine[]): Machine {
     const value = yield _push(machine);
     result.push(value);
   }
-  return new CrochetStream(result);
+  return result;
+}
+
+export function cvalue(x: unknown): CrochetValue {
+  if (x instanceof CrochetValue) {
+    return x;
+  } else {
+    throw new Error(`internal: expected a crochet value`);
+  }
+}
+
+export function avalue(x: unknown): CrochetValue[] {
+  if (Array.isArray(x) && x.every((z) => z instanceof CrochetValue)) {
+    return x;
+  } else {
+    throw new Error(`internal: expected an array of crochet values`);
+  }
 }

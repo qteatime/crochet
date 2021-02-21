@@ -28,7 +28,6 @@ type PredicateEffect =
 type Statement =
   | Fact(pos: Meta, signature: Signature<Expression>)
   | Forget(pos: Meta, signature: Signature<Expression>)
-  | Return(pos: Meta, value: Expression)
   | Let(pos: Meta, name: Name, value: Expression)
   | Expr(value: Expression)
 
@@ -176,7 +175,6 @@ grammar Crochet : Program {
     | letStatement
     | factStatement
     | forgetStatement
-    | returnStatement
     | e:expression    -> Statement.Expr(e)
 
   letStatement =
@@ -190,10 +188,6 @@ grammar Crochet : Program {
   forgetStatement =
     | fact_ s:logicSignature<invokePostfix>
       -> Statement.Forget(meta, s)
-
-  returnStatement =
-    | return_ e:expression
-      -> Statement.Return(meta, e)
 
 
   // -- Expressions

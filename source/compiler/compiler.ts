@@ -51,12 +51,15 @@ export function literalToValue(lit: Literal) {
     False(_) {
       return rt.bfalse;
     },
+
     True(_) {
       return rt.btrue;
     },
+
     Text(_, value) {
       return new rt.CrochetText(JSON.parse(value));
     },
+
     Integer(_, digits) {
       return new rt.CrochetInteger(parseInteger(digits));
     },
@@ -107,6 +110,7 @@ export function compileRelationTypes(types: RelationPart[]): Logic.TreeType {
       Many(_meta, _name) {
         return new Logic.TTMany(p);
       },
+
       One(_meta, _name) {
         return new Logic.TTOne(p);
       },
@@ -154,27 +158,33 @@ export function compileConstraint(c: Constraint): Logic.Constraint.Constraint {
         compileConstraint(r)
       );
     },
+
     Not(_, c) {
       return new Logic.Constraint.Not(compileConstraint(c));
     },
+
     Or(_, l, r) {
       return new Logic.Constraint.Or(
         compileConstraint(l),
         compileConstraint(r)
       );
     },
+
     Equal(_, l, r) {
       return new Logic.Constraint.Equals(
         compileConstraint(l),
         compileConstraint(r)
       );
     },
+
     Variable(_, name) {
       return new Logic.Constraint.Variable(name.name);
     },
+
     Lit(l) {
       return new Logic.Constraint.Value(literalToValue(l));
     },
+
     Parens(_, c) {
       return compileConstraint(c);
     },
@@ -209,12 +219,15 @@ export function literalToExpression(lit: Literal) {
     False(_) {
       return new IR.EFalse();
     },
+
     True(_) {
       return new IR.ETrue();
     },
+
     Text(_, value) {
       return new IR.EText(JSON.parse(value));
     },
+
     Integer(_, digits) {
       return new IR.EInteger(parseInteger(digits));
     },
@@ -253,21 +266,21 @@ export function compileStatement(stmt: Statement) {
     Let(_, name, value) {
       return new IR.SLet(name.name, compileExpression(value));
     },
+
     Fact(_, sig) {
       return new IR.SFact(
         signatureName(sig),
         signatureValues(sig).map(compileExpression)
       );
     },
+
     Forget(_, sig) {
       return new IR.SForget(
         signatureName(sig),
         signatureValues(sig).map(compileExpression)
       );
     },
-    Return(_, value) {
-      return new IR.SReturn(compileExpression(value));
-    },
+
     Expr(value) {
       return new IR.SExpression(compileExpression(value));
     },
