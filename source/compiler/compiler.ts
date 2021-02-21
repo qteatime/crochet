@@ -3,6 +3,8 @@ import {
   Declaration,
   Expression,
   Literal,
+  Namespace,
+  Parameter,
   Pattern,
   Predicate,
   PredicateClause,
@@ -12,12 +14,38 @@ import {
   RelationPart,
   Signature,
   Statement,
+  TypeApp,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
+import { CrochetType } from "../runtime";
 import * as IR from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 
 // -- Utilities
+function parseInteger(x: string): bigint {
+  return BigInt(x.replace(/_/g, ""));
+}
+
+export function typeFromName(x: string): CrochetType {
+  switch (x) {
+    case "true":
+      return rt.True;
+    case "false":
+      return rt.False;
+    case "integer":
+      return rt.CrochetInteger;
+    case "text":
+      return rt.CrochetText;
+    case "record":
+      return rt.CrochetRecord;
+    case "stream":
+      return rt.CrochetStream;
+    default: {
+      throw new Error(`Unknown native type ${x}`);
+    }
+  }
+}
+
 export function literalToValue(lit: Literal) {
   return lit.match<rt.CrochetValue>({
     False(_) {
@@ -28,6 +56,9 @@ export function literalToValue(lit: Literal) {
     },
     Text(_, value) {
       return new rt.CrochetText(JSON.parse(value));
+    },
+    Integer(_, digits) {
+      return new rt.CrochetInteger(parseInteger(digits));
     },
   });
 }
@@ -42,6 +73,10 @@ export function signatureName(sig: Signature<any>): string {
     Unary(_meta, _self, name) {
       return `_ ${name.name}`;
     },
+
+    Binary(_meta, op, _l, _r) {
+      return `_ ${op.name} _`;
+    },
   });
 }
 
@@ -50,10 +85,19 @@ export function signatureValues<T>(sig: Signature<T>): T[] {
     Keyword(_meta, self, pairs) {
       return [self, ...pairs.map((x) => x.value)];
     },
+
     Unary(_meta, self, _name) {
       return [self];
     },
+
+    Binary(_meta, _op, l, r) {
+      return [l, r];
+    },
   });
+}
+
+export function compileNamespace(x: Namespace) {
+  return x.names.map((x) => x.name).join(".");
 }
 
 // -- Logic
@@ -171,6 +215,9 @@ export function literalToExpression(lit: Literal) {
     Text(_, value) {
       return new IR.EText(JSON.parse(value));
     },
+    Integer(_, digits) {
+      return new IR.EInteger(parseInteger(digits));
+    },
   });
 }
 
@@ -219,11 +266,63 @@ export function compileStatement(stmt: Statement) {
 }
 
 // -- Declaration
+
+export function compileTypeApp(x: TypeApp): rt.DispatchType {
+  return x.match<rt.DispatchType>({
+    Named(_, name) {
+      return new rt.DTTyped(typeFromName(name.name));
+    },
+
+    Parens(_, type) {
+      return compileTypeApp(type);
+    },
+
+    Union(_, l, r) {
+      return new rt.DTUnion(
+        [compileTypeApp(l), compileTypeApp(r)].flatMap((x) => {
+          if (x instanceof rt.DTUnion) {
+            return x.types;
+          } else {
+            return [x];
+          }
+        })
+      );
+    },
+  });
+}
+
+export function compileParameter(x: Parameter) {
+  return x.match<{ type: rt.DispatchType; parameter: string }>({
+    Typed(_, name, type) {
+      return {
+        type: compileTypeApp(type),
+        parameter: name.name,
+      };
+    },
+
+    Untyped(_, name) {
+      return {
+        type: new rt.DTAny(),
+        parameter: name.name,
+      };
+    },
+  });
+}
+
+export function compileParameters(xs0: Parameter[]) {
+  const xs = xs0.map(compileParameter);
+  return {
+    types: xs.map((x) => x.type),
+    parameters: xs.map((x) => x.parameter),
+  };
+}
+
 export function compileDeclaration(d: Declaration) {
   return d.match<IR.Declaration>({
     Do(_, body) {
       return new IR.DDo(body.map(compileStatement));
     },
+
     Predicate(_, sig, clauses) {
       const name = signatureName(sig);
       const params = signatureValues(sig).map((x) => x.name);
@@ -234,9 +333,33 @@ export function compileDeclaration(d: Declaration) {
       );
       return new IR.DPredicate(name, procedure);
     },
+
     Relation(_, sig) {
       const types = signatureValues(sig);
       return new IR.DRelation(signatureName(sig), compileRelationTypes(types));
+    },
+
+    ForeignCommand(meta, sig, foreign_name, args0) {
+      const name = signatureName(sig);
+      const { types, parameters } = compileParameters(signatureValues(sig));
+      const args = args0.map((x) => parameters.indexOf(x.name));
+      return new IR.DForeignCommand(
+        name,
+        types,
+        compileNamespace(foreign_name),
+        args
+      );
+    },
+
+    Command(meta, sig, body) {
+      const name = signatureName(sig);
+      const { types, parameters } = compileParameters(signatureValues(sig));
+      return new IR.DCrochetCommand(
+        name,
+        parameters,
+        types,
+        body.map(compileStatement)
+      );
     },
   });
 }

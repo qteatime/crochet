@@ -4,6 +4,17 @@ type Declaration =
   | Relation(pos: Meta, signature: Signature<RelationPart>)
   | Predicate(pos: Meta, signature: Signature<Name>, clauses: PredicateClause[])
   | Do(pos: Meta, body: Statement[])
+  | ForeignCommand(pos: Meta, signature: Signature<Parameter>, foreign_name: Namespace, args: Name[])
+  | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[])
+
+type Parameter =
+  | Untyped(pos: Meta, name: Name)
+  | Typed(pos: Meta, name: Name, typ: TypeApp)
+
+type TypeApp =
+  | Union(pos: Meta, left: TypeApp, right: TypeApp)
+  | Named(pos: Meta, name: Name)
+  | Parens(pos: Meta, typ: TypeApp)
 
 type PredicateClause(
   pos: Meta,
@@ -31,6 +42,7 @@ type Literal =
   | False(pos: Meta)
   | True(pos: Meta)
   | Text(pos: Meta, value: string)
+  | Integer(pos: Meta, digits: string)
 
 type Predicate(
   pos: Meta,
@@ -58,6 +70,7 @@ type Constraint =
 
 type Signature<T> =
   | Unary(pos: Meta, self: T, name: Name)
+  | Binary(pos: Meta, op: Name, left: T, right: T)
   | Keyword(pos: Meta, self: T, pairs: Pair<Name, T>[])
 
 type RelationPart =
@@ -66,6 +79,7 @@ type RelationPart =
 
 type Pair<K, V>(pos: Meta, key: K, value: V)
 type Name(pos: Meta, name: string)
+type Namespace(pos: Meta, names: Name[])
 
 
 grammar Crochet : Program {
@@ -77,6 +91,7 @@ grammar Crochet : Program {
     | relationDeclaration
     | predicateDeclaration
     | doDeclaration
+    | commandDeclaration
 
   relationDeclaration =
     | relation_ s:logicSignature<relationPart> s<";">
@@ -97,6 +112,27 @@ grammar Crochet : Program {
     | do_ xs:statementBlock<statement>
       -> Declaration.Do(meta, xs)
 
+  commandDeclaration =
+    | command_ s:signature<parameter> s<"="> n:namespace s<"("> xs:listOf<name, s<",">> s<")"> s<";">
+      -> Declaration.ForeignCommand(meta, s, n, xs)
+    | command_ s:signature<parameter> b:statementBlock<statement>
+      -> Declaration.Command(meta, s, b)
+
+  parameter =
+    | n:name                              -> Parameter.Untyped(meta, n)
+    | s<"("> n:name is_ t:typeApp s<")">  -> Parameter.Typed(meta, n, t)
+
+  typeApp =
+    | typeAppUnion
+
+  typeAppUnion =
+    | l:typeAppNamed s<"|"> r:typeAppUnion  -> TypeApp.Union(meta, l, r)
+    | typeAppNamed
+
+  typeAppNamed =
+    | s<"#"> t:atom             -> TypeApp.Named(meta, t)
+    | s<"("> t:typeApp s<")">   -> TypeApp.Parens(meta, t)
+    
 
   // -- Logic
   predicate =
@@ -158,6 +194,7 @@ grammar Crochet : Program {
     | return_ e:expression
       -> Statement.Return(meta, e)
 
+
   // -- Expressions
   expression =
     | searchExpression
@@ -183,22 +220,33 @@ grammar Crochet : Program {
     | false_                -> Literal.False(meta)
 
   text =
-    | x:s<t_text> -> Literal.Text(meta, x)
+    | x:s<t_text>           -> Literal.Text(meta, x)
 
+  integer =
+    | x:s<t_integer>        -> Literal.Integer(meta, x)
 
-  // -- Token -> Rule
-  atom = x:s<t_atom>        -> Name(meta, x)
-  name = x:s<t_name>        -> Name(meta, x)
-  keyword = x:s<t_keyword>  -> Name(meta, x)
+  // -- Token -> Rule & Basics
+  atom = x:s<t_atom>                          -> Name(meta, x)
+  name = x:s<t_name>                          -> Name(meta, x)
+  keyword = x:s<t_keyword>                    -> Name(meta, x)
+  infix_symbol = x:s<t_infix_symbol>          -> Name(meta, x)
+  not = x:not_                                -> Name(meta, x)
 
+  namespace = x:nonemptyListOf<atom, s<".">>  -> Namespace(meta, x)
 
   // -- Higher-order
   logicSignature<t> =
-    | s:t kws:logicSignaturePair<t>+  -> Signature.Keyword(meta, s, kws)
+    | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
     | s:t n:atom                      -> Signature.Unary(meta, s, n)
 
-  logicSignaturePair<t> =
+  signaturePair<t> =
     | kw:keyword v:t  -> Pair(meta, kw, v)
+
+  signature<t> =
+    | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
+    | l:t op:infix_symbol r:t         -> Signature.Binary(meta, op, l, r)
+    | s:t n:atom                      -> Signature.Unary(meta, s, n)
+    | n:not s:T                       -> Signature.Unary(meta, s, n)
 
   statementBlock<t> =
     | s<"{"> xs:listOf<t, s<";">> s<";">? s<"}"> -> xs
@@ -227,8 +275,18 @@ grammar Crochet : Program {
   token name_rest = letter | digit | "-"
   token t_name (a name) = name_start name_rest*
 
+  token t_infix_symbol =
+    | "+" | "-" | "*" | "/"
+    | "<" | ">" | "<=" | ">="
+    | "===" | "=/="
+    | and_ | or_
 
   // -- Literals
+  token dec_digit = "0".."9" | "_"
+
+  token t_integer (an integer) =
+    | ~"_" dec_digit+
+
   token text_character =
     | "\\" "\""
     | ~"\"" any

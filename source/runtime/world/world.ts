@@ -6,14 +6,23 @@ import {
   PredicateProcedure,
   TreeType,
 } from "../logic";
-import { Procedure } from "../primitives/procedure";
+import {
+  CrochetProcedure,
+  DispatchType,
+  NativeProcedure,
+  Procedure,
+} from "../primitives/procedure";
 import { Machine, run } from "../run";
+import { ForeignInterface } from "./foreign";
 
 export class World {
   private database = new Database();
   private procedures = new Map<string, Procedure>();
   private queue: Machine[] = [];
 
+  constructor(readonly ffi: ForeignInterface) {}
+
+  // -- Logic and relations
   add_relation(name: string, type: TreeType) {
     this.database.add(name, new ConcreteRelation(name, type.realise()));
   }
@@ -31,6 +40,33 @@ export class World {
     }
   }
 
+  search(predicate: Predicate) {
+    return this.database.search(predicate);
+  }
+
+  // -- Commands
+  add_foreign_procedure(
+    name: string,
+    types: DispatchType[],
+    native: NativeProcedure
+  ) {
+    const procedure =
+      this.procedures.get(name) ?? new Procedure(name, types.length);
+    procedure.add(types, native);
+    this.procedures.set(name, procedure);
+  }
+
+  add_crochet_procedure(
+    name: string,
+    types: DispatchType[],
+    code: CrochetProcedure
+  ) {
+    const procedure =
+      this.procedures.get(name) ?? new Procedure(name, types.length);
+    procedure.add(types, code);
+    this.procedures.set(name, procedure);
+  }
+
   get_procedure(name: string) {
     const procedure = this.procedures.get(name);
     if (procedure == null) {
@@ -40,10 +76,16 @@ export class World {
     }
   }
 
-  search(predicate: Predicate) {
-    return this.database.search(predicate);
+  get_native_procedure(name: string) {
+    const procedure = this.ffi.lookup(name);
+    if (procedure == null) {
+      throw new Error(`Undefined native procedure ${name}`);
+    } else {
+      return procedure;
+    }
   }
 
+  // -- Execution
   schedule(machine: Machine) {
     this.queue.push(machine);
   }

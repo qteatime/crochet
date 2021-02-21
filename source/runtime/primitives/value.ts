@@ -10,6 +10,7 @@ export abstract class CrochetValue {
 export type CrochetType =
   | typeof True
   | typeof False
+  | typeof CrochetInteger
   | typeof CrochetText
   | typeof CrochetRecord
   | typeof CrochetStream;
@@ -61,6 +62,28 @@ export class CrochetText extends CrochetValue {
 
   equals(other: CrochetValue): boolean {
     return other instanceof CrochetText && other.value === this.value;
+  }
+
+  as_bool() {
+    return true;
+  }
+
+  to_js() {
+    return this.value;
+  }
+}
+
+export class CrochetInteger extends CrochetValue {
+  get type_name() {
+    return "Integer";
+  }
+
+  constructor(readonly value: bigint) {
+    super();
+  }
+
+  equals(other: CrochetValue): boolean {
+    return other instanceof CrochetInteger && other.value === this.value;
   }
 
   as_bool() {
