@@ -2,6 +2,7 @@ import { Predicate } from "../logic";
 import {
   bfalse,
   btrue,
+  CrochetInteger,
   CrochetRecord,
   CrochetStream,
   CrochetText,
@@ -17,7 +18,14 @@ import {
 } from "../run";
 import { Environment, World } from "../world";
 
-export type Expression = EFalse | ETrue | EVariable | EText | ESearch | EInvoke;
+export type Expression =
+  | EFalse
+  | ETrue
+  | EVariable
+  | EText
+  | EInteger
+  | ESearch
+  | EInvoke;
 
 interface IExpression {
   evaluate(world: World, env: Environment): Machine;
@@ -51,6 +59,13 @@ export class EText implements IExpression {
   constructor(readonly value: string) {}
   async *evaluate(world: World, env: Environment) {
     return new CrochetText(this.value);
+  }
+}
+
+export class EInteger implements IExpression {
+  constructor(readonly value: bigint) {}
+  async *evaluate(world: World, env: Environment) {
+    return new CrochetInteger(this.value);
   }
 }
 

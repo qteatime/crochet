@@ -1,0 +1,44 @@
+% crochet
+
+// -- Universal operators
+command X as-text = crochet.builtin.as-text(X);
+
+command X === Y = crochet.builtin.eq(X, Y);
+command X =/= Y = crochet.builtin.not-eq(X, Y);
+
+// -- Boolean algebra
+command X and Y = crochet.builtin.and(X, Y);
+command X or Y = crochet.builtin.or(X, Y);
+command not X = crochet.builtin.not(X);
+
+// -- Integers
+command (X is #integer) + (Y is #integer) = crochet.builtin.integer-add(X, Y);
+command (X is #integer) - (Y is #integer) = crochet.builtin.integer-sub(X, Y);
+command (X is #integer) * (Y is #integer) = crochet.builtin.integer-mul(X, Y);
+command (X is #integer) / (Y is #integer) = crochet.builtin.integer-div(X, Y);
+command (X is #integer) division-remainder: (Y is #integer) = crochet.builtin.integer-rem(X, Y);
+
+command (X is #integer) < (Y is #integer) = crochet.builtin.integer-lt(X, Y);
+command (X is #integer) <= (Y is #integer) = crochet.builtin.integer-lte(X, Y);
+command (X is #integer) > (Y is #integer) = crochet.builtin.integer-gt(X, Y);
+command (X is #integer) >= (Y is #integer) = crochet.builtin.integer-gte(X, Y);
+
+// -- Text
+command (X is #text) ++ (Y is #text) = crochet.builtin.text-concat(X, Y);
+
+// -- Records
+command (X is #record) at: (Key is #text) = crochet.builtin.record-at(X, Key);
+command (X is #record) at: (Key is #text) put: Value = crochet.builtin.record-at-put(X, Key, Value);
+command (X is #record) keys = crochet.builtin.record-keys(X);
+command (X is #record) values = crochet.builtin.record-values(X);
+command (X is #record) merge: (Y is #record) = crochet.builtin.record-merge(X, Y);
+
+// -- Streams
+command (X is #stream) ++ (Y is #stream) = crochet.builtin.stream-concat(X, Y);
+command (X is #stream) first = crochet.builtin.stream-first(X);
+command (X is #stream) last = crochet.builtin.stream-last(X);
+command (X is #stream) rest = crochet.builtin.stream-rest(X);
+command (X is #stream) take: (N is #integer) = crochet.builtin.stream-take(X, N);
+command (X is #stream) drop: (N is #integer) = crochet.builtin.stream-drop(X, N);
+
+

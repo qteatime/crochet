@@ -39,11 +39,9 @@ export interface IProcedure {
 }
 
 export class Procedure {
-  constructor(
-    readonly name: string,
-    readonly parameters: string,
-    readonly branches: ProcedureBranch[]
-  ) {}
+  private branches: ProcedureBranch[] = [];
+
+  constructor(readonly name: string, readonly arity: number) {}
 
   select(values: CrochetValue[]): ProcedureBranch | null {
     for (const branch of this.branches) {
@@ -71,15 +69,17 @@ export class ProcedureBranch {
   }
 }
 
+export type NativeProcedureFn = (
+  world: World,
+  env: Environment,
+  ...args: CrochetValue[]
+) => Machine;
+
 export class NativeProcedure implements IProcedure {
   constructor(
     readonly name: string,
     readonly parameters: number[],
-    readonly code: (
-      world: World,
-      env: Environment,
-      ...args: CrochetValue[]
-    ) => Machine
+    readonly foreign_name: string
   ) {}
 
   async *invoke(
@@ -91,7 +91,8 @@ export class NativeProcedure implements IProcedure {
     for (const idx of this.parameters) {
       args.push(values[idx]);
     }
-    const result = yield _mark(this.name, this.code(world, env, ...args));
+    const procedure = world.get_native_procedure(this.foreign_name);
+    const result = yield _mark(this.name, procedure(world, env, ...args));
     return result;
   }
 }
