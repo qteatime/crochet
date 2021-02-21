@@ -1,3 +1,4 @@
+import { cast } from "../../utils/utils";
 import { Predicate } from "../logic";
 import {
   bfalse,
@@ -9,6 +10,8 @@ import {
 } from "../primitives";
 import { ProcedureBranch } from "../primitives/procedure";
 import {
+  avalue,
+  cvalue,
   ErrNoBranchMatched,
   ErrUndefinedVariable,
   Machine,
@@ -32,12 +35,12 @@ interface IExpression {
 }
 
 export class EFalse implements IExpression {
-  async *evaluate(world: World, env: Environment) {
+  async *evaluate(world: World, env: Environment): Machine {
     return bfalse;
   }
 }
 export class ETrue implements IExpression {
-  async *evaluate(world: World, env: Environment) {
+  async *evaluate(world: World, env: Environment): Machine {
     return btrue;
   }
 }
@@ -45,10 +48,10 @@ export class ETrue implements IExpression {
 export class EVariable implements IExpression {
   constructor(readonly name: string) {}
 
-  async *evaluate(world: World, env: Environment) {
+  async *evaluate(world: World, env: Environment): Machine {
     const value = env.lookup(this.name);
     if (value == null) {
-      return yield _throw(new ErrUndefinedVariable(this.name));
+      return cvalue(yield _throw(new ErrUndefinedVariable(this.name)));
     } else {
       return value;
     }
@@ -57,21 +60,21 @@ export class EVariable implements IExpression {
 
 export class EText implements IExpression {
   constructor(readonly value: string) {}
-  async *evaluate(world: World, env: Environment) {
+  async *evaluate(world: World, env: Environment): Machine {
     return new CrochetText(this.value);
   }
 }
 
 export class EInteger implements IExpression {
   constructor(readonly value: bigint) {}
-  async *evaluate(world: World, env: Environment) {
+  async *evaluate(world: World, env: Environment): Machine {
     return new CrochetInteger(this.value);
   }
 }
 
 export class ESearch implements IExpression {
   constructor(readonly predicate: Predicate) {}
-  async *evaluate(world: World, env: Environment) {
+  async *evaluate(world: World, env: Environment): Machine {
     const results = world.search(this.predicate);
     return new CrochetStream(
       results.map((x) => new CrochetRecord(x.boundValues))
@@ -82,20 +85,24 @@ export class ESearch implements IExpression {
 export class EInvoke implements IExpression {
   constructor(readonly name: string, readonly args: Expression[]) {}
   async *evaluate(world: World, env: Environment): Machine {
-    const args0 = (yield _push(
-      run_all(this.args.map((x) => x.evaluate(world, env)))
-    )) as CrochetStream;
-    const args = args0.values;
+    const args = avalue(
+      yield _push(run_all(this.args.map((x) => x.evaluate(world, env))))
+    );
 
     const procedure = world.get_procedure(this.name);
     const branch0 = procedure.select(args);
     let branch: ProcedureBranch;
     if (branch0 == null) {
-      branch = (yield _throw(new ErrNoBranchMatched(procedure, args))) as any;
+      branch = cast(
+        yield _throw(new ErrNoBranchMatched(procedure, args)),
+        ProcedureBranch
+      );
     } else {
       branch = branch0;
     }
-    const result = yield _push(branch.procedure.invoke(world, env, args));
+    const result = cvalue(
+      yield _push(branch.procedure.invoke(world, env, args))
+    );
     return result;
   }
 }

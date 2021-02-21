@@ -1,4 +1,5 @@
 import * as Util from "util";
+import { AnyClass } from "./types";
 
 export function unreachable(x: never, message: string) {
   console.error(message, x);
@@ -19,6 +20,14 @@ export function pick<A>(xs: A[]): A | null {
 
 export function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+}
+
+export function cast<T extends AnyClass>(x: any, type: T): InstanceType<T> {
+  if (x instanceof type) {
+    return x as any;
+  } else {
+    throw new TypeError(`internal: expected ${type.name}`);
+  }
 }
 
 export type Deferred<T> = {
@@ -47,7 +56,7 @@ export function* zip<A, B>(xs: A[], ys: B[]): Generator<[A, B]> {
 
 export function every<A>(xs: Iterable<A>, pred: (_: A) => boolean): boolean {
   for (const x of xs) {
-    if (!(pred(x))) {
+    if (!pred(x)) {
       return false;
     }
   }
