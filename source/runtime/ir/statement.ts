@@ -1,5 +1,13 @@
 import { bfalse, CrochetStream } from "../primitives";
-import { ErrVariableAlreadyBound, Machine, run_all, _mark, _push, _return, _throw } from "../run";
+import {
+  ErrVariableAlreadyBound,
+  Machine,
+  run_all,
+  _mark,
+  _push,
+  _return,
+  _throw,
+} from "../run";
 import { Environment, World } from "../world";
 import { Expression } from "./expression";
 
@@ -13,7 +21,9 @@ export class SFact implements IStatement {
   constructor(readonly name: string, readonly exprs: Expression[]) {}
   async *evaluate(world: World, env: Environment) {
     const relation = world.get_relation(this.name);
-    const values: CrochetStream = yield _push(run_all(this.exprs.map(x => x.evaluate(world, env))));
+    const values: CrochetStream = yield _push(
+      run_all(this.exprs.map((x) => x.evaluate(world, env)))
+    );
     relation.insert(values.values);
     return bfalse;
   }
@@ -23,7 +33,9 @@ export class SForget implements IStatement {
   constructor(readonly name: string, readonly exprs: Expression[]) {}
   async *evaluate(world: World, env: Environment) {
     const relation = world.get_relation(this.name);
-    const values: CrochetStream = yield _push(run_all(this.exprs.map(x => x.evaluate(world, env))));
+    const values: CrochetStream = yield _push(
+      run_all(this.exprs.map((x) => x.evaluate(world, env)))
+    );
     relation.remove(values.values);
     return bfalse;
   }
@@ -47,10 +59,8 @@ export class SReturn implements IStatement {
 }
 
 export class SLet implements IStatement {
-  constructor(readonly name: string, readonly expr: Expression) {
-    
-  }
-  
+  constructor(readonly name: string, readonly expr: Expression) {}
+
   async *evaluate(world: World, env: Environment) {
     let value = yield _push(this.expr.evaluate(world, env));
     if (env.has(this.name)) {

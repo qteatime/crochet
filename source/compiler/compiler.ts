@@ -1,9 +1,23 @@
-import { Constraint, Declaration, Expression, Literal, Pattern, Predicate, PredicateClause, PredicateEffect, PredicateRelation, Program, RelationPart, Signature, Statement } from "../generated/crochet-grammar";
+import {
+  Constraint,
+  Declaration,
+  Expression,
+  Literal,
+  Pattern,
+  Predicate,
+  PredicateClause,
+  PredicateEffect,
+  PredicateRelation,
+  Program,
+  RelationPart,
+  Signature,
+  Statement,
+} from "../generated/crochet-grammar";
 import * as rt from "../runtime";
-import * as IR from "../runtime/ir"
+import * as IR from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 
-// -- Utilities 
+// -- Utilities
 export function literalToValue(lit: Literal) {
   return lit.match<rt.CrochetValue>({
     False(_) {
@@ -14,31 +28,31 @@ export function literalToValue(lit: Literal) {
     },
     Text(_, value) {
       return new rt.CrochetText(JSON.parse(value));
-    }
-  })
+    },
+  });
 }
 
 export function signatureName(sig: Signature<any>): string {
   return sig.match({
     Keyword(_meta, _self, pairs) {
-      const names = pairs.map(x => x.key.name);
+      const names = pairs.map((x) => x.key.name);
       return `_ ${names.join("")}`;
     },
 
     Unary(_meta, _self, name) {
       return `_ ${name.name}`;
-    }
+    },
   });
 }
 
 export function signatureValues<T>(sig: Signature<T>): T[] {
   return sig.match({
     Keyword(_meta, self, pairs) {
-      return [self, ...pairs.map(x => x.value)];
+      return [self, ...pairs.map((x) => x.value)];
     },
     Unary(_meta, self, _name) {
       return [self];
-    }
+    },
   });
 }
 
@@ -51,8 +65,8 @@ export function compileRelationTypes(types: RelationPart[]): Logic.TreeType {
       },
       One(_meta, _name) {
         return new Logic.TTOne(p);
-      }
-    })
+      },
+    });
   }, new Logic.TTEnd() as Logic.TreeType);
 }
 
@@ -68,36 +82,48 @@ export function compilePattern(p: Pattern) {
 
     Wildcard(_) {
       return new Logic.WildcardPattern();
-    }
+    },
   });
 }
 
 export function compilePredicateRelation(r: PredicateRelation) {
   return r.match<Logic.Relation>({
     Has(_, sig) {
-      return new Logic.Relation(signatureName(sig), signatureValues(sig).map(compilePattern));
+      return new Logic.Relation(
+        signatureName(sig),
+        signatureValues(sig).map(compilePattern)
+      );
     },
 
     Not(_, sig) {
       // TODO:
       throw new Error(`todo`);
-    }
-  })
+    },
+  });
 }
 
 export function compileConstraint(c: Constraint): Logic.Constraint.Constraint {
   return c.match<Logic.Constraint.Constraint>({
     And(_, l, r) {
-      return new Logic.Constraint.And(compileConstraint(l), compileConstraint(r));
+      return new Logic.Constraint.And(
+        compileConstraint(l),
+        compileConstraint(r)
+      );
     },
     Not(_, c) {
       return new Logic.Constraint.Not(compileConstraint(c));
     },
     Or(_, l, r) {
-      return new Logic.Constraint.Or(compileConstraint(l), compileConstraint(r));
+      return new Logic.Constraint.Or(
+        compileConstraint(l),
+        compileConstraint(r)
+      );
     },
     Equal(_, l, r) {
-      return new Logic.Constraint.Equals(compileConstraint(l), compileConstraint(r));
+      return new Logic.Constraint.Equals(
+        compileConstraint(l),
+        compileConstraint(r)
+      );
     },
     Variable(_, name) {
       return new Logic.Constraint.Variable(name.name);
@@ -108,23 +134,29 @@ export function compileConstraint(c: Constraint): Logic.Constraint.Constraint {
     Parens(_, c) {
       return compileConstraint(c);
     },
-  })
+  });
 }
 
 export function compilePredicateEffect(eff: PredicateEffect) {
   return eff.match({
     Trivial() {
       return new Logic.Effect.Trivial();
-    }
+    },
   });
 }
 
 export function compilePredicate(p: Predicate) {
-  return new Logic.Predicate(p.relations.map(compilePredicateRelation), compileConstraint(p.constraint));
+  return new Logic.Predicate(
+    p.relations.map(compilePredicateRelation),
+    compileConstraint(p.constraint)
+  );
 }
 
 export function compilePredicateClause(p: PredicateClause) {
-  return new Logic.PredicateClause(compilePredicate(p.predicate), compilePredicateEffect(p.effect))
+  return new Logic.PredicateClause(
+    compilePredicate(p.predicate),
+    compilePredicateEffect(p.effect)
+  );
 }
 
 // -- Expression
@@ -138,8 +170,8 @@ export function literalToExpression(lit: Literal) {
     },
     Text(_, value) {
       return new IR.EText(JSON.parse(value));
-    }
-  })
+    },
+  });
 }
 
 export function compileExpression(expr: Expression): IR.Expression {
@@ -155,8 +187,8 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
     Lit(lit) {
       return literalToExpression(lit);
-    }
-  })
+    },
+  });
 }
 
 // -- Statement
@@ -166,18 +198,24 @@ export function compileStatement(stmt: Statement) {
       return new IR.SLet(name.name, compileExpression(value));
     },
     Fact(_, sig) {
-      return new IR.SFact(signatureName(sig), signatureValues(sig).map(compileExpression));
+      return new IR.SFact(
+        signatureName(sig),
+        signatureValues(sig).map(compileExpression)
+      );
     },
     Forget(_, sig) {
-      return new IR.SForget(signatureName(sig), signatureValues(sig).map(compileExpression));
+      return new IR.SForget(
+        signatureName(sig),
+        signatureValues(sig).map(compileExpression)
+      );
     },
     Return(_, value) {
       return new IR.SReturn(compileExpression(value));
     },
     Expr(value) {
       return new IR.SExpression(compileExpression(value));
-    }
-  })
+    },
+  });
 }
 
 // -- Declaration
@@ -188,7 +226,7 @@ export function compileDeclaration(d: Declaration) {
     },
     Predicate(_, sig, clauses) {
       const name = signatureName(sig);
-      const params = signatureValues(sig).map(x => x.name);
+      const params = signatureValues(sig).map((x) => x.name);
       const procedure = new Logic.PredicateProcedure(
         name,
         params,
@@ -199,8 +237,8 @@ export function compileDeclaration(d: Declaration) {
     Relation(_, sig) {
       const types = signatureValues(sig);
       return new IR.DRelation(signatureName(sig), compileRelationTypes(types));
-    }
-  })
+    },
+  });
 }
 
 export function compileProgram(p: Program) {

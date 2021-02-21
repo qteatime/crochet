@@ -14,7 +14,7 @@ interface IType {
 export class TTOne implements IType {
   constructor(readonly next: TreeType) {}
 
-  realise(){
+  realise() {
     return new OneNode(this.next);
   }
 }
@@ -31,21 +31,21 @@ export class TTEnd implements IType {
   }
 }
 
-
 export type Tree = OneNode | ManyNode | EndNode;
 
 interface INode {
   type: TreeType;
   insert(values: CrochetValue[]): void;
   remove(values: CrochetValue[]): Tree | null;
-  search(env: UnificationEnvironment, patterns: Pattern[]): UnificationEnvironment[];
+  search(
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[];
 }
 
 export class OneNode implements INode {
   private value: Pair | null = null;
-  constructor(
-    readonly subtype: TreeType
-  ) {}
+  constructor(readonly subtype: TreeType) {}
 
   get type() {
     return new TTOne(this.subtype);
@@ -75,7 +75,10 @@ export class OneNode implements INode {
     }
   }
 
-  search(env: UnificationEnvironment, patterns: Pattern[]): UnificationEnvironment[] {
+  search(
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[] {
     if (this.value == null) {
       return [];
     }
@@ -122,7 +125,7 @@ export class ManyNode implements INode {
 
   remove(values: CrochetValue[]) {
     const [head, ...tail] = values;
-    this.pairs = this.pairs.flatMap(pair => {
+    this.pairs = this.pairs.flatMap((pair) => {
       if (pair.value.equals(head)) {
         const result = pair.tree.remove(tail);
         if (result == null) {
@@ -133,7 +136,7 @@ export class ManyNode implements INode {
       } else {
         return [pair];
       }
-    })
+    });
 
     if (this.pairs.length === 0) {
       return null;
@@ -142,17 +145,20 @@ export class ManyNode implements INode {
     }
   }
 
-  search(env: UnificationEnvironment, patterns: Pattern[]): UnificationEnvironment[] {
+  search(
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[] {
     const [head, ...tail] = patterns;
 
-    return this.pairs.flatMap(pair => {
+    return this.pairs.flatMap((pair) => {
       const newEnv = head.unify(env, pair.value);
       if (newEnv == null) {
         return [];
       } else {
         return pair.tree.search(newEnv, tail);
       }
-    })
+    });
   }
 }
 
@@ -175,7 +181,10 @@ export class EndNode implements INode {
     }
   }
 
-  search(env: UnificationEnvironment, patterns: Pattern[]): UnificationEnvironment[] {
+  search(
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[] {
     if (patterns.length !== 0) {
       throw new Error(`non-empty search on end node`);
     }

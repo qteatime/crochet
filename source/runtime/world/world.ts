@@ -1,9 +1,17 @@
 import { Declaration } from "../ir";
-import { ConcreteRelation, Database, Predicate, PredicateProcedure, TreeType } from "../logic";
+import {
+  ConcreteRelation,
+  Database,
+  Predicate,
+  PredicateProcedure,
+  TreeType,
+} from "../logic";
+import { Procedure } from "../primitives/procedure";
 import { Machine, run } from "../run";
 
 export class World {
   private database = new Database();
+  private procedures = new Map<string, Procedure>();
   private queue: Machine[] = [];
 
   add_relation(name: string, type: TreeType) {
@@ -20,6 +28,15 @@ export class World {
       return relation.tree;
     } else {
       throw new Error(`Undefined relation ${name}`);
+    }
+  }
+
+  get_procedure(name: string) {
+    const procedure = this.procedures.get(name);
+    if (procedure == null) {
+      throw new Error(`Undefined procedure ${name}`);
+    } else {
+      return procedure;
     }
   }
 
