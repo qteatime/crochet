@@ -4,7 +4,9 @@
   },
   "scripts": {
     "build": "tsc && npm run build-player",
-    "build-player": "browserify build/player/main.js -s Crochet -o templates/web/crochet.js"
+    "build-ts": "tsc",
+    "build-player": "browserify build/player/main.js -s Crochet -o templates/web/crochet.js",
+    "build-grammar": "mkdir -p source/generated && node ./Linguist/dist/app.js source/grammar/crochet.lingua > source/generated/crochet-grammar.ts"
   },
   "dependencies": {
     "@types/mkdirp": "^1.0.1",
