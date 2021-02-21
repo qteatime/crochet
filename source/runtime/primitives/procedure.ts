@@ -81,7 +81,7 @@ export class CrochetProcedure implements IProcedure {
   ) {}
 
   async *invoke(_world: World, _env: Environment, values: CrochetValue[]) {
-    const env = new Environment(this.env, this.world);
+    const env = new Environment(this.env, this.world, values[0]);
     for (const [k, v] of zip(this.parameters, values)) {
       env.define(k, v);
     }

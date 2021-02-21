@@ -32,8 +32,8 @@ command (X is integer) hello {
   "hello integer" id;
 }
 
-command (X is lielle) hello {
-  "Lielle" id;
+command lielle hello {
+  self id;
 }
 
 do {
