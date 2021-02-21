@@ -51,11 +51,17 @@ let rec generateType t =
   match t with
   | TRecord (n, ps, fs) -> genRecord n ps fs
   | TUnion (n, ps, vs) ->
+      let patTypes = genParams (Array.append ps [|"$T"|])
       let variantGetters = Seq.map (genVariantGetter n ps) vs
-      let variants = Seq.map (genVariant n ps) vs
+      let variants = Seq.map (genVariant n ps patTypes) vs
       $"""
+      type $p_{n}{patTypes} = {{
+        {genTypePatterns n patTypes vs}
+      }}
+
       export abstract class {n}{genParams ps} extends Node {{
-        abstract tag: string;
+        abstract tag: {genVariantTags vs};
+        abstract match<$T>(p: $p_{n}{patTypes}): $T;
         {String.concat "\n" variantGetters}
 
         static has_instance(x: any) {{
@@ -84,7 +90,27 @@ and genRecord n ps fs =
   }}
   """
 
-and genVariant p ps (Variant (n, fs)) =
+and genTypePattern n patTypes (Variant (v, fs)) =
+  $"""
+  {v}({genFields fs}): $T;
+  """
+
+and genTypePatterns n patTypes vs =
+  Seq.map (genTypePattern n patTypes) vs
+  |> String.concat ""
+
+and genVariantTags vs =
+  Seq.map (fun (Variant (n, _)) -> toString n) vs
+  |> String.concat " | "
+
+and genThisProjection (Field (n, _)) =
+  $"this.{n}"
+
+and genThisProjections fs =
+  Seq.map genThisProjection fs
+  |> String.concat ", "
+
+and genVariant p ps patTypes (Variant (n, fs)) =
   $"""
   {n}: class {n}{genParams ps} extends {p}{genParams ps} {{
     readonly tag = "{n}";
@@ -92,6 +118,10 @@ and genVariant p ps (Variant (n, fs)) =
     constructor({genFieldInit fs}) {{
       super();
       {genInitAsserts ps fs}
+    }}
+
+    match<$T>(p: $p_{p}{patTypes}): $T {{
+      return p.{n}({genThisProjections fs});
     }}
 
     static has_instance(x: any) {{
