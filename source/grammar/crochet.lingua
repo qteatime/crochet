@@ -4,16 +4,22 @@ type Declaration =
   | Relation(pos: Meta, signature: Signature<RelationPart>)
   | Predicate(pos: Meta, signature: Signature<Name>, clauses: PredicateClause[])
   | Do(pos: Meta, body: Statement[])
-  | ForeignCommand(pos: Meta, signature: Signature<Parameter>, foreign_name: Namespace, args: Name[])
+  | ForeignCommand(pos: Meta, signature: Signature<Parameter>, body: FFI)
   | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[])
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
-  | SingletonType(pos: Meta, typ: TypeDef)
+  | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
   | Type(pos: Meta, typ: TypeDef)
   | Enum(pos: Meta, name: Name, values: Variant[])
 
 type TypeDef(name: Name, roles: Name[])
 type Variant(pos: Meta, name: Name, roles: Name[])
+type FFI(pos: Meta, name: Namespace, args: Name[])
+
+type TypeInit =
+  | Fact(pos: Meta, sig: PartialSignature<Expression>)
+  | Command(pos: Meta, sig: PartialSignature<Parameter>, body: Statement[])
+  | ForeignCommand(pos: Meta, signature: PartialSignature<Parameter>, body: FFI)
 
 type Parameter =
   | Untyped(pos: Meta, name: Name)
@@ -90,6 +96,11 @@ type Signature<T> =
   | Binary(pos: Meta, op: Name, left: T, right: T)
   | Keyword(pos: Meta, self: T, pairs: Pair<Name, T>[])
 
+type PartialSignature<T> =
+  | Unary(pos: Meta, name: Name)
+  | Binary(pos: Meta, op: Name, right: T)
+  | Keyword(pos: Meta, pairs: Pair<Name, T>[])
+
 type RelationPart =
   | Many(pos: Meta, name: Name)
   | One(pos: Meta, name: Name)
@@ -134,10 +145,14 @@ grammar Crochet : Program {
       -> Declaration.Do(meta, xs)
 
   commandDeclaration =
-    | command_ s:signature<parameter> s<"="> n:namespace s<"("> xs:listOf<name, s<",">> s<")"> s<";">
-      -> Declaration.ForeignCommand(meta, s, n, xs)
+    | command_ s:signature<parameter> s<"="> b:foreignBody
+      -> Declaration.ForeignCommand(meta, s, b)
     | command_ s:signature<parameter> b:statementBlock<statement>
       -> Declaration.Command(meta, s, b)
+
+  foreignBody =
+    | n:namespace s<"("> xs:listOf<name, s<",">> s<")"> s<";">
+      -> FFI(meta, n, xs)
 
   parameter =
     | n:name                              -> Parameter.Untyped(meta, n)
@@ -156,11 +171,23 @@ grammar Crochet : Program {
     | s<"("> t:typeApp s<")">   -> TypeApp.Parens(meta, t)
 
   typeDeclaration =
-    | singleton_ t:basicType        -> Declaration.SingletonType(meta, t)
-    | t:basicType                   -> Declaration.Type(meta, t)
+    | singleton_ t:basicType i:typeInitBlock  -> Declaration.SingletonType(meta, t, i)
+    | t:basicType s<";">                      -> Declaration.Type(meta, t)
   
   basicType =
-    | type_ n:atom r:roles s<";">   -> TypeDef(n, r)
+    | type_ n:atom r:roles    -> TypeDef(n, r)
+
+  typeInitBlock =
+    | x:block<typeInit>   -> x
+    | s<";">              -> []
+
+  typeInit =
+    | s:partialLogicSignature<invokePostfix> s<";">
+      -> TypeInit.Fact(meta, s)
+    | command_ s:partialSignature<parameter> s<"="> b:foreignBody
+      -> TypeInit.ForeignCommand(meta, s, b)
+    | command_ s:partialSignature<parameter> b:statementBlock<statement>
+      -> TypeInit.Command(meta, s, b)
 
   roleDeclaration =
     | role_ n:atom s<";">           -> Declaration.Role(meta, n)
@@ -321,6 +348,16 @@ grammar Crochet : Program {
 
   signaturePair<t> =
     | kw:keyword v:t  -> Pair(meta, kw, v)
+
+  partialLogicSignature<t> =
+    | kws:signaturePair<t>+       -> PartialSignature.Keyword(meta, kws)
+    | n:atom                      -> PartialSignature.Unary(meta, n)
+
+  partialSignature<t> =
+    | kws:signaturePair<t>+       -> PartialSignature.Keyword(meta, kws)
+    | op:infix_symbol r:t         -> PartialSignature.Binary(meta, op, r)
+    | n:atom                      -> PartialSignature.Unary(meta, n)
+    | n:not                       -> PartialSignature.Unary(meta, n)
 
   signature<t> =
     | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)

@@ -12,8 +12,18 @@ const programStr = `
 role actor;
 role room;
 
-singleton type lielle :: actor;
-singleton type kristine :: actor;
+singleton type lielle :: actor {
+  at: foyer;
+  likes: kristine;
+
+  command hello {
+    "Hello, world from Lielle";
+  }
+}
+
+singleton type kristine :: actor {
+  at: foyer;
+}
 
 singleton type foyer :: room;
 
@@ -32,14 +42,7 @@ command (X is integer) hello {
   "hello integer" id;
 }
 
-command lielle hello {
-  self id;
-}
-
 do {
-  fact lielle at: foyer;
-  fact kristine at: foyer;
-  fact lielle likes: kristine;
   let X = search lielle kisses: (Who :: actor) at: (Where :: room);
   lielle hello;
 }

@@ -3,8 +3,11 @@ import {
   Declaration,
   Expression,
   Literal,
+  Meta,
+  Name,
   Namespace,
   Parameter,
+  PartialSignature,
   Pattern,
   Predicate,
   PredicateClause,
@@ -16,6 +19,7 @@ import {
   Statement,
   TypeApp,
   TypeDef,
+  TypeInit,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
@@ -275,6 +279,69 @@ export function compileExpression(expr: Expression): IR.Expression {
 }
 
 // -- Statement
+export function materialiseSignature<T>(
+  self: T,
+  signature: PartialSignature<T>
+): Signature<T> {
+  return signature.match<Signature<T>>({
+    Unary(meta, name) {
+      return new Signature.Unary(meta, self, name);
+    },
+
+    Binary(meta, op, right) {
+      return new Signature.Binary(meta, op, self, right);
+    },
+
+    Keyword(meta, pairs) {
+      return new Signature.Keyword(meta, self, pairs);
+    },
+  });
+}
+
+export function compileTypeInit(
+  meta: Meta,
+  self: string,
+  partialStmts: TypeInit[]
+): IR.Declaration[] {
+  const results = partialStmts.map((x) =>
+    x.match<Statement | Declaration>({
+      Fact(meta, sig0) {
+        const self_expr: Expression = new Expression.Global(
+          meta,
+          new Name(meta, self)
+        );
+        const sig = materialiseSignature(self_expr, sig0);
+        return new Statement.Fact(meta, sig);
+      },
+
+      Command(meta, sig0, body) {
+        const self_param: Parameter = new Parameter.TypedOnly(
+          meta,
+          new TypeApp.Named(meta, new Name(meta, self))
+        );
+        const sig = materialiseSignature(self_param, sig0);
+        return new Declaration.Command(meta, sig, body);
+      },
+
+      ForeignCommand(meta, sig0, body) {
+        const self_param: Parameter = new Parameter.TypedOnly(
+          meta,
+          new TypeApp.Named(meta, new Name(meta, self))
+        );
+        const sig = materialiseSignature(self_param, sig0);
+        return new Declaration.ForeignCommand(meta, sig, body);
+      },
+    })
+  );
+
+  const stmts = results.filter((x) => x instanceof Statement) as Statement[];
+  const decls0 = results.filter(
+    (x) => x instanceof Declaration
+  ) as Declaration[];
+  const decls = [...decls0, new Declaration.Do(meta, stmts)];
+  return decls.flatMap(compileDeclaration);
+}
+
 export function compileStatement(stmt: Statement) {
   return stmt.match<IR.Statement>({
     Let(_, name, value) {
@@ -382,17 +449,12 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       ];
     },
 
-    ForeignCommand(meta, sig, foreign_name, args0) {
+    ForeignCommand(meta, sig, body) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
-      const args = args0.map((x) => parameters.indexOf(x.name));
+      const args = body.args.map((x) => parameters.indexOf(x.name));
       return [
-        new IR.DForeignCommand(
-          name,
-          types,
-          compileNamespace(foreign_name),
-          args
-        ),
+        new IR.DForeignCommand(name, types, compileNamespace(body.name), args),
       ];
     },
 
@@ -414,11 +476,12 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     // FIXME: make sure no further possible instantiations of this type exist
-    SingletonType(_, type0) {
+    SingletonType(meta, type0, init) {
       const type = compileTypeDef(type0);
       return [
         new IR.DType(type.name, type.roles),
         new IR.DDefine(type.name, new IR.ENew(type.name)),
+        ...compileTypeInit(meta, type.name, init),
       ];
     },
 

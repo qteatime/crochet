@@ -95,12 +95,7 @@ type $p_Declaration<$T> = {
 
   Do(pos: Meta, body: Statement[]): $T;
 
-  ForeignCommand(
-    pos: Meta,
-    signature: Signature<Parameter>,
-    foreign_name: Namespace,
-    args: Name[]
-  ): $T;
+  ForeignCommand(pos: Meta, signature: Signature<Parameter>, body: FFI): $T;
 
   Command(pos: Meta, signature: Signature<Parameter>, body: Statement[]): $T;
 
@@ -108,7 +103,7 @@ type $p_Declaration<$T> = {
 
   Role(pos: Meta, name: Name): $T;
 
-  SingletonType(pos: Meta, typ: TypeDef): $T;
+  SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[]): $T;
 
   Type(pos: Meta, typ: TypeDef): $T;
 
@@ -251,8 +246,7 @@ const $Declaration = (function () {
     constructor(
       readonly pos: Meta,
       readonly signature: Signature<Parameter>,
-      readonly foreign_name: Namespace,
-      readonly args: Name[]
+      readonly body: FFI
     ) {
       super();
       $assert_type<Meta>(pos, "Meta", Meta);
@@ -261,17 +255,11 @@ const $Declaration = (function () {
         "Signature<Parameter>",
         Signature
       );
-      $assert_type<Namespace>(foreign_name, "Namespace", Namespace);
-      $assert_type<Name[]>(args, "Name[]", $is_array(Name));
+      $assert_type<FFI>(body, "FFI", FFI);
     }
 
     match<$T>(p: $p_Declaration<$T>): $T {
-      return p.ForeignCommand(
-        this.pos,
-        this.signature,
-        this.foreign_name,
-        this.args
-      );
+      return p.ForeignCommand(this.pos, this.signature, this.body);
     }
 
     static has_instance(x: any) {
@@ -350,14 +338,19 @@ const $Declaration = (function () {
   class SingletonType extends Declaration {
     readonly tag = "SingletonType";
 
-    constructor(readonly pos: Meta, readonly typ: TypeDef) {
+    constructor(
+      readonly pos: Meta,
+      readonly typ: TypeDef,
+      readonly init: TypeInit[]
+    ) {
       super();
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
+      $assert_type<TypeInit[]>(init, "TypeInit[]", $is_array(TypeInit));
     }
 
     match<$T>(p: $p_Declaration<$T>): $T {
-      return p.SingletonType(this.pos, this.typ);
+      return p.SingletonType(this.pos, this.typ, this.init);
     }
 
     static has_instance(x: any) {
@@ -448,6 +441,141 @@ export class Variant extends Node {
     return x instanceof Variant;
   }
 }
+
+export class FFI extends Node {
+  readonly tag = "FFI";
+
+  constructor(
+    readonly pos: Meta,
+    readonly name: Namespace,
+    readonly args: Name[]
+  ) {
+    super();
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Namespace>(name, "Namespace", Namespace);
+    $assert_type<Name[]>(args, "Name[]", $is_array(Name));
+  }
+
+  static has_instance(x: any) {
+    return x instanceof FFI;
+  }
+}
+
+type $p_TypeInit<$T> = {
+  Fact(pos: Meta, sig: PartialSignature<Expression>): $T;
+
+  Command(pos: Meta, sig: PartialSignature<Parameter>, body: Statement[]): $T;
+
+  ForeignCommand(
+    pos: Meta,
+    signature: PartialSignature<Parameter>,
+    body: FFI
+  ): $T;
+};
+
+export abstract class TypeInit extends Node {
+  abstract tag: "Fact" | "Command" | "ForeignCommand";
+  abstract match<$T>(p: $p_TypeInit<$T>): $T;
+
+  static get Fact() {
+    return $TypeInit.Fact;
+  }
+
+  static get Command() {
+    return $TypeInit.Command;
+  }
+
+  static get ForeignCommand() {
+    return $TypeInit.ForeignCommand;
+  }
+
+  static has_instance(x: any) {
+    return x instanceof TypeInit;
+  }
+}
+
+const $TypeInit = (function () {
+  class Fact extends TypeInit {
+    readonly tag = "Fact";
+
+    constructor(
+      readonly pos: Meta,
+      readonly sig: PartialSignature<Expression>
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<PartialSignature<Expression>>(
+        sig,
+        "PartialSignature<Expression>",
+        PartialSignature
+      );
+    }
+
+    match<$T>(p: $p_TypeInit<$T>): $T {
+      return p.Fact(this.pos, this.sig);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Fact;
+    }
+  }
+
+  class Command extends TypeInit {
+    readonly tag = "Command";
+
+    constructor(
+      readonly pos: Meta,
+      readonly sig: PartialSignature<Parameter>,
+      readonly body: Statement[]
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<PartialSignature<Parameter>>(
+        sig,
+        "PartialSignature<Parameter>",
+        PartialSignature
+      );
+      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
+    }
+
+    match<$T>(p: $p_TypeInit<$T>): $T {
+      return p.Command(this.pos, this.sig, this.body);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Command;
+    }
+  }
+
+  class ForeignCommand extends TypeInit {
+    readonly tag = "ForeignCommand";
+
+    constructor(
+      readonly pos: Meta,
+      readonly signature: PartialSignature<Parameter>,
+      readonly body: FFI
+    ) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<PartialSignature<Parameter>>(
+        signature,
+        "PartialSignature<Parameter>",
+        PartialSignature
+      );
+      $assert_type<FFI>(body, "FFI", FFI);
+    }
+
+    match<$T>(p: $p_TypeInit<$T>): $T {
+      return p.ForeignCommand(this.pos, this.signature, this.body);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof ForeignCommand;
+    }
+  }
+
+  return { Fact, Command, ForeignCommand };
+})();
 
 type $p_Parameter<$T> = {
   Untyped(pos: Meta, name: Name): $T;
@@ -1768,6 +1896,93 @@ const $Signature = (function () {
   return { Unary, Binary, Keyword };
 })();
 
+type $p_PartialSignature<T, $T> = {
+  Unary(pos: Meta, name: Name): $T;
+
+  Binary(pos: Meta, op: Name, right: T): $T;
+
+  Keyword(pos: Meta, pairs: Pair<Name, T>[]): $T;
+};
+
+export abstract class PartialSignature<T> extends Node {
+  abstract tag: "Unary" | "Binary" | "Keyword";
+  abstract match<$T>(p: $p_PartialSignature<T, $T>): $T;
+
+  static get Unary() {
+    return $PartialSignature.Unary;
+  }
+
+  static get Binary() {
+    return $PartialSignature.Binary;
+  }
+
+  static get Keyword() {
+    return $PartialSignature.Keyword;
+  }
+
+  static has_instance(x: any) {
+    return x instanceof PartialSignature;
+  }
+}
+
+const $PartialSignature = (function () {
+  class Unary<T> extends PartialSignature<T> {
+    readonly tag = "Unary";
+
+    constructor(readonly pos: Meta, readonly name: Name) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(name, "Name", Name);
+    }
+
+    match<$T>(p: $p_PartialSignature<T, $T>): $T {
+      return p.Unary(this.pos, this.name);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Unary;
+    }
+  }
+
+  class Binary<T> extends PartialSignature<T> {
+    readonly tag = "Binary";
+
+    constructor(readonly pos: Meta, readonly op: Name, readonly right: T) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Name>(op, "Name", Name);
+    }
+
+    match<$T>(p: $p_PartialSignature<T, $T>): $T {
+      return p.Binary(this.pos, this.op, this.right);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Binary;
+    }
+  }
+
+  class Keyword<T> extends PartialSignature<T> {
+    readonly tag = "Keyword";
+
+    constructor(readonly pos: Meta, readonly pairs: Pair<Name, T>[]) {
+      super();
+      $assert_type<Meta>(pos, "Meta", Meta);
+      $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
+    }
+
+    match<$T>(p: $p_PartialSignature<T, $T>): $T {
+      return p.Keyword(this.pos, this.pairs);
+    }
+
+    static has_instance(x: any) {
+      return x instanceof Keyword;
+    }
+  }
+
+  return { Unary, Binary, Keyword };
+})();
+
 type $p_RelationPart<$T> = {
   Many(pos: Meta, name: Name): $T;
 
@@ -1874,7 +2089,7 @@ export class Namespace extends Node {
 
 // == Grammar definition ============================================
 export const grammar = Ohm.grammar(
-  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | enumDeclaration  -- alt7\n | defineDeclaration  -- alt8\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n | command_ signature<parameter> statementBlock<statement>  -- alt2\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | atom  -- alt3\n\n\ntypeApp  = typeAppUnion  -- alt1\n\n\ntypeAppUnion  = typeAppPrimary s<"|"> typeAppUnion  -- alt1\n | typeAppPrimary  -- alt2\n\n\ntypeAppPrimary  = atom  -- alt1\n | s<"("> typeApp s<")">  -- alt2\n\n\ntypeDeclaration  = singleton_ basicType  -- alt1\n | basicType  -- alt2\n\n\nbasicType  = type_ atom roles s<";">  -- alt1\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nenumDeclaration  = enum_ atom s<"="> s<"|">? nonemptyListOf<variant, s<"|">> s<";">  -- alt1\n\n\nvariant  = atom roles  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\npredicate  = predicateRelations if_ constraint  -- alt1\n | predicateRelations  -- alt2\n\n\npredicateRelations  = nonemptyListOf<predicateRelation, s<",">>  -- alt1\n\n\npredicateRelation  = not_ logicSignature<pattern>  -- alt1\n | logicSignature<pattern>  -- alt2\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom s<"."> atom  -- alt2\n | atom  -- alt3\n | literal  -- alt4\n | patternName  -- alt5\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and_ constraint  -- alt1\n | constraint or_ constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400  -- alt2\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | s<"("> constraint s<")">  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | expression  -- alt4\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nforgetStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\ninvokeInfixExpression  = invokeMixfix infix_symbol invokeInfixExpression  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = invokePostfix signaturePair<invokePostfix>  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | primaryExpression  -- alt2\n\n\nprimaryExpression  = newExpression  -- alt1\n | literalExpression  -- alt2\n | self_  -- alt3\n | atom  -- alt4\n | name  -- alt5\n | s<"("> expression s<")">  -- alt6\n\n\nnewExpression  = new_ atom  -- alt1\n | atom s<"."> atom  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = newExpression  -- alt1\n | literalExpression  -- alt2\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = s<t_text>  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\natom  = ~reserved s<t_atom> ~":"  -- alt1\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\nsignature<t>  = t signaturePair<t>+  -- alt1\n | t infix_symbol t  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "<="  -- alt7\n | ">="  -- alt8\n | "==="  -- alt9\n | "=/="  -- alt10\n | and_  -- alt11\n | or_  -- alt12\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | type_  -- alt6\n | role_  -- alt7\n | enum_  -- alt8\n | define_  -- alt9\n | singleton_  -- alt10\n | let_  -- alt11\n | return_  -- alt12\n | fact_  -- alt13\n | forget_  -- alt14\n | new_  -- alt15\n | search_  -- alt16\n | if_  -- alt17\n | true_  -- alt18\n | false_  -- alt19\n | not_  -- alt20\n | and_  -- alt21\n | or_  -- alt22\n | is_  -- alt23\n | self_  -- alt24\n\r\n  }\r\n  '
+  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | enumDeclaration  -- alt7\n | defineDeclaration  -- alt8\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> foreignBody  -- alt1\n | command_ signature<parameter> statementBlock<statement>  -- alt2\n\n\nforeignBody  = namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | atom  -- alt3\n\n\ntypeApp  = typeAppUnion  -- alt1\n\n\ntypeAppUnion  = typeAppPrimary s<"|"> typeAppUnion  -- alt1\n | typeAppPrimary  -- alt2\n\n\ntypeAppPrimary  = atom  -- alt1\n | s<"("> typeApp s<")">  -- alt2\n\n\ntypeDeclaration  = singleton_ basicType typeInitBlock  -- alt1\n | basicType s<";">  -- alt2\n\n\nbasicType  = type_ atom roles  -- alt1\n\n\ntypeInitBlock  = block<typeInit>  -- alt1\n | s<";">  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> s<"="> foreignBody  -- alt2\n | command_ partialSignature<parameter> statementBlock<statement>  -- alt3\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nenumDeclaration  = enum_ atom s<"="> s<"|">? nonemptyListOf<variant, s<"|">> s<";">  -- alt1\n\n\nvariant  = atom roles  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\npredicate  = predicateRelations if_ constraint  -- alt1\n | predicateRelations  -- alt2\n\n\npredicateRelations  = nonemptyListOf<predicateRelation, s<",">>  -- alt1\n\n\npredicateRelation  = not_ logicSignature<pattern>  -- alt1\n | logicSignature<pattern>  -- alt2\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom s<"."> atom  -- alt2\n | atom  -- alt3\n | literal  -- alt4\n | patternName  -- alt5\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and_ constraint  -- alt1\n | constraint or_ constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400  -- alt2\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | s<"("> constraint s<")">  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | expression  -- alt4\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nforgetStatement  = fact_ logicSignature<invokePostfix>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\ninvokeInfixExpression  = invokeMixfix infix_symbol invokeInfixExpression  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = invokePostfix signaturePair<invokePostfix>  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | primaryExpression  -- alt2\n\n\nprimaryExpression  = newExpression  -- alt1\n | literalExpression  -- alt2\n | self_  -- alt3\n | atom  -- alt4\n | name  -- alt5\n | s<"("> expression s<")">  -- alt6\n\n\nnewExpression  = new_ atom  -- alt1\n | atom s<"."> atom  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = newExpression  -- alt1\n | literalExpression  -- alt2\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = s<t_text>  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\natom  = ~reserved s<t_atom> ~":"  -- alt1\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t signaturePair<t>+  -- alt1\n | t infix_symbol t  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "<="  -- alt7\n | ">="  -- alt8\n | "==="  -- alt9\n | "=/="  -- alt10\n | and_  -- alt11\n | or_  -- alt12\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | type_  -- alt6\n | role_  -- alt7\n | enum_  -- alt8\n | define_  -- alt9\n | singleton_  -- alt10\n | let_  -- alt11\n | return_  -- alt12\n | fact_  -- alt13\n | forget_  -- alt14\n | new_  -- alt15\n | search_  -- alt16\n | if_  -- alt17\n | true_  -- alt18\n | false_  -- alt19\n | not_  -- alt20\n | and_  -- alt21\n | or_  -- alt22\n | is_  -- alt23\n | self_  -- alt24\n\r\n  }\r\n  '
 );
 
 // == Parsing =======================================================
@@ -2048,16 +2263,11 @@ const toAstVisitor = {
     _1: Ohm.Node,
     s$0: Ohm.Node,
     _3: Ohm.Node,
-    n$0: Ohm.Node,
-    _5: Ohm.Node,
-    xs$0: Ohm.Node,
-    _7: Ohm.Node,
-    _8: Ohm.Node
+    b$0: Ohm.Node
   ): any {
     const s = s$0.toAST();
-    const n = n$0.toAST();
-    const xs = xs$0.toAST();
-    return new Declaration.ForeignCommand($meta(this), s, n, xs);
+    const b = b$0.toAST();
+    return new Declaration.ForeignCommand($meta(this), s, b);
   },
 
   commandDeclaration_alt2(
@@ -2069,6 +2279,23 @@ const toAstVisitor = {
     const s = s$0.toAST();
     const b = b$0.toAST();
     return new Declaration.Command($meta(this), s, b);
+  },
+
+  foreignBody(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  foreignBody_alt1(
+    this: Ohm.Node,
+    n$0: Ohm.Node,
+    _2: Ohm.Node,
+    xs$0: Ohm.Node,
+    _4: Ohm.Node,
+    _5: Ohm.Node
+  ): any {
+    const n = n$0.toAST();
+    const xs = xs$0.toAST();
+    return new FFI($meta(this), n, xs);
   },
 
   parameter(x: Ohm.Node): any {
@@ -2151,12 +2378,18 @@ const toAstVisitor = {
     return x.toAST();
   },
 
-  typeDeclaration_alt1(this: Ohm.Node, _1: Ohm.Node, t$0: Ohm.Node): any {
+  typeDeclaration_alt1(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    t$0: Ohm.Node,
+    i$0: Ohm.Node
+  ): any {
     const t = t$0.toAST();
-    return new Declaration.SingletonType($meta(this), t);
+    const i = i$0.toAST();
+    return new Declaration.SingletonType($meta(this), t, i);
   },
 
-  typeDeclaration_alt2(this: Ohm.Node, t$0: Ohm.Node): any {
+  typeDeclaration_alt2(this: Ohm.Node, t$0: Ohm.Node, _2: Ohm.Node): any {
     const t = t$0.toAST();
     return new Declaration.Type($meta(this), t);
   },
@@ -2169,12 +2402,56 @@ const toAstVisitor = {
     this: Ohm.Node,
     _1: Ohm.Node,
     n$0: Ohm.Node,
-    r$0: Ohm.Node,
-    _4: Ohm.Node
+    r$0: Ohm.Node
   ): any {
     const n = n$0.toAST();
     const r = r$0.toAST();
     return new TypeDef(n, r);
+  },
+
+  typeInitBlock(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  typeInitBlock_alt1(this: Ohm.Node, x$0: Ohm.Node): any {
+    const x = x$0.toAST();
+    return x;
+  },
+
+  typeInitBlock_alt2(this: Ohm.Node, _1: Ohm.Node): any {
+    return [];
+  },
+
+  typeInit(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  typeInit_alt1(this: Ohm.Node, s$0: Ohm.Node, _2: Ohm.Node): any {
+    const s = s$0.toAST();
+    return new TypeInit.Fact($meta(this), s);
+  },
+
+  typeInit_alt2(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    s$0: Ohm.Node,
+    _3: Ohm.Node,
+    b$0: Ohm.Node
+  ): any {
+    const s = s$0.toAST();
+    const b = b$0.toAST();
+    return new TypeInit.ForeignCommand($meta(this), s, b);
+  },
+
+  typeInit_alt3(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    s$0: Ohm.Node,
+    b$0: Ohm.Node
+  ): any {
+    const s = s$0.toAST();
+    const b = b$0.toAST();
+    return new TypeInit.Command($meta(this), s, b);
   },
 
   roleDeclaration(x: Ohm.Node): any {
@@ -2788,6 +3065,45 @@ const toAstVisitor = {
     const kw = kw$0.toAST();
     const v = v$0.toAST();
     return new Pair($meta(this), kw, v);
+  },
+
+  partialLogicSignature(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  partialLogicSignature_alt1(this: Ohm.Node, kws$0: Ohm.Node): any {
+    const kws = kws$0.toAST();
+    return new PartialSignature.Keyword($meta(this), kws);
+  },
+
+  partialLogicSignature_alt2(this: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new PartialSignature.Unary($meta(this), n);
+  },
+
+  partialSignature(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  partialSignature_alt1(this: Ohm.Node, kws$0: Ohm.Node): any {
+    const kws = kws$0.toAST();
+    return new PartialSignature.Keyword($meta(this), kws);
+  },
+
+  partialSignature_alt2(this: Ohm.Node, op$0: Ohm.Node, r$0: Ohm.Node): any {
+    const op = op$0.toAST();
+    const r = r$0.toAST();
+    return new PartialSignature.Binary($meta(this), op, r);
+  },
+
+  partialSignature_alt3(this: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new PartialSignature.Unary($meta(this), n);
+  },
+
+  partialSignature_alt4(this: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new PartialSignature.Unary($meta(this), n);
   },
 
   signature(x: Ohm.Node): any {
