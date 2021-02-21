@@ -8,6 +8,7 @@ import {
   CrochetRecord,
   CrochetStream,
   CrochetText,
+  CrochetValue,
   CrochetVariant,
   TCrochetEnum,
   TCrochetType,
@@ -37,7 +38,9 @@ export type Expression =
   | ENew
   | ENewVariant
   | EGlobal
-  | ESelf;
+  | ESelf
+  | EList
+  | ERecord;
 
 interface IExpression {
   evaluate(world: World, env: Environment): Machine;
@@ -145,5 +148,28 @@ export class EGlobal implements IExpression {
 export class ESelf implements IExpression {
   async *evaluate(world: World, env: Environment) {
     return env.receiver;
+  }
+}
+
+export class EList implements IExpression {
+  constructor(readonly values: Expression[]) {}
+
+  async *evaluate(world: World, env: Environment): Machine {
+    const values = avalue(
+      yield _push(run_all(this.values.map((x) => x.evaluate(world, env))))
+    );
+    return new CrochetStream(values);
+  }
+}
+
+export class ERecord implements IExpression {
+  constructor(readonly pairs: { key: string; value: Expression }[]) {}
+  async *evaluate(world: World, env: Environment): Machine {
+    const map = new Map<string, CrochetValue>();
+    for (const pair of this.pairs) {
+      const value = cvalue(yield _push(pair.value.evaluate(world, env)));
+      map.set(pair.key, value);
+    }
+    return new CrochetRecord(map);
   }
 }

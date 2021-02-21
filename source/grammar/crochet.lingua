@@ -53,6 +53,8 @@ type Expression =
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
   | Self(pos: Meta)
+  | List(pos: Meta, values: Expression[])
+  | Record(pos: Meta, pairs: Pair<Name, Expression>[])
   | Search(pos: Meta, predicate: Predicate)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
@@ -300,6 +302,8 @@ grammar Crochet : Program {
   primaryExpression =
     | newExpression
     | literalExpression
+    | recordExpression
+    | listExpression
     | self_                       -> Expression.Self(meta)
     | n:atom                      -> Expression.Global(meta, n)
     | n:name                      -> Expression.Variable(meta, n)
@@ -308,6 +312,17 @@ grammar Crochet : Program {
   newExpression =
     | new_ n:atom            -> Expression.New(meta, n)
     | n:atom s<"."> v:atom   -> Expression.NewVariant(meta, n, v)
+
+  listExpression =
+    | s<"["> xs:listOf<expression, s<",">> s<",">? s<"]">
+      -> Expression.List(meta, xs)
+
+  recordExpression =
+    | s<"["> s<"->"> s<"]">                                         -> Expression.Record(meta, [])
+    | s<"["> xs:nonemptyListOf<recordPair, s<",">> s<",">? s<"]">   -> Expression.Record(meta, xs)
+
+  recordPair =
+    | n:name s<"->"> v:expression -> Pair(meta, n, v)
 
   literalExpression =
     | l:literal             -> Expression.Lit(l)
