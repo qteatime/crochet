@@ -1,7 +1,7 @@
-import { and, from_bool, not, or,  bfalse, btrue, CrochetValue } from "../primitives";
+import { and, from_bool, not, or, CrochetValue } from "../primitives";
 import { UnificationEnvironment } from "./unification";
 
-export type Constraint = And | Or | Not | Variable | Equals | True | False;
+export type Constraint = And | Or | Not | Variable | Equals | Value;
 
 interface IConstraint {
   evaluate(env: UnificationEnvironment): CrochetValue;
@@ -57,14 +57,12 @@ export class Equals implements IConstraint {
   }
 }
 
-export class True implements IConstraint {
-  evaluate(env: UnificationEnvironment): CrochetValue {
-    return btrue;
+export class Value implements IConstraint {
+  constructor(readonly value: CrochetValue) {
+    
   }
-}
 
-export class False implements IConstraint {
   evaluate(env: UnificationEnvironment): CrochetValue {
-    return bfalse;
+    return this.value;
   }
 }

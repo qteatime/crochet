@@ -1,0 +1,267 @@
+type Program(pos: Meta, declarations: Declaration[])
+
+type Declaration =
+  | Relation(pos: Meta, signature: Signature<RelationPart>)
+  | Predicate(pos: Meta, signature: Signature<Name>, clauses: PredicateClause[])
+  | Do(pos: Meta, body: Statement[])
+
+type PredicateClause(
+  pos: Meta,
+  predicate: Predicate,
+  effect: PredicateEffect
+)
+
+type PredicateEffect =
+  | Trivial()
+
+type Statement =
+  | Fact(pos: Meta, signature: Signature<Expression>)
+  | Forget(pos: Meta, signature: Signature<Expression>)
+  | Return(pos: Meta, value: Expression)
+  | Let(pos: Meta, name: Name, value: Expression)
+  | Expr(value: Expression)
+
+type Expression =
+  | Parens(pos: Meta, value: Expression)
+  | Variable(pos: Meta, name: Name)
+  | Search(pos: Meta, predicate: Predicate)
+  | Lit(value: Literal)
+
+type Literal =
+  | False(pos: Meta)
+  | True(pos: Meta)
+  | Text(pos: Meta, value: string)
+
+type Predicate(
+  pos: Meta,
+  relations: PredicateRelation[],
+  constraint: Constraint
+)
+
+type PredicateRelation =
+  | Not(pos: Meta, signature: Signature<Pattern>)
+  | Has(pos: Meta, signature: Signature<Pattern>)
+
+type Pattern =
+  | Variable(pos: Meta, name: Name)
+  | Wildcard(pos: Meta)
+  | Lit(lit: Literal)
+
+type Constraint =
+  | And(pos: Meta, left: Constraint, right: Constraint)
+  | Or(pos: Meta, left: Constraint, right: Constraint)
+  | Not(pos: Meta, value: Constraint)
+  | Equal(pos: Meta, left: Constraint, right: Constraint)
+  | Variable(pos: Meta, name: Name)
+  | Parens(pos: Meta, value: Constraint)
+  | Lit(lit: Literal)
+
+type Signature<T> =
+  | Unary(pos: Meta, self: T, name: Name)
+  | Keyword(pos: Meta, self: T, pairs: Pair<Name, T>[])
+
+type RelationPart =
+  | Many(pos: Meta, name: Name)
+  | One(pos: Meta, name: Name)
+
+type Pair<K, V>(pos: Meta, key: K, value: V)
+type Name(pos: Meta, name: string)
+
+
+grammar Crochet : Program {
+  program =
+    | header ds:declaration* space* end
+      -> Program(meta, ds)
+
+  declaration =
+    | relationDeclaration
+    | predicateDeclaration
+    | doDeclaration
+
+  relationDeclaration =
+    | relation_ s:logicSignature<relationPart> s<";">
+      -> Declaration.Relation(meta, s)
+
+  relationPart =
+    | n:name s<"*"> -> RelationPart.Many(meta, n)
+    | n:name        -> RelationPart.One(meta, n)
+
+  predicateDeclaration =
+    | predicate_ l:logicSignature<name> c:block<predicateClause>
+      -> Declaration.Predicate(meta, l, c)
+
+  predicateClause =
+    | when_ p:predicate ";"     -> PredicateClause(meta, p, PredicateEffect.Trivial())
+
+  doDeclaration =
+    | do_ xs:statementBlock<statement>
+      -> Declaration.Do(meta, xs)
+
+
+  // -- Logic
+  predicate =
+    | rs:predicateRelations if_ c:constraint    -> Predicate(meta, rs, c)
+    | rs:predicateRelations                     -> Predicate(meta, rs, Constraint.Lit(Literal.True(meta)))
+
+  predicateRelations =
+    | nonemptyListOf<predicateRelation, s<",">>
+
+  predicateRelation =
+    | not_ s:logicSignature<pattern>  -> PredicateRelation.Not(meta, s)
+    | s:logicSignature<pattern>       -> PredicateRelation.Has(meta, s)
+
+  pattern =
+    | s<"_">        -> Pattern.Wildcard(meta)
+    | n:name        -> Pattern.Variable(meta, n)
+    | l:literal     -> Pattern.Lit(l)
+
+  constraint =
+    | l:constraint and_ r:constraint  -> Constraint.And(meta, l, r)
+    | l:constraint or_ r:constraint   -> Constraint.Or(meta, l, r)
+    | constraint200
+
+  constraint200 =
+    | not_ c:constraint300            -> Constraint.Not(meta, c)
+    | constraint300
+
+  constraint300 =
+    | l:constraint400 s<"==="> r:constraint400  -> Constraint.Equal(meta, l, r)
+    | constraint400
+
+  constraint400 =
+    | n:name                          -> Constraint.Variable(meta, n)
+    | l:literal                       -> Constraint.Lit(l)
+    | "(" c:constraint ")"            -> Constraint.Parens(meta, c)
+
+
+  // -- Statement
+  statement =
+    | letStatement
+    | factStatement
+    | forgetStatement
+    | returnStatement
+    | e:expression    -> Statement.Expr(e)
+
+  letStatement =
+    | let_ n:name s<"="> e:expression
+      -> Statement.Let(meta, n, e)
+  
+  factStatement =
+    | fact_ s:logicSignature<expression> 
+      -> Statement.Fact(meta, s)
+  
+  forgetStatement =
+    | fact_ s:logicSignature<expression>
+      -> Statement.Forget(meta, s)
+
+  returnStatement =
+    | return_ e:expression
+      -> Statement.Return(meta, e)
+
+  // -- Expressions
+  expression =
+    | searchExpression
+    | primaryExpression
+
+  searchExpression =
+    | search_ p:predicate
+      -> Expression.Search(meta, p)
+
+  primaryExpression =
+    | l:literal             -> Expression.Lit(l)
+    | n:name                -> Expression.Variable(meta, n)
+    | "(" e:expression ")"  -> Expression.Parens(meta, e)
+
+
+  // -- Literals
+  literal =
+    | text
+    | boolean
+
+  boolean =
+    | true_                 -> Literal.True(meta)
+    | false_                -> Literal.False(meta)
+
+  text =
+    | x:s<t_text> -> Literal.Text(meta, x)
+
+
+  // -- Token -> Rule
+  atom = x:s<t_atom>        -> Name(meta, x)
+  name = x:s<t_name>        -> Name(meta, x)
+  keyword = x:s<t_keyword>  -> Name(meta, x)
+
+
+  // -- Higher-order
+  logicSignature<t> =
+    | s:t kws:logicSignaturePair<t>+  -> Signature.Keyword(meta, s, kws)
+    | s:t n:atom                      -> Signature.Unary(meta, s, n)
+
+  logicSignaturePair<t> =
+    | kw:keyword v:t  -> Pair(meta, kw, v)
+
+  statementBlock<t> =
+    | s<"{"> xs:listOf<t, s<";">> s<";">? s<"}"> -> xs
+
+  block<t> =
+    | s<"{"> xs:t* s<"}"> -> xs
+
+  s<p> = space* x:p -> x
+
+
+  // -- Lexical
+  token header (a file header) = space* "%" hs* "crochet" nl
+  token hs = " " | "\t"
+  token nl = "\n" | "\r"
+  token line = (~nl any)*
+  token comment (a comment) = "//" line
+  space += comment
+
+  token atom_start = "a".."z"
+  token atom_rest = letter | digit | "-"
+  token t_atom (an atom) = atom_start atom_rest*
+
+  token t_keyword (a keyword) = t_atom ":"
+
+  token name_start = "A".."Z" | "_"
+  token name_rest = letter | digit | "-"
+  token t_name (a name) = name_start name_rest*
+
+
+  // -- Literals
+  token text_character =
+    | "\\" "\""
+    | ~"\"" any
+
+  token t_text (a text) =
+    | "\"" text_character* "\""
+
+
+  // -- Reserved words
+  kw<w> = s<w> ~atom_rest
+
+  relation_ = kw<"relation">
+  predicate_ = kw<"predicate">
+  when_ = kw<"when">
+  do_ = kw<"do">
+
+  let_ = kw<"let">
+  return_ = kw<"return">
+  fact_ = kw<"fact">
+  forget_ = kw<"forget">
+
+  search_ = kw<"search">
+  if_ = kw<"if">
+
+  true_ = kw<"true">
+  false_ = kw<"false">
+  not_ = kw<"not">
+  and_ = kw<"and">
+  or_ = kw<"or">
+
+  reserved =
+    | relation_ | predicate_ | when_ | do_
+    | let_ | return_ | fact_ | forget_
+    | search_ | if_
+    | true_ | false_ | not_ | and_ | or_
+}
