@@ -30,7 +30,9 @@ export class ErrNoBranchMatched {
   format() {
     return `no-branch-matched: No branches of ${
       this.procedure.name
-    } match the signature (${this.args.map((x) => x.type_name).join(", ")})`;
+    } match the signature (${this.args
+      .map((x) => x.type.type_name)
+      .join(", ")})`;
   }
 }
 

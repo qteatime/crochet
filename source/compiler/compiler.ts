@@ -26,26 +26,6 @@ function parseInteger(x: string): bigint {
   return BigInt(x.replace(/_/g, ""));
 }
 
-export function typeFromName(x: string): CrochetType {
-  switch (x) {
-    case "true":
-      return rt.True;
-    case "false":
-      return rt.False;
-    case "integer":
-      return rt.CrochetInteger;
-    case "text":
-      return rt.CrochetText;
-    case "record":
-      return rt.CrochetRecord;
-    case "stream":
-      return rt.CrochetStream;
-    default: {
-      throw new Error(`Unknown native type ${x}`);
-    }
-  }
-}
-
 export function literalToValue(lit: Literal) {
   return lit.match<rt.CrochetValue>({
     False(_) {
@@ -288,10 +268,10 @@ export function compileStatement(stmt: Statement) {
 }
 
 // -- Declaration
-export function compileTypeApp(x: TypeApp): rt.DispatchType {
-  return x.match<rt.DispatchType>({
+export function compileTypeApp(x: TypeApp): IR.Type {
+  return x.match<IR.Type>({
     Named(_, name) {
-      return new rt.DTTyped(typeFromName(name.name));
+      return new IR.TNamed(name.name);
     },
 
     Parens(_, type) {
@@ -299,21 +279,13 @@ export function compileTypeApp(x: TypeApp): rt.DispatchType {
     },
 
     Union(_, l, r) {
-      return new rt.DTUnion(
-        [compileTypeApp(l), compileTypeApp(r)].flatMap((x) => {
-          if (x instanceof rt.DTUnion) {
-            return x.types;
-          } else {
-            return [x];
-          }
-        })
-      );
+      return new IR.TUnion(compileTypeApp(l), compileTypeApp(r));
     },
   });
 }
 
 export function compileParameter(x: Parameter) {
-  return x.match<{ type: rt.DispatchType; parameter: string }>({
+  return x.match<{ type: IR.Type; parameter: string }>({
     Typed(_, name, type) {
       return {
         type: compileTypeApp(type),
@@ -323,7 +295,7 @@ export function compileParameter(x: Parameter) {
 
     Untyped(_, name) {
       return {
-        type: new rt.DTAny(),
+        type: new IR.TAny(),
         parameter: name.name,
       };
     },
@@ -380,6 +352,27 @@ export function compileDeclaration(d: Declaration) {
         parameters,
         types,
         body.map(compileStatement)
+      );
+    },
+
+    Role(_, name) {
+      return new IR.DRole(name.name);
+    },
+
+    Type(_, name, roles) {
+      return new IR.DType(
+        name.name,
+        roles.map((x) => x.name)
+      );
+    },
+
+    Enum(_, name, variants) {
+      return new IR.DEnum(
+        name.name,
+        variants.map((x) => ({
+          name: x.name.name,
+          roles: x.roles.map((z) => z.name),
+        }))
       );
     },
   });

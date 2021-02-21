@@ -2,36 +2,8 @@ import { every, zip } from "../../utils/utils";
 import { SBlock, Statement } from "../ir";
 import { cvalue, Machine, _mark } from "../run";
 import { Environment, World } from "../world";
-import { bfalse, CrochetType, CrochetValue } from "./value";
-
-// -- Dispatch algebra
-export type DispatchType = DTUnion | DTAny | DTTyped;
-
-interface IDispatchType {
-  accepts(value: CrochetValue): boolean;
-}
-
-export class DTAny implements IDispatchType {
-  accepts(value: CrochetValue) {
-    return true;
-  }
-}
-
-export class DTTyped implements IDispatchType {
-  constructor(readonly type: CrochetType) {}
-
-  accepts(value: CrochetValue) {
-    return value instanceof this.type;
-  }
-}
-
-export class DTUnion implements IDispatchType {
-  constructor(readonly types: DispatchType[]) {}
-
-  accepts(value: CrochetValue): boolean {
-    return this.types.some((t) => t.accepts(value));
-  }
-}
+import { bfalse, CrochetValue } from "./value";
+import { CrochetType } from "./types";
 
 // -- Procedures
 export interface IProcedure {
@@ -53,13 +25,13 @@ export class Procedure {
     return null;
   }
 
-  add(types: DispatchType[], procedure: IProcedure) {
+  add(types: CrochetType[], procedure: IProcedure) {
     this.branches.push(new ProcedureBranch(types, procedure));
   }
 }
 
 export class ProcedureBranch {
-  constructor(readonly types: DispatchType[], readonly procedure: IProcedure) {}
+  constructor(readonly types: CrochetType[], readonly procedure: IProcedure) {}
 
   accepts(values: CrochetValue[]) {
     return (
