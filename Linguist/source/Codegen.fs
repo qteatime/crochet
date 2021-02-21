@@ -54,6 +54,7 @@ let rec generateType t =
       let patTypes = genParams (Array.append ps [|"$T"|])
       let variantGetters = Seq.map (genVariantGetter n ps) vs
       let variants = Seq.map (genVariant n ps patTypes) vs
+      let names = getVariantNames vs
       $"""
       type $p_{n}{patTypes} = {{
         {genTypePatterns n patTypes vs}
@@ -69,9 +70,11 @@ let rec generateType t =
         }}
       }}
  
-      const ${n} = {{
+      const ${n} = function() {{
         {String.concat "\n\n" variants}
-      }};
+
+        return {{ {String.concat "," names} }}
+      }}();
       """
 
 and genRecord n ps fs =
@@ -112,7 +115,7 @@ and genThisProjections fs =
 
 and genVariant p ps patTypes (Variant (n, fs)) =
   $"""
-  {n}: class {n}{genParams ps} extends {p}{genParams ps} {{
+  class {n}{genParams ps} extends {p}{genParams ps} {{
     readonly tag = "{n}";
 
     constructor({genFieldInit fs}) {{
@@ -127,8 +130,11 @@ and genVariant p ps patTypes (Variant (n, fs)) =
     static has_instance(x: any) {{
       return x instanceof {n};
     }}
-  }},
+  }}
   """
+
+and getVariantNames vs =
+  Seq.map (fun (Variant (n, _)) -> n) vs
 
 and genVariantGetter p ps (Variant (n, fs)) =
   $"""
