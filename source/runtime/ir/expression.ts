@@ -3,10 +3,15 @@ import { Predicate } from "../logic";
 import {
   bfalse,
   btrue,
+  CrochetInstance,
   CrochetInteger,
   CrochetRecord,
   CrochetStream,
   CrochetText,
+  CrochetVariant,
+  TCrochetEnum,
+  TCrochetType,
+  TCrochetUnion,
 } from "../primitives";
 import { ProcedureBranch } from "../primitives/procedure";
 import {
@@ -28,7 +33,10 @@ export type Expression =
   | EText
   | EInteger
   | ESearch
-  | EInvoke;
+  | EInvoke
+  | ENew
+  | ENewVariant
+  | EGlobal;
 
 interface IExpression {
   evaluate(world: World, env: Environment): Machine;
@@ -104,5 +112,31 @@ export class EInvoke implements IExpression {
       yield _push(branch.procedure.invoke(world, env, args))
     );
     return result;
+  }
+}
+
+export class ENew implements IExpression {
+  constructor(readonly name: string) {}
+
+  async *evaluate(world: World, env: Environment) {
+    const type = cast(world.get_type(this.name), TCrochetType);
+    return new CrochetInstance(type);
+  }
+}
+
+export class ENewVariant implements IExpression {
+  constructor(readonly name: string, readonly variant: string) {}
+
+  async *evaluate(world: World, env: Environment) {
+    const type = cast(world.get_type(this.name), TCrochetEnum);
+    return type.get_variant(this.variant);
+  }
+}
+
+export class EGlobal implements IExpression {
+  constructor(readonly name: string) {}
+
+  async *evaluate(world: World, env: Environment) {
+    return world.get_global(this.name);
   }
 }

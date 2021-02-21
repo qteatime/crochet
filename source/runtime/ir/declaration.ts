@@ -1,8 +1,9 @@
 import { PredicateProcedure, TreeType } from "../logic";
 import { CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
-import { Machine } from "../run";
+import { cvalue, Machine, run } from "../run";
 import { Environment, World } from "../world";
+import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 
@@ -14,10 +15,11 @@ export type Declaration =
   | DCrochetCommand
   | DRole
   | DType
-  | DEnum;
+  | DEnum
+  | DDefine;
 
 interface IDeclaration {
-  apply(world: World): void;
+  apply(world: World): Promise<void> | void;
 }
 
 export class DRelation implements IDeclaration {
@@ -102,7 +104,7 @@ export class DType implements IDeclaration {
 
   apply(world: World) {
     const roles = this.roles.map((x) => world.get_role(x));
-    const type = new TCrochetType(this.name, roles);
+    const type = new TCrochetType(this.name, new Set(roles));
     world.add_type(this.name, type);
   }
 }
@@ -120,5 +122,14 @@ export class DEnum implements IDeclaration {
         x.roles.map((z) => world.get_role(z))
       );
     }
+  }
+}
+
+export class DDefine implements IDeclaration {
+  constructor(readonly name: string, readonly value: Expression) {}
+  async apply(world: World) {
+    const env = new Environment(null, world);
+    const value = cvalue(await run(this.value.evaluate(world, env)));
+    world.add_global(this.name, value);
   }
 }

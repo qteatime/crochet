@@ -1,4 +1,8 @@
-import { CrochetValue } from "../primitives";
+import { TypeApp } from "../../generated/crochet-grammar";
+import { cast } from "../../utils/utils";
+import { Type } from "../ir";
+import { CrochetType, CrochetValue, TCrochetEnum } from "../primitives";
+import { World } from "../world";
 
 export class UnificationEnvironment {
   private bindings = new Map<string, CrochetValue>();
@@ -32,20 +36,98 @@ export class UnificationEnvironment {
   }
 }
 
-export type Pattern = ValuePattern | VariablePattern | WildcardPattern;
+export type Pattern =
+  | VariantPattern
+  | TypePattern
+  | RolePattern
+  | ValuePattern
+  | GlobalPattern
+  | VariablePattern
+  | WildcardPattern;
 
 interface IPattern {
   unify(
+    world: World,
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null;
 }
 
+export class TypePattern implements IPattern {
+  constructor(readonly pattern: Pattern, readonly type: Type) {}
+  unify(
+    world: World,
+    env: UnificationEnvironment,
+    value: CrochetValue
+  ): UnificationEnvironment | null {
+    const type = this.type.realise(world);
+    if (type.accepts(value)) {
+      return this.pattern.unify(world, env, value);
+    } else {
+      return null;
+    }
+  }
+}
+
+export class RolePattern implements IPattern {
+  constructor(readonly pattern: Pattern, readonly role: string) {}
+  unify(
+    world: World,
+    env: UnificationEnvironment,
+    value: CrochetValue
+  ): UnificationEnvironment | null {
+    const role = world.get_role(this.role);
+    if (value.has_role(role)) {
+      return this.pattern.unify(world, env, value);
+    } else {
+      return null;
+    }
+  }
+}
+
 export class ValuePattern implements IPattern {
   constructor(readonly value: CrochetValue) {}
 
-  unify(env: UnificationEnvironment, value: CrochetValue) {
+  unify(
+    world: World,
+    env: UnificationEnvironment,
+    value: CrochetValue
+  ): UnificationEnvironment | null {
     if (value.equals(this.value)) {
+      return env;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class VariantPattern implements IPattern {
+  constructor(readonly type: string, readonly variant: string) {}
+  unify(
+    world: World,
+    env: UnificationEnvironment,
+    other: CrochetValue
+  ): UnificationEnvironment | null {
+    const type = cast(world.get_type(this.type), TCrochetEnum);
+    const variant = type.get_variant(this.variant);
+    if (variant.equals(other)) {
+      return env;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class GlobalPattern implements IPattern {
+  constructor(readonly name: string) {}
+
+  unify(
+    world: World,
+    env: UnificationEnvironment,
+    other: CrochetValue
+  ): UnificationEnvironment | null {
+    const value = world.get_global(this.name);
+    if (other.equals(value)) {
       return env;
     } else {
       return null;
@@ -56,7 +138,11 @@ export class ValuePattern implements IPattern {
 export class VariablePattern implements IPattern {
   constructor(readonly name: string) {}
 
-  unify(env: UnificationEnvironment, value: CrochetValue) {
+  unify(
+    world: World,
+    env: UnificationEnvironment,
+    value: CrochetValue
+  ): UnificationEnvironment | null {
     const bound = env.lookup(this.name);
     if (bound == null) {
       const newEnv = env.clone();
@@ -71,7 +157,11 @@ export class VariablePattern implements IPattern {
 }
 
 export class WildcardPattern implements IPattern {
-  unify(env: UnificationEnvironment, _value: CrochetValue) {
+  unify(
+    world: World,
+    env: UnificationEnvironment,
+    _value: CrochetValue
+  ): UnificationEnvironment | null {
     return env;
   }
 }

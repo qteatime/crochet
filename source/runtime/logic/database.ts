@@ -1,3 +1,4 @@
+import { World } from "../world";
 import { MappedRelation, Predicate } from "./predicate";
 import { UnificationEnvironment } from "./unification";
 
@@ -16,7 +17,7 @@ export class Database {
     return this.relations.get(name) ?? null;
   }
 
-  search(predicate: Predicate) {
-    return predicate.search(UnificationEnvironment.empty(), this);
+  search(world: World, predicate: Predicate) {
+    return predicate.search(world, UnificationEnvironment.empty(), this);
   }
 }

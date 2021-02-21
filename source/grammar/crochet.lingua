@@ -6,10 +6,13 @@ type Declaration =
   | Do(pos: Meta, body: Statement[])
   | ForeignCommand(pos: Meta, signature: Signature<Parameter>, foreign_name: Namespace, args: Name[])
   | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[])
+  | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
-  | Type(pos: Meta, name: Name, roles: Name[])
+  | SingletonType(pos: Meta, typ: TypeDef)
+  | Type(pos: Meta, typ: TypeDef)
   | Enum(pos: Meta, name: Name, values: Variant[])
 
+type TypeDef(name: Name, roles: Name[])
 type Variant(pos: Meta, name: Name, roles: Name[])
 
 type Parameter =
@@ -37,7 +40,10 @@ type Statement =
   | Expr(value: Expression)
 
 type Expression =
+  | New(pos: Meta, typ: Name)
+  | NewVariant(pos: Meta, typ: Name, variant: Name)
   | Invoke(pos: Meta, signature: Signature<Expression>)
+  | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
   | Search(pos: Meta, predicate: Predicate)
   | Parens(pos: Meta, value: Expression)
@@ -60,6 +66,10 @@ type PredicateRelation =
   | Has(pos: Meta, signature: Signature<Pattern>)
 
 type Pattern =
+  | HasRole(pos: Meta, typ: Name, name: Pattern)
+  | HasType(pos: Meta, typ: TypeApp, name: Pattern)
+  | Variant(pos: Meta, typ: Name, variant: Name)
+  | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
   | Wildcard(pos: Meta)
   | Lit(lit: Literal)
@@ -100,6 +110,7 @@ grammar Crochet : Program {
     | roleDeclaration
     | typeDeclaration
     | enumDeclaration
+    | defineDeclaration
 
   relationDeclaration =
     | relation_ s:logicSignature<relationPart> s<";">
@@ -114,7 +125,7 @@ grammar Crochet : Program {
       -> Declaration.Predicate(meta, l, c)
 
   predicateClause =
-    | when_ p:predicate ";"     -> PredicateClause(meta, p, PredicateEffect.Trivial())
+    | when_ p:predicate s<";">   -> PredicateClause(meta, p, PredicateEffect.Trivial())
 
   doDeclaration =
     | do_ xs:statementBlock<statement>
@@ -142,7 +153,11 @@ grammar Crochet : Program {
     | s<"("> t:typeApp s<")">   -> TypeApp.Parens(meta, t)
 
   typeDeclaration =
-    | type_ n:atom r:roles s<";">   -> Declaration.Type(meta, n, r)
+    | singleton_ t:basicType        -> Declaration.SingletonType(meta, t)
+    | t:basicType                   -> Declaration.Type(meta, t)
+  
+  basicType =
+    | type_ n:atom r:roles s<";">   -> TypeDef(n, r)
 
   roleDeclaration =
     | role_ n:atom s<";">           -> Declaration.Role(meta, n)
@@ -155,9 +170,12 @@ grammar Crochet : Program {
     | n:atom r:roles  -> Variant(meta, n, r)
 
   roles =
-    | "::" r:nonemptyListOf<atom, s<",">>   -> r
-    |                                       -> []
+    | s<"::"> r:nonemptyListOf<atom, s<",">>   -> r
+    |                                          -> []
 
+  defineDeclaration =
+    | define_ n:atom s<"="> e:atomicExpression s<";">
+      -> Declaration.Define(meta, n, e)
 
   // -- Logic
   predicate =
@@ -172,9 +190,19 @@ grammar Crochet : Program {
     | s:logicSignature<pattern>       -> PredicateRelation.Has(meta, s)
 
   pattern =
+    | s<"("> c:patternComplex s<")">  -> c
+    | n:atom s<"."> v:atom    -> Pattern.Variant(meta, n, v)
+    | n:atom                  -> Pattern.Global(meta, n)
+    | l:literal               -> Pattern.Lit(l)
+    | patternName
+
+  patternComplex =
+    | n:patternName is_ t:typeApp   -> Pattern.HasType(meta, t, n)
+    | n:patternName s<"::"> t:atom  -> Pattern.HasRole(meta, t, n)
+
+  patternName =
     | s<"_">        -> Pattern.Wildcard(meta)
     | n:name        -> Pattern.Variable(meta, n)
-    | l:literal     -> Pattern.Lit(l)
 
   constraint =
     | l:constraint and_ r:constraint  -> Constraint.And(meta, l, r)
@@ -192,7 +220,7 @@ grammar Crochet : Program {
   constraint400 =
     | n:name                          -> Constraint.Variable(meta, n)
     | l:literal                       -> Constraint.Lit(l)
-    | "(" c:constraint ")"            -> Constraint.Parens(meta, c)
+    | s<"("> c:constraint s<")">      -> Constraint.Parens(meta, c)
 
 
   // -- Statement
@@ -240,10 +268,22 @@ grammar Crochet : Program {
     | primaryExpression
 
   primaryExpression =
-    | l:literal             -> Expression.Lit(l)
-    | n:name                -> Expression.Variable(meta, n)
-    | "(" e:expression ")"  -> Expression.Parens(meta, e)
+    | newExpression
+    | literalExpression
+    | n:atom                      -> Expression.Global(meta, n)
+    | n:name                      -> Expression.Variable(meta, n)
+    | s<"("> e:expression s<")">  -> Expression.Parens(meta, e)
 
+  newExpression =
+    | new_ n:atom            -> Expression.New(meta, n)
+    | n:atom s<"."> v:atom   -> Expression.NewVariant(meta, n, v)
+
+  literalExpression =
+    | l:literal             -> Expression.Lit(l)
+
+  atomicExpression =
+    | newExpression
+    | literalExpression
 
   // -- Literals
   literal =
@@ -342,12 +382,14 @@ grammar Crochet : Program {
   type_ = kw<"type">
   role_ = kw<"role">
   enum_ = kw<"enum">
+  define_ = kw<"define">
+  singleton_ = kw<"singleton">
 
   let_ = kw<"let">
   return_ = kw<"return">
   fact_ = kw<"fact">
   forget_ = kw<"forget">
-
+  new_ = kw<"new">
   search_ = kw<"search">
   if_ = kw<"if">
 
@@ -359,8 +401,8 @@ grammar Crochet : Program {
   is_ = kw<"is">
 
   reserved =
-    | relation_ | predicate_ | when_ | do_ | command_ | type_ | role_ | enum_
-    | let_ | return_ | fact_ | forget_
-    | search_ | if_
+    | relation_ | predicate_ | when_ | do_ | command_
+    | type_ | role_ | enum_ | define_ | singleton_
+    | let_ | return_ | fact_ | forget_ | new_ | search_ | if_
     | true_ | false_ | not_ | and_ | or_ | is_
 }
