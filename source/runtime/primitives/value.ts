@@ -10,6 +10,7 @@ import {
   tStream,
   tText,
   tTrue,
+  tUnknown,
 } from "./types";
 
 export abstract class CrochetValue {
@@ -204,9 +205,11 @@ export class CrochetInstance extends CrochetValue {
   equals(other: CrochetValue): boolean {
     return <any>other === this;
   }
+
   as_bool(): boolean {
     return true;
   }
+
   to_js() {
     return this;
   }
@@ -232,11 +235,46 @@ export class CrochetVariant extends CrochetValue {
       other.tag === this.tag
     );
   }
+
   as_bool(): boolean {
     return true;
   }
+
   to_js() {
     return this;
+  }
+}
+
+export class CrochetUnknown extends CrochetValue {
+  get type() {
+    return tUnknown;
+  }
+
+  constructor(readonly value: unknown) {
+    super();
+    if (value instanceof CrochetUnknown) {
+      throw new Error(`internal: double-wrapping an unknown value`);
+    }
+  }
+
+  has_role(role: CrochetRole): boolean {
+    return false;
+  }
+
+  equals(other: CrochetValue): boolean {
+    return other === this;
+  }
+
+  as_bool() {
+    return true;
+  }
+
+  to_js() {
+    if (this.value instanceof CrochetValue) {
+      return this.value.to_js();
+    } else {
+      return this.value;
+    }
   }
 }
 

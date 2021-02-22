@@ -1,12 +1,19 @@
 import { unreachable } from "../utils/utils";
-import { bfalse, CrochetStream, CrochetValue } from "./primitives";
+import {
+  bfalse,
+  CrochetStream,
+  CrochetType,
+  CrochetValue,
+  type_name,
+} from "./primitives";
 import { Procedure } from "./primitives/procedure";
 
 // Error types
 export type MachineError =
   | ErrUndefinedVariable
   | ErrVariableAlreadyBound
-  | ErrNoBranchMatched;
+  | ErrNoBranchMatched
+  | ErrNoConversionAvailable;
 
 export class ErrUndefinedVariable {
   constructor(readonly name: string) {}
@@ -30,9 +37,17 @@ export class ErrNoBranchMatched {
   format() {
     return `no-branch-matched: No branches of ${
       this.procedure.name
-    } match the signature (${this.args
-      .map((x) => x.type.type_name)
-      .join(", ")})`;
+    } match the signature (${this.args.map(type_name).join(", ")})`;
+  }
+}
+
+export class ErrNoConversionAvailable {
+  constructor(readonly type: CrochetType, readonly value: CrochetValue) {}
+
+  format() {
+    return `no-conversion-available: It's not possible to convert the value of type ${type_name(
+      this.value
+    )} to ${type_name(this.type)}`;
   }
 }
 

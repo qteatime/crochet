@@ -281,6 +281,10 @@ export function compileExpression(expr: Expression): IR.Expression {
       );
     },
 
+    Cast(_, type, value) {
+      return new IR.ECast(compileTypeApp(type), compileExpression(value));
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },

@@ -8,17 +8,21 @@ import {
   CrochetRecord,
   CrochetStream,
   CrochetText,
+  CrochetType,
+  CrochetUnknown,
   CrochetValue,
   CrochetVariant,
   TCrochetEnum,
   TCrochetType,
   TCrochetUnion,
+  tUnknown,
 } from "../primitives";
 import { ProcedureBranch } from "../primitives/procedure";
 import {
   avalue,
   cvalue,
   ErrNoBranchMatched,
+  ErrNoConversionAvailable,
   ErrUndefinedVariable,
   Machine,
   run_all,
@@ -26,6 +30,7 @@ import {
   _throw,
 } from "../run";
 import { Environment, World } from "../world";
+import { Type } from "./type";
 
 export type Expression =
   | EFalse
@@ -171,5 +176,20 @@ export class ERecord implements IExpression {
       map.set(pair.key, value);
     }
     return new CrochetRecord(map);
+  }
+}
+
+export class ECast implements IExpression {
+  constructor(readonly type: Type, readonly value: Expression) {}
+
+  async *evaluate(world: World, env: Environment): Machine {
+    const type = this.type.realise(world);
+    const value0 = cvalue(yield _push(this.value.evaluate(world, env)));
+    const value = type.coerce(value0);
+    if (value != null) {
+      return value;
+    } else {
+      return yield _throw(new ErrNoConversionAvailable(type, value0));
+    }
   }
 }

@@ -1,9 +1,12 @@
 import {
+  bfalse,
+  btrue,
   CrochetInstance,
   CrochetInteger,
   CrochetRecord,
   CrochetStream,
   CrochetText,
+  CrochetUnknown,
   CrochetValue,
   CrochetVariant,
   False,
@@ -13,60 +16,138 @@ import {
 export abstract class CrochetType {
   abstract type_name: string;
   abstract accepts(x: any): boolean;
+  abstract coerce(x: CrochetValue): CrochetValue | null;
 }
 
 export class CrochetRole {
   constructor(readonly name: string) {}
 }
 
-export const tAny = new (class TCrochetAny extends CrochetType {
+export class TCrochetAny extends CrochetType {
   readonly type_name = "any";
+
   accepts(x: any) {
     return x instanceof CrochetValue;
   }
-})();
 
-export const tInteger = new (class TCrochetInteger extends CrochetType {
+  coerce(x: CrochetValue): CrochetValue | null {
+    return x;
+  }
+}
+
+export class TCrochetInteger extends CrochetType {
   readonly type_name = "integer";
+
   accepts(x: any) {
     return x instanceof CrochetInteger;
   }
-})();
 
-export const tText = new (class TCrochetText extends CrochetType {
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (x instanceof CrochetInteger) {
+      return x;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class TCrochetText extends CrochetType {
   readonly type_name = "text";
+
   accepts(x: any) {
     return x instanceof CrochetText;
   }
-})();
 
-export const tTrue = new (class TCrochetTrue extends CrochetType {
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (x instanceof CrochetText) {
+      return x;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class TCrochetTrue extends CrochetType {
   readonly type_name = "true";
+
   accepts(x: any) {
     return x instanceof True;
   }
-})();
 
-export const tFalse = new (class TCrochetFalse extends CrochetType {
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (x.as_bool()) {
+      return btrue;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class TCrochetFalse extends CrochetType {
   readonly type_name = "false";
+
   accepts(x: any) {
     return x instanceof False;
   }
-})();
 
-export const tStream = new (class TCrochetStream extends CrochetType {
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (!x.as_bool()) {
+      return bfalse;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class TCrochetStream extends CrochetType {
   readonly type_name = "stream";
+
   accepts(x: any) {
     return x instanceof CrochetStream;
   }
-})();
 
-export const tRecord = new (class TCrochetRecord extends CrochetType {
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (x instanceof CrochetStream) {
+      return x;
+    } else if (x instanceof False) {
+      return null;
+    } else {
+      return new CrochetStream([x]);
+    }
+  }
+}
+
+export class TCrochetRecord extends CrochetType {
   readonly type_name = "record";
+
   accepts(x: any) {
     return x instanceof CrochetRecord;
   }
-})();
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (x instanceof CrochetRecord) {
+      return x;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class TCrochetUnknown extends CrochetType {
+  readonly type_name = "unknown";
+
+  accepts(x: any) {
+    return x instanceof CrochetUnknown;
+  }
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (x instanceof CrochetUnknown) {
+      return x;
+    } else {
+      return new CrochetUnknown(x);
+    }
+  }
+}
 
 export class TCrochetUnion extends CrochetType {
   constructor(readonly left: CrochetType, readonly right: CrochetType) {
@@ -79,6 +160,15 @@ export class TCrochetUnion extends CrochetType {
 
   accepts(x: any) {
     return this.left.accepts(x) || this.right.accepts(x);
+  }
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    const lvalue = this.left.coerce(x);
+    if (lvalue != null) {
+      return lvalue;
+    } else {
+      return this.right.coerce(x);
+    }
   }
 }
 
@@ -93,6 +183,14 @@ export class TCrochetType extends CrochetType {
 
   accepts(x: any) {
     return x instanceof CrochetInstance && x.type === this;
+  }
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (this.accepts(x)) {
+      return x;
+    } else {
+      return null;
+    }
   }
 }
 
@@ -126,6 +224,14 @@ export class TCrochetEnum extends CrochetType {
   accepts(x: any) {
     return x instanceof CrochetVariant && x.type === this;
   }
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (this.accepts(x)) {
+      return x;
+    } else {
+      return null;
+    }
+  }
 }
 
 export function type_name(x: any) {
@@ -137,3 +243,12 @@ export function type_name(x: any) {
     return `<host value: ${x?.name ?? typeof x}>`;
   }
 }
+
+export const tAny = new TCrochetAny();
+export const tInteger = new TCrochetInteger();
+export const tText = new TCrochetText();
+export const tTrue = new TCrochetTrue();
+export const tFalse = new TCrochetFalse();
+export const tStream = new TCrochetStream();
+export const tRecord = new TCrochetRecord();
+export const tUnknown = new TCrochetUnknown();
