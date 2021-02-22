@@ -302,27 +302,27 @@ grammar Crochet : Program {
   primaryExpression =
     | newExpression
     | literalExpression
-    | recordExpression
-    | listExpression
-    | self_                       -> Expression.Self(meta)
-    | n:atom                      -> Expression.Global(meta, n)
-    | n:name                      -> Expression.Variable(meta, n)
-    | s<"("> e:expression s<")">  -> Expression.Parens(meta, e)
+    | recordExpression<expression>
+    | listExpression<expression>
+    | self_                         -> Expression.Self(meta)
+    | n:atom                        -> Expression.Global(meta, n)
+    | n:name                        -> Expression.Variable(meta, n)
+    | s<"("> e:expression s<")">    -> Expression.Parens(meta, e)
 
   newExpression =
     | new_ n:atom            -> Expression.New(meta, n)
     | n:atom s<"."> v:atom   -> Expression.NewVariant(meta, n, v)
 
-  listExpression =
-    | s<"["> xs:listOf<expression, s<",">> s<",">? s<"]">
+  listExpression<e> =
+    | s<"["> xs:listOf<e, s<",">> s<",">? s<"]">
       -> Expression.List(meta, xs)
 
-  recordExpression =
-    | s<"["> s<"->"> s<"]">                                         -> Expression.Record(meta, [])
-    | s<"["> xs:nonemptyListOf<recordPair, s<",">> s<",">? s<"]">   -> Expression.Record(meta, xs)
+  recordExpression<e> =
+    | s<"["> s<"->"> s<"]">                                             -> Expression.Record(meta, [])
+    | s<"["> xs:nonemptyListOf<recordPair<e>, s<",">> s<",">? s<"]">    -> Expression.Record(meta, xs)
 
-  recordPair =
-    | n:name s<"->"> v:expression -> Pair(meta, n, v)
+  recordPair<e> =
+    | n:name s<"->"> v:e -> Pair(meta, n, v)
 
   literalExpression =
     | l:literal             -> Expression.Lit(l)
@@ -330,6 +330,8 @@ grammar Crochet : Program {
   atomicExpression =
     | newExpression
     | literalExpression
+    | recordExpression<atomicExpression>
+    | listExpression<atomicExpression>
 
   // -- Literals
   literal =

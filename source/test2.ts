@@ -12,17 +12,23 @@ const programStr = `
 role actor;
 role room;
 
+command (X is integer) hello { "Numbers can't say anything, miss..."; }
+
 singleton type lielle :: actor {
   at: foyer;
   likes: kristine;
 
   command hello {
-    "Hello, world from Lielle";
+    "Lielle: hello!";
   }
 }
 
 singleton type kristine :: actor {
   at: foyer;
+
+  command hello {
+    "Kristine: hi.";
+  }
 }
 
 singleton type foyer :: room;
@@ -34,19 +40,11 @@ predicate Who kisses: Whom at: Where {
   when Who at: Where, Whom at: Where, Who likes: Whom;
 }
 
-command What id {
-  What;
-}
-
-command (X is integer) hello {
-  "hello integer" id;
-}
-
 do {
-  let X = search lielle kisses: (Who :: actor) at: (Where :: room);
-  [ Hello -> lielle hello,
-    Integer -> [1 hello, 2 id],
-    Search -> X,
+  let Kisses = search lielle kisses: (Who :: actor) at: (Where :: room);
+  [
+    Hello -> [lielle hello, kristine hello, 1 hello],
+    Search -> Kisses,
   ];
 }
 `;
