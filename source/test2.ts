@@ -55,9 +55,9 @@ void (async function main() {
     console.log(show(ast));
 
     const ir = compileProgram(ast);
-    const world2 = new World(new ForeignInterface());
-    world2.add_type("integer", rt.tInteger);
-    world2.add_type("text", rt.tText);
+    const world2 = new World();
+    world2.types.add("integer", rt.tInteger);
+    world2.types.add("text", rt.tText);
     await world2.load_declarations(ir);
     const result = await world2.run();
     console.log(">>>", show(world2));

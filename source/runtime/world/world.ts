@@ -15,131 +15,88 @@ import {
   Procedure,
 } from "../primitives";
 import { Machine, run } from "../run";
+import { Context } from "./events";
 import { ForeignInterface } from "./foreign";
+import { Scene } from "./scene";
 
-export class World {
-  private database = new Database();
-  private procedures = new Map<string, Procedure>();
-  private types = new Map<string, CrochetType>();
-  private roles = new Map<string, CrochetRole>();
-  private globals = new Map<string, CrochetValue>();
-  private queue: Machine[] = [];
+export class Bag<K, V> {
+  private map = new Map<K, V>();
 
-  constructor(readonly ffi: ForeignInterface) {}
+  constructor(readonly name: string) {}
 
-  // -- Logic and relations
-  add_relation(name: string, type: TreeType) {
-    this.database.add(name, new ConcreteRelation(name, type.realise()));
+  add(name: K, value: V) {
+    if (this.map.has(name)) {
+      throw new Error(`internal: duplicated ${this.name}: ${name}`);
+    }
+    this.map.set(name, value);
   }
 
-  add_predicate(name: string, predicate: PredicateProcedure) {
-    this.database.add(name, predicate);
+  has(name: K) {
+    return this.map.has(name);
   }
 
-  get_relation(name: string) {
-    const relation = this.database.lookup(name);
-    if (relation instanceof ConcreteRelation) {
-      return relation.tree;
+  try_lookup(name: K) {
+    return this.map.get(name) ?? null;
+  }
+
+  lookup(name: K) {
+    const value = this.map.get(name);
+    if (value != null) {
+      return value;
     } else {
-      throw new Error(`internal: undefined relation ${name}`);
+      throw new Error(`internal: undefined ${this.name}: ${name}`);
     }
   }
+}
+
+export class ProcedureBag {
+  private map = new Map<string, Procedure>();
+
+  add_foreign(name: string, types: CrochetType[], code: NativeProcedure) {
+    const procedure = this.map.get(name) ?? new Procedure(name, types.length);
+    procedure.add(types, code);
+    this.map.set(name, procedure);
+  }
+
+  add_crochet(name: string, types: CrochetType[], code: CrochetProcedure) {
+    const procedure = this.map.get(name) ?? new Procedure(name, types.length);
+    procedure.add(types, code);
+    this.map.set(name, procedure);
+  }
+
+  has(name: string) {
+    return this.map.has(name);
+  }
+
+  try_lookup(name: string) {
+    return this.map.get(name) ?? null;
+  }
+
+  lookup(name: string) {
+    const value = this.map.get(name);
+    if (value != null) {
+      return value;
+    } else {
+      throw new Error(`internal: undefined procedure: ${name}`);
+    }
+  }
+}
+
+export class World {
+  private queue: Machine[] = [];
+  readonly database = new Database();
+  readonly procedures = new ProcedureBag();
+  readonly types = new Bag<string, CrochetType>("type");
+  readonly roles = new Bag<string, CrochetRole>("role");
+  readonly globals = new Bag<string, CrochetValue>("global");
+  readonly scenes = new Bag<string, Scene>("scene");
+  readonly global_context = new Context();
+  readonly ffi = new ForeignInterface();
 
   search(predicate: Predicate) {
     return this.database.search(this, predicate);
   }
 
-  // -- Types
-  get_global(name: string) {
-    const value = this.globals.get(name);
-    if (value == null) {
-      throw new Error(`internal: undefined global ${name}`);
-    }
-
-    return value;
-  }
-
-  add_global(name: string, value: CrochetValue) {
-    if (this.globals.has(name)) {
-      throw new Error(`internal: duplicated global ${name}`);
-    }
-    this.globals.set(name, value);
-  }
-
-  get_type(name: string) {
-    const type = this.types.get(name);
-    if (type == null) {
-      throw new Error(`internal: undefined type ${name}`);
-    }
-
-    return type;
-  }
-
-  add_type(name: string, type: CrochetType) {
-    if (this.types.has(name)) {
-      throw new Error(`internal: duplicated type ${name}`);
-    }
-    this.types.set(name, type);
-  }
-
-  get_role(name: string) {
-    const role = this.roles.get(name);
-    if (role == null) {
-      throw new Error(`internal: undefined role ${name}`);
-    }
-
-    return role;
-  }
-
-  add_role(name: string, role: CrochetRole) {
-    if (this.roles.has(name)) {
-      throw new Error(`internal: duplicated role ${name}`);
-    }
-    this.roles.set(name, role);
-  }
-
-  // -- Commands
-  add_foreign_procedure(
-    name: string,
-    types: CrochetType[],
-    native: NativeProcedure
-  ) {
-    const procedure =
-      this.procedures.get(name) ?? new Procedure(name, types.length);
-    procedure.add(types, native);
-    this.procedures.set(name, procedure);
-  }
-
-  add_crochet_procedure(
-    name: string,
-    types: CrochetType[],
-    code: CrochetProcedure
-  ) {
-    const procedure =
-      this.procedures.get(name) ?? new Procedure(name, types.length);
-    procedure.add(types, code);
-    this.procedures.set(name, procedure);
-  }
-
-  get_procedure(name: string) {
-    const procedure = this.procedures.get(name);
-    if (procedure == null) {
-      throw new Error(`internal: undefined procedure ${name}`);
-    } else {
-      return procedure;
-    }
-  }
-
-  get_native_procedure(name: string) {
-    const procedure = this.ffi.lookup(name);
-    if (procedure == null) {
-      throw new Error(`internal: undefined native procedure ${name}`);
-    } else {
-      return procedure;
-    }
-  }
-
-  // -- Execution
   schedule(machine: Machine) {
     this.queue.push(machine);
   }

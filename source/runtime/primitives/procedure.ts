@@ -63,7 +63,7 @@ export class NativeProcedure implements IProcedure {
     for (const idx of this.parameters) {
       args.push(values[idx]);
     }
-    const procedure = world.get_native_procedure(this.foreign_name);
+    const procedure = world.ffi.lookup(this.foreign_name);
     const result = cvalue(
       yield _mark(this.name, procedure(world, env, ...args))
     );

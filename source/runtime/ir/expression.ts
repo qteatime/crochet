@@ -101,7 +101,7 @@ export class EInvoke implements IExpression {
       yield _push(run_all(this.args.map((x) => x.evaluate(world, env))))
     );
 
-    const procedure = world.get_procedure(this.name);
+    const procedure = world.procedures.lookup(this.name);
     const branch0 = procedure.select(args);
     let branch: ProcedureBranch;
     if (branch0 == null) {
@@ -123,7 +123,7 @@ export class ENew implements IExpression {
   constructor(readonly name: string) {}
 
   async *evaluate(world: World, env: Environment) {
-    const type = cast(world.get_type(this.name), TCrochetType);
+    const type = cast(world.types.lookup(this.name), TCrochetType);
     return new CrochetInstance(type);
   }
 }
@@ -132,7 +132,7 @@ export class ENewVariant implements IExpression {
   constructor(readonly name: string, readonly variant: string) {}
 
   async *evaluate(world: World, env: Environment) {
-    const type = cast(world.get_type(this.name), TCrochetEnum);
+    const type = cast(world.types.lookup(this.name), TCrochetEnum);
     return type.get_variant(this.variant);
   }
 }
@@ -141,7 +141,7 @@ export class EGlobal implements IExpression {
   constructor(readonly name: string) {}
 
   async *evaluate(world: World, env: Environment) {
-    return world.get_global(this.name);
+    return world.globals.lookup(this.name);
   }
 }
 

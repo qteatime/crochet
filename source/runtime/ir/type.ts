@@ -17,7 +17,7 @@ export class TNamed implements IType {
   constructor(readonly name: string) {}
 
   realise(world: World): CrochetType {
-    return world.get_type(this.name);
+    return world.types.lookup(this.name);
   }
 }
 
