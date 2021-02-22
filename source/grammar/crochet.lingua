@@ -55,6 +55,7 @@ type Expression =
   | Self(pos: Meta)
   | List(pos: Meta, values: Expression[])
   | Record(pos: Meta, pairs: Pair<Name, Expression>[])
+  | Cast(pos: Meta, typ: TypeApp, value: Expression)
   | Search(pos: Meta, predicate: Predicate)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
@@ -290,8 +291,13 @@ grammar Crochet : Program {
     | invokeMixfix
 
   invokeMixfix =
-    | s:invokePostfix ps:signaturePair<invokePostfix>
+    | s:castExpression ps:signaturePair<invokePostfix>
       -> Expression.Invoke(meta, Signature.Keyword(meta, s, ps))
+    | castExpression
+
+  castExpression =
+    | s:invokePostfix as_ t:typeAppPrimary
+      -> Expression.Cast(meta, t, s)
     | invokePostfix
 
   invokePostfix =
@@ -458,10 +464,11 @@ grammar Crochet : Program {
   or_ = kw<"or">
   is_ = kw<"is">
   self_ = kw<"self">
+  as_ = kw<"as">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_
     | type_ | role_ | enum_ | define_ | singleton_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_
-    | true_ | false_ | not_ | and_ | or_ | is_ | self_
+    | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
 }

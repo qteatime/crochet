@@ -43,7 +43,11 @@ predicate Who kisses: Whom at: Where {
 do {
   let Kisses = search lielle kisses: (Who :: actor) at: (Where :: room);
   [
-    Hello -> [lielle hello, kristine hello, 1 hello],
+    Hello -> [
+      (lielle hello as stream) as stream,
+      kristine hello as unknown,
+      1 hello as any
+    ],
     Search -> Kisses,
   ];
 }
@@ -58,6 +62,9 @@ void (async function main() {
     const world2 = new World();
     world2.types.add("integer", rt.tInteger);
     world2.types.add("text", rt.tText);
+    world2.types.add("stream", rt.tStream);
+    world2.types.add("unknown", rt.tUnknown);
+    world2.types.add("any", rt.tAny);
     await world2.load_declarations(ir);
     const result = await world2.run();
     console.log(">>>", show(world2));
