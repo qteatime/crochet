@@ -7,8 +7,15 @@ export class Environment {
   constructor(
     readonly parent: Environment | null,
     readonly world: World,
-    readonly receiver: CrochetValue
+    private _receiver: CrochetValue | null
   ) {}
+
+  get receiver() {
+    if (this._receiver == null) {
+      throw new Error(`internal: requesting receiver outside of command`);
+    }
+    return this._receiver;
+  }
 
   has(name: string): boolean {
     return this.bindings.has(name);
@@ -35,5 +42,11 @@ export class Environment {
     }
 
     this.bindings.set(name, value);
+  }
+
+  define_all(bindings: Map<string, CrochetValue>) {
+    for (const [k, v] of bindings.entries()) {
+      this.define(k, v);
+    }
   }
 }

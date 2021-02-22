@@ -1,3 +1,5 @@
+import { cast } from "../../utils/utils";
+import { ConcreteRelation } from "../logic";
 import { bfalse, CrochetStream, CrochetValue } from "../primitives";
 import {
   avalue,
@@ -21,11 +23,11 @@ interface IStatement {
 export class SFact implements IStatement {
   constructor(readonly name: string, readonly exprs: Expression[]) {}
   async *evaluate(world: World, env: Environment): Machine {
-    const relation = world.get_relation(this.name);
+    const relation = cast(world.database.lookup(this.name), ConcreteRelation);
     const values = avalue(
       yield _push(run_all(this.exprs.map((x) => x.evaluate(world, env))))
     );
-    relation.insert(values);
+    relation.tree.insert(values);
     return bfalse;
   }
 }
@@ -33,11 +35,11 @@ export class SFact implements IStatement {
 export class SForget implements IStatement {
   constructor(readonly name: string, readonly exprs: Expression[]) {}
   async *evaluate(world: World, env: Environment): Machine {
-    const relation = world.get_relation(this.name);
+    const relation = cast(world.database.lookup(this.name), ConcreteRelation);
     const values = avalue(
       yield _push(run_all(this.exprs.map((x) => x.evaluate(world, env))))
     );
-    relation.remove(values);
+    relation.tree.remove(values);
     return bfalse;
   }
 }

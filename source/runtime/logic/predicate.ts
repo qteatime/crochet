@@ -31,9 +31,6 @@ export class Relation {
 
   search(world: World, env: UnificationEnvironment, db: Database) {
     const relation = db.lookup(this.name);
-    if (relation == null) {
-      throw new Error(`Undefined relation ${this.name}`);
-    }
     return relation.search(world, env, this.patterns, db);
   }
 }

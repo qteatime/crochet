@@ -76,7 +76,7 @@ export class RolePattern implements IPattern {
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
-    const role = world.get_role(this.role);
+    const role = world.roles.lookup(this.role);
     if (value.has_role(role)) {
       return this.pattern.unify(world, env, value);
     } else {
@@ -108,7 +108,7 @@ export class VariantPattern implements IPattern {
     env: UnificationEnvironment,
     other: CrochetValue
   ): UnificationEnvironment | null {
-    const type = cast(world.get_type(this.type), TCrochetEnum);
+    const type = cast(world.types.lookup(this.type), TCrochetEnum);
     const variant = type.get_variant(this.variant);
     if (variant.equals(other)) {
       return env;
@@ -126,7 +126,7 @@ export class GlobalPattern implements IPattern {
     env: UnificationEnvironment,
     other: CrochetValue
   ): UnificationEnvironment | null {
-    const value = world.get_global(this.name);
+    const value = world.globals.lookup(this.name);
     if (other.equals(value)) {
       return env;
     } else {

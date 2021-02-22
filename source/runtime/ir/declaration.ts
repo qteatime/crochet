@@ -1,4 +1,4 @@
-import { PredicateProcedure, TreeType } from "../logic";
+import { ConcreteRelation, PredicateProcedure, TreeType } from "../logic";
 import { bfalse, CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
 import { cvalue, Machine, run } from "../run";
@@ -26,7 +26,8 @@ export class DRelation implements IDeclaration {
   constructor(readonly name: string, readonly type: TreeType) {}
 
   apply(world: World) {
-    world.add_relation(this.name, this.type);
+    const relation = new ConcreteRelation(this.name, this.type.realise());
+    world.database.add(this.name, relation);
   }
 }
 
@@ -34,7 +35,7 @@ export class DPredicate implements IDeclaration {
   constructor(readonly name: string, readonly procedure: PredicateProcedure) {}
 
   apply(world: World) {
-    world.add_predicate(this.name, this.procedure);
+    world.database.add(this.name, this.procedure);
   }
 }
 
@@ -42,7 +43,7 @@ export class DDo implements IDeclaration {
   constructor(readonly body: Statement[]) {}
 
   apply(world: World) {
-    const env = new Environment(null, world, bfalse);
+    const env = new Environment(null, world, null);
     const block = new SBlock(this.body);
     world.schedule(block.evaluate(world, env));
   }
@@ -57,7 +58,7 @@ export class DForeignCommand implements IDeclaration {
   ) {}
 
   apply(world: World) {
-    world.add_foreign_procedure(
+    world.procedures.add_foreign(
       this.name,
       this.types.map((x) => x.realise(world)),
       new NativeProcedure(this.name, this.args, this.foreign_name)
@@ -74,7 +75,7 @@ export class DCrochetCommand implements IDeclaration {
   ) {}
 
   apply(world: World) {
-    const env = new Environment(null, world, bfalse);
+    const env = new Environment(null, world, null);
     const code = new CrochetProcedure(
       env,
       world,
@@ -82,7 +83,7 @@ export class DCrochetCommand implements IDeclaration {
       this.parameters,
       this.body
     );
-    world.add_crochet_procedure(
+    world.procedures.add_crochet(
       this.name,
       this.types.map((x) => x.realise(world)),
       code
@@ -95,7 +96,7 @@ export class DRole implements IDeclaration {
 
   apply(world: World) {
     const role = new CrochetRole(this.name);
-    world.add_role(this.name, role);
+    world.roles.add(this.name, role);
   }
 }
 
@@ -103,9 +104,9 @@ export class DType implements IDeclaration {
   constructor(readonly name: string, readonly roles: string[]) {}
 
   apply(world: World) {
-    const roles = this.roles.map((x) => world.get_role(x));
+    const roles = this.roles.map((x) => world.roles.lookup(x));
     const type = new TCrochetType(this.name, new Set(roles));
-    world.add_type(this.name, type);
+    world.types.add(this.name, type);
   }
 }
 
@@ -119,7 +120,7 @@ export class DEnum implements IDeclaration {
     for (const x of this.variants) {
       type.add_variant(
         x.name,
-        x.roles.map((z) => world.get_role(z))
+        x.roles.map((z) => world.roles.lookup(z))
       );
     }
   }
@@ -128,8 +129,8 @@ export class DEnum implements IDeclaration {
 export class DDefine implements IDeclaration {
   constructor(readonly name: string, readonly value: Expression) {}
   async apply(world: World) {
-    const env = new Environment(null, world, bfalse);
+    const env = new Environment(null, world, null);
     const value = cvalue(await run(this.value.evaluate(world, env)));
-    world.add_global(this.name, value);
+    world.globals.add(this.name, value);
   }
 }

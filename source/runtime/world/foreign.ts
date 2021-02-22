@@ -5,7 +5,7 @@ export class ForeignInterface {
 
   add(name: string, procedure: NativeProcedureFn) {
     if (this.has(name)) {
-      throw new Error(`Duplicated foreign function ${name}`);
+      throw new Error(`internal: duplicated foreign function: ${name}`);
     }
     this.methods.set(name, procedure);
   }
@@ -14,8 +14,17 @@ export class ForeignInterface {
     return this.methods.has(name);
   }
 
-  lookup(name: string): NativeProcedureFn | null {
+  try_lookup(name: string): NativeProcedureFn | null {
     const procedure = this.methods.get(name);
     return procedure ?? null;
+  }
+
+  lookup(name: string) {
+    const procedure = this.try_lookup(name);
+    if (procedure != null) {
+      return procedure;
+    } else {
+      throw new Error(`internal: undefined foreign function: ${name}`);
+    }
   }
 }
