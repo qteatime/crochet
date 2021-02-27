@@ -2,7 +2,7 @@ import { ConcreteRelation, PredicateProcedure, TreeType } from "../logic";
 import { bfalse, CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
 import { cvalue, Machine, run } from "../run";
-import { Environment, World } from "../world";
+import { Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
@@ -16,7 +16,8 @@ export type Declaration =
   | DRole
   | DType
   | DEnum
-  | DDefine;
+  | DDefine
+  | DScene;
 
 interface IDeclaration {
   apply(world: World): Promise<void> | void;
@@ -132,5 +133,14 @@ export class DDefine implements IDeclaration {
     const env = new Environment(null, world, null);
     const value = cvalue(await run(this.value.evaluate(world, env)));
     world.globals.add(this.name, value);
+  }
+}
+
+export class DScene implements IDeclaration {
+  constructor(readonly name: string, readonly body: Statement[]) {}
+  async apply(world: World) {
+    const env = new Environment(null, world, null);
+    const scene = new Scene(this.name, env, this.body);
+    world.scenes.add(this.name, scene);
   }
 }

@@ -107,13 +107,13 @@ export class World {
     }
   }
 
-  async run() {
+  async run(entry: string) {
     let current = this.queue.shift();
-    let result = null;
     while (current != null) {
-      result = await run(current);
+      await run(current);
       current = this.queue.shift();
     }
-    return result;
+    const scene = this.scenes.lookup(entry);
+    return await run(scene.evaluate(this));
   }
 }

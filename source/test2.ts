@@ -1,5 +1,5 @@
 import * as rt from "./runtime";
-import { cvalue } from "./runtime";
+import { bfalse, cvalue } from "./runtime";
 import { World } from "./runtime/world";
 import { show } from "./utils/utils";
 import { parse } from "./compiler";
@@ -12,6 +12,7 @@ const programStr = `
 role actor;
 role room;
 
+command X show = show(X);
 command (X is integer) hello { "Numbers can't say anything, miss..."; }
 
 singleton type lielle :: actor {
@@ -49,7 +50,24 @@ do {
       1 hello as any
     ],
     Search -> Kisses,
-  ];
+  ] show;
+}
+
+scene main {
+  "Hello" show;
+  call one;
+  goto two;
+  "End" show;
+}
+
+scene one {
+  "One" show;
+  call two;
+  "One end" show;
+}
+
+scene two {
+  "Two" show;
 }
 `;
 
@@ -65,8 +83,12 @@ void (async function main() {
     world2.types.add("stream", rt.tStream);
     world2.types.add("unknown", rt.tUnknown);
     world2.types.add("any", rt.tAny);
+    world2.ffi.add("show", async function* (world, env, x) {
+      console.log("[SHOW]", show(cvalue(x).to_js()));
+      return bfalse;
+    });
     await world2.load_declarations(ir);
-    const result = await world2.run();
+    const result = await world2.run("main");
     console.log(">>>", show(world2));
     console.log(">>>", show(cvalue(result).to_js()));
     debugger;

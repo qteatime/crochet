@@ -379,6 +379,14 @@ export function compileStatement(stmt: Statement) {
       );
     },
 
+    Call(_, name) {
+      return new IR.SCall(name.name);
+    },
+
+    Goto(_, name) {
+      return new IR.SGoto(name.name);
+    },
+
     Expr(value) {
       return new IR.SExpression(compileExpression(value));
     },
@@ -520,6 +528,10 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
 
     Define(_, name, value) {
       return [new IR.DDefine(name.name, compileExpression(value))];
+    },
+
+    Scene(_, name, body) {
+      return [new IR.DScene(name.name, body.map(compileStatement))];
     },
   });
 }
