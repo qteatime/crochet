@@ -21,11 +21,13 @@ import {
   TypeDef,
   TypeInit,
   String,
+  SimulationGoal,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
 import * as IR from "../runtime/ir";
 import * as Logic from "../runtime/logic";
+import * as Sim from "../runtime/simulation";
 import { cast } from "../utils/utils";
 
 // -- Utilities
@@ -364,6 +366,26 @@ export function compileTypeInit(
   return decls.flatMap(compileDeclaration);
 }
 
+export function compileSimulationGoal(goal: SimulationGoal): Sim.Goal {
+  return goal.match<Sim.Goal>({
+    ActionQuiescence(_) {
+      return new Sim.ActionQuiescence();
+    },
+
+    EventQuiescence(_) {
+      return new Sim.EventQuiescence();
+    },
+
+    TotalQuiescence(_) {
+      return new Sim.TotalQuiescence();
+    },
+
+    CustomGoal(_, pred) {
+      return new Sim.CustomGoal(compilePredicate(pred));
+    },
+  });
+}
+
 export function compileStatement(stmt: Statement) {
   return stmt.match<IR.Statement>({
     Let(_, name, value) {
@@ -390,6 +412,14 @@ export function compileStatement(stmt: Statement) {
 
     Goto(_, name) {
       return new IR.SGoto(name.name);
+    },
+
+    SimulateGlobal(_, actors, goal) {
+      return new IR.SSimulate(
+        null,
+        compileExpression(actors),
+        compileSimulationGoal(goal)
+      );
     },
 
     Expr(value) {

@@ -3,7 +3,7 @@ import { World } from "../world";
 import { Pattern, UnificationEnvironment } from "./unification";
 
 class Pair {
-  constructor(readonly value: CrochetValue, readonly tree: Tree) {}
+  constructor(readonly value: CrochetValue, public tree: Tree) {}
 }
 
 export type TreeType = TTOne | TTMany | TTEnd;
@@ -66,12 +66,15 @@ export class OneNode implements INode {
     }
 
     if (head.equals(this.value.value)) {
+      this.value = null;
       return null;
     } else {
       const result = this.value.tree.remove(tail);
       if (result == null) {
+        this.value = null;
         return null;
       } else {
+        this.value.tree = result;
         return this;
       }
     }

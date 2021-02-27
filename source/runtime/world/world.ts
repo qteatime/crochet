@@ -9,39 +9,10 @@ import {
   Procedure,
 } from "../primitives";
 import { Machine, run } from "../run";
-import { Context } from "../../simulation";
+import { Context } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
-
-export class Bag<K, V> {
-  private map = new Map<K, V>();
-
-  constructor(readonly name: string) {}
-
-  add(name: K, value: V) {
-    if (this.map.has(name)) {
-      throw new Error(`internal: duplicated ${this.name}: ${name}`);
-    }
-    this.map.set(name, value);
-  }
-
-  has(name: K) {
-    return this.map.has(name);
-  }
-
-  try_lookup(name: K) {
-    return this.map.get(name) ?? null;
-  }
-
-  lookup(name: K) {
-    const value = this.map.get(name);
-    if (value != null) {
-      return value;
-    } else {
-      throw new Error(`internal: undefined ${this.name}: ${name}`);
-    }
-  }
-}
+import { Bag } from "../../utils/bag";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
