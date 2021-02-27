@@ -59,7 +59,10 @@ export class NotRelation implements IPredicateRelation {
   }
 }
 
-export type MappedRelation = ConcreteRelation | PredicateProcedure;
+export type MappedRelation =
+  | ConcreteRelation
+  | PredicateProcedure
+  | FunctionRelation;
 
 interface IRelation {
   search(
@@ -80,6 +83,26 @@ export class ConcreteRelation implements IRelation {
     db: Database
   ): UnificationEnvironment[] {
     return this.tree.search(world, env, patterns);
+  }
+}
+
+export type FunctionRelationFn = (
+  world: World,
+  env: UnificationEnvironment,
+  patterns: Pattern[],
+  db: Database
+) => UnificationEnvironment[];
+
+export class FunctionRelation implements IRelation {
+  constructor(readonly name: string, readonly code: FunctionRelationFn) {}
+
+  search(
+    world: World,
+    env: UnificationEnvironment,
+    patterns: Pattern[],
+    db: Database
+  ): UnificationEnvironment[] {
+    return this.code(world, env, patterns, db);
   }
 }
 

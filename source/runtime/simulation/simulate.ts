@@ -6,7 +6,13 @@ import { Goal } from "./goal";
 import { World } from "../world";
 import { maybe_cast, pick } from "../../utils/utils";
 import { _push } from "../run";
-import { bfalse, CrochetVariant } from "../primitives";
+import { bfalse, CrochetInteger, CrochetVariant } from "../primitives";
+import {
+  FunctionRelation,
+  FunctionRelationFn,
+  UnificationEnvironment,
+} from "../logic";
+import { timingSafeEqual } from "crypto";
 
 export class Signal {
   constructor(
@@ -24,6 +30,7 @@ export class Simulation {
   private turn: CrochetValue | null = null;
   private acted = new Set<CrochetValue>();
   private active: boolean = false;
+  private rounds: bigint = 0n;
 
   constructor(
     readonly actors: CrochetValue[],
@@ -34,8 +41,11 @@ export class Simulation {
 
   async *run(world: World, env: Environment): Machine {
     this.active = true;
+    this.rounds = 0n;
+    this.setup_relations(world);
     while (this.active) {
       yield _push(this.simulate_round(world, env));
+      this.rounds += 1n;
     }
     return bfalse;
   }
@@ -53,14 +63,15 @@ export class Simulation {
           yield _push(reaction);
         }
       }
-      if (this.goal.reached(world, this.context)) {
-        this.active = false;
-        return;
-      }
+      this.acted.add(this.turn);
       this.turn = maybe_cast(
         yield _push(this.next_actor(world, env)),
         CrochetValue
       );
+      if (this.goal.reached(world, this.context)) {
+        this.active = false;
+        return;
+      }
     }
   }
 
@@ -79,4 +90,52 @@ export class Simulation {
       .map((x) => new ActionChoice(x.title, x.machine));
     return pick(actions);
   }
+
+  setup_relations(world: World) {
+    this.setup_relation(
+      world,
+      "_ simulate-turn",
+      (world, env, [pattern], db) => {
+        return maybe_env(pattern.unify(world, env, this.turn!));
+      }
+    );
+
+    this.setup_relation(
+      world,
+      "_ simulate-actor",
+      (world, env, [pattern], db) => {
+        return this.actors.flatMap((x) =>
+          maybe_env(pattern.unify(world, env, x))
+        );
+      }
+    );
+
+    this.setup_relation(
+      world,
+      "_ simulate-acted",
+      (world, env, [pattern], db) => {
+        return [...this.acted].flatMap((x) =>
+          maybe_env(pattern.unify(world, env, x))
+        );
+      }
+    );
+
+    this.setup_relation(
+      world,
+      "_ simulate-rounds-elapsed",
+      (world, env, [pattern], db) => {
+        return maybe_env(
+          pattern.unify(world, env, new CrochetInteger(this.rounds))
+        );
+      }
+    );
+  }
+
+  setup_relation(world: World, name: string, code: FunctionRelationFn) {
+    world.database.update(name, new FunctionRelation(name, code));
+  }
+}
+
+function maybe_env(x: UnificationEnvironment | null) {
+  return x == null ? [] : [x];
 }

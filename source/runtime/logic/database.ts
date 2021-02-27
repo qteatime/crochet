@@ -13,6 +13,10 @@ export class Database {
     this.relations.set(name, relation);
   }
 
+  update(name: string, relation: MappedRelation) {
+    this.relations.set(name, relation);
+  }
+
   try_lookup(name: string): MappedRelation | null {
     return this.relations.get(name) ?? null;
   }
