@@ -1,6 +1,6 @@
-import { World, Environment } from "../runtime/world";
-import { SBlock, Statement } from "../runtime/ir";
-import { Predicate } from "../runtime/logic";
+import { World, Environment } from "../world";
+import { SBlock, Statement } from "../ir";
+import { Predicate } from "../logic";
 
 export class When {
   constructor(

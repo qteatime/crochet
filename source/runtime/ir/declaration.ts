@@ -1,4 +1,4 @@
-import { Action, Context, When } from "../../simulation";
+import { Action, Context, When } from "../simulation";
 import {
   ConcreteRelation,
   Predicate,

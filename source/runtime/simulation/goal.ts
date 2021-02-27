@@ -1,5 +1,5 @@
-import { Predicate } from "../runtime";
-import { World } from "../runtime/world";
+import { Predicate } from "..";
+import { World } from "../world";
 import { Context } from "./event";
 
 export type Goal =

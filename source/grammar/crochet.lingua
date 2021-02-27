@@ -49,6 +49,7 @@ type Statement =
   | Goto(pos: Meta, name: Name)
   | Call(pos: Meta, name: Name)
   | Let(pos: Meta, name: Name, value: Expression)
+  | SimulateGlobal(pos: Meta, actors: Expression, goal: SimulationGoal)
   | Expr(value: Expression)
 
 type Expression =
@@ -70,6 +71,12 @@ type Literal =
   | True(pos: Meta)
   | Text(pos: Meta, value: String)
   | Integer(pos: Meta, digits: string)
+
+type SimulationGoal =
+  | ActionQuiescence(pos: Meta)
+  | EventQuiescence(pos: Meta)
+  | TotalQuiescence(pos: Meta)
+  | CustomGoal(pos: Meta, pred: Predicate)
 
 type Predicate(
   pos: Meta,
@@ -286,6 +293,7 @@ grammar Crochet : Program {
     | forgetStatement
     | gotoStatement
     | callStatement
+    | simulateStatement
     | e:expression    -> Statement.Expr(e)
 
   letStatement =
@@ -293,11 +301,11 @@ grammar Crochet : Program {
       -> Statement.Let(meta, n, e)
   
   factStatement =
-    | fact_ s:logicSignature<invokePostfix> 
+    | fact_ s:logicSignature<primaryExpression> 
       -> Statement.Fact(meta, s)
   
   forgetStatement =
-    | fact_ s:logicSignature<invokePostfix>
+    | forget_ s:logicSignature<primaryExpression>
       -> Statement.Forget(meta, s)
 
   gotoStatement =
@@ -305,6 +313,16 @@ grammar Crochet : Program {
 
   callStatement =
     | call_ n:atom  -> Statement.Call(meta, n)
+
+  simulateStatement =
+    | simulate_ for_ e:expression until_ g:simulateGoal
+      -> Statement.SimulateGlobal(meta, e, g)
+
+  simulateGoal =
+    | action_ quiescence_ -> SimulationGoal.ActionQuiescence(meta)
+    | event_ quiescence_  -> SimulationGoal.EventQuiescence(meta)
+    | quiescence_         -> SimulationGoal.TotalQuiescence(meta)
+    | p:predicate         -> SimulationGoal.CustomGoal(meta, p)
 
 
   // -- Expressions
@@ -497,6 +515,7 @@ grammar Crochet : Program {
   if_ = kw<"if">
   goto_ = kw<"goto">
   call_ = kw<"call">
+  simulate_ = kw<"simulate">
 
   true_ = kw<"true">
   false_ = kw<"false">
@@ -506,10 +525,15 @@ grammar Crochet : Program {
   is_ = kw<"is">
   self_ = kw<"self">
   as_ = kw<"as">
+  event_ = kw<"event">
+  quiescence_ = kw<"quiescence">
+  for_ = kw<"for">
+  until_ = kw<"until">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
     | type_ | role_ | enum_ | define_ | singleton_ | goto_ | call_
-    | let_ | return_ | fact_ | forget_ | new_ | search_ | if_
+    | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
+    | event_ | quiescence_ | for_ | until_
 }

@@ -18,6 +18,7 @@ command (X is integer) hello { "Numbers can't say anything, miss..."; }
 singleton type lielle :: actor {
   at: foyer;
   likes: kristine;
+  enabled;
 
   command hello {
     "Lielle: hello!";
@@ -26,6 +27,7 @@ singleton type lielle :: actor {
 
 singleton type kristine :: actor {
   at: foyer;
+  enabled;
 
   command hello {
     "Kristine: hi.";
@@ -36,6 +38,7 @@ singleton type foyer :: room;
 
 relation Who* at: Where;
 relation Who* likes: Whom*;
+relation Who* enabled;
 
 predicate Who kisses: Whom at: Where {
   when Who at: Where, Whom at: Where, Who likes: Whom;
@@ -55,6 +58,7 @@ do {
 
 scene main {
   "Hello" show;
+  simulate for [kristine, lielle] until action quiescence;
   call one;
   goto two;
   "End" show;
@@ -71,11 +75,12 @@ scene two {
 }
 
 action "Hello"
-when X at: P, Y at: P if X =/= Y {
-  "[X] says hello to [Y]" show;
+when X enabled, X at: P, Y at: P if X =/= Y {
+  [X, "says hello to", Y] show;
+  forget X enabled;
 }
 
-when X at: foyer {
+when X at: foyer, X enabled {
   "[X] arrives at foyer" show;
 }
 `;
@@ -83,7 +88,7 @@ when X at: foyer {
 void (async function main() {
   try {
     const ast = parse(programStr);
-    console.log(show(ast));
+    // console.log(show(ast));
 
     const ir = compileProgram(ast);
     const world2 = new World();
@@ -98,7 +103,7 @@ void (async function main() {
     });
     await world2.load_declarations(ir);
     const result = await world2.run("main");
-    console.log(">>>", show(world2));
+    // console.log(">>>", show(world2));
     console.log(">>>", show(cvalue(result).to_js()));
     debugger;
   } catch (e) {

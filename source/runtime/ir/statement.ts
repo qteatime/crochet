@@ -1,6 +1,7 @@
+import { Bag } from "../../utils/bag";
 import { cast } from "../../utils/utils";
 import { ConcreteRelation } from "../logic";
-import { bfalse, CrochetValue } from "../primitives";
+import { bfalse, CrochetStream, CrochetValue } from "../primitives";
 import {
   avalue,
   cvalue,
@@ -12,10 +13,18 @@ import {
   _push,
   _throw,
 } from "../run";
+import { Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
 import { Expression } from "./expression";
 
-export type Statement = SFact | SForget | SExpression | SLet | SGoto | SCall;
+export type Statement =
+  | SFact
+  | SForget
+  | SExpression
+  | SLet
+  | SGoto
+  | SCall
+  | SSimulate;
 
 interface IStatement {
   evaluate(world: World, env: Environment): Machine;
@@ -94,5 +103,37 @@ export class SCall implements IStatement {
     const scene = world.scenes.lookup(this.name);
     const machine = scene.evaluate(world);
     return yield _mark(scene.name, machine);
+  }
+}
+
+export class SSimulate implements IStatement {
+  constructor(
+    readonly context: string | null,
+    readonly actors: Expression,
+    readonly goal: Goal
+  ) {}
+
+  async *evaluate(world: World, env: Environment): Machine {
+    const actors = cast(
+      yield _push(this.actors.evaluate(world, env)),
+      CrochetStream
+    );
+    const context = this.lookup_context(world);
+    const signals = new Bag<string, Signal>("signal");
+    const simulation = new Simulation(
+      actors.values,
+      context,
+      this.goal,
+      signals
+    );
+    return yield _push(simulation.run(world, env));
+  }
+
+  lookup_context(world: World) {
+    if (this.context == null) {
+      return world.global_context;
+    } else {
+      return world.contexts.lookup(this.context);
+    }
   }
 }

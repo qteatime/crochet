@@ -21,5 +21,5 @@ export function from_bool(x: boolean): CrochetValue {
 }
 
 export function not(x: CrochetValue) {
-  return from_bool(x.as_bool());
+  return from_bool(!x.as_bool());
 }

@@ -23,11 +23,25 @@ export function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 }
 
-export function cast<T extends AnyClass>(x: any, type: T): InstanceType<T> {
+export function cast<T extends Function & { prototype: any }>(
+  x: any,
+  type: T
+): T["prototype"] {
   if (x instanceof type) {
     return x as any;
   } else {
     throw new TypeError(`internal: expected ${type_name(type)}`);
+  }
+}
+
+export function maybe_cast<T extends Function & { prototype: any }>(
+  x: any,
+  type: T
+): T["prototype"] | null {
+  if (x == null) {
+    return null;
+  } else {
+    return cast(x, type);
   }
 }
 
