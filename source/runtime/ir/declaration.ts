@@ -1,7 +1,13 @@
-import { ConcreteRelation, PredicateProcedure, TreeType } from "../logic";
-import { bfalse, CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
+import { Action, Context, When } from "../../simulation";
+import {
+  ConcreteRelation,
+  Predicate,
+  PredicateProcedure,
+  TreeType,
+} from "../logic";
+import { CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
-import { cvalue, Machine, run } from "../run";
+import { cvalue, run } from "../run";
 import { Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
@@ -17,10 +23,18 @@ export type Declaration =
   | DType
   | DEnum
   | DDefine
-  | DScene;
+  | DScene
+  | DAction
+  | DWhen;
+
+export type ContextualDeclaration = DAction | DWhen;
 
 interface IDeclaration {
   apply(world: World): Promise<void> | void;
+}
+
+interface IContextualDeclaration {
+  apply_to_context(world: World, context: Context): Promise<void> | void;
 }
 
 export class DRelation implements IDeclaration {
@@ -142,5 +156,37 @@ export class DScene implements IDeclaration {
     const env = new Environment(null, world, null);
     const scene = new Scene(this.name, env, this.body);
     world.scenes.add(this.name, scene);
+  }
+}
+
+export class DAction implements IDeclaration, IContextualDeclaration {
+  constructor(
+    readonly title: string,
+    readonly predicate: Predicate,
+    readonly body: Statement[]
+  ) {}
+
+  async apply_to_context(world: World, context: Context) {
+    const env = new Environment(null, world, null);
+    const action = new Action(this.title, this.predicate, [], env, this.body);
+    context.actions.push(action);
+  }
+
+  async apply(world: World) {
+    this.apply_to_context(world, world.global_context);
+  }
+}
+
+export class DWhen implements IDeclaration, IContextualDeclaration {
+  constructor(readonly predicate: Predicate, readonly body: Statement[]) {}
+
+  async apply_to_context(world: World, context: Context) {
+    const env = new Environment(null, world, null);
+    const event = new When(this.predicate, env, this.body);
+    context.events.push(event);
+  }
+
+  async apply(world: World) {
+    this.apply_to_context(world, world.global_context);
   }
 }

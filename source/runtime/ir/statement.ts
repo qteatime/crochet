@@ -1,6 +1,6 @@
 import { cast } from "../../utils/utils";
 import { ConcreteRelation } from "../logic";
-import { bfalse, CrochetStream, CrochetValue } from "../primitives";
+import { bfalse, CrochetValue } from "../primitives";
 import {
   avalue,
   cvalue,

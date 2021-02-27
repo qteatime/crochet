@@ -1,11 +1,5 @@
 import { Declaration } from "../ir";
-import {
-  ConcreteRelation,
-  Database,
-  Predicate,
-  PredicateProcedure,
-  TreeType,
-} from "../logic";
+import { Database, Predicate } from "../logic";
 import {
   CrochetRole,
   CrochetType,
@@ -15,7 +9,7 @@ import {
   Procedure,
 } from "../primitives";
 import { Machine, run } from "../run";
-import { Context } from "./events";
+import { Context } from "../../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
 
@@ -90,6 +84,7 @@ export class World {
   readonly roles = new Bag<string, CrochetRole>("role");
   readonly globals = new Bag<string, CrochetValue>("global");
   readonly scenes = new Bag<string, Scene>("scene");
+  readonly contexts = new Bag<string, Context>("context");
   readonly global_context = new Context();
   readonly ffi = new ForeignInterface();
 

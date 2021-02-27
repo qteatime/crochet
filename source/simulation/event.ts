@@ -1,7 +1,6 @@
-import { World } from "./world";
-import { SBlock, Statement } from "../ir";
-import { Predicate } from "../logic";
-import { Environment } from "./environment";
+import { World, Environment } from "../runtime/world";
+import { SBlock, Statement } from "../runtime/ir";
+import { Predicate } from "../runtime/logic";
 
 export class When {
   constructor(
@@ -48,4 +47,12 @@ export class Action {
 export class Context {
   readonly events: When[] = [];
   readonly actions: Action[] = [];
+
+  available_actions(world: World) {
+    return this.actions.flatMap((x) => x.ready_actions(world));
+  }
+
+  available_events(world: World) {
+    return this.events.flatMap((x) => x.executions(world));
+  }
 }

@@ -69,6 +69,15 @@ scene one {
 scene two {
   "Two" show;
 }
+
+action "Hello"
+when X at: P, Y at: P if X =/= Y {
+  "[X] says hello to [Y]" show;
+}
+
+when X at: foyer {
+  "[X] arrives at foyer" show;
+}
 `;
 
 void (async function main() {

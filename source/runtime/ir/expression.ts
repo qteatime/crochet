@@ -8,14 +8,9 @@ import {
   CrochetRecord,
   CrochetStream,
   CrochetText,
-  CrochetType,
-  CrochetUnknown,
   CrochetValue,
-  CrochetVariant,
   TCrochetEnum,
   TCrochetType,
-  TCrochetUnion,
-  tUnknown,
 } from "../primitives";
 import { ProcedureBranch } from "../primitives/procedure";
 import {
