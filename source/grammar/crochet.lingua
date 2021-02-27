@@ -2,7 +2,7 @@ type Program(pos: Meta, declarations: Declaration[])
 
 type Declaration =
   | Relation(pos: Meta, signature: Signature<RelationPart>)
-  | Predicate(pos: Meta, signature: Signature<Name>, clauses: PredicateClause[])
+  | DefinePredicate(pos: Meta, signature: Signature<Name>, clauses: PredicateClause[])
   | Do(pos: Meta, body: Statement[])
   | ForeignCommand(pos: Meta, signature: Signature<Parameter>, body: FFI)
   | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[])
@@ -12,6 +12,8 @@ type Declaration =
   | Type(pos: Meta, typ: TypeDef)
   | Enum(pos: Meta, name: Name, values: Variant[])
   | Scene(pos: Meta, name: Name, body: Statement[])
+  | Action(pos: Meta, title: String, pred: Predicate, body: Statement[]) // FIXME: interpolated titles
+  | When(pos: Meta, pred: Predicate, body: Statement[])
 
 type TypeDef(name: Name, roles: Name[])
 type Variant(pos: Meta, name: Name, roles: Name[])
@@ -66,7 +68,7 @@ type Expression =
 type Literal =
   | False(pos: Meta)
   | True(pos: Meta)
-  | Text(pos: Meta, value: string)
+  | Text(pos: Meta, value: String)
   | Integer(pos: Meta, digits: string)
 
 type Predicate(
@@ -114,6 +116,7 @@ type RelationPart =
 type Pair<K, V>(pos: Meta, key: K, value: V)
 type Name(pos: Meta, name: string)
 type Namespace(pos: Meta, names: Name[])
+type String(pos: Meta, text: string)
 
 
 grammar Crochet : Program {
@@ -131,6 +134,8 @@ grammar Crochet : Program {
     | enumDeclaration
     | defineDeclaration
     | sceneDeclaration
+    | actionDeclaration
+    | whenDeclaration
 
   relationDeclaration =
     | relation_ s:logicSignature<relationPart> s<";">
@@ -142,7 +147,7 @@ grammar Crochet : Program {
 
   predicateDeclaration =
     | predicate_ l:logicSignature<name> c:block<predicateClause>
-      -> Declaration.Predicate(meta, l, c)
+      -> Declaration.DefinePredicate(meta, l, c)
 
   predicateClause =
     | when_ p:predicate s<";">   -> PredicateClause(meta, p, PredicateEffect.Trivial())
@@ -218,6 +223,15 @@ grammar Crochet : Program {
     | scene_ n:atom b:statementBlock<statement>
       -> Declaration.Scene(meta, n, b)
 
+  actionDeclaration =
+    | action_ t:string when_ p:predicate b:statementBlock<statement>
+      -> Declaration.Action(meta, t, p, b)
+  
+  whenDeclaration =
+    | when_ p:predicate b:statementBlock<statement>
+      -> Declaration.When(meta, p, b)
+
+
   // -- Logic
   predicate =
     | rs:predicateRelations if_ c:constraint    -> Predicate(meta, rs, c)
@@ -256,6 +270,7 @@ grammar Crochet : Program {
 
   constraint300 =
     | l:constraint400 s<"==="> r:constraint400  -> Constraint.Equal(meta, l, r)
+    | l:constraint400 s<"=/="> r:constraint400  -> Constraint.Not(meta, Constraint.Equal(meta, l, r))
     | constraint400
 
   constraint400 =
@@ -290,6 +305,7 @@ grammar Crochet : Program {
 
   callStatement =
     | call_ n:atom  -> Statement.Call(meta, n)
+
 
   // -- Expressions
   expression =
@@ -354,6 +370,7 @@ grammar Crochet : Program {
     | recordExpression<atomicExpression>
     | listExpression<atomicExpression>
 
+
   // -- Literals
   literal =
     | text
@@ -365,10 +382,14 @@ grammar Crochet : Program {
     | false_                -> Literal.False(meta)
 
   text =
-    | x:s<t_text>           -> Literal.Text(meta, x)
+    | x:string              -> Literal.Text(meta, x)
 
   integer =
     | x:s<t_integer>        -> Literal.Integer(meta, x)
+
+  string =
+    | x:s<t_text>           -> String(meta, x)
+  
 
   // -- Token -> Rule & Basics
   atom = ~reserved x:s<t_atom> ~":"           -> Name(meta, x)
@@ -378,6 +399,7 @@ grammar Crochet : Program {
   not = x:not_                                -> Name(meta, x)
 
   namespace = x:nonemptyListOf<atom, s<".">>  -> Namespace(meta, x)
+
 
   // -- Higher-order
   logicSignature<t> =
@@ -464,6 +486,7 @@ grammar Crochet : Program {
   define_ = kw<"define">
   singleton_ = kw<"singleton">
   scene_ = kw<"scene">
+  action_ = kw<"action">
 
   let_ = kw<"let">
   return_ = kw<"return">
@@ -485,7 +508,7 @@ grammar Crochet : Program {
   as_ = kw<"as">
 
   reserved =
-    | relation_ | predicate_ | when_ | do_ | command_ | scene_
+    | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
     | type_ | role_ | enum_ | define_ | singleton_ | goto_ | call_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_

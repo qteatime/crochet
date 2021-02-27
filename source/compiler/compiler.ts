@@ -20,6 +20,7 @@ import {
   TypeApp,
   TypeDef,
   TypeInit,
+  String,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
@@ -30,6 +31,10 @@ import { cast } from "../utils/utils";
 // -- Utilities
 function parseInteger(x: string): bigint {
   return BigInt(x.replace(/_/g, ""));
+}
+
+function parseString(x: String): string {
+  return JSON.parse(x.text);
 }
 
 export function literalToValue(lit: Literal) {
@@ -43,7 +48,7 @@ export function literalToValue(lit: Literal) {
     },
 
     Text(_, value) {
-      return new rt.CrochetText(JSON.parse(value));
+      return new rt.CrochetText(parseString(value));
     },
 
     Integer(_, digits) {
@@ -227,7 +232,7 @@ export function literalToExpression(lit: Literal) {
     },
 
     Text(_, value) {
-      return new IR.EText(JSON.parse(value));
+      return new IR.EText(parseString(value));
     },
 
     Integer(_, digits) {
@@ -456,7 +461,7 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       return [new IR.DDo(body.map(compileStatement))];
     },
 
-    Predicate(_, sig, clauses) {
+    DefinePredicate(_, sig, clauses) {
       const name = signatureName(sig);
       const params = signatureValues(sig).map((x) => x.name);
       const procedure = new Logic.PredicateProcedure(
@@ -532,6 +537,23 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
 
     Scene(_, name, body) {
       return [new IR.DScene(name.name, body.map(compileStatement))];
+    },
+
+    Action(_, title0, predicate, body) {
+      const title = parseString(title0);
+      return [
+        new IR.DAction(
+          title,
+          compilePredicate(predicate),
+          body.map(compileStatement)
+        ),
+      ];
+    },
+
+    When(_, predicate, body) {
+      return [
+        new IR.DWhen(compilePredicate(predicate), body.map(compileStatement)),
+      ];
     },
   });
 }
