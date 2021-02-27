@@ -8,7 +8,7 @@ import { Pattern, UnificationEnvironment } from "./unification";
 
 export class Predicate {
   constructor(
-    readonly relations: Relation[],
+    readonly relations: PredicateRelation[],
     readonly constraint: Constraint
   ) {}
 
@@ -26,12 +26,36 @@ export class Predicate {
   }
 }
 
-export class Relation {
+export type PredicateRelation = HasRelation | NotRelation;
+
+interface IPredicateRelation {
+  search(
+    world: World,
+    env: UnificationEnvironment,
+    db: Database
+  ): UnificationEnvironment[];
+}
+
+export class HasRelation implements IPredicateRelation {
   constructor(readonly name: string, readonly patterns: Pattern[]) {}
 
   search(world: World, env: UnificationEnvironment, db: Database) {
     const relation = db.lookup(this.name);
     return relation.search(world, env, this.patterns, db);
+  }
+}
+
+export class NotRelation implements IPredicateRelation {
+  constructor(readonly name: string, readonly patterns: Pattern[]) {}
+
+  search(world: World, env: UnificationEnvironment, db: Database) {
+    const relation = db.lookup(this.name);
+    const results = relation.search(world, env, this.patterns, db);
+    if (results.length === 0) {
+      return [env];
+    } else {
+      return [];
+    }
   }
 }
 

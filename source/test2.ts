@@ -18,7 +18,6 @@ command (X is integer) hello { "Numbers can't say anything, miss..."; }
 singleton type lielle :: actor {
   at: foyer;
   likes: kristine;
-  enabled;
 
   command hello {
     "Lielle: hello!";
@@ -27,7 +26,6 @@ singleton type lielle :: actor {
 
 singleton type kristine :: actor {
   at: foyer;
-  enabled;
 
   command hello {
     "Kristine: hi.";
@@ -38,7 +36,7 @@ singleton type foyer :: room;
 
 relation Who* at: Where;
 relation Who* likes: Whom*;
-relation Who* enabled;
+relation Who* disabled;
 
 predicate Who kisses: Whom at: Where {
   when Who at: Where, Whom at: Where, Who likes: Whom;
@@ -75,13 +73,13 @@ scene two {
 }
 
 action "Hello"
-when X enabled, X at: P, Y at: P if X =/= Y {
+when X at: P, Y at: P, not X disabled if X =/= Y {
   [X, "says hello to", Y] show;
-  forget X enabled;
+  fact X disabled;
 }
 
-when X at: foyer, X enabled {
-  "[X] arrives at foyer" show;
+when X at: foyer, not X disabled {
+  [X, "is at the foyer and ready to act"] show;
 }
 `;
 

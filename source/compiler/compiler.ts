@@ -144,17 +144,19 @@ export function compilePattern(p: Pattern): Logic.Pattern {
 }
 
 export function compilePredicateRelation(r: PredicateRelation) {
-  return r.match<Logic.Relation>({
+  return r.match<Logic.PredicateRelation>({
     Has(_, sig) {
-      return new Logic.Relation(
+      return new Logic.HasRelation(
         signatureName(sig),
         signatureValues(sig).map(compilePattern)
       );
     },
 
     Not(_, sig) {
-      // TODO:
-      throw new Error(`todo`);
+      return new Logic.NotRelation(
+        signatureName(sig),
+        signatureValues(sig).map(compilePattern)
+      );
     },
   });
 }
