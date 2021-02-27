@@ -11,6 +11,7 @@ type Declaration =
   | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
   | Type(pos: Meta, typ: TypeDef)
   | Enum(pos: Meta, name: Name, values: Variant[])
+  | Scene(pos: Meta, name: Name, body: Statement[])
 
 type TypeDef(name: Name, roles: Name[])
 type Variant(pos: Meta, name: Name, roles: Name[])
@@ -43,6 +44,8 @@ type PredicateEffect =
 type Statement =
   | Fact(pos: Meta, signature: Signature<Expression>)
   | Forget(pos: Meta, signature: Signature<Expression>)
+  | Goto(pos: Meta, name: Name)
+  | Call(pos: Meta, name: Name)
   | Let(pos: Meta, name: Name, value: Expression)
   | Expr(value: Expression)
 
@@ -127,6 +130,7 @@ grammar Crochet : Program {
     | typeDeclaration
     | enumDeclaration
     | defineDeclaration
+    | sceneDeclaration
 
   relationDeclaration =
     | relation_ s:logicSignature<relationPart> s<";">
@@ -210,6 +214,10 @@ grammar Crochet : Program {
     | define_ n:atom s<"="> e:atomicExpression s<";">
       -> Declaration.Define(meta, n, e)
 
+  sceneDeclaration =
+    | scene_ n:atom b:statementBlock<statement>
+      -> Declaration.Scene(meta, n, b)
+
   // -- Logic
   predicate =
     | rs:predicateRelations if_ c:constraint    -> Predicate(meta, rs, c)
@@ -261,6 +269,8 @@ grammar Crochet : Program {
     | letStatement
     | factStatement
     | forgetStatement
+    | gotoStatement
+    | callStatement
     | e:expression    -> Statement.Expr(e)
 
   letStatement =
@@ -275,6 +285,11 @@ grammar Crochet : Program {
     | fact_ s:logicSignature<invokePostfix>
       -> Statement.Forget(meta, s)
 
+  gotoStatement =
+    | goto_ n:atom  -> Statement.Goto(meta, n)
+
+  callStatement =
+    | call_ n:atom  -> Statement.Call(meta, n)
 
   // -- Expressions
   expression =
@@ -448,6 +463,7 @@ grammar Crochet : Program {
   enum_ = kw<"enum">
   define_ = kw<"define">
   singleton_ = kw<"singleton">
+  scene_ = kw<"scene">
 
   let_ = kw<"let">
   return_ = kw<"return">
@@ -456,6 +472,8 @@ grammar Crochet : Program {
   new_ = kw<"new">
   search_ = kw<"search">
   if_ = kw<"if">
+  goto_ = kw<"goto">
+  call_ = kw<"call">
 
   true_ = kw<"true">
   false_ = kw<"false">
@@ -467,8 +485,8 @@ grammar Crochet : Program {
   as_ = kw<"as">
 
   reserved =
-    | relation_ | predicate_ | when_ | do_ | command_
-    | type_ | role_ | enum_ | define_ | singleton_
+    | relation_ | predicate_ | when_ | do_ | command_ | scene_
+    | type_ | role_ | enum_ | define_ | singleton_ | goto_ | call_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
 }

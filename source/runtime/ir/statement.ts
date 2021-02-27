@@ -7,6 +7,7 @@ import {
   ErrVariableAlreadyBound,
   Machine,
   run_all,
+  _jump,
   _mark,
   _push,
   _throw,
@@ -14,7 +15,7 @@ import {
 import { Environment, World } from "../world";
 import { Expression } from "./expression";
 
-export type Statement = SFact | SForget | SExpression | SLet;
+export type Statement = SFact | SForget | SExpression | SLet | SGoto | SCall;
 
 interface IStatement {
   evaluate(world: World, env: Environment): Machine;
@@ -67,11 +68,31 @@ export class SLet implements IStatement {
 
 export class SBlock implements IStatement {
   constructor(readonly statements: Statement[]) {}
-  async *evaluate(world: World, env: Environment) {
+  async *evaluate(world: World, env: Environment): Machine {
     let result: CrochetValue = bfalse;
     for (const stmt of this.statements) {
       result = cvalue(yield _push(stmt.evaluate(world, env)));
     }
     return result;
+  }
+}
+
+export class SGoto implements IStatement {
+  constructor(readonly name: string) {}
+
+  async *evaluate(world: World, env: Environment): Machine {
+    const scene = world.scenes.lookup(this.name);
+    const machine = scene.evaluate(world);
+    return yield _jump(machine);
+  }
+}
+
+export class SCall implements IStatement {
+  constructor(readonly name: string) {}
+
+  async *evaluate(world: World, env: Environment): Machine {
+    const scene = world.scenes.lookup(this.name);
+    const machine = scene.evaluate(world);
+    return yield _mark(scene.name, machine);
   }
 }

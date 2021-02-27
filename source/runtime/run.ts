@@ -52,10 +52,15 @@ export class ErrNoConversionAvailable {
 }
 
 // Yield types
-export type Yield = Push | Mark | Throw;
+export type Yield = Push | Jump | Mark | Throw;
 
 export class Push {
   readonly tag = "push";
+  constructor(readonly machine: Machine) {}
+}
+
+export class Jump {
+  readonly tag = "jump";
   constructor(readonly machine: Machine) {}
 }
 
@@ -75,6 +80,10 @@ export class Throw {
 
 export function _push(machine: Machine) {
   return new Push(machine);
+}
+
+export function _jump(machine: Machine) {
+  return new Jump(machine);
 }
 
 export function _mark(
@@ -146,6 +155,18 @@ export async function run(machine0: Machine) {
           continue;
         }
 
+        case "jump": {
+          let frame: Frame | null = null;
+          do {
+            frame = stack.pop() ?? null;
+          } while (frame != null && !(frame instanceof FProcedure));
+
+          stack.push(new FMachine(machine));
+          machine = value.machine;
+          input = null;
+          continue;
+        }
+
         case "mark": {
           stack.push(new FProcedure(value.name, value.k ?? machine));
           machine = value.machine;
@@ -163,19 +184,6 @@ export async function run(machine0: Machine) {
         default:
           throw unreachable(value, "Unknown yield");
       }
-    }
-  }
-}
-
-function get_continuation(frames: Frame[]) {
-  while (true) {
-    const frame = frames.pop();
-    if (frame == null) {
-      return null;
-    } else if (frame instanceof FProcedure) {
-      return frame;
-    } else {
-      continue;
     }
   }
 }
