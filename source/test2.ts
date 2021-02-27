@@ -73,13 +73,16 @@ scene two {
 }
 
 action "Hello"
-when X at: P, Y at: P, not X disabled if X =/= Y {
+when X simulate-turn, not X disabled, X at: P, Y at: P if X =/= Y {
   [X, "says hello to", Y] show;
+  ["Stats", search Turn simulate-turn, Rounds simulate-rounds-elapsed] show;
+  ["Acted", search X simulate-acted] show;
+  ["Remaining", (search X simulate-actor, not X simulate-acted, not X simulate-turn)] show;
   fact X disabled;
 }
 
-when X at: foyer, not X disabled {
-  [X, "is at the foyer and ready to act"] show;
+when X simulate-turn {
+  [X, "ends her turn"] show;
 }
 `;
 
