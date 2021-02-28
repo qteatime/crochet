@@ -24,7 +24,11 @@ export class Signal {
 }
 
 export class ActionChoice {
-  constructor(readonly title: string, readonly machine: Machine) {}
+  constructor(
+    readonly title: string,
+    readonly action: Action,
+    readonly machine: Machine
+  ) {}
 }
 
 export class Simulation {
@@ -54,20 +58,23 @@ export class Simulation {
 
   async *simulate_round(state: State): Machine {
     this.acted = new Set();
+    this.goal.reset();
     const actor0 = yield _push(this.next_actor(state));
     this.turn = maybe_cast(actor0, CrochetValue);
     while (this.turn != null) {
       const action0 = yield _push(this.pick_action(state, this.turn));
       const action = maybe_cast(action0, ActionChoice);
       if (action != null) {
+        action.action.fire(this.turn);
         yield _push(action.machine);
         for (const reaction of this.context.available_events(state)) {
           yield _push(reaction);
         }
       }
       this.acted.add(this.turn);
+      this.goal.tick(this.turn, state, this.context);
       this.turn = maybe_cast(yield _push(this.next_actor(state)), CrochetValue);
-      if (this.goal.reached(state, this.context)) {
+      if (this.goal.reached(this.turn == null)) {
         this.active = false;
         return;
       }
@@ -81,8 +88,8 @@ export class Simulation {
 
   async *pick_action(state: State, actor: CrochetValue): Machine {
     const actions = this.context
-      .available_actions(state)
-      .map((x) => new ActionChoice(x.title, x.machine));
+      .available_actions(actor, state)
+      .map((x) => new ActionChoice(x.title, x.action, x.machine));
     return pick(actions);
   }
 
