@@ -8,11 +8,12 @@ import {
   NativeProcedure,
   Procedure,
 } from "../primitives";
-import { Machine, run } from "../vm";
+import { Machine, run, State } from "../vm";
 import { Context } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
+import { Environment } from "./environment";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
@@ -67,19 +68,21 @@ export class World {
     this.queue.push(machine);
   }
 
-  async load_declarations(xs: Declaration[]) {
+  async load_declarations(xs: Declaration[], env: Environment) {
+    const state = new State(this, env);
     for (const x of xs) {
-      await x.apply(this);
+      await x.apply(state);
     }
   }
 
   async run(entry: string) {
+    const state = State.root(this);
     let current = this.queue.shift();
     while (current != null) {
       await run(current);
       current = this.queue.shift();
     }
     const scene = this.scenes.lookup(entry);
-    return await run(scene.evaluate(this));
+    return await run(scene.evaluate(state));
   }
 }

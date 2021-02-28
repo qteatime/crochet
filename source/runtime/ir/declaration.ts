@@ -7,7 +7,7 @@ import {
 } from "../logic";
 import { CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
-import { cvalue, run } from "../vm";
+import { cvalue, run, State } from "../vm";
 import { Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
@@ -30,37 +30,36 @@ export type Declaration =
 export type ContextualDeclaration = DAction | DWhen;
 
 interface IDeclaration {
-  apply(world: World): Promise<void> | void;
+  apply(state: State): Promise<void> | void;
 }
 
 interface IContextualDeclaration {
-  apply_to_context(world: World, context: Context): Promise<void> | void;
+  apply_to_context(state: State, context: Context): Promise<void> | void;
 }
 
 export class DRelation implements IDeclaration {
   constructor(readonly name: string, readonly type: TreeType) {}
 
-  apply(world: World) {
+  apply(state: State) {
     const relation = new ConcreteRelation(this.name, this.type.realise());
-    world.database.add(this.name, relation);
+    state.world.database.add(this.name, relation);
   }
 }
 
 export class DPredicate implements IDeclaration {
   constructor(readonly name: string, readonly procedure: PredicateProcedure) {}
 
-  apply(world: World) {
-    world.database.add(this.name, this.procedure);
+  apply(state: State) {
+    state.world.database.add(this.name, this.procedure);
   }
 }
 
 export class DDo implements IDeclaration {
   constructor(readonly body: Statement[]) {}
 
-  apply(world: World) {
-    const env = new Environment(null, world, null);
+  apply(state: State) {
     const block = new SBlock(this.body);
-    world.schedule(block.evaluate(world, env));
+    state.world.schedule(block.evaluate(state.with_new_env()));
   }
 }
 
@@ -72,10 +71,10 @@ export class DForeignCommand implements IDeclaration {
     readonly args: number[]
   ) {}
 
-  apply(world: World) {
-    world.procedures.add_foreign(
+  apply(state: State) {
+    state.world.procedures.add_foreign(
       this.name,
-      this.types.map((x) => x.realise(world)),
+      this.types.map((x) => x.realise(state.world)),
       new NativeProcedure(this.name, this.args, this.foreign_name)
     );
   }
@@ -89,18 +88,18 @@ export class DCrochetCommand implements IDeclaration {
     readonly body: Statement[]
   ) {}
 
-  apply(world: World) {
-    const env = new Environment(null, world, null);
+  apply(state: State) {
+    const env = new Environment(state.env, null);
     const code = new CrochetProcedure(
       env,
-      world,
+      state.world,
       this.name,
       this.parameters,
       this.body
     );
-    world.procedures.add_crochet(
+    state.world.procedures.add_crochet(
       this.name,
-      this.types.map((x) => x.realise(world)),
+      this.types.map((x) => x.realise(state.world)),
       code
     );
   }
@@ -109,19 +108,19 @@ export class DCrochetCommand implements IDeclaration {
 export class DRole implements IDeclaration {
   constructor(readonly name: string) {}
 
-  apply(world: World) {
+  apply(state: State) {
     const role = new CrochetRole(this.name);
-    world.roles.add(this.name, role);
+    state.world.roles.add(this.name, role);
   }
 }
 
 export class DType implements IDeclaration {
   constructor(readonly name: string, readonly roles: string[]) {}
 
-  apply(world: World) {
-    const roles = this.roles.map((x) => world.roles.lookup(x));
+  apply(state: State) {
+    const roles = this.roles.map((x) => state.world.roles.lookup(x));
     const type = new TCrochetType(this.name, new Set(roles));
-    world.types.add(this.name, type);
+    state.world.types.add(this.name, type);
   }
 }
 
@@ -130,12 +129,12 @@ export type Variant = { name: string; roles: string[] };
 export class DEnum implements IDeclaration {
   constructor(readonly name: string, readonly variants: Variant[]) {}
 
-  apply(world: World) {
+  apply(state: State) {
     const type = new TCrochetEnum(this.name);
     for (const x of this.variants) {
       type.add_variant(
         x.name,
-        x.roles.map((z) => world.roles.lookup(z))
+        x.roles.map((z) => state.world.roles.lookup(z))
       );
     }
   }
@@ -143,19 +142,18 @@ export class DEnum implements IDeclaration {
 
 export class DDefine implements IDeclaration {
   constructor(readonly name: string, readonly value: Expression) {}
-  async apply(world: World) {
-    const env = new Environment(null, world, null);
-    const value = cvalue(await run(this.value.evaluate(world, env)));
-    world.globals.add(this.name, value);
+  async apply(state: State) {
+    const value = cvalue(await run(this.value.evaluate(state.with_new_env())));
+    state.world.globals.add(this.name, value);
   }
 }
 
 export class DScene implements IDeclaration {
   constructor(readonly name: string, readonly body: Statement[]) {}
-  async apply(world: World) {
-    const env = new Environment(null, world, null);
+  async apply(state: State) {
+    const env = new Environment(state.env, null);
     const scene = new Scene(this.name, env, this.body);
-    world.scenes.add(this.name, scene);
+    state.world.scenes.add(this.name, scene);
   }
 }
 
@@ -166,27 +164,27 @@ export class DAction implements IDeclaration, IContextualDeclaration {
     readonly body: Statement[]
   ) {}
 
-  async apply_to_context(world: World, context: Context) {
-    const env = new Environment(null, world, null);
+  async apply_to_context(state: State, context: Context) {
+    const env = new Environment(state.env, null);
     const action = new Action(this.title, this.predicate, [], env, this.body);
     context.actions.push(action);
   }
 
-  async apply(world: World) {
-    this.apply_to_context(world, world.global_context);
+  async apply(state: State) {
+    this.apply_to_context(state, state.world.global_context);
   }
 }
 
 export class DWhen implements IDeclaration, IContextualDeclaration {
   constructor(readonly predicate: Predicate, readonly body: Statement[]) {}
 
-  async apply_to_context(world: World, context: Context) {
-    const env = new Environment(null, world, null);
+  async apply_to_context(state: State, context: Context) {
+    const env = new Environment(state.env, null);
     const event = new When(this.predicate, env, this.body);
     context.events.push(event);
   }
 
-  async apply(world: World) {
-    this.apply_to_context(world, world.global_context);
+  async apply(state: State) {
+    this.apply_to_context(state, state.world.global_context);
   }
 }

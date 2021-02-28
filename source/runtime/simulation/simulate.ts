@@ -5,7 +5,7 @@ import { Action, Context } from "./event";
 import { Goal } from "./goal";
 import { World } from "../world";
 import { maybe_cast, pick } from "../../utils/utils";
-import { _push } from "../vm";
+import { State, _push } from "../vm";
 import { bfalse, CrochetInteger, CrochetVariant } from "../primitives";
 import {
   FunctionRelation,
@@ -39,59 +39,53 @@ export class Simulation {
     readonly signals: Bag<string, Signal>
   ) {}
 
-  async *run(world: World, env: Environment): Machine {
+  async *run(state: State): Machine {
     this.active = true;
     this.rounds = 0n;
-    this.setup_relations(world);
+    this.setup_relations(state);
     while (this.active) {
-      yield _push(this.simulate_round(world, env));
+      yield _push(this.simulate_round(state));
       this.rounds += 1n;
     }
     return bfalse;
   }
 
-  async *simulate_round(world: World, env: Environment): Machine {
+  async *simulate_round(state: State): Machine {
     this.acted = new Set();
-    const actor0 = yield _push(this.next_actor(world, env));
+    const actor0 = yield _push(this.next_actor(state));
     this.turn = maybe_cast(actor0, CrochetValue);
     while (this.turn != null) {
-      const action0 = yield _push(this.pick_action(world, env, this.turn));
+      const action0 = yield _push(this.pick_action(state, this.turn));
       const action = maybe_cast(action0, ActionChoice);
       if (action != null) {
         yield _push(action.machine);
-        for (const reaction of this.context.available_events(world)) {
+        for (const reaction of this.context.available_events(state)) {
           yield _push(reaction);
         }
       }
       this.acted.add(this.turn);
-      this.turn = maybe_cast(
-        yield _push(this.next_actor(world, env)),
-        CrochetValue
-      );
-      if (this.goal.reached(world, this.context)) {
+      this.turn = maybe_cast(yield _push(this.next_actor(state)), CrochetValue);
+      if (this.goal.reached(state, this.context)) {
         this.active = false;
         return;
       }
     }
   }
 
-  async *next_actor(world: World, env: Environment): Machine {
+  async *next_actor(state: State): Machine {
     const remaining = this.actors.filter((x) => !this.acted.has(x));
     return remaining[0] ?? null;
   }
 
-  async *pick_action(
-    world: World,
-    env: Environment,
-    actor: CrochetValue
-  ): Machine {
+  async *pick_action(state: State, actor: CrochetValue): Machine {
     const actions = this.context
-      .available_actions(world)
+      .available_actions(state)
       .map((x) => new ActionChoice(x.title, x.machine));
     return pick(actions);
   }
 
-  setup_relations(world: World) {
+  setup_relations(state: State) {
+    const world = state.world;
     this.setup_relation(
       world,
       "_ simulate-turn",

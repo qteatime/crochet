@@ -1,4 +1,5 @@
 import { SBlock, Statement } from "../ir";
+import { State } from "../vm";
 import { Environment } from "./environment";
 import { World } from "./world";
 
@@ -9,9 +10,9 @@ export class Scene {
     readonly body: Statement[]
   ) {}
 
-  evaluate(world: World) {
-    const env = new Environment(this.env, world, null);
+  evaluate(state: State) {
+    const env = new Environment(this.env, null);
     const block = new SBlock(this.body);
-    return block.evaluate(world, env);
+    return block.evaluate(state.with_env(env));
   }
 }
