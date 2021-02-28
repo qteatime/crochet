@@ -78,15 +78,13 @@ type SimulationGoal =
   | TotalQuiescence(pos: Meta)
   | CustomGoal(pos: Meta, pred: Predicate)
 
-type Predicate(
-  pos: Meta,
-  relations: PredicateRelation[],
-  constraint: Constraint
-)
-
-type PredicateRelation =
-  | Not(pos: Meta, signature: Signature<Pattern>)
+type Predicate =
+  | And(pos: Meta, left: Predicate, right: Predicate)
+  | Or(pos: Meta, left: Predicate, right: Predicate)
+  | Not(pos: Meta, pred: Predicate)
   | Has(pos: Meta, signature: Signature<Pattern>)
+  | Constrain(pos: Meta, pred: Predicate, constraint: Constraint)
+  | Parens(pos: Meta, pred: Predicate)
 
 type Pattern =
   | HasRole(pos: Meta, typ: Name, name: Pattern)
@@ -241,15 +239,35 @@ grammar Crochet : Program {
 
   // -- Logic
   predicate =
-    | rs:predicateRelations if_ c:constraint    -> Predicate(meta, rs, c)
-    | rs:predicateRelations                     -> Predicate(meta, rs, Constraint.Lit(Literal.True(meta)))
+    | p:predicateBinary if_ c:constraint      -> Predicate.Constrain(meta, p, c)
+    | predicateBinary
 
-  predicateRelations =
-    | nonemptyListOf<predicateRelation, s<",">>
+  predicateBinary =
+    | predicateAnd
+    | predicateOr
+    | predicateNot
 
-  predicateRelation =
-    | not_ s:logicSignature<pattern>  -> PredicateRelation.Not(meta, s)
-    | s:logicSignature<pattern>       -> PredicateRelation.Has(meta, s)
+  predicateAnd =
+    | l:predicateNot s<","> r:predicateAnd1   -> Predicate.And(meta, l, r)
+  
+  predicateAnd1 =
+    | l:predicateNot s<","> r:predicateAnd1   -> Predicate.And(meta, l, r)
+    | predicateNot
+
+  predicateOr =
+    | l:predicateNot s<"|"> r:predicateOr1    -> Predicate.Or(meta, l, r)
+  
+  predicateOr1 =
+    | l:predicateNot s<"|"> r:predicateOr1    -> Predicate.Or(meta, l, r)
+    | predicateNot
+  
+  predicateNot =
+    | not_ p:predicatePrimary                 -> Predicate.Not(meta, p)
+    | predicatePrimary
+
+  predicatePrimary =
+    | r:logicSignature<pattern>               -> Predicate.Has(meta, r)
+    | s<"("> p:predicate s<")">               -> Predicate.Parens(meta, p)
 
   pattern =
     | s<"("> c:patternComplex s<")">  -> c

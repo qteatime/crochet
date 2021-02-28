@@ -12,7 +12,6 @@ import {
   Predicate,
   PredicateClause,
   PredicateEffect,
-  PredicateRelation,
   Program,
   RelationPart,
   Signature,
@@ -152,24 +151,6 @@ export function compilePattern(p: Pattern): Logic.Pattern {
   });
 }
 
-export function compilePredicateRelation(r: PredicateRelation) {
-  return r.match<Logic.PredicateRelation>({
-    Has(_, sig) {
-      return new Logic.HasRelation(
-        signatureName(sig),
-        signatureValues(sig).map(compilePattern)
-      );
-    },
-
-    Not(_, sig) {
-      return new Logic.NotRelation(
-        signatureName(sig),
-        signatureValues(sig).map(compilePattern)
-      );
-    },
-  });
-}
-
 export function compileConstraint(c: Constraint): Logic.Constraint.Constraint {
   return c.match<Logic.Constraint.Constraint>({
     And(_, l, r) {
@@ -219,11 +200,38 @@ export function compilePredicateEffect(eff: PredicateEffect) {
   });
 }
 
-export function compilePredicate(p: Predicate) {
-  return new Logic.Predicate(
-    p.relations.map(compilePredicateRelation),
-    compileConstraint(p.constraint)
-  );
+export function compilePredicate(p: Predicate): Logic.Predicate {
+  return p.match<Logic.Predicate>({
+    And(_, l, r) {
+      return new Logic.AndPredicate(compilePredicate(l), compilePredicate(r));
+    },
+
+    Or(_, l, r) {
+      return new Logic.OrPredicate(compilePredicate(l), compilePredicate(r));
+    },
+
+    Not(_, p) {
+      return new Logic.NotPredicate(compilePredicate(p));
+    },
+
+    Constrain(_, p, c) {
+      return new Logic.ConstrainedPredicate(
+        compilePredicate(p),
+        compileConstraint(c)
+      );
+    },
+
+    Parens(_, p) {
+      return compilePredicate(p);
+    },
+
+    Has(_, sig) {
+      return new Logic.HasRelation(
+        signatureName(sig),
+        signatureValues(sig).map(compilePattern)
+      );
+    },
+  });
 }
 
 export function compilePredicateClause(p: PredicateClause) {

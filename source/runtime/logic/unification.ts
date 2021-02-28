@@ -44,8 +44,7 @@ export type Pattern =
   | ValuePattern
   | GlobalPattern
   | VariablePattern
-  | WildcardPattern
-  | DefaultPattern;
+  | WildcardPattern;
 
 abstract class AbstractPattern {
   abstract unify(
