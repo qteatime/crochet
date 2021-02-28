@@ -10,9 +10,10 @@ import { bfalse, CrochetInteger, CrochetVariant } from "../primitives";
 import {
   FunctionRelation,
   FunctionRelationFn,
+  Pattern,
   UnificationEnvironment,
 } from "../logic";
-import { timingSafeEqual } from "crypto";
+import { DatabaseLayer, FunctionLayer } from "../logic/layer";
 
 export class Signal {
   constructor(
@@ -39,10 +40,11 @@ export class Simulation {
     readonly signals: Bag<string, Signal>
   ) {}
 
-  async *run(state: State): Machine {
+  async *run(state0: State): Machine {
     this.active = true;
     this.rounds = 0n;
-    this.setup_relations(state);
+    const layered_db = new DatabaseLayer(state0.database, this.layer);
+    const state = state0.with_database(layered_db);
     while (this.active) {
       yield _push(this.simulate_round(state));
       this.rounds += 1n;
@@ -84,52 +86,34 @@ export class Simulation {
     return pick(actions);
   }
 
-  setup_relations(state: State) {
-    const world = state.world;
-    this.setup_relation(
-      world,
-      "_ simulate-turn",
-      (world, env, [pattern], db) => {
-        return maybe_env(pattern.unify(world, env, this.turn!));
-      }
+  get layer() {
+    const layer = new FunctionLayer(null);
+    layer.add("_ simulate-turn", (state, env, [pattern]) =>
+      unify(pattern, this.turn ?? bfalse, state, env)
     );
-
-    this.setup_relation(
-      world,
-      "_ simulate-actor",
-      (world, env, [pattern], db) => {
-        return this.actors.flatMap((x) =>
-          maybe_env(pattern.unify(world, env, x))
-        );
-      }
+    layer.add("_ simulate-actor", (state, env, [pattern]) =>
+      this.actors.flatMap((x) => unify(pattern, x, state, env))
     );
-
-    this.setup_relation(
-      world,
-      "_ simulate-acted",
-      (world, env, [pattern], db) => {
-        return [...this.acted].flatMap((x) =>
-          maybe_env(pattern.unify(world, env, x))
-        );
-      }
+    layer.add("_ simulate-acted", (state, env, [pattern]) =>
+      [...this.acted].flatMap((x) => unify(pattern, x, state, env))
     );
-
-    this.setup_relation(
-      world,
-      "_ simulate-rounds-elapsed",
-      (world, env, [pattern], db) => {
-        return maybe_env(
-          pattern.unify(world, env, new CrochetInteger(this.rounds))
-        );
-      }
+    layer.add("_ simulate-rounds-elapsed", (state, env, [pattern]) =>
+      unify(pattern, new CrochetInteger(this.rounds), state, env)
     );
-  }
-
-  setup_relation(world: World, name: string, code: FunctionRelationFn) {
-    world.database.update(name, new FunctionRelation(name, code));
+    return layer;
   }
 }
 
-function maybe_env(x: UnificationEnvironment | null) {
-  return x == null ? [] : [x];
+function unify(
+  pattern: Pattern,
+  value: CrochetValue,
+  state: State,
+  env: UnificationEnvironment
+) {
+  const result = pattern.unify(state, env, value);
+  if (result == null) {
+    return [];
+  } else {
+    return [result];
+  }
 }

@@ -61,7 +61,7 @@ export class World {
   readonly ffi = new ForeignInterface();
 
   search(predicate: Predicate) {
-    return this.database.search(this, predicate);
+    return this.database.search(State.root(this), predicate);
   }
 
   schedule(machine: Machine) {
@@ -69,7 +69,7 @@ export class World {
   }
 
   async load_declarations(xs: Declaration[], env: Environment) {
-    const state = new State(this, env);
+    const state = new State(this, env, this.database);
     for (const x of xs) {
       await x.apply(state);
     }

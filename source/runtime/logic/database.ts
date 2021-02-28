@@ -1,8 +1,9 @@
+import { State } from "../vm";
 import { World } from "../world";
 import { MappedRelation, Predicate } from "./predicate";
 import { UnificationEnvironment } from "./unification";
 
-export class Database {
+export class Database implements IDatabase {
   private relations = new Map<string, MappedRelation>();
 
   add(name: string, relation: MappedRelation) {
@@ -29,7 +30,18 @@ export class Database {
     return relation;
   }
 
-  search(world: World, predicate: Predicate) {
-    return predicate.search(world, UnificationEnvironment.empty(), this);
+  search(state: State, predicate: Predicate): UnificationEnvironment[] {
+    return predicate.search(
+      state.with_database(this),
+      UnificationEnvironment.empty()
+    );
   }
+}
+
+export interface IDatabase {
+  add(name: string, relation: MappedRelation): void;
+  update(name: string, relation: MappedRelation): void;
+  lookup(name: string): MappedRelation;
+  try_lookup(name: string): MappedRelation | null;
+  search(state: State, predicate: Predicate): UnificationEnvironment[];
 }

@@ -89,7 +89,7 @@ export class EInteger implements IExpression {
 export class ESearch implements IExpression {
   constructor(readonly predicate: Predicate) {}
   async *evaluate(state: State): Machine {
-    const results = state.world.search(this.predicate);
+    const results = state.database.search(state, this.predicate);
     return new CrochetStream(
       results.map((x) => new CrochetRecord(x.boundValues))
     );

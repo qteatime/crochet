@@ -11,7 +11,7 @@ export class When {
   ) {}
 
   executions(state: State) {
-    const results = state.world.search(this.predicate);
+    const results = state.database.search(state, this.predicate);
     return results.map((uenv) => {
       const env = new Environment(this.env, null);
       env.define_all(uenv.boundValues);
@@ -31,7 +31,7 @@ export class Action {
   ) {}
 
   ready_actions(state: State) {
-    const results = state.world.search(this.predicate);
+    const results = state.database.search(state, this.predicate);
     return results.map((uenv) => {
       const env = new Environment(this.env, null);
       env.define_all(uenv.boundValues);
