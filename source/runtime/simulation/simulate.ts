@@ -5,7 +5,7 @@ import { Action, Context } from "./event";
 import { Goal } from "./goal";
 import { World } from "../world";
 import { maybe_cast, pick } from "../../utils/utils";
-import { _push } from "../run";
+import { _push } from "../vm";
 import { bfalse, CrochetInteger, CrochetVariant } from "../primitives";
 import {
   FunctionRelation,

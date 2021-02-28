@@ -8,7 +8,7 @@ import {
   NativeProcedure,
   Procedure,
 } from "../primitives";
-import { Machine, run } from "../run";
+import { Machine, run } from "../vm";
 import { Context } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
