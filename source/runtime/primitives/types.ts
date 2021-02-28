@@ -173,12 +173,18 @@ export class TCrochetUnion extends CrochetType {
 }
 
 export class TCrochetType extends CrochetType {
+  private instance_count = 0n;
+
   constructor(readonly name: string, readonly roles: Set<CrochetRole>) {
     super();
   }
 
   get type_name() {
     return this.name;
+  }
+
+  instantiate() {
+    return new CrochetInstance(this, ++this.instance_count);
   }
 
   accepts(x: any) {

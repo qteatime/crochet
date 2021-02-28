@@ -124,7 +124,7 @@ export class ENew implements IExpression {
 
   async *evaluate(world: World, env: Environment) {
     const type = cast(world.types.lookup(this.name), TCrochetType);
-    return new CrochetInstance(type);
+    return type.instantiate();
   }
 }
 
