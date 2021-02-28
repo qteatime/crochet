@@ -221,7 +221,7 @@ export class CrochetRecord extends CrochetValue {
 }
 
 export class CrochetInstance extends CrochetValue {
-  constructor(readonly type: TCrochetType) {
+  constructor(readonly type: TCrochetType, readonly id: bigint) {
     super();
   }
 
@@ -242,7 +242,7 @@ export class CrochetInstance extends CrochetValue {
   }
 
   to_text() {
-    return `#${this.type.type_name}`;
+    return `<${this.type.type_name}#${this.id}>`;
   }
 }
 
