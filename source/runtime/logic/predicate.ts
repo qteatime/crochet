@@ -7,30 +7,48 @@ import { Effect } from "./effect";
 import { Tree } from "./tree";
 import { Pattern, UnificationEnvironment } from "./unification";
 
-export class Predicate {
-  constructor(
-    readonly relations: PredicateRelation[],
-    readonly constraint: Constraint
-  ) {}
-
-  search(state: State, env: UnificationEnvironment) {
-    return this.relations
-      .reduce(
-        (envs, relation) => {
-          return envs.flatMap((env) => relation.search(state, env));
-        },
-        [env]
-      )
-      .filter((env) => {
-        return this.constraint.evaluate(env).as_bool();
-      });
-  }
-}
-
-export type PredicateRelation = HasRelation | NotRelation;
+export type Predicate =
+  | HasRelation
+  | NotPredicate
+  | AndPredicate
+  | OrPredicate
+  | ConstrainedPredicate;
 
 interface IPredicateRelation {
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[];
+}
+
+export class ConstrainedPredicate implements IPredicateRelation {
+  constructor(readonly predicate: Predicate, readonly constraint: Constraint) {}
+
+  search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
+    return this.predicate
+      .search(state, env)
+      .filter((env) => this.constraint.evaluate(env).as_bool());
+  }
+}
+
+export class AndPredicate implements IPredicateRelation {
+  constructor(readonly left: Predicate, readonly right: Predicate) {}
+
+  search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
+    return this.left
+      .search(state, env)
+      .flatMap((env) => this.right.search(state, env));
+  }
+}
+
+export class OrPredicate implements IPredicateRelation {
+  constructor(readonly left: Predicate, readonly right: Predicate) {}
+
+  search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
+    const lresult = this.left.search(state, env);
+    if (lresult.length !== 0) {
+      return lresult;
+    } else {
+      return this.right.search(state, env);
+    }
+  }
 }
 
 export class HasRelation implements IPredicateRelation {
@@ -42,13 +60,12 @@ export class HasRelation implements IPredicateRelation {
   }
 }
 
-export class NotRelation implements IPredicateRelation {
-  constructor(readonly name: string, readonly patterns: Pattern[]) {}
+export class NotPredicate implements IPredicateRelation {
+  constructor(readonly predicate: Predicate) {}
 
   search(state: State, env: UnificationEnvironment) {
-    const relation = state.database.lookup(this.name);
-    const results = relation.search(state, env, this.patterns);
-    if (results.length === 0) {
+    const result = this.predicate.search(state, env);
+    if (result.length === 0) {
       return [env];
     } else {
       return [];
