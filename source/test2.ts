@@ -44,6 +44,10 @@ predicate Who kisses: Whom at: Where {
 
 do {
   let Kisses = search lielle kisses: (Who :: actor) at: (Where :: room);
+  let Multi = "This is
+               a multiline
+          text alright
+                  a bit weird tho";
   [
     Hello -> [
       (lielle hello as stream) as stream,
@@ -52,6 +56,7 @@ do {
     ],
     Search -> Kisses,
   ];
+  Multi show;
 }
 
 scene one {

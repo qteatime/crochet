@@ -36,7 +36,16 @@ function parseInteger(x: string): bigint {
 }
 
 function parseString(x: String): string {
-  return JSON.parse(x.text);
+  const column = x.pos.position.column + 1;
+  const indent = new RegExp(`^\\s{0,${column}}`);
+  const text = x.text
+    .split(/\\r\\n|\\n|\r\n|\r|\n/)
+    .map((x) => {
+      return x.replace(indent, "");
+    })
+    .join("\\n");
+
+  return JSON.parse(text);
 }
 
 export function literalToValue(lit: Literal) {
