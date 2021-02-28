@@ -1,5 +1,5 @@
 import * as rt from "./runtime";
-import { bfalse, cvalue } from "./runtime";
+import { bfalse, CrochetInstance, CrochetInteger, cvalue } from "./runtime";
 import { World } from "./runtime/world";
 import { show } from "./utils/utils";
 import { parse } from "./compiler";
@@ -51,15 +51,7 @@ do {
       1 hello as any
     ],
     Search -> Kisses,
-  ] show;
-}
-
-scene main {
-  "Hello" show;
-  simulate for [kristine, lielle] until action quiescence;
-  call one;
-  goto two;
-  "End" show;
+  ];
 }
 
 scene one {
@@ -72,7 +64,15 @@ scene two {
   "Two" show;
 }
 
-action "Hello"
+scene main {
+  "Hello" show;
+  simulate for [kristine, lielle] until action quiescence;
+  call one;
+  goto two;
+  "End" show;
+}
+
+action "Say hello"
 when X simulate-turn, not X disabled, X at: P, Y at: P if X =/= Y {
   [X, "says hello to", Y] show;
   ["Stats", search Turn simulate-turn, Rounds simulate-rounds-elapsed] show;
@@ -99,7 +99,7 @@ void (async function main() {
     world2.types.add("unknown", rt.tUnknown);
     world2.types.add("any", rt.tAny);
     world2.ffi.add("show", async function* (world, env, x) {
-      console.log("[SHOW]", show(cvalue(x).to_js()));
+      console.log("[SHOW]", cvalue(x).to_text());
       return bfalse;
     });
     await world2.load_declarations(ir);

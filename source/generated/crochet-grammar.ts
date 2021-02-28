@@ -1,27 +1,54 @@
 // This file is generated from Linguist
 import * as Ohm from "ohm-js";
+const OhmUtil = require("ohm-js/src/util");
 import { inspect as $inspect } from "util";
+
+const inspect = Symbol.for("nodejs.util.inspect.custom");
 
 type Result<A> = { ok: true; value: A } | { ok: false; error: string };
 
 export abstract class Node {}
 
 export class Meta {
-  constructor(
-    readonly source: string,
-    readonly position: { start_index: number; end_index: number }
-  ) {}
+  constructor(readonly interval: Ohm.Interval) {}
 
   static has_instance(x: any) {
     return x instanceof Meta;
   }
+
+  get position() {
+    const { lineNum, colNum } = OhmUtil.getLineAndColumn(
+      (this.interval as any).sourceString,
+      this.interval.startIdx
+    );
+    return {
+      line: lineNum,
+      column: colNum,
+    };
+  }
+
+  get range() {
+    return {
+      start: this.interval.startIdx,
+      end: this.interval.endIdx,
+    };
+  }
+
+  get source_slice() {
+    return this.interval.contents;
+  }
+
+  get formatted_position_message() {
+    return this.interval.getLineAndColumnMessage();
+  }
+
+  [inspect]() {
+    return this.position;
+  }
 }
 
 function $meta(x: Ohm.Node): Meta {
-  return new Meta(x.sourceString, {
-    start_index: x.source.startIdx,
-    end_index: x.source.endIdx,
-  });
+  return new Meta(x.source);
 }
 
 type Typed = ((_: any) => boolean) | { has_instance(x: any): boolean };
@@ -67,10 +94,11 @@ function $assert_type<T>(x: any, t: string, f: Typed): asserts x is T {
 // == Type definitions ==============================================
 
 export class Program extends Node {
-  readonly tag = "Program";
+  readonly tag!: "Program";
 
   constructor(readonly pos: Meta, readonly declarations: Declaration[]) {
     super();
+    Object.defineProperty(this, "tag", { value: "Program" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<Declaration[]>(
       declarations,
@@ -192,13 +220,14 @@ export abstract class Declaration extends Node {
 
 const $Declaration = (function () {
   class Relation extends Declaration {
-    readonly tag = "Relation";
+    readonly tag!: "Relation";
 
     constructor(
       readonly pos: Meta,
       readonly signature: Signature<RelationPart>
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Relation" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<RelationPart>>(
         signature,
@@ -217,7 +246,7 @@ const $Declaration = (function () {
   }
 
   class DefinePredicate extends Declaration {
-    readonly tag = "DefinePredicate";
+    readonly tag!: "DefinePredicate";
 
     constructor(
       readonly pos: Meta,
@@ -225,6 +254,7 @@ const $Declaration = (function () {
       readonly clauses: PredicateClause[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "DefinePredicate" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Name>>(signature, "Signature<Name>", Signature);
       $assert_type<PredicateClause[]>(
@@ -244,10 +274,11 @@ const $Declaration = (function () {
   }
 
   class Do extends Declaration {
-    readonly tag = "Do";
+    readonly tag!: "Do";
 
     constructor(readonly pos: Meta, readonly body: Statement[]) {
       super();
+      Object.defineProperty(this, "tag", { value: "Do" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
     }
@@ -262,7 +293,7 @@ const $Declaration = (function () {
   }
 
   class ForeignCommand extends Declaration {
-    readonly tag = "ForeignCommand";
+    readonly tag!: "ForeignCommand";
 
     constructor(
       readonly pos: Meta,
@@ -270,6 +301,7 @@ const $Declaration = (function () {
       readonly body: FFI
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "ForeignCommand" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Parameter>>(
         signature,
@@ -289,7 +321,7 @@ const $Declaration = (function () {
   }
 
   class Command extends Declaration {
-    readonly tag = "Command";
+    readonly tag!: "Command";
 
     constructor(
       readonly pos: Meta,
@@ -297,6 +329,7 @@ const $Declaration = (function () {
       readonly body: Statement[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Command" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Parameter>>(
         signature,
@@ -316,7 +349,7 @@ const $Declaration = (function () {
   }
 
   class Define extends Declaration {
-    readonly tag = "Define";
+    readonly tag!: "Define";
 
     constructor(
       readonly pos: Meta,
@@ -324,6 +357,7 @@ const $Declaration = (function () {
       readonly value: Expression
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Define" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
       $assert_type<Expression>(value, "Expression", Expression);
@@ -339,10 +373,11 @@ const $Declaration = (function () {
   }
 
   class Role extends Declaration {
-    readonly tag = "Role";
+    readonly tag!: "Role";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Role" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -357,7 +392,7 @@ const $Declaration = (function () {
   }
 
   class SingletonType extends Declaration {
-    readonly tag = "SingletonType";
+    readonly tag!: "SingletonType";
 
     constructor(
       readonly pos: Meta,
@@ -365,6 +400,7 @@ const $Declaration = (function () {
       readonly init: TypeInit[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "SingletonType" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
       $assert_type<TypeInit[]>(init, "TypeInit[]", $is_array(TypeInit));
@@ -380,10 +416,11 @@ const $Declaration = (function () {
   }
 
   class Type extends Declaration {
-    readonly tag = "Type";
+    readonly tag!: "Type";
 
     constructor(readonly pos: Meta, readonly typ: TypeDef) {
       super();
+      Object.defineProperty(this, "tag", { value: "Type" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
     }
@@ -398,7 +435,7 @@ const $Declaration = (function () {
   }
 
   class Enum extends Declaration {
-    readonly tag = "Enum";
+    readonly tag!: "Enum";
 
     constructor(
       readonly pos: Meta,
@@ -406,6 +443,7 @@ const $Declaration = (function () {
       readonly values: Variant[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Enum" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
       $assert_type<Variant[]>(values, "Variant[]", $is_array(Variant));
@@ -421,7 +459,7 @@ const $Declaration = (function () {
   }
 
   class Scene extends Declaration {
-    readonly tag = "Scene";
+    readonly tag!: "Scene";
 
     constructor(
       readonly pos: Meta,
@@ -429,6 +467,7 @@ const $Declaration = (function () {
       readonly body: Statement[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Scene" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
       $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
@@ -444,7 +483,7 @@ const $Declaration = (function () {
   }
 
   class Action extends Declaration {
-    readonly tag = "Action";
+    readonly tag!: "Action";
 
     constructor(
       readonly pos: Meta,
@@ -453,6 +492,7 @@ const $Declaration = (function () {
       readonly body: Statement[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Action" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<String>(title, "String", String);
       $assert_type<Predicate>(pred, "Predicate", Predicate);
@@ -469,7 +509,7 @@ const $Declaration = (function () {
   }
 
   class When extends Declaration {
-    readonly tag = "When";
+    readonly tag!: "When";
 
     constructor(
       readonly pos: Meta,
@@ -477,6 +517,7 @@ const $Declaration = (function () {
       readonly body: Statement[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "When" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Predicate>(pred, "Predicate", Predicate);
       $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
@@ -509,10 +550,11 @@ const $Declaration = (function () {
 })();
 
 export class TypeDef extends Node {
-  readonly tag = "TypeDef";
+  readonly tag!: "TypeDef";
 
   constructor(readonly name: Name, readonly roles: Name[]) {
     super();
+    Object.defineProperty(this, "tag", { value: "TypeDef" });
     $assert_type<Name>(name, "Name", Name);
     $assert_type<Name[]>(roles, "Name[]", $is_array(Name));
   }
@@ -523,10 +565,11 @@ export class TypeDef extends Node {
 }
 
 export class Variant extends Node {
-  readonly tag = "Variant";
+  readonly tag!: "Variant";
 
   constructor(readonly pos: Meta, readonly name: Name, readonly roles: Name[]) {
     super();
+    Object.defineProperty(this, "tag", { value: "Variant" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<Name>(name, "Name", Name);
     $assert_type<Name[]>(roles, "Name[]", $is_array(Name));
@@ -538,7 +581,7 @@ export class Variant extends Node {
 }
 
 export class FFI extends Node {
-  readonly tag = "FFI";
+  readonly tag!: "FFI";
 
   constructor(
     readonly pos: Meta,
@@ -546,6 +589,7 @@ export class FFI extends Node {
     readonly args: Name[]
   ) {
     super();
+    Object.defineProperty(this, "tag", { value: "FFI" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<Namespace>(name, "Namespace", Namespace);
     $assert_type<Name[]>(args, "Name[]", $is_array(Name));
@@ -591,13 +635,14 @@ export abstract class TypeInit extends Node {
 
 const $TypeInit = (function () {
   class Fact extends TypeInit {
-    readonly tag = "Fact";
+    readonly tag!: "Fact";
 
     constructor(
       readonly pos: Meta,
       readonly sig: PartialSignature<Expression>
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Fact" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<PartialSignature<Expression>>(
         sig,
@@ -616,7 +661,7 @@ const $TypeInit = (function () {
   }
 
   class Command extends TypeInit {
-    readonly tag = "Command";
+    readonly tag!: "Command";
 
     constructor(
       readonly pos: Meta,
@@ -624,6 +669,7 @@ const $TypeInit = (function () {
       readonly body: Statement[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Command" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<PartialSignature<Parameter>>(
         sig,
@@ -643,7 +689,7 @@ const $TypeInit = (function () {
   }
 
   class ForeignCommand extends TypeInit {
-    readonly tag = "ForeignCommand";
+    readonly tag!: "ForeignCommand";
 
     constructor(
       readonly pos: Meta,
@@ -651,6 +697,7 @@ const $TypeInit = (function () {
       readonly body: FFI
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "ForeignCommand" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<PartialSignature<Parameter>>(
         signature,
@@ -703,10 +750,11 @@ export abstract class Parameter extends Node {
 
 const $Parameter = (function () {
   class Untyped extends Parameter {
-    readonly tag = "Untyped";
+    readonly tag!: "Untyped";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Untyped" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -721,7 +769,7 @@ const $Parameter = (function () {
   }
 
   class Typed extends Parameter {
-    readonly tag = "Typed";
+    readonly tag!: "Typed";
 
     constructor(
       readonly pos: Meta,
@@ -729,6 +777,7 @@ const $Parameter = (function () {
       readonly typ: TypeApp
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Typed" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
       $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
@@ -744,10 +793,11 @@ const $Parameter = (function () {
   }
 
   class TypedOnly extends Parameter {
-    readonly tag = "TypedOnly";
+    readonly tag!: "TypedOnly";
 
     constructor(readonly pos: Meta, readonly typ: TypeApp) {
       super();
+      Object.defineProperty(this, "tag", { value: "TypedOnly" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
     }
@@ -795,7 +845,7 @@ export abstract class TypeApp extends Node {
 
 const $TypeApp = (function () {
   class Union extends TypeApp {
-    readonly tag = "Union";
+    readonly tag!: "Union";
 
     constructor(
       readonly pos: Meta,
@@ -803,6 +853,7 @@ const $TypeApp = (function () {
       readonly right: TypeApp
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Union" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeApp>(left, "TypeApp", TypeApp);
       $assert_type<TypeApp>(right, "TypeApp", TypeApp);
@@ -818,10 +869,11 @@ const $TypeApp = (function () {
   }
 
   class Named extends TypeApp {
-    readonly tag = "Named";
+    readonly tag!: "Named";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Named" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -836,10 +888,11 @@ const $TypeApp = (function () {
   }
 
   class Parens extends TypeApp {
-    readonly tag = "Parens";
+    readonly tag!: "Parens";
 
     constructor(readonly pos: Meta, readonly typ: TypeApp) {
       super();
+      Object.defineProperty(this, "tag", { value: "Parens" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
     }
@@ -857,7 +910,7 @@ const $TypeApp = (function () {
 })();
 
 export class PredicateClause extends Node {
-  readonly tag = "PredicateClause";
+  readonly tag!: "PredicateClause";
 
   constructor(
     readonly pos: Meta,
@@ -865,6 +918,7 @@ export class PredicateClause extends Node {
     readonly effect: PredicateEffect
   ) {
     super();
+    Object.defineProperty(this, "tag", { value: "PredicateClause" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<Predicate>(predicate, "Predicate", Predicate);
     $assert_type<PredicateEffect>(effect, "PredicateEffect", PredicateEffect);
@@ -894,10 +948,11 @@ export abstract class PredicateEffect extends Node {
 
 const $PredicateEffect = (function () {
   class Trivial extends PredicateEffect {
-    readonly tag = "Trivial";
+    readonly tag!: "Trivial";
 
     constructor() {
       super();
+      Object.defineProperty(this, "tag", { value: "Trivial" });
     }
 
     match<$T>(p: $p_PredicateEffect<$T>): $T {
@@ -974,10 +1029,11 @@ export abstract class Statement extends Node {
 
 const $Statement = (function () {
   class Fact extends Statement {
-    readonly tag = "Fact";
+    readonly tag!: "Fact";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
       super();
+      Object.defineProperty(this, "tag", { value: "Fact" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Expression>>(
         signature,
@@ -996,10 +1052,11 @@ const $Statement = (function () {
   }
 
   class Forget extends Statement {
-    readonly tag = "Forget";
+    readonly tag!: "Forget";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
       super();
+      Object.defineProperty(this, "tag", { value: "Forget" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Expression>>(
         signature,
@@ -1018,10 +1075,11 @@ const $Statement = (function () {
   }
 
   class Goto extends Statement {
-    readonly tag = "Goto";
+    readonly tag!: "Goto";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Goto" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -1036,10 +1094,11 @@ const $Statement = (function () {
   }
 
   class Call extends Statement {
-    readonly tag = "Call";
+    readonly tag!: "Call";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Call" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -1054,7 +1113,7 @@ const $Statement = (function () {
   }
 
   class Let extends Statement {
-    readonly tag = "Let";
+    readonly tag!: "Let";
 
     constructor(
       readonly pos: Meta,
@@ -1062,6 +1121,7 @@ const $Statement = (function () {
       readonly value: Expression
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Let" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
       $assert_type<Expression>(value, "Expression", Expression);
@@ -1077,7 +1137,7 @@ const $Statement = (function () {
   }
 
   class SimulateGlobal extends Statement {
-    readonly tag = "SimulateGlobal";
+    readonly tag!: "SimulateGlobal";
 
     constructor(
       readonly pos: Meta,
@@ -1085,6 +1145,7 @@ const $Statement = (function () {
       readonly goal: SimulationGoal
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "SimulateGlobal" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Expression>(actors, "Expression", Expression);
       $assert_type<SimulationGoal>(goal, "SimulationGoal", SimulationGoal);
@@ -1100,10 +1161,11 @@ const $Statement = (function () {
   }
 
   class Expr extends Statement {
-    readonly tag = "Expr";
+    readonly tag!: "Expr";
 
     constructor(readonly value: Expression) {
       super();
+      Object.defineProperty(this, "tag", { value: "Expr" });
       $assert_type<Expression>(value, "Expression", Expression);
     }
 
@@ -1216,10 +1278,11 @@ export abstract class Expression extends Node {
 
 const $Expression = (function () {
   class New extends Expression {
-    readonly tag = "New";
+    readonly tag!: "New";
 
     constructor(readonly pos: Meta, readonly typ: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "New" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(typ, "Name", Name);
     }
@@ -1234,7 +1297,7 @@ const $Expression = (function () {
   }
 
   class NewVariant extends Expression {
-    readonly tag = "NewVariant";
+    readonly tag!: "NewVariant";
 
     constructor(
       readonly pos: Meta,
@@ -1242,6 +1305,7 @@ const $Expression = (function () {
       readonly variant: Name
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "NewVariant" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(typ, "Name", Name);
       $assert_type<Name>(variant, "Name", Name);
@@ -1257,10 +1321,11 @@ const $Expression = (function () {
   }
 
   class Invoke extends Expression {
-    readonly tag = "Invoke";
+    readonly tag!: "Invoke";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
       super();
+      Object.defineProperty(this, "tag", { value: "Invoke" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Expression>>(
         signature,
@@ -1279,10 +1344,11 @@ const $Expression = (function () {
   }
 
   class Global extends Expression {
-    readonly tag = "Global";
+    readonly tag!: "Global";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Global" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -1297,10 +1363,11 @@ const $Expression = (function () {
   }
 
   class Variable extends Expression {
-    readonly tag = "Variable";
+    readonly tag!: "Variable";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Variable" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -1315,10 +1382,11 @@ const $Expression = (function () {
   }
 
   class Self extends Expression {
-    readonly tag = "Self";
+    readonly tag!: "Self";
 
     constructor(readonly pos: Meta) {
       super();
+      Object.defineProperty(this, "tag", { value: "Self" });
       $assert_type<Meta>(pos, "Meta", Meta);
     }
 
@@ -1332,10 +1400,11 @@ const $Expression = (function () {
   }
 
   class List extends Expression {
-    readonly tag = "List";
+    readonly tag!: "List";
 
     constructor(readonly pos: Meta, readonly values: Expression[]) {
       super();
+      Object.defineProperty(this, "tag", { value: "List" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Expression[]>(values, "Expression[]", $is_array(Expression));
     }
@@ -1350,10 +1419,11 @@ const $Expression = (function () {
   }
 
   class Record extends Expression {
-    readonly tag = "Record";
+    readonly tag!: "Record";
 
     constructor(readonly pos: Meta, readonly pairs: Pair<Name, Expression>[]) {
       super();
+      Object.defineProperty(this, "tag", { value: "Record" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Pair<Name, Expression>[]>(
         pairs,
@@ -1372,7 +1442,7 @@ const $Expression = (function () {
   }
 
   class Cast extends Expression {
-    readonly tag = "Cast";
+    readonly tag!: "Cast";
 
     constructor(
       readonly pos: Meta,
@@ -1380,6 +1450,7 @@ const $Expression = (function () {
       readonly value: Expression
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Cast" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
       $assert_type<Expression>(value, "Expression", Expression);
@@ -1395,10 +1466,11 @@ const $Expression = (function () {
   }
 
   class Search extends Expression {
-    readonly tag = "Search";
+    readonly tag!: "Search";
 
     constructor(readonly pos: Meta, readonly predicate: Predicate) {
       super();
+      Object.defineProperty(this, "tag", { value: "Search" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Predicate>(predicate, "Predicate", Predicate);
     }
@@ -1413,10 +1485,11 @@ const $Expression = (function () {
   }
 
   class Parens extends Expression {
-    readonly tag = "Parens";
+    readonly tag!: "Parens";
 
     constructor(readonly pos: Meta, readonly value: Expression) {
       super();
+      Object.defineProperty(this, "tag", { value: "Parens" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Expression>(value, "Expression", Expression);
     }
@@ -1431,10 +1504,11 @@ const $Expression = (function () {
   }
 
   class Lit extends Expression {
-    readonly tag = "Lit";
+    readonly tag!: "Lit";
 
     constructor(readonly value: Literal) {
       super();
+      Object.defineProperty(this, "tag", { value: "Lit" });
       $assert_type<Literal>(value, "Literal", Literal);
     }
 
@@ -1500,10 +1574,11 @@ export abstract class Literal extends Node {
 
 const $Literal = (function () {
   class False extends Literal {
-    readonly tag = "False";
+    readonly tag!: "False";
 
     constructor(readonly pos: Meta) {
       super();
+      Object.defineProperty(this, "tag", { value: "False" });
       $assert_type<Meta>(pos, "Meta", Meta);
     }
 
@@ -1517,10 +1592,11 @@ const $Literal = (function () {
   }
 
   class True extends Literal {
-    readonly tag = "True";
+    readonly tag!: "True";
 
     constructor(readonly pos: Meta) {
       super();
+      Object.defineProperty(this, "tag", { value: "True" });
       $assert_type<Meta>(pos, "Meta", Meta);
     }
 
@@ -1534,10 +1610,11 @@ const $Literal = (function () {
   }
 
   class Text extends Literal {
-    readonly tag = "Text";
+    readonly tag!: "Text";
 
     constructor(readonly pos: Meta, readonly value: String) {
       super();
+      Object.defineProperty(this, "tag", { value: "Text" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<String>(value, "String", String);
     }
@@ -1552,10 +1629,11 @@ const $Literal = (function () {
   }
 
   class Integer extends Literal {
-    readonly tag = "Integer";
+    readonly tag!: "Integer";
 
     constructor(readonly pos: Meta, readonly digits: string) {
       super();
+      Object.defineProperty(this, "tag", { value: "Integer" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<string>(digits, "string", $is_type("string"));
     }
@@ -1613,10 +1691,11 @@ export abstract class SimulationGoal extends Node {
 
 const $SimulationGoal = (function () {
   class ActionQuiescence extends SimulationGoal {
-    readonly tag = "ActionQuiescence";
+    readonly tag!: "ActionQuiescence";
 
     constructor(readonly pos: Meta) {
       super();
+      Object.defineProperty(this, "tag", { value: "ActionQuiescence" });
       $assert_type<Meta>(pos, "Meta", Meta);
     }
 
@@ -1630,10 +1709,11 @@ const $SimulationGoal = (function () {
   }
 
   class EventQuiescence extends SimulationGoal {
-    readonly tag = "EventQuiescence";
+    readonly tag!: "EventQuiescence";
 
     constructor(readonly pos: Meta) {
       super();
+      Object.defineProperty(this, "tag", { value: "EventQuiescence" });
       $assert_type<Meta>(pos, "Meta", Meta);
     }
 
@@ -1647,10 +1727,11 @@ const $SimulationGoal = (function () {
   }
 
   class TotalQuiescence extends SimulationGoal {
-    readonly tag = "TotalQuiescence";
+    readonly tag!: "TotalQuiescence";
 
     constructor(readonly pos: Meta) {
       super();
+      Object.defineProperty(this, "tag", { value: "TotalQuiescence" });
       $assert_type<Meta>(pos, "Meta", Meta);
     }
 
@@ -1664,10 +1745,11 @@ const $SimulationGoal = (function () {
   }
 
   class CustomGoal extends SimulationGoal {
-    readonly tag = "CustomGoal";
+    readonly tag!: "CustomGoal";
 
     constructor(readonly pos: Meta, readonly pred: Predicate) {
       super();
+      Object.defineProperty(this, "tag", { value: "CustomGoal" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Predicate>(pred, "Predicate", Predicate);
     }
@@ -1685,7 +1767,7 @@ const $SimulationGoal = (function () {
 })();
 
 export class Predicate extends Node {
-  readonly tag = "Predicate";
+  readonly tag!: "Predicate";
 
   constructor(
     readonly pos: Meta,
@@ -1693,6 +1775,7 @@ export class Predicate extends Node {
     readonly constraint: Constraint
   ) {
     super();
+    Object.defineProperty(this, "tag", { value: "Predicate" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<PredicateRelation[]>(
       relations,
@@ -1732,10 +1815,11 @@ export abstract class PredicateRelation extends Node {
 
 const $PredicateRelation = (function () {
   class Not extends PredicateRelation {
-    readonly tag = "Not";
+    readonly tag!: "Not";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Pattern>) {
       super();
+      Object.defineProperty(this, "tag", { value: "Not" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Pattern>>(
         signature,
@@ -1754,10 +1838,11 @@ const $PredicateRelation = (function () {
   }
 
   class Has extends PredicateRelation {
-    readonly tag = "Has";
+    readonly tag!: "Has";
 
     constructor(readonly pos: Meta, readonly signature: Signature<Pattern>) {
       super();
+      Object.defineProperty(this, "tag", { value: "Has" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Signature<Pattern>>(
         signature,
@@ -1840,7 +1925,7 @@ export abstract class Pattern extends Node {
 
 const $Pattern = (function () {
   class HasRole extends Pattern {
-    readonly tag = "HasRole";
+    readonly tag!: "HasRole";
 
     constructor(
       readonly pos: Meta,
@@ -1848,6 +1933,7 @@ const $Pattern = (function () {
       readonly name: Pattern
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "HasRole" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(typ, "Name", Name);
       $assert_type<Pattern>(name, "Pattern", Pattern);
@@ -1863,7 +1949,7 @@ const $Pattern = (function () {
   }
 
   class HasType extends Pattern {
-    readonly tag = "HasType";
+    readonly tag!: "HasType";
 
     constructor(
       readonly pos: Meta,
@@ -1871,6 +1957,7 @@ const $Pattern = (function () {
       readonly name: Pattern
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "HasType" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
       $assert_type<Pattern>(name, "Pattern", Pattern);
@@ -1886,7 +1973,7 @@ const $Pattern = (function () {
   }
 
   class Variant extends Pattern {
-    readonly tag = "Variant";
+    readonly tag!: "Variant";
 
     constructor(
       readonly pos: Meta,
@@ -1894,6 +1981,7 @@ const $Pattern = (function () {
       readonly variant: Name
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Variant" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(typ, "Name", Name);
       $assert_type<Name>(variant, "Name", Name);
@@ -1909,10 +1997,11 @@ const $Pattern = (function () {
   }
 
   class Global extends Pattern {
-    readonly tag = "Global";
+    readonly tag!: "Global";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Global" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -1927,10 +2016,11 @@ const $Pattern = (function () {
   }
 
   class Variable extends Pattern {
-    readonly tag = "Variable";
+    readonly tag!: "Variable";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Variable" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -1945,10 +2035,11 @@ const $Pattern = (function () {
   }
 
   class Wildcard extends Pattern {
-    readonly tag = "Wildcard";
+    readonly tag!: "Wildcard";
 
     constructor(readonly pos: Meta) {
       super();
+      Object.defineProperty(this, "tag", { value: "Wildcard" });
       $assert_type<Meta>(pos, "Meta", Meta);
     }
 
@@ -1962,10 +2053,11 @@ const $Pattern = (function () {
   }
 
   class Lit extends Pattern {
-    readonly tag = "Lit";
+    readonly tag!: "Lit";
 
     constructor(readonly lit: Literal) {
       super();
+      Object.defineProperty(this, "tag", { value: "Lit" });
       $assert_type<Literal>(lit, "Literal", Literal);
     }
 
@@ -2036,7 +2128,7 @@ export abstract class Constraint extends Node {
 
 const $Constraint = (function () {
   class And extends Constraint {
-    readonly tag = "And";
+    readonly tag!: "And";
 
     constructor(
       readonly pos: Meta,
@@ -2044,6 +2136,7 @@ const $Constraint = (function () {
       readonly right: Constraint
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "And" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Constraint>(left, "Constraint", Constraint);
       $assert_type<Constraint>(right, "Constraint", Constraint);
@@ -2059,7 +2152,7 @@ const $Constraint = (function () {
   }
 
   class Or extends Constraint {
-    readonly tag = "Or";
+    readonly tag!: "Or";
 
     constructor(
       readonly pos: Meta,
@@ -2067,6 +2160,7 @@ const $Constraint = (function () {
       readonly right: Constraint
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Or" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Constraint>(left, "Constraint", Constraint);
       $assert_type<Constraint>(right, "Constraint", Constraint);
@@ -2082,10 +2176,11 @@ const $Constraint = (function () {
   }
 
   class Not extends Constraint {
-    readonly tag = "Not";
+    readonly tag!: "Not";
 
     constructor(readonly pos: Meta, readonly value: Constraint) {
       super();
+      Object.defineProperty(this, "tag", { value: "Not" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Constraint>(value, "Constraint", Constraint);
     }
@@ -2100,7 +2195,7 @@ const $Constraint = (function () {
   }
 
   class Equal extends Constraint {
-    readonly tag = "Equal";
+    readonly tag!: "Equal";
 
     constructor(
       readonly pos: Meta,
@@ -2108,6 +2203,7 @@ const $Constraint = (function () {
       readonly right: Constraint
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Equal" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Constraint>(left, "Constraint", Constraint);
       $assert_type<Constraint>(right, "Constraint", Constraint);
@@ -2123,10 +2219,11 @@ const $Constraint = (function () {
   }
 
   class Variable extends Constraint {
-    readonly tag = "Variable";
+    readonly tag!: "Variable";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Variable" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -2141,10 +2238,11 @@ const $Constraint = (function () {
   }
 
   class Parens extends Constraint {
-    readonly tag = "Parens";
+    readonly tag!: "Parens";
 
     constructor(readonly pos: Meta, readonly value: Constraint) {
       super();
+      Object.defineProperty(this, "tag", { value: "Parens" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Constraint>(value, "Constraint", Constraint);
     }
@@ -2159,10 +2257,11 @@ const $Constraint = (function () {
   }
 
   class Lit extends Constraint {
-    readonly tag = "Lit";
+    readonly tag!: "Lit";
 
     constructor(readonly lit: Literal) {
       super();
+      Object.defineProperty(this, "tag", { value: "Lit" });
       $assert_type<Literal>(lit, "Literal", Literal);
     }
 
@@ -2209,10 +2308,11 @@ export abstract class Signature<T> extends Node {
 
 const $Signature = (function () {
   class Unary<T> extends Signature<T> {
-    readonly tag = "Unary";
+    readonly tag!: "Unary";
 
     constructor(readonly pos: Meta, readonly self: T, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Unary" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -2227,7 +2327,7 @@ const $Signature = (function () {
   }
 
   class Binary<T> extends Signature<T> {
-    readonly tag = "Binary";
+    readonly tag!: "Binary";
 
     constructor(
       readonly pos: Meta,
@@ -2236,6 +2336,7 @@ const $Signature = (function () {
       readonly right: T
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Binary" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(op, "Name", Name);
     }
@@ -2250,7 +2351,7 @@ const $Signature = (function () {
   }
 
   class Keyword<T> extends Signature<T> {
-    readonly tag = "Keyword";
+    readonly tag!: "Keyword";
 
     constructor(
       readonly pos: Meta,
@@ -2258,6 +2359,7 @@ const $Signature = (function () {
       readonly pairs: Pair<Name, T>[]
     ) {
       super();
+      Object.defineProperty(this, "tag", { value: "Keyword" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
     }
@@ -2305,10 +2407,11 @@ export abstract class PartialSignature<T> extends Node {
 
 const $PartialSignature = (function () {
   class Unary<T> extends PartialSignature<T> {
-    readonly tag = "Unary";
+    readonly tag!: "Unary";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Unary" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -2323,10 +2426,11 @@ const $PartialSignature = (function () {
   }
 
   class Binary<T> extends PartialSignature<T> {
-    readonly tag = "Binary";
+    readonly tag!: "Binary";
 
     constructor(readonly pos: Meta, readonly op: Name, readonly right: T) {
       super();
+      Object.defineProperty(this, "tag", { value: "Binary" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(op, "Name", Name);
     }
@@ -2341,10 +2445,11 @@ const $PartialSignature = (function () {
   }
 
   class Keyword<T> extends PartialSignature<T> {
-    readonly tag = "Keyword";
+    readonly tag!: "Keyword";
 
     constructor(readonly pos: Meta, readonly pairs: Pair<Name, T>[]) {
       super();
+      Object.defineProperty(this, "tag", { value: "Keyword" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
     }
@@ -2386,10 +2491,11 @@ export abstract class RelationPart extends Node {
 
 const $RelationPart = (function () {
   class Many extends RelationPart {
-    readonly tag = "Many";
+    readonly tag!: "Many";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "Many" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -2404,10 +2510,11 @@ const $RelationPart = (function () {
   }
 
   class One extends RelationPart {
-    readonly tag = "One";
+    readonly tag!: "One";
 
     constructor(readonly pos: Meta, readonly name: Name) {
       super();
+      Object.defineProperty(this, "tag", { value: "One" });
       $assert_type<Meta>(pos, "Meta", Meta);
       $assert_type<Name>(name, "Name", Name);
     }
@@ -2425,10 +2532,11 @@ const $RelationPart = (function () {
 })();
 
 export class Pair<K, V> extends Node {
-  readonly tag = "Pair";
+  readonly tag!: "Pair";
 
   constructor(readonly pos: Meta, readonly key: K, readonly value: V) {
     super();
+    Object.defineProperty(this, "tag", { value: "Pair" });
     $assert_type<Meta>(pos, "Meta", Meta);
   }
 
@@ -2438,10 +2546,11 @@ export class Pair<K, V> extends Node {
 }
 
 export class Name extends Node {
-  readonly tag = "Name";
+  readonly tag!: "Name";
 
   constructor(readonly pos: Meta, readonly name: string) {
     super();
+    Object.defineProperty(this, "tag", { value: "Name" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<string>(name, "string", $is_type("string"));
   }
@@ -2452,10 +2561,11 @@ export class Name extends Node {
 }
 
 export class Namespace extends Node {
-  readonly tag = "Namespace";
+  readonly tag!: "Namespace";
 
   constructor(readonly pos: Meta, readonly names: Name[]) {
     super();
+    Object.defineProperty(this, "tag", { value: "Namespace" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<Name[]>(names, "Name[]", $is_array(Name));
   }
@@ -2466,10 +2576,11 @@ export class Namespace extends Node {
 }
 
 export class String extends Node {
-  readonly tag = "String";
+  readonly tag!: "String";
 
   constructor(readonly pos: Meta, readonly text: string) {
     super();
+    Object.defineProperty(this, "tag", { value: "String" });
     $assert_type<Meta>(pos, "Meta", Meta);
     $assert_type<string>(text, "string", $is_type("string"));
   }

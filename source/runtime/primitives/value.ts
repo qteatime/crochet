@@ -19,6 +19,7 @@ export abstract class CrochetValue {
   abstract equals(other: CrochetValue): boolean;
   abstract as_bool(): boolean;
   abstract to_js(): any;
+  abstract to_text(): string;
 }
 
 export class True extends CrochetValue {
@@ -41,6 +42,10 @@ export class True extends CrochetValue {
   to_js() {
     return true;
   }
+
+  to_text() {
+    return "true";
+  }
 }
 
 export class False extends CrochetValue {
@@ -62,6 +67,10 @@ export class False extends CrochetValue {
 
   to_js() {
     return false;
+  }
+
+  to_text() {
+    return "false";
   }
 }
 
@@ -89,6 +98,10 @@ export class CrochetText extends CrochetValue {
   to_js() {
     return this.value;
   }
+
+  to_text() {
+    return JSON.stringify(this.value);
+  }
 }
 
 export class CrochetInteger extends CrochetValue {
@@ -114,6 +127,10 @@ export class CrochetInteger extends CrochetValue {
 
   to_js() {
     return this.value;
+  }
+
+  to_text() {
+    return this.value.toString();
   }
 }
 
@@ -144,6 +161,10 @@ export class CrochetStream extends CrochetValue {
 
   to_js() {
     return this.values.map((x) => x.to_js());
+  }
+
+  to_text() {
+    return `[${this.values.map((x) => x.to_text()).join(", ")}]`;
   }
 }
 
@@ -191,6 +212,12 @@ export class CrochetRecord extends CrochetValue {
   as_bool() {
     return true;
   }
+
+  to_text() {
+    return `[${[...this.values.entries()]
+      .map(([k, v]) => `${k} -> ${v.to_text()}`)
+      .join(", ")}]`;
+  }
 }
 
 export class CrochetInstance extends CrochetValue {
@@ -212,6 +239,10 @@ export class CrochetInstance extends CrochetValue {
 
   to_js() {
     return this;
+  }
+
+  to_text() {
+    return `#${this.type.type_name}`;
   }
 }
 
@@ -242,6 +273,10 @@ export class CrochetVariant extends CrochetValue {
 
   to_js() {
     return this;
+  }
+
+  to_text() {
+    return `${this.type.type_name}.${this.tag}`;
   }
 }
 
@@ -275,6 +310,10 @@ export class CrochetUnknown extends CrochetValue {
     } else {
       return this.value;
     }
+  }
+
+  to_text() {
+    return `<unknown>`;
   }
 }
 

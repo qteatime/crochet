@@ -43,6 +43,9 @@ let genField (Field (n, t)) =
 let genFields fs =
   Seq.map genField fs |> String.concat ", "
 
+let genFieldNames fs =
+  Seq.map (fun (Field (n, _)) -> n) fs
+
 let genFieldInit fs =
   let gen f = $"readonly {genField f}"
   Seq.map gen fs |> String.concat ", "
@@ -80,10 +83,11 @@ let rec generateType t =
 and genRecord n ps fs =
   $"""
   export class {n}{genParams ps} extends Node {{
-    readonly tag = "{n}"
+    readonly tag!: "{n}"
 
     constructor({genFieldInit fs}) {{
       super();
+      Object.defineProperty(this, "tag", {{ value: "{n}" }});
       {genInitAsserts ps fs}
     }}
 
@@ -113,13 +117,20 @@ and genThisProjections fs =
   Seq.map genThisProjection fs
   |> String.concat ", "
 
+and genTaggedThisProjections fs =
+  let vs = Seq.map genThisProjection fs
+  let ks = Seq.map (fun (Field (n, _)) -> n) fs
+  Seq.map2 (fun k v -> $"{k}: {v}") ks vs
+  |> String.concat ", "
+
 and genVariant p ps patTypes (Variant (n, fs)) =
   $"""
   class {n}{genParams ps} extends {p}{genParams ps} {{
-    readonly tag = "{n}";
+    readonly tag!: "{n}";
 
     constructor({genFieldInit fs}) {{
       super();
+      Object.defineProperty(this, "tag", {{ value: "{n}" }});
       {genInitAsserts ps fs}
     }}
 
@@ -387,6 +398,8 @@ let generateAstVisitor (g:Grammar) =
 // == Top
 let prelude =
   """
+const inspect = Symbol.for('nodejs.util.inspect.custom');
+
 type Result<A> =
   { ok: true, value: A }
 | { ok: false, error: string };
@@ -394,24 +407,45 @@ type Result<A> =
 export abstract class Node {}
 
 export class Meta {
-  constructor(
-    readonly source: string,
-    readonly position: { start_index: number, end_index: number }
-  ) {}
+  constructor(readonly interval: Ohm.Interval) {}
 
   static has_instance(x: any) {
     return x instanceof Meta;
   }
-};
+
+  get position() {
+    const { lineNum, colNum } = OhmUtil.getLineAndColumn(
+      (this.interval as any).sourceString,
+      this.interval.startIdx
+    );
+    return {
+      line: lineNum,
+      column: colNum,
+    };
+  }
+
+  get range() {
+    return {
+      start: this.interval.startIdx,
+      end: this.interval.endIdx,
+    };
+  }
+
+  get source_slice() {
+    return this.interval.contents;
+  }
+
+  get formatted_position_message() {
+    return this.interval.getLineAndColumnMessage();
+  }
+
+  [inspect]() {
+    return this.position;
+  }
+}
 
 function $meta(x: Ohm.Node): Meta {
-  return new Meta(
-    x.sourceString,
-    {
-      start_index: x.source.startIdx,
-      end_index: x.source.endIdx
-    }
-  );
+  return new Meta(x.source);
 }
 
 type Typed =
@@ -461,6 +495,7 @@ let generate (g:Grammar) =
   $"""
   // This file is generated from Linguist
   import * as Ohm from "ohm-js";
+  const OhmUtil = require("ohm-js/src/util");
   import {{ inspect as $inspect }} from "util";
 
   {prelude}
