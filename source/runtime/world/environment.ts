@@ -1,12 +1,10 @@
 import { CrochetValue } from "../primitives";
-import { World } from "./world";
 
 export class Environment {
   readonly bindings = new Map<string, CrochetValue>();
 
   constructor(
     readonly parent: Environment | null,
-    readonly world: World,
     private _receiver: CrochetValue | null
   ) {}
 

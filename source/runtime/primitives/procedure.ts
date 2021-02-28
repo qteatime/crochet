@@ -1,13 +1,13 @@
 import { every, zip } from "../../utils/utils";
 import { SBlock, Statement } from "../ir";
-import { cvalue, Machine, _mark } from "../vm";
+import { cvalue, Machine, State, _mark } from "../vm";
 import { Environment, World } from "../world";
 import { bfalse, CrochetValue } from "./value";
 import { CrochetType } from "./types";
 
 // -- Procedures
 export interface IProcedure {
-  invoke(world: World, env: Environment, values: CrochetValue[]): Machine;
+  invoke(state: State, values: CrochetValue[]): Machine;
 }
 
 export class Procedure {
@@ -42,8 +42,7 @@ export class ProcedureBranch {
 }
 
 export type NativeProcedureFn = (
-  world: World,
-  env: Environment,
+  state: State,
   ...args: CrochetValue[]
 ) => Machine;
 
@@ -54,19 +53,13 @@ export class NativeProcedure implements IProcedure {
     readonly foreign_name: string
   ) {}
 
-  async *invoke(
-    world: World,
-    env: Environment,
-    values: CrochetValue[]
-  ): Machine {
+  async *invoke(state: State, values: CrochetValue[]): Machine {
     const args: CrochetValue[] = [];
     for (const idx of this.parameters) {
       args.push(values[idx]);
     }
-    const procedure = world.ffi.lookup(this.foreign_name);
-    const result = cvalue(
-      yield _mark(this.name, procedure(world, env, ...args))
-    );
+    const procedure = state.world.ffi.lookup(this.foreign_name);
+    const result = cvalue(yield _mark(this.name, procedure(state, ...args)));
     return result;
   }
 }
@@ -80,14 +73,14 @@ export class CrochetProcedure implements IProcedure {
     readonly body: Statement[]
   ) {}
 
-  async *invoke(_world: World, _env: Environment, values: CrochetValue[]) {
-    const env = new Environment(this.env, this.world, values[0]);
+  async *invoke(state: State, values: CrochetValue[]) {
+    const env = new Environment(this.env, values[0]);
     for (const [k, v] of zip(this.parameters, values)) {
       env.define(k, v);
     }
     const block = new SBlock(this.body);
     const result = cvalue(
-      yield _mark(this.name, block.evaluate(this.world, env))
+      yield _mark(this.name, block.evaluate(state.with_env(env)))
     );
     return result;
   }

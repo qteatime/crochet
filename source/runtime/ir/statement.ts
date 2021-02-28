@@ -8,6 +8,7 @@ import {
   ErrVariableAlreadyBound,
   Machine,
   run_all,
+  State,
   _jump,
   _mark,
   _push,
@@ -27,15 +28,18 @@ export type Statement =
   | SSimulate;
 
 interface IStatement {
-  evaluate(world: World, env: Environment): Machine;
+  evaluate(state: State): Machine;
 }
 
 export class SFact implements IStatement {
   constructor(readonly name: string, readonly exprs: Expression[]) {}
-  async *evaluate(world: World, env: Environment): Machine {
-    const relation = cast(world.database.lookup(this.name), ConcreteRelation);
+  async *evaluate(state: State): Machine {
+    const relation = cast(
+      state.world.database.lookup(this.name),
+      ConcreteRelation
+    );
     const values = avalue(
-      yield _push(run_all(this.exprs.map((x) => x.evaluate(world, env))))
+      yield _push(run_all(this.exprs.map((x) => x.evaluate(state))))
     );
     relation.tree.insert(values);
     return bfalse;
@@ -44,10 +48,13 @@ export class SFact implements IStatement {
 
 export class SForget implements IStatement {
   constructor(readonly name: string, readonly exprs: Expression[]) {}
-  async *evaluate(world: World, env: Environment): Machine {
-    const relation = cast(world.database.lookup(this.name), ConcreteRelation);
+  async *evaluate(state: State): Machine {
+    const relation = cast(
+      state.world.database.lookup(this.name),
+      ConcreteRelation
+    );
     const values = avalue(
-      yield _push(run_all(this.exprs.map((x) => x.evaluate(world, env))))
+      yield _push(run_all(this.exprs.map((x) => x.evaluate(state))))
     );
     relation.tree.remove(values);
     return bfalse;
@@ -56,8 +63,8 @@ export class SForget implements IStatement {
 
 export class SExpression implements IStatement {
   constructor(readonly expr: Expression) {}
-  async *evaluate(world: World, env: Environment): Machine {
-    const result = cvalue(yield _push(this.expr.evaluate(world, env)));
+  async *evaluate(state: State): Machine {
+    const result = cvalue(yield _push(this.expr.evaluate(state)));
     return result;
   }
 }
@@ -65,22 +72,22 @@ export class SExpression implements IStatement {
 export class SLet implements IStatement {
   constructor(readonly name: string, readonly expr: Expression) {}
 
-  async *evaluate(world: World, env: Environment): Machine {
-    let value = cvalue(yield _push(this.expr.evaluate(world, env)));
-    if (env.has(this.name)) {
+  async *evaluate(state: State): Machine {
+    let value = cvalue(yield _push(this.expr.evaluate(state)));
+    if (state.env.has(this.name)) {
       value = cvalue(yield _throw(new ErrVariableAlreadyBound(this.name)));
     }
-    env.define(this.name, value);
+    state.env.define(this.name, value);
     return value;
   }
 }
 
 export class SBlock implements IStatement {
   constructor(readonly statements: Statement[]) {}
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     let result: CrochetValue = bfalse;
     for (const stmt of this.statements) {
-      result = cvalue(yield _push(stmt.evaluate(world, env)));
+      result = cvalue(yield _push(stmt.evaluate(state)));
     }
     return result;
   }
@@ -89,9 +96,9 @@ export class SBlock implements IStatement {
 export class SGoto implements IStatement {
   constructor(readonly name: string) {}
 
-  async *evaluate(world: World, env: Environment): Machine {
-    const scene = world.scenes.lookup(this.name);
-    const machine = scene.evaluate(world);
+  async *evaluate(state: State): Machine {
+    const scene = state.world.scenes.lookup(this.name);
+    const machine = scene.evaluate(state);
     return yield _jump(machine);
   }
 }
@@ -99,9 +106,9 @@ export class SGoto implements IStatement {
 export class SCall implements IStatement {
   constructor(readonly name: string) {}
 
-  async *evaluate(world: World, env: Environment): Machine {
-    const scene = world.scenes.lookup(this.name);
-    const machine = scene.evaluate(world);
+  async *evaluate(state: State): Machine {
+    const scene = state.world.scenes.lookup(this.name);
+    const machine = scene.evaluate(state);
     return yield _mark(scene.name, machine);
   }
 }
@@ -113,12 +120,12 @@ export class SSimulate implements IStatement {
     readonly goal: Goal
   ) {}
 
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     const actors = cast(
-      yield _push(this.actors.evaluate(world, env)),
+      yield _push(this.actors.evaluate(state)),
       CrochetStream
     );
-    const context = this.lookup_context(world);
+    const context = this.lookup_context(state.world);
     const signals = new Bag<string, Signal>("signal");
     const simulation = new Simulation(
       actors.values,
@@ -126,7 +133,7 @@ export class SSimulate implements IStatement {
       this.goal,
       signals
     );
-    return yield _push(simulation.run(world, env));
+    return yield _push(simulation.run(state));
   }
 
   lookup_context(world: World) {

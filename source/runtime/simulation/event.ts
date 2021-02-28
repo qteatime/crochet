@@ -1,6 +1,7 @@
 import { World, Environment } from "../world";
 import { SBlock, Statement } from "../ir";
 import { Predicate } from "../logic";
+import { State } from "../vm";
 
 export class When {
   constructor(
@@ -9,13 +10,13 @@ export class When {
     readonly body: Statement[]
   ) {}
 
-  executions(world: World) {
-    const results = world.search(this.predicate);
+  executions(state: State) {
+    const results = state.world.search(this.predicate);
     return results.map((uenv) => {
-      const env = new Environment(this.env, world, null);
+      const env = new Environment(this.env, null);
       env.define_all(uenv.boundValues);
       const block = new SBlock(this.body);
-      return block.evaluate(world, env);
+      return block.evaluate(state.with_env(env));
     });
   }
 }
@@ -29,16 +30,16 @@ export class Action {
     readonly body: Statement[]
   ) {}
 
-  ready_actions(world: World) {
-    const results = world.search(this.predicate);
+  ready_actions(state: State) {
+    const results = state.world.search(this.predicate);
     return results.map((uenv) => {
-      const env = new Environment(this.env, world, null);
+      const env = new Environment(this.env, null);
       env.define_all(uenv.boundValues);
       const block = new SBlock(this.body);
       return {
         title: this.title,
         tags: this.tags,
-        machine: block.evaluate(world, env),
+        machine: block.evaluate(state.with_env(env)),
       };
     });
   }
@@ -48,11 +49,11 @@ export class Context {
   readonly events: When[] = [];
   readonly actions: Action[] = [];
 
-  available_actions(world: World) {
-    return this.actions.flatMap((x) => x.ready_actions(world));
+  available_actions(state: State) {
+    return this.actions.flatMap((x) => x.ready_actions(state));
   }
 
-  available_events(world: World) {
-    return this.events.flatMap((x) => x.executions(world));
+  available_events(state: State) {
+    return this.events.flatMap((x) => x.executions(state));
   }
 }

@@ -1,6 +1,6 @@
 import * as rt from "./runtime";
 import { bfalse, CrochetInstance, CrochetInteger, cvalue } from "./runtime";
-import { World } from "./runtime/world";
+import { Environment, World } from "./runtime/world";
 import { show } from "./utils/utils";
 import { parse } from "./compiler";
 import { compileProgram } from "./compiler/compiler";
@@ -97,18 +97,19 @@ void (async function main() {
     // console.log(show(ast));
 
     const ir = compileProgram(ast);
-    const world2 = new World();
-    world2.types.add("integer", rt.tInteger);
-    world2.types.add("text", rt.tText);
-    world2.types.add("stream", rt.tStream);
-    world2.types.add("unknown", rt.tUnknown);
-    world2.types.add("any", rt.tAny);
-    world2.ffi.add("show", async function* (world, env, x) {
-      console.log("[SHOW]", cvalue(x).to_text());
+    const world = new World();
+    world.types.add("integer", rt.tInteger);
+    world.types.add("text", rt.tText);
+    world.types.add("stream", rt.tStream);
+    world.types.add("unknown", rt.tUnknown);
+    world.types.add("any", rt.tAny);
+    world.ffi.add("show", async function* (state, x) {
+      console.log("[SHOW]", x.to_text());
       return bfalse;
     });
-    await world2.load_declarations(ir);
-    const result = await world2.run("main");
+    const root = new Environment(null, null);
+    await world.load_declarations(ir, root);
+    const result = await world.run("main");
     // console.log(">>>", show(world2));
     console.log(">>>", show(cvalue(result).to_js()));
     debugger;

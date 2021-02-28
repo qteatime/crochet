@@ -1,4 +1,5 @@
-import { Predicate } from "..";
+import { Predicate } from "../logic";
+import { State } from "../vm";
 import { World } from "../world";
 import { Context } from "./event";
 
@@ -9,26 +10,26 @@ export type Goal =
   | CustomGoal;
 
 interface IGoal {
-  reached(world: World, context: Context): boolean;
+  reached(state: State, context: Context): boolean;
 }
 
 export class ActionQuiescence implements IGoal {
-  reached(world: World, context: Context): boolean {
-    return context.available_actions(world).length === 0;
+  reached(state: State, context: Context): boolean {
+    return context.available_actions(state).length === 0;
   }
 }
 
 export class EventQuiescence implements IGoal {
-  reached(world: World, context: Context): boolean {
-    return context.available_events(world).length === 0;
+  reached(state: State, context: Context): boolean {
+    return context.available_events(state).length === 0;
   }
 }
 
 export class TotalQuiescence implements IGoal {
-  reached(world: World, context: Context): boolean {
+  reached(state: State, context: Context): boolean {
     return (
-      context.available_actions(world).length === 0 &&
-      context.available_events(world).length === 0
+      context.available_actions(state).length === 0 &&
+      context.available_events(state).length === 0
     );
   }
 }
@@ -36,8 +37,8 @@ export class TotalQuiescence implements IGoal {
 export class CustomGoal implements IGoal {
   constructor(readonly predicate: Predicate) {}
 
-  reached(world: World, context: Context): boolean {
-    const results = world.search(this.predicate);
+  reached(state: State, context: Context): boolean {
+    const results = state.world.search(this.predicate);
     return results.length !== 0;
   }
 }

@@ -21,6 +21,7 @@ import {
   ErrUndefinedVariable,
   Machine,
   run_all,
+  State,
   _push,
   _throw,
 } from "../vm";
@@ -40,19 +41,20 @@ export type Expression =
   | EGlobal
   | ESelf
   | EList
-  | ERecord;
+  | ERecord
+  | ECast;
 
 interface IExpression {
-  evaluate(world: World, env: Environment): Machine;
+  evaluate(state: State): Machine;
 }
 
 export class EFalse implements IExpression {
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     return bfalse;
   }
 }
 export class ETrue implements IExpression {
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     return btrue;
   }
 }
@@ -60,8 +62,8 @@ export class ETrue implements IExpression {
 export class EVariable implements IExpression {
   constructor(readonly name: string) {}
 
-  async *evaluate(world: World, env: Environment): Machine {
-    const value = env.lookup(this.name);
+  async *evaluate(state: State): Machine {
+    const value = state.env.lookup(this.name);
     if (value == null) {
       return cvalue(yield _throw(new ErrUndefinedVariable(this.name)));
     } else {
@@ -72,22 +74,22 @@ export class EVariable implements IExpression {
 
 export class EText implements IExpression {
   constructor(readonly value: string) {}
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     return new CrochetText(this.value);
   }
 }
 
 export class EInteger implements IExpression {
   constructor(readonly value: bigint) {}
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     return new CrochetInteger(this.value);
   }
 }
 
 export class ESearch implements IExpression {
   constructor(readonly predicate: Predicate) {}
-  async *evaluate(world: World, env: Environment): Machine {
-    const results = world.search(this.predicate);
+  async *evaluate(state: State): Machine {
+    const results = state.world.search(this.predicate);
     return new CrochetStream(
       results.map((x) => new CrochetRecord(x.boundValues))
     );
@@ -96,12 +98,12 @@ export class ESearch implements IExpression {
 
 export class EInvoke implements IExpression {
   constructor(readonly name: string, readonly args: Expression[]) {}
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     const args = avalue(
-      yield _push(run_all(this.args.map((x) => x.evaluate(world, env))))
+      yield _push(run_all(this.args.map((x) => x.evaluate(state))))
     );
 
-    const procedure = world.procedures.lookup(this.name);
+    const procedure = state.world.procedures.lookup(this.name);
     const branch0 = procedure.select(args);
     let branch: ProcedureBranch;
     if (branch0 == null) {
@@ -112,9 +114,7 @@ export class EInvoke implements IExpression {
     } else {
       branch = branch0;
     }
-    const result = cvalue(
-      yield _push(branch.procedure.invoke(world, env, args))
-    );
+    const result = cvalue(yield _push(branch.procedure.invoke(state, args)));
     return result;
   }
 }
@@ -122,8 +122,8 @@ export class EInvoke implements IExpression {
 export class ENew implements IExpression {
   constructor(readonly name: string) {}
 
-  async *evaluate(world: World, env: Environment) {
-    const type = cast(world.types.lookup(this.name), TCrochetType);
+  async *evaluate(state: State) {
+    const type = cast(state.world.types.lookup(this.name), TCrochetType);
     return type.instantiate();
   }
 }
@@ -131,8 +131,8 @@ export class ENew implements IExpression {
 export class ENewVariant implements IExpression {
   constructor(readonly name: string, readonly variant: string) {}
 
-  async *evaluate(world: World, env: Environment) {
-    const type = cast(world.types.lookup(this.name), TCrochetEnum);
+  async *evaluate(state: State) {
+    const type = cast(state.world.types.lookup(this.name), TCrochetEnum);
     return type.get_variant(this.variant);
   }
 }
@@ -140,23 +140,23 @@ export class ENewVariant implements IExpression {
 export class EGlobal implements IExpression {
   constructor(readonly name: string) {}
 
-  async *evaluate(world: World, env: Environment) {
-    return world.globals.lookup(this.name);
+  async *evaluate(state: State) {
+    return state.world.globals.lookup(this.name);
   }
 }
 
 export class ESelf implements IExpression {
-  async *evaluate(world: World, env: Environment) {
-    return env.receiver;
+  async *evaluate(state: State) {
+    return state.env.receiver;
   }
 }
 
 export class EList implements IExpression {
   constructor(readonly values: Expression[]) {}
 
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     const values = avalue(
-      yield _push(run_all(this.values.map((x) => x.evaluate(world, env))))
+      yield _push(run_all(this.values.map((x) => x.evaluate(state))))
     );
     return new CrochetStream(values);
   }
@@ -164,10 +164,10 @@ export class EList implements IExpression {
 
 export class ERecord implements IExpression {
   constructor(readonly pairs: { key: string; value: Expression }[]) {}
-  async *evaluate(world: World, env: Environment): Machine {
+  async *evaluate(state: State): Machine {
     const map = new Map<string, CrochetValue>();
     for (const pair of this.pairs) {
-      const value = cvalue(yield _push(pair.value.evaluate(world, env)));
+      const value = cvalue(yield _push(pair.value.evaluate(state)));
       map.set(pair.key, value);
     }
     return new CrochetRecord(map);
@@ -177,9 +177,9 @@ export class ERecord implements IExpression {
 export class ECast implements IExpression {
   constructor(readonly type: Type, readonly value: Expression) {}
 
-  async *evaluate(world: World, env: Environment): Machine {
-    const type = this.type.realise(world);
-    const value0 = cvalue(yield _push(this.value.evaluate(world, env)));
+  async *evaluate(state: State): Machine {
+    const type = this.type.realise(state.world);
+    const value0 = cvalue(yield _push(this.value.evaluate(state)));
     const value = type.coerce(value0);
     if (value != null) {
       return value;
