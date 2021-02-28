@@ -23,7 +23,7 @@ import {
   run_all,
   _push,
   _throw,
-} from "../run";
+} from "../vm";
 import { Environment, World } from "../world";
 import { Type } from "./type";
 

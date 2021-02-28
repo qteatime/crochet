@@ -12,7 +12,7 @@ import {
   _mark,
   _push,
   _throw,
-} from "../run";
+} from "../vm";
 import { Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
 import { Expression } from "./expression";

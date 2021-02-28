@@ -7,7 +7,7 @@ import {
 } from "../logic";
 import { CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
-import { cvalue, run } from "../run";
+import { cvalue, run } from "../vm";
 import { Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
