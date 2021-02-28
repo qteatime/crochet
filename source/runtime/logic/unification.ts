@@ -44,18 +44,31 @@ export type Pattern =
   | ValuePattern
   | GlobalPattern
   | VariablePattern
-  | WildcardPattern;
+  | WildcardPattern
+  | DefaultPattern;
 
-interface IPattern {
-  unify(
+abstract class AbstractPattern {
+  abstract unify(
     state: State,
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null;
+
+  aunify(state: State, env: UnificationEnvironment, value: CrochetValue) {
+    const result = this.unify(state, env, value);
+    if (result == null) {
+      return [];
+    } else {
+      return [result];
+    }
+  }
 }
 
-export class TypePattern implements IPattern {
-  constructor(readonly pattern: Pattern, readonly type: Type) {}
+export class TypePattern extends AbstractPattern {
+  constructor(readonly pattern: Pattern, readonly type: Type) {
+    super();
+  }
+
   unify(
     state: State,
     env: UnificationEnvironment,
@@ -70,8 +83,11 @@ export class TypePattern implements IPattern {
   }
 }
 
-export class RolePattern implements IPattern {
-  constructor(readonly pattern: Pattern, readonly role: string) {}
+export class RolePattern extends AbstractPattern {
+  constructor(readonly pattern: Pattern, readonly role: string) {
+    super();
+  }
+
   unify(
     state: State,
     env: UnificationEnvironment,
@@ -86,8 +102,10 @@ export class RolePattern implements IPattern {
   }
 }
 
-export class ValuePattern implements IPattern {
-  constructor(readonly value: CrochetValue) {}
+export class ValuePattern extends AbstractPattern {
+  constructor(readonly value: CrochetValue) {
+    super();
+  }
 
   unify(
     state: State,
@@ -102,8 +120,11 @@ export class ValuePattern implements IPattern {
   }
 }
 
-export class VariantPattern implements IPattern {
-  constructor(readonly type: string, readonly variant: string) {}
+export class VariantPattern extends AbstractPattern {
+  constructor(readonly type: string, readonly variant: string) {
+    super();
+  }
+
   unify(
     state: State,
     env: UnificationEnvironment,
@@ -119,8 +140,10 @@ export class VariantPattern implements IPattern {
   }
 }
 
-export class GlobalPattern implements IPattern {
-  constructor(readonly name: string) {}
+export class GlobalPattern extends AbstractPattern {
+  constructor(readonly name: string) {
+    super();
+  }
 
   unify(
     state: State,
@@ -136,8 +159,10 @@ export class GlobalPattern implements IPattern {
   }
 }
 
-export class VariablePattern implements IPattern {
-  constructor(readonly name: string) {}
+export class VariablePattern extends AbstractPattern {
+  constructor(readonly name: string) {
+    super();
+  }
 
   unify(
     state: State,
@@ -157,7 +182,7 @@ export class VariablePattern implements IPattern {
   }
 }
 
-export class WildcardPattern implements IPattern {
+export class WildcardPattern extends AbstractPattern {
   unify(
     state: State,
     env: UnificationEnvironment,

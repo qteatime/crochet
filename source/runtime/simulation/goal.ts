@@ -1,4 +1,5 @@
 import { Predicate } from "../logic";
+import { CrochetValue } from "../primitives";
 import { State } from "../vm";
 import { World } from "../world";
 import { Context } from "./event";
@@ -10,35 +11,86 @@ export type Goal =
   | CustomGoal;
 
 interface IGoal {
-  reached(state: State, context: Context): boolean;
+  reset(): void;
+  tick(actor: CrochetValue, state: State, context: Context): void;
+  reached(round_ended: boolean): boolean;
 }
 
 export class ActionQuiescence implements IGoal {
-  reached(state: State, context: Context): boolean {
-    return context.available_actions(state).length === 0;
+  private _reached = true;
+
+  reached(round_ended: boolean) {
+    return round_ended && this._reached;
+  }
+
+  reset() {
+    this._reached = true;
+  }
+
+  tick(actor: CrochetValue, state: State, context: Context) {
+    if (context.available_actions(actor, state).length !== 0) {
+      this._reached = false;
+    }
   }
 }
 
 export class EventQuiescence implements IGoal {
-  reached(state: State, context: Context): boolean {
-    return context.available_events(state).length === 0;
+  private _reached = true;
+
+  reached(round_ended: boolean) {
+    return round_ended && this._reached;
+  }
+
+  reset() {
+    this._reached = true;
+  }
+
+  tick(actor: CrochetValue, state: State, context: Context) {
+    if (context.available_events(state).length !== 0) {
+      this._reached = false;
+    }
   }
 }
 
 export class TotalQuiescence implements IGoal {
-  reached(state: State, context: Context): boolean {
+  private event_goal = new EventQuiescence();
+  private action_goal = new ActionQuiescence();
+
+  reached(round_ended: boolean) {
     return (
-      context.available_actions(state).length === 0 &&
-      context.available_events(state).length === 0
+      this.event_goal.reached(round_ended) &&
+      this.action_goal.reached(round_ended)
     );
+  }
+
+  reset() {
+    this.event_goal.reset();
+    this.action_goal.reset();
+  }
+
+  tick(actor: CrochetValue, state: State, context: Context) {
+    this.action_goal.tick(actor, state, context);
+    this.event_goal.tick(actor, state, context);
   }
 }
 
 export class CustomGoal implements IGoal {
+  private _reached = false;
+
   constructor(readonly predicate: Predicate) {}
 
-  reached(state: State, context: Context): boolean {
+  reached(round_ended: boolean) {
+    return this._reached;
+  }
+
+  reset() {
+    this._reached = false;
+  }
+
+  tick(actor: CrochetValue, state: State, context: Context) {
     const results = state.database.search(state, this.predicate);
-    return results.length !== 0;
+    if (results.length !== 0) {
+      this._reached = true;
+    }
   }
 }
