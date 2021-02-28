@@ -38,7 +38,7 @@ export class CustomGoal implements IGoal {
   constructor(readonly predicate: Predicate) {}
 
   reached(state: State, context: Context): boolean {
-    const results = state.world.search(this.predicate);
+    const results = state.database.search(state, this.predicate);
     return results.length !== 0;
   }
 }

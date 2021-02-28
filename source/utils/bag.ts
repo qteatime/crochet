@@ -10,8 +10,12 @@ export class Bag<K, V> {
     this.map.set(name, value);
   }
 
-  has(name: K) {
+  has_own(name: K) {
     return this.map.has(name);
+  }
+
+  has(name: K) {
+    return this.try_lookup(name) != null;
   }
 
   try_lookup(name: K) {
@@ -19,7 +23,7 @@ export class Bag<K, V> {
   }
 
   lookup(name: K) {
-    const value = this.map.get(name);
+    const value = this.try_lookup(name);
     if (value != null) {
       return value;
     } else {

@@ -1,4 +1,5 @@
 import { CrochetValue } from "../primitives";
+import { State } from "../vm";
 import { World } from "../world";
 import { Pattern, UnificationEnvironment } from "./unification";
 
@@ -39,7 +40,7 @@ interface INode {
   insert(values: CrochetValue[]): void;
   remove(values: CrochetValue[]): Tree | null;
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[];
@@ -81,7 +82,7 @@ export class OneNode implements INode {
   }
 
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[] {
@@ -90,11 +91,11 @@ export class OneNode implements INode {
     }
 
     const [head, ...tail] = patterns;
-    const newEnv = head.unify(world, env, this.value.value);
+    const newEnv = head.unify(state, env, this.value.value);
     if (newEnv == null) {
       return [];
     } else {
-      return this.value.tree.search(world, newEnv, tail);
+      return this.value.tree.search(state, newEnv, tail);
     }
   }
 
@@ -152,18 +153,18 @@ export class ManyNode implements INode {
   }
 
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[] {
     const [head, ...tail] = patterns;
 
     return this.pairs.flatMap((pair) => {
-      const newEnv = head.unify(world, env, pair.value);
+      const newEnv = head.unify(state, env, pair.value);
       if (newEnv == null) {
         return [];
       } else {
-        return pair.tree.search(world, newEnv, tail);
+        return pair.tree.search(state, newEnv, tail);
       }
     });
   }
@@ -189,7 +190,7 @@ export class EndNode implements INode {
   }
 
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[] {

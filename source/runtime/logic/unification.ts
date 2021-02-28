@@ -2,6 +2,7 @@ import { TypeApp } from "../../generated/crochet-grammar";
 import { cast } from "../../utils/utils";
 import { Type } from "../ir";
 import { CrochetType, CrochetValue, TCrochetEnum } from "../primitives";
+import { State } from "../vm";
 import { World } from "../world";
 
 export class UnificationEnvironment {
@@ -47,7 +48,7 @@ export type Pattern =
 
 interface IPattern {
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null;
@@ -56,13 +57,13 @@ interface IPattern {
 export class TypePattern implements IPattern {
   constructor(readonly pattern: Pattern, readonly type: Type) {}
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
-    const type = this.type.realise(world);
+    const type = this.type.realise(state.world);
     if (type.accepts(value)) {
-      return this.pattern.unify(world, env, value);
+      return this.pattern.unify(state, env, value);
     } else {
       return null;
     }
@@ -72,13 +73,13 @@ export class TypePattern implements IPattern {
 export class RolePattern implements IPattern {
   constructor(readonly pattern: Pattern, readonly role: string) {}
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
-    const role = world.roles.lookup(this.role);
+    const role = state.world.roles.lookup(this.role);
     if (value.has_role(role)) {
-      return this.pattern.unify(world, env, value);
+      return this.pattern.unify(state, env, value);
     } else {
       return null;
     }
@@ -89,7 +90,7 @@ export class ValuePattern implements IPattern {
   constructor(readonly value: CrochetValue) {}
 
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
@@ -104,11 +105,11 @@ export class ValuePattern implements IPattern {
 export class VariantPattern implements IPattern {
   constructor(readonly type: string, readonly variant: string) {}
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     other: CrochetValue
   ): UnificationEnvironment | null {
-    const type = cast(world.types.lookup(this.type), TCrochetEnum);
+    const type = cast(state.world.types.lookup(this.type), TCrochetEnum);
     const variant = type.get_variant(this.variant);
     if (variant.equals(other)) {
       return env;
@@ -122,11 +123,11 @@ export class GlobalPattern implements IPattern {
   constructor(readonly name: string) {}
 
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     other: CrochetValue
   ): UnificationEnvironment | null {
-    const value = world.globals.lookup(this.name);
+    const value = state.world.globals.lookup(this.name);
     if (other.equals(value)) {
       return env;
     } else {
@@ -139,7 +140,7 @@ export class VariablePattern implements IPattern {
   constructor(readonly name: string) {}
 
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
@@ -158,7 +159,7 @@ export class VariablePattern implements IPattern {
 
 export class WildcardPattern implements IPattern {
   unify(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
     _value: CrochetValue
   ): UnificationEnvironment | null {

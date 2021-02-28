@@ -1,4 +1,5 @@
 import { zip } from "../../utils/utils";
+import { State } from "../vm";
 import { World } from "../world";
 import { Constraint } from "./constraint";
 import { Database } from "./database";
@@ -12,11 +13,11 @@ export class Predicate {
     readonly constraint: Constraint
   ) {}
 
-  search(world: World, env: UnificationEnvironment, db: Database) {
+  search(state: State, env: UnificationEnvironment) {
     return this.relations
       .reduce(
         (envs, relation) => {
-          return envs.flatMap((env) => relation.search(world, env, db));
+          return envs.flatMap((env) => relation.search(state, env));
         },
         [env]
       )
@@ -29,28 +30,24 @@ export class Predicate {
 export type PredicateRelation = HasRelation | NotRelation;
 
 interface IPredicateRelation {
-  search(
-    world: World,
-    env: UnificationEnvironment,
-    db: Database
-  ): UnificationEnvironment[];
+  search(state: State, env: UnificationEnvironment): UnificationEnvironment[];
 }
 
 export class HasRelation implements IPredicateRelation {
   constructor(readonly name: string, readonly patterns: Pattern[]) {}
 
-  search(world: World, env: UnificationEnvironment, db: Database) {
-    const relation = db.lookup(this.name);
-    return relation.search(world, env, this.patterns, db);
+  search(state: State, env: UnificationEnvironment) {
+    const relation = state.database.lookup(this.name);
+    return relation.search(state, env, this.patterns);
   }
 }
 
 export class NotRelation implements IPredicateRelation {
   constructor(readonly name: string, readonly patterns: Pattern[]) {}
 
-  search(world: World, env: UnificationEnvironment, db: Database) {
-    const relation = db.lookup(this.name);
-    const results = relation.search(world, env, this.patterns, db);
+  search(state: State, env: UnificationEnvironment) {
+    const relation = state.database.lookup(this.name);
+    const results = relation.search(state, env, this.patterns);
     if (results.length === 0) {
       return [env];
     } else {
@@ -66,10 +63,9 @@ export type MappedRelation =
 
 interface IRelation {
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
-    patterns: Pattern[],
-    database: Database
+    patterns: Pattern[]
   ): UnificationEnvironment[];
 }
 
@@ -77,32 +73,29 @@ export class ConcreteRelation implements IRelation {
   constructor(readonly name: string, readonly tree: Tree) {}
 
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
-    patterns: Pattern[],
-    db: Database
+    patterns: Pattern[]
   ): UnificationEnvironment[] {
-    return this.tree.search(world, env, patterns);
+    return this.tree.search(state, env, patterns);
   }
 }
 
 export type FunctionRelationFn = (
-  world: World,
+  state: State,
   env: UnificationEnvironment,
-  patterns: Pattern[],
-  db: Database
+  patterns: Pattern[]
 ) => UnificationEnvironment[];
 
 export class FunctionRelation implements IRelation {
   constructor(readonly name: string, readonly code: FunctionRelationFn) {}
 
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
-    patterns: Pattern[],
-    db: Database
+    patterns: Pattern[]
   ): UnificationEnvironment[] {
-    return this.code(world, env, patterns, db);
+    return this.code(state, env, patterns);
   }
 }
 
@@ -114,14 +107,13 @@ export class PredicateProcedure implements IRelation {
   ) {}
 
   search(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
-    patterns: Pattern[],
-    db: Database
+    patterns: Pattern[]
   ): UnificationEnvironment[] {
     const bindings = [...zip(this.parameters, patterns)];
     for (const clause of this.clauses) {
-      const result = clause.evaluate(world, env, bindings, db);
+      const result = clause.evaluate(state, env, bindings);
       if (result.length !== 0) {
         return result;
       }
@@ -134,13 +126,12 @@ export class PredicateClause {
   constructor(readonly predicate: Predicate, readonly effect: Effect) {}
 
   evaluate(
-    world: World,
+    state: State,
     env: UnificationEnvironment,
-    bindings: [string, Pattern][],
-    db: Database
+    bindings: [string, Pattern][]
   ) {
-    return this.predicate.search(world, env, db).flatMap((env0) => {
-      const env1 = join(world, env0, env, bindings);
+    return this.predicate.search(state, env).flatMap((env0) => {
+      const env1 = join(state, env0, env, bindings);
       if (env1 == null) {
         return [];
       } else {
@@ -156,7 +147,7 @@ export class PredicateClause {
 }
 
 function join(
-  world: World,
+  state: State,
   env0: UnificationEnvironment,
   resultEnv: UnificationEnvironment,
   bindings: [string, Pattern][]
@@ -169,7 +160,7 @@ function join(
       return null;
     }
 
-    const newEnv = pattern.unify(world, env, value);
+    const newEnv = pattern.unify(state, env, value);
     if (newEnv == null) {
       return null;
     } else {
