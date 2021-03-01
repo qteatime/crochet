@@ -1,0 +1,4 @@
+% crochet
+
+command (X is text) ++ (Y is text) = crochet.text.concat(X, Y);
+

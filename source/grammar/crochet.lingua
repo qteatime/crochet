@@ -285,8 +285,8 @@ grammar Crochet : Program {
     | n:name        -> Pattern.Variable(meta, n)
 
   constraint =
-    | l:constraint and_ r:constraint  -> Constraint.And(meta, l, r)
-    | l:constraint or_ r:constraint   -> Constraint.Or(meta, l, r)
+    | l:constraint and r:constraint  -> Constraint.And(meta, l, r)
+    | l:constraint or r:constraint   -> Constraint.Or(meta, l, r)
     | constraint200
 
   constraint200 =
@@ -353,12 +353,12 @@ grammar Crochet : Program {
       -> Expression.Search(meta, p)
 
   invokeInfixExpression =
-    | l:invokeMixfix op:infix_symbol r:invokeInfixExpression
+    | l:invokeInfixExpression op:infix_symbol r:invokeMixfix
       -> Expression.Invoke(meta, Signature.Binary(meta, op, l, r))
     | invokeMixfix
 
   invokeMixfix =
-    | s:castExpression ps:signaturePair<invokePostfix>
+    | s:castExpression ps:signaturePair<invokePostfix>+
       -> Expression.Invoke(meta, Signature.Keyword(meta, s, ps))
     | castExpression
 
@@ -433,6 +433,8 @@ grammar Crochet : Program {
   keyword = x:s<t_keyword>                    -> Name(meta, x)
   infix_symbol = x:s<t_infix_symbol>          -> Name(meta, x)
   not = x:not_                                -> Name(meta, x)
+  and = x:and_                                -> Name(meta, x)
+  or = x:or_                                  -> Name(meta, x)
 
   namespace = x:nonemptyListOf<atom, s<".">>  -> Namespace(meta, x)
 
@@ -456,8 +458,8 @@ grammar Crochet : Program {
     | n:not                       -> PartialSignature.Unary(meta, n)
 
   signature<t> =
-    | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
     | l:t op:infix_symbol r:t         -> Signature.Binary(meta, op, l, r)
+    | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
     | s:t n:atom                      -> Signature.Unary(meta, s, n)
     | n:not s:t                       -> Signature.Unary(meta, s, n)
 
@@ -489,10 +491,20 @@ grammar Crochet : Program {
   token t_name (a name) = name_start name_rest*
 
   token t_infix_symbol =
-    | "+" | "-" | "*" | "/"
-    | "<" | ">" | "<=" | ">="
+    | x:t_any_infix ~infix_character  -> x
+    | and_
+    | or_
+
+  token t_any_infix =
+    | "++" | "+"
+    | "-"
+    | "*"
+    | "/"
+    | "<=" | "<"
+    | ">=" | ">"
     | "===" | "=/="
-    | and_ | or_
+
+  token infix_character = "+" | "-" | "*" | "/" | "<" | ">" | "="
 
   // -- Literals
   token dec_digit = "0".."9" | "_"
@@ -509,7 +521,7 @@ grammar Crochet : Program {
 
 
   // -- Reserved words
-  kw<w> = s<w> ~atom_rest
+  kw<w> = x:s<w> ~atom_rest -> x
 
   relation_ = kw<"relation">
   predicate_ = kw<"predicate">

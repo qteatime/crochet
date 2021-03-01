@@ -1,4 +1,5 @@
-import { and, from_bool, not, or, CrochetValue } from "../primitives";
+import { from_bool, CrochetValue } from "../primitives";
+import { Core } from "../primitives";
 import { UnificationEnvironment } from "./unification";
 
 export type Constraint = And | Or | Not | Variable | Equals | Value;
@@ -11,7 +12,7 @@ export class And implements IConstraint {
   constructor(readonly left: Constraint, readonly right: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
-    return and(this.left.evaluate(env), this.right.evaluate(env));
+    return Core.band(this.left.evaluate(env), this.right.evaluate(env));
   }
 }
 
@@ -19,7 +20,7 @@ export class Or implements IConstraint {
   constructor(readonly left: Constraint, readonly right: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
-    return or(this.left.evaluate(env), this.right.evaluate(env));
+    return Core.bor(this.left.evaluate(env), this.right.evaluate(env));
   }
 }
 
@@ -27,7 +28,7 @@ export class Not implements IConstraint {
   constructor(readonly constraint: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
-    return not(this.constraint.evaluate(env));
+    return Core.bnot(this.constraint.evaluate(env));
   }
 }
 
@@ -48,7 +49,7 @@ export class Equals implements IConstraint {
   constructor(readonly left: Constraint, readonly right: Constraint) {}
 
   evaluate(env: UnificationEnvironment): CrochetValue {
-    return from_bool(this.left.evaluate(env).equals(this.right.evaluate(env)));
+    return Core.eq(this.left.evaluate(env), this.right.evaluate(env));
   }
 }
 

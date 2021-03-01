@@ -1,10 +1,18 @@
-import { CrochetType, CrochetValue, Procedure, type_name } from "../primitives";
+import {
+  CrochetRecord,
+  CrochetType,
+  CrochetValue,
+  Procedure,
+  type_name,
+} from "../primitives";
 
 export type MachineError =
   | ErrUndefinedVariable
   | ErrVariableAlreadyBound
   | ErrNoBranchMatched
-  | ErrNoConversionAvailable;
+  | ErrNoConversionAvailable
+  | ErrNoRecordKey
+  | ErrIndexOutOfRange;
 
 export class ErrUndefinedVariable {
   constructor(readonly name: string) {}
@@ -39,5 +47,21 @@ export class ErrNoConversionAvailable {
     return `no-conversion-available: It's not possible to convert the value of type ${type_name(
       this.value
     )} to ${type_name(this.type)}`;
+  }
+}
+
+export class ErrNoRecordKey {
+  constructor(readonly record: CrochetRecord, readonly key: string) {}
+
+  format() {
+    return `no-record-key: The record does not contain a key ${this.key}`;
+  }
+}
+
+export class ErrIndexOutOfRange {
+  constructor(readonly value: CrochetValue, readonly index: any) {}
+
+  format() {
+    return `index-out-of-range: The index ${this.index} does not exist in the value`;
   }
 }

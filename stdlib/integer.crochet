@@ -1,0 +1,27 @@
+% crochet
+
+// Note: we don't provide the non-integral division operator (/) yet because
+// we neither have fractional numbers nor floats.
+
+// == Arithmetic
+command (X is integer) + (Y is integer) = crochet.integer.add(X, Y);
+command (X is integer) - (Y is integer) = crochet.integer.sub(X, Y);
+command (X is integer) * (Y is integer) = crochet.integer.mul(X, Y);
+
+command (X is integer) divided-by: (Y is integer) = crochet.integer.div(X, Y);
+command (X is integer) remainder-of-division-by: (Y is integer) = crochet.integer.rem(X, Y);
+
+command (X is integer) divide-by-with-remainder: (Y is integer) {
+  [
+    Quotient -> X divided-by: Y,
+    Remainder -> X remainder-of-division-by: Y,
+  ];
+}
+
+// == Relational
+command (X is integer) < (Y is integer) = crochet.integer.lt(X, Y);
+command (X is integer) <= (Y is integer) = crochet.integer.lte(X, Y);
+command (X is integer) > (Y is integer) = crochet.integer.gt(X, Y);
+command (X is integer) >= (Y is integer) = crochet.integer.gte(X, Y);
+
+

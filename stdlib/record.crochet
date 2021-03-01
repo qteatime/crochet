@@ -1,0 +1,11 @@
+% crochet
+
+command (X is record) ++ (Y is record) = crochet.record.merge(X, Y);
+
+command (X is record) at: (K is text) = crochet.record.at(X, K);
+command (X is record) at: (K is text) put: V = crochet.record.at-put(X, K, V);
+
+command (X is record) keys = crochet.record.keys(X);
+command (X is record) values = crochet.record.values(X);
+
+command (X is record) count = crochet.record.count(X);

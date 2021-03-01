@@ -1,10 +1,17 @@
 import * as rt from "./runtime";
-import { bfalse, CrochetInstance, CrochetInteger, cvalue } from "./runtime";
+import {
+  bfalse,
+  CrochetInstance,
+  CrochetInteger,
+  cvalue,
+  State,
+} from "./runtime";
 import { Environment, World } from "./runtime/world";
 import { show } from "./utils/utils";
 import { parse } from "./compiler";
 import { compileProgram } from "./compiler/compiler";
 import { ForeignInterface } from "./runtime/world/foreign";
+import * as Stdlib from "./stdlib";
 
 const programStr = `
 % crochet
@@ -93,24 +100,22 @@ when X simulate-turn {
 
 void (async function main() {
   try {
+    const world = new World();
+    const state = State.root(world);
+    await Stdlib.load(state);
+
     const ast = parse(programStr);
     // console.log(show(ast));
 
     const ir = compileProgram(ast);
-    const world = new World();
-    world.types.add("integer", rt.tInteger);
-    world.types.add("text", rt.tText);
-    world.types.add("stream", rt.tStream);
-    world.types.add("unknown", rt.tUnknown);
-    world.types.add("any", rt.tAny);
     world.ffi.add("show", async function* (state, x) {
       console.log("[SHOW]", x.to_text());
       return bfalse;
     });
-    const root = new Environment(null, null);
-    await world.load_declarations(ir, root);
+
+    await world.load_declarations(ir, state.env);
+
     const result = await world.run("main");
-    // console.log(">>>", show(world2));
     console.log(">>>", show(cvalue(result).to_js()));
     debugger;
   } catch (e) {

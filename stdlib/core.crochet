@@ -1,0 +1,8 @@
+% crochet
+
+command X and Y = crochet.core.band(X, Y);
+command X or Y = crochet.core.bor(X, Y);
+command not X = crochet.core.bnot(X);
+
+command X === Y = crochet.core.eq(X, Y);
+command X =/= Y = crochet.core.not-eq(X, Y);

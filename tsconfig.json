@@ -4,8 +4,9 @@
     "rootDir": "source",
     "outDir": "build",
     "module": "commonjs",
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM"]
+    "target": "ES2020",
+    "lib": ["ESNext", "DOM"],
+    "experimentalDecorators": true
   },
   "include": ["source/**/*.ts"]
 }

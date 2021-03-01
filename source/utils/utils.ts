@@ -77,3 +77,14 @@ export function every<A>(xs: Iterable<A>, pred: (_: A) => boolean): boolean {
   }
   return true;
 }
+
+export function copy_map<A, B>(source: Map<A, B>, target: Map<A, B>) {
+  for (const [k, v] of source.entries()) {
+    target.set(k, v);
+  }
+  return target;
+}
+
+export function* gen<A>(x: Iterable<A>) {
+  yield* x;
+}
