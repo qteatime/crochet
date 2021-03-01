@@ -1,0 +1,5 @@
+% crochet
+
+scene main {
+  ["1 + 2 * 4 =", 1 + 2 * 4] show;
+}
