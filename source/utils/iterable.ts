@@ -1,9 +1,9 @@
-export function iter<T>(x: IterableIterator<T>) {
+export function iter<T>(x: Iterable<T>) {
   return new BetterIterable(x);
 }
 
 export class BetterIterable<T> {
-  constructor(readonly values: IterableIterator<T>) {}
+  constructor(readonly values: Iterable<T>) {}
 
   map<U>(f: (_: T) => U) {
     const values = this.values;

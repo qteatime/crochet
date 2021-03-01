@@ -1,4 +1,5 @@
 import { every, zip } from "../../utils/utils";
+import { Machine } from "../vm";
 import {
   CrochetRole,
   CrochetType,

@@ -1,0 +1,14 @@
+% crochet
+
+command (X is stream) count = crochet.stream.count(X);
+
+command (X is stream) first = crochet.stream.first(X);
+command (X is stream) last = crochet.stream.last(X);
+command (X is stream) but-first = crochet.stream.but-first(X);
+command (X is stream) but-last = crochet.stream.but-last(X);
+command (X is stream) take: (N is integer) = crochet.stream.take(X, N);
+command (X is stream) drop: (N is integer) = crochet.stream.drop(X, N);
+
+command (X is stream) ++ (Y is stream) = crochet.stream.concat(X, Y);
+
+command (X is stream) zip: (Y is stream) = crochet.stream.zip(X, Y);
