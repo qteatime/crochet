@@ -1,0 +1,15 @@
+% crochet
+
+relation X* at: Y;
+
+scene main {
+  let Point = [X -> 1, Y -> 2];
+  [Point.X, Point.Y] show;
+
+  fact "player" at: "foyer";
+  fact "npc" at: "foyer";
+  let Location = search Who at: Where;
+  Location.Who show;
+  Location.Where show;
+
+}

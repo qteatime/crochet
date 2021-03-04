@@ -311,6 +311,10 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.ECast(compileTypeApp(type), compileExpression(value));
     },
 
+    Project(_, object, field) {
+      return new IR.EProject(compileExpression(object), field.name);
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },
