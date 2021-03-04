@@ -67,6 +67,8 @@ type Expression =
   | Select(pos: Meta, object: Expression, fields: Projection[])
   | For(pos: Meta, stream: Expression, name: Name, body: Expression)
   | Block(pos: Meta, body: Statement[])
+  | Apply(pos: Meta, partial: Expression, values: Expression[])
+  | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
@@ -384,6 +386,11 @@ grammar Crochet : Program {
   invokePostfix =
     | s:invokePostfix n:atom
       -> Expression.Invoke(meta, Signature.Unary(meta, s, n))
+    | applyExpression
+
+  applyExpression =
+    | f:applyExpression s<"("> xs:nonemptyListOf<expression, s<",">> s<",">? s<")">
+      -> Expression.Apply(meta, f, xs)
     | memberExpression
 
   memberExpression =
@@ -406,6 +413,7 @@ grammar Crochet : Program {
     | literalExpression
     | recordExpression<expression>
     | listExpression<expression>
+    | hole
     | self_                         -> Expression.Self(meta)
     | n:atom                        -> Expression.Global(meta, n)
     | n:name                        -> Expression.Variable(meta, n)
@@ -455,6 +463,8 @@ grammar Crochet : Program {
   string =
     | x:s<t_text>           -> String(meta, x)
   
+  hole =
+    | x:s<"_"> ~name_rest   -> Expression.Hole(meta)
 
   // -- Token -> Rule & Basics
   atom = ~reserved x:s<t_atom> ~":"           -> Name(meta, x)
