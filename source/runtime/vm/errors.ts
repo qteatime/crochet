@@ -12,7 +12,8 @@ export type MachineError =
   | ErrNoBranchMatched
   | ErrNoConversionAvailable
   | ErrNoRecordKey
-  | ErrIndexOutOfRange;
+  | ErrIndexOutOfRange
+  | ErrUnexpectedType;
 
 export class ErrUndefinedVariable {
   constructor(readonly name: string) {}
@@ -63,5 +64,15 @@ export class ErrIndexOutOfRange {
 
   format() {
     return `index-out-of-range: The index ${this.index} does not exist in the value`;
+  }
+}
+
+export class ErrUnexpectedType {
+  constructor(readonly type: CrochetType, readonly value: CrochetValue) {}
+
+  format() {
+    return `unexpected-type: Expected a value of type ${type_name(
+      this.type
+    )}, but got a value of type ${type_name(this.value)}`;
   }
 }

@@ -9,8 +9,12 @@ import {
   CrochetStream,
   CrochetText,
   CrochetValue,
+  Record,
   TCrochetEnum,
   TCrochetType,
+  TCrochetUnion,
+  tRecord,
+  tStream,
 } from "../primitives";
 import { ProcedureBranch } from "../primitives/procedure";
 import {
@@ -19,6 +23,7 @@ import {
   ErrNoBranchMatched,
   ErrNoConversionAvailable,
   ErrUndefinedVariable,
+  ErrUnexpectedType,
   Machine,
   run_all,
   State,
@@ -42,7 +47,8 @@ export type Expression =
   | ESelf
   | EList
   | ERecord
-  | ECast;
+  | ECast
+  | EProject;
 
 interface IExpression {
   evaluate(state: State): Machine;
@@ -185,6 +191,33 @@ export class ECast implements IExpression {
       return value;
     } else {
       return yield _throw(new ErrNoConversionAvailable(type, value0));
+    }
+  }
+}
+
+export class EProject implements IExpression {
+  constructor(readonly object: Expression, readonly field: string) {}
+
+  async *evaluate(state: State): Machine {
+    const object = cvalue(yield _push(this.object.evaluate(state)));
+    const key = new CrochetText(this.field);
+    if (object instanceof CrochetRecord) {
+      return yield _push(Record.crochet_at(state, object, key));
+    } else if (object instanceof CrochetStream) {
+      const values = avalue(
+        yield _push(
+          run_all(
+            object.values.map((x) =>
+              Record.crochet_at(state, cast(x, CrochetRecord), key)
+            )
+          )
+        )
+      );
+      return new CrochetStream(values);
+    } else {
+      return _throw(
+        new ErrUnexpectedType(new TCrochetUnion(tRecord, tStream), object)
+      );
     }
   }
 }

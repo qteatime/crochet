@@ -63,6 +63,7 @@ type Expression =
   | Record(pos: Meta, pairs: Pair<Name, Expression>[])
   | Cast(pos: Meta, typ: TypeApp, value: Expression)
   | Search(pos: Meta, predicate: Predicate)
+  | Project(pos: Meta, object: Expression, field: Name)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
@@ -370,6 +371,10 @@ grammar Crochet : Program {
   invokePostfix =
     | s:invokePostfix n:atom
       -> Expression.Invoke(meta, Signature.Unary(meta, s, n))
+    | memberExpression
+
+  memberExpression =
+    | o:memberExpression s<"."> f:name    -> Expression.Project(meta, o, f)
     | primaryExpression
 
   primaryExpression =
