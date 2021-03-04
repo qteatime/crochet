@@ -1,12 +1,5 @@
 import { unreachable } from "../../utils/utils";
-import {
-  bfalse,
-  CrochetStream,
-  CrochetType,
-  CrochetValue,
-  type_name,
-} from "../primitives";
-import { Procedure } from "../primitives/procedure";
+import { CrochetValue } from "../primitives";
 import { MachineError } from "./errors";
 
 // Error types
@@ -35,7 +28,7 @@ export class Mark {
 
 export class Throw {
   readonly tag = "throw";
-  constructor(readonly error: MachineError) {}
+  constructor(readonly error: MachineError | Error) {}
 }
 
 export function _push(machine: Machine) {
@@ -54,7 +47,7 @@ export function _mark(
   return new Mark(name, machine, k);
 }
 
-export function _throw(error: MachineError) {
+export function _throw(error: MachineError | Error) {
   return new Throw(error);
 }
 
@@ -161,9 +154,13 @@ function get_trace(frames: Frame[]) {
   return trace;
 }
 
-function format_error(error: MachineError, trace: string[]) {
-  const trace_string = trace.map((x) => `  - ${x}`).join("\n");
-  return `${error.format()}\n\n${trace_string}`;
+function format_error(error: MachineError | Error, trace: string[]) {
+  if (error instanceof Error) {
+    return error.stack;
+  } else {
+    const trace_string = trace.map((x) => `  - ${x}`).join("\n");
+    return `${error.format()}\n\n${trace_string}`;
+  }
 }
 
 export async function* run_all(machines: Machine[]): Machine {

@@ -1,16 +1,9 @@
 import * as rt from "./runtime";
-import {
-  bfalse,
-  CrochetInstance,
-  CrochetInteger,
-  cvalue,
-  State,
-} from "./runtime";
-import { Environment, World } from "./runtime/world";
+import { cvalue, False, State } from "./runtime";
+import { World } from "./runtime/world";
 import { show } from "./utils/utils";
 import { parse } from "./compiler";
 import { compileProgram } from "./compiler/compiler";
-import { ForeignInterface } from "./runtime/world/foreign";
 import * as Stdlib from "./stdlib";
 import * as FS from "fs";
 
@@ -39,7 +32,7 @@ void (async function main() {
 
     world.ffi.add("show", async function* (state, x) {
       console.log("[SHOW]", x.to_text());
-      return bfalse;
+      return False.instance;
     });
 
     const source = FS.readFileSync(filename, "utf8");

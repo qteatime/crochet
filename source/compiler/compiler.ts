@@ -22,6 +22,7 @@ import {
   String,
   SimulationGoal,
   InterpolationPart,
+  Pair,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
@@ -52,11 +53,11 @@ function parseString(x: String): string {
 export function literalToValue(lit: Literal) {
   return lit.match<rt.CrochetValue>({
     False(_) {
-      return rt.bfalse;
+      return rt.True.instance;
     },
 
     True(_) {
-      return rt.btrue;
+      return rt.False.instance;
     },
 
     Text(_, value) {
@@ -363,8 +364,8 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.ESelf();
     },
 
-    New(_, type) {
-      return new IR.ENew(type.name);
+    New(_, type, values) {
+      return new IR.ENew(type.name, values.map(compileExpression));
     },
 
     NewVariant(_, type, variant) {
@@ -616,10 +617,13 @@ export function compileParameters(xs0: Parameter[]) {
   };
 }
 
-export function compileTypeDef(t: TypeDef) {
+export function compileTypeDef(t: TypeDef, fields: Parameter[]) {
+  const params = fields.map(compileParameter);
+
   return new IR.DType(
     t.name.name,
-    t.roles.map((x) => x.name)
+    t.roles.map((x) => x.name),
+    params
   );
 }
 
@@ -675,16 +679,16 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
 
     // FIXME: make sure no further possible instantiations of this type exist
     SingletonType(meta, type0, init) {
-      const type = compileTypeDef(type0);
+      const type = compileTypeDef(type0, []);
       return [
-        new IR.DType(type.name, type.roles),
-        new IR.DDefine(type.name, new IR.ENew(type.name)),
+        new IR.DType(type.name, type.roles, []),
+        new IR.DDefine(type.name, new IR.ENew(type.name, [])),
         ...compileTypeInit(meta, type.name, init),
       ];
     },
 
-    Type(_, t) {
-      return [compileTypeDef(t)];
+    Type(_, t, fields) {
+      return [compileTypeDef(t, fields)];
     },
 
     Enum(_, name, variants) {

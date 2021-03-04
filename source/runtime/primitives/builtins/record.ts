@@ -12,13 +12,11 @@ import {
   foreign_namespace,
   machine,
 } from "../../world/ffi-decorators";
-import {
-  CrochetInteger,
-  CrochetRecord,
-  CrochetStream,
-  CrochetText,
-  CrochetValue,
-} from "../value";
+import { CrochetValue } from "../value";
+import { CrochetRecord } from "../record";
+import { CrochetStream } from "../stream";
+import { CrochetInteger } from "../integer";
+import { CrochetText } from "../text";
 
 @foreign_namespace("crochet.record")
 export class Record {

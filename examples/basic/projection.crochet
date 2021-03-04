@@ -1,14 +1,20 @@
 % crochet
 
+type point(X is integer, Y is integer);
+
 relation X* at: Y;
 
 scene main {
   let Point = [X -> 1, Y -> 2];
   [Point.X, Point.Y] show;
 
+  let Point2 = new point(1, 2);
+  [Point2.X] show;
+
   fact "player" at: "foyer";
   fact "npc" at: "foyer";
   let Location = search Who at: Where;
+  let Who = Location.Who;
   Location.Who show;
   Location.Where show;
 

@@ -8,6 +8,14 @@ import { Stream } from "./stream";
 import { Text } from "./text";
 import * as Types from "../types";
 import { Interpolation } from "./interpolation";
+import { TCrochetUnknown } from "../unknown";
+import { TCrochetFalse, TCrochetTrue } from "../boolean";
+import { TCrochetInteger } from "../integer";
+import { TCrochetRecord } from "../record";
+import { TCrochetStream } from "../stream";
+import { TCrochetText } from "../text";
+import { TAnyCrochetPartial, TCrochetPartial } from "../partial";
+import { TCrochetInterpolation } from "../interpolation";
 
 interface ForeignBag {
   $ffi_namespace: string;
@@ -39,15 +47,18 @@ export function add_native_commands(state: State) {
 
 export function add_types(state: State) {
   const types = state.world.types;
-  types.add("any", Types.tAny);
-  types.add("unknown", Types.tUnknown);
-  types.add("true", Types.tTrue);
-  types.add("false", Types.tFalse);
-  types.add("boolean", new Types.TCrochetUnion(Types.tTrue, Types.tFalse));
-  types.add("integer", Types.tInteger);
-  types.add("record", Types.tRecord);
-  types.add("stream", Types.tStream);
-  types.add("text", Types.tText);
-  types.add("partial", Types.tAnyPartial);
-  types.add("interpolation", Types.tInterpolation);
+  types.add("any", Types.TCrochetAny.type);
+  types.add("unknown", TCrochetUnknown.type);
+  types.add("true", TCrochetTrue.type);
+  types.add("false", TCrochetFalse.type);
+  types.add(
+    "boolean",
+    new Types.TCrochetUnion(TCrochetTrue.type, TCrochetFalse.type)
+  );
+  types.add("integer", TCrochetInteger.type);
+  types.add("record", TCrochetRecord.type);
+  types.add("stream", TCrochetStream.type);
+  types.add("text", TCrochetText.type);
+  types.add("partial", TAnyCrochetPartial.type);
+  types.add("interpolation", TCrochetInterpolation.type);
 }

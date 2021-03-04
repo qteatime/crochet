@@ -115,11 +115,24 @@ export class DRole implements IDeclaration {
 }
 
 export class DType implements IDeclaration {
-  constructor(readonly name: string, readonly roles: string[]) {}
+  constructor(
+    readonly name: string,
+    readonly roles: string[],
+    readonly fields: { parameter: string; type: Type }[]
+  ) {}
 
   apply(state: State) {
     const roles = this.roles.map((x) => state.world.roles.lookup(x));
-    const type = new TCrochetType(this.name, new Set(roles));
+    const fields = this.fields.map((x) => x.parameter);
+    const types = this.fields.map((x) => x.type.realise(state.world));
+    const layout = new Map(this.fields.map((x, i) => [x.parameter, i]));
+    const type = new TCrochetType(
+      this.name,
+      new Set(roles),
+      types,
+      fields,
+      layout
+    );
     state.world.types.add(this.name, type);
   }
 }

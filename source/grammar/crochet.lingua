@@ -9,7 +9,7 @@ type Declaration =
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
   | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
-  | Type(pos: Meta, typ: TypeDef)
+  | Type(pos: Meta, typ: TypeDef, fields: Parameter[])
   | Enum(pos: Meta, name: Name, values: Variant[])
   | Scene(pos: Meta, name: Name, body: Statement[])
   | Action(pos: Meta, title: String, pred: Predicate, body: Statement[]) // FIXME: interpolated titles
@@ -53,7 +53,7 @@ type Statement =
   | Expr(value: Expression)
 
 type Expression =
-  | New(pos: Meta, typ: Name)
+  | New(pos: Meta, typ: Name, fields: Expression[])
   | NewVariant(pos: Meta, typ: Name, variant: Name)
   | Invoke(pos: Meta, signature: Signature<Expression>)
   | Global(pos: Meta, name: Name)
@@ -203,7 +203,7 @@ grammar Crochet : Program {
 
   typeDeclaration =
     | singleton_ t:basicType i:typeInitBlock  -> Declaration.SingletonType(meta, t, i)
-    | t:basicType s<";">                      -> Declaration.Type(meta, t)
+    | t:basicType fs:typeFields s<";">        -> Declaration.Type(meta, t, fs)
   
   basicType =
     | type_ n:atom r:roles    -> TypeDef(n, r)
@@ -211,6 +211,14 @@ grammar Crochet : Program {
   typeInitBlock =
     | x:block<typeInit>   -> x
     | s<";">              -> []
+
+  typeFields =
+    | s<"("> fs:nonemptyListOf<typeField, s<",">> s<")">  -> fs
+    |                                                     -> []
+
+  typeField =
+    | n:name is_ t:typeApp                -> Parameter.Typed(meta, n, t)
+    | n:name                              -> Parameter.Untyped(meta, n)
 
   typeInit =
     | s:partialLogicSignature<invokePostfix> s<";">
@@ -415,7 +423,7 @@ grammar Crochet : Program {
     | n:name              -> Projection(meta, n, n)
 
   primaryExpression =
-    | newExpression
+    | newExpression<expression>
     | interpolateText<expression>
     | literalExpression
     | recordExpression<expression>
@@ -426,9 +434,13 @@ grammar Crochet : Program {
     | n:name                        -> Expression.Variable(meta, n)
     | s<"("> e:expression s<")">    -> Expression.Parens(meta, e)
 
-  newExpression =
-    | new_ n:atom            -> Expression.New(meta, n)
-    | n:atom s<"."> v:atom   -> Expression.NewVariant(meta, n, v)
+  newExpression<e> =
+    | new_ n:atom fs:newFields<e>   -> Expression.New(meta, n, fs)
+    | n:atom s<"."> v:atom          -> Expression.NewVariant(meta, n, v)
+
+  newFields<e> =
+    | s<"("> fs:nonemptyListOf<e, s<",">> s<")">    -> fs
+    |                                               -> []
 
   listExpression<e> =
     | s<"["> xs:listOf<e, s<",">> s<",">? s<"]">
@@ -445,7 +457,7 @@ grammar Crochet : Program {
     | l:literal             -> Expression.Lit(l)
 
   atomicExpression =
-    | newExpression
+    | newExpression<atomicExpression>
     | literalExpression
     | recordExpression<atomicExpression>
     | listExpression<atomicExpression>

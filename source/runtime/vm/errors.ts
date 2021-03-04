@@ -3,8 +3,8 @@ import {
   CrochetRecord,
   CrochetType,
   CrochetValue,
-  partial_holes,
   Procedure,
+  Selection,
   type_name,
 } from "../primitives";
 
@@ -16,7 +16,9 @@ export type MachineError =
   | ErrNoRecordKey
   | ErrIndexOutOfRange
   | ErrUnexpectedType
-  | ErrInvalidArity;
+  | ErrInvalidArity
+  | ErrNoProjection
+  | ErrNoSelection;
 
 export class ErrUndefinedVariable {
   constructor(readonly name: string) {}
@@ -87,5 +89,23 @@ export class ErrInvalidArity {
     return `invalid-arity: ${type_name(this.partial)} requires ${
       this.partial.arity
     } arguments, but was given ${this.provided}`;
+  }
+}
+
+export class ErrNoProjection {
+  constructor(readonly value: CrochetValue) {}
+
+  format() {
+    return `no-projection: ${type_name(
+      this.value
+    )} does not support projection.`;
+  }
+}
+
+export class ErrNoSelection {
+  constructor(readonly value: CrochetValue) {}
+
+  format() {
+    return `no-selection: ${type_name(this.value)} does not support selection.`;
   }
 }

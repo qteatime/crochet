@@ -2,6 +2,7 @@
 
 command (X is text) ++ (Y is text) = crochet.text.concat(X, Y);
 
+
 command (X is interpolation) ++ (Y is interpolation) =
   crochet.interpolation.concat(X, Y);
 
@@ -12,3 +13,8 @@ command (X is text) ++ (Y is interpolation) {
 command (X is interpolation) ++ (Y is text) {
   X ++ (Y as interpolation);
 }
+
+
+command (X is interpolation) parts = crochet.interpolation.parts(X);
+command (X is interpolation) holes = crochet.interpolation.holes(X);
+command (X is interpolation) static-text = crochet.interpolation.static-text(X);
