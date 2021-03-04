@@ -12,4 +12,5 @@ scene main {
   Location.Who show;
   Location.Where show;
 
+  Location.(Who as Quem, Where as Aonde) show;
 }

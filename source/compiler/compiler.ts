@@ -315,6 +315,28 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.EProject(compileExpression(object), field.name);
     },
 
+    Select(_, object, fields) {
+      return new IR.EProjectMany(
+        compileExpression(object),
+        fields.map((x) => ({
+          key: x.name.name,
+          alias: x.alias.name,
+        }))
+      );
+    },
+
+    Block(_, body) {
+      return new IR.EBlock(body.map(compileStatement));
+    },
+
+    For(_, stream, name, body) {
+      return new IR.EForall(
+        compileExpression(stream),
+        name.name,
+        compileExpression(body)
+      );
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },

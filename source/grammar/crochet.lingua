@@ -64,8 +64,13 @@ type Expression =
   | Cast(pos: Meta, typ: TypeApp, value: Expression)
   | Search(pos: Meta, predicate: Predicate)
   | Project(pos: Meta, object: Expression, field: Name)
+  | Select(pos: Meta, object: Expression, fields: Projection[])
+  | For(pos: Meta, stream: Expression, name: Name, body: Expression)
+  | Block(pos: Meta, body: Statement[])
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
+
+type Projection(pos: Meta, name: Name, alias: Name)
 
 type Literal =
   | False(pos: Meta)
@@ -347,11 +352,19 @@ grammar Crochet : Program {
   // -- Expressions
   expression =
     | searchExpression
+    | forExpression
     | invokeInfixExpression
 
   searchExpression =
     | search_ p:predicate
       -> Expression.Search(meta, p)
+
+  forExpression =
+    | for_ n:name in_ e:expression b:expressionBlock
+      -> Expression.For(meta, e, n, b)
+
+  expressionBlock =
+    | b:statementBlock<statement> -> Expression.Block(meta, b)
 
   invokeInfixExpression =
     | l:invokeInfixExpression op:infix_symbol r:invokeMixfix
@@ -374,8 +387,19 @@ grammar Crochet : Program {
     | memberExpression
 
   memberExpression =
-    | o:memberExpression s<"."> f:name    -> Expression.Project(meta, o, f)
+    | o:memberExpression s<"."> f:name
+      -> Expression.Project(meta, o, f)
+    | o:memberExpression s<"."> p:memberSelection
+      -> Expression.Select(meta, o, p)
     | primaryExpression
+
+  memberSelection =
+    | s<"("> xs:nonemptyListOf<fieldSelection, s<",">> s<",">? s<")">
+      -> xs
+
+  fieldSelection =
+    | n:name as_ a:name   -> Projection(meta, n, a)
+    | n:name              -> Projection(meta, n, n)
 
   primaryExpression =
     | newExpression
@@ -564,11 +588,12 @@ grammar Crochet : Program {
   quiescence_ = kw<"quiescence">
   for_ = kw<"for">
   until_ = kw<"until">
+  in_ = kw<"in">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
     | type_ | role_ | enum_ | define_ | singleton_ | goto_ | call_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
-    | event_ | quiescence_ | for_ | until_
+    | event_ | quiescence_ | for_ | until_ | in_
 }

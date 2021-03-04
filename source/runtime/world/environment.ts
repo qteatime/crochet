@@ -5,14 +5,14 @@ export class Environment {
 
   constructor(
     readonly parent: Environment | null,
-    private _receiver: CrochetValue | null
+    readonly raw_receiver: CrochetValue | null
   ) {}
 
   get receiver() {
-    if (this._receiver == null) {
+    if (this.raw_receiver == null) {
       throw new Error(`internal: requesting receiver outside of command`);
     }
-    return this._receiver;
+    return this.raw_receiver;
   }
 
   has(name: string): boolean {

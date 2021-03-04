@@ -1,3 +1,4 @@
+import ts = require("typescript");
 import { cast } from "../../utils/utils";
 import { Predicate } from "../logic";
 import {
@@ -10,6 +11,8 @@ import {
   CrochetText,
   CrochetValue,
   Record,
+  safe_cast,
+  Stream,
   TCrochetEnum,
   TCrochetType,
   TCrochetUnion,
@@ -31,6 +34,7 @@ import {
   _throw,
 } from "../vm";
 import { Environment, World } from "../world";
+import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 
 export type Expression =
@@ -48,7 +52,9 @@ export type Expression =
   | EList
   | ERecord
   | ECast
-  | EProject;
+  | EProject
+  | EForall
+  | EBlock;
 
 interface IExpression {
   evaluate(state: State): Machine;
@@ -200,24 +206,67 @@ export class EProject implements IExpression {
 
   async *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
-    const key = new CrochetText(this.field);
     if (object instanceof CrochetRecord) {
-      return yield _push(Record.crochet_at(state, object, key));
+      return yield _push(Record.at_m(state, object, this.field));
     } else if (object instanceof CrochetStream) {
-      const values = avalue(
-        yield _push(
-          run_all(
-            object.values.map((x) =>
-              Record.crochet_at(state, cast(x, CrochetRecord), key)
-            )
-          )
-        )
-      );
-      return new CrochetStream(values);
+      return yield _push(Stream.project(state, object, this.field));
     } else {
       return _throw(
         new ErrUnexpectedType(new TCrochetUnion(tRecord, tStream), object)
       );
     }
+  }
+}
+
+type Projection = { key: string; alias: string };
+
+export class EProjectMany implements IExpression {
+  constructor(readonly object: Expression, readonly fields: Projection[]) {}
+
+  async *evaluate(state: State): Machine {
+    const object = cvalue(yield _push(this.object.evaluate(state)));
+    if (object instanceof CrochetRecord) {
+      return yield _push(Record.select(state, object, this.fields));
+    } else if (object instanceof CrochetStream) {
+      return yield _push(Stream.select(state, object, this.fields));
+    } else {
+      return _throw(
+        new ErrUnexpectedType(new TCrochetUnion(tRecord, tStream), object)
+      );
+    }
+  }
+}
+
+export class EForall implements IExpression {
+  constructor(
+    readonly stream: Expression,
+    readonly name: string,
+    readonly code: Expression
+  ) {}
+
+  async *evaluate(state: State): Machine {
+    const stream0 = cvalue(yield _push(this.stream.evaluate(state)));
+    const stream = cast(
+      yield _push(safe_cast(stream0, tStream)),
+      CrochetStream
+    );
+    const results: CrochetValue[] = [];
+    for (const x of stream.values) {
+      const env = new Environment(state.env, state.env.raw_receiver);
+      env.define(this.name, x);
+      const value = cvalue(
+        yield _push(this.code.evaluate(state.with_env(env)))
+      );
+      results.push(value);
+    }
+    return new CrochetStream(results);
+  }
+}
+
+export class EBlock implements IExpression {
+  constructor(readonly body: Statement[]) {}
+
+  evaluate(state: State): Machine {
+    return new SBlock(this.body).evaluate(state);
   }
 }
