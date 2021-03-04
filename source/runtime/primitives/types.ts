@@ -3,6 +3,7 @@ import {
   btrue,
   CrochetInstance,
   CrochetInteger,
+  CrochetInterpolation,
   CrochetPartial,
   CrochetRecord,
   CrochetStream,
@@ -11,6 +12,8 @@ import {
   CrochetValue,
   CrochetVariant,
   False,
+  InterpolationDynamic,
+  InterpolationStatic,
   True,
 } from "./value";
 
@@ -281,6 +284,26 @@ export class TAnyCrochetPartial extends CrochetType {
   }
 }
 
+export class TCrochetInterpolation extends CrochetType {
+  get type_name() {
+    return "interpolation";
+  }
+
+  accepts(x: any): boolean {
+    return x instanceof CrochetInterpolation;
+  }
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (x instanceof CrochetInterpolation) {
+      return x;
+    } else if (x instanceof CrochetText) {
+      return new CrochetInterpolation([new InterpolationStatic(x.value)]);
+    } else {
+      return new CrochetInterpolation([new InterpolationDynamic(x)]);
+    }
+  }
+}
+
 export function type_name(x: any) {
   if (x instanceof CrochetValue) {
     return x.type.type_name;
@@ -300,3 +323,4 @@ export const tStream = new TCrochetStream();
 export const tRecord = new TCrochetRecord();
 export const tUnknown = new TCrochetUnknown();
 export const tAnyPartial = new TAnyCrochetPartial();
+export const tInterpolation = new TCrochetInterpolation();

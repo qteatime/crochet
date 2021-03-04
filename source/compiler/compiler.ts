@@ -21,6 +21,7 @@ import {
   TypeInit,
   String,
   SimulationGoal,
+  InterpolationPart,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
@@ -271,6 +272,65 @@ export function compileArgument(expr: Expression): IR.PartialExpr {
   }
 }
 
+export function compileInterpolationPart(
+  part: InterpolationPart
+): IR.EInterpolationPart {
+  return part.match<IR.EInterpolationPart>({
+    Escape(_, c) {
+      switch (c) {
+        case "n":
+          return new IR.EInterpolateStatic("\n");
+        case "r":
+          return new IR.EInterpolateStatic("\r");
+        case "t":
+          return new IR.EInterpolateStatic("\t");
+        default:
+          return new IR.EInterpolateStatic(c);
+      }
+    },
+
+    Static(_, c) {
+      return new IR.EInterpolateStatic(c);
+    },
+
+    Dynamic(_, x) {
+      return new IR.EInterpolateDynamic(compileExpression(x));
+    },
+  });
+}
+
+export function optimiseInterpolation(xs: IR.EInterpolationPart[]) {
+  if (xs.length === 0) {
+    return new IR.EInterpolate([]);
+  } else {
+    const [hd, ...tl] = xs;
+    const result = tl.reduce(
+      (prev, cur) => {
+        if (
+          cur instanceof IR.EInterpolateStatic &&
+          prev.now instanceof IR.EInterpolateStatic
+        ) {
+          return {
+            now: new IR.EInterpolateStatic(prev.now.text + cur.text),
+            list: prev.list,
+          };
+        } else {
+          prev.list.push(prev.now);
+          return { now: cur, list: prev.list };
+        }
+      },
+      { now: hd, list: [] as IR.EInterpolationPart[] }
+    );
+    const list = result.list;
+    list.push(result.now);
+    if (list.length === 1 && list[0] instanceof IR.EInterpolateStatic) {
+      return new IR.EText(list[0].text);
+    } else {
+      return new IR.EInterpolate(list);
+    }
+  }
+}
+
 export function compileExpression(expr: Expression): IR.Expression {
   return expr.match<IR.Expression>({
     Search(_, pred) {
@@ -359,6 +419,11 @@ export function compileExpression(expr: Expression): IR.Expression {
         compileExpression(partial),
         args.map(compileArgument)
       );
+    },
+
+    Interpolate(_, parts0) {
+      const parts = parts0.map(compileInterpolationPart);
+      return optimiseInterpolation(parts);
     },
 
     Hole(_) {

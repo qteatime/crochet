@@ -1,7 +1,7 @@
 % crochet
 
 command A says: X to: B {
-  [A, "says", X, "to", B] show;
+  "[A] says [X] to [B]" show;
 }
 
 scene main {
