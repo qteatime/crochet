@@ -7,6 +7,7 @@ import { Record } from "./record";
 import { Stream } from "./stream";
 import { Text } from "./text";
 import * as Types from "../types";
+import { Interpolation } from "./interpolation";
 
 interface ForeignBag {
   $ffi_namespace: string;
@@ -19,6 +20,7 @@ export const bags = ([
   Record,
   Stream,
   Text,
+  Interpolation,
 ] as any) as ForeignBag[];
 
 export function add_prelude(state: State) {
@@ -46,4 +48,6 @@ export function add_types(state: State) {
   types.add("record", Types.tRecord);
   types.add("stream", Types.tStream);
   types.add("text", Types.tText);
+  types.add("partial", Types.tAnyPartial);
+  types.add("interpolation", Types.tInterpolation);
 }

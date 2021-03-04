@@ -1,0 +1,12 @@
+% crochet
+
+singleton type player;
+
+scene main {
+  "Hello" show;
+  "Hello, [player]" show;
+  "Hello, ["World"]" show;
+  ("[1] " ++ " [2]") show;
+  ("1 " ++ " [2]") show;
+  ("[1] " ++ " 2") show;
+}

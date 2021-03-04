@@ -68,11 +68,17 @@ type Expression =
   | For(pos: Meta, stream: Expression, name: Name, body: Expression)
   | Block(pos: Meta, body: Statement[])
   | Apply(pos: Meta, partial: Expression, values: Expression[])
+  | Interpolate(pos: Meta, parts: InterpolationPart[])
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
 type Projection(pos: Meta, name: Name, alias: Name)
+
+type InterpolationPart =
+  | Escape(pos: Meta, character: string)
+  | Static(pos: Meta, text: string)
+  | Dynamic(pos: Meta, value: Expression)
 
 type Literal =
   | False(pos: Meta)
@@ -410,6 +416,7 @@ grammar Crochet : Program {
 
   primaryExpression =
     | newExpression
+    | interpolateText<expression>
     | literalExpression
     | recordExpression<expression>
     | listExpression<expression>
@@ -442,6 +449,15 @@ grammar Crochet : Program {
     | literalExpression
     | recordExpression<atomicExpression>
     | listExpression<atomicExpression>
+
+  interpolateText<t> =
+    | s<"\""> xs:interpolatePart<t>* "\""
+      -> Expression.Interpolate(meta, xs)
+
+  interpolatePart<p> =
+    | "\\" c:any                 -> InterpolationPart.Escape(meta, c)
+    | "[" x:s<p> s<"]">          -> InterpolationPart.Dynamic(meta, x)
+    | ~"\"" c:any                -> InterpolationPart.Static(meta, c)
 
 
   // -- Literals

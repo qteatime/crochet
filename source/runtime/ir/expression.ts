@@ -7,6 +7,7 @@ import {
   btrue,
   CrochetInstance,
   CrochetInteger,
+  CrochetInterpolation,
   CrochetPartial,
   CrochetRecord,
   CrochetStream,
@@ -319,5 +320,34 @@ export class EPartialConcrete implements IPartialExpr {
   async *evaluate(state: State): Machine {
     const value = cvalue(yield _push(this.expr.evaluate(state)));
     return new PartialConcrete(value);
+  }
+}
+
+export class EInterpolate implements IExpression {
+  constructor(readonly parts: EInterpolationPart[]) {}
+
+  async *evaluate(state: State): Machine {
+    const values = avalue(
+      yield _push(run_all(this.parts.map((x) => x.evaluate(state))))
+    );
+    return new CrochetInterpolation(values);
+  }
+}
+
+export type EInterpolationPart = EInterpolateStatic | EInterpolateDynamic;
+
+export class EInterpolateStatic {
+  constructor(readonly text: string) {}
+
+  async *evaluate(state: State): Machine {
+    return new CrochetText(this.text);
+  }
+}
+
+export class EInterpolateDynamic {
+  constructor(readonly expr: Expression) {}
+
+  async *evaluate(state: State): Machine {
+    return cvalue(yield _push(this.expr.evaluate(state)));
   }
 }

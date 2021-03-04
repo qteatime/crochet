@@ -1,4 +1,5 @@
-import { cast, every, zip } from "../../utils/utils";
+import { iter } from "../../utils";
+import { cast, every, gen, zip } from "../../utils/utils";
 import { Machine } from "../vm";
 import { Environment } from "../world";
 import {
@@ -9,6 +10,7 @@ import {
   TCrochetType,
   tFalse,
   tInteger,
+  tInterpolation,
   tRecord,
   tStream,
   tText,
@@ -22,7 +24,7 @@ export abstract class CrochetValue {
   abstract equals(other: CrochetValue): boolean;
   abstract as_bool(): boolean;
   abstract to_js(): any;
-  abstract to_text(): string;
+  abstract to_text(transparent?: boolean): string;
 }
 
 export class True extends CrochetValue {
@@ -102,8 +104,12 @@ export class CrochetText extends CrochetValue {
     return this.value;
   }
 
-  to_text() {
-    return JSON.stringify(this.value);
+  to_text(transparent?: boolean) {
+    if (transparent) {
+      return this.value;
+    } else {
+      return `"${this.value.replace(/"/g, '\\"')}"`;
+    }
   }
 }
 
@@ -401,6 +407,78 @@ export class PartialHole extends PartialValue {}
 export class PartialConcrete extends PartialValue {
   constructor(readonly value: CrochetValue) {
     super();
+  }
+}
+
+export class CrochetInterpolation extends CrochetValue {
+  constructor(readonly parts: InteprolationPart[]) {
+    super();
+  }
+
+  get type() {
+    return tInterpolation;
+  }
+
+  has_role(role: CrochetRole): boolean {
+    return false;
+  }
+
+  equals(other: CrochetValue): boolean {
+    return (
+      other instanceof CrochetInterpolation &&
+      iter(this.parts)
+        .zip(gen(other.parts))
+        .every(([x, y]) => x.equals(y))
+    );
+  }
+
+  as_bool(): boolean {
+    return true;
+  }
+
+  to_js() {
+    return this;
+  }
+
+  to_text(transparent?: boolean): string {
+    const text = this.parts.map((x) => x.to_text(true)).join("");
+    if (transparent) {
+      return text;
+    } else {
+      return `"${text}"`;
+    }
+  }
+}
+
+export abstract class InteprolationPart {
+  abstract equals(other: InteprolationPart): boolean;
+  abstract to_text(transparent?: boolean): string;
+}
+
+export class InterpolationStatic extends InteprolationPart {
+  constructor(readonly text: string) {
+    super();
+  }
+  equals(other: InteprolationPart): boolean {
+    return other instanceof InterpolationStatic && other.text === this.text;
+  }
+
+  to_text() {
+    return this.text;
+  }
+}
+
+export class InterpolationDynamic extends InteprolationPart {
+  constructor(readonly value: CrochetValue) {
+    super();
+  }
+  equals(other: InteprolationPart): boolean {
+    return (
+      other instanceof InterpolationDynamic && other.value.equals(this.value)
+    );
+  }
+  to_text(transparent?: boolean) {
+    return this.value.to_text(transparent);
   }
 }
 

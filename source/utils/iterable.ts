@@ -39,6 +39,15 @@ export class BetterIterable<T> {
     );
   }
 
+  every(f: (_: T) => boolean): boolean {
+    for (const x of this.values) {
+      if (!f(x)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   to_array() {
     return [...this.values];
   }
