@@ -3,6 +3,7 @@ import {
   btrue,
   CrochetInstance,
   CrochetInteger,
+  CrochetPartial,
   CrochetRecord,
   CrochetStream,
   CrochetText,
@@ -240,6 +241,46 @@ export class TCrochetEnum extends CrochetType {
   }
 }
 
+export class TCrochetPartial extends CrochetType {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  get type_name() {
+    return `<partial ${this.name}>`;
+  }
+
+  accepts(x: any) {
+    return x instanceof CrochetPartial && this.name === x.name;
+  }
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (this.accepts(x)) {
+      return x;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class TAnyCrochetPartial extends CrochetType {
+  get type_name() {
+    return "<partial>";
+  }
+
+  accepts(x: any) {
+    return x instanceof CrochetPartial;
+  }
+
+  coerce(x: CrochetValue): CrochetValue | null {
+    if (this.accepts(x)) {
+      return x;
+    } else {
+      return null;
+    }
+  }
+}
+
 export function type_name(x: any) {
   if (x instanceof CrochetValue) {
     return x.type.type_name;
@@ -258,3 +299,4 @@ export const tFalse = new TCrochetFalse();
 export const tStream = new TCrochetStream();
 export const tRecord = new TCrochetRecord();
 export const tUnknown = new TCrochetUnknown();
+export const tAnyPartial = new TAnyCrochetPartial();

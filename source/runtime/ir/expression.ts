@@ -2,17 +2,25 @@ import ts = require("typescript");
 import { cast } from "../../utils/utils";
 import { Predicate } from "../logic";
 import {
+  apply,
   bfalse,
   btrue,
   CrochetInstance,
   CrochetInteger,
+  CrochetPartial,
   CrochetRecord,
   CrochetStream,
   CrochetText,
   CrochetValue,
+  invoke,
+  PartialConcrete,
+  PartialHole,
+  PartialValue,
+  partial_holes,
   Record,
   safe_cast,
   Stream,
+  tAnyPartial,
   TCrochetEnum,
   TCrochetType,
   TCrochetUnion,
@@ -23,6 +31,7 @@ import { ProcedureBranch } from "../primitives/procedure";
 import {
   avalue,
   cvalue,
+  ErrInvalidArity,
   ErrNoBranchMatched,
   ErrNoConversionAvailable,
   ErrUndefinedVariable,
@@ -54,7 +63,9 @@ export type Expression =
   | ECast
   | EProject
   | EForall
-  | EBlock;
+  | EBlock
+  | EPartial
+  | EApplyPartial;
 
 interface IExpression {
   evaluate(state: State): Machine;
@@ -110,24 +121,13 @@ export class ESearch implements IExpression {
 
 export class EInvoke implements IExpression {
   constructor(readonly name: string, readonly args: Expression[]) {}
+
   async *evaluate(state: State): Machine {
     const args = avalue(
       yield _push(run_all(this.args.map((x) => x.evaluate(state))))
     );
 
-    const procedure = state.world.procedures.lookup(this.name);
-    const branch0 = procedure.select(args);
-    let branch: ProcedureBranch;
-    if (branch0 == null) {
-      branch = cast(
-        yield _throw(new ErrNoBranchMatched(procedure, args)),
-        ProcedureBranch
-      );
-    } else {
-      branch = branch0;
-    }
-    const result = cvalue(yield _push(branch.procedure.invoke(state, args)));
-    return result;
+    return yield _push(invoke(state, this.name, args));
   }
 }
 
@@ -268,5 +268,56 @@ export class EBlock implements IExpression {
 
   evaluate(state: State): Machine {
     return new SBlock(this.body).evaluate(state);
+  }
+}
+
+export class EPartial implements IExpression {
+  constructor(readonly name: string, readonly values: PartialExpr[]) {}
+
+  async *evaluate(state: State): Machine {
+    const values = (yield _push(
+      run_all(this.values.map((x) => x.evaluate(state)))
+    )) as unknown[];
+    return new CrochetPartial(
+      this.name,
+      state.env,
+      values.map((x) => cast(x, PartialValue))
+    );
+  }
+}
+
+export class EApplyPartial implements IExpression {
+  constructor(readonly partial: Expression, readonly values: PartialExpr[]) {}
+
+  async *evaluate(state: State): Machine {
+    const fn0 = cvalue(yield _push(this.partial.evaluate(state)));
+    const fn = cast(yield _push(safe_cast(fn0, tAnyPartial)), CrochetPartial);
+    const values0 = (yield _push(
+      run_all(this.values.map((x) => x.evaluate(state)))
+    )) as unknown[];
+    const values = values0.map((x) => cast(x, PartialValue));
+
+    return yield _push(apply(state, fn, values));
+  }
+}
+
+export type PartialExpr = EPartialHole | EPartialConcrete;
+
+interface IPartialExpr {
+  evaluate(state: State): Machine;
+}
+
+export class EPartialHole implements IPartialExpr {
+  async *evaluate(state: State): Machine {
+    return new PartialHole();
+  }
+}
+
+export class EPartialConcrete implements IPartialExpr {
+  constructor(readonly expr: Expression) {}
+
+  async *evaluate(state: State): Machine {
+    const value = cvalue(yield _push(this.expr.evaluate(state)));
+    return new PartialConcrete(value);
   }
 }

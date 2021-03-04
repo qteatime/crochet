@@ -25,6 +25,7 @@ import {
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
 import * as IR from "../runtime/ir";
+import { EPartialConcrete, EPartialHole } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
 import { cast } from "../utils/utils";
@@ -262,6 +263,14 @@ export function literalToExpression(lit: Literal) {
   });
 }
 
+export function compileArgument(expr: Expression): IR.PartialExpr {
+  if (expr instanceof Expression.Hole) {
+    return new EPartialHole();
+  } else {
+    return new EPartialConcrete(compileExpression(expr));
+  }
+}
+
 export function compileExpression(expr: Expression): IR.Expression {
   return expr.match<IR.Expression>({
     Search(_, pred) {
@@ -270,8 +279,16 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     Invoke(_, sig) {
       const name = signatureName(sig);
-      const args = signatureValues(sig).map(compileExpression);
-      return new IR.EInvoke(name, args);
+      const args = signatureValues(sig).map(compileArgument);
+      const is_saturated = args.every((x) => x instanceof EPartialConcrete);
+      if (is_saturated) {
+        return new IR.EInvoke(
+          name,
+          args.map((x) => cast(x, EPartialConcrete).expr)
+        );
+      } else {
+        return new IR.EPartial(name, args);
+      }
     },
 
     Variable(_, name) {
@@ -335,6 +352,17 @@ export function compileExpression(expr: Expression): IR.Expression {
         name.name,
         compileExpression(body)
       );
+    },
+
+    Apply(_, partial, args) {
+      return new IR.EApplyPartial(
+        compileExpression(partial),
+        args.map(compileArgument)
+      );
+    },
+
+    Hole(_) {
+      throw new Error(`Hole found outside of function application.`);
     },
 
     Parens(_, value) {

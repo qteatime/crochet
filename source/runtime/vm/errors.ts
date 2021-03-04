@@ -1,7 +1,9 @@
 import {
+  CrochetPartial,
   CrochetRecord,
   CrochetType,
   CrochetValue,
+  partial_holes,
   Procedure,
   type_name,
 } from "../primitives";
@@ -13,7 +15,8 @@ export type MachineError =
   | ErrNoConversionAvailable
   | ErrNoRecordKey
   | ErrIndexOutOfRange
-  | ErrUnexpectedType;
+  | ErrUnexpectedType
+  | ErrInvalidArity;
 
 export class ErrUndefinedVariable {
   constructor(readonly name: string) {}
@@ -74,5 +77,15 @@ export class ErrUnexpectedType {
     return `unexpected-type: Expected a value of type ${type_name(
       this.type
     )}, but got a value of type ${type_name(this.value)}`;
+  }
+}
+
+export class ErrInvalidArity {
+  constructor(readonly partial: CrochetPartial, readonly provided: number) {}
+
+  format() {
+    return `invalid-arity: ${type_name(this.partial)} requires ${
+      this.partial.arity
+    } arguments, but was given ${this.provided}`;
   }
 }
