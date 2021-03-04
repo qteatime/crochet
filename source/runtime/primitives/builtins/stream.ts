@@ -1,11 +1,26 @@
 import { gen, iter } from "../../../utils";
-import { ErrIndexOutOfRange, _throw } from "../../vm";
+import {
+  avalue,
+  ErrIndexOutOfRange,
+  run_all,
+  State,
+  _push,
+  _throw,
+} from "../../vm";
 import {
   foreign,
   foreign_namespace,
   machine,
 } from "../../world/ffi-decorators";
-import { CrochetInteger, CrochetStream, CrochetValue } from "../value";
+import { safe_cast } from "../core-ops";
+import { tRecord } from "../types";
+import {
+  CrochetInteger,
+  CrochetRecord,
+  CrochetStream,
+  CrochetValue,
+} from "../value";
+import { Record } from "./record";
 
 @foreign_namespace("crochet.stream")
 export class Stream {
@@ -72,5 +87,33 @@ export class Stream {
   @machine()
   static concat(a: CrochetStream, b: CrochetStream) {
     return new CrochetStream(a.values.concat(b.values));
+  }
+
+  static async *project(state: State, stream: CrochetStream, field: string) {
+    const records = avalue(
+      yield _push(run_all(stream.values.map((x) => safe_cast(x, tRecord))))
+    ) as CrochetRecord[];
+
+    const values = avalue(
+      yield _push(run_all(records.map((x) => Record.at_m(state, x, field))))
+    );
+
+    return new CrochetStream(values);
+  }
+
+  static async *select(
+    state: State,
+    stream: CrochetStream,
+    fields: { key: string; alias: string }[]
+  ) {
+    const records = avalue(
+      yield _push(run_all(stream.values.map((x) => safe_cast(x, tRecord))))
+    ) as CrochetRecord[];
+
+    const values = avalue(
+      yield _push(run_all(records.map((x) => Record.select(state, x, fields))))
+    );
+
+    return new CrochetStream(values);
   }
 }

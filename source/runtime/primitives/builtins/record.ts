@@ -1,5 +1,12 @@
 import { copy_map } from "../../../utils";
-import { ErrNoRecordKey, Machine, State, _throw } from "../../vm";
+import {
+  cvalue,
+  ErrNoRecordKey,
+  Machine,
+  State,
+  _push,
+  _throw,
+} from "../../vm";
 import {
   foreign,
   foreign_namespace,
@@ -28,18 +35,39 @@ export class Record {
     return new CrochetRecord(map);
   }
 
+  static async *at_m(
+    state: State,
+    record: CrochetRecord,
+    key: string
+  ): Machine {
+    const value = record.values.get(key);
+    if (value == null) {
+      return yield _throw(new ErrNoRecordKey(record, key));
+    } else {
+      return value;
+    }
+  }
+
   @foreign("at")
-  static async *crochet_at(
+  private static async *crochet_at(
     state: State,
     record: CrochetRecord,
     key: CrochetText
   ): Machine {
-    const value = Record.at(record, key);
-    if (value == null) {
-      return yield _throw(new ErrNoRecordKey(record, key.value));
-    } else {
-      return value;
+    return yield _push(Record.at_m(state, record, key.value));
+  }
+
+  static async *select(
+    state: State,
+    record: CrochetRecord,
+    fields: { key: string; alias: string }[]
+  ): Machine {
+    const result = new Map<string, CrochetValue>();
+    for (const { key, alias } of fields) {
+      const value = cvalue(yield _push(Record.at_m(state, record, key)));
+      result.set(alias, value);
     }
+    return new CrochetRecord(result);
   }
 
   @foreign("at-put")

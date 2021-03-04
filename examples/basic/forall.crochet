@@ -1,0 +1,7 @@
+% crochet
+
+scene main {
+  let N = [1, 2, 3, 4];
+  let Succ = for X in N { for Y in N { [X, "+", Y, X + Y] } };
+  Succ show;
+}
