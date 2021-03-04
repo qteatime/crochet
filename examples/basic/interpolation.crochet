@@ -1,6 +1,7 @@
 % crochet
 
 singleton type player;
+singleton type foyer;
 
 scene main {
   "Hello" show;
@@ -9,4 +10,10 @@ scene main {
   ("[1] " ++ " [2]") show;
   ("1 " ++ " [2]") show;
   ("[1] " ++ " 2") show;
+
+  let Text = "[player] is at the [foyer]";
+  Text show;
+  Text parts show;
+  Text holes show;
+  Text static-text show;
 }

@@ -1,7 +1,7 @@
 import { Bag } from "../../utils/bag";
 import { cast } from "../../utils/utils";
 import { ConcreteRelation } from "../logic";
-import { bfalse, CrochetStream, CrochetValue } from "../primitives";
+import { CrochetStream, CrochetValue, False } from "../primitives";
 import {
   avalue,
   cvalue,
@@ -42,7 +42,7 @@ export class SFact implements IStatement {
       yield _push(run_all(this.exprs.map((x) => x.evaluate(state))))
     );
     relation.tree.insert(values);
-    return bfalse;
+    return False.instance;
   }
 }
 
@@ -57,7 +57,7 @@ export class SForget implements IStatement {
       yield _push(run_all(this.exprs.map((x) => x.evaluate(state))))
     );
     relation.tree.remove(values);
-    return bfalse;
+    return False.instance;
   }
 }
 
@@ -85,7 +85,7 @@ export class SLet implements IStatement {
 export class SBlock implements IStatement {
   constructor(readonly statements: Statement[]) {}
   async *evaluate(state: State): Machine {
-    let result: CrochetValue = bfalse;
+    let result: CrochetValue = False.instance;
     for (const stmt of this.statements) {
       result = cvalue(yield _push(stmt.evaluate(state)));
     }

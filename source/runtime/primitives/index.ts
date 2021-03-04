@@ -1,4 +1,15 @@
 export * from "./value";
+export * from "./boolean";
+export * from "./enum";
+export * from "./instance";
+export * from "./integer";
+export * from "./interpolation";
+export * from "./partial";
+export * from "./record";
+export * from "./stream";
+export * from "./text";
+export * from "./unknown";
+
 export * from "./core-ops";
 export * from "./procedure";
 export * from "./types";

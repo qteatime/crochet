@@ -1,6 +1,4 @@
 import { cast } from "../../utils";
-import { PartialExpr } from "../ir";
-import { Value } from "../logic/constraint";
 import {
   cvalue,
   ErrInvalidArity,
@@ -13,17 +11,12 @@ import {
 } from "../vm";
 import { ProcedureBranch } from "./procedure";
 import { CrochetType } from "./types";
-import {
-  bfalse,
-  btrue,
-  CrochetPartial,
-  CrochetRecord,
-  CrochetValue,
-  PartialValue,
-} from "./value";
+import { CrochetValue } from "./value";
+import { CrochetPartial, PartialValue } from "./partial";
+import { False, True } from "./boolean";
 
 export function from_bool(x: boolean): CrochetValue {
-  return x ? btrue : bfalse;
+  return x ? True.instance : False.instance;
 }
 
 export async function* safe_cast(x: any, type: CrochetType): Machine {

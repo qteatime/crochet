@@ -1,4 +1,4 @@
-import { CrochetType, tAny, TCrochetUnion } from "../primitives";
+import { CrochetType, TCrochetAny, TCrochetUnion } from "../primitives";
 import { World } from "../world";
 
 export type Type = TNamed | TUnion | TAny;
@@ -9,7 +9,7 @@ interface IType {
 
 export class TAny implements IType {
   realise(world: World): CrochetType {
-    return tAny;
+    return TCrochetAny.type;
   }
 }
 

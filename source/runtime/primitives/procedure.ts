@@ -2,7 +2,7 @@ import { every, zip } from "../../utils/utils";
 import { SBlock, Statement } from "../ir";
 import { cvalue, Machine, State, _mark } from "../vm";
 import { Environment, World } from "../world";
-import { bfalse, CrochetValue } from "./value";
+import { CrochetValue } from "./value";
 import { CrochetType } from "./types";
 
 // -- Procedures

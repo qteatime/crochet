@@ -4,7 +4,7 @@ import {
   machine,
 } from "../../world/ffi-decorators";
 import { from_bool } from "../core-ops";
-import { CrochetInteger } from "../value";
+import { CrochetInteger } from "../integer";
 
 @foreign_namespace("crochet.integer")
 export class Integer {

@@ -3,8 +3,6 @@ import { cast } from "../../utils/utils";
 import { Predicate } from "../logic";
 import {
   apply,
-  bfalse,
-  btrue,
   CrochetInstance,
   CrochetInteger,
   CrochetInterpolation,
@@ -13,27 +11,29 @@ import {
   CrochetStream,
   CrochetText,
   CrochetValue,
+  False,
+  InteprolationPart,
+  InterpolationDynamic,
+  InterpolationStatic,
   invoke,
   PartialConcrete,
   PartialHole,
   PartialValue,
-  partial_holes,
   Record,
   safe_cast,
+  Selection,
   Stream,
-  tAnyPartial,
+  TAnyCrochetPartial,
   TCrochetEnum,
+  TCrochetRecord,
+  TCrochetStream,
   TCrochetType,
   TCrochetUnion,
-  tRecord,
-  tStream,
+  True,
 } from "../primitives";
-import { ProcedureBranch } from "../primitives/procedure";
 import {
   avalue,
   cvalue,
-  ErrInvalidArity,
-  ErrNoBranchMatched,
   ErrNoConversionAvailable,
   ErrUndefinedVariable,
   ErrUnexpectedType,
@@ -43,7 +43,7 @@ import {
   _push,
   _throw,
 } from "../vm";
-import { Environment, World } from "../world";
+import { Environment } from "../world";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 
@@ -74,12 +74,12 @@ interface IExpression {
 
 export class EFalse implements IExpression {
   async *evaluate(state: State): Machine {
-    return bfalse;
+    return True.instance;
   }
 }
 export class ETrue implements IExpression {
   async *evaluate(state: State): Machine {
-    return btrue;
+    return False.instance;
   }
 }
 
@@ -133,11 +133,14 @@ export class EInvoke implements IExpression {
 }
 
 export class ENew implements IExpression {
-  constructor(readonly name: string) {}
+  constructor(readonly name: string, readonly data: Expression[]) {}
 
-  async *evaluate(state: State) {
+  async *evaluate(state: State): Machine {
     const type = cast(state.world.types.lookup(this.name), TCrochetType);
-    return type.instantiate();
+    const values = avalue(
+      yield _push(run_all(this.data.map((x) => x.evaluate(state))))
+    );
+    return type.instantiate(values);
   }
 }
 
@@ -207,33 +210,23 @@ export class EProject implements IExpression {
 
   async *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
-    if (object instanceof CrochetRecord) {
-      return yield _push(Record.at_m(state, object, this.field));
-    } else if (object instanceof CrochetStream) {
-      return yield _push(Stream.project(state, object, this.field));
-    } else {
-      return _throw(
-        new ErrUnexpectedType(new TCrochetUnion(tRecord, tStream), object)
-      );
+    try {
+      return object.projection.project(this.field);
+    } catch (error) {
+      return yield _throw(error);
     }
   }
 }
 
-type Projection = { key: string; alias: string };
-
 export class EProjectMany implements IExpression {
-  constructor(readonly object: Expression, readonly fields: Projection[]) {}
+  constructor(readonly object: Expression, readonly fields: Selection[]) {}
 
   async *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
-    if (object instanceof CrochetRecord) {
-      return yield _push(Record.select(state, object, this.fields));
-    } else if (object instanceof CrochetStream) {
-      return yield _push(Stream.select(state, object, this.fields));
-    } else {
-      return _throw(
-        new ErrUnexpectedType(new TCrochetUnion(tRecord, tStream), object)
-      );
+    try {
+      return object.selection.select(this.fields);
+    } catch (error) {
+      return yield _throw(error);
     }
   }
 }
@@ -248,7 +241,7 @@ export class EForall implements IExpression {
   async *evaluate(state: State): Machine {
     const stream0 = cvalue(yield _push(this.stream.evaluate(state)));
     const stream = cast(
-      yield _push(safe_cast(stream0, tStream)),
+      yield _push(safe_cast(stream0, TCrochetStream.type)),
       CrochetStream
     );
     const results: CrochetValue[] = [];
@@ -292,7 +285,10 @@ export class EApplyPartial implements IExpression {
 
   async *evaluate(state: State): Machine {
     const fn0 = cvalue(yield _push(this.partial.evaluate(state)));
-    const fn = cast(yield _push(safe_cast(fn0, tAnyPartial)), CrochetPartial);
+    const fn = cast(
+      yield _push(safe_cast(fn0, TAnyCrochetPartial.type)),
+      CrochetPartial
+    );
     const values0 = (yield _push(
       run_all(this.values.map((x) => x.evaluate(state)))
     )) as unknown[];
@@ -327,9 +323,9 @@ export class EInterpolate implements IExpression {
   constructor(readonly parts: EInterpolationPart[]) {}
 
   async *evaluate(state: State): Machine {
-    const values = avalue(
-      yield _push(run_all(this.parts.map((x) => x.evaluate(state))))
-    );
+    const values = (yield _push(
+      run_all(this.parts.map((x) => x.evaluate(state)))
+    )) as InteprolationPart[];
     return new CrochetInterpolation(values);
   }
 }
@@ -340,7 +336,7 @@ export class EInterpolateStatic {
   constructor(readonly text: string) {}
 
   async *evaluate(state: State): Machine {
-    return new CrochetText(this.text);
+    return new InterpolationStatic(this.text);
   }
 }
 
@@ -348,6 +344,8 @@ export class EInterpolateDynamic {
   constructor(readonly expr: Expression) {}
 
   async *evaluate(state: State): Machine {
-    return cvalue(yield _push(this.expr.evaluate(state)));
+    return new InterpolationDynamic(
+      cvalue(yield _push(this.expr.evaluate(state)))
+    );
   }
 }

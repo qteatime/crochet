@@ -3,7 +3,7 @@ import {
   foreign_namespace,
   machine,
 } from "../../world/ffi-decorators";
-import { CrochetText } from "../value";
+import { CrochetText } from "../text";
 
 @foreign_namespace("crochet.text")
 export class Text {

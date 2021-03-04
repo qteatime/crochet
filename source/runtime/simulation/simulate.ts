@@ -6,7 +6,7 @@ import { Goal } from "./goal";
 import { World } from "../world";
 import { maybe_cast, pick } from "../../utils/utils";
 import { State, _push } from "../vm";
-import { bfalse, CrochetInteger, CrochetVariant } from "../primitives";
+import { CrochetInteger, CrochetVariant, False } from "../primitives";
 import {
   FunctionRelation,
   FunctionRelationFn,
@@ -53,7 +53,7 @@ export class Simulation {
       yield _push(this.simulate_round(state));
       this.rounds += 1n;
     }
-    return bfalse;
+    return False.instance;
   }
 
   async *simulate_round(state: State): Machine {
@@ -96,7 +96,7 @@ export class Simulation {
   get layer() {
     const layer = new FunctionLayer(null);
     layer.add("_ simulate-turn", (state, env, [pattern]) =>
-      unify(pattern, this.turn ?? bfalse, state, env)
+      unify(pattern, this.turn ?? False.instance, state, env)
     );
     layer.add("_ simulate-actor", (state, env, [pattern]) =>
       this.actors.flatMap((x) => unify(pattern, x, state, env))

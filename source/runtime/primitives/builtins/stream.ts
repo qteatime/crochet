@@ -13,13 +13,10 @@ import {
   machine,
 } from "../../world/ffi-decorators";
 import { safe_cast } from "../core-ops";
-import { tRecord } from "../types";
-import {
-  CrochetInteger,
-  CrochetRecord,
-  CrochetStream,
-  CrochetValue,
-} from "../value";
+import { CrochetValue } from "../value";
+import { CrochetRecord, TCrochetRecord } from "../record";
+import { CrochetStream } from "../stream";
+import { CrochetInteger } from "../integer";
 import { Record } from "./record";
 
 @foreign_namespace("crochet.stream")
@@ -91,7 +88,9 @@ export class Stream {
 
   static async *project(state: State, stream: CrochetStream, field: string) {
     const records = avalue(
-      yield _push(run_all(stream.values.map((x) => safe_cast(x, tRecord))))
+      yield _push(
+        run_all(stream.values.map((x) => safe_cast(x, TCrochetRecord.type)))
+      )
     ) as CrochetRecord[];
 
     const values = avalue(
@@ -107,7 +106,9 @@ export class Stream {
     fields: { key: string; alias: string }[]
   ) {
     const records = avalue(
-      yield _push(run_all(stream.values.map((x) => safe_cast(x, tRecord))))
+      yield _push(
+        run_all(stream.values.map((x) => safe_cast(x, TCrochetRecord.type)))
+      )
     ) as CrochetRecord[];
 
     const values = avalue(
