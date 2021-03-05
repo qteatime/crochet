@@ -2,6 +2,7 @@ import {
   CrochetRecord,
   CrochetStream,
   CrochetText,
+  CrochetType,
   CrochetValue,
   False,
   ForeignBag,
@@ -10,11 +11,17 @@ import {
 import {
   foreign,
   foreign_namespace,
+  foreign_type,
   machine,
 } from "../../runtime/world/ffi-decorators";
 import { cast, defer } from "../../utils";
 import { lazy } from "../../utils/decorators";
-import { CrochetHtml, CrochetMenu } from "./element";
+import {
+  CrochetHtml,
+  CrochetMenu,
+  TCrochetHtml,
+  TCrochetMenu,
+} from "./element";
 
 export class Canvas {
   @lazy()
@@ -25,9 +32,20 @@ export class Canvas {
 
 @foreign_namespace("crochet.ui.html")
 export class HtmlFfi {
+  @foreign_type("element")
+  static get type_element(): CrochetType {
+    return TCrochetHtml.type;
+  }
+
+  @foreign_type("menu")
+  static get type_menu(): CrochetType {
+    return TCrochetMenu.type;
+  }
+
   @foreign("show")
   static async *show(state: State, value: CrochetHtml) {
     Canvas.instance.appendChild(value.value);
+    return False.instance;
   }
 
   @foreign("wait")

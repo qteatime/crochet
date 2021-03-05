@@ -78,6 +78,11 @@ export function signatureName(sig: Signature<any>): string {
       return `_ ${names.join("")}`;
     },
 
+    KeywordSelfless(_meta, pairs) {
+      const names = pairs.map((x) => x.key.name);
+      return names.join("");
+    },
+
     Unary(_meta, _self, name) {
       return `_ ${name.name}`;
     },
@@ -92,6 +97,10 @@ export function signatureValues<T>(sig: Signature<T>): T[] {
   return sig.match({
     Keyword(_meta, self, pairs) {
       return [self, ...pairs.map((x) => x.value)];
+    },
+
+    KeywordSelfless(_meta, pairs) {
+      return pairs.map((x) => x.value);
     },
 
     Unary(_meta, self, _name) {
@@ -426,6 +435,12 @@ export function compileExpression(expr: Expression): IR.Expression {
     Interpolate(_, parts0) {
       const parts = parts0.map(compileInterpolationPart);
       return optimiseInterpolation(parts);
+    },
+
+    Pipe(_, left, right) {
+      return new IR.EApplyPartial(compileExpression(right), [
+        compileExpression(left),
+      ]);
     },
 
     Hole(_) {

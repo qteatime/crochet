@@ -16,7 +16,7 @@ export class ForeignInterface {
       this.methods.add(`${prefix}.${fun}`, code);
     }
     for (const [key, type] of bag.$ffi_types.entries()) {
-      this.types.add(key, type);
+      this.types.add(`${prefix}.${key}`, type());
     }
   }
 }
@@ -24,5 +24,5 @@ export class ForeignInterface {
 export interface ForeignBag {
   $ffi_namespace: string;
   $ffi: Map<string, (state: State, ...args: CrochetValue[]) => Machine>;
-  $ffi_types: Map<string, CrochetType>;
+  $ffi_types: Map<string, () => CrochetType>;
 }

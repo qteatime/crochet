@@ -19,7 +19,7 @@ export function machine() {
 export function foreign(name?: string) {
   return (target: any, key: string, descriptor: PropertyDescriptor) => {
     target.$ffi ||= new Map();
-    target.$ffi[name ?? key] = descriptor.value?.machine ?? descriptor.value;
+    target.$ffi.set(name ?? key, descriptor.value?.machine ?? descriptor.value);
   };
 }
 
@@ -30,7 +30,10 @@ export function foreign_type(name?: string) {
     descriptor: TypedPropertyDescriptor<CrochetType>
   ) => {
     target.$ffi_types ||= new Map();
-    target.$ffi_types[name ?? key] = descriptor.value;
+    target.$ffi_types.set(
+      name ?? key,
+      () => descriptor.get?.() ?? descriptor.value
+    );
   };
 }
 

@@ -3,91 +3,116 @@
 type html-element = foreign crochet.ui.html.element;
 type html-menu = foreign crochet.ui.html.menu;
 
-command (X is html-element) show =
+singleton html;
+
+command html show: X =
   foreign crochet.ui.html.show(X);
 
-command wait-click =
-  foreign crochet.ui.html.wait()
+command html wait-click =
+  foreign crochet.ui.html.wait();
 
-command html: Name class: Class children: Children =
+command html box: Name class: Class children: Children =
   foreign crochet.ui.html.box(Name, Class, Children);
 
-command html-text: Text =
+command html text: Text =
   foreign crochet.ui.html.text(Text);
 
-command html-menu: Items class: Class =
+command html menu: Items class: Class =
   foreign crochet.ui.html.menu(Class, Items);
 
 command (X is html-menu) selected =
   foreign crochet.ui.html.menu-selected(X);
 
 
-command (X is html-element) show-wait {
+command (X is text) show {
+  html show: X text;
+}
+
+command (X is html-element) show {
+  html show: X;
+}
+
+command X show-wait {
   X show;
   wait-click;
 }
 
-command header: (Children is stream) {
-  html: "header"
-  class: "crochet-header"
-  children: Children;
+command (Children is stream) header {
+  html
+    box: "header"
+    class: "crochet-header"
+    children: Children;
 }
 
-command title: (Text is text) {
-  html: "h1"
-  class: "crochet-title"
-  children: [html-text: Text];
+command (Text is text) title {
+  html
+    box: "h1"
+    class: "crochet-title"
+    children: [html text: Text];
 }
 
-command subtitle: (Text is text) {
-  html: "h2"
-  class: "crochet-subtitle"
-  children: [html-text: Text];
+command (Text is text) subtitle {
+  html
+    box: "h2"
+    class: "crochet-subtitle"
+    children: [html text: Text];
+}
+
+command (Text is text) text {
+  html text: Text;
 }
 
 command paragraph: (X is html-element) {
-  html: "p"
-  class: "crochet-paragraph"
-  children: [X];
+  html 
+    box: "p"
+    class: "crochet-paragraph"
+    children: [X];
 }
 
 command flow: (Children is stream) {
-  html: "div"
-  class: "crochet-flow"
-  children: Children;
+  html
+    box: "div"
+    class: "crochet-flow"
+    children: Children;
 }
 
 command stack: (Children is stream) {
-  html: "div"
-  class: "crochet-stack"
-  children: Children;
+  html
+    box: "div"
+    class: "crochet-stack"
+    children: Children;
 }
 
 command emphasis: (X is html-element) {
-  html: "em"
-  class: "crochet-emphasis"
-  children: [X];
+  html
+    box: "em"
+    class: "crochet-emphasis"
+    children: [X];
 }
 
 command strong: (X is html-element) {
-  html: "strong"
-  class: "crochet-strong"
-  children: [X];
+  html
+    box: "strong"
+    class: "crochet-strong"
+    children: [X];
 }
 
-command divider {
-  html: "div"
-  class: "crochet-divider"
-  children: [];
+command html divider {
+  html
+    box: "div"
+    class: "crochet-divider"
+    children: [];
 }
 
 command section: (Children is stream) {
-  html: "section"
-  class: "crochet-section"
-  children: Children;
+  html
+    box: "section"
+    class: "crochet-section"
+    children: Children;
 }
 
 command menu: (Items is stream) {
-  html-menu: Items
-  class: "crochet-menu";
+  html
+    menu: Items
+    class: "crochet-menu";
 }

@@ -26,4 +26,10 @@ task("build-grammar", () => {
 
 task("build-ts", tscTask());
 
-task("build", series("build-grammar", "build-stdlib", "build-ts"));
+task("build-web", () => {
+  execSync(
+    `./node_modules/.bin/browserify -e build/targets/web.js -s Crochet -o dist/crochet.js`
+  );
+});
+
+task("build", series("build-grammar", "build-stdlib", "build-ts", "build-web"));
