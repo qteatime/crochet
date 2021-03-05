@@ -1,4 +1,4 @@
-import { CrochetType } from "./types";
+import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
 
 export class CrochetUnknown extends CrochetValue {
@@ -31,11 +31,8 @@ export class CrochetUnknown extends CrochetValue {
 }
 
 export class TCrochetUnknown extends CrochetType {
+  readonly parent = TCrochetAny.type;
   readonly type_name = "unknown";
-
-  accepts(x: any) {
-    return x instanceof CrochetUnknown;
-  }
 
   coerce(x: CrochetValue): CrochetValue | null {
     if (x instanceof CrochetUnknown) {

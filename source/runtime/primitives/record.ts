@@ -1,5 +1,5 @@
 import { ErrNoRecordKey } from "../vm";
-import { CrochetType } from "./types";
+import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue, IProjection, ISelection, Selection } from "./value";
 
 export class CrochetRecord extends CrochetValue {
@@ -84,11 +84,8 @@ export class RecordSelection implements ISelection {
 }
 
 export class TCrochetRecord extends CrochetType {
+  readonly parent = TCrochetAny.type;
   readonly type_name = "record";
-
-  accepts(x: any) {
-    return x instanceof CrochetRecord;
-  }
 
   static type = new TCrochetRecord();
 }

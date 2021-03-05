@@ -1,0 +1,33 @@
+% crochet
+
+command any other {
+  "any other" show;
+}
+
+command any hello {
+  "any hello" show;
+}
+
+command integer hello {
+  "integer hello" show;
+}
+
+command partial hello {
+  "partial hello" show;
+}
+
+command boolean hello {
+  "boolean hello" show;
+}
+
+command true hello {
+  "true hello" show;
+}
+
+scene main {
+  1 other;
+  1 hello;
+  (_ + 1) hello;
+  true hello;
+  false hello;
+}
