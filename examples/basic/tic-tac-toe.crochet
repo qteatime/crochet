@@ -16,11 +16,9 @@ singleton empty {
 
 singleton board {
   command show {
-    let S = (search 
-              line.l1 c1: M11 c2: M12 c3: M13,
-              line.l2 c1: M21 c2: M22 c3: M23,
-              line.l3 c1: M31 c2: M32 c3: M33
-            ) first;
+    let S = (search l1 c1: M11 c2: M12 c3: M13,
+                    l2 c1: M21 c2: M22 c3: M23,
+                    l3 c1: M31 c2: M32 c3: M33) first;
     "
     [S.M11 mark]|[S.M12 mark]|[S.M13 mark]
     [S.M21 mark]|[S.M22 mark]|[S.M23 mark]
@@ -29,40 +27,32 @@ singleton board {
   }
 }
 
+type line;
+singleton l1 is line;
+singleton l2 is line;
+singleton l3 is line;
 
-enum line = l1 | l2 | l3;
-enum column = c1 | c2 | c3;
-enum state = on-going | won | draw;
+type column;
+singleton c1 is column;
+singleton c2 is column;
+singleton c3 is column;
+
+type state;
+singleton on-going is state;
+singleton won is state;
+singleton draw is state;
 
 relation Line* at: Column* mark: Who;
 relation State state;
 
-define lines = [line.l1, line.l2, line.l3];
-define columns = [column.c1, column.c2, column.c3];
+define lines = [l1, l2, l3];
+define columns = [c1, c2, c3];
 
-
-predicate X won {
-  when L at: column.c1 mark: X,
-       L at: column.c2 mark: X,
-       L at: column.c3 mark: X;
-  
-  when line.l1 at: C mark: X,
-       line.l2 at: C mark: X,
-       line.l3 at: C mark: X;
-
-  when line.l1 at: column.c1 mark: X,
-       line.l2 at: column.c2 mark: X,
-       line.l3 at: column.c3 mark: X;
-  
-  when line.l1 at: column.c3 mark: X,
-       line.l2 at: column.c2 mark: X,
-       line.l3 at: column.c1 mark: X;
-}
 
 predicate Line c1: M1 c2: M2 c3: M3 {
-  when Line at: column.c1 mark: M1,
-       Line at: column.c2 mark: M2,
-       Line at: column.c3 mark: M3;
+  when Line at: c1 mark: M1,
+       Line at: c2 mark: M2,
+       Line at: c3 mark: M3;
 }
 
 
@@ -73,17 +63,35 @@ do {
     }
   };
 
-  fact state.on-going state;
+  fact on-going state;
+}
+
+
+predicate X won {
+  when L at: c1 mark: X,
+       L at: c2 mark: X,
+       L at: c3 mark: X;
+  
+  when l1 at: C mark: X,
+       l2 at: C mark: X,
+       l3 at: C mark: X;
+
+  when l1 at: c1 mark: X,
+       l2 at: c2 mark: X,
+       l3 at: c3 mark: X;
+  
+  when l1 at: c3 mark: X,
+       l2 at: c2 mark: X,
+       l3 at: c1 mark: X;
 }
 
 scene main {
   simulate for [erin, saga]
-  until not state.on-going state
+  until not on-going state
   on pick-action: Actions for: Turn {
     Actions random-choice
   };
 }
-
 
 action "Mark [L], [C]"
 when X simulate-turn, L at: C mark: empty {
@@ -95,10 +103,10 @@ when X simulate-turn, L at: C mark: empty {
 
 when X simulate-turn, X won {
   "[X name] won!" inspect;
-  fact state.won state;
+  fact won state;
 }
 
-when state.on-going state, not X won, not L at: C mark: empty {
+when on-going state, not X won, not L at: C mark: empty {
   "It's a draw!" inspect;
-  fact state.draw state;
+  fact draw state;
 }

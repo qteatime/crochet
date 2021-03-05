@@ -15,7 +15,7 @@ type Declaration =
   | Action(pos: Meta, title: String, pred: Predicate, body: Statement[]) // FIXME: interpolated titles
   | When(pos: Meta, pred: Predicate, body: Statement[])
 
-type TypeDef(name: Name, roles: Name[])
+type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
 type FFI(pos: Meta, name: Namespace, args: Name[])
 
 type TypeInit =
@@ -214,7 +214,11 @@ grammar Crochet : Program {
       -> Declaration.ForeignType(meta, n, ns)
   
   basicType =
-    | n:atom r:roles    -> TypeDef(n, r)
+    | n:atom p:typeDefParent r:roles    -> TypeDef(p, n, r)
+
+  typeDefParent =
+    | is_ t:typeApp   -> t
+    |                 -> null
 
   typeInitBlock =
     | x:block<typeInit>   -> x
@@ -466,6 +470,7 @@ grammar Crochet : Program {
     | l:literal             -> Expression.Lit(l)
 
   atomicExpression =
+    | a:atom                                -> Expression.Global(meta, a)
     | newExpression<atomicExpression>
     | literalExpression
     | recordExpression<atomicExpression>

@@ -59,10 +59,10 @@ export class InstanceSelection implements ISelection {
 }
 
 export class TCrochetType extends CrochetType {
-  readonly parent = TCrochetAny.type;
   private instance_count = 0n;
 
   constructor(
+    readonly parent: CrochetType | null,
     readonly name: string,
     readonly roles: Set<CrochetRole>,
     readonly types: CrochetType[],
