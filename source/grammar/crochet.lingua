@@ -11,13 +11,11 @@ type Declaration =
   | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
   | ForeignType(pos: Meta, name: Name, foreign_name: Namespace)
   | Type(pos: Meta, typ: TypeDef, fields: Parameter[])
-  | Enum(pos: Meta, name: Name, values: Variant[])
   | Scene(pos: Meta, name: Name, body: Statement[])
   | Action(pos: Meta, title: String, pred: Predicate, body: Statement[]) // FIXME: interpolated titles
   | When(pos: Meta, pred: Predicate, body: Statement[])
 
 type TypeDef(name: Name, roles: Name[])
-type Variant(pos: Meta, name: Name, roles: Name[])
 type FFI(pos: Meta, name: Namespace, args: Name[])
 
 type TypeInit =
@@ -55,7 +53,6 @@ type Signal(pos: Meta, signature: Signature<Parameter>, body: Statement[])
 
 type Expression =
   | New(pos: Meta, typ: Name, fields: Expression[])
-  | NewVariant(pos: Meta, typ: Name, variant: Name)
   | Invoke(pos: Meta, signature: Signature<Expression>)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
@@ -105,7 +102,6 @@ type Predicate =
 type Pattern =
   | HasRole(pos: Meta, typ: Name, name: Pattern)
   | HasType(pos: Meta, typ: TypeApp, name: Pattern)
-  | Variant(pos: Meta, typ: Name, variant: Name)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
   | Wildcard(pos: Meta)
@@ -153,7 +149,6 @@ grammar Crochet : Program {
     | commandDeclaration
     | roleDeclaration
     | typeDeclaration
-    | enumDeclaration
     | defineDeclaration
     | sceneDeclaration
     | actionDeclaration
@@ -244,13 +239,6 @@ grammar Crochet : Program {
   roleDeclaration =
     | role_ n:atom s<";">           -> Declaration.Role(meta, n)
 
-  enumDeclaration =
-    | enum_ n:atom s<"="> s<"|">? vs:nonemptyListOf<variant, s<"|">> s<";">
-      -> Declaration.Enum(meta, n, vs)
-
-  variant =
-    | n:atom r:roles  -> Variant(meta, n, r)
-
   roles =
     | s<"::"> r:nonemptyListOf<atom, s<",">>   -> r
     |                                          -> []
@@ -306,7 +294,6 @@ grammar Crochet : Program {
 
   pattern =
     | s<"("> c:patternComplex s<")">  -> c
-    | n:atom s<"."> v:atom    -> Pattern.Variant(meta, n, v)
     | n:atom                  -> Pattern.Global(meta, n)
     | l:literal               -> Pattern.Lit(l)
     | patternName
@@ -459,7 +446,6 @@ grammar Crochet : Program {
 
   newExpression<e> =
     | new_ n:atom fs:newFields<e>   -> Expression.New(meta, n, fs)
-    | n:atom s<"."> v:atom          -> Expression.NewVariant(meta, n, v)
 
   newFields<e> =
     | s<"("> fs:nonemptyListOf<e, s<",">> s<")">    -> fs

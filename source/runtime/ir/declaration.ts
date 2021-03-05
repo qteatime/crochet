@@ -5,7 +5,7 @@ import {
   PredicateProcedure,
   TreeType,
 } from "../logic";
-import { CrochetRole, TCrochetEnum, TCrochetType } from "../primitives";
+import { CrochetRole, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
 import { cvalue, run, State } from "../vm";
 import { Environment, Scene, World } from "../world";
@@ -21,7 +21,6 @@ export type Declaration =
   | DCrochetCommand
   | DRole
   | DType
-  | DEnum
   | DDefine
   | DScene
   | DAction
@@ -134,23 +133,6 @@ export class DType implements IDeclaration {
       fields,
       layout
     );
-    state.world.types.add(this.name, type);
-  }
-}
-
-export type Variant = { name: string; roles: string[] };
-
-export class DEnum implements IDeclaration {
-  constructor(readonly name: string, readonly variants: Variant[]) {}
-
-  apply(state: State) {
-    const type = new TCrochetEnum(this.name);
-    for (const x of this.variants) {
-      type.add_variant(
-        x.name,
-        x.roles.map((z) => state.world.roles.lookup(z))
-      );
-    }
     state.world.types.add(this.name, type);
   }
 }

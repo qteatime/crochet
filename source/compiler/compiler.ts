@@ -143,10 +143,6 @@ export function compilePattern(p: Pattern): Logic.Pattern {
       return new Logic.TypePattern(compilePattern(name), compileTypeApp(type));
     },
 
-    Variant(_, type, variant) {
-      return new Logic.VariantPattern(type.name, variant.name);
-    },
-
     Lit(lit) {
       return new Logic.ValuePattern(literalToValue(lit));
     },
@@ -377,10 +373,6 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     New(_, type, values) {
       return new IR.ENew(type.name, values.map(compileExpression));
-    },
-
-    NewVariant(_, type, variant) {
-      return new IR.ENewVariant(type.name, variant.name);
     },
 
     List(_, values) {
@@ -706,18 +698,6 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
 
     Type(_, t, fields) {
       return [compileTypeDef(t, fields)];
-    },
-
-    Enum(_, name, variants) {
-      return [
-        new IR.DEnum(
-          name.name,
-          variants.map((x) => ({
-            name: x.name.name,
-            roles: x.roles.map((z) => z.name),
-          }))
-        ),
-      ];
     },
 
     Define(_, name, value) {
