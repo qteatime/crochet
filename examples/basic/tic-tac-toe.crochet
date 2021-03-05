@@ -70,7 +70,10 @@ do {
 
 scene main {
   simulate for [erin, saga]
-  until not state.on-going state;
+  until not state.on-going state
+  on pick-action: Actions for: Turn {
+    Actions random-choice
+  };
 }
 
 
