@@ -23,6 +23,7 @@ import {
   SimulationGoal,
   InterpolationPart,
   Pair,
+  Signal,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetType } from "../runtime";
@@ -541,6 +542,13 @@ export function compileSimulationGoal(goal: SimulationGoal): Sim.Goal {
   });
 }
 
+export function compileSignal(signal: Signal): rt.Signal {
+  const name = signatureName(signal.signature);
+  const parameters0 = signatureValues(signal.signature);
+  const { parameters } = compileParameters(parameters0);
+  return new rt.Signal(name, parameters, signal.body.map(compileStatement));
+}
+
 export function compileStatement(stmt: Statement) {
   return stmt.match<IR.Statement>({
     Let(_, name, value) {
@@ -569,11 +577,12 @@ export function compileStatement(stmt: Statement) {
       return new IR.SGoto(name.name);
     },
 
-    SimulateGlobal(_, actors, goal) {
+    SimulateGlobal(_, actors, goal, signals) {
       return new IR.SSimulate(
         null,
         compileExpression(actors),
-        compileSimulationGoal(goal)
+        compileSimulationGoal(goal),
+        signals.map(compileSignal)
       );
     },
 

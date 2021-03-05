@@ -9,13 +9,18 @@ import Integer from "./generated/integer.crochet";
 import Record from "./generated/record.crochet";
 import Stream from "./generated/stream.crochet";
 import Text from "./generated/text.crochet";
+import Debug from "./generated/debug.crochet";
+import Time from "./generated/time.crochet";
 import { HtmlFfi } from "./html/ffi";
+import { DebugFfi, TimeFfi } from "./native";
 
-const sources = [Core, Integer, Record, Stream, Text, HtmlUi];
+const sources = [Core, Integer, Record, Stream, Text, Debug, Time, HtmlUi];
 
 export async function load(state: State) {
   Builtin.add_prelude(state);
   state.world.ffi.add(HtmlFfi as any);
+  state.world.ffi.add(DebugFfi as any);
+  state.world.ffi.add(TimeFfi as any);
 
   for (const source of sources) {
     const ast = parse(source);

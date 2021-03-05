@@ -56,7 +56,7 @@ export class OneNode implements INode {
 
   insert(values: CrochetValue[]) {
     const [head, ...tail] = values;
-    this.value = this.make_subtree(head);
+    this.value = new Pair(head, this.subtype.realise());
     this.value.tree.insert(tail);
   }
 
@@ -96,14 +96,6 @@ export class OneNode implements INode {
       return [];
     } else {
       return this.value.tree.search(state, newEnv, tail);
-    }
-  }
-
-  make_subtree(value: CrochetValue): Pair {
-    if (this.value == null) {
-      return new Pair(value, this.subtype.realise());
-    } else {
-      return this.value;
     }
   }
 }

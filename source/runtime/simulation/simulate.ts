@@ -1,19 +1,20 @@
-import { Statement } from "../ir";
-import { CrochetValue, Environment, Machine } from "..";
+import { SBlock, Statement } from "../ir";
 import { Bag } from "../../utils/bag";
-import { Action, Context } from "./event";
+import { Context } from "./event";
 import { Goal } from "./goal";
-import { World } from "../world";
-import { maybe_cast, pick } from "../../utils/utils";
-import { State, _push } from "../vm";
-import { CrochetInteger, CrochetVariant, False } from "../primitives";
+import { Environment } from "../world";
+import { maybe_cast, pick, zip } from "../../utils/utils";
+import { cvalue, Machine, State, _push } from "../vm";
 import {
-  FunctionRelation,
-  FunctionRelationFn,
-  Pattern,
-  UnificationEnvironment,
-} from "../logic";
+  CrochetInteger,
+  CrochetStream,
+  CrochetValue,
+  False,
+} from "../primitives";
+import { Pattern, UnificationEnvironment } from "../logic";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
+import { Error } from "../../utils/result";
+import { ActionChoice } from "./action-choice";
 
 export class Signal {
   constructor(
@@ -21,14 +22,20 @@ export class Signal {
     readonly parameters: string[],
     readonly body: Statement[]
   ) {}
-}
 
-export class ActionChoice {
-  constructor(
-    readonly title: string,
-    readonly action: Action,
-    readonly machine: Machine
-  ) {}
+  async *evaluate(state: State, args: CrochetValue[]) {
+    const env = new Environment(state.env, state.env.raw_receiver);
+    if (this.parameters.length !== args.length) {
+      throw new Error(`internal: Invalid arity in signal ${this.name}`);
+    }
+    for (const [key, value] of zip(this.parameters, args)) {
+      env.define(key, value);
+    }
+    const block = new SBlock(this.body);
+    const new_state = state.with_env(env);
+    const result = cvalue(yield _push(block.evaluate(new_state)));
+    return result;
+  }
 }
 
 export class Simulation {
@@ -38,6 +45,7 @@ export class Simulation {
   private rounds: bigint = 0n;
 
   constructor(
+    readonly env: Environment,
     readonly actors: CrochetValue[],
     readonly context: Context,
     readonly goal: Goal,
@@ -62,7 +70,7 @@ export class Simulation {
     const actor0 = yield _push(this.next_actor(state));
     this.turn = maybe_cast(actor0, CrochetValue);
     while (this.turn != null) {
-      const action0 = yield _push(this.pick_action(state, this.turn));
+      const action0 = cvalue(yield _push(this.pick_action(state, this.turn)));
       const action = maybe_cast(action0, ActionChoice);
       if (action != null) {
         action.action.fire(this.turn);
@@ -90,7 +98,38 @@ export class Simulation {
     const actions = this.context
       .available_actions(actor, state)
       .map((x) => new ActionChoice(x.title, x.action, x.machine));
-    return pick(actions);
+
+    const selected = cvalue(
+      yield _push(
+        this.trigger_signal(
+          state,
+          "pick-action:for:",
+          [new CrochetStream(actions), actor],
+          async function* (_state, _actions, _for) {
+            return pick(actions) ?? False.instance;
+          }
+        )
+      )
+    );
+    return selected;
+  }
+
+  async *trigger_signal(
+    state: State,
+    name: string,
+    args: CrochetValue[],
+    default_handler: (state: State, ...args: CrochetValue[]) => Machine
+  ) {
+    const signal = this.signals.try_lookup(name);
+    if (signal != null) {
+      const result = cvalue(
+        yield _push(signal.evaluate(state.with_env(this.env), args))
+      );
+      return result;
+    } else {
+      const result = cvalue(yield _push(default_handler(state, ...args)));
+      return result;
+    }
   }
 
   get layer() {

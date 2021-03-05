@@ -4,16 +4,16 @@ singleton type player;
 singleton type foyer;
 
 scene main {
-  "Hello" show;
-  "Hello, [player]" show;
-  "Hello, ["World"]" show;
-  ("[1] " ++ " [2]") show;
-  ("1 " ++ " [2]") show;
-  ("[1] " ++ " 2") show;
+  "Hello" inspect;
+  "Hello, [player]" inspect;
+  "Hello, ["World"]" inspect;
+  ("[1] " ++ " [2]") inspect;
+  ("1 " ++ " [2]") inspect;
+  ("[1] " ++ " 2") inspect;
 
   let Text = "[player] is at the [foyer]";
-  Text show;
-  Text parts show;
-  Text holes show;
-  Text static-text show;
+  Text inspect;
+  Text parts inspect;
+  Text holes inspect;
+  Text static-text inspect;
 }

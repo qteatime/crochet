@@ -17,6 +17,7 @@ import {
 import { Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
 import { Expression } from "./expression";
+import { Type } from "./type";
 
 export type Statement =
   | SFact
@@ -117,7 +118,8 @@ export class SSimulate implements IStatement {
   constructor(
     readonly context: string | null,
     readonly actors: Expression,
-    readonly goal: Goal
+    readonly goal: Goal,
+    readonly signals: Signal[]
   ) {}
 
   async *evaluate(state: State): Machine {
@@ -127,7 +129,11 @@ export class SSimulate implements IStatement {
     );
     const context = this.lookup_context(state.world);
     const signals = new Bag<string, Signal>("signal");
+    for (const signal of this.signals) {
+      signals.add(signal.name, signal);
+    }
     const simulation = new Simulation(
+      state.env,
       actors.values,
       context,
       this.goal,

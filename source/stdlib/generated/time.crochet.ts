@@ -1,0 +1,1 @@
+export default "% crochet\r\n\r\ncommand (X is integer) sleep =\r\n  foreign crochet.time.sleep(X);"

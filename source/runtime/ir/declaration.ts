@@ -151,6 +151,7 @@ export class DEnum implements IDeclaration {
         x.roles.map((z) => state.world.roles.lookup(z))
       );
     }
+    state.world.types.add(this.name, type);
   }
 }
 
