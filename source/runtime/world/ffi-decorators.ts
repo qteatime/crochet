@@ -1,4 +1,4 @@
-import { CrochetValue, NativeProcedureFn } from "../primitives";
+import { CrochetType, CrochetValue, NativeProcedureFn } from "../primitives";
 import { Machine, State } from "../vm";
 
 export function machine() {
@@ -18,14 +18,26 @@ export function machine() {
 
 export function foreign(name?: string) {
   return (target: any, key: string, descriptor: PropertyDescriptor) => {
-    target.$ffi ||= {};
+    target.$ffi ||= new Map();
     target.$ffi[name ?? key] = descriptor.value?.machine ?? descriptor.value;
+  };
+}
+
+export function foreign_type(name?: string) {
+  return (
+    target: any,
+    key: string,
+    descriptor: TypedPropertyDescriptor<CrochetType>
+  ) => {
+    target.$ffi_types ||= new Map();
+    target.$ffi_types[name ?? key] = descriptor.value;
   };
 }
 
 export function foreign_namespace(prefix: string) {
   return (target: any) => {
     target.$ffi_namespace = prefix;
-    target.$ffi ||= [];
+    target.$ffi ||= new Map();
+    target.$ffi_types ||= new Map();
   };
 }

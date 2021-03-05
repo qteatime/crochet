@@ -16,11 +16,7 @@ import { TCrochetStream } from "../stream";
 import { TCrochetText } from "../text";
 import { TAnyCrochetPartial, TCrochetPartial } from "../partial";
 import { TCrochetInterpolation } from "../interpolation";
-
-interface ForeignBag {
-  $ffi_namespace: string;
-  $ffi: { [key: string]: (state: State, ...args: CrochetValue[]) => Machine };
-}
+import { ForeignBag } from "../../world";
 
 export const bags = ([
   Core,
@@ -39,9 +35,7 @@ export function add_prelude(state: State) {
 export function add_native_commands(state: State) {
   const ffi = state.world.ffi;
   for (const bag of bags) {
-    for (const [fun, code] of Object.entries(bag.$ffi)) {
-      ffi.add(`${bag.$ffi_namespace}.${fun}`, code);
-    }
+    ffi.add(bag);
   }
 }
 

@@ -9,6 +9,7 @@ type Declaration =
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
   | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
+  | ForeignType(pos: Meta, name: Name, foreign_name: Namespace)
   | Type(pos: Meta, typ: TypeDef, fields: Parameter[])
   | Enum(pos: Meta, name: Name, values: Variant[])
   | Scene(pos: Meta, name: Name, body: Statement[])
@@ -174,8 +175,12 @@ grammar Crochet : Program {
       -> Declaration.Do(meta, xs)
 
   commandDeclaration =
-    | command_ s:signature<parameter> s<"="> b:foreignBody
+    | command_ s:signature<parameter> s<"="> foreign_ b:foreignBody
       -> Declaration.ForeignCommand(meta, s, b)
+
+    | command_ s:signature<parameter> s<"="> e:expression s<";">
+      -> Declaration.Command(meta, s, [Statement.Expr(e)])
+
     | command_ s:signature<parameter> b:statementBlock<statement>
       -> Declaration.Command(meta, s, b)
 
@@ -200,8 +205,14 @@ grammar Crochet : Program {
     | x:false_  -> Name(meta, x)
 
   typeDeclaration =
-    | singleton_ t:basicType i:typeInitBlock  -> Declaration.SingletonType(meta, t, i)
-    | type_ t:basicType fs:typeFields s<";">  -> Declaration.Type(meta, t, fs)
+    | singleton_ t:basicType i:typeInitBlock
+      -> Declaration.SingletonType(meta, t, i)
+
+    | type_ t:basicType fs:typeFields s<";">
+      -> Declaration.Type(meta, t, fs)
+
+    | type_ n:typeName s<"="> foreign_ ns:namespace s<";">
+      -> Declaration.ForeignType(meta, n, ns)
   
   basicType =
     | n:atom r:roles    -> TypeDef(n, r)
@@ -625,11 +636,12 @@ grammar Crochet : Program {
   for_ = kw<"for">
   until_ = kw<"until">
   in_ = kw<"in">
+  foreign_ = kw<"foreign">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
     | type_ | role_ | enum_ | define_ | singleton_ | goto_ | call_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
-    | event_ | quiescence_ | for_ | until_ | in_
+    | event_ | quiescence_ | for_ | until_ | in_ | foreign_
 }

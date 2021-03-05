@@ -15,7 +15,7 @@ if (!filename) {
 
 const prelude = `% crochet
 
-command X show = show(X);
+command X show = foreign show(X);
 `;
 
 async function load(source: string, state: State) {
@@ -30,7 +30,7 @@ void (async function main() {
     const state = State.root(world);
     await Stdlib.load(state);
 
-    world.ffi.add("show", async function* (state, x) {
+    world.ffi.methods.add("show", async function* (state, x) {
       console.log("[SHOW]", x.to_text());
       return False.instance;
     });

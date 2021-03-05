@@ -25,7 +25,8 @@ export type Declaration =
   | DDefine
   | DScene
   | DAction
-  | DWhen;
+  | DWhen
+  | DForeignType;
 
 export type ContextualDeclaration = DAction | DWhen;
 
@@ -199,5 +200,14 @@ export class DWhen implements IDeclaration, IContextualDeclaration {
 
   async apply(state: State) {
     this.apply_to_context(state, state.world.global_context);
+  }
+}
+
+export class DForeignType implements IDeclaration {
+  constructor(readonly name: string, readonly foreign_name: string) {}
+
+  async apply(state: State) {
+    const type = state.world.ffi.types.lookup(this.foreign_name);
+    state.world.types.add(this.name, type);
   }
 }
