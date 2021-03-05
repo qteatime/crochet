@@ -49,6 +49,14 @@ predicate X won {
   when line.l1 at: C mark: X,
        line.l2 at: C mark: X,
        line.l3 at: C mark: X;
+
+  when line.l1 at: column.c1 mark: X,
+       line.l2 at: column.c2 mark: X,
+       line.l3 at: column.c3 mark: X;
+  
+  when line.l1 at: column.c3 mark: X,
+       line.l2 at: column.c2 mark: X,
+       line.l3 at: column.c1 mark: X;
 }
 
 predicate Line c1: M1 c2: M2 c3: M3 {
