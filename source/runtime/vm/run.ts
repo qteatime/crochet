@@ -130,14 +130,24 @@ export async function run(machine0: Machine) {
         case "throw": {
           const error = value.error;
           const trace = get_trace(stack);
-          console.error(format_error(error, trace));
-          throw error;
+          const message = format_error(error, trace);
+          console.error(message);
+          throw { error: error, message: message };
         }
 
         default:
           throw unreachable(value, "Unknown yield");
       }
     }
+  }
+}
+
+function format_error(error: MachineError | Error, trace: string[]) {
+  if (error instanceof Error) {
+    return error.stack;
+  } else {
+    const trace_string = trace.map((x) => `  - ${x}`).join("\n");
+    return `${error.format()}\n\n${trace_string}`;
   }
 }
 
@@ -152,15 +162,6 @@ function get_trace(frames: Frame[]) {
     }
   }
   return trace;
-}
-
-function format_error(error: MachineError | Error, trace: string[]) {
-  if (error instanceof Error) {
-    return error.stack;
-  } else {
-    const trace_string = trace.map((x) => `  - ${x}`).join("\n");
-    return `${error.format()}\n\n${trace_string}`;
-  }
 }
 
 export async function* run_all(machines: Machine[]): Machine {

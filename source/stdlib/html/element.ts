@@ -1,7 +1,7 @@
-import { CrochetType, CrochetValue } from "../../runtime";
+import { CrochetType, CrochetValue, TCrochetAny } from "../../runtime";
 
 export class TCrochetHtml extends CrochetType {
-  readonly parent = null;
+  readonly parent = TCrochetAny.type;
   readonly type_name = "html-element";
   static type = new TCrochetHtml();
 }
