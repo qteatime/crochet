@@ -1,6 +1,5 @@
 export * from "./value";
 export * from "./boolean";
-export * from "./enum";
 export * from "./instance";
 export * from "./integer";
 export * from "./interpolation";

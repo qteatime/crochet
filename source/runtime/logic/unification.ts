@@ -1,7 +1,7 @@
 import { TypeApp } from "../../generated/crochet-grammar";
 import { cast } from "../../utils/utils";
 import { Type } from "../ir";
-import { CrochetType, CrochetValue, TCrochetEnum } from "../primitives";
+import { CrochetType, CrochetValue } from "../primitives";
 import { State } from "../vm";
 import { World } from "../world";
 
@@ -38,7 +38,6 @@ export class UnificationEnvironment {
 }
 
 export type Pattern =
-  | VariantPattern
   | TypePattern
   | RolePattern
   | ValuePattern
@@ -112,26 +111,6 @@ export class ValuePattern extends AbstractPattern {
     value: CrochetValue
   ): UnificationEnvironment | null {
     if (value.equals(this.value)) {
-      return env;
-    } else {
-      return null;
-    }
-  }
-}
-
-export class VariantPattern extends AbstractPattern {
-  constructor(readonly type: string, readonly variant: string) {
-    super();
-  }
-
-  unify(
-    state: State,
-    env: UnificationEnvironment,
-    other: CrochetValue
-  ): UnificationEnvironment | null {
-    const type = cast(state.world.types.lookup(this.type), TCrochetEnum);
-    const variant = type.get_variant(this.variant);
-    if (variant.equals(other)) {
       return env;
     } else {
       return null;

@@ -22,7 +22,6 @@ import {
   safe_cast,
   Selection,
   TAnyCrochetPartial,
-  TCrochetEnum,
   TCrochetStream,
   TCrochetType,
   True,
@@ -52,7 +51,6 @@ export type Expression =
   | ESearch
   | EInvoke
   | ENew
-  | ENewVariant
   | EGlobal
   | ESelf
   | EList
@@ -137,15 +135,6 @@ export class ENew implements IExpression {
       yield _push(run_all(this.data.map((x) => x.evaluate(state))))
     );
     return type.instantiate(values);
-  }
-}
-
-export class ENewVariant implements IExpression {
-  constructor(readonly name: string, readonly variant: string) {}
-
-  async *evaluate(state: State) {
-    const type = cast(state.world.types.lookup(this.name), TCrochetEnum);
-    return type.get_variant(this.variant);
   }
 }
 
