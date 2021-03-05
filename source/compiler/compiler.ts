@@ -628,8 +628,10 @@ export function compileParameters(xs0: Parameter[]) {
 
 export function compileTypeDef(t: TypeDef, fields: Parameter[]) {
   const params = fields.map(compileParameter);
+  const parent = t.parent ? compileTypeApp(t.parent) : null;
 
   return new IR.DType(
+    parent,
     t.name.name,
     t.roles.map((x) => x.name),
     params
@@ -690,7 +692,7 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     SingletonType(meta, type0, init) {
       const type = compileTypeDef(type0, []);
       return [
-        new IR.DType(type.name, type.roles, []),
+        new IR.DType(type.parent, type.name, type.roles, []),
         new IR.DDefine(type.name, new IR.ENew(type.name, [])),
         ...compileTypeInit(meta, type.name, init),
       ];
