@@ -26,3 +26,6 @@ command (X is stream) ++ (Y is stream) =
 
 command (X is stream) zip: (Y is stream) = 
   foreign crochet.stream.zip(X, Y);
+
+command (X is stream) random-choice =
+  foreign crochet.stream.random-choice(X);

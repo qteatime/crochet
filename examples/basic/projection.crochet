@@ -6,17 +6,17 @@ relation X* at: Y;
 
 scene main {
   let Point = [X -> 1, Y -> 2];
-  [Point.X, Point.Y] show;
+  [Point.X, Point.Y] inspect;
 
   let Point2 = new point(1, 2);
-  [Point2.X] show;
+  [Point2.X] inspect;
 
   fact "player" at: "foyer";
   fact "npc" at: "foyer";
   let Location = search Who at: Where;
   let Who = Location.Who;
-  Location.Who show;
-  Location.Where show;
+  Location.Who inspect;
+  Location.Where inspect;
 
-  Location.(Who as Quem, Where as Aonde) show;
+  Location.(Who as Quem, Where as Aonde) inspect;
 }

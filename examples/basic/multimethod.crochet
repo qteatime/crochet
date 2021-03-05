@@ -1,27 +1,27 @@
 % crochet
 
 command any other {
-  "any other" show;
+  "any other" inspect;
 }
 
 command any hello {
-  "any hello" show;
+  "any hello" inspect;
 }
 
 command integer hello {
-  "integer hello" show;
+  "integer hello" inspect;
 }
 
 command partial hello {
-  "partial hello" show;
+  "partial hello" inspect;
 }
 
 command boolean hello {
-  "boolean hello" show;
+  "boolean hello" inspect;
 }
 
 command true hello {
-  "true hello" show;
+  "true hello" inspect;
 }
 
 scene main {

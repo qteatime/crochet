@@ -1,0 +1,1 @@
+export default "% crochet\r\n\r\ncommand X inspect =\r\n  foreign crochet.debug.inspect(X);"

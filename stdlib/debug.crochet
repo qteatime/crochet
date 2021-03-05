@@ -1,0 +1,4 @@
+% crochet
+
+command X inspect =
+  foreign crochet.debug.inspect(X);

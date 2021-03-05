@@ -48,8 +48,10 @@ type Statement =
   | Goto(pos: Meta, name: Name)
   | Call(pos: Meta, name: Name)
   | Let(pos: Meta, name: Name, value: Expression)
-  | SimulateGlobal(pos: Meta, actors: Expression, goal: SimulationGoal)
+  | SimulateGlobal(pos: Meta, actors: Expression, goal: SimulationGoal, signals: Signal[])
   | Expr(value: Expression)
+
+type Signal(pos: Meta, signature: Signature<Parameter>, body: Statement[])
 
 type Expression =
   | New(pos: Meta, typ: Name, fields: Expression[])
@@ -366,8 +368,8 @@ grammar Crochet : Program {
     | call_ n:atom  -> Statement.Call(meta, n)
 
   simulateStatement =
-    | simulate_ for_ e:expression until_ g:simulateGoal
-      -> Statement.SimulateGlobal(meta, e, g)
+    | simulate_ for_ e:expression until_ g:simulateGoal s:signal*
+      -> Statement.SimulateGlobal(meta, e, g, s)
 
   simulateGoal =
     | action_ quiescence_ -> SimulationGoal.ActionQuiescence(meta)
@@ -375,6 +377,9 @@ grammar Crochet : Program {
     | quiescence_         -> SimulationGoal.TotalQuiescence(meta)
     | p:predicate         -> SimulationGoal.CustomGoal(meta, p)
 
+  signal =
+    | on_ s:signature<parameter> b:statementBlock<statement>
+      -> Signal(meta, s, b)
 
   // -- Expressions
   expression =
@@ -647,11 +652,12 @@ grammar Crochet : Program {
   until_ = kw<"until">
   in_ = kw<"in">
   foreign_ = kw<"foreign">
+  on_ = kw<"on">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
     | type_ | role_ | enum_ | define_ | singleton_ | goto_ | call_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
-    | event_ | quiescence_ | for_ | until_ | in_ | foreign_
+    | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
 }

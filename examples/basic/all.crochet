@@ -3,10 +3,10 @@
 role actor;
 role room;
 
-command X show = show(X);
+command X inspect = inspect(X);
 command (X is integer) hello { "Numbers can't say anything, miss..."; }
 
-singleton type lielle :: actor {
+singleton lielle :: actor {
   at: foyer;
   likes: kristine;
 
@@ -15,7 +15,7 @@ singleton type lielle :: actor {
   }
 }
 
-singleton type kristine :: actor {
+singleton kristine :: actor {
   at: foyer;
 
   command hello {
@@ -23,7 +23,7 @@ singleton type kristine :: actor {
   }
 }
 
-singleton type foyer :: room;
+singleton foyer :: room;
 
 relation Who* at: Where;
 relation Who* likes: Whom*;
@@ -47,36 +47,45 @@ do {
     ],
     Search -> Kisses,
   ];
-  Multi show;
+  Multi inspect;
 }
 
 scene one {
-  "One" show;
+  "One" inspect;
   call two;
-  "One end" show;
+  "One end" inspect;
 }
 
 scene two {
-  "Two" show;
+  "Two" inspect;
 }
 
 scene main {
-  "Hello" show;
-  simulate for [kristine, lielle] until action quiescence;
+  "Hello" inspect;
+  simulate for [kristine, lielle] until action quiescence
+    on pick-action: Actions for: Turn {
+      "Simulate for [Turn] with [Actions.Title]" inspect;
+      Actions first;
+    };
   call one;
   goto two;
-  "End" show;
+  "End" inspect;
 }
 
 action "Say hello"
 when X simulate-turn, not X disabled, X at: P, Y at: P if X =/= Y {
-  [X, "says hello to", Y] show;
-  ["Stats", search Turn simulate-turn, Rounds simulate-rounds-elapsed] show;
-  ["Acted", search X simulate-acted] show;
-  ["Remaining", (search X simulate-actor, not X simulate-acted, not X simulate-turn)] show;
+  [X, "says hello to", Y] inspect;
+  ["Stats", search Turn simulate-turn, Rounds simulate-rounds-elapsed] inspect;
+  ["Acted", search X simulate-acted] inspect;
+  ["Remaining", (search X simulate-actor, not X simulate-acted, not X simulate-turn)] inspect;
   fact X disabled;
 }
 
+action "Say goodbye"
+when X simulate-turn, not X action-fired: _ {
+  "[X] says goodbye" inspect;
+}
+
 when X simulate-turn {
-  [X, "ends her turn"] show;
+  [X, "ends her turn"] inspect;
 }

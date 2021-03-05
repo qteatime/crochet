@@ -1,10 +1,8 @@
 import { ErrNoProjection, ErrNoSelection } from "../vm";
-import { CrochetRole, CrochetType } from "./types";
+import { CrochetRole, CrochetType, type_name } from "./types";
 
 export abstract class CrochetValue {
   abstract type: CrochetType;
-  abstract equals(other: CrochetValue): boolean;
-  abstract to_text(transparent?: boolean): string;
 
   readonly _projection: IProjection | null = null;
   readonly _selection: ISelection | null = null;
@@ -19,6 +17,14 @@ export abstract class CrochetValue {
 
   to_js(): any {
     return this;
+  }
+
+  equals(other: CrochetValue): boolean {
+    return other === this;
+  }
+
+  to_text(transparent?: boolean): string {
+    return `<${type_name(this.type)}>`;
   }
 
   get projection(): IProjection {
