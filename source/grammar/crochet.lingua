@@ -30,9 +30,7 @@ type Parameter =
   | TypedOnly(pos: Meta, typ: TypeApp)
 
 type TypeApp =
-  | Union(pos: Meta, left: TypeApp, right: TypeApp)
   | Named(pos: Meta, name: Name)
-  | Parens(pos: Meta, typ: TypeApp)
 
 type PredicateClause(
   pos: Meta,
@@ -188,25 +186,25 @@ grammar Crochet : Program {
   parameter =
     | n:name                              -> Parameter.Untyped(meta, n)
     | s<"("> n:name is_ t:typeApp s<")">  -> Parameter.Typed(meta, n, t)
-    | t:atom                              -> Parameter.TypedOnly(meta, TypeApp.Named(meta, t))
+    | t:typeName                          -> Parameter.TypedOnly(meta, TypeApp.Named(meta, t))
 
   typeApp =
-    | typeAppUnion
-
-  typeAppUnion =
-    | l:typeAppPrimary s<"|"> r:typeAppUnion  -> TypeApp.Union(meta, l, r)
     | typeAppPrimary
 
   typeAppPrimary =
-    | t:atom                    -> TypeApp.Named(meta, t)
-    | s<"("> t:typeApp s<")">   -> TypeApp.Parens(meta, t)
+    | t:typeName                  -> TypeApp.Named(meta, t)
+
+  typeName =
+    | atom
+    | x:true_   -> Name(meta, x)
+    | x:false_  -> Name(meta, x)
 
   typeDeclaration =
     | singleton_ t:basicType i:typeInitBlock  -> Declaration.SingletonType(meta, t, i)
-    | t:basicType fs:typeFields s<";">        -> Declaration.Type(meta, t, fs)
+    | type_ t:basicType fs:typeFields s<";">  -> Declaration.Type(meta, t, fs)
   
   basicType =
-    | type_ n:atom r:roles    -> TypeDef(n, r)
+    | n:atom r:roles    -> TypeDef(n, r)
 
   typeInitBlock =
     | x:block<typeInit>   -> x

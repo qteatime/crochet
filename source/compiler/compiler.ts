@@ -573,14 +573,6 @@ export function compileTypeApp(x: TypeApp): IR.Type {
     Named(_, name) {
       return new IR.TNamed(name.name);
     },
-
-    Parens(_, type) {
-      return compileTypeApp(type);
-    },
-
-    Union(_, l, r) {
-      return new IR.TUnion(compileTypeApp(l), compileTypeApp(r));
-    },
   });
 }
 

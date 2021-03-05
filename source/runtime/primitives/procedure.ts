@@ -4,6 +4,7 @@ import { cvalue, Machine, State, _mark } from "../vm";
 import { Environment, World } from "../world";
 import { CrochetValue } from "./value";
 import { CrochetType } from "./types";
+import { Comparison } from "../../utils/comparison";
 
 // -- Procedures
 export interface IProcedure {
@@ -27,11 +28,22 @@ export class Procedure {
 
   add(types: CrochetType[], procedure: IProcedure) {
     this.branches.push(new ProcedureBranch(types, procedure));
+    this.branches.sort((b1, b2) => b1.compare(b2));
   }
 }
 
 export class ProcedureBranch {
   constructor(readonly types: CrochetType[], readonly procedure: IProcedure) {}
+
+  compare(branch: ProcedureBranch) {
+    for (const [t1, t2] of zip(this.types, branch.types)) {
+      const d = t1.distance() - t2.distance();
+      if (d !== 0) {
+        return d;
+      }
+    }
+    return 0;
+  }
 
   accepts(values: CrochetValue[]) {
     return (

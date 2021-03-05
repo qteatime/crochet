@@ -1,4 +1,5 @@
-import { CrochetType, TCrochetUnion } from "./types";
+import { from_bool } from "./core-ops";
+import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
 
 export class True extends CrochetValue {
@@ -49,12 +50,20 @@ export class False extends CrochetValue {
   static instance = new False();
 }
 
-export class TCrochetTrue extends CrochetType {
-  readonly type_name = "true";
+export class TCrochetBoolean extends CrochetType {
+  readonly parent = TCrochetAny.type;
+  readonly type_name = "boolean";
 
-  accepts(x: any) {
-    return x instanceof True;
+  coerce(x: CrochetValue): CrochetValue | null {
+    return from_bool(x.as_bool());
   }
+
+  static type = new TCrochetBoolean();
+}
+
+export class TCrochetTrue extends CrochetType {
+  readonly parent = TCrochetBoolean.type;
+  readonly type_name = "true";
 
   coerce(x: CrochetValue): CrochetValue | null {
     if (x.as_bool()) {
@@ -68,11 +77,8 @@ export class TCrochetTrue extends CrochetType {
 }
 
 export class TCrochetFalse extends CrochetType {
+  readonly parent = TCrochetBoolean.type;
   readonly type_name = "false";
-
-  accepts(x: any) {
-    return x instanceof False;
-  }
 
   coerce(x: CrochetValue): CrochetValue | null {
     if (!x.as_bool()) {
@@ -84,5 +90,3 @@ export class TCrochetFalse extends CrochetType {
 
   static type = new TCrochetFalse();
 }
-
-export const boolean = new TCrochetUnion(TCrochetFalse.type, TCrochetTrue.type);

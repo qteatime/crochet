@@ -1,4 +1,4 @@
-import { CrochetType } from "./types";
+import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
 
 export class CrochetInteger extends CrochetValue {
@@ -24,11 +24,8 @@ export class CrochetInteger extends CrochetValue {
 }
 
 export class TCrochetInteger extends CrochetType {
+  readonly parent = TCrochetAny.type;
   readonly type_name = "integer";
-
-  accepts(x: any) {
-    return x instanceof CrochetInteger;
-  }
 
   static type = new TCrochetInteger();
 }

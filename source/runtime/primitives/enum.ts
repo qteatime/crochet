@@ -1,7 +1,8 @@
 import { CrochetValue } from "./value";
-import { CrochetType, CrochetRole } from "./types";
+import { CrochetType, CrochetRole, TCrochetAny } from "./types";
 
 export class TCrochetEnum extends CrochetType {
+  readonly parent = TCrochetAny.type;
   private variants: { [key: string]: CrochetVariant } = {};
 
   constructor(readonly name: string) {
@@ -26,10 +27,6 @@ export class TCrochetEnum extends CrochetType {
 
   get type_name() {
     return this.name;
-  }
-
-  accepts(x: any) {
-    return x instanceof CrochetVariant && x.type === this;
   }
 }
 

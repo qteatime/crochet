@@ -1,6 +1,6 @@
 import { every, zip } from "../../utils/utils";
 import { False } from "./boolean";
-import { CrochetType } from "./types";
+import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue, IProjection, ISelection, Selection } from "./value";
 
 export class CrochetStream extends CrochetValue {
@@ -61,11 +61,8 @@ export class StreamSelection implements ISelection {
 }
 
 export class TCrochetStream extends CrochetType {
+  readonly parent = TCrochetAny.type;
   readonly type_name = "stream";
-
-  accepts(x: any) {
-    return x instanceof CrochetStream;
-  }
 
   coerce(x: CrochetValue): CrochetValue | null {
     if (x instanceof CrochetStream) {

@@ -1,6 +1,6 @@
 import { cast } from "../../utils/utils";
 import { Environment } from "../world";
-import { CrochetType } from "./types";
+import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
 
 export class CrochetPartial extends CrochetValue {
@@ -65,6 +65,10 @@ export class CrochetPartial extends CrochetValue {
 }
 
 export class TCrochetPartial extends CrochetType {
+  get parent() {
+    return TAnyCrochetPartial.type;
+  }
+
   constructor(readonly name: string) {
     super();
   }
@@ -72,19 +76,13 @@ export class TCrochetPartial extends CrochetType {
   get type_name() {
     return `<partial ${this.name}>`;
   }
-
-  accepts(x: any) {
-    return x instanceof CrochetPartial && this.name === x.name;
-  }
 }
 
 export class TAnyCrochetPartial extends CrochetType {
+  readonly parent = TCrochetAny.type;
+
   get type_name() {
     return "<partial>";
-  }
-
-  accepts(x: any) {
-    return x instanceof CrochetPartial;
   }
 
   static type = new TAnyCrochetPartial();

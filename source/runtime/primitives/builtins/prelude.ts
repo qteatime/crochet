@@ -9,7 +9,7 @@ import { Text } from "./text";
 import * as Types from "../types";
 import { Interpolation } from "./interpolation";
 import { TCrochetUnknown } from "../unknown";
-import { TCrochetFalse, TCrochetTrue } from "../boolean";
+import { TCrochetBoolean, TCrochetFalse, TCrochetTrue } from "../boolean";
 import { TCrochetInteger } from "../integer";
 import { TCrochetRecord } from "../record";
 import { TCrochetStream } from "../stream";
@@ -51,10 +51,7 @@ export function add_types(state: State) {
   types.add("unknown", TCrochetUnknown.type);
   types.add("true", TCrochetTrue.type);
   types.add("false", TCrochetFalse.type);
-  types.add(
-    "boolean",
-    new Types.TCrochetUnion(TCrochetTrue.type, TCrochetFalse.type)
-  );
+  types.add("boolean", TCrochetBoolean.type);
   types.add("integer", TCrochetInteger.type);
   types.add("record", TCrochetRecord.type);
   types.add("stream", TCrochetStream.type);

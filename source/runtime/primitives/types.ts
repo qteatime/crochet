@@ -2,7 +2,29 @@ import { CrochetValue } from "./value";
 
 export abstract class CrochetType {
   abstract type_name: string;
-  abstract accepts(x: any): boolean;
+  abstract parent: CrochetType | null;
+
+  accepts(x: CrochetValue): boolean {
+    return x.type.is_subtype(this);
+  }
+
+  is_subtype(type: CrochetType): boolean {
+    if (this === type) {
+      return true;
+    } else if (this.parent != null) {
+      return this.parent.is_subtype(type);
+    } else {
+      return false;
+    }
+  }
+
+  distance(): number {
+    if (this.parent == null) {
+      return 0;
+    } else {
+      return -1 + this.parent.distance();
+    }
+  }
 
   coerce(x: CrochetValue): CrochetValue | null {
     if (this.accepts(x)) {
@@ -19,39 +41,13 @@ export class CrochetRole {
 
 export class TCrochetAny extends CrochetType {
   readonly type_name = "any";
-
-  accepts(x: any) {
-    return x instanceof CrochetValue;
-  }
+  readonly parent = null;
 
   coerce(x: CrochetValue): CrochetValue | null {
     return x;
   }
 
   static type = new TCrochetAny();
-}
-
-export class TCrochetUnion extends CrochetType {
-  constructor(readonly left: CrochetType, readonly right: CrochetType) {
-    super();
-  }
-
-  get type_name() {
-    return `${this.left.type_name} | ${this.right.type_name}`;
-  }
-
-  accepts(x: any) {
-    return this.left.accepts(x) || this.right.accepts(x);
-  }
-
-  coerce(x: CrochetValue): CrochetValue | null {
-    const lvalue = this.left.coerce(x);
-    if (lvalue != null) {
-      return lvalue;
-    } else {
-      return this.right.coerce(x);
-    }
-  }
 }
 
 export function type_name(x: any) {

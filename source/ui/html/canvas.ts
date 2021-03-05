@@ -2,20 +2,10 @@ import { CrochetType, CrochetValue } from "../../runtime";
 import { HTMLStyle } from "./props";
 
 export class THTMLCanvas extends CrochetType {
+  readonly parent = null;
+
   get type_name() {
     return "html-canvas";
-  }
-
-  accepts(x: any): boolean {
-    return x instanceof HTMLCanvas;
-  }
-
-  coerce(x: CrochetValue): CrochetValue | null {
-    if (this.accepts(x)) {
-      return x;
-    } else {
-      return null;
-    }
   }
 }
 

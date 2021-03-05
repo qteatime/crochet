@@ -1,6 +1,6 @@
 import { zip } from "../../utils";
 import { CrochetRecord } from "./record";
-import { CrochetRole, CrochetType, type_name } from "./types";
+import { CrochetRole, CrochetType, TCrochetAny, type_name } from "./types";
 import { CrochetValue, IProjection, ISelection, Selection } from "./value";
 
 export class CrochetInstance extends CrochetValue {
@@ -59,6 +59,7 @@ export class InstanceSelection implements ISelection {
 }
 
 export class TCrochetType extends CrochetType {
+  readonly parent = TCrochetAny.type;
   private instance_count = 0n;
 
   constructor(
@@ -92,9 +93,5 @@ export class TCrochetType extends CrochetType {
   instantiate(data: CrochetValue[]) {
     this.validate(data);
     return new CrochetInstance(this, ++this.instance_count, data);
-  }
-
-  accepts(x: any) {
-    return x instanceof CrochetInstance && x.type === this;
   }
 }

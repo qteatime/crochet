@@ -1,7 +1,7 @@
 import { iter } from "../../utils";
 import { gen } from "../../utils/utils";
 import { CrochetText } from "./text";
-import { CrochetType } from "./types";
+import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
 
 export class CrochetInterpolation extends CrochetValue {
@@ -33,12 +33,9 @@ export class CrochetInterpolation extends CrochetValue {
 }
 
 export class TCrochetInterpolation extends CrochetType {
+  readonly parent = TCrochetAny.type;
   get type_name() {
     return "interpolation";
-  }
-
-  accepts(x: any): boolean {
-    return x instanceof CrochetInterpolation;
   }
 
   coerce(x: CrochetValue): CrochetValue | null {

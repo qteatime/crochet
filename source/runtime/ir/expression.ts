@@ -19,16 +19,12 @@ import {
   PartialConcrete,
   PartialHole,
   PartialValue,
-  Record,
   safe_cast,
   Selection,
-  Stream,
   TAnyCrochetPartial,
   TCrochetEnum,
-  TCrochetRecord,
   TCrochetStream,
   TCrochetType,
-  TCrochetUnion,
   True,
 } from "../primitives";
 import {
