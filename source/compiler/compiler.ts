@@ -30,6 +30,7 @@ import * as IR from "../runtime/ir";
 import { EPartialConcrete, EPartialHole } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
+import { foreign_namespace } from "../runtime/world/ffi-decorators";
 import { cast } from "../utils/utils";
 
 // -- Utilities
@@ -718,6 +719,10 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       return [
         new IR.DWhen(compilePredicate(predicate), body.map(compileStatement)),
       ];
+    },
+
+    ForeignType(_, name, foreign_name) {
+      return [new IR.DForeignType(name.name, compileNamespace(foreign_name))];
     },
   });
 }

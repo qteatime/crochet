@@ -1,0 +1,1 @@
+export default "% crochet\r\n\r\ncommand X and Y = foreign crochet.core.band(X, Y);\r\ncommand X or Y = foreign crochet.core.bor(X, Y);\r\ncommand not X = foreign crochet.core.bnot(X);\r\n\r\ncommand X === Y = foreign crochet.core.eq(X, Y);\r\ncommand X =/= Y = foreign crochet.core.not-eq(X, Y);"

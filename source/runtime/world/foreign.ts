@@ -1,30 +1,28 @@
-import { NativeProcedureFn } from "../primitives/procedure";
+import { Bag } from "../../utils";
+import { Error } from "../../utils/result";
+import { CrochetType, CrochetValue, NativeProcedureFn } from "../primitives";
+import { Machine, State } from "../vm";
 
 export class ForeignInterface {
-  private methods = new Map<string, NativeProcedureFn>();
+  readonly methods = new Bag<string, NativeProcedureFn>("foreign function");
+  readonly types = new Bag<string, CrochetType>("foreign type");
 
-  add(name: string, procedure: NativeProcedureFn) {
-    if (this.has(name)) {
-      throw new Error(`internal: duplicated foreign function: ${name}`);
+  add(bag: ForeignBag) {
+    const prefix = bag.$ffi_namespace;
+    if (prefix == null) {
+      throw new Error(`Undefined prefix`);
     }
-    this.methods.set(name, procedure);
-  }
-
-  has(name: string): boolean {
-    return this.methods.has(name);
-  }
-
-  try_lookup(name: string): NativeProcedureFn | null {
-    const procedure = this.methods.get(name);
-    return procedure ?? null;
-  }
-
-  lookup(name: string) {
-    const procedure = this.try_lookup(name);
-    if (procedure != null) {
-      return procedure;
-    } else {
-      throw new Error(`internal: undefined foreign function: ${name}`);
+    for (const [fun, code] of bag.$ffi.entries()) {
+      this.methods.add(`${prefix}.${fun}`, code);
+    }
+    for (const [key, type] of bag.$ffi_types.entries()) {
+      this.types.add(key, type);
     }
   }
+}
+
+export interface ForeignBag {
+  $ffi_namespace: string;
+  $ffi: Map<string, (state: State, ...args: CrochetValue[]) => Machine>;
+  $ffi_types: Map<string, CrochetType>;
 }
