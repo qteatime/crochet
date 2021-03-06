@@ -12,7 +12,8 @@ export type Predicate =
   | NotPredicate
   | AndPredicate
   | OrPredicate
-  | ConstrainedPredicate;
+  | ConstrainedPredicate
+  | AlwaysPredicate;
 
 interface IPredicateRelation {
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[];
@@ -70,6 +71,12 @@ export class NotPredicate implements IPredicateRelation {
     } else {
       return [];
     }
+  }
+}
+
+export class AlwaysPredicate implements IPredicateRelation {
+  search(state: State, env: UnificationEnvironment) {
+    return [env];
   }
 }
 

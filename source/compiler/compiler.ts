@@ -24,14 +24,12 @@ import {
   InterpolationPart,
   Pair,
   Signal,
+  MatchSearchCase,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
-import { CrochetType } from "../runtime";
 import * as IR from "../runtime/ir";
-import { EPartialConcrete, EPartialHole } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
-import { foreign_namespace } from "../runtime/world/ffi-decorators";
 import { cast } from "../utils/utils";
 
 // -- Utilities
@@ -241,6 +239,10 @@ export function compilePredicate(p: Predicate): Logic.Predicate {
         signatureValues(sig).map(compilePattern)
       );
     },
+
+    Always(_) {
+      return new Logic.AlwaysPredicate();
+    },
   });
 }
 
@@ -274,9 +276,9 @@ export function literalToExpression(lit: Literal) {
 
 export function compileArgument(expr: Expression): IR.PartialExpr {
   if (expr instanceof Expression.Hole) {
-    return new EPartialHole();
+    return new IR.EPartialHole();
   } else {
-    return new EPartialConcrete(compileExpression(expr));
+    return new IR.EPartialConcrete(compileExpression(expr));
   }
 }
 
@@ -339,20 +341,33 @@ export function optimiseInterpolation(xs: IR.EInterpolationPart[]) {
   }
 }
 
+export function compileMatchSearchCase(
+  kase: MatchSearchCase
+): IR.MatchSearchCase {
+  return new IR.MatchSearchCase(
+    compilePredicate(kase.predicate),
+    new IR.SBlock(kase.body.map(compileStatement))
+  );
+}
+
 export function compileExpression(expr: Expression): IR.Expression {
   return expr.match<IR.Expression>({
     Search(_, pred) {
       return new IR.ESearch(compilePredicate(pred));
     },
 
+    MatchSearch(_, cases) {
+      return new IR.EMatchSearch(cases.map(compileMatchSearchCase));
+    },
+
     Invoke(_, sig) {
       const name = signatureName(sig);
       const args = signatureValues(sig).map(compileArgument);
-      const is_saturated = args.every((x) => x instanceof EPartialConcrete);
+      const is_saturated = args.every((x) => x instanceof IR.EPartialConcrete);
       if (is_saturated) {
         return new IR.EInvoke(
           name,
-          args.map((x) => cast(x, EPartialConcrete).expr)
+          args.map((x) => cast(x, IR.EPartialConcrete).expr)
         );
       } else {
         return new IR.EPartial(name, args);

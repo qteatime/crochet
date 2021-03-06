@@ -61,6 +61,7 @@ type Expression =
   | Record(pos: Meta, pairs: Pair<Name, Expression>[])
   | Cast(pos: Meta, typ: TypeApp, value: Expression)
   | Search(pos: Meta, predicate: Predicate)
+  | MatchSearch(pos: Meta, cases: MatchSearchCase[])
   | Project(pos: Meta, object: Expression, field: Name)
   | Select(pos: Meta, object: Expression, fields: Projection[])
   | For(pos: Meta, stream: Expression, name: Name, body: Expression)
@@ -71,6 +72,8 @@ type Expression =
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
+
+type MatchSearchCase(pos: Meta, predicate: Predicate, body: Statement[])
 
 type Projection(pos: Meta, name: Name, alias: Name)
 
@@ -97,6 +100,7 @@ type Predicate =
   | Not(pos: Meta, pred: Predicate)
   | Has(pos: Meta, signature: Signature<Pattern>)
   | Constrain(pos: Meta, pred: Predicate, constraint: Constraint)
+  | Always(pos: Meta)
   | Parens(pos: Meta, pred: Predicate)
 
 type Pattern =
@@ -167,7 +171,8 @@ grammar Crochet : Program {
       -> Declaration.DefinePredicate(meta, l, c)
 
   predicateClause =
-    | when_ p:predicate s<";">   -> PredicateClause(meta, p, PredicateEffect.Trivial())
+    | when_ p:predicate s<";">    -> PredicateClause(meta, p, PredicateEffect.Trivial())
+    | always_ p:predicate s<";">  -> PredicateClause(meta, Predicate.Always(meta), PredicateEffect.Trivial())
 
   doDeclaration =
     | do_ xs:statementBlock<statement>
@@ -293,6 +298,7 @@ grammar Crochet : Program {
     | predicatePrimary
 
   predicatePrimary =
+    | always_                                 -> Predicate.Always(meta)
     | r:logicSignature<pattern>               -> Predicate.Has(meta, r)
     | s<"("> p:predicate s<")">               -> Predicate.Parens(meta, p)
 
@@ -375,16 +381,11 @@ grammar Crochet : Program {
   // -- Expressions
   expression =
     | searchExpression
-    | forExpression
     | pipeExpression
 
   searchExpression =
     | search_ p:predicate
       -> Expression.Search(meta, p)
-
-  forExpression =
-    | for_ n:name in_ e:expression b:expressionBlock
-      -> Expression.For(meta, e, n, b)
 
   expressionBlock =
     | b:statementBlock<statement> -> Expression.Block(meta, b)
@@ -437,6 +438,8 @@ grammar Crochet : Program {
     | n:name              -> Projection(meta, n, n)
 
   primaryExpression =
+    | matchSearchExpression
+    | forExpression
     | newExpression<expression>
     | interpolateText<expression>
     | literalExpression
@@ -447,6 +450,20 @@ grammar Crochet : Program {
     | n:atom                        -> Expression.Global(meta, n)
     | n:name                        -> Expression.Variable(meta, n)
     | s<"("> e:expression s<")">    -> Expression.Parens(meta, e)
+
+  matchSearchExpression =
+    | match_ s<"{"> c:matchSearchCase+ s<"}">
+      -> Expression.MatchSearch(meta, c)
+
+  matchSearchCase =
+    | when_ p:predicate b:statementBlock<statement>
+      -> MatchSearchCase(meta, p, b)
+    | always_ b:statementBlock<statement>
+      -> MatchSearchCase(meta, Predicate.Always(meta), b)
+
+  forExpression =
+    | for_ n:name in_ e:expression b:expressionBlock
+      -> Expression.For(meta, e, n, b)
 
   newExpression<e> =
     | new_ n:atom fs:newFields<e>   -> Expression.New(meta, n, fs)
@@ -628,6 +645,7 @@ grammar Crochet : Program {
   goto_ = kw<"goto">
   call_ = kw<"call">
   simulate_ = kw<"simulate">
+  match_ = kw<"match">
 
   true_ = kw<"true">
   false_ = kw<"false">
@@ -644,6 +662,7 @@ grammar Crochet : Program {
   in_ = kw<"in">
   foreign_ = kw<"foreign">
   on_ = kw<"on">
+  always_ = kw<"always">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -651,4 +670,5 @@ grammar Crochet : Program {
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
+    | always_ | match_
 }

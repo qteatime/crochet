@@ -1,6 +1,7 @@
+import { stat } from "fs";
 import ts = require("typescript");
 import { cast } from "../../utils/utils";
-import { Predicate } from "../logic";
+import { Predicate, UnificationEnvironment } from "../logic";
 import {
   apply,
   CrochetInstance,
@@ -60,7 +61,8 @@ export type Expression =
   | EForall
   | EBlock
   | EPartial
-  | EApplyPartial;
+  | EApplyPartial
+  | EMatchSearch;
 
 interface IExpression {
   evaluate(state: State): Machine;
@@ -332,5 +334,33 @@ export class EInterpolateDynamic {
     return new InterpolationDynamic(
       cvalue(yield _push(this.expr.evaluate(state)))
     );
+  }
+}
+
+export class EMatchSearch {
+  constructor(readonly cases: MatchSearchCase[]) {}
+
+  async *evaluate(state: State): Machine {
+    for (const kase of this.cases) {
+      const results = kase.search(state);
+      if (results.length !== 0) {
+        const machines = results.map((uenv) => {
+          const new_env = new Environment(state.env, state.env.raw_receiver);
+          new_env.define_all(uenv.boundValues);
+          const new_state = state.with_env(new_env);
+          return kase.body.evaluate(new_state);
+        });
+        const values = avalue(yield _push(run_all(machines)));
+        return new CrochetStream(values);
+      }
+    }
+    return new CrochetStream([]);
+  }
+}
+export class MatchSearchCase {
+  constructor(readonly predicate: Predicate, readonly body: SBlock) {}
+
+  search(state: State) {
+    return state.world.search(this.predicate);
   }
 }
