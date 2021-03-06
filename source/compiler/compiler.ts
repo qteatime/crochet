@@ -455,6 +455,14 @@ export function compileExpression(expr: Expression): IR.Expression {
       throw new Error(`Hole found outside of function application.`);
     },
 
+    If(_, test, consequent, alternate) {
+      return new IR.EIf(
+        compileExpression(test),
+        compileExpression(consequent),
+        compileExpression(alternate)
+      );
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },

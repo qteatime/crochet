@@ -69,6 +69,7 @@ type Expression =
   | Apply(pos: Meta, partial: Expression, values: Expression[])
   | Pipe(pos: Meta, left: Expression, right: Expression)
   | Interpolate(pos: Meta, parts: InterpolationPart[])
+  | If(pos: Meta, test: Expression, consequent: Expression, alternate: Expression)
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
@@ -380,12 +381,20 @@ grammar Crochet : Program {
 
   // -- Expressions
   expression =
+    | ifExpression
+    | expression_200
+
+  expression_200 =
     | searchExpression
     | pipeExpression
 
   searchExpression =
     | search_ p:predicate
       -> Expression.Search(meta, p)
+
+  ifExpression =
+    | if_ t:expression_200 then_ c:expression_200 else_ a:expression
+      -> Expression.If(meta, t, c, a)
 
   expressionBlock =
     | b:statementBlock<statement> -> Expression.Block(meta, b)
@@ -445,6 +454,7 @@ grammar Crochet : Program {
     | literalExpression
     | recordExpression<expression>
     | listExpression<expression>
+    | expressionBlock
     | hole
     | self_                         -> Expression.Self(meta)
     | n:atom                        -> Expression.Global(meta, n)
@@ -634,7 +644,6 @@ grammar Crochet : Program {
   singleton_ = kw<"singleton">
   scene_ = kw<"scene">
   action_ = kw<"action">
-
   let_ = kw<"let">
   return_ = kw<"return">
   fact_ = kw<"fact">
@@ -642,11 +651,12 @@ grammar Crochet : Program {
   new_ = kw<"new">
   search_ = kw<"search">
   if_ = kw<"if">
+  then_ = kw<"then">
+  else_ = kw<"else">
   goto_ = kw<"goto">
   call_ = kw<"call">
   simulate_ = kw<"simulate">
   match_ = kw<"match">
-
   true_ = kw<"true">
   false_ = kw<"false">
   not_ = kw<"not">
@@ -670,5 +680,5 @@ grammar Crochet : Program {
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
-    | always_ | match_
+    | always_ | match_ | then_ | else_
 }
