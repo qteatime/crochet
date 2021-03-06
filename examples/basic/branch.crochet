@@ -1,0 +1,27 @@
+% crochet
+
+relation Who* at: Where;
+
+singleton lielle { at: foyer; }
+singleton karis { }
+
+singleton foyer;
+
+scene main {
+  if 1 > 2 then
+    "1 > 2" inspect
+  else if "1 < 2" then
+    "1 < 2" inspect
+  else
+    "umpossible!" inspect;
+
+  if search Who at: foyer then
+    "Someone at the foyer" inspect
+  else
+    "Nope" inspect;
+
+  if search karis at: foyer then
+    "Nah" inspect
+  else
+    "That's right" inspect;
+}

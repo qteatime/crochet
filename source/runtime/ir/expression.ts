@@ -62,7 +62,8 @@ export type Expression =
   | EBlock
   | EPartial
   | EApplyPartial
-  | EMatchSearch;
+  | EMatchSearch
+  | EIf;
 
 interface IExpression {
   evaluate(state: State): Machine;
@@ -337,7 +338,7 @@ export class EInterpolateDynamic {
   }
 }
 
-export class EMatchSearch {
+export class EMatchSearch implements IExpression {
   constructor(readonly cases: MatchSearchCase[]) {}
 
   async *evaluate(state: State): Machine {
@@ -362,5 +363,22 @@ export class MatchSearchCase {
 
   search(state: State) {
     return state.world.search(this.predicate);
+  }
+}
+
+export class EIf implements IExpression {
+  constructor(
+    readonly test: Expression,
+    readonly consequent: Expression,
+    readonly alternate: Expression
+  ) {}
+
+  async *evaluate(state: State): Machine {
+    const test = cvalue(yield _push(this.test.evaluate(state)));
+    if (test.as_bool()) {
+      return cvalue(yield _push(this.consequent.evaluate(state)));
+    } else {
+      return cvalue(yield _push(this.alternate.evaluate(state)));
+    }
   }
 }
