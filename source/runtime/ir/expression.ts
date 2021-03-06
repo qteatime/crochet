@@ -63,7 +63,7 @@ export type Expression =
   | EPartial
   | EApplyPartial
   | EMatchSearch
-  | EIf;
+  | ECondition;
 
 interface IExpression {
   evaluate(state: State): Machine;
@@ -366,19 +366,20 @@ export class MatchSearchCase {
   }
 }
 
-export class EIf implements IExpression {
-  constructor(
-    readonly test: Expression,
-    readonly consequent: Expression,
-    readonly alternate: Expression
-  ) {}
+export class ECondition implements IExpression {
+  constructor(readonly cases: ConditionCase[]) {}
 
   async *evaluate(state: State): Machine {
-    const test = cvalue(yield _push(this.test.evaluate(state)));
-    if (test.as_bool()) {
-      return cvalue(yield _push(this.consequent.evaluate(state)));
-    } else {
-      return cvalue(yield _push(this.alternate.evaluate(state)));
+    for (const kase of this.cases) {
+      const valid = cvalue(yield _push(kase.test.evaluate(state)));
+      if (valid.as_bool()) {
+        return cvalue(yield _push(kase.body.evaluate(state)));
+      }
     }
+    return False.instance;
   }
+}
+
+export class ConditionCase {
+  constructor(readonly test: Expression, readonly body: SBlock) {}
 }

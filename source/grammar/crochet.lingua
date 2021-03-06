@@ -69,12 +69,13 @@ type Expression =
   | Apply(pos: Meta, partial: Expression, values: Expression[])
   | Pipe(pos: Meta, left: Expression, right: Expression)
   | Interpolate(pos: Meta, parts: InterpolationPart[])
-  | If(pos: Meta, test: Expression, consequent: Expression, alternate: Expression)
+  | Condition(pos: Meta, cases: ConditionCase[])
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
 type MatchSearchCase(pos: Meta, predicate: Predicate, body: Statement[])
+type ConditionCase(pos: Meta, guard: Expression, body: Statement[])
 
 type Projection(pos: Meta, name: Name, alias: Name)
 
@@ -381,20 +382,12 @@ grammar Crochet : Program {
 
   // -- Expressions
   expression =
-    | ifExpression
-    | expression_200
-
-  expression_200 =
     | searchExpression
     | pipeExpression
 
   searchExpression =
     | search_ p:predicate
       -> Expression.Search(meta, p)
-
-  ifExpression =
-    | if_ t:expression_200 then_ c:expression_200 else_ a:expression
-      -> Expression.If(meta, t, c, a)
 
   expressionBlock =
     | b:statementBlock<statement> -> Expression.Block(meta, b)
@@ -448,6 +441,7 @@ grammar Crochet : Program {
 
   primaryExpression =
     | matchSearchExpression
+    | conditionExpression
     | forExpression
     | newExpression<expression>
     | interpolateText<expression>
@@ -460,6 +454,16 @@ grammar Crochet : Program {
     | n:atom                        -> Expression.Global(meta, n)
     | n:name                        -> Expression.Variable(meta, n)
     | s<"("> e:expression s<")">    -> Expression.Parens(meta, e)
+
+  conditionExpression =
+    | condition_ s<"{"> cs:conditionCase+ s<"}">
+      -> Expression.Condition(meta, cs)
+
+  conditionCase =
+    | when_ e:expression b:statementBlock<statement>
+      -> ConditionCase(meta, e, b)
+    | always_ b:statementBlock<statement>
+      -> ConditionCase(meta, Expression.Lit(Literal.True(meta)), b)
 
   matchSearchExpression =
     | match_ s<"{"> c:matchSearchCase+ s<"}">
@@ -673,6 +677,7 @@ grammar Crochet : Program {
   foreign_ = kw<"foreign">
   on_ = kw<"on">
   always_ = kw<"always">
+  condition_ = kw<"condition">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -680,5 +685,5 @@ grammar Crochet : Program {
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
-    | always_ | match_ | then_ | else_
+    | always_ | match_ | then_ | else_ | condition_
 }

@@ -8,15 +8,19 @@ singleton karis { }
 singleton foyer;
 
 scene main {
-  [
-    if 1 > 2 then "1 > 2"
-    else if 1 < 2 then "1 < 2"
-    else "umpossible!",
+  condition {
+    when 1 > 2 { "1 > 2" }
+    when 1 < 2 { "1 < 2" }
+    always { "umpossible" }
+  } inspect;
 
-    if search Who at: foyer then "Someone at the foyer"
-    else "Nope",
+  match {
+    when Who at: foyer { "[Who] at foyer" }
+    always { "Nah" }
+  } inspect;
 
-    if search karis at: foyer then "Nah"
-    else "That's right"
-  ] inspect;
+  condition {
+    when search karis at: foyer { "Nah" }
+    always { "That's right" }
+  } inspect;
 }

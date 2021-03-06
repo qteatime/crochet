@@ -451,16 +451,20 @@ export function compileExpression(expr: Expression): IR.Expression {
       ]);
     },
 
-    Hole(_) {
-      throw new Error(`Hole found outside of function application.`);
+    Condition(_, cases) {
+      return new IR.ECondition(
+        cases.map(
+          (x) =>
+            new IR.ConditionCase(
+              compileExpression(x.guard),
+              new IR.SBlock(x.body.map(compileStatement))
+            )
+        )
+      );
     },
 
-    If(_, test, consequent, alternate) {
-      return new IR.EIf(
-        compileExpression(test),
-        compileExpression(consequent),
-        compileExpression(alternate)
-      );
+    Hole(_) {
+      throw new Error(`Hole found outside of function application.`);
     },
 
     Parens(_, value) {
