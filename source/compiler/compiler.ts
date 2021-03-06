@@ -53,11 +53,11 @@ function parseString(x: String): string {
 export function literalToValue(lit: Literal) {
   return lit.match<rt.CrochetValue>({
     False(_) {
-      return rt.True.instance;
+      return rt.False.instance;
     },
 
     True(_) {
-      return rt.False.instance;
+      return rt.True.instance;
     },
 
     Text(_, value) {

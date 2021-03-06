@@ -71,12 +71,12 @@ interface IExpression {
 
 export class EFalse implements IExpression {
   async *evaluate(state: State): Machine {
-    return True.instance;
+    return False.instance;
   }
 }
 export class ETrue implements IExpression {
   async *evaluate(state: State): Machine {
-    return False.instance;
+    return True.instance;
   }
 }
 
