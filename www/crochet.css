@@ -98,8 +98,9 @@ body {
 }
 
 .crochet-error {
+  white-space: pre-wrap;
+  font-family: monospace;
   padding: 3em;
-  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;

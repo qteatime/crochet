@@ -5146,7 +5146,7 @@ class SSimulate {
 }
 exports.SSimulate = SSimulate;
 
-},{"../../utils/bag":72,"../../utils/utils":81,"../logic":14,"../primitives":29,"../simulation":44,"../vm":47}],10:[function(require,module,exports){
+},{"../../utils/bag":73,"../../utils/utils":81,"../logic":14,"../primitives":29,"../simulation":44,"../vm":47}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TNamed = exports.TAny = void 0;
@@ -5361,7 +5361,7 @@ class DatabaseLayer {
 }
 exports.DatabaseLayer = DatabaseLayer;
 
-},{"../../utils/bag":72,"./predicate":16,"./unification":18}],16:[function(require,module,exports){
+},{"../../utils/bag":73,"./predicate":16,"./unification":18}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PredicateClause = exports.PredicateProcedure = exports.FunctionRelation = exports.ConcreteRelation = exports.AlwaysPredicate = exports.NotPredicate = exports.HasRelation = exports.OrPredicate = exports.AndPredicate = exports.ConstrainedPredicate = void 0;
@@ -8164,7 +8164,7 @@ class World {
 }
 exports.World = World;
 
-},{"../../utils/bag":72,"../logic":14,"../primitives":29,"../simulation":44,"../vm":47,"./foreign":52}],56:[function(require,module,exports){
+},{"../../utils/bag":73,"../logic":14,"../primitives":29,"../simulation":44,"../vm":47,"./foreign":52}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand X and Y = foreign crochet.core.band(X, Y);\r\ncommand X or Y = foreign crochet.core.bor(X, Y);\r\ncommand not X = foreign crochet.core.bnot(X);\r\n\r\ncommand X === Y = foreign crochet.core.eq(X, Y);\r\ncommand X =/= Y = foreign crochet.core.not-eq(X, Y);";
@@ -8177,7 +8177,7 @@ exports.default = "% crochet\r\n\r\ncommand X inspect =\r\n  foreign crochet.deb
 },{}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = "% crochet\r\n\r\ntype html-element = foreign crochet.ui.html.element;\r\ntype html-menu = foreign crochet.ui.html.menu;\r\n\r\nsingleton html;\r\n\r\ncommand html show: X =\r\n  foreign crochet.ui.html.show(X);\r\n\r\ncommand html wait-click =\r\n  foreign crochet.ui.html.wait();\r\n\r\ncommand html box: Name class: Class children: Children =\r\n  foreign crochet.ui.html.box(Name, Class, Children);\r\n\r\ncommand html text: Text =\r\n  foreign crochet.ui.html.text(Text);\r\n\r\ncommand html menu: Items class: Class =\r\n  foreign crochet.ui.html.menu(Class, Items);\r\n\r\ncommand (X is html-menu) selected =\r\n  foreign crochet.ui.html.menu-selected(X);\r\n\r\n\r\ncommand X show {\r\n  X text show;\r\n}\r\n\r\ncommand (X is html-element) show {\r\n  html show: X;\r\n}\r\n\r\ncommand X show-wait {\r\n  X show;\r\n  wait-click;\r\n}\r\n\r\n\r\ncommand X text {\r\n  X debug-representation text;\r\n}\r\n\r\ncommand (Text is text) text {\r\n  html text: Text;\r\n}\r\n\r\ncommand (X is interpolation) text {\r\n  X parts text;\r\n}\r\n\r\ncommand (Xs is stream) text {\r\n  flow: for X in Xs { X text };\r\n}\r\n\r\n\r\ncommand (Children is stream) header {\r\n  html\r\n    box: \"header\"\r\n    class: \"crochet-header\"\r\n    children: Children;\r\n}\r\n\r\ncommand (X is html-element) title {\r\n  html\r\n    box: \"h1\"\r\n    class: \"crochet-title\"\r\n    children: [X text];\r\n}\r\n\r\ncommand (X is html-element) subtitle {\r\n  html\r\n    box: \"h2\"\r\n    class: \"crochet-subtitle\"\r\n    children: [X text];\r\n}\r\n\r\ncommand (X is html-element) monospace {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-mono\"\r\n    children: [X];\r\n}\r\n\r\ncommand paragraph: (X is html-element) {\r\n  html \r\n    box: \"p\"\r\n    class: \"crochet-paragraph\"\r\n    children: [X];\r\n}\r\n\r\ncommand flow: (Children is stream) {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-flow\"\r\n    children: Children;\r\n}\r\n\r\ncommand stack: (Children is stream) {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-stack\"\r\n    children: Children;\r\n}\r\n\r\ncommand emphasis: (X is html-element) {\r\n  html\r\n    box: \"em\"\r\n    class: \"crochet-emphasis\"\r\n    children: [X];\r\n}\r\n\r\ncommand strong: (X is html-element) {\r\n  html\r\n    box: \"strong\"\r\n    class: \"crochet-strong\"\r\n    children: [X];\r\n}\r\n\r\ncommand html divider {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-divider\"\r\n    children: [];\r\n}\r\n\r\ncommand section: (Children is stream) {\r\n  html\r\n    box: \"section\"\r\n    class: \"crochet-section\"\r\n    children: Children;\r\n}\r\n\r\ncommand menu: (Items is stream) {\r\n  html\r\n    menu: Items\r\n    class: \"crochet-menu\";\r\n}";
+exports.default = "% crochet\r\n\r\ntype html-element = foreign crochet.ui.html.element;\r\ntype html-menu = foreign crochet.ui.html.menu;\r\n\r\nsingleton html;\r\n\r\ncommand html show: X =\r\n  foreign crochet.ui.html.show(X);\r\n\r\ncommand html wait-click =\r\n  foreign crochet.ui.html.wait();\r\n\r\ncommand html box: Name class: Class children: Children =\r\n  foreign crochet.ui.html.box(Name, Class, Children);\r\n\r\ncommand html text: Text =\r\n  foreign crochet.ui.html.text(Text);\r\n\r\ncommand html menu: Items class: Class =\r\n  foreign crochet.ui.html.menu(Class, Items);\r\n\r\ncommand (X is html-menu) selected =\r\n  foreign crochet.ui.html.menu-selected(X);\r\n\r\n\r\ncommand X show {\r\n  X to-html show;\r\n}\r\n\r\ncommand (X is html-element) show {\r\n  html show: X;\r\n}\r\n\r\ncommand X show-wait {\r\n  X show;\r\n  wait-click;\r\n}\r\n\r\n\r\ncommand X to-html {\r\n  X debug-representation text;\r\n}\r\n\r\ncommand (X is html-element) to-html {\r\n  X;\r\n}\r\n\r\ncommand (X is text) to-html {\r\n  X text;\r\n}\r\n\r\ncommand (X is interpolation) to-html {\r\n  X parts to-html;\r\n}\r\n\r\ncommand (Xs is stream) to-html {\r\n  let Items = for X in Xs { X to-html };\r\n  html box: \"span\" class: \"crochet-stream\" children: Items;\r\n}\r\n\r\n\r\ncommand (Text is text) text {\r\n  html text: Text;\r\n}\r\n\r\ncommand header: X {\r\n  html\r\n    box: \"header\"\r\n    class: \"crochet-header\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand title: X {\r\n  html\r\n    box: \"h1\"\r\n    class: \"crochet-title\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand subtitle: X {\r\n  html\r\n    box: \"h2\"\r\n    class: \"crochet-subtitle\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand monospace: X {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-mono\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand paragraph: X {\r\n  html \r\n    box: \"p\"\r\n    class: \"crochet-paragraph\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand box: (Class is text) children: X {\r\n  html box: \"div\" class: Class children: [X to-html];\r\n}\r\n\r\ncommand flow: X {\r\n  box: \"crochet-flow\" children: X to-html;\r\n}\r\n\r\ncommand stack: X {\r\n  box: \"crochet-stack\" children: X to-html;\r\n}\r\n\r\ncommand emphasis: X {\r\n  html\r\n    box: \"em\"\r\n    class: \"crochet-emphasis\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand strong: X {\r\n  html\r\n    box: \"strong\"\r\n    class: \"crochet-strong\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand html divider {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-divider\"\r\n    children: [];\r\n}\r\n\r\ncommand section: X {\r\n  html\r\n    box: \"section\"\r\n    class: \"crochet-section\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand menu: (Items0 is stream) {\r\n  let Items = for X in Items {\r\n    [\r\n      Title -> X.Title to-html,\r\n      Value -> X.Value,\r\n    ]\r\n  };\r\n\r\n  html\r\n    menu: Items\r\n    class: \"crochet-menu\";\r\n}";
 
 },{}],59:[function(require,module,exports){
 "use strict";
@@ -8205,6 +8205,98 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand (X is integer) sleep =\r\n  foreign crochet.time.sleep(X);";
 
 },{}],64:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.canvas = exports.Canvas = exports.Rect = void 0;
+const utils_1 = require("../../utils");
+class Rect {
+    constructor(left, top, width, height) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+    }
+    static from_element_offset(x) {
+        return new Rect(x.offsetLeft, x.offsetTop, x.offsetWidth, x.offsetHeight);
+    }
+    get bottom() {
+        return this.top + this.height;
+    }
+    get right() {
+        return this.left + this.width;
+    }
+}
+exports.Rect = Rect;
+class Canvas {
+    constructor() {
+        this.mark = null;
+    }
+    get canvas() {
+        if (this._canvas == null) {
+            throw new Error(`internal: HTML canvas has not been initialised`);
+        }
+        return this._canvas;
+    }
+    measure(x) {
+        const old_visibility = x.style.visibility;
+        const old_animation = x.style.animation;
+        x.style.visibility = "hidden";
+        x.style.animation = "none";
+        this.canvas.appendChild(x);
+        const dimensions = Rect.from_element_offset(x);
+        this.canvas.removeChild(x);
+        x.style.animation = old_animation;
+        x.style.visibility = old_visibility;
+        return dimensions;
+    }
+    async wait_mark(x) {
+        if (this.mark == null) {
+            this.mark = x;
+            return;
+        }
+        const dimensions = this.measure(x);
+        if (dimensions.bottom > this.canvas.clientHeight) {
+            await this.click_to_continue(x);
+        }
+    }
+    async click_to_continue(x) {
+        const deferred = utils_1.defer();
+        this.canvas.setAttribute("data-wait", "true");
+        this.canvas.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            ev.preventDefault();
+            this.canvas.removeAttribute("data-wait");
+            if (x != null) {
+                this.mark = x;
+            }
+            else {
+                const children = this.canvas.children;
+                this.mark = children.item(children.length - 1) ?? null;
+            }
+            deferred.resolve();
+        });
+        return deferred.promise;
+    }
+    async show(x) {
+        await this.wait_mark(x);
+        this.canvas.appendChild(x);
+        x.scrollIntoView();
+    }
+    async show_error(error) {
+        console.error(error);
+        const element = document.createElement("div");
+        element.className = "crochet-error";
+        element.appendChild(document.createTextNode(error));
+        this.canvas.appendChild(element);
+    }
+    render_to(x) {
+        this._canvas = x;
+    }
+}
+exports.Canvas = Canvas;
+exports.canvas = new Canvas();
+
+},{"../../utils":75}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrochetMenu = exports.TCrochetMenu = exports.CrochetHtml = exports.TCrochetHtml = void 0;
@@ -8261,7 +8353,7 @@ class CrochetMenu extends CrochetHtml {
 }
 exports.CrochetMenu = CrochetMenu;
 
-},{"../../runtime":5}],65:[function(require,module,exports){
+},{"../../runtime":5}],66:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -8270,21 +8362,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HtmlFfi = exports.Canvas = void 0;
+exports.HtmlFfi = void 0;
 const runtime_1 = require("../../runtime");
 const ffi_decorators_1 = require("../../runtime/world/ffi-decorators");
 const utils_1 = require("../../utils");
-const decorators_1 = require("../../utils/decorators");
+const canvas_1 = require("./canvas");
 const element_1 = require("./element");
-class Canvas {
-    static get instance() {
-        return document.createElement("div");
-    }
-}
-__decorate([
-    decorators_1.lazy()
-], Canvas, "instance", null);
-exports.Canvas = Canvas;
 let HtmlFfi = class HtmlFfi {
     static get type_element() {
         return element_1.TCrochetHtml.type;
@@ -8293,17 +8376,12 @@ let HtmlFfi = class HtmlFfi {
         return element_1.TCrochetMenu.type;
     }
     static async *show(state, value) {
-        Canvas.instance.appendChild(value.value);
+        await canvas_1.canvas.show(value.value);
         return runtime_1.False.instance;
     }
     static async *wait(state) {
-        const result = utils_1.defer();
-        Canvas.instance.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            result.resolve(runtime_1.False.instance);
-        }, { once: true });
-        return await result.promise;
+        await canvas_1.canvas.click_to_continue();
+        return runtime_1.False.instance;
     }
     static box(name, klass, children) {
         const element = document.createElement(name.value);
@@ -8373,7 +8451,7 @@ HtmlFfi = __decorate([
 ], HtmlFfi);
 exports.HtmlFfi = HtmlFfi;
 
-},{"../../runtime":5,"../../runtime/world/ffi-decorators":51,"../../utils":75,"../../utils/decorators":74,"./element":64}],66:[function(require,module,exports){
+},{"../../runtime":5,"../../runtime/world/ffi-decorators":51,"../../utils":75,"./canvas":64,"./element":65}],67:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8388,21 +8466,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./element"), exports);
 __exportStar(require("./ffi"), exports);
+__exportStar(require("./canvas"), exports);
 
-},{"./element":64,"./ffi":65}],67:[function(require,module,exports){
+},{"./canvas":64,"./element":65,"./ffi":66}],68:[function(require,module,exports){
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.load = void 0;
+exports.Html = exports.load = void 0;
 const compiler_1 = require("../compiler");
 const compiler_2 = require("../compiler/compiler");
 const Builtin = require("../runtime/primitives/builtins");
@@ -8429,9 +8498,10 @@ async function load(state) {
     }
 }
 exports.load = load;
-__exportStar(require("./html"), exports);
+const Html = require("./html");
+exports.Html = Html;
 
-},{"../compiler":2,"../compiler/compiler":1,"../runtime/primitives/builtins":21,"./generated/core.crochet":56,"./generated/debug.crochet":57,"./generated/html-ui.crochet":58,"./generated/integer.crochet":59,"./generated/record.crochet":60,"./generated/stream.crochet":61,"./generated/text.crochet":62,"./generated/time.crochet":63,"./html":66,"./html/ffi":65,"./native":69}],68:[function(require,module,exports){
+},{"../compiler":2,"../compiler/compiler":1,"../runtime/primitives/builtins":21,"./generated/core.crochet":56,"./generated/debug.crochet":57,"./generated/html-ui.crochet":58,"./generated/integer.crochet":59,"./generated/record.crochet":60,"./generated/stream.crochet":61,"./generated/text.crochet":62,"./generated/time.crochet":63,"./html":67,"./html/ffi":66,"./native":70}],69:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -8465,7 +8535,7 @@ DebugFfi = __decorate([
 ], DebugFfi);
 exports.DebugFfi = DebugFfi;
 
-},{"../../runtime":5,"../../runtime/world/ffi-decorators":51}],69:[function(require,module,exports){
+},{"../../runtime":5,"../../runtime/world/ffi-decorators":51}],70:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8481,7 +8551,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./debug"), exports);
 __exportStar(require("./time"), exports);
 
-},{"./debug":68,"./time":70}],70:[function(require,module,exports){
+},{"./debug":69,"./time":71}],71:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -8508,7 +8578,7 @@ TimeFfi = __decorate([
 ], TimeFfi);
 exports.TimeFfi = TimeFfi;
 
-},{"../../runtime":5,"../../runtime/world/ffi-decorators":51,"../../utils":75}],71:[function(require,module,exports){
+},{"../../runtime":5,"../../runtime/world/ffi-decorators":51,"../../utils":75}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Crochet = void 0;
@@ -8524,7 +8594,7 @@ class Crochet {
         return this.world.ffi;
     }
     async initialise() {
-        this.root.appendChild(stdlib.Canvas.instance);
+        stdlib.Html.canvas.render_to(this.root);
         await stdlib.load(runtime_1.State.root(this.world));
     }
     async load_from_source(source) {
@@ -8540,10 +8610,13 @@ class Crochet {
     async run(scene) {
         return this.world.run(scene);
     }
+    async show_error(error) {
+        await stdlib.Html.canvas.show_error(error.message);
+    }
 }
 exports.Crochet = Crochet;
 
-},{"../compiler":2,"../runtime":5,"../stdlib":67}],72:[function(require,module,exports){
+},{"../compiler":2,"../runtime":5,"../stdlib":68}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Bag = void 0;
@@ -8579,7 +8652,7 @@ class Bag {
 }
 exports.Bag = Bag;
 
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BagMap = void 0;
@@ -8625,31 +8698,7 @@ class BagMap {
 }
 exports.BagMap = BagMap;
 
-},{}],74:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.lazy = void 0;
-const result_1 = require("./result");
-function lazy() {
-    const nothing = new (class Nothing {
-    })();
-    return (target, key, descriptor) => {
-        const getter = descriptor.get;
-        if (getter == null) {
-            throw new result_1.Error(`@lazy applied to non-getter ${key}`);
-        }
-        let value = nothing;
-        descriptor.get = function () {
-            if (value === nothing) {
-                value = getter.call(this);
-            }
-            return value;
-        };
-    };
-}
-exports.lazy = lazy;
-
-},{"./result":78}],75:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8670,7 +8719,7 @@ __exportStar(require("./types"), exports);
 __exportStar(require("./utils"), exports);
 __exportStar(require("./collections"), exports);
 
-},{"./bag":72,"./collections":73,"./iterable":76,"./operators":77,"./spec":79,"./types":80,"./utils":81}],76:[function(require,module,exports){
+},{"./bag":73,"./collections":74,"./iterable":76,"./operators":77,"./spec":79,"./types":80,"./utils":81}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BetterIterable = exports.iter = void 0;
@@ -17775,5 +17824,5 @@ module.exports = function whichTypedArray(value) {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":83,"call-bind/callBound":84,"es-abstract/helpers/getOwnPropertyDescriptor":86,"foreach":87,"has-symbols":91,"is-typed-array":98}]},{},[71])(71)
+},{"available-typed-arrays":83,"call-bind/callBound":84,"es-abstract/helpers/getOwnPropertyDescriptor":86,"foreach":87,"has-symbols":91,"is-typed-array":98}]},{},[72])(72)
 });

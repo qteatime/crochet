@@ -7,7 +7,6 @@ void (async function () {
     await game.load_from_url("/game.crochet");
     await game.run("main");
   } catch (error) {
-    console.error(error);
-    alert(error.message);
+    await game.show_error(error);
   }
 })();

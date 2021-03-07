@@ -1,6 +1,6 @@
 import * as stdlib from "../stdlib";
 import * as compiler from "../compiler";
-import { State, World } from "../runtime";
+import { MachineError, State, World } from "../runtime";
 
 export class Crochet {
   readonly world: World;
@@ -14,7 +14,7 @@ export class Crochet {
   }
 
   async initialise() {
-    this.root.appendChild(stdlib.Canvas.instance);
+    stdlib.Html.canvas.render_to(this.root);
     await stdlib.load(State.root(this.world));
   }
 
@@ -32,5 +32,9 @@ export class Crochet {
 
   async run(scene: string) {
     return this.world.run(scene);
+  }
+
+  async show_error(error: { message: string }) {
+    await stdlib.Html.canvas.show_error(error.message);
   }
 }

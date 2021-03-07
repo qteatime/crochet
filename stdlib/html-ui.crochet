@@ -25,7 +25,7 @@ command (X is html-menu) selected =
 
 
 command X show {
-  X text show;
+  X to-html show;
 }
 
 command (X is html-element) show {
@@ -38,84 +38,91 @@ command X show-wait {
 }
 
 
-command X text {
+command X to-html {
   X debug-representation text;
 }
+
+command (X is html-element) to-html {
+  X;
+}
+
+command (X is text) to-html {
+  X text;
+}
+
+command (X is interpolation) to-html {
+  X parts to-html;
+}
+
+command (Xs is stream) to-html {
+  let Items = for X in Xs { X to-html };
+  html box: "span" class: "crochet-stream" children: Items;
+}
+
 
 command (Text is text) text {
   html text: Text;
 }
 
-command (X is interpolation) text {
-  X parts text;
-}
-
-command (Xs is stream) text {
-  flow: for X in Xs { X text };
-}
-
-
-command (Children is stream) header {
+command header: X {
   html
     box: "header"
     class: "crochet-header"
-    children: Children;
+    children: [X to-html];
 }
 
-command (X is html-element) title {
+command title: X {
   html
     box: "h1"
     class: "crochet-title"
-    children: [X text];
+    children: [X to-html];
 }
 
-command (X is html-element) subtitle {
+command subtitle: X {
   html
     box: "h2"
     class: "crochet-subtitle"
-    children: [X text];
+    children: [X to-html];
 }
 
-command (X is html-element) monospace {
+command monospace: X {
   html
     box: "div"
     class: "crochet-mono"
-    children: [X];
+    children: [X to-html];
 }
 
-command paragraph: (X is html-element) {
+command paragraph: X {
   html 
     box: "p"
     class: "crochet-paragraph"
-    children: [X];
+    children: [X to-html];
 }
 
-command flow: (Children is stream) {
-  html
-    box: "div"
-    class: "crochet-flow"
-    children: Children;
+command box: (Class is text) children: X {
+  html box: "div" class: Class children: [X to-html];
 }
 
-command stack: (Children is stream) {
-  html
-    box: "div"
-    class: "crochet-stack"
-    children: Children;
+command flow: X {
+  box: "crochet-flow" children: X to-html;
 }
 
-command emphasis: (X is html-element) {
+command stack: X {
+  box: "crochet-stack" children: X to-html;
+}
+
+command emphasis: X {
   html
     box: "em"
     class: "crochet-emphasis"
-    children: [X];
+    children: [X to-html];
 }
 
-command strong: (X is html-element) {
+command strong: X {
   html
     box: "strong"
     class: "crochet-strong"
-    children: [X];
+    children: [X to-html];
 }
 
 command html divider {
@@ -125,14 +132,21 @@ command html divider {
     children: [];
 }
 
-command section: (Children is stream) {
+command section: X {
   html
     box: "section"
     class: "crochet-section"
-    children: Children;
+    children: [X to-html];
 }
 
-command menu: (Items is stream) {
+command menu: (Items0 is stream) {
+  let Items = for X in Items {
+    [
+      Title -> X.Title to-html,
+      Value -> X.Value,
+    ]
+  };
+
   html
     menu: Items
     class: "crochet-menu";

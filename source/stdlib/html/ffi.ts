@@ -15,20 +15,13 @@ import {
   machine,
 } from "../../runtime/world/ffi-decorators";
 import { cast, defer } from "../../utils";
-import { lazy } from "../../utils/decorators";
+import { canvas } from "./canvas";
 import {
   CrochetHtml,
   CrochetMenu,
   TCrochetHtml,
   TCrochetMenu,
 } from "./element";
-
-export class Canvas {
-  @lazy()
-  static get instance() {
-    return document.createElement("div");
-  }
-}
 
 @foreign_namespace("crochet.ui.html")
 export class HtmlFfi {
@@ -44,25 +37,14 @@ export class HtmlFfi {
 
   @foreign("show")
   static async *show(state: State, value: CrochetHtml) {
-    Canvas.instance.appendChild(value.value);
+    await canvas.show(value.value);
     return False.instance;
   }
 
   @foreign("wait")
   static async *wait(state: State) {
-    const result = defer<CrochetValue>();
-
-    Canvas.instance.addEventListener(
-      "click",
-      (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        result.resolve(False.instance);
-      },
-      { once: true }
-    );
-
-    return await result.promise;
+    await canvas.click_to_continue();
+    return False.instance;
   }
 
   @foreign("box")
