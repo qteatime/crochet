@@ -24,8 +24,8 @@ command (X is html-menu) selected =
   foreign crochet.ui.html.menu-selected(X);
 
 
-command (X is text) show {
-  html show: X text;
+command X show {
+  X text show;
 }
 
 command (X is html-element) show {
@@ -37,6 +37,24 @@ command X show-wait {
   wait-click;
 }
 
+
+command X text {
+  X debug-representation text;
+}
+
+command (Text is text) text {
+  html text: Text;
+}
+
+command (X is interpolation) text {
+  X parts text;
+}
+
+command (Xs is stream) text {
+  flow: for X in Xs { X text };
+}
+
+
 command (Children is stream) header {
   html
     box: "header"
@@ -44,22 +62,25 @@ command (Children is stream) header {
     children: Children;
 }
 
-command (Text is text) title {
+command (X is html-element) title {
   html
     box: "h1"
     class: "crochet-title"
-    children: [html text: Text];
+    children: [X text];
 }
 
-command (Text is text) subtitle {
+command (X is html-element) subtitle {
   html
     box: "h2"
     class: "crochet-subtitle"
-    children: [html text: Text];
+    children: [X text];
 }
 
-command (Text is text) text {
-  html text: Text;
+command (X is html-element) monospace {
+  html
+    box: "div"
+    class: "crochet-mono"
+    children: [X];
 }
 
 command paragraph: (X is html-element) {

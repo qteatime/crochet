@@ -22,7 +22,7 @@ export class Crochet {
     const ast = compiler.parse(source);
     const ir = compiler.compileProgram(ast);
     const state = State.root(this.world);
-    state.world.load_declarations(ir, state.env);
+    await state.world.load_declarations(ir, state.env);
   }
 
   async load_from_url(url: string) {
