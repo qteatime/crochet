@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require("./build/bin/crochet");
+require("./build/cli/crochet");

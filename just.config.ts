@@ -28,7 +28,7 @@ task("build-ts", tscTask());
 
 task("build-web", () => {
   execSync(
-    `./node_modules/.bin/browserify -e build/targets/web.js -s Crochet -o dist/crochet.js`
+    `./node_modules/.bin/browserify -e build/targets/web.js -s Crochet -o www/crochet.js`
   );
 });
 

@@ -1,4 +1,4 @@
-import { CrochetValue, False } from "../../runtime";
+import { CrochetText, CrochetValue, False } from "../../runtime";
 import {
   foreign,
   foreign_namespace,
@@ -12,5 +12,11 @@ export class DebugFfi {
   static inspect(value: CrochetValue) {
     console.log(">>", value.to_text());
     return False.instance;
+  }
+
+  @foreign("representation")
+  @machine()
+  static representation(value: CrochetValue) {
+    return new CrochetText(value.to_text());
   }
 }

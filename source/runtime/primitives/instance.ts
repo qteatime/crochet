@@ -62,7 +62,7 @@ export class TCrochetType extends CrochetType {
   private instance_count = 0n;
 
   constructor(
-    readonly parent: CrochetType | null,
+    readonly parent: CrochetType,
     readonly name: string,
     readonly roles: Set<CrochetRole>,
     readonly types: CrochetType[],

@@ -23,7 +23,7 @@ singleton board {
     [S.M11 mark]|[S.M12 mark]|[S.M13 mark]
     [S.M21 mark]|[S.M22 mark]|[S.M23 mark]
     [S.M31 mark]|[S.M32 mark]|[S.M33 mark]
-    " inspect;
+    " text monospace show;
   }
 }
 
@@ -95,18 +95,18 @@ scene main {
 
 action "Mark [L], [C]"
 when X simulate-turn, L at: C mark: empty {
-  "[X name] marks [L], [C]" inspect;
+  "[X name] marks [L], [C]" text show;
   fact L at: C mark: X;
   board show;
   100 sleep;
 }
 
 when X simulate-turn, X won {
-  "[X name] won!" inspect;
+  "[X name] won!" text show;
   fact won state;
 }
 
 when on-going state, not X won, not L at: C mark: empty {
-  "It's a draw!" inspect;
+  "It's a draw!" text show;
   fact draw state;
 }

@@ -5,7 +5,7 @@ import {
   PredicateProcedure,
   TreeType,
 } from "../logic";
-import { CrochetRole, TCrochetType } from "../primitives";
+import { CrochetRole, TCrochetAny, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
 import { cvalue, run, State } from "../vm";
 import { Environment, Scene, World } from "../world";
@@ -129,7 +129,7 @@ export class DType implements IDeclaration {
     const layout = new Map(this.fields.map((x, i) => [x.parameter, i]));
     const parent = this.parent ? this.parent.realise(state.world) : null;
     const type = new TCrochetType(
-      parent,
+      parent ?? TCrochetAny.type,
       this.name,
       new Set(roles),
       types,
