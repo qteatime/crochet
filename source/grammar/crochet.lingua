@@ -12,7 +12,7 @@ type Declaration =
   | ForeignType(pos: Meta, name: Name, foreign_name: Namespace)
   | Type(pos: Meta, typ: TypeDef, fields: Parameter[])
   | Scene(pos: Meta, name: Name, body: Statement[])
-  | Action(pos: Meta, title: String, pred: Predicate, body: Statement[]) // FIXME: interpolated titles
+  | Action(pos: Meta, title: Interpolation<Name>, pred: Predicate, body: Statement[])
   | When(pos: Meta, pred: Predicate, body: Statement[])
 
 type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
@@ -68,7 +68,7 @@ type Expression =
   | Block(pos: Meta, body: Statement[])
   | Apply(pos: Meta, partial: Expression, values: Expression[])
   | Pipe(pos: Meta, left: Expression, right: Expression)
-  | Interpolate(pos: Meta, parts: InterpolationPart[])
+  | Interpolate(pos: Meta, value: Interpolation<Expression>)
   | Condition(pos: Meta, cases: ConditionCase[])
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
@@ -83,10 +83,12 @@ type RecordField =
 
 type Projection(pos: Meta, name: RecordField, alias: RecordField)
 
-type InterpolationPart =
+type Interpolation<T>(pos: Meta, parts: InterpolationPart<T>[])
+
+type InterpolationPart<T> =
   | Escape(pos: Meta, character: string)
   | Static(pos: Meta, text: string)
-  | Dynamic(pos: Meta, value: Expression)
+  | Dynamic(pos: Meta, value: T)
 
 type Literal =
   | False(pos: Meta)
@@ -267,7 +269,7 @@ grammar Crochet : Program {
       -> Declaration.Scene(meta, n, b)
 
   actionDeclaration =
-    | action_ t:string when_ p:predicate b:statementBlock<statement>
+    | action_ t:interpolateText<name> when_ p:predicate b:statementBlock<statement>
       -> Declaration.Action(meta, t, p, b)
   
   whenDeclaration =
@@ -450,7 +452,7 @@ grammar Crochet : Program {
     | conditionExpression
     | forExpression
     | newExpression<expression>
-    | interpolateText<expression>
+    | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
     | literalExpression
     | recordExpression<expression>
     | listExpression<expression>
@@ -519,7 +521,7 @@ grammar Crochet : Program {
 
   interpolateText<t> =
     | s<"\""> xs:interpolatePart<t>* "\""
-      -> Expression.Interpolate(meta, xs)
+      -> Interpolation(meta, xs)
 
   interpolatePart<p> =
     | "\\" c:any                 -> InterpolationPart.Escape(meta, c)

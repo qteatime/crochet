@@ -11,7 +11,7 @@ import { Machine } from "../vm";
 
 export class ActionChoice extends CrochetValue {
   constructor(
-    readonly title: string,
+    readonly title: CrochetValue,
     readonly action: Action,
     readonly machine: Machine
   ) {
@@ -25,7 +25,7 @@ export class ActionChoice extends CrochetValue {
   as_record() {
     return new CrochetRecord(
       new Map<string, CrochetValue>([
-        ["Title", new CrochetText(this.title)],
+        ["Title", this.title],
         ["Action", new CrochetUnknown(this.action)],
       ])
     );

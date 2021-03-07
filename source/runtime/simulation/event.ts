@@ -1,10 +1,11 @@
 import { Environment } from "../world";
-import { SBlock, Statement } from "../ir";
+import { EInterpolate, SBlock, Statement } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
 import { State } from "../vm";
 import { CrochetInteger, CrochetText, CrochetValue } from "../primitives";
 import { BagMap, iter } from "../../utils";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
+import { SimpleInterpolation } from "../ir/atomic";
 
 export class When {
   constructor(
@@ -32,7 +33,7 @@ export class Action {
   private fired_for = new BagMap<CrochetValue, bigint>();
 
   constructor(
-    readonly title: string,
+    readonly title: SimpleInterpolation<string>,
     readonly predicate: Predicate,
     readonly tags: string[],
     readonly env: Environment,
@@ -53,7 +54,7 @@ export class Action {
       const block = new SBlock(this.body);
       return {
         action: this,
-        title: this.title,
+        title: this.title.interpolate((x) => env.lookup(x)),
         tags: this.tags,
         machine: block.evaluate(state.with_env(env)),
       };
@@ -67,9 +68,7 @@ export class Action {
 
   get layer() {
     const layer = new FunctionLayer(null);
-    layer.add("_ action-name", (state, env, [pattern]) =>
-      pattern.aunify(state, env, new CrochetText(this.title))
-    );
+
     layer.add("_ action-fired:", (state, env, [pactor, ptimes]) => {
       return iter(this.fired_for.entries())
         .flatMap<UnificationEnvironment>(([actor, times]) => {
@@ -79,6 +78,7 @@ export class Action {
         })
         .to_array();
     });
+
     return layer;
   }
 }

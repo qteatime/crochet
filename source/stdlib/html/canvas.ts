@@ -47,6 +47,20 @@ export class Canvas {
     return dimensions;
   }
 
+  private is_interactive(x: HTMLElement): boolean {
+    if (x.getAttribute("data-interactive") === "true") {
+      return true;
+    }
+    const children = Array.from(x.children);
+    if (children.length === 0) {
+      return false;
+    } else {
+      return children.some(
+        (x) => x instanceof HTMLElement && this.is_interactive(x)
+      );
+    }
+  }
+
   private async wait_mark(x: HTMLElement) {
     if (this.mark == null) {
       this.mark = x;
@@ -54,8 +68,11 @@ export class Canvas {
     }
 
     const dimensions = this.measure(x);
-    if (dimensions.bottom > this.canvas.clientHeight) {
+    if (dimensions.bottom - this.mark.offsetTop > this.canvas.clientHeight) {
       await this.click_to_continue(x);
+    }
+    if (this.is_interactive(x)) {
+      this.mark = null;
     }
   }
 

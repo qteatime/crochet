@@ -43,48 +43,28 @@ import { Environment } from "../world";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 
-export type Expression =
-  | EFalse
-  | ETrue
-  | EVariable
-  | EText
-  | EInteger
-  | ESearch
-  | EInvoke
-  | ENew
-  | EGlobal
-  | ESelf
-  | EList
-  | ERecord
-  | ECast
-  | EProject
-  | EForall
-  | EBlock
-  | EPartial
-  | EApplyPartial
-  | EMatchSearch
-  | ECondition;
-
-interface IExpression {
-  evaluate(state: State): Machine;
+export abstract class Expression {
+  abstract evaluate(state: State): Machine;
 }
 
-export class EFalse implements IExpression {
+export class EFalse extends Expression {
   async *evaluate(state: State): Machine {
     return False.instance;
   }
 }
-export class ETrue implements IExpression {
+export class ETrue extends Expression {
   async *evaluate(state: State): Machine {
     return True.instance;
   }
 }
 
-export class EVariable implements IExpression {
-  constructor(readonly name: string) {}
+export class EVariable extends Expression {
+  constructor(readonly name: string) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
-    const value = state.env.lookup(this.name);
+    const value = state.env.try_lookup(this.name);
     if (value == null) {
       return cvalue(yield _throw(new ErrUndefinedVariable(this.name)));
     } else {
@@ -93,23 +73,29 @@ export class EVariable implements IExpression {
   }
 }
 
-export class EText implements IExpression {
-  constructor(readonly value: string) {}
+export class EText extends Expression {
+  constructor(readonly value: string) {
+    super();
+  }
   async *evaluate(state: State): Machine {
     return new CrochetText(this.value);
   }
 }
 
-export class EInteger implements IExpression {
-  constructor(readonly value: bigint) {}
+export class EInteger extends Expression {
+  constructor(readonly value: bigint) {
+    super();
+  }
   async *evaluate(state: State): Machine {
     return new CrochetInteger(this.value);
   }
 }
 
-export class ESearch implements IExpression {
+export class ESearch extends Expression {
   readonly variables = this.predicate.variables;
-  constructor(readonly predicate: Predicate) {}
+  constructor(readonly predicate: Predicate) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const env = UnificationEnvironment.from(
@@ -122,8 +108,10 @@ export class ESearch implements IExpression {
   }
 }
 
-export class EInvoke implements IExpression {
-  constructor(readonly name: string, readonly args: Expression[]) {}
+export class EInvoke extends Expression {
+  constructor(readonly name: string, readonly args: Expression[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const args = avalue(
@@ -134,8 +122,10 @@ export class EInvoke implements IExpression {
   }
 }
 
-export class ENew implements IExpression {
-  constructor(readonly name: string, readonly data: Expression[]) {}
+export class ENew extends Expression {
+  constructor(readonly name: string, readonly data: Expression[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const type = cast(state.world.types.lookup(this.name), TCrochetType);
@@ -146,22 +136,26 @@ export class ENew implements IExpression {
   }
 }
 
-export class EGlobal implements IExpression {
-  constructor(readonly name: string) {}
+export class EGlobal extends Expression {
+  constructor(readonly name: string) {
+    super();
+  }
 
   async *evaluate(state: State) {
     return state.world.globals.lookup(this.name);
   }
 }
 
-export class ESelf implements IExpression {
+export class ESelf extends Expression {
   async *evaluate(state: State) {
     return state.env.receiver;
   }
 }
 
-export class EList implements IExpression {
-  constructor(readonly values: Expression[]) {}
+export class EList extends Expression {
+  constructor(readonly values: Expression[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const values = avalue(
@@ -171,8 +165,10 @@ export class EList implements IExpression {
   }
 }
 
-export class ERecord implements IExpression {
-  constructor(readonly pairs: { key: string; value: Expression }[]) {}
+export class ERecord extends Expression {
+  constructor(readonly pairs: { key: string; value: Expression }[]) {
+    super();
+  }
   async *evaluate(state: State): Machine {
     const map = new Map<string, CrochetValue>();
     for (const pair of this.pairs) {
@@ -183,8 +179,10 @@ export class ERecord implements IExpression {
   }
 }
 
-export class ECast implements IExpression {
-  constructor(readonly type: Type, readonly value: Expression) {}
+export class ECast extends Expression {
+  constructor(readonly type: Type, readonly value: Expression) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const type = this.type.realise(state.world);
@@ -198,8 +196,10 @@ export class ECast implements IExpression {
   }
 }
 
-export class EProject implements IExpression {
-  constructor(readonly object: Expression, readonly field: string) {}
+export class EProject extends Expression {
+  constructor(readonly object: Expression, readonly field: string) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
@@ -211,8 +211,10 @@ export class EProject implements IExpression {
   }
 }
 
-export class EProjectMany implements IExpression {
-  constructor(readonly object: Expression, readonly fields: Selection[]) {}
+export class EProjectMany extends Expression {
+  constructor(readonly object: Expression, readonly fields: Selection[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
@@ -224,12 +226,14 @@ export class EProjectMany implements IExpression {
   }
 }
 
-export class EForall implements IExpression {
+export class EForall extends Expression {
   constructor(
     readonly stream: Expression,
     readonly name: string,
     readonly code: Expression
-  ) {}
+  ) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const stream0 = cvalue(yield _push(this.stream.evaluate(state)));
@@ -250,16 +254,20 @@ export class EForall implements IExpression {
   }
 }
 
-export class EBlock implements IExpression {
-  constructor(readonly body: Statement[]) {}
+export class EBlock extends Expression {
+  constructor(readonly body: Statement[]) {
+    super();
+  }
 
   evaluate(state: State): Machine {
     return new SBlock(this.body).evaluate(state);
   }
 }
 
-export class EPartial implements IExpression {
-  constructor(readonly name: string, readonly values: PartialExpr[]) {}
+export class EPartial extends Expression {
+  constructor(readonly name: string, readonly values: PartialExpr[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const values = (yield _push(
@@ -273,8 +281,10 @@ export class EPartial implements IExpression {
   }
 }
 
-export class EApplyPartial implements IExpression {
-  constructor(readonly partial: Expression, readonly values: PartialExpr[]) {}
+export class EApplyPartial extends Expression {
+  constructor(readonly partial: Expression, readonly values: PartialExpr[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const fn0 = cvalue(yield _push(this.partial.evaluate(state)));
@@ -291,20 +301,20 @@ export class EApplyPartial implements IExpression {
   }
 }
 
-export type PartialExpr = EPartialHole | EPartialConcrete;
-
-interface IPartialExpr {
-  evaluate(state: State): Machine;
+export abstract class PartialExpr {
+  abstract evaluate(state: State): Machine;
 }
 
-export class EPartialHole implements IPartialExpr {
+export class EPartialHole extends PartialExpr {
   async *evaluate(state: State): Machine {
     return new PartialHole();
   }
 }
 
-export class EPartialConcrete implements IPartialExpr {
-  constructor(readonly expr: Expression) {}
+export class EPartialConcrete extends PartialExpr {
+  constructor(readonly expr: Expression) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const value = cvalue(yield _push(this.expr.evaluate(state)));
@@ -312,8 +322,10 @@ export class EPartialConcrete implements IPartialExpr {
   }
 }
 
-export class EInterpolate implements IExpression {
-  constructor(readonly parts: EInterpolationPart[]) {}
+export class EInterpolate extends Expression {
+  constructor(readonly parts: EInterpolationPart[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const values = (yield _push(
@@ -343,8 +355,10 @@ export class EInterpolateDynamic {
   }
 }
 
-export class EMatchSearch implements IExpression {
-  constructor(readonly cases: MatchSearchCase[]) {}
+export class EMatchSearch extends Expression {
+  constructor(readonly cases: MatchSearchCase[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     for (const kase of this.cases) {
@@ -375,8 +389,10 @@ export class MatchSearchCase {
   }
 }
 
-export class ECondition implements IExpression {
-  constructor(readonly cases: ConditionCase[]) {}
+export class ECondition extends Expression {
+  constructor(readonly cases: ConditionCase[]) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     for (const kase of this.cases) {

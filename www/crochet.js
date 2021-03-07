@@ -1,10 +1,11 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Crochet = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compileProgram = exports.compileDeclaration = exports.compileTypeDef = exports.compileParameters = exports.compileParameter = exports.compileTypeApp = exports.compileStatement = exports.compileSignal = exports.compileSimulationGoal = exports.compileTypeInit = exports.materialiseSignature = exports.compileExpression = exports.compileRecordField = exports.compileMatchSearchCase = exports.optimiseInterpolation = exports.compileInterpolationPart = exports.compileArgument = exports.literalToExpression = exports.compilePredicateClause = exports.compilePredicate = exports.compilePredicateEffect = exports.compileConstraint = exports.compilePattern = exports.compileRelationTypes = exports.compileNamespace = exports.signatureValues = exports.signatureName = exports.literalToValue = void 0;
+exports.compileProgram = exports.compileDeclaration = exports.compileTypeDef = exports.compileParameters = exports.compileParameter = exports.compileTypeApp = exports.compileStatement = exports.compileSignal = exports.compileSimulationGoal = exports.compileTypeInit = exports.materialiseSignature = exports.compileExpression = exports.compileRecordField = exports.compileMatchSearchCase = exports.optimiseInterpolation = exports.compileInterpolationPart = exports.compileInterpolation = exports.compileArgument = exports.literalToExpression = exports.compilePredicateClause = exports.compilePredicate = exports.compilePredicateEffect = exports.compileConstraint = exports.compilePattern = exports.compileRelationTypes = exports.compileNamespace = exports.signatureValues = exports.signatureName = exports.literalToValue = void 0;
 const crochet_grammar_1 = require("../generated/crochet-grammar");
 const rt = require("../runtime");
 const IR = require("../runtime/ir");
+const ir_1 = require("../runtime/ir");
 const Logic = require("../runtime/logic");
 const Sim = require("../runtime/simulation");
 const utils_1 = require("../utils/utils");
@@ -208,25 +209,29 @@ function compileArgument(expr) {
     }
 }
 exports.compileArgument = compileArgument;
-function compileInterpolationPart(part) {
+function compileInterpolation(value, f) {
+    return new ir_1.SimpleInterpolation(value.parts.map((x) => compileInterpolationPart(x, f)));
+}
+exports.compileInterpolation = compileInterpolation;
+function compileInterpolationPart(part, f) {
     return part.match({
         Escape(_, c) {
             switch (c) {
                 case "n":
-                    return new IR.EInterpolateStatic("\n");
+                    return new IR.SIPStatic("\n");
                 case "r":
-                    return new IR.EInterpolateStatic("\r");
+                    return new IR.SIPStatic("\r");
                 case "t":
-                    return new IR.EInterpolateStatic("\t");
+                    return new IR.SIPStatic("\t");
                 default:
-                    return new IR.EInterpolateStatic(c);
+                    return new IR.SIPStatic(c);
             }
         },
         Static(_, c) {
-            return new IR.EInterpolateStatic(c);
+            return new IR.SIPStatic(c);
         },
         Dynamic(_, x) {
-            return new IR.EInterpolateDynamic(compileExpression(x));
+            return new IR.SIPDynamic(f(x));
         },
     });
 }
@@ -337,9 +342,9 @@ function compileExpression(expr) {
         Apply(_, partial, args) {
             return new IR.EApplyPartial(compileExpression(partial), args.map(compileArgument));
         },
-        Interpolate(_, parts0) {
-            const parts = parts0.map(compileInterpolationPart);
-            return optimiseInterpolation(parts);
+        Interpolate(_, x) {
+            const interpolation = compileInterpolation(x, compileExpression).to_expression();
+            return optimiseInterpolation(interpolation.parts);
         },
         Pipe(_, left, right) {
             return new IR.EApplyPartial(compileExpression(right), [
@@ -549,10 +554,9 @@ function compileDeclaration(d) {
         Scene(_, name, body) {
             return [new IR.DScene(name.name, body.map(compileStatement))];
         },
-        Action(_, title0, predicate, body) {
-            const title = parseString(title0);
+        Action(_, title, predicate, body) {
             return [
-                new IR.DAction(title, compilePredicate(predicate), body.map(compileStatement)),
+                new IR.DAction(compileInterpolation(title, (x) => x.name), compilePredicate(predicate), body.map(compileStatement)),
             ];
         },
         When(_, predicate, body) {
@@ -571,7 +575,7 @@ function compileProgram(p) {
 }
 exports.compileProgram = compileProgram;
 
-},{"../generated/crochet-grammar":4,"../runtime":5,"../runtime/ir":8,"../runtime/logic":14,"../runtime/simulation":44,"../utils/utils":81}],2:[function(require,module,exports){
+},{"../generated/crochet-grammar":4,"../runtime":5,"../runtime/ir":9,"../runtime/logic":15,"../runtime/simulation":45,"../utils/utils":82}],2:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -606,7 +610,7 @@ exports.parse = parse;
 },{"../generated/crochet-grammar":4}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.semantics = exports.parse = exports.grammar = exports.String = exports.Namespace = exports.Name = exports.Pair = exports.RelationPart = exports.PartialSignature = exports.Signature = exports.Constraint = exports.Pattern = exports.Predicate = exports.SimulationGoal = exports.Literal = exports.InterpolationPart = exports.Projection = exports.RecordField = exports.ConditionCase = exports.MatchSearchCase = exports.Expression = exports.Signal = exports.Statement = exports.PredicateEffect = exports.PredicateClause = exports.TypeApp = exports.Parameter = exports.TypeInit = exports.FFI = exports.TypeDef = exports.Declaration = exports.Program = exports.Meta = exports.Node = void 0;
+exports.semantics = exports.parse = exports.grammar = exports.String = exports.Namespace = exports.Name = exports.Pair = exports.RelationPart = exports.PartialSignature = exports.Signature = exports.Constraint = exports.Pattern = exports.Predicate = exports.SimulationGoal = exports.Literal = exports.InterpolationPart = exports.Interpolation = exports.Projection = exports.RecordField = exports.ConditionCase = exports.MatchSearchCase = exports.Expression = exports.Signal = exports.Statement = exports.PredicateEffect = exports.PredicateClause = exports.TypeApp = exports.Parameter = exports.TypeInit = exports.FFI = exports.TypeDef = exports.Declaration = exports.Program = exports.Meta = exports.Node = void 0;
 // This file is generated from Linguist
 const Ohm = require("ohm-js");
 const OhmUtil = require("ohm-js/src/util");
@@ -944,7 +948,7 @@ const $Declaration = (function () {
             this.body = body;
             Object.defineProperty(this, "tag", { value: "Action" });
             $assert_type(pos, "Meta", Meta);
-            $assert_type(title, "String", String);
+            $assert_type(title, "Interpolation<Name>", Interpolation);
             $assert_type(pred, "Predicate", Predicate);
             $assert_type(body, "Statement[]", $is_array(Statement));
         }
@@ -1730,16 +1734,16 @@ const $Expression = (function () {
         }
     }
     class Interpolate extends Expression {
-        constructor(pos, parts) {
+        constructor(pos, value) {
             super();
             this.pos = pos;
-            this.parts = parts;
+            this.value = value;
             Object.defineProperty(this, "tag", { value: "Interpolate" });
             $assert_type(pos, "Meta", Meta);
-            $assert_type(parts, "InterpolationPart[]", $is_array(InterpolationPart));
+            $assert_type(value, "Interpolation<Expression>", Interpolation);
         }
         match(p) {
-            return p.Interpolate(this.pos, this.parts);
+            return p.Interpolate(this.pos, this.value);
         }
         static has_instance(x) {
             return x instanceof Interpolate;
@@ -1920,6 +1924,20 @@ class Projection extends Node {
     }
 }
 exports.Projection = Projection;
+class Interpolation extends Node {
+    constructor(pos, parts) {
+        super();
+        this.pos = pos;
+        this.parts = parts;
+        Object.defineProperty(this, "tag", { value: "Interpolation" });
+        $assert_type(pos, "Meta", Meta);
+        $assert_type(parts, "InterpolationPart<T>[]", $is_array(InterpolationPart));
+    }
+    static has_instance(x) {
+        return x instanceof Interpolation;
+    }
+}
+exports.Interpolation = Interpolation;
 class InterpolationPart extends Node {
     static get Escape() {
         return $InterpolationPart.Escape;
@@ -1975,7 +1993,6 @@ const $InterpolationPart = (function () {
             this.value = value;
             Object.defineProperty(this, "tag", { value: "Dynamic" });
             $assert_type(pos, "Meta", Meta);
-            $assert_type(value, "Expression", Expression);
         }
         match(p) {
             return p.Dynamic(this.pos, this.value);
@@ -2821,7 +2838,7 @@ class String extends Node {
 }
 exports.String = String;
 // == Grammar definition ============================================
-exports.grammar = Ohm.grammar('\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | defineDeclaration  -- alt7\n | sceneDeclaration  -- alt8\n | actionDeclaration  -- alt9\n | whenDeclaration  -- alt10\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> foreign_ foreignBody  -- alt1\n | command_ signature<parameter> s<"="> expression s<";">  -- alt2\n | command_ signature<parameter> statementBlock<statement>  -- alt3\n\n\nforeignBody  = namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeName  -- alt3\n\n\ntypeApp  = typeAppPrimary  -- alt1\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = singleton_ basicType typeInitBlock  -- alt1\n | type_ basicType typeFields s<";">  -- alt2\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt3\n\n\nbasicType  = atom typeDefParent roles  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = block<typeInit>  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> nonemptyListOf<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = name is_ typeApp  -- alt1\n | name  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> s<"="> foreignBody  -- alt2\n | command_ partialSignature<parameter> statementBlock<statement>  -- alt3\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom statementBlock<statement>  -- alt1\n\n\nactionDeclaration  = action_ string when_ predicate statementBlock<statement>  -- alt1\n\n\nwhenDeclaration  = when_ predicate statementBlock<statement>  -- alt1\n\n\npredicate  = predicateBinary if_ constraint  -- alt1\n | predicateBinary  -- alt2\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicatePrimary  -- alt1\n | predicatePrimary  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | literal  -- alt3\n | patternName  -- alt4\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and constraint  -- alt1\n | constraint or constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400 s<"=/="> constraint400  -- alt2\n | constraint400  -- alt3\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | s<"("> constraint s<")">  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | expression  -- alt7\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression until_ simulateGoal signal*  -- alt1\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> statementBlock<statement>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | pipeExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nexpressionBlock  = statementBlock<statement>  -- alt1\n\n\npipeExpression  = pipeExpression s<"|"> invokeInfixExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\ninvokeInfixExpression  = invokeInfixExpression infix_symbol invokeMixfix  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePostfix as_ typeAppPrimary  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> nonemptyListOf<expression, s<",">> s<",">? s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> recordField<expression>  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> nonemptyListOf<fieldSelection, s<",">> s<",">? s<")">  -- alt1\n\n\nfieldSelection  = recordField<expression> as_ recordField<expression>  -- alt1\n | recordField<expression>  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | expressionBlock  -- alt9\n | hole  -- alt10\n | self_  -- alt11\n | atom  -- alt12\n | name  -- alt13\n | s<"("> expression s<")">  -- alt14\n\n\nconditionExpression  = condition_ s<"{"> conditionCase+ s<"}">  -- alt1\n\n\nconditionCase  = when_ expression statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nmatchSearchExpression  = match_ s<"{"> matchSearchCase+ s<"}">  -- alt1\n\n\nmatchSearchCase  = when_ predicate statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nforExpression  = for_ name in_ expression expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> nonemptyListOf<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> listOf<e, s<",">> s<",">? s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> nonemptyListOf<recordPair<e>, s<",">> s<",">? s<"]">  -- alt2\n\n\nrecordPair<e>  = recordField<e> s<"->"> e  -- alt1\n\n\nrecordField<e>  = (name | atom)  -- alt1\n | string  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = s<"\'"> t_atom  -- alt1\n | ~reserved s<t_atom> ~":"  -- alt2\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "*"  -- alt4\n | "/"  -- alt5\n | "<="  -- alt6\n | "<"  -- alt7\n | ">="  -- alt8\n | ">"  -- alt9\n | "==="  -- alt10\n | "=/="  -- alt11\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | role_  -- alt9\n | enum_  -- alt10\n | define_  -- alt11\n | singleton_  -- alt12\n | goto_  -- alt13\n | call_  -- alt14\n | let_  -- alt15\n | return_  -- alt16\n | fact_  -- alt17\n | forget_  -- alt18\n | new_  -- alt19\n | search_  -- alt20\n | if_  -- alt21\n | simulate_  -- alt22\n | true_  -- alt23\n | false_  -- alt24\n | not_  -- alt25\n | and_  -- alt26\n | or_  -- alt27\n | is_  -- alt28\n | self_  -- alt29\n | as_  -- alt30\n | event_  -- alt31\n | quiescence_  -- alt32\n | for_  -- alt33\n | until_  -- alt34\n | in_  -- alt35\n | foreign_  -- alt36\n | on_  -- alt37\n | always_  -- alt38\n | match_  -- alt39\n | then_  -- alt40\n | else_  -- alt41\n | condition_  -- alt42\n\r\n  }\r\n  ');
+exports.grammar = Ohm.grammar('\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | defineDeclaration  -- alt7\n | sceneDeclaration  -- alt8\n | actionDeclaration  -- alt9\n | whenDeclaration  -- alt10\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> foreign_ foreignBody  -- alt1\n | command_ signature<parameter> s<"="> expression s<";">  -- alt2\n | command_ signature<parameter> statementBlock<statement>  -- alt3\n\n\nforeignBody  = namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeName  -- alt3\n\n\ntypeApp  = typeAppPrimary  -- alt1\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = singleton_ basicType typeInitBlock  -- alt1\n | type_ basicType typeFields s<";">  -- alt2\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt3\n\n\nbasicType  = atom typeDefParent roles  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = block<typeInit>  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> nonemptyListOf<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = name is_ typeApp  -- alt1\n | name  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> s<"="> foreignBody  -- alt2\n | command_ partialSignature<parameter> statementBlock<statement>  -- alt3\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom statementBlock<statement>  -- alt1\n\n\nactionDeclaration  = action_ interpolateText<name> when_ predicate statementBlock<statement>  -- alt1\n\n\nwhenDeclaration  = when_ predicate statementBlock<statement>  -- alt1\n\n\npredicate  = predicateBinary if_ constraint  -- alt1\n | predicateBinary  -- alt2\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicatePrimary  -- alt1\n | predicatePrimary  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | literal  -- alt3\n | patternName  -- alt4\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and constraint  -- alt1\n | constraint or constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400 s<"=/="> constraint400  -- alt2\n | constraint400  -- alt3\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | s<"("> constraint s<")">  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | expression  -- alt7\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression until_ simulateGoal signal*  -- alt1\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> statementBlock<statement>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | pipeExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nexpressionBlock  = statementBlock<statement>  -- alt1\n\n\npipeExpression  = pipeExpression s<"|"> invokeInfixExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\ninvokeInfixExpression  = invokeInfixExpression infix_symbol invokeMixfix  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePostfix as_ typeAppPrimary  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> nonemptyListOf<expression, s<",">> s<",">? s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> recordField<expression>  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> nonemptyListOf<fieldSelection, s<",">> s<",">? s<")">  -- alt1\n\n\nfieldSelection  = recordField<expression> as_ recordField<expression>  -- alt1\n | recordField<expression>  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | expressionBlock  -- alt9\n | hole  -- alt10\n | self_  -- alt11\n | atom  -- alt12\n | name  -- alt13\n | s<"("> expression s<")">  -- alt14\n\n\nconditionExpression  = condition_ s<"{"> conditionCase+ s<"}">  -- alt1\n\n\nconditionCase  = when_ expression statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nmatchSearchExpression  = match_ s<"{"> matchSearchCase+ s<"}">  -- alt1\n\n\nmatchSearchCase  = when_ predicate statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nforExpression  = for_ name in_ expression expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> nonemptyListOf<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> listOf<e, s<",">> s<",">? s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> nonemptyListOf<recordPair<e>, s<",">> s<",">? s<"]">  -- alt2\n\n\nrecordPair<e>  = recordField<e> s<"->"> e  -- alt1\n\n\nrecordField<e>  = (name | atom)  -- alt1\n | string  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = s<"\'"> t_atom  -- alt1\n | ~reserved s<t_atom> ~":"  -- alt2\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "*"  -- alt4\n | "/"  -- alt5\n | "<="  -- alt6\n | "<"  -- alt7\n | ">="  -- alt8\n | ">"  -- alt9\n | "==="  -- alt10\n | "=/="  -- alt11\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | role_  -- alt9\n | enum_  -- alt10\n | define_  -- alt11\n | singleton_  -- alt12\n | goto_  -- alt13\n | call_  -- alt14\n | let_  -- alt15\n | return_  -- alt16\n | fact_  -- alt17\n | forget_  -- alt18\n | new_  -- alt19\n | search_  -- alt20\n | if_  -- alt21\n | simulate_  -- alt22\n | true_  -- alt23\n | false_  -- alt24\n | not_  -- alt25\n | and_  -- alt26\n | or_  -- alt27\n | is_  -- alt28\n | self_  -- alt29\n | as_  -- alt30\n | event_  -- alt31\n | quiescence_  -- alt32\n | for_  -- alt33\n | until_  -- alt34\n | in_  -- alt35\n | foreign_  -- alt36\n | on_  -- alt37\n | always_  -- alt38\n | match_  -- alt39\n | then_  -- alt40\n | else_  -- alt41\n | condition_  -- alt42\n\r\n  }\r\n  ');
 // == Parsing =======================================================
 function parse(source, rule) {
     const result = exports.grammar.match(source, rule);
@@ -3573,8 +3590,9 @@ const toAstVisitor = {
     primaryExpression_alt4(_1) {
         return this.children[0].toAST();
     },
-    primaryExpression_alt5(_1) {
-        return this.children[0].toAST();
+    primaryExpression_alt5(x$0) {
+        const x = x$0.toAST();
+        return new Expression.Interpolate($meta(this), x);
     },
     primaryExpression_alt6(_1) {
         return this.children[0].toAST();
@@ -3738,7 +3756,7 @@ const toAstVisitor = {
     },
     interpolateText_alt1(_1, xs$0, _3) {
         const xs = xs$0.toAST();
-        return new Expression.Interpolate($meta(this), xs);
+        return new Interpolation($meta(this), xs);
     },
     interpolatePart(x) {
         return x.toAST();
@@ -4560,7 +4578,7 @@ function toAst(result) {
     return exports.semantics(result).toAST();
 }
 
-},{"ohm-js":122,"ohm-js/src/util":141,"util":148}],5:[function(require,module,exports){
+},{"ohm-js":123,"ohm-js/src/util":142,"util":149}],5:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -4582,7 +4600,56 @@ __exportStar(require("./world"), exports);
 __exportStar(require("./simulation"), exports);
 __exportStar(require("./vm"), exports);
 
-},{"./ir":8,"./logic":14,"./primitives":29,"./simulation":44,"./vm":48,"./world":53}],6:[function(require,module,exports){
+},{"./ir":9,"./logic":15,"./primitives":30,"./simulation":45,"./vm":49,"./world":54}],6:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SIPDynamic = exports.SIPStatic = exports.SimpleInterpolationPart = exports.SimpleInterpolation = void 0;
+const utils_1 = require("../../utils");
+const primitives_1 = require("../primitives");
+const expression_1 = require("./expression");
+class SimpleInterpolation {
+    constructor(parts) {
+        this.parts = parts;
+    }
+    interpolate(f) {
+        return new primitives_1.CrochetInterpolation(this.parts.map((x) => x.evaluate(f)));
+    }
+    to_expression() {
+        return new expression_1.EInterpolate(this.parts.map((x) => x.to_expression()));
+    }
+}
+exports.SimpleInterpolation = SimpleInterpolation;
+class SimpleInterpolationPart {
+}
+exports.SimpleInterpolationPart = SimpleInterpolationPart;
+class SIPStatic extends SimpleInterpolationPart {
+    constructor(text) {
+        super();
+        this.text = text;
+    }
+    evaluate(f) {
+        return new primitives_1.InterpolationStatic(this.text);
+    }
+    to_expression() {
+        return new expression_1.EInterpolateStatic(this.text);
+    }
+}
+exports.SIPStatic = SIPStatic;
+class SIPDynamic extends SimpleInterpolationPart {
+    constructor(value) {
+        super();
+        this.value = value;
+    }
+    evaluate(f) {
+        return new primitives_1.InterpolationDynamic(f(this.value));
+    }
+    to_expression() {
+        return new expression_1.EInterpolateDynamic(utils_1.cast(this.value, expression_1.Expression));
+    }
+}
+exports.SIPDynamic = SIPDynamic;
+
+},{"../../utils":76,"../primitives":30,"./expression":8}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DForeignType = exports.DWhen = exports.DAction = exports.DScene = exports.DDefine = exports.DType = exports.DRole = exports.DCrochetCommand = exports.DForeignCommand = exports.DDo = exports.DPredicate = exports.DRelation = void 0;
@@ -4744,34 +4811,38 @@ class DForeignType {
 }
 exports.DForeignType = DForeignType;
 
-},{"../logic":14,"../primitives":29,"../primitives/procedure":34,"../simulation":44,"../vm":48,"../world":53,"./statement":9}],7:[function(require,module,exports){
+},{"../logic":15,"../primitives":30,"../primitives/procedure":35,"../simulation":45,"../vm":49,"../world":54,"./statement":10}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ConditionCase = exports.ECondition = exports.MatchSearchCase = exports.EMatchSearch = exports.EInterpolateDynamic = exports.EInterpolateStatic = exports.EInterpolate = exports.EPartialConcrete = exports.EPartialHole = exports.EApplyPartial = exports.EPartial = exports.EBlock = exports.EForall = exports.EProjectMany = exports.EProject = exports.ECast = exports.ERecord = exports.EList = exports.ESelf = exports.EGlobal = exports.ENew = exports.EInvoke = exports.ESearch = exports.EInteger = exports.EText = exports.EVariable = exports.ETrue = exports.EFalse = void 0;
+exports.ConditionCase = exports.ECondition = exports.MatchSearchCase = exports.EMatchSearch = exports.EInterpolateDynamic = exports.EInterpolateStatic = exports.EInterpolate = exports.EPartialConcrete = exports.EPartialHole = exports.PartialExpr = exports.EApplyPartial = exports.EPartial = exports.EBlock = exports.EForall = exports.EProjectMany = exports.EProject = exports.ECast = exports.ERecord = exports.EList = exports.ESelf = exports.EGlobal = exports.ENew = exports.EInvoke = exports.ESearch = exports.EInteger = exports.EText = exports.EVariable = exports.ETrue = exports.EFalse = exports.Expression = void 0;
 const utils_1 = require("../../utils/utils");
 const logic_1 = require("../logic");
 const primitives_1 = require("../primitives");
 const vm_1 = require("../vm");
 const world_1 = require("../world");
 const statement_1 = require("./statement");
-class EFalse {
+class Expression {
+}
+exports.Expression = Expression;
+class EFalse extends Expression {
     async *evaluate(state) {
         return primitives_1.False.instance;
     }
 }
 exports.EFalse = EFalse;
-class ETrue {
+class ETrue extends Expression {
     async *evaluate(state) {
         return primitives_1.True.instance;
     }
 }
 exports.ETrue = ETrue;
-class EVariable {
+class EVariable extends Expression {
     constructor(name) {
+        super();
         this.name = name;
     }
     async *evaluate(state) {
-        const value = state.env.lookup(this.name);
+        const value = state.env.try_lookup(this.name);
         if (value == null) {
             return vm_1.cvalue(yield vm_1._throw(new vm_1.ErrUndefinedVariable(this.name)));
         }
@@ -4781,8 +4852,9 @@ class EVariable {
     }
 }
 exports.EVariable = EVariable;
-class EText {
+class EText extends Expression {
     constructor(value) {
+        super();
         this.value = value;
     }
     async *evaluate(state) {
@@ -4790,8 +4862,9 @@ class EText {
     }
 }
 exports.EText = EText;
-class EInteger {
+class EInteger extends Expression {
     constructor(value) {
+        super();
         this.value = value;
     }
     async *evaluate(state) {
@@ -4799,8 +4872,9 @@ class EInteger {
     }
 }
 exports.EInteger = EInteger;
-class ESearch {
+class ESearch extends Expression {
     constructor(predicate) {
+        super();
         this.predicate = predicate;
         this.variables = this.predicate.variables;
     }
@@ -4811,8 +4885,9 @@ class ESearch {
     }
 }
 exports.ESearch = ESearch;
-class EInvoke {
+class EInvoke extends Expression {
     constructor(name, args) {
+        super();
         this.name = name;
         this.args = args;
     }
@@ -4822,8 +4897,9 @@ class EInvoke {
     }
 }
 exports.EInvoke = EInvoke;
-class ENew {
+class ENew extends Expression {
     constructor(name, data) {
+        super();
         this.name = name;
         this.data = data;
     }
@@ -4834,8 +4910,9 @@ class ENew {
     }
 }
 exports.ENew = ENew;
-class EGlobal {
+class EGlobal extends Expression {
     constructor(name) {
+        super();
         this.name = name;
     }
     async *evaluate(state) {
@@ -4843,14 +4920,15 @@ class EGlobal {
     }
 }
 exports.EGlobal = EGlobal;
-class ESelf {
+class ESelf extends Expression {
     async *evaluate(state) {
         return state.env.receiver;
     }
 }
 exports.ESelf = ESelf;
-class EList {
+class EList extends Expression {
     constructor(values) {
+        super();
         this.values = values;
     }
     async *evaluate(state) {
@@ -4859,8 +4937,9 @@ class EList {
     }
 }
 exports.EList = EList;
-class ERecord {
+class ERecord extends Expression {
     constructor(pairs) {
+        super();
         this.pairs = pairs;
     }
     async *evaluate(state) {
@@ -4873,8 +4952,9 @@ class ERecord {
     }
 }
 exports.ERecord = ERecord;
-class ECast {
+class ECast extends Expression {
     constructor(type, value) {
+        super();
         this.type = type;
         this.value = value;
     }
@@ -4891,8 +4971,9 @@ class ECast {
     }
 }
 exports.ECast = ECast;
-class EProject {
+class EProject extends Expression {
     constructor(object, field) {
+        super();
         this.object = object;
         this.field = field;
     }
@@ -4907,8 +4988,9 @@ class EProject {
     }
 }
 exports.EProject = EProject;
-class EProjectMany {
+class EProjectMany extends Expression {
     constructor(object, fields) {
+        super();
         this.object = object;
         this.fields = fields;
     }
@@ -4923,8 +5005,9 @@ class EProjectMany {
     }
 }
 exports.EProjectMany = EProjectMany;
-class EForall {
+class EForall extends Expression {
     constructor(stream, name, code) {
+        super();
         this.stream = stream;
         this.name = name;
         this.code = code;
@@ -4943,8 +5026,9 @@ class EForall {
     }
 }
 exports.EForall = EForall;
-class EBlock {
+class EBlock extends Expression {
     constructor(body) {
+        super();
         this.body = body;
     }
     evaluate(state) {
@@ -4952,8 +5036,9 @@ class EBlock {
     }
 }
 exports.EBlock = EBlock;
-class EPartial {
+class EPartial extends Expression {
     constructor(name, values) {
+        super();
         this.name = name;
         this.values = values;
     }
@@ -4963,8 +5048,9 @@ class EPartial {
     }
 }
 exports.EPartial = EPartial;
-class EApplyPartial {
+class EApplyPartial extends Expression {
     constructor(partial, values) {
+        super();
         this.partial = partial;
         this.values = values;
     }
@@ -4977,14 +5063,18 @@ class EApplyPartial {
     }
 }
 exports.EApplyPartial = EApplyPartial;
-class EPartialHole {
+class PartialExpr {
+}
+exports.PartialExpr = PartialExpr;
+class EPartialHole extends PartialExpr {
     async *evaluate(state) {
         return new primitives_1.PartialHole();
     }
 }
 exports.EPartialHole = EPartialHole;
-class EPartialConcrete {
+class EPartialConcrete extends PartialExpr {
     constructor(expr) {
+        super();
         this.expr = expr;
     }
     async *evaluate(state) {
@@ -4993,8 +5083,9 @@ class EPartialConcrete {
     }
 }
 exports.EPartialConcrete = EPartialConcrete;
-class EInterpolate {
+class EInterpolate extends Expression {
     constructor(parts) {
+        super();
         this.parts = parts;
     }
     async *evaluate(state) {
@@ -5021,8 +5112,9 @@ class EInterpolateDynamic {
     }
 }
 exports.EInterpolateDynamic = EInterpolateDynamic;
-class EMatchSearch {
+class EMatchSearch extends Expression {
     constructor(cases) {
+        super();
         this.cases = cases;
     }
     async *evaluate(state) {
@@ -5055,8 +5147,9 @@ class MatchSearchCase {
     }
 }
 exports.MatchSearchCase = MatchSearchCase;
-class ECondition {
+class ECondition extends Expression {
     constructor(cases) {
+        super();
         this.cases = cases;
     }
     async *evaluate(state) {
@@ -5078,7 +5171,7 @@ class ConditionCase {
 }
 exports.ConditionCase = ConditionCase;
 
-},{"../../utils/utils":81,"../logic":14,"../primitives":29,"../vm":48,"../world":53,"./statement":9}],8:[function(require,module,exports){
+},{"../../utils/utils":82,"../logic":15,"../primitives":30,"../vm":49,"../world":54,"./statement":10}],9:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5095,8 +5188,9 @@ __exportStar(require("./declaration"), exports);
 __exportStar(require("./statement"), exports);
 __exportStar(require("./expression"), exports);
 __exportStar(require("./type"), exports);
+__exportStar(require("./atomic"), exports);
 
-},{"./declaration":6,"./expression":7,"./statement":9,"./type":10}],9:[function(require,module,exports){
+},{"./atomic":6,"./declaration":7,"./expression":8,"./statement":10,"./type":11}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SSimulate = exports.SCall = exports.SGoto = exports.SBlock = exports.SLet = exports.SExpression = exports.SForget = exports.SFact = void 0;
@@ -5220,7 +5314,7 @@ class SSimulate {
 }
 exports.SSimulate = SSimulate;
 
-},{"../../utils/bag":73,"../../utils/utils":81,"../logic":14,"../primitives":29,"../simulation":44,"../vm":48}],10:[function(require,module,exports){
+},{"../../utils/bag":74,"../../utils/utils":82,"../logic":15,"../primitives":30,"../simulation":45,"../vm":49}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TNamed = exports.TAny = void 0;
@@ -5241,7 +5335,7 @@ class TNamed {
 }
 exports.TNamed = TNamed;
 
-},{"../primitives":29}],11:[function(require,module,exports){
+},{"../primitives":30}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Value = exports.Equals = exports.Variable = exports.Not = exports.Or = exports.And = void 0;
@@ -5326,7 +5420,7 @@ class Value {
 }
 exports.Value = Value;
 
-},{"../primitives":29}],12:[function(require,module,exports){
+},{"../primitives":30}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Database = void 0;
@@ -5359,7 +5453,7 @@ class Database {
 }
 exports.Database = Database;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Trivial = void 0;
@@ -5370,7 +5464,7 @@ class Trivial {
 }
 exports.Trivial = Trivial;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5393,7 +5487,7 @@ __exportStar(require("./predicate"), exports);
 __exportStar(require("./unification"), exports);
 __exportStar(require("./tree"), exports);
 
-},{"./constraint":11,"./database":12,"./effect":13,"./predicate":16,"./tree":17,"./unification":18}],15:[function(require,module,exports){
+},{"./constraint":12,"./database":13,"./effect":14,"./predicate":17,"./tree":18,"./unification":19}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseLayer = exports.FunctionLayer = void 0;
@@ -5451,7 +5545,7 @@ class DatabaseLayer {
 }
 exports.DatabaseLayer = DatabaseLayer;
 
-},{"../../utils/bag":73,"./predicate":16}],16:[function(require,module,exports){
+},{"../../utils/bag":74,"./predicate":17}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PredicateClause = exports.PredicateProcedure = exports.FunctionRelation = exports.ConcreteRelation = exports.AlwaysPredicate = exports.NotPredicate = exports.HasRelation = exports.OrPredicate = exports.AndPredicate = exports.ConstrainedPredicate = void 0;
@@ -5626,7 +5720,7 @@ function join(state, env0, resultEnv, bindings) {
     return env;
 }
 
-},{"../../utils/utils":81}],17:[function(require,module,exports){
+},{"../../utils/utils":82}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EndNode = exports.ManyNode = exports.OneNode = exports.TTEnd = exports.TTMany = exports.TTOne = void 0;
@@ -5792,7 +5886,7 @@ class EndNode {
 }
 exports.EndNode = EndNode;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WildcardPattern = exports.VariablePattern = exports.GlobalPattern = exports.ValuePattern = exports.RolePattern = exports.TypePattern = exports.UnificationEnvironment = void 0;
@@ -5934,7 +6028,7 @@ class WildcardPattern extends AbstractPattern {
 }
 exports.WildcardPattern = WildcardPattern;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetFalse = exports.TCrochetTrue = exports.TCrochetBoolean = exports.False = exports.True = void 0;
@@ -6026,7 +6120,7 @@ class TCrochetFalse extends types_1.CrochetType {
 exports.TCrochetFalse = TCrochetFalse;
 TCrochetFalse.type = new TCrochetFalse();
 
-},{"./core-ops":28,"./types":38,"./value":40}],20:[function(require,module,exports){
+},{"./core-ops":29,"./types":39,"./value":41}],21:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6080,7 +6174,7 @@ Core = __decorate([
 ], Core);
 exports.Core = Core;
 
-},{"../../world/ffi-decorators":51,"../core-ops":28}],21:[function(require,module,exports){
+},{"../../world/ffi-decorators":52,"../core-ops":29}],22:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6100,7 +6194,7 @@ __exportStar(require("./stream"), exports);
 __exportStar(require("./text"), exports);
 __exportStar(require("./prelude"), exports);
 
-},{"./core":20,"./integer":22,"./prelude":24,"./record":25,"./stream":26,"./text":27}],22:[function(require,module,exports){
+},{"./core":21,"./integer":23,"./prelude":25,"./record":26,"./stream":27,"./text":28}],23:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6183,7 +6277,7 @@ Integer = __decorate([
 ], Integer);
 exports.Integer = Integer;
 
-},{"../../world/ffi-decorators":51,"../core-ops":28,"../integer":31}],23:[function(require,module,exports){
+},{"../../world/ffi-decorators":52,"../core-ops":29,"../integer":32}],24:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6234,7 +6328,7 @@ Interpolation = __decorate([
 ], Interpolation);
 exports.Interpolation = Interpolation;
 
-},{"../../world/ffi-decorators":51,"../interpolation":32,"../stream":36,"../text":37}],24:[function(require,module,exports){
+},{"../../world/ffi-decorators":52,"../interpolation":33,"../stream":37,"../text":38}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.add_types = exports.add_native_commands = exports.add_prelude = exports.bags = void 0;
@@ -6289,7 +6383,7 @@ function add_types(state) {
 }
 exports.add_types = add_types;
 
-},{"../boolean":19,"../integer":31,"../interpolation":32,"../partial":33,"../record":35,"../stream":36,"../text":37,"../types":38,"../unknown":39,"./core":20,"./integer":22,"./interpolation":23,"./record":25,"./stream":26,"./text":27}],25:[function(require,module,exports){
+},{"../boolean":20,"../integer":32,"../interpolation":33,"../partial":34,"../record":36,"../stream":37,"../text":38,"../types":39,"../unknown":40,"./core":21,"./integer":23,"./interpolation":24,"./record":26,"./stream":27,"./text":28}],26:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6381,7 +6475,7 @@ Record = Record_1 = __decorate([
 ], Record);
 exports.Record = Record;
 
-},{"../../../utils":75,"../../vm":48,"../../world/ffi-decorators":51,"../integer":31,"../record":35,"../stream":36,"../text":37}],26:[function(require,module,exports){
+},{"../../../utils":76,"../../vm":49,"../../world/ffi-decorators":52,"../integer":32,"../record":36,"../stream":37,"../text":38}],27:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6491,7 +6585,7 @@ Stream = __decorate([
 ], Stream);
 exports.Stream = Stream;
 
-},{"../../../utils":75,"../../vm":48,"../../world/ffi-decorators":51,"../integer":31,"../stream":36}],27:[function(require,module,exports){
+},{"../../../utils":76,"../../vm":49,"../../world/ffi-decorators":52,"../integer":32,"../stream":37}],28:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6517,7 +6611,7 @@ Text = __decorate([
 ], Text);
 exports.Text = Text;
 
-},{"../../world/ffi-decorators":51,"../text":37}],28:[function(require,module,exports){
+},{"../../world/ffi-decorators":52,"../text":38}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.apply = exports.invoke = exports.safe_cast = exports.from_bool = void 0;
@@ -6568,7 +6662,7 @@ async function* apply(state, fn, args) {
 }
 exports.apply = apply;
 
-},{"../../utils":75,"../vm":48,"./boolean":19,"./procedure":34}],29:[function(require,module,exports){
+},{"../../utils":76,"../vm":49,"./boolean":20,"./procedure":35}],30:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6596,7 +6690,7 @@ __exportStar(require("./procedure"), exports);
 __exportStar(require("./types"), exports);
 __exportStar(require("./builtins"), exports);
 
-},{"./boolean":19,"./builtins":21,"./core-ops":28,"./instance":30,"./integer":31,"./interpolation":32,"./partial":33,"./procedure":34,"./record":35,"./stream":36,"./text":37,"./types":38,"./unknown":39,"./value":40}],30:[function(require,module,exports){
+},{"./boolean":20,"./builtins":22,"./core-ops":29,"./instance":31,"./integer":32,"./interpolation":33,"./partial":34,"./procedure":35,"./record":36,"./stream":37,"./text":38,"./types":39,"./unknown":40,"./value":41}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetType = exports.InstanceSelection = exports.InstanceProjection = exports.CrochetInstance = void 0;
@@ -6685,7 +6779,7 @@ class TCrochetType extends types_1.CrochetType {
 }
 exports.TCrochetType = TCrochetType;
 
-},{"../../utils":75,"./record":35,"./types":38,"./value":40}],31:[function(require,module,exports){
+},{"../../utils":76,"./record":36,"./types":39,"./value":41}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetInteger = exports.CrochetInteger = void 0;
@@ -6720,7 +6814,7 @@ class TCrochetInteger extends types_1.CrochetType {
 exports.TCrochetInteger = TCrochetInteger;
 TCrochetInteger.type = new TCrochetInteger();
 
-},{"./types":38,"./value":40}],32:[function(require,module,exports){
+},{"./types":39,"./value":41}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpolationDynamic = exports.InterpolationStatic = exports.InteprolationPart = exports.TCrochetInterpolation = exports.CrochetInterpolation = void 0;
@@ -6818,7 +6912,7 @@ class InterpolationDynamic extends InteprolationPart {
 }
 exports.InterpolationDynamic = InterpolationDynamic;
 
-},{"../../utils":75,"../../utils/utils":81,"./text":37,"./types":38,"./value":40}],33:[function(require,module,exports){
+},{"../../utils":76,"../../utils/utils":82,"./text":38,"./types":39,"./value":41}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PartialConcrete = exports.PartialHole = exports.PartialValue = exports.partial_holes = exports.TAnyCrochetPartial = exports.TCrochetPartial = exports.CrochetPartial = void 0;
@@ -6916,7 +7010,7 @@ class PartialConcrete extends PartialValue {
 }
 exports.PartialConcrete = PartialConcrete;
 
-},{"../../utils/utils":81,"./types":38,"./value":40}],34:[function(require,module,exports){
+},{"../../utils/utils":82,"./types":39,"./value":41}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrochetProcedure = exports.NativeProcedure = exports.ProcedureBranch = exports.Procedure = void 0;
@@ -7001,7 +7095,7 @@ class CrochetProcedure {
 }
 exports.CrochetProcedure = CrochetProcedure;
 
-},{"../../utils/utils":81,"../ir":8,"../vm":48,"../world":53}],35:[function(require,module,exports){
+},{"../../utils/utils":82,"../ir":9,"../vm":49,"../world":54}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetRecord = exports.RecordSelection = exports.RecordProjection = exports.CrochetRecord = void 0;
@@ -7094,7 +7188,7 @@ class TCrochetRecord extends types_1.CrochetType {
 exports.TCrochetRecord = TCrochetRecord;
 TCrochetRecord.type = new TCrochetRecord();
 
-},{"../vm":48,"./types":38,"./value":40}],36:[function(require,module,exports){
+},{"../vm":49,"./types":39,"./value":41}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetStream = exports.StreamSelection = exports.StreamProjection = exports.CrochetStream = void 0;
@@ -7175,7 +7269,7 @@ class TCrochetStream extends types_1.CrochetType {
 exports.TCrochetStream = TCrochetStream;
 TCrochetStream.type = new TCrochetStream();
 
-},{"../../utils/utils":81,"./boolean":19,"./types":38,"./value":40}],37:[function(require,module,exports){
+},{"../../utils/utils":82,"./boolean":20,"./types":39,"./value":41}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetText = exports.CrochetText = void 0;
@@ -7215,7 +7309,7 @@ class TCrochetText extends types_1.CrochetType {
 exports.TCrochetText = TCrochetText;
 TCrochetText.type = new TCrochetText();
 
-},{"./types":38,"./value":40}],38:[function(require,module,exports){
+},{"./types":39,"./value":41}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.type_name = exports.TCrochetAny = exports.CrochetRole = exports.CrochetType = void 0;
@@ -7284,7 +7378,7 @@ function type_name(x) {
 }
 exports.type_name = type_name;
 
-},{"./value":40}],39:[function(require,module,exports){
+},{"./value":41}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetUnknown = exports.CrochetUnknown = void 0;
@@ -7335,7 +7429,7 @@ class TCrochetUnknown extends types_1.CrochetType {
 exports.TCrochetUnknown = TCrochetUnknown;
 TCrochetUnknown.type = new TCrochetUnknown();
 
-},{"./types":38,"./value":40}],40:[function(require,module,exports){
+},{"./types":39,"./value":41}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrochetValue = void 0;
@@ -7382,7 +7476,7 @@ class CrochetValue {
 }
 exports.CrochetValue = CrochetValue;
 
-},{"../vm":48,"./types":38}],41:[function(require,module,exports){
+},{"../vm":49,"./types":39}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TActionChoice = exports.ActionChoice = void 0;
@@ -7401,7 +7495,7 @@ class ActionChoice extends primitives_1.CrochetValue {
     }
     as_record() {
         return new primitives_1.CrochetRecord(new Map([
-            ["Title", new primitives_1.CrochetText(this.title)],
+            ["Title", this.title],
             ["Action", new primitives_1.CrochetUnknown(this.action)],
         ]));
     }
@@ -7417,7 +7511,7 @@ class TActionChoice extends primitives_1.CrochetType {
 exports.TActionChoice = TActionChoice;
 TActionChoice.type = new TActionChoice();
 
-},{"../primitives":29}],42:[function(require,module,exports){
+},{"../primitives":30}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Context = exports.Action = exports.When = void 0;
@@ -7463,7 +7557,7 @@ class Action {
             const block = new ir_1.SBlock(this.body);
             return {
                 action: this,
-                title: this.title,
+                title: this.title.interpolate((x) => env.lookup(x)),
                 tags: this.tags,
                 machine: block.evaluate(state.with_env(env)),
             };
@@ -7475,7 +7569,6 @@ class Action {
     }
     get layer() {
         const layer = new layer_1.FunctionLayer(null);
-        layer.add("_ action-name", (state, env, [pattern]) => pattern.aunify(state, env, new primitives_1.CrochetText(this.title)));
         layer.add("_ action-fired:", (state, env, [pactor, ptimes]) => {
             return utils_1.iter(this.fired_for.entries())
                 .flatMap(([actor, times]) => {
@@ -7503,7 +7596,7 @@ class Context {
 }
 exports.Context = Context;
 
-},{"../../utils":75,"../ir":8,"../logic":14,"../logic/layer":15,"../primitives":29,"../world":53}],43:[function(require,module,exports){
+},{"../../utils":76,"../ir":9,"../logic":15,"../logic/layer":16,"../primitives":30,"../world":54}],44:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomGoal = exports.TotalQuiescence = exports.EventQuiescence = exports.ActionQuiescence = void 0;
@@ -7583,7 +7676,7 @@ class CustomGoal {
 }
 exports.CustomGoal = CustomGoal;
 
-},{"../logic":14}],44:[function(require,module,exports){
+},{"../logic":15}],45:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7600,7 +7693,7 @@ __exportStar(require("./event"), exports);
 __exportStar(require("./goal"), exports);
 __exportStar(require("./simulate"), exports);
 
-},{"./event":42,"./goal":43,"./simulate":45}],45:[function(require,module,exports){
+},{"./event":43,"./goal":44,"./simulate":46}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Simulation = exports.Signal = void 0;
@@ -7724,7 +7817,7 @@ function unify(pattern, value, state, env) {
     }
 }
 
-},{"../../utils/result":78,"../../utils/utils":81,"../ir":8,"../logic/layer":15,"../primitives":29,"../vm":48,"../world":53,"./action-choice":41}],46:[function(require,module,exports){
+},{"../../utils/result":79,"../../utils/utils":82,"../ir":9,"../logic/layer":16,"../primitives":30,"../vm":49,"../world":54,"./action-choice":42}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Environment = void 0;
@@ -7743,16 +7836,25 @@ class Environment {
     has(name) {
         return this.bindings.has(name);
     }
-    lookup(name) {
+    try_lookup(name) {
         const result = this.bindings.get(name);
         if (result != null) {
             return result;
         }
         else if (this.parent != null) {
-            return this.parent.lookup(name);
+            return this.parent.try_lookup(name);
         }
         else {
             return null;
+        }
+    }
+    lookup(name) {
+        const result = this.try_lookup(name);
+        if (result != null) {
+            return result;
+        }
+        else {
+            throw new Error(`internal: undefined variable ${name}`);
         }
     }
     define(name, value) {
@@ -7772,7 +7874,7 @@ class Environment {
     lookup_all(names) {
         const result = new Map();
         for (const name of names) {
-            const value = this.lookup(name);
+            const value = this.try_lookup(name);
             if (value != null) {
                 result.set(name, value);
             }
@@ -7782,7 +7884,7 @@ class Environment {
 }
 exports.Environment = Environment;
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ErrNoSelection = exports.ErrNoProjection = exports.ErrInvalidArity = exports.ErrUnexpectedType = exports.ErrIndexOutOfRange = exports.ErrNoRecordKey = exports.ErrNoConversionAvailable = exports.ErrNoBranchMatched = exports.ErrVariableAlreadyBound = exports.ErrUndefinedVariable = void 0;
@@ -7884,7 +7986,7 @@ class ErrNoSelection {
 }
 exports.ErrNoSelection = ErrNoSelection;
 
-},{"../primitives":29}],48:[function(require,module,exports){
+},{"../primitives":30}],49:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7901,7 +8003,7 @@ __exportStar(require("./errors"), exports);
 __exportStar(require("./state"), exports);
 __exportStar(require("./run"), exports);
 
-},{"./errors":47,"./run":49,"./state":50}],49:[function(require,module,exports){
+},{"./errors":48,"./run":50,"./state":51}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.avalue = exports.cvalue = exports.run_all = exports.run = exports._throw = exports._mark = exports._jump = exports._push = exports.Throw = exports.Mark = exports.Jump = exports.Push = void 0;
@@ -8084,7 +8186,7 @@ function avalue(x) {
 }
 exports.avalue = avalue;
 
-},{"../../utils/utils":81,"../primitives":29}],50:[function(require,module,exports){
+},{"../../utils/utils":82,"../primitives":30}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.State = void 0;
@@ -8110,7 +8212,7 @@ class State {
 }
 exports.State = State;
 
-},{"../world":53}],51:[function(require,module,exports){
+},{"../world":54}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.foreign_namespace = exports.foreign_type = exports.foreign = exports.machine = void 0;
@@ -8149,7 +8251,7 @@ function foreign_namespace(prefix) {
 }
 exports.foreign_namespace = foreign_namespace;
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ForeignInterface = void 0;
@@ -8175,7 +8277,7 @@ class ForeignInterface {
 }
 exports.ForeignInterface = ForeignInterface;
 
-},{"../../utils":75,"../../utils/result":78}],53:[function(require,module,exports){
+},{"../../utils":76,"../../utils/result":79}],54:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8193,7 +8295,7 @@ __exportStar(require("./foreign"), exports);
 __exportStar(require("./scene"), exports);
 __exportStar(require("./world"), exports);
 
-},{"../vm/environment":46,"./foreign":52,"./scene":54,"./world":55}],54:[function(require,module,exports){
+},{"../vm/environment":47,"./foreign":53,"./scene":55,"./world":56}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scene = void 0;
@@ -8213,7 +8315,7 @@ class Scene {
 }
 exports.Scene = Scene;
 
-},{"../ir":8,"../vm/environment":46}],55:[function(require,module,exports){
+},{"../ir":9,"../vm/environment":47}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.World = exports.ProcedureBag = void 0;
@@ -8289,47 +8391,47 @@ class World {
 }
 exports.World = World;
 
-},{"../../utils/bag":73,"../logic":14,"../primitives":29,"../simulation":44,"../vm":48,"./foreign":52}],56:[function(require,module,exports){
+},{"../../utils/bag":74,"../logic":15,"../primitives":30,"../simulation":45,"../vm":49,"./foreign":53}],57:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand X and Y = foreign crochet.core.band(X, Y);\r\ncommand X or Y = foreign crochet.core.bor(X, Y);\r\ncommand not X = foreign crochet.core.bnot(X);\r\n\r\ncommand X === Y = foreign crochet.core.eq(X, Y);\r\ncommand X =/= Y = foreign crochet.core.not-eq(X, Y);";
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand X inspect =\r\n  foreign crochet.debug.inspect(X);\r\n\r\ncommand X debug-representation =\r\n  foreign crochet.debug.representation(X);";
 
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ntype html-element = foreign crochet.ui.html.element;\r\ntype html-menu = foreign crochet.ui.html.menu;\r\n\r\nsingleton html;\r\nsingleton ui;\r\n\r\ncommand html show: X =\r\n  foreign crochet.ui.html.show(X);\r\n\r\ncommand html wait-click =\r\n  foreign crochet.ui.html.wait();\r\n\r\ncommand html box: Name class: Class attributes: Attrs children: Children =\r\n  foreign crochet.ui.html.box(Name, Class, Attrs, Children);\r\n\r\ncommand html text: Text =\r\n  foreign crochet.ui.html.text(Text);\r\n\r\ncommand html menu: Items class: Class =\r\n  foreign crochet.ui.html.menu(Class, Items);\r\n\r\ncommand (X is html-menu) selected =\r\n  foreign crochet.ui.html.menu-selected(X);\r\n\r\ncommand html preload: Url =\r\n  foreign crochet.ui.html.preload(Url);\r\n\r\ncommand html image: Url =\r\n  foreign crochet.ui.html.image(Url);\r\n\r\ncommand html animate: Element frame-rate: Rate =\r\n  foreign crochet.ui.html.animate(Element, Rate);\r\n\r\ncommand html make-animation: Elements =\r\n  foreign crochet.ui.html.make-animation(Elements);\r\n\r\ncommand html mark =\r\n  foreign crochet.ui.html.mark();\r\n\r\ncommand X show {\r\n  X to-html show;\r\n}\r\n\r\ncommand (X is html-element) show {\r\n  html show: X;\r\n}\r\n\r\ncommand X show-wait {\r\n  X show;\r\n  wait-click;\r\n}\r\n\r\ncommand ui mark {\r\n  html mark;\r\n}\r\n\r\ncommand X to-html {\r\n  X debug-representation text;\r\n}\r\n\r\ncommand (X is html-element) to-html {\r\n  X;\r\n}\r\n\r\ncommand (X is text) to-html {\r\n  X text;\r\n}\r\n\r\ncommand (X is interpolation) to-html {\r\n  X parts to-html;\r\n}\r\n\r\ncommand (Xs is stream) to-html {\r\n  let Items = for X in Xs { X to-html };\r\n  html box: \"span\"\r\n       class: \"crochet-stream\"\r\n       attributes: [->]\r\n       children: Items;\r\n}\r\n\r\n\r\ncommand (Text is text) text {\r\n  html text: Text;\r\n}\r\n\r\ncommand preload: (Url is text) {\r\n  html preload: Url;\r\n}\r\n\r\ncommand html-element animate: (FrameRate is integer) {\r\n  html animate: self frame-rate: FrameRate;\r\n}\r\n\r\ncommand image: (Url is text) {\r\n  html box: \"img\"\r\n       class: \"crochet-image\"\r\n       attributes: [src -> Url]\r\n       children: [];\r\n}\r\n\r\ncommand animation: (Elements is stream) {\r\n  html make-animation: (for X in Elements { X to-html });\r\n}\r\n\r\ncommand header: X {\r\n  html\r\n    box: \"header\"\r\n    class: \"crochet-header\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand title: X {\r\n  html\r\n    box: \"h1\"\r\n    class: \"crochet-title\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand subtitle: X {\r\n  html\r\n    box: \"h2\"\r\n    class: \"crochet-subtitle\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand monospace: X {\r\n  box: \"crochet-mono\" children: X;\r\n}\r\n\r\ncommand paragraph: X {\r\n  html \r\n    box: \"p\"\r\n    class: \"crochet-paragraph\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand box: (Class is text) children: X {\r\n  html box: \"div\"\r\n       class: Class\r\n       attributes: [->]\r\n       children: [X to-html];\r\n}\r\n\r\ncommand flow: X {\r\n  box: \"crochet-flow\" children: X to-html;\r\n}\r\n\r\ncommand stack: X {\r\n  box: \"crochet-stack\" children: X to-html;\r\n}\r\n\r\ncommand emphasis: X {\r\n  html\r\n    box: \"em\"\r\n    class: \"crochet-emphasis\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand strong: X {\r\n  html\r\n    box: \"strong\"\r\n    class: \"crochet-strong\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand ui divider {\r\n  box: \"crochet-divider\" children: [];\r\n}\r\n\r\ncommand section: X {\r\n  html\r\n    box: \"section\"\r\n    class: \"crochet-section\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand button: X {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-button\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand menu: (Items0 is stream) {\r\n  let Items = for X in Items0 {\r\n    [\r\n      Title -> (button: X.Title to-html),\r\n      Value -> X.Value,\r\n    ]\r\n  };\r\n\r\n  html\r\n    menu: Items\r\n    class: \"crochet-menu\";\r\n}";
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\n// Note: we don't provide the non-integral division operator (/) yet because\r\n// we neither have fractional numbers nor floats.\r\n\r\n// == Arithmetic\r\ncommand (X is integer) + (Y is integer) =\r\n  foreign crochet.integer.add(X, Y);\r\n\r\ncommand (X is integer) - (Y is integer) =\r\n  foreign crochet.integer.sub(X, Y);\r\n\r\ncommand (X is integer) * (Y is integer) =\r\n  foreign crochet.integer.mul(X, Y);\r\n\r\ncommand (X is integer) divided-by: (Y is integer) =\r\n  foreign crochet.integer.div(X, Y);\r\n\r\ncommand (X is integer) remainder-of-division-by: (Y is integer) =\r\n  foreign crochet.integer.rem(X, Y);\r\n\r\ncommand (X is integer) divide-by-with-remainder: (Y is integer) {\r\n  [\r\n    Quotient -> X divided-by: Y,\r\n    Remainder -> X remainder-of-division-by: Y,\r\n  ];\r\n}\r\n\r\n// == Relational\r\ncommand (X is integer) < (Y is integer) = \r\n  foreign crochet.integer.lt(X, Y);\r\n\r\ncommand (X is integer) <= (Y is integer) = \r\n  foreign crochet.integer.lte(X, Y);\r\n\r\ncommand (X is integer) > (Y is integer) = \r\n  foreign crochet.integer.gt(X, Y);\r\n\r\ncommand (X is integer) >= (Y is integer) = \r\n  foreign crochet.integer.gte(X, Y);\r\n\r\n\r\n\r\n";
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand (X is record) ++ (Y is record) =\r\n  foreign crochet.record.merge(X, Y);\r\n\r\ncommand (X is record) at: (K is text) =\r\n  foreign crochet.record.at(X, K);\r\n\r\ncommand (X is record) at: (K is text) put: V =\r\n  foreign crochet.record.at-put(X, K, V);\r\n\r\ncommand (X is record) keys =\r\n  foreign crochet.record.keys(X);\r\n\r\ncommand (X is record) values =\r\n  foreign crochet.record.values(X);\r\n\r\ncommand (X is record) count =\r\n  foreign crochet.record.count(X);";
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand (X is stream) count =\r\n  foreign crochet.stream.count(X);\r\n\r\ncommand (X is stream) first =\r\n  foreign crochet.stream.first(X);\r\n\r\ncommand (X is stream) last =\r\n  foreign crochet.stream.last(X);\r\n\r\ncommand (X is stream) but-first = \r\n  foreign crochet.stream.but-first(X);\r\n\r\ncommand (X is stream) but-last = \r\n  foreign crochet.stream.but-last(X);\r\n\r\ncommand (X is stream) take: (N is integer) = \r\n  foreign crochet.stream.take(X, N);\r\n\r\ncommand (X is stream) drop: (N is integer) = \r\n  foreign crochet.stream.drop(X, N);\r\n\r\ncommand (X is stream) ++ (Y is stream) = \r\n  foreign crochet.stream.concat(X, Y);\r\n\r\ncommand (X is stream) zip: (Y is stream) = \r\n  foreign crochet.stream.zip(X, Y);\r\n\r\ncommand (X is stream) random-choice =\r\n  foreign crochet.stream.random-choice(X);";
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand (X is text) ++ (Y is text) = \r\n  foreign crochet.text.concat(X, Y);\r\n\r\n\r\ncommand (X is interpolation) ++ (Y is interpolation) =\r\n  foreign crochet.interpolation.concat(X, Y);\r\n\r\ncommand (X is text) ++ (Y is interpolation) {\r\n  (X as interpolation) ++ Y;\r\n}\r\n\r\ncommand (X is interpolation) ++ (Y is text) {\r\n  X ++ (Y as interpolation);\r\n}\r\n\r\n\r\ncommand (X is interpolation) parts = \r\n  foreign crochet.interpolation.parts(X);\r\n\r\ncommand (X is interpolation) holes =\r\n  foreign crochet.interpolation.holes(X);\r\n\r\ncommand (X is interpolation) static-text =\r\n  foreign crochet.interpolation.static-text(X);";
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand (X is integer) sleep =\r\n  foreign crochet.time.sleep(X);";
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.canvas = exports.Canvas = exports.Rect = void 0;
@@ -8374,14 +8476,29 @@ class Canvas {
         x.style.visibility = old_visibility;
         return dimensions;
     }
+    is_interactive(x) {
+        if (x.getAttribute("data-interactive") === "true") {
+            return true;
+        }
+        const children = Array.from(x.children);
+        if (children.length === 0) {
+            return false;
+        }
+        else {
+            return children.some((x) => x instanceof HTMLElement && this.is_interactive(x));
+        }
+    }
     async wait_mark(x) {
         if (this.mark == null) {
             this.mark = x;
             return;
         }
         const dimensions = this.measure(x);
-        if (dimensions.bottom > this.canvas.clientHeight) {
+        if (dimensions.bottom - this.mark.offsetTop > this.canvas.clientHeight) {
             await this.click_to_continue(x);
+        }
+        if (this.is_interactive(x)) {
+            this.mark = null;
         }
     }
     async animate(x, frames, time) {
@@ -8455,7 +8572,7 @@ class Canvas {
 exports.Canvas = Canvas;
 exports.canvas = new Canvas();
 
-},{"../../utils":75}],65:[function(require,module,exports){
+},{"../../utils":76}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrochetMenu = exports.TCrochetMenu = exports.CrochetHtml = exports.TCrochetHtml = void 0;
@@ -8512,7 +8629,7 @@ class CrochetMenu extends CrochetHtml {
 }
 exports.CrochetMenu = CrochetMenu;
 
-},{"../../runtime":5}],66:[function(require,module,exports){
+},{"../../runtime":5}],67:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -8572,6 +8689,7 @@ let HtmlFfi = class HtmlFfi {
     static menu(klass, items) {
         const selection = utils_1.defer();
         const menu = document.createElement("div");
+        menu.setAttribute("data-interactive", "true");
         menu.className = "crochet-box " + klass.value;
         for (const child of items.values) {
             const record = utils_1.cast(child, runtime_1.CrochetRecord);
@@ -8581,6 +8699,8 @@ let HtmlFfi = class HtmlFfi {
             title.value.addEventListener("click", (ev) => {
                 ev.stopPropagation();
                 ev.preventDefault();
+                title.value.setAttribute("data-selected", "true");
+                menu.setAttribute("data-selected", "true");
                 selection.resolve(value);
             }, { once: true });
         }
@@ -8678,7 +8798,7 @@ HtmlFfi = __decorate([
 ], HtmlFfi);
 exports.HtmlFfi = HtmlFfi;
 
-},{"../../runtime":5,"../../runtime/world/ffi-decorators":51,"../../utils":75,"./canvas":64,"./element":65}],67:[function(require,module,exports){
+},{"../../runtime":5,"../../runtime/world/ffi-decorators":52,"../../utils":76,"./canvas":65,"./element":66}],68:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8695,7 +8815,7 @@ __exportStar(require("./element"), exports);
 __exportStar(require("./ffi"), exports);
 __exportStar(require("./canvas"), exports);
 
-},{"./canvas":64,"./element":65,"./ffi":66}],68:[function(require,module,exports){
+},{"./canvas":65,"./element":66,"./ffi":67}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Html = exports.load = void 0;
@@ -8728,7 +8848,7 @@ exports.load = load;
 const Html = require("./html");
 exports.Html = Html;
 
-},{"../compiler":2,"../compiler/compiler":1,"../runtime/primitives/builtins":21,"./generated/core.crochet":56,"./generated/debug.crochet":57,"./generated/html-ui.crochet":58,"./generated/integer.crochet":59,"./generated/record.crochet":60,"./generated/stream.crochet":61,"./generated/text.crochet":62,"./generated/time.crochet":63,"./html":67,"./html/ffi":66,"./native":70}],69:[function(require,module,exports){
+},{"../compiler":2,"../compiler/compiler":1,"../runtime/primitives/builtins":22,"./generated/core.crochet":57,"./generated/debug.crochet":58,"./generated/html-ui.crochet":59,"./generated/integer.crochet":60,"./generated/record.crochet":61,"./generated/stream.crochet":62,"./generated/text.crochet":63,"./generated/time.crochet":64,"./html":68,"./html/ffi":67,"./native":71}],70:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -8762,7 +8882,7 @@ DebugFfi = __decorate([
 ], DebugFfi);
 exports.DebugFfi = DebugFfi;
 
-},{"../../runtime":5,"../../runtime/world/ffi-decorators":51}],70:[function(require,module,exports){
+},{"../../runtime":5,"../../runtime/world/ffi-decorators":52}],71:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8778,7 +8898,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./debug"), exports);
 __exportStar(require("./time"), exports);
 
-},{"./debug":69,"./time":71}],71:[function(require,module,exports){
+},{"./debug":70,"./time":72}],72:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -8805,7 +8925,7 @@ TimeFfi = __decorate([
 ], TimeFfi);
 exports.TimeFfi = TimeFfi;
 
-},{"../../runtime":5,"../../runtime/world/ffi-decorators":51,"../../utils":75}],72:[function(require,module,exports){
+},{"../../runtime":5,"../../runtime/world/ffi-decorators":52,"../../utils":76}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Crochet = void 0;
@@ -8843,7 +8963,7 @@ class Crochet {
 }
 exports.Crochet = Crochet;
 
-},{"../compiler":2,"../runtime":5,"../stdlib":68}],73:[function(require,module,exports){
+},{"../compiler":2,"../runtime":5,"../stdlib":69}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Bag = void 0;
@@ -8879,7 +8999,7 @@ class Bag {
 }
 exports.Bag = Bag;
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BagMap = void 0;
@@ -8925,7 +9045,7 @@ class BagMap {
 }
 exports.BagMap = BagMap;
 
-},{}],75:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -8946,7 +9066,7 @@ __exportStar(require("./types"), exports);
 __exportStar(require("./utils"), exports);
 __exportStar(require("./collections"), exports);
 
-},{"./bag":73,"./collections":74,"./iterable":76,"./operators":77,"./spec":79,"./types":80,"./utils":81}],76:[function(require,module,exports){
+},{"./bag":74,"./collections":75,"./iterable":77,"./operators":78,"./spec":80,"./types":81,"./utils":82}],77:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BetterIterable = exports.iter = void 0;
@@ -8997,7 +9117,7 @@ class BetterIterable {
 }
 exports.BetterIterable = BetterIterable;
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.coercePrimitiveArray = exports.coerceArray = exports.coercePrimitive = exports.coerce = void 0;
@@ -9030,7 +9150,7 @@ function coercePrimitiveArray(type, value) {
 }
 exports.coercePrimitiveArray = coercePrimitiveArray;
 
-},{}],78:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Error = exports.Ok = exports.Result = void 0;
@@ -9064,7 +9184,7 @@ class Error extends Result {
 }
 exports.Error = Error;
 
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = exports.optional = exports.spec = exports.anyOf = exports.equal = exports.array = exports.nothing = exports.boolean = exports.number = exports.bigint_string = exports.bigint = exports.string = exports.lazy = exports.LazySpec = exports.EAnyOf = exports.ENotEqual = exports.ENoKey = exports.EType = exports.Err = exports.Ok = void 0;
@@ -9280,11 +9400,11 @@ function parse(x, spec) {
 }
 exports.parse = parse;
 
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],81:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gen = exports.copy_map = exports.every = exports.zip = exports.defer = exports.maybe_cast = exports.cast = exports.delay = exports.pick = exports.show = exports.unreachable = void 0;
@@ -9369,7 +9489,7 @@ function* gen(x) {
 }
 exports.gen = gen;
 
-},{"../runtime":5,"util":148}],82:[function(require,module,exports){
+},{"../runtime":5,"util":149}],83:[function(require,module,exports){
 
 /**
  * Array#filter.
@@ -9396,7 +9516,7 @@ module.exports = function (arr, fn, self) {
 
 var hasOwn = Object.prototype.hasOwnProperty;
 
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -9421,7 +9541,7 @@ module.exports = function availableTypedArrays() {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"array-filter":82}],84:[function(require,module,exports){
+},{"array-filter":83}],85:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -9438,7 +9558,7 @@ module.exports = function callBoundIntrinsic(name, allowMissing) {
 	return intrinsic;
 };
 
-},{"./":85,"get-intrinsic":90}],85:[function(require,module,exports){
+},{"./":86,"get-intrinsic":91}],86:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -9487,7 +9607,7 @@ if ($defineProperty) {
 	module.exports.apply = applyBind;
 }
 
-},{"function-bind":89,"get-intrinsic":90}],86:[function(require,module,exports){
+},{"function-bind":90,"get-intrinsic":91}],87:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -9504,7 +9624,7 @@ if ($gOPD) {
 
 module.exports = $gOPD;
 
-},{"get-intrinsic":90}],87:[function(require,module,exports){
+},{"get-intrinsic":91}],88:[function(require,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -9528,7 +9648,7 @@ module.exports = function forEach (obj, fn, ctx) {
 };
 
 
-},{}],88:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 'use strict';
 
 /* eslint no-invalid-this: 1 */
@@ -9582,14 +9702,14 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":88}],90:[function(require,module,exports){
+},{"./implementation":89}],91:[function(require,module,exports){
 'use strict';
 
 var undefined;
@@ -9921,7 +10041,7 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	return value;
 };
 
-},{"function-bind":89,"has":93,"has-symbols":91}],91:[function(require,module,exports){
+},{"function-bind":90,"has":94,"has-symbols":92}],92:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -9938,7 +10058,7 @@ module.exports = function hasNativeSymbols() {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./shams":92}],92:[function(require,module,exports){
+},{"./shams":93}],93:[function(require,module,exports){
 'use strict';
 
 /* eslint complexity: [2, 18], max-statements: [2, 33] */
@@ -9982,14 +10102,14 @@ module.exports = function hasSymbols() {
 	return true;
 };
 
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":89}],94:[function(require,module,exports){
+},{"function-bind":90}],95:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -10018,7 +10138,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],95:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 'use strict';
 
 var hasToStringTag = typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol';
@@ -10053,7 +10173,7 @@ isStandardArguments.isLegacyArguments = isLegacyArguments; // for tests
 
 module.exports = supportsStandardArguments ? isStandardArguments : isLegacyArguments;
 
-},{"call-bind/callBound":84}],96:[function(require,module,exports){
+},{"call-bind/callBound":85}],97:[function(require,module,exports){
 /*!
  * Determine if an object is a Buffer
  *
@@ -10066,7 +10186,7 @@ module.exports = function isBuffer (obj) {
     typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
 }
 
-},{}],97:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -10100,7 +10220,7 @@ module.exports = function isGeneratorFunction(fn) {
 	return getProto && getProto(fn) === GeneratorFunction;
 };
 
-},{}],98:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -10165,19 +10285,19 @@ module.exports = function isTypedArray(value) {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":83,"call-bind/callBound":84,"es-abstract/helpers/getOwnPropertyDescriptor":86,"foreach":87,"has-symbols":91}],99:[function(require,module,exports){
+},{"available-typed-arrays":84,"call-bind/callBound":85,"es-abstract/helpers/getOwnPropertyDescriptor":87,"foreach":88,"has-symbols":92}],100:[function(require,module,exports){
 var ohm = require('..');
 module.exports = ohm.makeRecipe(["grammar",{"source":"BuiltInRules {\n\n  alnum  (an alpha-numeric character)\n    = letter\n    | digit\n\n  letter  (a letter)\n    = lower\n    | upper\n    | unicodeLtmo\n\n  digit  (a digit)\n    = \"0\"..\"9\"\n\n  hexDigit  (a hexadecimal digit)\n    = digit\n    | \"a\"..\"f\"\n    | \"A\"..\"F\"\n\n  ListOf<elem, sep>\n    = NonemptyListOf<elem, sep>\n    | EmptyListOf<elem, sep>\n\n  NonemptyListOf<elem, sep>\n    = elem (sep elem)*\n\n  EmptyListOf<elem, sep>\n    = /* nothing */\n\n  listOf<elem, sep>\n    = nonemptyListOf<elem, sep>\n    | emptyListOf<elem, sep>\n\n  nonemptyListOf<elem, sep>\n    = elem (sep elem)*\n\n  emptyListOf<elem, sep>\n    = /* nothing */\n\n}"},"BuiltInRules",null,null,{"alnum":["define",{"sourceInterval":[18,78]},"an alpha-numeric character",[],["alt",{"sourceInterval":[60,78]},["app",{"sourceInterval":[60,66]},"letter",[]],["app",{"sourceInterval":[73,78]},"digit",[]]]],"letter":["define",{"sourceInterval":[82,142]},"a letter",[],["alt",{"sourceInterval":[107,142]},["app",{"sourceInterval":[107,112]},"lower",[]],["app",{"sourceInterval":[119,124]},"upper",[]],["app",{"sourceInterval":[131,142]},"unicodeLtmo",[]]]],"digit":["define",{"sourceInterval":[146,177]},"a digit",[],["range",{"sourceInterval":[169,177]},"0","9"]],"hexDigit":["define",{"sourceInterval":[181,254]},"a hexadecimal digit",[],["alt",{"sourceInterval":[219,254]},["app",{"sourceInterval":[219,224]},"digit",[]],["range",{"sourceInterval":[231,239]},"a","f"],["range",{"sourceInterval":[246,254]},"A","F"]]],"ListOf":["define",{"sourceInterval":[258,336]},null,["elem","sep"],["alt",{"sourceInterval":[282,336]},["app",{"sourceInterval":[282,307]},"NonemptyListOf",[["param",{"sourceInterval":[297,301]},0],["param",{"sourceInterval":[303,306]},1]]],["app",{"sourceInterval":[314,336]},"EmptyListOf",[["param",{"sourceInterval":[326,330]},0],["param",{"sourceInterval":[332,335]},1]]]]],"NonemptyListOf":["define",{"sourceInterval":[340,388]},null,["elem","sep"],["seq",{"sourceInterval":[372,388]},["param",{"sourceInterval":[372,376]},0],["star",{"sourceInterval":[377,388]},["seq",{"sourceInterval":[378,386]},["param",{"sourceInterval":[378,381]},1],["param",{"sourceInterval":[382,386]},0]]]]],"EmptyListOf":["define",{"sourceInterval":[392,434]},null,["elem","sep"],["seq",{"sourceInterval":[438,438]}]],"listOf":["define",{"sourceInterval":[438,516]},null,["elem","sep"],["alt",{"sourceInterval":[462,516]},["app",{"sourceInterval":[462,487]},"nonemptyListOf",[["param",{"sourceInterval":[477,481]},0],["param",{"sourceInterval":[483,486]},1]]],["app",{"sourceInterval":[494,516]},"emptyListOf",[["param",{"sourceInterval":[506,510]},0],["param",{"sourceInterval":[512,515]},1]]]]],"nonemptyListOf":["define",{"sourceInterval":[520,568]},null,["elem","sep"],["seq",{"sourceInterval":[552,568]},["param",{"sourceInterval":[552,556]},0],["star",{"sourceInterval":[557,568]},["seq",{"sourceInterval":[558,566]},["param",{"sourceInterval":[558,561]},1],["param",{"sourceInterval":[562,566]},0]]]]],"emptyListOf":["define",{"sourceInterval":[572,614]},null,["elem","sep"],["seq",{"sourceInterval":[616,616]}]]}]);
 
-},{"..":122}],100:[function(require,module,exports){
+},{"..":123}],101:[function(require,module,exports){
 var ohm = require('..');
 module.exports = ohm.makeRecipe(["grammar",{"source":"Ohm {\n\n  Grammars\n    = Grammar*\n\n  Grammar\n    = ident SuperGrammar? \"{\" Rule* \"}\"\n\n  SuperGrammar\n    = \"<:\" ident\n\n  Rule\n    = ident Formals? ruleDescr? \"=\"  RuleBody  -- define\n    | ident Formals?            \":=\" OverrideRuleBody  -- override\n    | ident Formals?            \"+=\" RuleBody  -- extend\n\n  RuleBody\n    = \"|\"? NonemptyListOf<TopLevelTerm, \"|\">\n\n  TopLevelTerm\n    = Seq caseName  -- inline\n    | Seq\n\n  OverrideRuleBody\n    = \"|\"? NonemptyListOf<OverrideTopLevelTerm, \"|\">\n\n  OverrideTopLevelTerm\n    = \"...\"  -- superSplice\n    | TopLevelTerm\n\n  Formals\n    = \"<\" ListOf<ident, \",\"> \">\"\n\n  Params\n    = \"<\" ListOf<Seq, \",\"> \">\"\n\n  Alt\n    = NonemptyListOf<Seq, \"|\">\n\n  Seq\n    = Iter*\n\n  Iter\n    = Pred \"*\"  -- star\n    | Pred \"+\"  -- plus\n    | Pred \"?\"  -- opt\n    | Pred\n\n  Pred\n    = \"~\" Lex  -- not\n    | \"&\" Lex  -- lookahead\n    | Lex\n\n  Lex\n    = \"#\" Base  -- lex\n    | Base\n\n  Base\n    = ident Params? ~(ruleDescr? \"=\" | \":=\" | \"+=\")  -- application\n    | oneCharTerminal \"..\" oneCharTerminal           -- range\n    | terminal                                       -- terminal\n    | \"(\" Alt \")\"                                    -- paren\n\n  ruleDescr  (a rule description)\n    = \"(\" ruleDescrText \")\"\n\n  ruleDescrText\n    = (~\")\" any)*\n\n  caseName\n    = \"--\" (~\"\\n\" space)* name (~\"\\n\" space)* (\"\\n\" | &\"}\")\n\n  name  (a name)\n    = nameFirst nameRest*\n\n  nameFirst\n    = \"_\"\n    | letter\n\n  nameRest\n    = \"_\"\n    | alnum\n\n  ident  (an identifier)\n    = name\n\n  terminal\n    = \"\\\"\" terminalChar* \"\\\"\"\n\n  oneCharTerminal\n    = \"\\\"\" terminalChar \"\\\"\"\n\n  terminalChar\n    = escapeChar\n    | ~\"\\\\\" ~\"\\\"\" ~\"\\n\" any\n\n  escapeChar  (an escape sequence)\n    = \"\\\\\\\\\"                                     -- backslash\n    | \"\\\\\\\"\"                                     -- doubleQuote\n    | \"\\\\\\'\"                                     -- singleQuote\n    | \"\\\\b\"                                      -- backspace\n    | \"\\\\n\"                                      -- lineFeed\n    | \"\\\\r\"                                      -- carriageReturn\n    | \"\\\\t\"                                      -- tab\n    | \"\\\\u\" hexDigit hexDigit hexDigit hexDigit  -- unicodeEscape\n    | \"\\\\x\" hexDigit hexDigit                    -- hexEscape\n\n  space\n   += comment\n\n  comment\n    = \"//\" (~\"\\n\" any)* \"\\n\"  -- singleLine\n    | \"/*\" (~\"*/\" any)* \"*/\"  -- multiLine\n\n  tokens = token*\n\n  token = caseName | comment | ident | operator | punctuation | terminal | any\n\n  operator = \"<:\" | \"=\" | \":=\" | \"+=\" | \"*\" | \"+\" | \"?\" | \"~\" | \"&\"\n\n  punctuation = \"<\" | \">\" | \",\" | \"--\"\n}"},"Ohm",null,"Grammars",{"Grammars":["define",{"sourceInterval":[9,32]},null,[],["star",{"sourceInterval":[24,32]},["app",{"sourceInterval":[24,31]},"Grammar",[]]]],"Grammar":["define",{"sourceInterval":[36,83]},null,[],["seq",{"sourceInterval":[50,83]},["app",{"sourceInterval":[50,55]},"ident",[]],["opt",{"sourceInterval":[56,69]},["app",{"sourceInterval":[56,68]},"SuperGrammar",[]]],["terminal",{"sourceInterval":[70,73]},"{"],["star",{"sourceInterval":[74,79]},["app",{"sourceInterval":[74,78]},"Rule",[]]],["terminal",{"sourceInterval":[80,83]},"}"]]],"SuperGrammar":["define",{"sourceInterval":[87,116]},null,[],["seq",{"sourceInterval":[106,116]},["terminal",{"sourceInterval":[106,110]},"<:"],["app",{"sourceInterval":[111,116]},"ident",[]]]],"Rule_define":["define",{"sourceInterval":[131,181]},null,[],["seq",{"sourceInterval":[131,170]},["app",{"sourceInterval":[131,136]},"ident",[]],["opt",{"sourceInterval":[137,145]},["app",{"sourceInterval":[137,144]},"Formals",[]]],["opt",{"sourceInterval":[146,156]},["app",{"sourceInterval":[146,155]},"ruleDescr",[]]],["terminal",{"sourceInterval":[157,160]},"="],["app",{"sourceInterval":[162,170]},"RuleBody",[]]]],"Rule_override":["define",{"sourceInterval":[188,248]},null,[],["seq",{"sourceInterval":[188,235]},["app",{"sourceInterval":[188,193]},"ident",[]],["opt",{"sourceInterval":[194,202]},["app",{"sourceInterval":[194,201]},"Formals",[]]],["terminal",{"sourceInterval":[214,218]},":="],["app",{"sourceInterval":[219,235]},"OverrideRuleBody",[]]]],"Rule_extend":["define",{"sourceInterval":[255,305]},null,[],["seq",{"sourceInterval":[255,294]},["app",{"sourceInterval":[255,260]},"ident",[]],["opt",{"sourceInterval":[261,269]},["app",{"sourceInterval":[261,268]},"Formals",[]]],["terminal",{"sourceInterval":[281,285]},"+="],["app",{"sourceInterval":[286,294]},"RuleBody",[]]]],"Rule":["define",{"sourceInterval":[120,305]},null,[],["alt",{"sourceInterval":[131,305]},["app",{"sourceInterval":[131,170]},"Rule_define",[]],["app",{"sourceInterval":[188,235]},"Rule_override",[]],["app",{"sourceInterval":[255,294]},"Rule_extend",[]]]],"RuleBody":["define",{"sourceInterval":[309,362]},null,[],["seq",{"sourceInterval":[324,362]},["opt",{"sourceInterval":[324,328]},["terminal",{"sourceInterval":[324,327]},"|"]],["app",{"sourceInterval":[329,362]},"NonemptyListOf",[["app",{"sourceInterval":[344,356]},"TopLevelTerm",[]],["terminal",{"sourceInterval":[358,361]},"|"]]]]],"TopLevelTerm_inline":["define",{"sourceInterval":[385,408]},null,[],["seq",{"sourceInterval":[385,397]},["app",{"sourceInterval":[385,388]},"Seq",[]],["app",{"sourceInterval":[389,397]},"caseName",[]]]],"TopLevelTerm":["define",{"sourceInterval":[366,418]},null,[],["alt",{"sourceInterval":[385,418]},["app",{"sourceInterval":[385,397]},"TopLevelTerm_inline",[]],["app",{"sourceInterval":[415,418]},"Seq",[]]]],"OverrideRuleBody":["define",{"sourceInterval":[422,491]},null,[],["seq",{"sourceInterval":[445,491]},["opt",{"sourceInterval":[445,449]},["terminal",{"sourceInterval":[445,448]},"|"]],["app",{"sourceInterval":[450,491]},"NonemptyListOf",[["app",{"sourceInterval":[465,485]},"OverrideTopLevelTerm",[]],["terminal",{"sourceInterval":[487,490]},"|"]]]]],"OverrideTopLevelTerm_superSplice":["define",{"sourceInterval":[522,543]},null,[],["terminal",{"sourceInterval":[522,527]},"..."]],"OverrideTopLevelTerm":["define",{"sourceInterval":[495,562]},null,[],["alt",{"sourceInterval":[522,562]},["app",{"sourceInterval":[522,527]},"OverrideTopLevelTerm_superSplice",[]],["app",{"sourceInterval":[550,562]},"TopLevelTerm",[]]]],"Formals":["define",{"sourceInterval":[566,606]},null,[],["seq",{"sourceInterval":[580,606]},["terminal",{"sourceInterval":[580,583]},"<"],["app",{"sourceInterval":[584,602]},"ListOf",[["app",{"sourceInterval":[591,596]},"ident",[]],["terminal",{"sourceInterval":[598,601]},","]]],["terminal",{"sourceInterval":[603,606]},">"]]],"Params":["define",{"sourceInterval":[610,647]},null,[],["seq",{"sourceInterval":[623,647]},["terminal",{"sourceInterval":[623,626]},"<"],["app",{"sourceInterval":[627,643]},"ListOf",[["app",{"sourceInterval":[634,637]},"Seq",[]],["terminal",{"sourceInterval":[639,642]},","]]],["terminal",{"sourceInterval":[644,647]},">"]]],"Alt":["define",{"sourceInterval":[651,685]},null,[],["app",{"sourceInterval":[661,685]},"NonemptyListOf",[["app",{"sourceInterval":[676,679]},"Seq",[]],["terminal",{"sourceInterval":[681,684]},"|"]]]],"Seq":["define",{"sourceInterval":[689,704]},null,[],["star",{"sourceInterval":[699,704]},["app",{"sourceInterval":[699,703]},"Iter",[]]]],"Iter_star":["define",{"sourceInterval":[719,736]},null,[],["seq",{"sourceInterval":[719,727]},["app",{"sourceInterval":[719,723]},"Pred",[]],["terminal",{"sourceInterval":[724,727]},"*"]]],"Iter_plus":["define",{"sourceInterval":[743,760]},null,[],["seq",{"sourceInterval":[743,751]},["app",{"sourceInterval":[743,747]},"Pred",[]],["terminal",{"sourceInterval":[748,751]},"+"]]],"Iter_opt":["define",{"sourceInterval":[767,783]},null,[],["seq",{"sourceInterval":[767,775]},["app",{"sourceInterval":[767,771]},"Pred",[]],["terminal",{"sourceInterval":[772,775]},"?"]]],"Iter":["define",{"sourceInterval":[708,794]},null,[],["alt",{"sourceInterval":[719,794]},["app",{"sourceInterval":[719,727]},"Iter_star",[]],["app",{"sourceInterval":[743,751]},"Iter_plus",[]],["app",{"sourceInterval":[767,775]},"Iter_opt",[]],["app",{"sourceInterval":[790,794]},"Pred",[]]]],"Pred_not":["define",{"sourceInterval":[809,824]},null,[],["seq",{"sourceInterval":[809,816]},["terminal",{"sourceInterval":[809,812]},"~"],["app",{"sourceInterval":[813,816]},"Lex",[]]]],"Pred_lookahead":["define",{"sourceInterval":[831,852]},null,[],["seq",{"sourceInterval":[831,838]},["terminal",{"sourceInterval":[831,834]},"&"],["app",{"sourceInterval":[835,838]},"Lex",[]]]],"Pred":["define",{"sourceInterval":[798,862]},null,[],["alt",{"sourceInterval":[809,862]},["app",{"sourceInterval":[809,816]},"Pred_not",[]],["app",{"sourceInterval":[831,838]},"Pred_lookahead",[]],["app",{"sourceInterval":[859,862]},"Lex",[]]]],"Lex_lex":["define",{"sourceInterval":[876,892]},null,[],["seq",{"sourceInterval":[876,884]},["terminal",{"sourceInterval":[876,879]},"#"],["app",{"sourceInterval":[880,884]},"Base",[]]]],"Lex":["define",{"sourceInterval":[866,903]},null,[],["alt",{"sourceInterval":[876,903]},["app",{"sourceInterval":[876,884]},"Lex_lex",[]],["app",{"sourceInterval":[899,903]},"Base",[]]]],"Base_application":["define",{"sourceInterval":[918,979]},null,[],["seq",{"sourceInterval":[918,963]},["app",{"sourceInterval":[918,923]},"ident",[]],["opt",{"sourceInterval":[924,931]},["app",{"sourceInterval":[924,930]},"Params",[]]],["not",{"sourceInterval":[932,963]},["alt",{"sourceInterval":[934,962]},["seq",{"sourceInterval":[934,948]},["opt",{"sourceInterval":[934,944]},["app",{"sourceInterval":[934,943]},"ruleDescr",[]]],["terminal",{"sourceInterval":[945,948]},"="]],["terminal",{"sourceInterval":[951,955]},":="],["terminal",{"sourceInterval":[958,962]},"+="]]]]],"Base_range":["define",{"sourceInterval":[986,1041]},null,[],["seq",{"sourceInterval":[986,1022]},["app",{"sourceInterval":[986,1001]},"oneCharTerminal",[]],["terminal",{"sourceInterval":[1002,1006]},".."],["app",{"sourceInterval":[1007,1022]},"oneCharTerminal",[]]]],"Base_terminal":["define",{"sourceInterval":[1048,1106]},null,[],["app",{"sourceInterval":[1048,1056]},"terminal",[]]],"Base_paren":["define",{"sourceInterval":[1113,1168]},null,[],["seq",{"sourceInterval":[1113,1124]},["terminal",{"sourceInterval":[1113,1116]},"("],["app",{"sourceInterval":[1117,1120]},"Alt",[]],["terminal",{"sourceInterval":[1121,1124]},")"]]],"Base":["define",{"sourceInterval":[907,1168]},null,[],["alt",{"sourceInterval":[918,1168]},["app",{"sourceInterval":[918,963]},"Base_application",[]],["app",{"sourceInterval":[986,1022]},"Base_range",[]],["app",{"sourceInterval":[1048,1056]},"Base_terminal",[]],["app",{"sourceInterval":[1113,1124]},"Base_paren",[]]]],"ruleDescr":["define",{"sourceInterval":[1172,1231]},"a rule description",[],["seq",{"sourceInterval":[1210,1231]},["terminal",{"sourceInterval":[1210,1213]},"("],["app",{"sourceInterval":[1214,1227]},"ruleDescrText",[]],["terminal",{"sourceInterval":[1228,1231]},")"]]],"ruleDescrText":["define",{"sourceInterval":[1235,1266]},null,[],["star",{"sourceInterval":[1255,1266]},["seq",{"sourceInterval":[1256,1264]},["not",{"sourceInterval":[1256,1260]},["terminal",{"sourceInterval":[1257,1260]},")"]],["app",{"sourceInterval":[1261,1264]},"any",[]]]]],"caseName":["define",{"sourceInterval":[1270,1338]},null,[],["seq",{"sourceInterval":[1285,1338]},["terminal",{"sourceInterval":[1285,1289]},"--"],["star",{"sourceInterval":[1290,1304]},["seq",{"sourceInterval":[1291,1302]},["not",{"sourceInterval":[1291,1296]},["terminal",{"sourceInterval":[1292,1296]},"\n"]],["app",{"sourceInterval":[1297,1302]},"space",[]]]],["app",{"sourceInterval":[1305,1309]},"name",[]],["star",{"sourceInterval":[1310,1324]},["seq",{"sourceInterval":[1311,1322]},["not",{"sourceInterval":[1311,1316]},["terminal",{"sourceInterval":[1312,1316]},"\n"]],["app",{"sourceInterval":[1317,1322]},"space",[]]]],["alt",{"sourceInterval":[1326,1337]},["terminal",{"sourceInterval":[1326,1330]},"\n"],["lookahead",{"sourceInterval":[1333,1337]},["terminal",{"sourceInterval":[1334,1337]},"}"]]]]],"name":["define",{"sourceInterval":[1342,1382]},"a name",[],["seq",{"sourceInterval":[1363,1382]},["app",{"sourceInterval":[1363,1372]},"nameFirst",[]],["star",{"sourceInterval":[1373,1382]},["app",{"sourceInterval":[1373,1381]},"nameRest",[]]]]],"nameFirst":["define",{"sourceInterval":[1386,1418]},null,[],["alt",{"sourceInterval":[1402,1418]},["terminal",{"sourceInterval":[1402,1405]},"_"],["app",{"sourceInterval":[1412,1418]},"letter",[]]]],"nameRest":["define",{"sourceInterval":[1422,1452]},null,[],["alt",{"sourceInterval":[1437,1452]},["terminal",{"sourceInterval":[1437,1440]},"_"],["app",{"sourceInterval":[1447,1452]},"alnum",[]]]],"ident":["define",{"sourceInterval":[1456,1489]},"an identifier",[],["app",{"sourceInterval":[1485,1489]},"name",[]]],"terminal":["define",{"sourceInterval":[1493,1531]},null,[],["seq",{"sourceInterval":[1508,1531]},["terminal",{"sourceInterval":[1508,1512]},"\""],["star",{"sourceInterval":[1513,1526]},["app",{"sourceInterval":[1513,1525]},"terminalChar",[]]],["terminal",{"sourceInterval":[1527,1531]},"\""]]],"oneCharTerminal":["define",{"sourceInterval":[1535,1579]},null,[],["seq",{"sourceInterval":[1557,1579]},["terminal",{"sourceInterval":[1557,1561]},"\""],["app",{"sourceInterval":[1562,1574]},"terminalChar",[]],["terminal",{"sourceInterval":[1575,1579]},"\""]]],"terminalChar":["define",{"sourceInterval":[1583,1640]},null,[],["alt",{"sourceInterval":[1602,1640]},["app",{"sourceInterval":[1602,1612]},"escapeChar",[]],["seq",{"sourceInterval":[1619,1640]},["not",{"sourceInterval":[1619,1624]},["terminal",{"sourceInterval":[1620,1624]},"\\"]],["not",{"sourceInterval":[1625,1630]},["terminal",{"sourceInterval":[1626,1630]},"\""]],["not",{"sourceInterval":[1631,1636]},["terminal",{"sourceInterval":[1632,1636]},"\n"]],["app",{"sourceInterval":[1637,1640]},"any",[]]]]],"escapeChar_backslash":["define",{"sourceInterval":[1683,1738]},null,[],["terminal",{"sourceInterval":[1683,1689]},"\\\\"]],"escapeChar_doubleQuote":["define",{"sourceInterval":[1745,1802]},null,[],["terminal",{"sourceInterval":[1745,1751]},"\\\""]],"escapeChar_singleQuote":["define",{"sourceInterval":[1809,1866]},null,[],["terminal",{"sourceInterval":[1809,1815]},"\\'"]],"escapeChar_backspace":["define",{"sourceInterval":[1873,1928]},null,[],["terminal",{"sourceInterval":[1873,1878]},"\\b"]],"escapeChar_lineFeed":["define",{"sourceInterval":[1935,1989]},null,[],["terminal",{"sourceInterval":[1935,1940]},"\\n"]],"escapeChar_carriageReturn":["define",{"sourceInterval":[1996,2056]},null,[],["terminal",{"sourceInterval":[1996,2001]},"\\r"]],"escapeChar_tab":["define",{"sourceInterval":[2063,2112]},null,[],["terminal",{"sourceInterval":[2063,2068]},"\\t"]],"escapeChar_unicodeEscape":["define",{"sourceInterval":[2119,2178]},null,[],["seq",{"sourceInterval":[2119,2160]},["terminal",{"sourceInterval":[2119,2124]},"\\u"],["app",{"sourceInterval":[2125,2133]},"hexDigit",[]],["app",{"sourceInterval":[2134,2142]},"hexDigit",[]],["app",{"sourceInterval":[2143,2151]},"hexDigit",[]],["app",{"sourceInterval":[2152,2160]},"hexDigit",[]]]],"escapeChar_hexEscape":["define",{"sourceInterval":[2185,2240]},null,[],["seq",{"sourceInterval":[2185,2208]},["terminal",{"sourceInterval":[2185,2190]},"\\x"],["app",{"sourceInterval":[2191,2199]},"hexDigit",[]],["app",{"sourceInterval":[2200,2208]},"hexDigit",[]]]],"escapeChar":["define",{"sourceInterval":[1644,2240]},"an escape sequence",[],["alt",{"sourceInterval":[1683,2240]},["app",{"sourceInterval":[1683,1689]},"escapeChar_backslash",[]],["app",{"sourceInterval":[1745,1751]},"escapeChar_doubleQuote",[]],["app",{"sourceInterval":[1809,1815]},"escapeChar_singleQuote",[]],["app",{"sourceInterval":[1873,1878]},"escapeChar_backspace",[]],["app",{"sourceInterval":[1935,1940]},"escapeChar_lineFeed",[]],["app",{"sourceInterval":[1996,2001]},"escapeChar_carriageReturn",[]],["app",{"sourceInterval":[2063,2068]},"escapeChar_tab",[]],["app",{"sourceInterval":[2119,2160]},"escapeChar_unicodeEscape",[]],["app",{"sourceInterval":[2185,2208]},"escapeChar_hexEscape",[]]]],"space":["extend",{"sourceInterval":[2244,2263]},null,[],["app",{"sourceInterval":[2256,2263]},"comment",[]]],"comment_singleLine":["define",{"sourceInterval":[2281,2318]},null,[],["seq",{"sourceInterval":[2281,2303]},["terminal",{"sourceInterval":[2281,2285]},"//"],["star",{"sourceInterval":[2286,2298]},["seq",{"sourceInterval":[2287,2296]},["not",{"sourceInterval":[2287,2292]},["terminal",{"sourceInterval":[2288,2292]},"\n"]],["app",{"sourceInterval":[2293,2296]},"any",[]]]],["terminal",{"sourceInterval":[2299,2303]},"\n"]]],"comment_multiLine":["define",{"sourceInterval":[2325,2361]},null,[],["seq",{"sourceInterval":[2325,2347]},["terminal",{"sourceInterval":[2325,2329]},"/*"],["star",{"sourceInterval":[2330,2342]},["seq",{"sourceInterval":[2331,2340]},["not",{"sourceInterval":[2331,2336]},["terminal",{"sourceInterval":[2332,2336]},"*/"]],["app",{"sourceInterval":[2337,2340]},"any",[]]]],["terminal",{"sourceInterval":[2343,2347]},"*/"]]],"comment":["define",{"sourceInterval":[2267,2361]},null,[],["alt",{"sourceInterval":[2281,2361]},["app",{"sourceInterval":[2281,2303]},"comment_singleLine",[]],["app",{"sourceInterval":[2325,2347]},"comment_multiLine",[]]]],"tokens":["define",{"sourceInterval":[2365,2380]},null,[],["star",{"sourceInterval":[2374,2380]},["app",{"sourceInterval":[2374,2379]},"token",[]]]],"token":["define",{"sourceInterval":[2384,2460]},null,[],["alt",{"sourceInterval":[2392,2460]},["app",{"sourceInterval":[2392,2400]},"caseName",[]],["app",{"sourceInterval":[2403,2410]},"comment",[]],["app",{"sourceInterval":[2413,2418]},"ident",[]],["app",{"sourceInterval":[2421,2429]},"operator",[]],["app",{"sourceInterval":[2432,2443]},"punctuation",[]],["app",{"sourceInterval":[2446,2454]},"terminal",[]],["app",{"sourceInterval":[2457,2460]},"any",[]]]],"operator":["define",{"sourceInterval":[2464,2529]},null,[],["alt",{"sourceInterval":[2475,2529]},["terminal",{"sourceInterval":[2475,2479]},"<:"],["terminal",{"sourceInterval":[2482,2485]},"="],["terminal",{"sourceInterval":[2488,2492]},":="],["terminal",{"sourceInterval":[2495,2499]},"+="],["terminal",{"sourceInterval":[2502,2505]},"*"],["terminal",{"sourceInterval":[2508,2511]},"+"],["terminal",{"sourceInterval":[2514,2517]},"?"],["terminal",{"sourceInterval":[2520,2523]},"~"],["terminal",{"sourceInterval":[2526,2529]},"&"]]],"punctuation":["define",{"sourceInterval":[2533,2569]},null,[],["alt",{"sourceInterval":[2547,2569]},["terminal",{"sourceInterval":[2547,2550]},"<"],["terminal",{"sourceInterval":[2553,2556]},">"],["terminal",{"sourceInterval":[2559,2562]},","],["terminal",{"sourceInterval":[2565,2569]},"--"]]]}]);
 
-},{"..":122}],101:[function(require,module,exports){
+},{"..":123}],102:[function(require,module,exports){
 var ohm = require('..');
 module.exports = ohm.makeRecipe(["grammar",{"source":"OperationsAndAttributes {\n\n  AttributeSignature =\n    name\n\n  OperationSignature =\n    name Formals?\n\n  Formals\n    = \"(\" ListOf<name, \",\"> \")\"\n\n  name  (a name)\n    = nameFirst nameRest*\n\n  nameFirst\n    = \"_\"\n    | letter\n\n  nameRest\n    = \"_\"\n    | alnum\n\n}"},"OperationsAndAttributes",null,"AttributeSignature",{"AttributeSignature":["define",{"sourceInterval":[29,58]},null,[],["app",{"sourceInterval":[54,58]},"name",[]]],"OperationSignature":["define",{"sourceInterval":[62,100]},null,[],["seq",{"sourceInterval":[87,100]},["app",{"sourceInterval":[87,91]},"name",[]],["opt",{"sourceInterval":[92,100]},["app",{"sourceInterval":[92,99]},"Formals",[]]]]],"Formals":["define",{"sourceInterval":[104,143]},null,[],["seq",{"sourceInterval":[118,143]},["terminal",{"sourceInterval":[118,121]},"("],["app",{"sourceInterval":[122,139]},"ListOf",[["app",{"sourceInterval":[129,133]},"name",[]],["terminal",{"sourceInterval":[135,138]},","]]],["terminal",{"sourceInterval":[140,143]},")"]]],"name":["define",{"sourceInterval":[147,187]},"a name",[],["seq",{"sourceInterval":[168,187]},["app",{"sourceInterval":[168,177]},"nameFirst",[]],["star",{"sourceInterval":[178,187]},["app",{"sourceInterval":[178,186]},"nameRest",[]]]]],"nameFirst":["define",{"sourceInterval":[191,223]},null,[],["alt",{"sourceInterval":[207,223]},["terminal",{"sourceInterval":[207,210]},"_"],["app",{"sourceInterval":[217,223]},"letter",[]]]],"nameRest":["define",{"sourceInterval":[227,257]},null,[],["alt",{"sourceInterval":[242,257]},["terminal",{"sourceInterval":[242,245]},"_"],["app",{"sourceInterval":[252,257]},"alnum",[]]]]}]);
 
-},{"..":122}],102:[function(require,module,exports){
+},{"..":123}],103:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -10347,7 +10467,7 @@ VisitorFamily.prototype.addOperation = function(signature, actions) {
 
 module.exports = VisitorFamily;
 
-},{"../src/common":120}],103:[function(require,module,exports){
+},{"../src/common":121}],104:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -10356,7 +10476,7 @@ module.exports = {
   toAST: require('./semantics-toAST').helper
 };
 
-},{"./VisitorFamily":102,"./semantics-toAST":104}],104:[function(require,module,exports){
+},{"./VisitorFamily":103,"./semantics-toAST":105}],105:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -10498,7 +10618,7 @@ module.exports = {
   semantics: semanticsForToAST
 };
 
-},{"../src/Grammar":109,"../src/MatchResult":113,"../src/pexprs":140,"util-extend":145}],105:[function(require,module,exports){
+},{"../src/Grammar":110,"../src/MatchResult":114,"../src/pexprs":141,"util-extend":146}],106:[function(require,module,exports){
 module.exports={
   "name": "ohm-js",
   "version": "15.3.0",
@@ -10574,7 +10694,7 @@ module.exports={
   }
 }
 
-},{}],106:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -10768,7 +10888,7 @@ Builder.prototype = {
 
 module.exports = Builder;
 
-},{"./GrammarDecl":110,"./pexprs":140}],107:[function(require,module,exports){
+},{"./GrammarDecl":111,"./pexprs":141}],108:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -10846,7 +10966,7 @@ class CaseInsensitiveTerminal extends PExpr {
 
 module.exports = CaseInsensitiveTerminal;
 
-},{"./Failure":108,"./common":120,"./nodes":123,"./pexprs":140}],108:[function(require,module,exports){
+},{"./Failure":109,"./common":121,"./nodes":124,"./pexprs":141}],109:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -10947,7 +11067,7 @@ Failure.prototype.toKey = function() {
 
 module.exports = Failure;
 
-},{}],109:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -11302,7 +11422,7 @@ Grammar.ProtoBuiltInRules = new Grammar(
 
 module.exports = Grammar;
 
-},{"./CaseInsensitiveTerminal":107,"./Matcher":115,"./Semantics":118,"./common":120,"./errors":121,"./pexprs":140}],110:[function(require,module,exports){
+},{"./CaseInsensitiveTerminal":108,"./Matcher":116,"./Semantics":119,"./common":121,"./errors":122,"./pexprs":141}],111:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -11491,7 +11611,7 @@ GrammarDecl.prototype.extend = function(name, formals, fragment, descIgnored, so
 
 module.exports = GrammarDecl;
 
-},{"./Grammar":109,"./InputStream":111,"./common":120,"./errors":121,"./pexprs":140}],111:[function(require,module,exports){
+},{"./Grammar":110,"./InputStream":112,"./common":121,"./errors":122,"./pexprs":141}],112:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -11565,7 +11685,7 @@ InputStream.prototype = {
 
 module.exports = InputStream;
 
-},{"./Interval":112}],112:[function(require,module,exports){
+},{"./Interval":113}],113:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -11707,7 +11827,7 @@ Object.defineProperties(Interval.prototype, {
 module.exports = Interval;
 
 
-},{"./common":120,"./errors":121,"./util":141}],113:[function(require,module,exports){
+},{"./common":121,"./errors":122,"./util":142}],114:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -11817,7 +11937,7 @@ MatchResult.prototype.getInterval = function() {
 
 module.exports = MatchResult;
 
-},{"./Interval":112,"./common":120,"./util":141}],114:[function(require,module,exports){
+},{"./Interval":113,"./common":121,"./util":142}],115:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -12205,7 +12325,7 @@ MatchState.prototype = {
 
 module.exports = MatchState;
 
-},{"./InputStream":111,"./MatchResult":113,"./PosInfo":117,"./Trace":119,"./pexprs":140}],115:[function(require,module,exports){
+},{"./InputStream":112,"./MatchResult":114,"./PosInfo":118,"./Trace":120,"./pexprs":141}],116:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -12303,7 +12423,7 @@ Matcher.prototype._getStartExpr = function(optStartApplicationStr) {
 
 module.exports = Matcher;
 
-},{"./MatchState":114,"./pexprs":140}],116:[function(require,module,exports){
+},{"./MatchState":115,"./pexprs":141}],117:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -12361,7 +12481,7 @@ Namespace.toString = function(ns) {
 
 module.exports = Namespace;
 
-},{"util-extend":145}],117:[function(require,module,exports){
+},{"util-extend":146}],118:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -12472,7 +12592,7 @@ PosInfo.prototype = {
 
 module.exports = PosInfo;
 
-},{}],118:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -13227,7 +13347,7 @@ function initPrototypeParser(grammar) {
 
 module.exports = Semantics;
 
-},{"../dist/operations-and-attributes":101,"./InputStream":111,"./MatchResult":113,"./common":120,"./errors":121,"./nodes":123,"./util":141}],119:[function(require,module,exports){
+},{"../dist/operations-and-attributes":102,"./InputStream":112,"./MatchResult":114,"./common":121,"./errors":122,"./nodes":124,"./util":142}],120:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -13427,7 +13547,7 @@ Trace.prototype.toString = function() {
 
 module.exports = Trace;
 
-},{"./Interval":112,"./common":120}],120:[function(require,module,exports){
+},{"./Interval":113,"./common":121}],121:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -13622,7 +13742,7 @@ exports.unexpectedObjToString = function(obj) {
   }
 };
 
-},{"util-extend":145}],121:[function(require,module,exports){
+},{"util-extend":146}],122:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -13890,7 +14010,7 @@ module.exports = {
   }
 };
 
-},{"./Namespace":116,"./pexprs":140}],122:[function(require,module,exports){
+},{"./Namespace":117,"./pexprs":141}],123:[function(require,module,exports){
 /* global document, XMLHttpRequest */
 
 'use strict';
@@ -14298,7 +14418,7 @@ util.announceBuiltInRules(Grammar.BuiltInRules);
 module.exports.ohmGrammar = ohmGrammar = require('../dist/ohm-grammar');
 Grammar.initApplicationParser(ohmGrammar, buildGrammar);
 
-},{"../dist/built-in-rules":99,"../dist/ohm-grammar":100,"../extras":103,"./Builder":106,"./Grammar":109,"./Namespace":116,"./common":120,"./errors":121,"./pexprs":140,"./util":141,"./version":142,"is-buffer":96}],123:[function(require,module,exports){
+},{"../dist/built-in-rules":100,"../dist/ohm-grammar":101,"../extras":104,"./Builder":107,"./Grammar":110,"./Namespace":117,"./common":121,"./errors":122,"./pexprs":141,"./util":142,"./version":143,"is-buffer":97}],124:[function(require,module,exports){
 'use strict';
 
 const common = require('./common');
@@ -14477,7 +14597,7 @@ module.exports = {
   IterationNode
 };
 
-},{"./common":120}],124:[function(require,module,exports){
+},{"./common":121}],125:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -14524,7 +14644,7 @@ pexprs.Seq.prototype.allowsSkippingPrecedingSpace = function() {
   return false;
 };
 
-},{"./common":120,"./pexprs":140}],125:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],126:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -14627,7 +14747,7 @@ pexprs.Apply.prototype._assertAllApplicationsAreValid = function(ruleName, gramm
   }
 };
 
-},{"./common":120,"./errors":121,"./pexprs":140,"./util":141}],126:[function(require,module,exports){
+},{"./common":121,"./errors":122,"./pexprs":141,"./util":142}],127:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -14704,7 +14824,7 @@ pexprs.Apply.prototype.assertChoicesHaveUniformArity = function(ruleName) {
   // `assertAllApplicationsAreValid()`.
 };
 
-},{"./common":120,"./errors":121,"./pexprs":140}],127:[function(require,module,exports){
+},{"./common":121,"./errors":122,"./pexprs":141}],128:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -14766,7 +14886,7 @@ pexprs.Apply.prototype.assertIteratedExprsAreNotNullable = function(grammar) {
   });
 };
 
-},{"./common":120,"./errors":121,"./pexprs":140}],128:[function(require,module,exports){
+},{"./common":121,"./errors":122,"./pexprs":141}],129:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -14888,7 +15008,7 @@ pexprs.UnicodeChar.prototype.check = function(grammar, vals) {
          typeof vals[0].primitiveValue === 'string';
 };
 
-},{"./common":120,"./nodes":123,"./pexprs":140}],129:[function(require,module,exports){
+},{"./common":121,"./nodes":124,"./pexprs":141}],130:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -15276,7 +15396,7 @@ pexprs.UnicodeChar.prototype.eval = function(state) {
   }
 };
 
-},{"./Trace":119,"./common":120,"./errors":121,"./nodes":123,"./pexprs":140}],130:[function(require,module,exports){
+},{"./Trace":120,"./common":121,"./errors":122,"./nodes":124,"./pexprs":141}],131:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -15484,7 +15604,7 @@ pexprs.UnicodeChar.prototype.generateExample = function(
   return {value: char}; // 💩
 };
 
-},{"./common":120,"./pexprs":140}],131:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],132:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -15537,7 +15657,7 @@ pexprs.Lex.prototype.getArity = function() {
   return this.expr.getArity();
 };
 
-},{"./common":120,"./pexprs":140}],132:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],133:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -15605,7 +15725,7 @@ pexprs.Apply.prototype.introduceParams = function(formals) {
   }
 };
 
-},{"./common":120,"./pexprs":140}],133:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],134:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -15679,7 +15799,7 @@ pexprs.Apply.prototype._isNullable = function(grammar, memo) {
   return memo[key];
 };
 
-},{"./common":120,"./pexprs":140}],134:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],135:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -15801,7 +15921,7 @@ pexprs.UnicodeChar.prototype.outputRecipe = function(formals, grammarInterval) {
   ];
 };
 
-},{"./common":120,"./pexprs":140}],135:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],136:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -15863,7 +15983,7 @@ pexprs.Apply.prototype.substituteParams = function(actuals) {
   }
 };
 
-},{"./common":120,"./pexprs":140}],136:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],137:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -16048,7 +16168,7 @@ pexprs.Param.prototype.toArgumentNameList = function(firstArgIndex, noDupCheck) 
 
 // "Value pexprs" (Value, Str, Arr, Obj) are going away soon, so we don't worry about them here.
 
-},{"./common":120,"./pexprs":140}],137:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],138:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -16098,7 +16218,7 @@ pexprs.UnicodeChar.prototype.toDisplayString = function() {
   return 'Unicode [' + this.category + '] character';
 };
 
-},{"./common":120,"./pexprs":140}],138:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],139:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -16173,7 +16293,7 @@ pexprs.Iter.prototype.toFailure = function(grammar) {
   return new Failure(this, description, 'description');
 };
 
-},{"./Failure":108,"./common":120,"./pexprs":140}],139:[function(require,module,exports){
+},{"./Failure":109,"./common":121,"./pexprs":141}],140:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -16257,7 +16377,7 @@ pexprs.UnicodeChar.prototype.toString = function() {
   return '\\p{' + this.category + '}';
 };
 
-},{"./common":120,"./pexprs":140}],140:[function(require,module,exports){
+},{"./common":121,"./pexprs":141}],141:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -16495,7 +16615,7 @@ require('./pexprs-toArgumentNameList');
 require('./pexprs-toFailure');
 require('./pexprs-toString');
 
-},{"../third_party/UnicodeCategories":143,"./common":120,"./pexprs-allowsSkippingPrecedingSpace":124,"./pexprs-assertAllApplicationsAreValid":125,"./pexprs-assertChoicesHaveUniformArity":126,"./pexprs-assertIteratedExprsAreNotNullable":127,"./pexprs-check":128,"./pexprs-eval":129,"./pexprs-generateExample":130,"./pexprs-getArity":131,"./pexprs-introduceParams":132,"./pexprs-isNullable":133,"./pexprs-outputRecipe":134,"./pexprs-substituteParams":135,"./pexprs-toArgumentNameList":136,"./pexprs-toDisplayString":137,"./pexprs-toFailure":138,"./pexprs-toString":139}],141:[function(require,module,exports){
+},{"../third_party/UnicodeCategories":144,"./common":121,"./pexprs-allowsSkippingPrecedingSpace":125,"./pexprs-assertAllApplicationsAreValid":126,"./pexprs-assertChoicesHaveUniformArity":127,"./pexprs-assertIteratedExprsAreNotNullable":128,"./pexprs-check":129,"./pexprs-eval":130,"./pexprs-generateExample":131,"./pexprs-getArity":132,"./pexprs-introduceParams":133,"./pexprs-isNullable":134,"./pexprs-outputRecipe":135,"./pexprs-substituteParams":136,"./pexprs-toArgumentNameList":137,"./pexprs-toDisplayString":138,"./pexprs-toFailure":139,"./pexprs-toString":140}],142:[function(require,module,exports){
 'use strict';
 
 // --------------------------------------------------------------------
@@ -16666,7 +16786,7 @@ exports.uniqueId = (() => {
   return prefix => '' + prefix + idCounter++;
 })();
 
-},{"./common":120}],142:[function(require,module,exports){
+},{"./common":121}],143:[function(require,module,exports){
 /* global __GLOBAL_OHM_VERSION__ */
 
 'use strict';
@@ -16677,7 +16797,7 @@ module.exports = typeof __GLOBAL_OHM_VERSION__ === 'string'
     ? __GLOBAL_OHM_VERSION__
     : require('../package.json').version;
 
-},{"../package.json":105}],143:[function(require,module,exports){
+},{"../package.json":106}],144:[function(require,module,exports){
 // Based on https://github.com/mathiasbynens/unicode-9.0.0.
 // These are just categories that are used in ES5/ES2015.
 // The full list of Unicode categories is here: http://www.fileformat.info/info/unicode/category/index.htm.
@@ -16710,7 +16830,7 @@ module.exports = {
   Ltmo: /[\u01C5\u01C8\u01CB\u01F2\u1F88-\u1F8F\u1F98-\u1F9F\u1FA8-\u1FAF\u1FBC\u1FCC\u1FFC]|[\u02B0-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0374\u037A\u0559\u0640\u06E5\u06E6\u07F4\u07F5\u07FA\u081A\u0824\u0828\u0971\u0E46\u0EC6\u10FC\u17D7\u1843\u1AA7\u1C78-\u1C7D\u1D2C-\u1D6A\u1D78\u1D9B-\u1DBF\u2071\u207F\u2090-\u209C\u2C7C\u2C7D\u2D6F\u2E2F\u3005\u3031-\u3035\u303B\u309D\u309E\u30FC-\u30FE\uA015\uA4F8-\uA4FD\uA60C\uA67F\uA69C\uA69D\uA717-\uA71F\uA770\uA788\uA7F8\uA7F9\uA9CF\uA9E6\uAA70\uAADD\uAAF3\uAAF4\uAB5C-\uAB5F\uFF70\uFF9E\uFF9F]|\uD81A[\uDF40-\uDF43]|\uD81B[\uDF93-\uDF9F\uDFE0]|[\xAA\xBA\u01BB\u01C0-\u01C3\u0294\u05D0-\u05EA\u05F0-\u05F2\u0620-\u063F\u0641-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u0800-\u0815\u0840-\u0858\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0972-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E45\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10D0-\u10FA\u10FD-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16F1-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17DC\u1820-\u1842\u1844-\u1877\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C77\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5\u1CF6\u2135-\u2138\u2D30-\u2D67\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u3006\u303C\u3041-\u3096\u309F\u30A1-\u30FA\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FD5\uA000-\uA014\uA016-\uA48C\uA4D0-\uA4F7\uA500-\uA60B\uA610-\uA61F\uA62A\uA62B\uA66E\uA6A0-\uA6E5\uA78F\uA7F7\uA7FB-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9E0-\uA9E4\uA9E7-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA6F\uAA71-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB\uAADC\uAAE0-\uAAEA\uAAF2\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF66-\uFF6F\uFF71-\uFF9D\uFFA0-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF30-\uDF40\uDF42-\uDF49\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF]|\uD801[\uDC50-\uDC9D\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE33\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48]|\uD804[\uDC03-\uDC37\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDF00-\uDF19]|\uD806[\uDCFF\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F]|\uD808[\uDC00-\uDF99]|\uD809[\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDED0-\uDEED\uDF00-\uDF2F\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDF00-\uDF44\uDF50]|\uD821[\uDC00-\uDFEC]|\uD822[\uDC00-\uDEF2]|\uD82C[\uDC00\uDC01]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD83A[\uDC00-\uDCC4]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDED6\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1]|\uD87E[\uDC00-\uDE1D]/
 };
 
-},{}],144:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -16896,7 +17016,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],145:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -16931,14 +17051,14 @@ function extend(origin, add) {
   return origin;
 }
 
-},{}],146:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],147:[function(require,module,exports){
+},{}],148:[function(require,module,exports){
 // Currently in sync with Node.js lib/internal/util/types.js
 // https://github.com/nodejs/node/commit/112cc7c27551254aa2b17098fb774867f05ed0d9
 
@@ -17272,7 +17392,7 @@ exports.isAnyArrayBuffer = isAnyArrayBuffer;
   });
 });
 
-},{"is-arguments":95,"is-generator-function":97,"is-typed-array":98,"which-typed-array":149}],148:[function(require,module,exports){
+},{"is-arguments":96,"is-generator-function":98,"is-typed-array":99,"which-typed-array":150}],149:[function(require,module,exports){
 (function (process){(function (){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -17991,7 +18111,7 @@ function callbackify(original) {
 exports.callbackify = callbackify;
 
 }).call(this)}).call(this,require('_process'))
-},{"./support/isBuffer":146,"./support/types":147,"_process":144,"inherits":94}],149:[function(require,module,exports){
+},{"./support/isBuffer":147,"./support/types":148,"_process":145,"inherits":95}],150:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -18051,5 +18171,5 @@ module.exports = function whichTypedArray(value) {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":83,"call-bind/callBound":84,"es-abstract/helpers/getOwnPropertyDescriptor":86,"foreach":87,"has-symbols":91,"is-typed-array":98}]},{},[72])(72)
+},{"available-typed-arrays":84,"call-bind/callBound":85,"es-abstract/helpers/getOwnPropertyDescriptor":87,"foreach":88,"has-symbols":92,"is-typed-array":99}]},{},[73])(73)
 });

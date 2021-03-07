@@ -26,9 +26,11 @@ import {
   Signal,
   MatchSearchCase,
   RecordField,
+  Interpolation,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
+import { SimpleInterpolation } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
 import { cast } from "../utils/utils";
@@ -283,29 +285,39 @@ export function compileArgument(expr: Expression): IR.PartialExpr {
   }
 }
 
-export function compileInterpolationPart(
-  part: InterpolationPart
-): IR.EInterpolationPart {
-  return part.match<IR.EInterpolationPart>({
+export function compileInterpolation<T, U>(
+  value: Interpolation<T>,
+  f: (_: T) => U
+): IR.SimpleInterpolation<U> {
+  return new SimpleInterpolation(
+    value.parts.map((x) => compileInterpolationPart(x, f))
+  );
+}
+
+export function compileInterpolationPart<T, U>(
+  part: InterpolationPart<T>,
+  f: (_: T) => U
+): IR.SimpleInterpolationPart<U> {
+  return part.match<IR.SimpleInterpolationPart<U>>({
     Escape(_, c) {
       switch (c) {
         case "n":
-          return new IR.EInterpolateStatic("\n");
+          return new IR.SIPStatic("\n");
         case "r":
-          return new IR.EInterpolateStatic("\r");
+          return new IR.SIPStatic("\r");
         case "t":
-          return new IR.EInterpolateStatic("\t");
+          return new IR.SIPStatic("\t");
         default:
-          return new IR.EInterpolateStatic(c);
+          return new IR.SIPStatic(c);
       }
     },
 
     Static(_, c) {
-      return new IR.EInterpolateStatic(c);
+      return new IR.SIPStatic(c);
     },
 
     Dynamic(_, x) {
-      return new IR.EInterpolateDynamic(compileExpression(x));
+      return new IR.SIPDynamic(f(x));
     },
   });
 }
@@ -456,9 +468,12 @@ export function compileExpression(expr: Expression): IR.Expression {
       );
     },
 
-    Interpolate(_, parts0) {
-      const parts = parts0.map(compileInterpolationPart);
-      return optimiseInterpolation(parts);
+    Interpolate(_, x) {
+      const interpolation = compileInterpolation(
+        x,
+        compileExpression
+      ).to_expression();
+      return optimiseInterpolation(interpolation.parts);
     },
 
     Pipe(_, left, right) {
@@ -753,11 +768,10 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       return [new IR.DScene(name.name, body.map(compileStatement))];
     },
 
-    Action(_, title0, predicate, body) {
-      const title = parseString(title0);
+    Action(_, title, predicate, body) {
       return [
         new IR.DAction(
-          title,
+          compileInterpolation(title, (x) => x.name),
           compilePredicate(predicate),
           body.map(compileStatement)
         ),
