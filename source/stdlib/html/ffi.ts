@@ -94,6 +94,7 @@ export class HtmlFfi {
     const selection = defer<CrochetValue>();
 
     const menu = document.createElement("div");
+    menu.setAttribute("data-interactive", "true");
     menu.className = "crochet-box " + klass.value;
     for (const child of items.values) {
       const record = cast(child, CrochetRecord);
@@ -105,6 +106,8 @@ export class HtmlFfi {
         (ev) => {
           ev.stopPropagation();
           ev.preventDefault();
+          title.value.setAttribute("data-selected", "true");
+          menu.setAttribute("data-selected", "true");
           selection.resolve(value);
         },
         { once: true }

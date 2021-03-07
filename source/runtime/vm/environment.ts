@@ -19,14 +19,23 @@ export class Environment {
     return this.bindings.has(name);
   }
 
-  lookup(name: string): CrochetValue | null {
+  try_lookup(name: string): CrochetValue | null {
     const result = this.bindings.get(name);
     if (result != null) {
       return result;
     } else if (this.parent != null) {
-      return this.parent.lookup(name);
+      return this.parent.try_lookup(name);
     } else {
       return null;
+    }
+  }
+
+  lookup(name: string): CrochetValue {
+    const result = this.try_lookup(name);
+    if (result != null) {
+      return result;
+    } else {
+      throw new Error(`internal: undefined variable ${name}`);
     }
   }
 
@@ -51,7 +60,7 @@ export class Environment {
   lookup_all(names: string[]): Map<string, CrochetValue> {
     const result = new Map();
     for (const name of names) {
-      const value = this.lookup(name);
+      const value = this.try_lookup(name);
       if (value != null) {
         result.set(name, value);
       }

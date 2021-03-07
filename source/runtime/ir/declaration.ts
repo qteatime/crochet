@@ -12,6 +12,7 @@ import { Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
+import { SimpleInterpolation } from "./atomic";
 
 export type Declaration =
   | DDo
@@ -159,7 +160,7 @@ export class DScene implements IDeclaration {
 
 export class DAction implements IDeclaration, IContextualDeclaration {
   constructor(
-    readonly title: string,
+    readonly title: SimpleInterpolation<string>,
     readonly predicate: Predicate,
     readonly body: Statement[]
   ) {}

@@ -109,8 +109,6 @@ scene main {
     PlayerSelection
   ]) show;
 
-  ui mark;
-
   fact (PlayerSelection selected) player;
 
   simulate for [erin, saga]
@@ -121,9 +119,7 @@ scene main {
         let Items = for Action in Actions {
           [Title -> Action.Title, Value -> Action]
         };
-        let Choice = (menu: Items) show selected;
-        ui mark;
-        Choice;
+        (menu: Items) show selected;
       }
 
       always {
