@@ -14,7 +14,11 @@ export class When {
   ) {}
 
   executions(state: State) {
-    const results = state.database.search(state, this.predicate);
+    const results = state.database.search(
+      state,
+      this.predicate,
+      UnificationEnvironment.empty()
+    );
     return results.map((uenv) => {
       const env = new Environment(this.env, null);
       env.define_all(uenv.boundValues);
@@ -38,7 +42,11 @@ export class Action {
   ready_actions(actor: CrochetValue, state0: State) {
     const db = new DatabaseLayer(state0.database, this.layer);
     const state = state0.with_database(db);
-    const results = state.database.search(state, this.predicate);
+    const results = state.database.search(
+      state,
+      this.predicate,
+      UnificationEnvironment.empty()
+    );
     return results.map((uenv) => {
       const env = new Environment(this.env, null);
       env.define_all(uenv.boundValues);

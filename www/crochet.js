@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Crochet = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compileProgram = exports.compileDeclaration = exports.compileTypeDef = exports.compileParameters = exports.compileParameter = exports.compileTypeApp = exports.compileStatement = exports.compileSignal = exports.compileSimulationGoal = exports.compileTypeInit = exports.materialiseSignature = exports.compileExpression = exports.compileMatchSearchCase = exports.optimiseInterpolation = exports.compileInterpolationPart = exports.compileArgument = exports.literalToExpression = exports.compilePredicateClause = exports.compilePredicate = exports.compilePredicateEffect = exports.compileConstraint = exports.compilePattern = exports.compileRelationTypes = exports.compileNamespace = exports.signatureValues = exports.signatureName = exports.literalToValue = void 0;
+exports.compileProgram = exports.compileDeclaration = exports.compileTypeDef = exports.compileParameters = exports.compileParameter = exports.compileTypeApp = exports.compileStatement = exports.compileSignal = exports.compileSimulationGoal = exports.compileTypeInit = exports.materialiseSignature = exports.compileExpression = exports.compileRecordField = exports.compileMatchSearchCase = exports.optimiseInterpolation = exports.compileInterpolationPart = exports.compileArgument = exports.literalToExpression = exports.compilePredicateClause = exports.compilePredicate = exports.compilePredicateEffect = exports.compileConstraint = exports.compilePattern = exports.compileRelationTypes = exports.compileNamespace = exports.signatureValues = exports.signatureName = exports.literalToValue = void 0;
 const crochet_grammar_1 = require("../generated/crochet-grammar");
 const rt = require("../runtime");
 const IR = require("../runtime/ir");
@@ -265,6 +265,17 @@ function compileMatchSearchCase(kase) {
     return new IR.MatchSearchCase(compilePredicate(kase.predicate), new IR.SBlock(kase.body.map(compileStatement)));
 }
 exports.compileMatchSearchCase = compileMatchSearchCase;
+function compileRecordField(field) {
+    return field.match({
+        FName(x) {
+            return x.name;
+        },
+        FText(x) {
+            return parseString(x);
+        },
+    });
+}
+exports.compileRecordField = compileRecordField;
 function compileExpression(expr) {
     return expr.match({
         Search(_, pred) {
@@ -301,7 +312,7 @@ function compileExpression(expr) {
         },
         Record(_, pairs) {
             return new IR.ERecord(pairs.map((x) => ({
-                key: x.key.name,
+                key: compileRecordField(x.key),
                 value: compileExpression(x.value),
             })));
         },
@@ -309,12 +320,12 @@ function compileExpression(expr) {
             return new IR.ECast(compileTypeApp(type), compileExpression(value));
         },
         Project(_, object, field) {
-            return new IR.EProject(compileExpression(object), field.name);
+            return new IR.EProject(compileExpression(object), compileRecordField(field));
         },
         Select(_, object, fields) {
             return new IR.EProjectMany(compileExpression(object), fields.map((x) => ({
-                key: x.name.name,
-                alias: x.alias.name,
+                key: compileRecordField(x.name),
+                alias: compileRecordField(x.alias),
             })));
         },
         Block(_, body) {
@@ -595,7 +606,7 @@ exports.parse = parse;
 },{"../generated/crochet-grammar":4}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.semantics = exports.parse = exports.grammar = exports.String = exports.Namespace = exports.Name = exports.Pair = exports.RelationPart = exports.PartialSignature = exports.Signature = exports.Constraint = exports.Pattern = exports.Predicate = exports.SimulationGoal = exports.Literal = exports.InterpolationPart = exports.Projection = exports.ConditionCase = exports.MatchSearchCase = exports.Expression = exports.Signal = exports.Statement = exports.PredicateEffect = exports.PredicateClause = exports.TypeApp = exports.Parameter = exports.TypeInit = exports.FFI = exports.TypeDef = exports.Declaration = exports.Program = exports.Meta = exports.Node = void 0;
+exports.semantics = exports.parse = exports.grammar = exports.String = exports.Namespace = exports.Name = exports.Pair = exports.RelationPart = exports.PartialSignature = exports.Signature = exports.Constraint = exports.Pattern = exports.Predicate = exports.SimulationGoal = exports.Literal = exports.InterpolationPart = exports.Projection = exports.RecordField = exports.ConditionCase = exports.MatchSearchCase = exports.Expression = exports.Signal = exports.Statement = exports.PredicateEffect = exports.PredicateClause = exports.TypeApp = exports.Parameter = exports.TypeInit = exports.FFI = exports.TypeDef = exports.Declaration = exports.Program = exports.Meta = exports.Node = void 0;
 // This file is generated from Linguist
 const Ohm = require("ohm-js");
 const OhmUtil = require("ohm-js/src/util");
@@ -1551,7 +1562,7 @@ const $Expression = (function () {
             this.pairs = pairs;
             Object.defineProperty(this, "tag", { value: "Record" });
             $assert_type(pos, "Meta", Meta);
-            $assert_type(pairs, "Pair<Name, Expression>[]", $is_array(Pair));
+            $assert_type(pairs, "Pair<RecordField, Expression>[]", $is_array(Pair));
         }
         match(p) {
             return p.Record(this.pos, this.pairs);
@@ -1619,7 +1630,7 @@ const $Expression = (function () {
             Object.defineProperty(this, "tag", { value: "Project" });
             $assert_type(pos, "Meta", Meta);
             $assert_type(object, "Expression", Expression);
-            $assert_type(field, "Name", Name);
+            $assert_type(field, "RecordField", RecordField);
         }
         match(p) {
             return p.Project(this.pos, this.object, this.field);
@@ -1850,6 +1861,49 @@ class ConditionCase extends Node {
     }
 }
 exports.ConditionCase = ConditionCase;
+class RecordField extends Node {
+    static get FName() {
+        return $RecordField.FName;
+    }
+    static get FText() {
+        return $RecordField.FText;
+    }
+    static has_instance(x) {
+        return x instanceof RecordField;
+    }
+}
+exports.RecordField = RecordField;
+const $RecordField = (function () {
+    class FName extends RecordField {
+        constructor(value) {
+            super();
+            this.value = value;
+            Object.defineProperty(this, "tag", { value: "FName" });
+            $assert_type(value, "Name", Name);
+        }
+        match(p) {
+            return p.FName(this.value);
+        }
+        static has_instance(x) {
+            return x instanceof FName;
+        }
+    }
+    class FText extends RecordField {
+        constructor(value) {
+            super();
+            this.value = value;
+            Object.defineProperty(this, "tag", { value: "FText" });
+            $assert_type(value, "String", String);
+        }
+        match(p) {
+            return p.FText(this.value);
+        }
+        static has_instance(x) {
+            return x instanceof FText;
+        }
+    }
+    return { FName, FText };
+})();
 class Projection extends Node {
     constructor(pos, name, alias) {
         super();
@@ -1858,8 +1912,8 @@ class Projection extends Node {
         this.alias = alias;
         Object.defineProperty(this, "tag", { value: "Projection" });
         $assert_type(pos, "Meta", Meta);
-        $assert_type(name, "Name", Name);
-        $assert_type(alias, "Name", Name);
+        $assert_type(name, "RecordField", RecordField);
+        $assert_type(alias, "RecordField", RecordField);
     }
     static has_instance(x) {
         return x instanceof Projection;
@@ -2767,7 +2821,7 @@ class String extends Node {
 }
 exports.String = String;
 // == Grammar definition ============================================
-exports.grammar = Ohm.grammar('\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | defineDeclaration  -- alt7\n | sceneDeclaration  -- alt8\n | actionDeclaration  -- alt9\n | whenDeclaration  -- alt10\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> foreign_ foreignBody  -- alt1\n | command_ signature<parameter> s<"="> expression s<";">  -- alt2\n | command_ signature<parameter> statementBlock<statement>  -- alt3\n\n\nforeignBody  = namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeName  -- alt3\n\n\ntypeApp  = typeAppPrimary  -- alt1\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = singleton_ basicType typeInitBlock  -- alt1\n | type_ basicType typeFields s<";">  -- alt2\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt3\n\n\nbasicType  = atom typeDefParent roles  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = block<typeInit>  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> nonemptyListOf<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = name is_ typeApp  -- alt1\n | name  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> s<"="> foreignBody  -- alt2\n | command_ partialSignature<parameter> statementBlock<statement>  -- alt3\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom statementBlock<statement>  -- alt1\n\n\nactionDeclaration  = action_ string when_ predicate statementBlock<statement>  -- alt1\n\n\nwhenDeclaration  = when_ predicate statementBlock<statement>  -- alt1\n\n\npredicate  = predicateBinary if_ constraint  -- alt1\n | predicateBinary  -- alt2\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicatePrimary  -- alt1\n | predicatePrimary  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | literal  -- alt3\n | patternName  -- alt4\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and constraint  -- alt1\n | constraint or constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400 s<"=/="> constraint400  -- alt2\n | constraint400  -- alt3\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | s<"("> constraint s<")">  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | expression  -- alt7\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression until_ simulateGoal signal*  -- alt1\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> statementBlock<statement>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | pipeExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nexpressionBlock  = statementBlock<statement>  -- alt1\n\n\npipeExpression  = pipeExpression s<"|"> invokeInfixExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\ninvokeInfixExpression  = invokeInfixExpression infix_symbol invokeMixfix  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePostfix as_ typeAppPrimary  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> nonemptyListOf<expression, s<",">> s<",">? s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> name  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> nonemptyListOf<fieldSelection, s<",">> s<",">? s<")">  -- alt1\n\n\nfieldSelection  = name as_ name  -- alt1\n | name  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | expressionBlock  -- alt9\n | hole  -- alt10\n | self_  -- alt11\n | atom  -- alt12\n | name  -- alt13\n | s<"("> expression s<")">  -- alt14\n\n\nconditionExpression  = condition_ s<"{"> conditionCase+ s<"}">  -- alt1\n\n\nconditionCase  = when_ expression statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nmatchSearchExpression  = match_ s<"{"> matchSearchCase+ s<"}">  -- alt1\n\n\nmatchSearchCase  = when_ predicate statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nforExpression  = for_ name in_ expression expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> nonemptyListOf<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> listOf<e, s<",">> s<",">? s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> nonemptyListOf<recordPair<e>, s<",">> s<",">? s<"]">  -- alt2\n\n\nrecordPair<e>  = name s<"->"> e  -- alt1\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = ~reserved s<t_atom> ~":"  -- alt1\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "*"  -- alt4\n | "/"  -- alt5\n | "<="  -- alt6\n | "<"  -- alt7\n | ">="  -- alt8\n | ">"  -- alt9\n | "==="  -- alt10\n | "=/="  -- alt11\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | role_  -- alt9\n | enum_  -- alt10\n | define_  -- alt11\n | singleton_  -- alt12\n | goto_  -- alt13\n | call_  -- alt14\n | let_  -- alt15\n | return_  -- alt16\n | fact_  -- alt17\n | forget_  -- alt18\n | new_  -- alt19\n | search_  -- alt20\n | if_  -- alt21\n | simulate_  -- alt22\n | true_  -- alt23\n | false_  -- alt24\n | not_  -- alt25\n | and_  -- alt26\n | or_  -- alt27\n | is_  -- alt28\n | self_  -- alt29\n | as_  -- alt30\n | event_  -- alt31\n | quiescence_  -- alt32\n | for_  -- alt33\n | until_  -- alt34\n | in_  -- alt35\n | foreign_  -- alt36\n | on_  -- alt37\n | always_  -- alt38\n | match_  -- alt39\n | then_  -- alt40\n | else_  -- alt41\n | condition_  -- alt42\n\r\n  }\r\n  ');
+exports.grammar = Ohm.grammar('\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | defineDeclaration  -- alt7\n | sceneDeclaration  -- alt8\n | actionDeclaration  -- alt9\n | whenDeclaration  -- alt10\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = do_ statementBlock<statement>  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> foreign_ foreignBody  -- alt1\n | command_ signature<parameter> s<"="> expression s<";">  -- alt2\n | command_ signature<parameter> statementBlock<statement>  -- alt3\n\n\nforeignBody  = namespace s<"("> listOf<name, s<",">> s<")"> s<";">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeName  -- alt3\n\n\ntypeApp  = typeAppPrimary  -- alt1\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = singleton_ basicType typeInitBlock  -- alt1\n | type_ basicType typeFields s<";">  -- alt2\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt3\n\n\nbasicType  = atom typeDefParent roles  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = block<typeInit>  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> nonemptyListOf<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = name is_ typeApp  -- alt1\n | name  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> s<"="> foreignBody  -- alt2\n | command_ partialSignature<parameter> statementBlock<statement>  -- alt3\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom statementBlock<statement>  -- alt1\n\n\nactionDeclaration  = action_ string when_ predicate statementBlock<statement>  -- alt1\n\n\nwhenDeclaration  = when_ predicate statementBlock<statement>  -- alt1\n\n\npredicate  = predicateBinary if_ constraint  -- alt1\n | predicateBinary  -- alt2\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicatePrimary  -- alt1\n | predicatePrimary  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | literal  -- alt3\n | patternName  -- alt4\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and constraint  -- alt1\n | constraint or constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400 s<"=/="> constraint400  -- alt2\n | constraint400  -- alt3\n\n\nconstraint400  = name  -- alt1\n | literal  -- alt2\n | s<"("> constraint s<")">  -- alt3\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | expression  -- alt7\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression until_ simulateGoal signal*  -- alt1\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> statementBlock<statement>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | pipeExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nexpressionBlock  = statementBlock<statement>  -- alt1\n\n\npipeExpression  = pipeExpression s<"|"> invokeInfixExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\ninvokeInfixExpression  = invokeInfixExpression infix_symbol invokeMixfix  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePostfix as_ typeAppPrimary  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> nonemptyListOf<expression, s<",">> s<",">? s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> recordField<expression>  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> nonemptyListOf<fieldSelection, s<",">> s<",">? s<")">  -- alt1\n\n\nfieldSelection  = recordField<expression> as_ recordField<expression>  -- alt1\n | recordField<expression>  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | expressionBlock  -- alt9\n | hole  -- alt10\n | self_  -- alt11\n | atom  -- alt12\n | name  -- alt13\n | s<"("> expression s<")">  -- alt14\n\n\nconditionExpression  = condition_ s<"{"> conditionCase+ s<"}">  -- alt1\n\n\nconditionCase  = when_ expression statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nmatchSearchExpression  = match_ s<"{"> matchSearchCase+ s<"}">  -- alt1\n\n\nmatchSearchCase  = when_ predicate statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nforExpression  = for_ name in_ expression expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> nonemptyListOf<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> listOf<e, s<",">> s<",">? s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> nonemptyListOf<recordPair<e>, s<",">> s<",">? s<"]">  -- alt2\n\n\nrecordPair<e>  = recordField<e> s<"->"> e  -- alt1\n\n\nrecordField<e>  = (name | atom)  -- alt1\n | string  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = s<"\'"> t_atom  -- alt1\n | ~reserved s<t_atom> ~":"  -- alt2\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = nonemptyListOf<atom, s<".">>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = s<"{"> listOf<t, s<";">> s<";">? s<"}">  -- alt1\n\n\nblock<t>  = s<"{"> t* s<"}">  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "*"  -- alt4\n | "/"  -- alt5\n | "<="  -- alt6\n | "<"  -- alt7\n | ">="  -- alt8\n | ">"  -- alt9\n | "==="  -- alt10\n | "=/="  -- alt11\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | role_  -- alt9\n | enum_  -- alt10\n | define_  -- alt11\n | singleton_  -- alt12\n | goto_  -- alt13\n | call_  -- alt14\n | let_  -- alt15\n | return_  -- alt16\n | fact_  -- alt17\n | forget_  -- alt18\n | new_  -- alt19\n | search_  -- alt20\n | if_  -- alt21\n | simulate_  -- alt22\n | true_  -- alt23\n | false_  -- alt24\n | not_  -- alt25\n | and_  -- alt26\n | or_  -- alt27\n | is_  -- alt28\n | self_  -- alt29\n | as_  -- alt30\n | event_  -- alt31\n | quiescence_  -- alt32\n | for_  -- alt33\n | until_  -- alt34\n | in_  -- alt35\n | foreign_  -- alt36\n | on_  -- alt37\n | always_  -- alt38\n | match_  -- alt39\n | then_  -- alt40\n | else_  -- alt41\n | condition_  -- alt42\n\r\n  }\r\n  ');
 // == Parsing =======================================================
 function parse(source, rule) {
     const result = exports.grammar.match(source, rule);
@@ -3642,6 +3696,17 @@ const toAstVisitor = {
         const v = v$0.toAST();
         return new Pair($meta(this), n, v);
     },
+    recordField(x) {
+        return x.toAST();
+    },
+    recordField_alt1(n$0) {
+        const n = n$0.toAST();
+        return new RecordField.FName(n);
+    },
+    recordField_alt2(t$0) {
+        const t = t$0.toAST();
+        return new RecordField.FText(t);
+    },
     literalExpression(x) {
         return x.toAST();
     },
@@ -3742,7 +3807,11 @@ const toAstVisitor = {
     atom(x) {
         return x.toAST();
     },
-    atom_alt1(x$0) {
+    atom_alt1(_1, x$0) {
+        const x = x$0.toAST();
+        return new Name($meta(this), x);
+    },
+    atom_alt2(x$0) {
         const x = x$0.toAST();
         return new Name($meta(this), x);
     },
@@ -4513,7 +4582,7 @@ __exportStar(require("./world"), exports);
 __exportStar(require("./simulation"), exports);
 __exportStar(require("./vm"), exports);
 
-},{"./ir":8,"./logic":14,"./primitives":29,"./simulation":44,"./vm":47,"./world":53}],6:[function(require,module,exports){
+},{"./ir":8,"./logic":14,"./primitives":29,"./simulation":44,"./vm":48,"./world":53}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DForeignType = exports.DWhen = exports.DAction = exports.DScene = exports.DDefine = exports.DType = exports.DRole = exports.DCrochetCommand = exports.DForeignCommand = exports.DDo = exports.DPredicate = exports.DRelation = void 0;
@@ -4675,11 +4744,12 @@ class DForeignType {
 }
 exports.DForeignType = DForeignType;
 
-},{"../logic":14,"../primitives":29,"../primitives/procedure":34,"../simulation":44,"../vm":47,"../world":53,"./statement":9}],7:[function(require,module,exports){
+},{"../logic":14,"../primitives":29,"../primitives/procedure":34,"../simulation":44,"../vm":48,"../world":53,"./statement":9}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConditionCase = exports.ECondition = exports.MatchSearchCase = exports.EMatchSearch = exports.EInterpolateDynamic = exports.EInterpolateStatic = exports.EInterpolate = exports.EPartialConcrete = exports.EPartialHole = exports.EApplyPartial = exports.EPartial = exports.EBlock = exports.EForall = exports.EProjectMany = exports.EProject = exports.ECast = exports.ERecord = exports.EList = exports.ESelf = exports.EGlobal = exports.ENew = exports.EInvoke = exports.ESearch = exports.EInteger = exports.EText = exports.EVariable = exports.ETrue = exports.EFalse = void 0;
 const utils_1 = require("../../utils/utils");
+const logic_1 = require("../logic");
 const primitives_1 = require("../primitives");
 const vm_1 = require("../vm");
 const world_1 = require("../world");
@@ -4732,9 +4802,11 @@ exports.EInteger = EInteger;
 class ESearch {
     constructor(predicate) {
         this.predicate = predicate;
+        this.variables = this.predicate.variables;
     }
     async *evaluate(state) {
-        const results = state.database.search(state, this.predicate);
+        const env = logic_1.UnificationEnvironment.from(state.env.lookup_all(this.variables));
+        const results = state.database.search(state, this.predicate, env);
         return new primitives_1.CrochetStream(results.map((x) => new primitives_1.CrochetRecord(x.boundValues)));
     }
 }
@@ -4975,9 +5047,11 @@ class MatchSearchCase {
     constructor(predicate, body) {
         this.predicate = predicate;
         this.body = body;
+        this.variables = this.predicate.variables;
     }
     search(state) {
-        return state.world.search(this.predicate);
+        const env = logic_1.UnificationEnvironment.from(state.env.lookup_all(this.variables));
+        return state.database.search(state, this.predicate, env);
     }
 }
 exports.MatchSearchCase = MatchSearchCase;
@@ -5004,7 +5078,7 @@ class ConditionCase {
 }
 exports.ConditionCase = ConditionCase;
 
-},{"../../utils/utils":81,"../primitives":29,"../vm":47,"../world":53,"./statement":9}],8:[function(require,module,exports){
+},{"../../utils/utils":81,"../logic":14,"../primitives":29,"../vm":48,"../world":53,"./statement":9}],8:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5146,7 +5220,7 @@ class SSimulate {
 }
 exports.SSimulate = SSimulate;
 
-},{"../../utils/bag":73,"../../utils/utils":81,"../logic":14,"../primitives":29,"../simulation":44,"../vm":47}],10:[function(require,module,exports){
+},{"../../utils/bag":73,"../../utils/utils":81,"../logic":14,"../primitives":29,"../simulation":44,"../vm":48}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TNamed = exports.TAny = void 0;
@@ -5180,6 +5254,9 @@ class And {
     evaluate(env) {
         return primitives_1.Core.band(this.left.evaluate(env), this.right.evaluate(env));
     }
+    get variables() {
+        return this.left.variables.concat(this.right.variables);
+    }
 }
 exports.And = And;
 class Or {
@@ -5190,6 +5267,9 @@ class Or {
     evaluate(env) {
         return primitives_1.Core.bor(this.left.evaluate(env), this.right.evaluate(env));
     }
+    get variables() {
+        return this.left.variables.concat(this.right.variables);
+    }
 }
 exports.Or = Or;
 class Not {
@@ -5198,6 +5278,9 @@ class Not {
     }
     evaluate(env) {
         return primitives_1.Core.bnot(this.constraint.evaluate(env));
+    }
+    get variables() {
+        return this.constraint.variables;
     }
 }
 exports.Not = Not;
@@ -5212,6 +5295,9 @@ class Variable {
         }
         return result;
     }
+    get variables() {
+        return [this.name];
+    }
 }
 exports.Variable = Variable;
 class Equals {
@@ -5222,6 +5308,9 @@ class Equals {
     evaluate(env) {
         return primitives_1.Core.eq(this.left.evaluate(env), this.right.evaluate(env));
     }
+    get variables() {
+        return this.left.variables.concat(this.right.variables);
+    }
 }
 exports.Equals = Equals;
 class Value {
@@ -5231,6 +5320,9 @@ class Value {
     evaluate(env) {
         return this.value;
     }
+    get variables() {
+        return [];
+    }
 }
 exports.Value = Value;
 
@@ -5238,7 +5330,6 @@ exports.Value = Value;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Database = void 0;
-const unification_1 = require("./unification");
 class Database {
     constructor() {
         this.relations = new Map();
@@ -5262,13 +5353,13 @@ class Database {
         }
         return relation;
     }
-    search(state, predicate) {
-        return predicate.search(state.with_database(this), unification_1.UnificationEnvironment.empty());
+    search(state, predicate, initial_environment) {
+        return predicate.search(state.with_database(this), initial_environment);
     }
 }
 exports.Database = Database;
 
-},{"./unification":18}],13:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Trivial = void 0;
@@ -5308,7 +5399,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseLayer = exports.FunctionLayer = void 0;
 const bag_1 = require("../../utils/bag");
 const predicate_1 = require("./predicate");
-const unification_1 = require("./unification");
 class FunctionLayer extends bag_1.Bag {
     constructor(parent) {
         super("function");
@@ -5355,13 +5445,13 @@ class DatabaseLayer {
         }
         return relation;
     }
-    search(state, predicate) {
-        return predicate.search(state.with_database(this), unification_1.UnificationEnvironment.empty());
+    search(state, predicate, initial_environment) {
+        return predicate.search(state.with_database(this), initial_environment);
     }
 }
 exports.DatabaseLayer = DatabaseLayer;
 
-},{"../../utils/bag":73,"./predicate":16,"./unification":18}],16:[function(require,module,exports){
+},{"../../utils/bag":73,"./predicate":16}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PredicateClause = exports.PredicateProcedure = exports.FunctionRelation = exports.ConcreteRelation = exports.AlwaysPredicate = exports.NotPredicate = exports.HasRelation = exports.OrPredicate = exports.AndPredicate = exports.ConstrainedPredicate = void 0;
@@ -5376,6 +5466,9 @@ class ConstrainedPredicate {
             .search(state, env)
             .filter((env) => this.constraint.evaluate(env).as_bool());
     }
+    get variables() {
+        return this.predicate.variables.concat(this.constraint.variables);
+    }
 }
 exports.ConstrainedPredicate = ConstrainedPredicate;
 class AndPredicate {
@@ -5387,6 +5480,9 @@ class AndPredicate {
         return this.left
             .search(state, env)
             .flatMap((env) => this.right.search(state, env));
+    }
+    get variables() {
+        return this.left.variables.concat(this.right.variables);
     }
 }
 exports.AndPredicate = AndPredicate;
@@ -5404,6 +5500,9 @@ class OrPredicate {
             return this.right.search(state, env);
         }
     }
+    get variables() {
+        return this.left.variables.concat(this.right.variables);
+    }
 }
 exports.OrPredicate = OrPredicate;
 class HasRelation {
@@ -5414,6 +5513,9 @@ class HasRelation {
     search(state, env) {
         const relation = state.database.lookup(this.name);
         return relation.search(state, env, this.patterns);
+    }
+    get variables() {
+        return this.patterns.flatMap((x) => x.variables);
     }
 }
 exports.HasRelation = HasRelation;
@@ -5430,11 +5532,17 @@ class NotPredicate {
             return [];
         }
     }
+    get variables() {
+        return this.predicate.variables;
+    }
 }
 exports.NotPredicate = NotPredicate;
 class AlwaysPredicate {
     search(state, env) {
         return [env];
+    }
+    get variables() {
+        return [];
     }
 }
 exports.AlwaysPredicate = AlwaysPredicate;
@@ -5726,6 +5834,9 @@ class AbstractPattern {
             return [result];
         }
     }
+    get variables() {
+        return [];
+    }
 }
 class TypePattern extends AbstractPattern {
     constructor(pattern, type) {
@@ -5810,6 +5921,9 @@ class VariablePattern extends AbstractPattern {
         else {
             return null;
         }
+    }
+    get variables() {
+        return [this.name];
     }
 }
 exports.VariablePattern = VariablePattern;
@@ -6267,7 +6381,7 @@ Record = Record_1 = __decorate([
 ], Record);
 exports.Record = Record;
 
-},{"../../../utils":75,"../../vm":47,"../../world/ffi-decorators":51,"../integer":31,"../record":35,"../stream":36,"../text":37}],26:[function(require,module,exports){
+},{"../../../utils":75,"../../vm":48,"../../world/ffi-decorators":51,"../integer":31,"../record":35,"../stream":36,"../text":37}],26:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6377,7 +6491,7 @@ Stream = __decorate([
 ], Stream);
 exports.Stream = Stream;
 
-},{"../../../utils":75,"../../vm":47,"../../world/ffi-decorators":51,"../integer":31,"../stream":36}],27:[function(require,module,exports){
+},{"../../../utils":75,"../../vm":48,"../../world/ffi-decorators":51,"../integer":31,"../stream":36}],27:[function(require,module,exports){
 "use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6454,7 +6568,7 @@ async function* apply(state, fn, args) {
 }
 exports.apply = apply;
 
-},{"../../utils":75,"../vm":47,"./boolean":19,"./procedure":34}],29:[function(require,module,exports){
+},{"../../utils":75,"../vm":48,"./boolean":19,"./procedure":34}],29:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6887,7 +7001,7 @@ class CrochetProcedure {
 }
 exports.CrochetProcedure = CrochetProcedure;
 
-},{"../../utils/utils":81,"../ir":8,"../vm":47,"../world":53}],35:[function(require,module,exports){
+},{"../../utils/utils":81,"../ir":8,"../vm":48,"../world":53}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetRecord = exports.RecordSelection = exports.RecordProjection = exports.CrochetRecord = void 0;
@@ -6980,7 +7094,7 @@ class TCrochetRecord extends types_1.CrochetType {
 exports.TCrochetRecord = TCrochetRecord;
 TCrochetRecord.type = new TCrochetRecord();
 
-},{"../vm":47,"./types":38,"./value":40}],36:[function(require,module,exports){
+},{"../vm":48,"./types":38,"./value":40}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TCrochetStream = exports.StreamSelection = exports.StreamProjection = exports.CrochetStream = void 0;
@@ -7268,7 +7382,7 @@ class CrochetValue {
 }
 exports.CrochetValue = CrochetValue;
 
-},{"../vm":47,"./types":38}],41:[function(require,module,exports){
+},{"../vm":48,"./types":38}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TActionChoice = exports.ActionChoice = void 0;
@@ -7309,6 +7423,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Context = exports.Action = exports.When = void 0;
 const world_1 = require("../world");
 const ir_1 = require("../ir");
+const logic_1 = require("../logic");
 const primitives_1 = require("../primitives");
 const utils_1 = require("../../utils");
 const layer_1 = require("../logic/layer");
@@ -7319,7 +7434,7 @@ class When {
         this.body = body;
     }
     executions(state) {
-        const results = state.database.search(state, this.predicate);
+        const results = state.database.search(state, this.predicate, logic_1.UnificationEnvironment.empty());
         return results.map((uenv) => {
             const env = new world_1.Environment(this.env, null);
             env.define_all(uenv.boundValues);
@@ -7341,7 +7456,7 @@ class Action {
     ready_actions(actor, state0) {
         const db = new layer_1.DatabaseLayer(state0.database, this.layer);
         const state = state0.with_database(db);
-        const results = state.database.search(state, this.predicate);
+        const results = state.database.search(state, this.predicate, logic_1.UnificationEnvironment.empty());
         return results.map((uenv) => {
             const env = new world_1.Environment(this.env, null);
             env.define_all(uenv.boundValues);
@@ -7388,10 +7503,11 @@ class Context {
 }
 exports.Context = Context;
 
-},{"../../utils":75,"../ir":8,"../logic/layer":15,"../primitives":29,"../world":53}],43:[function(require,module,exports){
+},{"../../utils":75,"../ir":8,"../logic":14,"../logic/layer":15,"../primitives":29,"../world":53}],43:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomGoal = exports.TotalQuiescence = exports.EventQuiescence = exports.ActionQuiescence = void 0;
+const logic_1 = require("../logic");
 class ActionQuiescence {
     constructor() {
         this._reached = true;
@@ -7449,6 +7565,7 @@ class CustomGoal {
     constructor(predicate) {
         this.predicate = predicate;
         this._reached = false;
+        this.variables = this.predicate.variables;
     }
     reached(round_ended) {
         return this._reached;
@@ -7457,7 +7574,8 @@ class CustomGoal {
         this._reached = false;
     }
     tick(actor, state, context) {
-        const results = state.database.search(state, this.predicate);
+        const env = logic_1.UnificationEnvironment.from(state.env.lookup_all(this.variables));
+        const results = state.database.search(state, this.predicate, env);
         if (results.length !== 0) {
             this._reached = true;
         }
@@ -7465,7 +7583,7 @@ class CustomGoal {
 }
 exports.CustomGoal = CustomGoal;
 
-},{}],44:[function(require,module,exports){
+},{"../logic":14}],44:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7606,7 +7724,65 @@ function unify(pattern, value, state, env) {
     }
 }
 
-},{"../../utils/result":78,"../../utils/utils":81,"../ir":8,"../logic/layer":15,"../primitives":29,"../vm":47,"../world":53,"./action-choice":41}],46:[function(require,module,exports){
+},{"../../utils/result":78,"../../utils/utils":81,"../ir":8,"../logic/layer":15,"../primitives":29,"../vm":48,"../world":53,"./action-choice":41}],46:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Environment = void 0;
+class Environment {
+    constructor(parent, raw_receiver) {
+        this.parent = parent;
+        this.raw_receiver = raw_receiver;
+        this.bindings = new Map();
+    }
+    get receiver() {
+        if (this.raw_receiver == null) {
+            throw new Error(`internal: requesting receiver outside of command`);
+        }
+        return this.raw_receiver;
+    }
+    has(name) {
+        return this.bindings.has(name);
+    }
+    lookup(name) {
+        const result = this.bindings.get(name);
+        if (result != null) {
+            return result;
+        }
+        else if (this.parent != null) {
+            return this.parent.lookup(name);
+        }
+        else {
+            return null;
+        }
+    }
+    define(name, value) {
+        if (name === "_") {
+            return;
+        }
+        if (this.bindings.has(name)) {
+            throw new Error(`Duplicate binding ${name}`);
+        }
+        this.bindings.set(name, value);
+    }
+    define_all(bindings) {
+        for (const [k, v] of bindings.entries()) {
+            this.define(k, v);
+        }
+    }
+    lookup_all(names) {
+        const result = new Map();
+        for (const name of names) {
+            const value = this.lookup(name);
+            if (value != null) {
+                result.set(name, value);
+            }
+        }
+        return result;
+    }
+}
+exports.Environment = Environment;
+
+},{}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ErrNoSelection = exports.ErrNoProjection = exports.ErrInvalidArity = exports.ErrUnexpectedType = exports.ErrIndexOutOfRange = exports.ErrNoRecordKey = exports.ErrNoConversionAvailable = exports.ErrNoBranchMatched = exports.ErrVariableAlreadyBound = exports.ErrUndefinedVariable = void 0;
@@ -7708,7 +7884,7 @@ class ErrNoSelection {
 }
 exports.ErrNoSelection = ErrNoSelection;
 
-},{"../primitives":29}],47:[function(require,module,exports){
+},{"../primitives":29}],48:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -7725,7 +7901,7 @@ __exportStar(require("./errors"), exports);
 __exportStar(require("./state"), exports);
 __exportStar(require("./run"), exports);
 
-},{"./errors":46,"./run":48,"./state":49}],48:[function(require,module,exports){
+},{"./errors":47,"./run":49,"./state":50}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.avalue = exports.cvalue = exports.run_all = exports.run = exports._throw = exports._mark = exports._jump = exports._push = exports.Throw = exports.Mark = exports.Jump = exports.Push = void 0;
@@ -7908,7 +8084,7 @@ function avalue(x) {
 }
 exports.avalue = avalue;
 
-},{"../../utils/utils":81,"../primitives":29}],49:[function(require,module,exports){
+},{"../../utils/utils":81,"../primitives":29}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.State = void 0;
@@ -7934,55 +8110,7 @@ class State {
 }
 exports.State = State;
 
-},{"../world":53}],50:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Environment = void 0;
-class Environment {
-    constructor(parent, raw_receiver) {
-        this.parent = parent;
-        this.raw_receiver = raw_receiver;
-        this.bindings = new Map();
-    }
-    get receiver() {
-        if (this.raw_receiver == null) {
-            throw new Error(`internal: requesting receiver outside of command`);
-        }
-        return this.raw_receiver;
-    }
-    has(name) {
-        return this.bindings.has(name);
-    }
-    lookup(name) {
-        const result = this.bindings.get(name);
-        if (result != null) {
-            return result;
-        }
-        else if (this.parent != null) {
-            return this.parent.lookup(name);
-        }
-        else {
-            return null;
-        }
-    }
-    define(name, value) {
-        if (name === "_") {
-            return;
-        }
-        if (this.bindings.has(name)) {
-            throw new Error(`Duplicate binding ${name}`);
-        }
-        this.bindings.set(name, value);
-    }
-    define_all(bindings) {
-        for (const [k, v] of bindings.entries()) {
-            this.define(k, v);
-        }
-    }
-}
-exports.Environment = Environment;
-
-},{}],51:[function(require,module,exports){
+},{"../world":53}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.foreign_namespace = exports.foreign_type = exports.foreign = exports.machine = void 0;
@@ -8060,17 +8188,17 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./environment"), exports);
+__exportStar(require("../vm/environment"), exports);
 __exportStar(require("./foreign"), exports);
 __exportStar(require("./scene"), exports);
 __exportStar(require("./world"), exports);
 
-},{"./environment":50,"./foreign":52,"./scene":54,"./world":55}],54:[function(require,module,exports){
+},{"../vm/environment":46,"./foreign":52,"./scene":54,"./world":55}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scene = void 0;
 const ir_1 = require("../ir");
-const environment_1 = require("./environment");
+const environment_1 = require("../vm/environment");
 class Scene {
     constructor(name, env, body) {
         this.name = name;
@@ -8085,7 +8213,7 @@ class Scene {
 }
 exports.Scene = Scene;
 
-},{"../ir":8,"./environment":50}],55:[function(require,module,exports){
+},{"../ir":8,"../vm/environment":46}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.World = exports.ProcedureBag = void 0;
@@ -8139,9 +8267,6 @@ class World {
         this.global_context = new simulation_1.Context();
         this.ffi = new foreign_1.ForeignInterface();
     }
-    search(predicate) {
-        return this.database.search(vm_1.State.root(this), predicate);
-    }
     schedule(machine) {
         this.queue.push(machine);
     }
@@ -8164,7 +8289,7 @@ class World {
 }
 exports.World = World;
 
-},{"../../utils/bag":73,"../logic":14,"../primitives":29,"../simulation":44,"../vm":47,"./foreign":52}],56:[function(require,module,exports){
+},{"../../utils/bag":73,"../logic":14,"../primitives":29,"../simulation":44,"../vm":48,"./foreign":52}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = "% crochet\r\n\r\ncommand X and Y = foreign crochet.core.band(X, Y);\r\ncommand X or Y = foreign crochet.core.bor(X, Y);\r\ncommand not X = foreign crochet.core.bnot(X);\r\n\r\ncommand X === Y = foreign crochet.core.eq(X, Y);\r\ncommand X =/= Y = foreign crochet.core.not-eq(X, Y);";
@@ -8177,7 +8302,7 @@ exports.default = "% crochet\r\n\r\ncommand X inspect =\r\n  foreign crochet.deb
 },{}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = "% crochet\r\n\r\ntype html-element = foreign crochet.ui.html.element;\r\ntype html-menu = foreign crochet.ui.html.menu;\r\n\r\nsingleton html;\r\n\r\ncommand html show: X =\r\n  foreign crochet.ui.html.show(X);\r\n\r\ncommand html wait-click =\r\n  foreign crochet.ui.html.wait();\r\n\r\ncommand html box: Name class: Class children: Children =\r\n  foreign crochet.ui.html.box(Name, Class, Children);\r\n\r\ncommand html text: Text =\r\n  foreign crochet.ui.html.text(Text);\r\n\r\ncommand html menu: Items class: Class =\r\n  foreign crochet.ui.html.menu(Class, Items);\r\n\r\ncommand (X is html-menu) selected =\r\n  foreign crochet.ui.html.menu-selected(X);\r\n\r\n\r\ncommand X show {\r\n  X to-html show;\r\n}\r\n\r\ncommand (X is html-element) show {\r\n  html show: X;\r\n}\r\n\r\ncommand X show-wait {\r\n  X show;\r\n  wait-click;\r\n}\r\n\r\n\r\ncommand X to-html {\r\n  X debug-representation text;\r\n}\r\n\r\ncommand (X is html-element) to-html {\r\n  X;\r\n}\r\n\r\ncommand (X is text) to-html {\r\n  X text;\r\n}\r\n\r\ncommand (X is interpolation) to-html {\r\n  X parts to-html;\r\n}\r\n\r\ncommand (Xs is stream) to-html {\r\n  let Items = for X in Xs { X to-html };\r\n  html box: \"span\" class: \"crochet-stream\" children: Items;\r\n}\r\n\r\n\r\ncommand (Text is text) text {\r\n  html text: Text;\r\n}\r\n\r\ncommand header: X {\r\n  html\r\n    box: \"header\"\r\n    class: \"crochet-header\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand title: X {\r\n  html\r\n    box: \"h1\"\r\n    class: \"crochet-title\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand subtitle: X {\r\n  html\r\n    box: \"h2\"\r\n    class: \"crochet-subtitle\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand monospace: X {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-mono\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand paragraph: X {\r\n  html \r\n    box: \"p\"\r\n    class: \"crochet-paragraph\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand box: (Class is text) children: X {\r\n  html box: \"div\" class: Class children: [X to-html];\r\n}\r\n\r\ncommand flow: X {\r\n  box: \"crochet-flow\" children: X to-html;\r\n}\r\n\r\ncommand stack: X {\r\n  box: \"crochet-stack\" children: X to-html;\r\n}\r\n\r\ncommand emphasis: X {\r\n  html\r\n    box: \"em\"\r\n    class: \"crochet-emphasis\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand strong: X {\r\n  html\r\n    box: \"strong\"\r\n    class: \"crochet-strong\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand html divider {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-divider\"\r\n    children: [];\r\n}\r\n\r\ncommand section: X {\r\n  html\r\n    box: \"section\"\r\n    class: \"crochet-section\"\r\n    children: [X to-html];\r\n}\r\n\r\ncommand menu: (Items0 is stream) {\r\n  let Items = for X in Items {\r\n    [\r\n      Title -> X.Title to-html,\r\n      Value -> X.Value,\r\n    ]\r\n  };\r\n\r\n  html\r\n    menu: Items\r\n    class: \"crochet-menu\";\r\n}";
+exports.default = "% crochet\r\n\r\ntype html-element = foreign crochet.ui.html.element;\r\ntype html-menu = foreign crochet.ui.html.menu;\r\n\r\nsingleton html;\r\nsingleton ui;\r\n\r\ncommand html show: X =\r\n  foreign crochet.ui.html.show(X);\r\n\r\ncommand html wait-click =\r\n  foreign crochet.ui.html.wait();\r\n\r\ncommand html box: Name class: Class attributes: Attrs children: Children =\r\n  foreign crochet.ui.html.box(Name, Class, Attrs, Children);\r\n\r\ncommand html text: Text =\r\n  foreign crochet.ui.html.text(Text);\r\n\r\ncommand html menu: Items class: Class =\r\n  foreign crochet.ui.html.menu(Class, Items);\r\n\r\ncommand (X is html-menu) selected =\r\n  foreign crochet.ui.html.menu-selected(X);\r\n\r\ncommand html preload: Url =\r\n  foreign crochet.ui.html.preload(Url);\r\n\r\ncommand html image: Url =\r\n  foreign crochet.ui.html.image(Url);\r\n\r\ncommand html animate: Element frame-rate: Rate =\r\n  foreign crochet.ui.html.animate(Element, Rate);\r\n\r\ncommand html make-animation: Elements =\r\n  foreign crochet.ui.html.make-animation(Elements);\r\n\r\ncommand html mark =\r\n  foreign crochet.ui.html.mark();\r\n\r\ncommand X show {\r\n  X to-html show;\r\n}\r\n\r\ncommand (X is html-element) show {\r\n  html show: X;\r\n}\r\n\r\ncommand X show-wait {\r\n  X show;\r\n  wait-click;\r\n}\r\n\r\ncommand ui mark {\r\n  html mark;\r\n}\r\n\r\ncommand X to-html {\r\n  X debug-representation text;\r\n}\r\n\r\ncommand (X is html-element) to-html {\r\n  X;\r\n}\r\n\r\ncommand (X is text) to-html {\r\n  X text;\r\n}\r\n\r\ncommand (X is interpolation) to-html {\r\n  X parts to-html;\r\n}\r\n\r\ncommand (Xs is stream) to-html {\r\n  let Items = for X in Xs { X to-html };\r\n  html box: \"span\"\r\n       class: \"crochet-stream\"\r\n       attributes: [->]\r\n       children: Items;\r\n}\r\n\r\n\r\ncommand (Text is text) text {\r\n  html text: Text;\r\n}\r\n\r\ncommand preload: (Url is text) {\r\n  html preload: Url;\r\n}\r\n\r\ncommand html-element animate: (FrameRate is integer) {\r\n  html animate: self frame-rate: FrameRate;\r\n}\r\n\r\ncommand image: (Url is text) {\r\n  html box: \"img\"\r\n       class: \"crochet-image\"\r\n       attributes: [src -> Url]\r\n       children: [];\r\n}\r\n\r\ncommand animation: (Elements is stream) {\r\n  html make-animation: (for X in Elements { X to-html });\r\n}\r\n\r\ncommand header: X {\r\n  html\r\n    box: \"header\"\r\n    class: \"crochet-header\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand title: X {\r\n  html\r\n    box: \"h1\"\r\n    class: \"crochet-title\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand subtitle: X {\r\n  html\r\n    box: \"h2\"\r\n    class: \"crochet-subtitle\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand monospace: X {\r\n  box: \"crochet-mono\" children: X;\r\n}\r\n\r\ncommand paragraph: X {\r\n  html \r\n    box: \"p\"\r\n    class: \"crochet-paragraph\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand box: (Class is text) children: X {\r\n  html box: \"div\"\r\n       class: Class\r\n       attributes: [->]\r\n       children: [X to-html];\r\n}\r\n\r\ncommand flow: X {\r\n  box: \"crochet-flow\" children: X to-html;\r\n}\r\n\r\ncommand stack: X {\r\n  box: \"crochet-stack\" children: X to-html;\r\n}\r\n\r\ncommand emphasis: X {\r\n  html\r\n    box: \"em\"\r\n    class: \"crochet-emphasis\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand strong: X {\r\n  html\r\n    box: \"strong\"\r\n    class: \"crochet-strong\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand ui divider {\r\n  box: \"crochet-divider\" children: [];\r\n}\r\n\r\ncommand section: X {\r\n  html\r\n    box: \"section\"\r\n    class: \"crochet-section\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand button: X {\r\n  html\r\n    box: \"div\"\r\n    class: \"crochet-button\"\r\n    attributes: [->]\r\n    children: [X to-html];\r\n}\r\n\r\ncommand menu: (Items0 is stream) {\r\n  let Items = for X in Items0 {\r\n    [\r\n      Title -> (button: X.Title to-html),\r\n      Value -> X.Value,\r\n    ]\r\n  };\r\n\r\n  html\r\n    menu: Items\r\n    class: \"crochet-menu\";\r\n}";
 
 },{}],59:[function(require,module,exports){
 "use strict";
@@ -8259,6 +8384,26 @@ class Canvas {
             await this.click_to_continue(x);
         }
     }
+    async animate(x, frames, time) {
+        const deferred = utils_1.defer();
+        const animation = x.animate(frames, time);
+        animation.addEventListener("finish", () => deferred.resolve());
+        animation.addEventListener("cancel", () => deferred.resolve());
+        await deferred.promise;
+    }
+    async animate_appear(x, time) {
+        x.style.opacity = "0";
+        x.style.top = "-1em";
+        x.style.position = "relative";
+        const appear = [
+            { opacity: 0, top: "-1em" },
+            { opacity: 1, top: "0px" },
+        ];
+        await this.animate(x, appear, time);
+        x.style.opacity = "1";
+        x.style.top = "0px";
+        x.style.position = "relative";
+    }
     async click_to_continue(x) {
         const deferred = utils_1.defer();
         this.canvas.setAttribute("data-wait", "true");
@@ -8279,8 +8424,10 @@ class Canvas {
     }
     async show(x) {
         await this.wait_mark(x);
+        x.style.opacity = "0";
         this.canvas.appendChild(x);
         x.scrollIntoView();
+        await this.animate_appear(x, 200);
     }
     async show_error(error) {
         console.error(error);
@@ -8288,6 +8435,18 @@ class Canvas {
         element.className = "crochet-error";
         element.appendChild(document.createTextNode(error));
         this.canvas.appendChild(element);
+    }
+    set_mark(x) {
+        if (x == null) {
+            this.mark =
+                this.canvas.children.item(this.canvas.children.length - 1) ?? null;
+        }
+        else {
+            this.mark = x;
+        }
+    }
+    is_empty() {
+        return this.canvas.childElementCount === 0;
     }
     render_to(x) {
         this._canvas = x;
@@ -8377,17 +8536,29 @@ let HtmlFfi = class HtmlFfi {
     }
     static async *show(state, value) {
         await canvas_1.canvas.show(value.value);
-        return runtime_1.False.instance;
+        return value;
     }
     static async *wait(state) {
         await canvas_1.canvas.click_to_continue();
         return runtime_1.False.instance;
     }
-    static box(name, klass, children) {
+    static async *mark(state) {
+        if (canvas_1.canvas.is_empty()) {
+            return;
+        }
+        else {
+            canvas_1.canvas.set_mark();
+        }
+        return runtime_1.False.instance;
+    }
+    static box(name, klass, attributes, children) {
         const element = document.createElement(name.value);
         element.setAttribute("class", "crochet-box " + klass.value);
         for (const child of children.values) {
             element.appendChild(utils_1.cast(child, element_1.CrochetHtml).value);
+        }
+        for (const [key, value] of attributes.values.entries()) {
+            element.setAttribute(key, utils_1.cast(value, runtime_1.CrochetText).value);
         }
         return new element_1.CrochetHtml(element);
     }
@@ -8401,7 +8572,7 @@ let HtmlFfi = class HtmlFfi {
     static menu(klass, items) {
         const selection = utils_1.defer();
         const menu = document.createElement("div");
-        menu.className = "crochet-box crochet-menu " + klass;
+        menu.className = "crochet-box " + klass.value;
         for (const child of items.values) {
             const record = utils_1.cast(child, runtime_1.CrochetRecord);
             const title = utils_1.cast(record.projection.project("Title"), element_1.CrochetHtml);
@@ -8418,6 +8589,50 @@ let HtmlFfi = class HtmlFfi {
     static async *menu_selected(state, menu) {
         return await menu.selected;
     }
+    static async *preload(state, url) {
+        const deferred = utils_1.defer();
+        const image = new Image();
+        image.onload = () => deferred.resolve(runtime_1.True.instance);
+        image.onerror = () => deferred.reject(new Error(`Failed to load image ${url.value}`));
+        image.src = url.value;
+        return await deferred.promise;
+    }
+    static async *animate(state, element, time0) {
+        const time = Number(time0.value);
+        for (const child of Array.from(element.value.children)) {
+            child.style.opacity = "1";
+            await utils_1.delay(time);
+        }
+        return element;
+    }
+    static async *make_animation(state, children0) {
+        const element = document.createElement("div");
+        const children = children0.values.map((x) => utils_1.cast(x, element_1.CrochetHtml).value);
+        element.className = "crochet-animation";
+        for (const child of children) {
+            element.appendChild(child);
+        }
+        children[0].style.opacity = "1";
+        let last_width = 0;
+        let last_height = 0;
+        const interval = setInterval(() => {
+            if (element.parentNode == null) {
+                return;
+            }
+            const width = Math.max(...children.map((x) => x.offsetWidth));
+            const height = Math.max(...children.map((x) => x.offsetHeight));
+            element.style.width = `${width}px`;
+            element.style.height = `${height}px`;
+            if (width == last_width && height == last_height) {
+                clearInterval(interval);
+            }
+            else {
+                last_width = width;
+                last_height = height;
+            }
+        }, 250);
+        return new element_1.CrochetHtml(element);
+    }
 };
 __decorate([
     ffi_decorators_1.foreign_type("element")
@@ -8431,6 +8646,9 @@ __decorate([
 __decorate([
     ffi_decorators_1.foreign("wait")
 ], HtmlFfi, "wait", null);
+__decorate([
+    ffi_decorators_1.foreign("mark")
+], HtmlFfi, "mark", null);
 __decorate([
     ffi_decorators_1.foreign("box"),
     ffi_decorators_1.machine()
@@ -8446,6 +8664,15 @@ __decorate([
 __decorate([
     ffi_decorators_1.foreign("menu-selected")
 ], HtmlFfi, "menu_selected", null);
+__decorate([
+    ffi_decorators_1.foreign("preload")
+], HtmlFfi, "preload", null);
+__decorate([
+    ffi_decorators_1.foreign("animate")
+], HtmlFfi, "animate", null);
+__decorate([
+    ffi_decorators_1.foreign("make-animation")
+], HtmlFfi, "make_animation", null);
 HtmlFfi = __decorate([
     ffi_decorators_1.foreign_namespace("crochet.ui.html")
 ], HtmlFfi);

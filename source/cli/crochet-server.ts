@@ -8,6 +8,7 @@ export function serve(filename: string, port: number) {
 
   const app = Express();
   app.use(Express.static(root));
+  app.use(Express.static(Path.dirname(filename)));
   app.get("/game.crochet", (req, res) => {
     res.sendFile(fullPath);
   });

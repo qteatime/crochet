@@ -6,6 +6,7 @@ export type Constraint = And | Or | Not | Variable | Equals | Value;
 
 interface IConstraint {
   evaluate(env: UnificationEnvironment): CrochetValue;
+  variables: string[];
 }
 
 export class And implements IConstraint {
@@ -13,6 +14,10 @@ export class And implements IConstraint {
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return Core.band(this.left.evaluate(env), this.right.evaluate(env));
+  }
+
+  get variables(): string[] {
+    return this.left.variables.concat(this.right.variables);
   }
 }
 
@@ -22,6 +27,10 @@ export class Or implements IConstraint {
   evaluate(env: UnificationEnvironment): CrochetValue {
     return Core.bor(this.left.evaluate(env), this.right.evaluate(env));
   }
+
+  get variables(): string[] {
+    return this.left.variables.concat(this.right.variables);
+  }
 }
 
 export class Not implements IConstraint {
@@ -29,6 +38,10 @@ export class Not implements IConstraint {
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return Core.bnot(this.constraint.evaluate(env));
+  }
+
+  get variables(): string[] {
+    return this.constraint.variables;
   }
 }
 
@@ -43,6 +56,10 @@ export class Variable implements IConstraint {
 
     return result;
   }
+
+  get variables() {
+    return [this.name];
+  }
 }
 
 export class Equals implements IConstraint {
@@ -51,6 +68,10 @@ export class Equals implements IConstraint {
   evaluate(env: UnificationEnvironment): CrochetValue {
     return Core.eq(this.left.evaluate(env), this.right.evaluate(env));
   }
+
+  get variables(): string[] {
+    return this.left.variables.concat(this.right.variables);
+  }
 }
 
 export class Value implements IConstraint {
@@ -58,5 +79,9 @@ export class Value implements IConstraint {
 
   evaluate(env: UnificationEnvironment): CrochetValue {
     return this.value;
+  }
+
+  get variables(): string[] {
+    return [];
   }
 }

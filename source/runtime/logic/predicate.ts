@@ -17,6 +17,7 @@ export type Predicate =
 
 interface IPredicateRelation {
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[];
+  variables: string[];
 }
 
 export class ConstrainedPredicate implements IPredicateRelation {
@@ -27,6 +28,10 @@ export class ConstrainedPredicate implements IPredicateRelation {
       .search(state, env)
       .filter((env) => this.constraint.evaluate(env).as_bool());
   }
+
+  get variables(): string[] {
+    return this.predicate.variables.concat(this.constraint.variables);
+  }
 }
 
 export class AndPredicate implements IPredicateRelation {
@@ -36,6 +41,10 @@ export class AndPredicate implements IPredicateRelation {
     return this.left
       .search(state, env)
       .flatMap((env) => this.right.search(state, env));
+  }
+
+  get variables(): string[] {
+    return this.left.variables.concat(this.right.variables);
   }
 }
 
@@ -50,6 +59,10 @@ export class OrPredicate implements IPredicateRelation {
       return this.right.search(state, env);
     }
   }
+
+  get variables(): string[] {
+    return this.left.variables.concat(this.right.variables);
+  }
 }
 
 export class HasRelation implements IPredicateRelation {
@@ -58,6 +71,10 @@ export class HasRelation implements IPredicateRelation {
   search(state: State, env: UnificationEnvironment) {
     const relation = state.database.lookup(this.name);
     return relation.search(state, env, this.patterns);
+  }
+
+  get variables(): string[] {
+    return this.patterns.flatMap((x) => x.variables);
   }
 }
 
@@ -72,11 +89,19 @@ export class NotPredicate implements IPredicateRelation {
       return [];
     }
   }
+
+  get variables(): string[] {
+    return this.predicate.variables;
+  }
 }
 
 export class AlwaysPredicate implements IPredicateRelation {
   search(state: State, env: UnificationEnvironment) {
     return [env];
+  }
+
+  get variables(): string[] {
+    return [];
   }
 }
 

@@ -1,0 +1,10 @@
+% crochet
+
+scene main {
+  [
+    'scene -> 0,
+    atoms -> 1,
+    Names -> 2,
+    "Text" -> 3,
+  ] inspect;
+}

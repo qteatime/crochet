@@ -108,9 +108,14 @@ export class EInteger implements IExpression {
 }
 
 export class ESearch implements IExpression {
+  readonly variables = this.predicate.variables;
   constructor(readonly predicate: Predicate) {}
+
   async *evaluate(state: State): Machine {
-    const results = state.database.search(state, this.predicate);
+    const env = UnificationEnvironment.from(
+      state.env.lookup_all(this.variables)
+    );
+    const results = state.database.search(state, this.predicate, env);
     return new CrochetStream(
       results.map((x) => new CrochetRecord(x.boundValues))
     );
@@ -359,10 +364,14 @@ export class EMatchSearch implements IExpression {
   }
 }
 export class MatchSearchCase {
+  readonly variables = this.predicate.variables;
   constructor(readonly predicate: Predicate, readonly body: SBlock) {}
 
   search(state: State) {
-    return state.world.search(this.predicate);
+    const env = UnificationEnvironment.from(
+      state.env.lookup_all(this.variables)
+    );
+    return state.database.search(state, this.predicate, env);
   }
 }
 

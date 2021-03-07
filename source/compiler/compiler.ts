@@ -25,6 +25,7 @@ import {
   Pair,
   Signal,
   MatchSearchCase,
+  RecordField,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
@@ -350,6 +351,18 @@ export function compileMatchSearchCase(
   );
 }
 
+export function compileRecordField(field: RecordField): string {
+  return field.match<string>({
+    FName(x) {
+      return x.name;
+    },
+
+    FText(x) {
+      return parseString(x);
+    },
+  });
+}
+
 export function compileExpression(expr: Expression): IR.Expression {
   return expr.match<IR.Expression>({
     Search(_, pred) {
@@ -397,7 +410,7 @@ export function compileExpression(expr: Expression): IR.Expression {
     Record(_, pairs) {
       return new IR.ERecord(
         pairs.map((x) => ({
-          key: x.key.name,
+          key: compileRecordField(x.key),
           value: compileExpression(x.value),
         }))
       );
@@ -408,15 +421,18 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
 
     Project(_, object, field) {
-      return new IR.EProject(compileExpression(object), field.name);
+      return new IR.EProject(
+        compileExpression(object),
+        compileRecordField(field)
+      );
     },
 
     Select(_, object, fields) {
       return new IR.EProjectMany(
         compileExpression(object),
         fields.map((x) => ({
-          key: x.name.name,
-          alias: x.alias.name,
+          key: compileRecordField(x.name),
+          alias: compileRecordField(x.alias),
         }))
       );
     },

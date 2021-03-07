@@ -55,10 +55,11 @@ export class DatabaseLayer implements IDatabase {
     return relation;
   }
 
-  search(state: State, predicate: Predicate): UnificationEnvironment[] {
-    return predicate.search(
-      state.with_database(this),
-      UnificationEnvironment.empty()
-    );
+  search(
+    state: State,
+    predicate: Predicate,
+    initial_environment: UnificationEnvironment
+  ): UnificationEnvironment[] {
+    return predicate.search(state.with_database(this), initial_environment);
   }
 }

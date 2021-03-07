@@ -1,4 +1,4 @@
-import { Predicate } from "../logic";
+import { Predicate, UnificationEnvironment } from "../logic";
 import { CrochetValue } from "../primitives";
 import { State } from "../vm";
 import { World } from "../world";
@@ -76,7 +76,7 @@ export class TotalQuiescence implements IGoal {
 
 export class CustomGoal implements IGoal {
   private _reached = false;
-
+  readonly variables = this.predicate.variables;
   constructor(readonly predicate: Predicate) {}
 
   reached(round_ended: boolean) {
@@ -88,7 +88,10 @@ export class CustomGoal implements IGoal {
   }
 
   tick(actor: CrochetValue, state: State, context: Context) {
-    const results = state.database.search(state, this.predicate);
+    const env = UnificationEnvironment.from(
+      state.env.lookup_all(this.variables)
+    );
+    const results = state.database.search(state, this.predicate, env);
     if (results.length !== 0) {
       this._reached = true;
     }
