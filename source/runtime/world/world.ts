@@ -1,5 +1,5 @@
 import { Declaration } from "../ir";
-import { Database, Predicate } from "../logic";
+import { Database, Predicate, UnificationEnvironment } from "../logic";
 import {
   CrochetRole,
   CrochetType,
@@ -13,7 +13,7 @@ import { Context } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
-import { Environment } from "./environment";
+import { Environment } from "../vm/environment";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
@@ -59,10 +59,6 @@ export class World {
   readonly contexts = new Bag<string, Context>("context");
   readonly global_context = new Context();
   readonly ffi = new ForeignInterface();
-
-  search(predicate: Predicate) {
-    return this.database.search(State.root(this), predicate);
-  }
 
   schedule(machine: Machine) {
     this.queue.push(machine);

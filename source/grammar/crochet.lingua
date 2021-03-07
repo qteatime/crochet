@@ -58,11 +58,11 @@ type Expression =
   | Variable(pos: Meta, name: Name)
   | Self(pos: Meta)
   | List(pos: Meta, values: Expression[])
-  | Record(pos: Meta, pairs: Pair<Name, Expression>[])
+  | Record(pos: Meta, pairs: Pair<RecordField, Expression>[])
   | Cast(pos: Meta, typ: TypeApp, value: Expression)
   | Search(pos: Meta, predicate: Predicate)
   | MatchSearch(pos: Meta, cases: MatchSearchCase[])
-  | Project(pos: Meta, object: Expression, field: Name)
+  | Project(pos: Meta, object: Expression, field: RecordField)
   | Select(pos: Meta, object: Expression, fields: Projection[])
   | For(pos: Meta, stream: Expression, name: Name, body: Expression)
   | Block(pos: Meta, body: Statement[])
@@ -77,7 +77,11 @@ type Expression =
 type MatchSearchCase(pos: Meta, predicate: Predicate, body: Statement[])
 type ConditionCase(pos: Meta, guard: Expression, body: Statement[])
 
-type Projection(pos: Meta, name: Name, alias: Name)
+type RecordField =
+  | FName(value: Name)
+  | FText(value: String)
+
+type Projection(pos: Meta, name: RecordField, alias: RecordField)
 
 type InterpolationPart =
   | Escape(pos: Meta, character: string)
@@ -425,7 +429,7 @@ grammar Crochet : Program {
     | memberExpression
 
   memberExpression =
-    | o:memberExpression s<"."> f:name
+    | o:memberExpression s<"."> f:recordField<expression>
       -> Expression.Project(meta, o, f)
     | o:memberExpression s<"."> p:memberSelection
       -> Expression.Select(meta, o, p)
@@ -436,8 +440,10 @@ grammar Crochet : Program {
       -> xs
 
   fieldSelection =
-    | n:name as_ a:name   -> Projection(meta, n, a)
-    | n:name              -> Projection(meta, n, n)
+    | n:recordField<expression> as_ a:recordField<expression>
+      -> Projection(meta, n, a)
+    | n:recordField<expression>
+      -> Projection(meta, n, n)
 
   primaryExpression =
     | matchSearchExpression
@@ -495,7 +501,11 @@ grammar Crochet : Program {
     | s<"["> xs:nonemptyListOf<recordPair<e>, s<",">> s<",">? s<"]">    -> Expression.Record(meta, xs)
 
   recordPair<e> =
-    | n:name s<"->"> v:e -> Pair(meta, n, v)
+    | n:recordField<e> s<"->"> v:e -> Pair(meta, n, v)
+
+  recordField<e> =
+    | n:(name | atom)    -> RecordField.FName(n)
+    | t:string           -> RecordField.FText(t)
 
   literalExpression =
     | l:literal             -> Expression.Lit(l)
@@ -540,7 +550,10 @@ grammar Crochet : Program {
     | x:s<"_"> ~name_rest   -> Expression.Hole(meta)
 
   // -- Token -> Rule & Basics
-  atom = ~reserved x:s<t_atom> ~":"           -> Name(meta, x)
+  atom =
+    | s<"'"> x:t_atom               -> Name(meta, x)
+    | ~reserved x:s<t_atom> ~":"    -> Name(meta, x)
+
   name = x:s<t_name>                          -> Name(meta, x)
   keyword = x:s<t_keyword>                    -> Name(meta, x)
   infix_symbol = x:s<t_infix_symbol>          -> Name(meta, x)

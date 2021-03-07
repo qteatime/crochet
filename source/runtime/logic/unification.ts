@@ -60,6 +60,10 @@ abstract class AbstractPattern {
       return [result];
     }
   }
+
+  get variables(): string[] {
+    return [];
+  }
 }
 
 export class TypePattern extends AbstractPattern {
@@ -157,6 +161,10 @@ export class VariablePattern extends AbstractPattern {
     } else {
       return null;
     }
+  }
+
+  get variables(): string[] {
+    return [this.name];
   }
 }
 

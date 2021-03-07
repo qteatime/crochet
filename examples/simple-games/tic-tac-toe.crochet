@@ -45,6 +45,7 @@ singleton draw is state;
 
 relation Line* at: Column* mark: Who;
 relation State state;
+relation Who player;
 
 define lines = [l1, l2, l3];
 define columns = [c1, c2, c3];
@@ -92,10 +93,43 @@ scene main {
     subtitle: "A small example of AI-driven game",
   ]) show;
 
+  let PlayerSelection = menu: [
+    [
+      Title -> "Saga ([saga mark])",
+      Value -> saga
+    ],
+    [
+      Title -> "Erin ([erin mark])",
+      Value -> erin
+    ]
+  ];
+
+  (paragraph: [
+    "Choose a character to play as:",
+    PlayerSelection
+  ]) show;
+
+  ui mark;
+
+  fact (PlayerSelection selected) player;
+
   simulate for [erin, saga]
   until not on-going state
   on pick-action: Actions for: Turn {
-    Actions random-choice
+    match {
+      when Turn player {
+        let Items = for Action in Actions {
+          [Title -> Action.Title, Value -> Action]
+        };
+        let Choice = (menu: Items) show selected;
+        ui mark;
+        Choice;
+      }
+
+      always {
+        Actions random-choice;
+      }
+    } first;
   };
 }
 

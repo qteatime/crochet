@@ -1,6 +1,6 @@
 import { SBlock, Statement } from "../ir";
 import { State } from "../vm";
-import { Environment } from "./environment";
+import { Environment } from "../vm/environment";
 import { World } from "./world";
 
 export class Scene {

@@ -106,12 +106,12 @@ body {
   justify-content: center;
   color: #d35;
   background: rgba(250, 250, 250, 0.9);
-  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+  position: fixed;
 }
 
 .crochet-menu {
@@ -144,4 +144,27 @@ body {
   margin: 0;
   padding: 0 1em;
   overflow: hidden;
+}
+
+.crochet-image {
+  width: 100%;
+  height: auto;
+  padding: 1em 2em;
+  margin-bottom: 1.5em;
+  border: 1px solid #ececea;
+  border-width: 1px 0 1px 0;
+  box-sizing: border-box;
+}
+
+.crochet-animation {
+  position: relative;
+  transition: all ease-out 200ms;
+  margin-bottom: 1.5em;
+}
+
+.crochet-animation > * {
+  opacity: 0;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }

@@ -47,4 +47,15 @@ export class Environment {
       this.define(k, v);
     }
   }
+
+  lookup_all(names: string[]): Map<string, CrochetValue> {
+    const result = new Map();
+    for (const name of names) {
+      const value = this.lookup(name);
+      if (value != null) {
+        result.set(name, value);
+      }
+    }
+    return result;
+  }
 }
