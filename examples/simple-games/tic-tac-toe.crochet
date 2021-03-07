@@ -15,27 +15,28 @@ singleton empty {
 }
 
 singleton board {
-  command show {
+  command render {
     let S = (search l1 c1: M11 c2: M12 c3: M13,
                     l2 c1: M21 c2: M22 c3: M23,
                     l3 c1: M31 c2: M32 c3: M33) first;
-    "
-    [S.M11 mark]|[S.M12 mark]|[S.M13 mark]
-    [S.M21 mark]|[S.M22 mark]|[S.M23 mark]
-    [S.M31 mark]|[S.M32 mark]|[S.M33 mark]
-    " text monospace show;
+    monospace:
+      "
+      [S.M11 mark]|[S.M12 mark]|[S.M13 mark]
+      [S.M21 mark]|[S.M22 mark]|[S.M23 mark]
+      [S.M31 mark]|[S.M32 mark]|[S.M33 mark]
+      ";
   }
 }
 
 type line;
-singleton l1 is line;
-singleton l2 is line;
-singleton l3 is line;
+singleton l1 is line { command to-html { "L1" text } }
+singleton l2 is line { command to-html { "L2" text } }
+singleton l3 is line { command to-html { "L3" text } }
 
 type column;
-singleton c1 is column;
-singleton c2 is column;
-singleton c3 is column;
+singleton c1 is column { command to-html { "C1" text } }
+singleton c2 is column { command to-html { "C2" text } }
+singleton c3 is column { command to-html { "C3" text } }
 
 type state;
 singleton on-going is state;
@@ -86,6 +87,11 @@ predicate X won {
 }
 
 scene main {
+  (header: [
+    title: "Tic-Tac-Toe",
+    subtitle: "A small example of AI-driven game",
+  ]) show;
+
   simulate for [erin, saga]
   until not on-going state
   on pick-action: Actions for: Turn {
@@ -95,18 +101,21 @@ scene main {
 
 action "Mark [L], [C]"
 when X simulate-turn, L at: C mark: empty {
-  "[X name] marks [L], [C]" text show;
   fact L at: C mark: X;
-  board show;
+
+  (section: [
+    "[X name] marks [L], [C]",
+    board render,
+  ]) show;
   100 sleep;
 }
 
 when X simulate-turn, X won {
-  "[X name] won!" text show;
+  "[X name] won!" show;
   fact won state;
 }
 
 when on-going state, not X won, not L at: C mark: empty {
-  "It's a draw!" text show;
+  "It's a draw!" show;
   fact draw state;
 }

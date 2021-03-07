@@ -29,4 +29,5 @@ export async function load(state: State) {
   }
 }
 
-export * from "./html";
+import * as Html from "./html";
+export { Html };

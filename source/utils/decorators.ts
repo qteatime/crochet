@@ -1,7 +1,7 @@
 import { Error } from "./result";
 
 export function lazy() {
-  const nothing = new (class Nothing {})();
+  const cache = new WeakMap<object, any>();
 
   return (target: any, key: string, descriptor: PropertyDescriptor) => {
     const getter = descriptor.get;
@@ -9,10 +9,11 @@ export function lazy() {
       throw new Error(`@lazy applied to non-getter ${key}`);
     }
 
-    let value = nothing;
     descriptor.get = function () {
-      if (value === nothing) {
+      let value = cache.get(this);
+      if (value == null) {
         value = getter.call(this);
+        cache.set(this, value);
       }
       return value;
     };
