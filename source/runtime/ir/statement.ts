@@ -19,21 +19,14 @@ import { Environment, World } from "../world";
 import { Expression } from "./expression";
 import { Type } from "./type";
 
-export type Statement =
-  | SFact
-  | SForget
-  | SExpression
-  | SLet
-  | SGoto
-  | SCall
-  | SSimulate;
-
-interface IStatement {
-  evaluate(state: State): Machine;
+export abstract class Statement {
+  abstract evaluate(state: State): Machine;
 }
 
-export class SFact implements IStatement {
-  constructor(readonly name: string, readonly exprs: Expression[]) {}
+export class SFact extends Statement {
+  constructor(readonly name: string, readonly exprs: Expression[]) {
+    super();
+  }
   async *evaluate(state: State): Machine {
     const relation = cast(
       state.world.database.lookup(this.name),
@@ -47,8 +40,10 @@ export class SFact implements IStatement {
   }
 }
 
-export class SForget implements IStatement {
-  constructor(readonly name: string, readonly exprs: Expression[]) {}
+export class SForget extends Statement {
+  constructor(readonly name: string, readonly exprs: Expression[]) {
+    super();
+  }
   async *evaluate(state: State): Machine {
     const relation = cast(
       state.world.database.lookup(this.name),
@@ -62,16 +57,20 @@ export class SForget implements IStatement {
   }
 }
 
-export class SExpression implements IStatement {
-  constructor(readonly expr: Expression) {}
+export class SExpression extends Statement {
+  constructor(readonly expr: Expression) {
+    super();
+  }
   async *evaluate(state: State): Machine {
     const result = cvalue(yield _push(this.expr.evaluate(state)));
     return result;
   }
 }
 
-export class SLet implements IStatement {
-  constructor(readonly name: string, readonly expr: Expression) {}
+export class SLet extends Statement {
+  constructor(readonly name: string, readonly expr: Expression) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     let value = cvalue(yield _push(this.expr.evaluate(state)));
@@ -83,8 +82,10 @@ export class SLet implements IStatement {
   }
 }
 
-export class SBlock implements IStatement {
-  constructor(readonly statements: Statement[]) {}
+export class SBlock extends Statement {
+  constructor(readonly statements: Statement[]) {
+    super();
+  }
   async *evaluate(state: State): Machine {
     let result: CrochetValue = False.instance;
     for (const stmt of this.statements) {
@@ -94,8 +95,10 @@ export class SBlock implements IStatement {
   }
 }
 
-export class SGoto implements IStatement {
-  constructor(readonly name: string) {}
+export class SGoto extends Statement {
+  constructor(readonly name: string) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const scene = state.world.scenes.lookup(this.name);
@@ -104,8 +107,10 @@ export class SGoto implements IStatement {
   }
 }
 
-export class SCall implements IStatement {
-  constructor(readonly name: string) {}
+export class SCall extends Statement {
+  constructor(readonly name: string) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const scene = state.world.scenes.lookup(this.name);
@@ -114,13 +119,15 @@ export class SCall implements IStatement {
   }
 }
 
-export class SSimulate implements IStatement {
+export class SSimulate extends Statement {
   constructor(
     readonly context: string | null,
     readonly actors: Expression,
     readonly goal: Goal,
     readonly signals: Signal[]
-  ) {}
+  ) {
+    super();
+  }
 
   async *evaluate(state: State): Machine {
     const actors = cast(
