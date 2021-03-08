@@ -70,6 +70,8 @@ type Expression =
   | Pipe(pos: Meta, left: Expression, right: Expression)
   | Interpolate(pos: Meta, value: Interpolation<Expression>)
   | Condition(pos: Meta, cases: ConditionCase[])
+  | HasType(pos: Meta, value: Expression, typ: TypeApp)
+  | HasRole(pos: Meta, value: Expression, role: Name)
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
@@ -427,6 +429,10 @@ grammar Crochet : Program {
   castExpression =
     | s:invokePostfix as_ t:typeAppPrimary
       -> Expression.Cast(meta, t, s)
+    | s:invokePostfix is_ t:typeAppPrimary
+      -> Expression.HasType(meta, s, t)
+    | s:invokePostfix s<"::"> r:name
+      -> Expression.HasRole(meta, s, r)
     | invokePostfix
 
   invokePostfix =

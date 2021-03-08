@@ -473,6 +473,14 @@ export function compileExpression(expr: Expression): IR.Expression {
       );
     },
 
+    HasType(_, value, type) {
+      return new IR.EHasType(compileExpression(value), compileTypeApp(type));
+    },
+
+    HasRole(_, value, role) {
+      return new IR.EHasRole(compileExpression(value), role.name);
+    },
+
     Hole(_) {
       throw new Error(`Hole found outside of function application.`);
     },

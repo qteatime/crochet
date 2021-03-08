@@ -1,5 +1,3 @@
-import { stat } from "fs";
-import ts = require("typescript");
 import { cast } from "../../utils/utils";
 import { Predicate, UnificationEnvironment } from "../logic";
 import {
@@ -13,6 +11,7 @@ import {
   CrochetText,
   CrochetValue,
   False,
+  from_bool,
   InteprolationPart,
   InterpolationDynamic,
   InterpolationStatic,
@@ -407,4 +406,28 @@ export class ECondition extends Expression {
 
 export class ConditionCase {
   constructor(readonly test: Expression, readonly body: SBlock) {}
+}
+
+export class EHasType extends Expression {
+  constructor(readonly value: Expression, readonly type: Type) {
+    super();
+  }
+
+  async *evaluate(state: State): Machine {
+    const value = cvalue(yield _push(this.value.evaluate(state)));
+    const type = this.type.realise(state.world);
+    return from_bool(type.accepts(value));
+  }
+}
+
+export class EHasRole extends Expression {
+  constructor(readonly value: Expression, readonly role: string) {
+    super();
+  }
+
+  async *evaluate(state: State): Machine {
+    const value = cvalue(yield _push(this.value.evaluate(state)));
+    const role = state.world.roles.lookup(this.role);
+    return from_bool(value.has_role(role));
+  }
 }
