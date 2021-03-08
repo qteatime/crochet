@@ -56,8 +56,12 @@ export class OneNode implements INode {
 
   insert(values: CrochetValue[]) {
     const [head, ...tail] = values;
-    this.value = new Pair(head, this.subtype.realise());
-    this.value.tree.insert(tail);
+    if (this.value == null || !this.value.value.equals(head)) {
+      this.value = new Pair(head, this.subtype.realise());
+      this.value.tree.insert(tail);
+    } else {
+      this.value.tree.insert(tail);
+    }
   }
 
   remove(values: CrochetValue[]) {

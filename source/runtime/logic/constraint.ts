@@ -1,19 +1,24 @@
+import { Type } from "../ir";
 import { from_bool, CrochetValue } from "../primitives";
 import { Core } from "../primitives";
+import { State } from "../vm";
 import { UnificationEnvironment } from "./unification";
 
-export type Constraint = And | Or | Not | Variable | Equals | Value;
-
-interface IConstraint {
-  evaluate(env: UnificationEnvironment): CrochetValue;
-  variables: string[];
+export abstract class Constraint {
+  abstract evaluate(env: UnificationEnvironment, state: State): CrochetValue;
+  abstract variables: string[];
 }
 
-export class And implements IConstraint {
-  constructor(readonly left: Constraint, readonly right: Constraint) {}
+export class And extends Constraint {
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
 
-  evaluate(env: UnificationEnvironment): CrochetValue {
-    return Core.band(this.left.evaluate(env), this.right.evaluate(env));
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    return Core.band(
+      this.left.evaluate(env, state),
+      this.right.evaluate(env, state)
+    );
   }
 
   get variables(): string[] {
@@ -21,11 +26,16 @@ export class And implements IConstraint {
   }
 }
 
-export class Or implements IConstraint {
-  constructor(readonly left: Constraint, readonly right: Constraint) {}
+export class Or extends Constraint {
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
 
-  evaluate(env: UnificationEnvironment): CrochetValue {
-    return Core.bor(this.left.evaluate(env), this.right.evaluate(env));
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    return Core.bor(
+      this.left.evaluate(env, state),
+      this.right.evaluate(env, state)
+    );
   }
 
   get variables(): string[] {
@@ -33,11 +43,13 @@ export class Or implements IConstraint {
   }
 }
 
-export class Not implements IConstraint {
-  constructor(readonly constraint: Constraint) {}
+export class Not extends Constraint {
+  constructor(readonly constraint: Constraint) {
+    super();
+  }
 
-  evaluate(env: UnificationEnvironment): CrochetValue {
-    return Core.bnot(this.constraint.evaluate(env));
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    return Core.bnot(this.constraint.evaluate(env, state));
   }
 
   get variables(): string[] {
@@ -45,10 +57,12 @@ export class Not implements IConstraint {
   }
 }
 
-export class Variable implements IConstraint {
-  constructor(readonly name: string) {}
+export class Variable extends Constraint {
+  constructor(readonly name: string) {
+    super();
+  }
 
-  evaluate(env: UnificationEnvironment): CrochetValue {
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
     const result = env.lookup(this.name);
     if (result == null) {
       throw new Error(`Undefined constraint variable ${this.name}`);
@@ -62,11 +76,30 @@ export class Variable implements IConstraint {
   }
 }
 
-export class Equals implements IConstraint {
-  constructor(readonly left: Constraint, readonly right: Constraint) {}
+export class Global extends Constraint {
+  constructor(readonly name: string) {
+    super();
+  }
 
-  evaluate(env: UnificationEnvironment): CrochetValue {
-    return Core.eq(this.left.evaluate(env), this.right.evaluate(env));
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    return state.world.globals.lookup(this.name);
+  }
+
+  get variables(): string[] {
+    return [];
+  }
+}
+
+export class Equals extends Constraint {
+  constructor(readonly left: Constraint, readonly right: Constraint) {
+    super();
+  }
+
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    return Core.eq(
+      this.left.evaluate(env, state),
+      this.right.evaluate(env, state)
+    );
   }
 
   get variables(): string[] {
@@ -74,11 +107,45 @@ export class Equals implements IConstraint {
   }
 }
 
-export class Value implements IConstraint {
-  constructor(readonly value: CrochetValue) {}
+export class Value extends Constraint {
+  constructor(readonly value: CrochetValue) {
+    super();
+  }
 
-  evaluate(env: UnificationEnvironment): CrochetValue {
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
     return this.value;
+  }
+
+  get variables(): string[] {
+    return [];
+  }
+}
+
+export class HasRole extends Constraint {
+  constructor(readonly value: Constraint, readonly role: string) {
+    super();
+  }
+
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    const value = this.value.evaluate(env, state);
+    const role = state.world.roles.lookup(this.role);
+    return from_bool(value.has_role(role));
+  }
+
+  get variables(): string[] {
+    return [];
+  }
+}
+
+export class HasType extends Constraint {
+  constructor(readonly value: Constraint, readonly type: Type) {
+    super();
+  }
+
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    const value = this.value.evaluate(env, state);
+    const type = this.type.realise(state.world);
+    return from_bool(type.accepts(value));
   }
 
   get variables(): string[] {

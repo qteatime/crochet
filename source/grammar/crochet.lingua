@@ -125,6 +125,9 @@ type Constraint =
   | Not(pos: Meta, value: Constraint)
   | Equal(pos: Meta, left: Constraint, right: Constraint)
   | Variable(pos: Meta, name: Name)
+  | Global(pos: Meta, name: Name)
+  | HasRole(pos: Meta, value: Constraint, role: Name)
+  | HasType(pos: Meta, value: Constraint, typ: TypeApp)
   | Parens(pos: Meta, value: Constraint)
   | Lit(lit: Literal)
 
@@ -339,7 +342,13 @@ grammar Crochet : Program {
     | constraint400
 
   constraint400 =
+    | l:constraint500 s<"::"> r:atom  -> Constraint.HasRole(meta, l, r)
+    | l:constraint500 is_ t:typeApp   -> Constraint.HasType(meta, l, t)
+    | constraint500
+
+  constraint500 =
     | n:name                          -> Constraint.Variable(meta, n)
+    | n:atom                          -> Constraint.Global(meta, n)
     | l:literal                       -> Constraint.Lit(l)
     | s<"("> c:constraint s<")">      -> Constraint.Parens(meta, c)
 

@@ -193,6 +193,21 @@ export function compileConstraint(c: Constraint): Logic.Constraint.Constraint {
       return new Logic.Constraint.Variable(name.name);
     },
 
+    Global(_, name) {
+      return new Logic.Constraint.Global(name.name);
+    },
+
+    HasRole(_, value, name) {
+      return new Logic.Constraint.HasRole(compileConstraint(value), name.name);
+    },
+
+    HasType(_, value, type) {
+      return new Logic.Constraint.HasType(
+        compileConstraint(value),
+        compileTypeApp(type)
+      );
+    },
+
     Lit(l) {
       return new Logic.Constraint.Value(literalToValue(l));
     },

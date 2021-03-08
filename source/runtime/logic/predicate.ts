@@ -26,7 +26,7 @@ export class ConstrainedPredicate implements IPredicateRelation {
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
     return this.predicate
       .search(state, env)
-      .filter((env) => this.constraint.evaluate(env).as_bool());
+      .filter((env) => this.constraint.evaluate(env, state).as_bool());
   }
 
   get variables(): string[] {
