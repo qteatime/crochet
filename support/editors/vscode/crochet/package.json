@@ -1,0 +1,35 @@
+{
+  "name": "crochet",
+  "displayName": "Crochet",
+  "description": "Basic support for the Crochet language",
+  "version": "0.0.1",
+  "publisher": "qteatime",
+  "engines": {
+    "vscode": "^1.12.0"
+  },
+  "categories": [
+    "Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "crochet",
+        "aliases": [
+          "Crochet",
+          "crochet"
+        ],
+        "extensions": [
+          ".crochet"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "crochet",
+        "scopeName": "source.crochet",
+        "path": "./syntaxes/crochet.tmLanguage.json"
+      }
+    ]
+  }
+}

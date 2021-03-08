@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Crochet",
+  "patterns": [
+    {
+      "name": "entity.name.method.crochet",
+      "match": "(?<![a-zA-Z0-9\\-])[a-z][a-zA-Z0-9\\-]*:"
+    },
+    {
+      "name": "keyword.control.crochet",
+      "match": "(?<![a-zA-Z0-9\\-\\.\\^])(relation|predicate|when|do|command|scene|action|type|role|enum|define|singleton|goto|call|let|return|fact|forget|new|search|if|simulate|true|false|not|and|or|is|self|as|event|quiescence|for|until|in|foreign|on|always|match|then|else|condition)(?![a-zA-Z0-9\\-:])"
+    },
+    {
+      "name": "constant.language.crochet",
+      "match": "(?<![a-zA-Z0-9\\-])(true|false)(?![a-zA-Z0-9_])"
+    },
+    {
+      "name": "comment.line.heading.crochet",
+      "match": "%[^\\n\\r]*"
+    },
+    {
+      "name": "constant.numeric.integer.crochet",
+      "match": "(?<![a-zA-Z0-9\\-])[\\-\\+]?[0-9][0-9_]*"
+    },
+    {
+      "name": "constant.numeric.decimal.crochet",
+      "match": "(?<![a-zA-Z0-9\\-])[\\-\\+]?[0-9][0-9_]*(\\.[0-9][0-9_]*)?([eE][\\-\\+]?[0-9][0-9_]*)?"
+    },
+    {
+      "name": "variable.name.crochet",
+      "match": "(?<![a-zA-Z0-9\\-])[A-Z][a-zA-Z0-9\\-]*|_"
+    },
+    {
+      "name": "string.quoted.double",
+      "begin": "\"",
+      "end": "\""
+    },
+    {
+      "name": "comment.line",
+      "match": "//.*"
+    },
+    {
+      "name": "keyword.operator.crochet",
+      "match": "(?<![\\+\\-\\*\\/\\<\\>\\=\\:])(\\+\\+|\\+|\\-|\\*|/|<=|<|>=|>|===|=/=|::|;)(?![\\+\\-\\*\\/\\<\\>\\=\\:])"
+    }
+  ],
+  "scopeName": "source.crochet"
+}
