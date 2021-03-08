@@ -1,0 +1,226 @@
+% crochet
+
+relation Item* short-name: Name;
+relation Item* name: Name;
+relation Item* description: Description;
+relation Item* on: Place;
+
+relation Room* to: Direction* lays: Room;
+relation Room* times-disturbed: N;
+
+relation Player visited: Room*;
+relation Player* at: Location;
+
+relation State state;
+
+type state;
+singleton on-going is state;
+singleton won is state;
+singleton lost is state;
+
+
+type direction;
+singleton north is direction { command to-html { "north" text } }
+singleton east is direction { command to-html { "east" text } }
+singleton south is direction { command to-html { "south" text } }
+singleton west is direction { command to-html { "west" text } }
+
+role place;
+type thing;
+type room is thing;
+
+singleton foyer is room {
+  name: "Foyer of the Opera House";
+  short-name: "foyer";
+  description:
+    "You are standing in a spacious hall, splendidly decorated in red and gold,
+    with glittering chanedliers overhead. The entrance from the street is to
+    the north, and there are doorways south and west.";
+  
+  to: south lays: bar;
+  to: west lays: cloakroom;
+}
+
+singleton cloakroom is room {
+  name: "Cloakroom";
+  short-name: "cloakroom";
+  description:
+    "The walls of this small room were clearly once lined with hooks,
+    though now only one remains. The exit is a door to the east.";
+  
+  to: east lays: foyer;
+}
+
+singleton hook is thing :: place {
+  name: "Small Brass Hook";
+  short-name: "hook";
+  description:
+    "It's just a small brass hook, screwed to the wall.";
+  
+  on: cloakroom;
+}
+
+singleton bar is room {
+  name: "Foyer Bar";
+  short-name: "bar";
+  description:
+    "The bar, much rougher than you'd have guessed after the opulence of the
+    foyer to the north, is completely empty. There seems to be some sort of
+    message scrawled in sawdust on the floor.";
+
+  to: north lays: foyer;
+  times-disturbed: 0;
+}
+
+singleton cloak is thing {
+  name: "Velvet Cloak";
+  short-name: "cloak";
+  description:
+    "A handsome cloak, of velvet trimmed with satin, and slightly spattered with
+    raindrops. Its blackness is so deep that it almost seems to suck light from
+    the room.";
+
+  on: player;
+}
+
+singleton player {
+  at: foyer;
+}
+
+
+command Room describe {
+  match {
+    when cloak on: player if Room === bar {
+      paragraph: "It's pitch dark here. You can't see a thing.";
+    }
+
+    when player visited: Room, Room short-name: Name {
+      paragraph: "You're back at the [Name]";
+    }
+
+    when Room name: Name, Room description: Description {
+      section: [
+        paragraph: (strong: Name),
+        paragraph: Description
+      ]
+    }
+  } first;
+}
+
+do {
+  fact on-going state;
+}
+
+scene main {
+  (header: [
+    title: "Cloak of Darkness",
+    subtitle: "The classic interactive fiction demo"
+  ]) show;
+  
+  (paragraph: 
+    "Hurrying through the rainswept November night, you're glad to see the
+    bright lights of the Opera House. It's surprising that there aren't
+    more people about but, hey, what do you expect in a cheap demo game...?"
+  ) show;
+
+  foyer describe show;
+  fact player visited: foyer;
+
+  simulate for [player]
+  until not on-going state
+  on pick-action: Actions for: _ {
+    let Items = for X in Actions { [Title -> X.Title, Value -> X] };
+    (menu: Items) show selected;
+  }
+}
+
+
+action "Go [Direction]"
+when
+  player at: Room,
+  Room to: Direction lays: Target,
+  not player visited: Target
+{
+  Target describe show;
+  fact player at: Target;
+  fact player visited: Target;
+}
+
+action "Go [Direction], to the [Name]"
+when
+  player at: Room,
+  Room to: Direction lays: Target,
+  Target short-name: Name,
+  player visited: Target
+{
+  Target describe show;
+  fact player at: Target;
+}
+
+action "Go north, to the street"
+when player at: foyer
+{
+  "You've only just arrived, and besides, the weather outside seems to be
+  getting worse." show;
+}
+
+
+// Bar actions
+action "Look around"
+when
+  player at: bar,
+  cloak on: player,
+  bar times-disturbed: N
+{
+  "In the dark? You could easily disturb something!" show;
+
+  fact bar times-disturbed: (N + 1);
+}
+
+action "Examine the message"
+when
+  player at: bar,
+  not cloak on: player,
+  bar times-disturbed: N
+{
+  condition {
+    when N < 2 {
+      "The message, neatly marked in the sawdust reads... [strong: "you won"]" show;
+      fact won state;
+    }
+
+    always {
+      "The message has been carelessly trampled, making it difficult to read.
+       You can just distinguish the words... [strong: "you have lost"]" show;
+       fact lost state;
+    }
+  }
+}
+
+
+// Cloakroom actions
+action "Place cloak on the [Name]"
+when
+  player at: cloakroom,
+  cloak on: player,
+  Thing on: cloakroom,
+  Thing short-name: Name
+  if Thing :: place
+{
+  "You place your cloak on [Name]." show;
+
+  fact cloak on: Thing;
+}
+
+action "Take cloak from the [Name]"
+when
+  player at: cloakroom,
+  Thing on: cloakroom,
+  cloak on: Thing,
+  Thing short-name: Name
+  if Thing :: place
+{
+  "You take your cloak from [Name]." show;
+
+  fact cloak on: player;
+}
