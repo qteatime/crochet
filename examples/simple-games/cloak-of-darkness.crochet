@@ -87,6 +87,13 @@ singleton player {
   at: foyer;
 }
 
+command Room describe-full {
+  let R = (search Room name: Name, Room description: Description) first;
+  section: [
+    paragraph: (strong: R.Name),
+    paragraph: R.Description
+  ];
+}
 
 command Room describe {
   match {
@@ -99,10 +106,8 @@ command Room describe {
     }
 
     when Room name: Name, Room description: Description {
-      section: [
-        paragraph: (strong: Name),
-        paragraph: Description
-      ]
+      fact player visited: Room;
+      Room describe-full;
     }
   } first;
 }
@@ -112,19 +117,18 @@ do {
 }
 
 scene main {
-  (header: [
+  header: [
     title: "Cloak of Darkness",
     subtitle: "The classic interactive fiction demo"
-  ]) show;
+  ] | _ show;
   
-  (paragraph: 
+  paragraph: 
     "Hurrying through the rainswept November night, you're glad to see the
     bright lights of the Opera House. It's surprising that there aren't
     more people about but, hey, what do you expect in a cheap demo game...?"
-  ) show;
+  | _ show;
 
   foyer describe show;
-  fact player visited: foyer;
 
   simulate for [player]
   until not on-going state
@@ -143,7 +147,6 @@ when
 {
   Target describe show;
   fact player at: Target;
-  fact player visited: Target;
 }
 
 action "Go [Direction], to the [Name]"
@@ -162,6 +165,14 @@ when player at: foyer
 {
   "You've only just arrived, and besides, the weather outside seems to be
   getting worse." show;
+}
+
+action "Look around"
+when
+  player at: Room,
+  not (cloak on: player, player at: bar)
+{
+  Room describe-full show;
 }
 
 

@@ -306,7 +306,7 @@ export function compileInterpolation<T, U>(
 ): IR.SimpleInterpolation<U> {
   return new SimpleInterpolation(
     value.parts.map((x) => compileInterpolationPart(x, f))
-  );
+  ).optimise();
 }
 
 export function compileInterpolationPart<T, U>(
@@ -335,38 +335,6 @@ export function compileInterpolationPart<T, U>(
       return new IR.SIPDynamic(f(x));
     },
   });
-}
-
-export function optimiseInterpolation(xs: IR.EInterpolationPart[]) {
-  if (xs.length === 0) {
-    return new IR.EInterpolate([]);
-  } else {
-    const [hd, ...tl] = xs;
-    const result = tl.reduce(
-      (prev, cur) => {
-        if (
-          cur instanceof IR.EInterpolateStatic &&
-          prev.now instanceof IR.EInterpolateStatic
-        ) {
-          return {
-            now: new IR.EInterpolateStatic(prev.now.text + cur.text),
-            list: prev.list,
-          };
-        } else {
-          prev.list.push(prev.now);
-          return { now: cur, list: prev.list };
-        }
-      },
-      { now: hd, list: [] as IR.EInterpolationPart[] }
-    );
-    const list = result.list;
-    list.push(result.now);
-    if (list.length === 1 && list[0] instanceof IR.EInterpolateStatic) {
-      return new IR.EText(list[0].text);
-    } else {
-      return new IR.EInterpolate(list);
-    }
-  }
 }
 
 export function compileMatchSearchCase(
@@ -484,16 +452,12 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
 
     Interpolate(_, x) {
-      const interpolation = compileInterpolation(
-        x,
-        compileExpression
-      ).to_expression();
-      return optimiseInterpolation(interpolation.parts);
+      return compileInterpolation(x, compileExpression).to_expression();
     },
 
     Pipe(_, left, right) {
       return new IR.EApplyPartial(compileExpression(right), [
-        compileExpression(left),
+        new IR.EPartialConcrete(compileExpression(left)),
       ]);
     },
 

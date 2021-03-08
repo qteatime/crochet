@@ -14,32 +14,20 @@ import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 import { SimpleInterpolation } from "./atomic";
 
-export type Declaration =
-  | DDo
-  | DPredicate
-  | DRelation
-  | DForeignCommand
-  | DCrochetCommand
-  | DRole
-  | DType
-  | DDefine
-  | DScene
-  | DAction
-  | DWhen
-  | DForeignType;
-
 export type ContextualDeclaration = DAction | DWhen;
 
-interface IDeclaration {
-  apply(state: State): Promise<void> | void;
+export abstract class Declaration {
+  abstract apply(state: State): Promise<void> | void;
 }
 
 interface IContextualDeclaration {
   apply_to_context(state: State, context: Context): Promise<void> | void;
 }
 
-export class DRelation implements IDeclaration {
-  constructor(readonly name: string, readonly type: TreeType) {}
+export class DRelation extends Declaration {
+  constructor(readonly name: string, readonly type: TreeType) {
+    super();
+  }
 
   apply(state: State) {
     const relation = new ConcreteRelation(this.name, this.type.realise());
@@ -47,16 +35,20 @@ export class DRelation implements IDeclaration {
   }
 }
 
-export class DPredicate implements IDeclaration {
-  constructor(readonly name: string, readonly procedure: PredicateProcedure) {}
+export class DPredicate extends Declaration {
+  constructor(readonly name: string, readonly procedure: PredicateProcedure) {
+    super();
+  }
 
   apply(state: State) {
     state.world.database.add(this.name, this.procedure);
   }
 }
 
-export class DDo implements IDeclaration {
-  constructor(readonly body: Statement[]) {}
+export class DDo extends Declaration {
+  constructor(readonly body: Statement[]) {
+    super();
+  }
 
   apply(state: State) {
     const block = new SBlock(this.body);
@@ -64,13 +56,15 @@ export class DDo implements IDeclaration {
   }
 }
 
-export class DForeignCommand implements IDeclaration {
+export class DForeignCommand extends Declaration {
   constructor(
     readonly name: string,
     readonly types: Type[],
     readonly foreign_name: string,
     readonly args: number[]
-  ) {}
+  ) {
+    super();
+  }
 
   apply(state: State) {
     state.world.procedures.add_foreign(
@@ -81,13 +75,15 @@ export class DForeignCommand implements IDeclaration {
   }
 }
 
-export class DCrochetCommand implements IDeclaration {
+export class DCrochetCommand extends Declaration {
   constructor(
     readonly name: string,
     readonly parameters: string[],
     readonly types: Type[],
     readonly body: Statement[]
-  ) {}
+  ) {
+    super();
+  }
 
   apply(state: State) {
     const env = new Environment(state.env, null);
@@ -106,8 +102,10 @@ export class DCrochetCommand implements IDeclaration {
   }
 }
 
-export class DRole implements IDeclaration {
-  constructor(readonly name: string) {}
+export class DRole extends Declaration {
+  constructor(readonly name: string) {
+    super();
+  }
 
   apply(state: State) {
     const role = new CrochetRole(this.name);
@@ -115,13 +113,15 @@ export class DRole implements IDeclaration {
   }
 }
 
-export class DType implements IDeclaration {
+export class DType extends Declaration {
   constructor(
     readonly parent: Type | null,
     readonly name: string,
     readonly roles: string[],
     readonly fields: { parameter: string; type: Type }[]
-  ) {}
+  ) {
+    super();
+  }
 
   apply(state: State) {
     const roles = this.roles.map((x) => state.world.roles.lookup(x));
@@ -141,16 +141,20 @@ export class DType implements IDeclaration {
   }
 }
 
-export class DDefine implements IDeclaration {
-  constructor(readonly name: string, readonly value: Expression) {}
+export class DDefine extends Declaration {
+  constructor(readonly name: string, readonly value: Expression) {
+    super();
+  }
   async apply(state: State) {
     const value = cvalue(await run(this.value.evaluate(state.with_new_env())));
     state.world.globals.add(this.name, value);
   }
 }
 
-export class DScene implements IDeclaration {
-  constructor(readonly name: string, readonly body: Statement[]) {}
+export class DScene extends Declaration {
+  constructor(readonly name: string, readonly body: Statement[]) {
+    super();
+  }
   async apply(state: State) {
     const env = new Environment(state.env, null);
     const scene = new Scene(this.name, env, this.body);
@@ -158,12 +162,14 @@ export class DScene implements IDeclaration {
   }
 }
 
-export class DAction implements IDeclaration, IContextualDeclaration {
+export class DAction extends Declaration implements IContextualDeclaration {
   constructor(
     readonly title: SimpleInterpolation<string>,
     readonly predicate: Predicate,
     readonly body: Statement[]
-  ) {}
+  ) {
+    super();
+  }
 
   async apply_to_context(state: State, context: Context) {
     const env = new Environment(state.env, null);
@@ -176,8 +182,10 @@ export class DAction implements IDeclaration, IContextualDeclaration {
   }
 }
 
-export class DWhen implements IDeclaration, IContextualDeclaration {
-  constructor(readonly predicate: Predicate, readonly body: Statement[]) {}
+export class DWhen extends Declaration implements IContextualDeclaration {
+  constructor(readonly predicate: Predicate, readonly body: Statement[]) {
+    super();
+  }
 
   async apply_to_context(state: State, context: Context) {
     const env = new Environment(state.env, null);
@@ -190,8 +198,10 @@ export class DWhen implements IDeclaration, IContextualDeclaration {
   }
 }
 
-export class DForeignType implements IDeclaration {
-  constructor(readonly name: string, readonly foreign_name: string) {}
+export class DForeignType extends Declaration {
+  constructor(readonly name: string, readonly foreign_name: string) {
+    super();
+  }
 
   async apply(state: State) {
     const type = state.world.ffi.types.lookup(this.foreign_name);
