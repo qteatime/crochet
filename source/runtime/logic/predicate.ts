@@ -204,7 +204,7 @@ function join(
   let env = resultEnv;
 
   for (const [key, pattern] of bindings) {
-    const value = env0.lookup(key);
+    const value = env0.try_lookup(key);
     if (value == null) {
       return null;
     }

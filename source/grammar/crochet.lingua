@@ -118,6 +118,7 @@ type Pattern =
   | HasType(pos: Meta, typ: TypeApp, name: Pattern)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
+  | Self(pos: Meta)
   | Wildcard(pos: Meta)
   | Lit(lit: Literal)
 
@@ -276,6 +277,8 @@ grammar Crochet : Program {
   actionDeclaration =
     | action_ t:interpolateText<name> when_ p:predicate b:statementBlock<statement>
       -> Declaration.Action(meta, t, p, b)
+    | action_ t:interpolateText<name> b:statementBlock<statement>
+      -> Declaration.Action(meta, t, Predicate.Always(meta), b)
   
   whenDeclaration =
     | when_ p:predicate b:statementBlock<statement>
@@ -284,7 +287,6 @@ grammar Crochet : Program {
 
   // -- Logic
   predicate =
-    | p:predicateBinary if_ c:constraint      -> Predicate.Constrain(meta, p, c)
     | predicateBinary
 
   predicateBinary =
@@ -307,7 +309,11 @@ grammar Crochet : Program {
     | predicateNot
   
   predicateNot =
-    | not_ p:predicatePrimary                 -> Predicate.Not(meta, p)
+    | not_ p:predicateConstrain               -> Predicate.Not(meta, p)
+    | predicateConstrain
+
+  predicateConstrain =
+    | p:predicatePrimary if_ c:constraint      -> Predicate.Constrain(meta, p, c)
     | predicatePrimary
 
   predicatePrimary =
@@ -318,6 +324,7 @@ grammar Crochet : Program {
   pattern =
     | s<"("> c:patternComplex s<")">  -> c
     | n:atom                  -> Pattern.Global(meta, n)
+    | self_                   -> Pattern.Self(meta)
     | l:literal               -> Pattern.Lit(l)
     | patternName
 

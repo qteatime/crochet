@@ -63,7 +63,7 @@ export class Variable extends Constraint {
   }
 
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
-    const result = env.lookup(this.name);
+    const result = env.try_lookup(this.name) ?? state.env.try_lookup(this.name);
     if (result == null) {
       throw new Error(`Undefined constraint variable ${this.name}`);
     }

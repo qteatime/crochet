@@ -152,6 +152,10 @@ export function compilePattern(p: Pattern): Logic.Pattern {
       return new Logic.GlobalPattern(name.name);
     },
 
+    Self(_) {
+      return new Logic.SelfPattern();
+    },
+
     Variable(_, name) {
       return new Logic.VariablePattern(name.name);
     },

@@ -12,8 +12,16 @@ export class UnificationEnvironment {
     return this.bindings;
   }
 
-  lookup(name: string) {
+  try_lookup(name: string) {
     return this.bindings.get(name);
+  }
+
+  lookup(name: string) {
+    const result = this.try_lookup(name);
+    if (result == null) {
+      throw new Error(`internal: undefined logical variable ${name}`);
+    }
+    return result;
   }
 
   bind(name: string, value: CrochetValue) {
@@ -37,15 +45,7 @@ export class UnificationEnvironment {
   }
 }
 
-export type Pattern =
-  | TypePattern
-  | RolePattern
-  | ValuePattern
-  | GlobalPattern
-  | VariablePattern
-  | WildcardPattern;
-
-abstract class AbstractPattern {
+export abstract class Pattern {
   abstract unify(
     state: State,
     env: UnificationEnvironment,
@@ -66,7 +66,7 @@ abstract class AbstractPattern {
   }
 }
 
-export class TypePattern extends AbstractPattern {
+export class TypePattern extends Pattern {
   constructor(readonly pattern: Pattern, readonly type: Type) {
     super();
   }
@@ -85,7 +85,7 @@ export class TypePattern extends AbstractPattern {
   }
 }
 
-export class RolePattern extends AbstractPattern {
+export class RolePattern extends Pattern {
   constructor(readonly pattern: Pattern, readonly role: string) {
     super();
   }
@@ -104,7 +104,7 @@ export class RolePattern extends AbstractPattern {
   }
 }
 
-export class ValuePattern extends AbstractPattern {
+export class ValuePattern extends Pattern {
   constructor(readonly value: CrochetValue) {
     super();
   }
@@ -122,7 +122,7 @@ export class ValuePattern extends AbstractPattern {
   }
 }
 
-export class GlobalPattern extends AbstractPattern {
+export class GlobalPattern extends Pattern {
   constructor(readonly name: string) {
     super();
   }
@@ -141,7 +141,22 @@ export class GlobalPattern extends AbstractPattern {
   }
 }
 
-export class VariablePattern extends AbstractPattern {
+export class SelfPattern extends Pattern {
+  unify(
+    state: State,
+    env: UnificationEnvironment,
+    other: CrochetValue
+  ): UnificationEnvironment | null {
+    const value = state.env.receiver;
+    if (other.equals(value)) {
+      return env;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class VariablePattern extends Pattern {
   constructor(readonly name: string) {
     super();
   }
@@ -151,7 +166,7 @@ export class VariablePattern extends AbstractPattern {
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
-    const bound = env.lookup(this.name);
+    const bound = env.try_lookup(this.name);
     if (bound == null) {
       const newEnv = env.clone();
       newEnv.bind(this.name, value);
@@ -168,7 +183,7 @@ export class VariablePattern extends AbstractPattern {
   }
 }
 
-export class WildcardPattern extends AbstractPattern {
+export class WildcardPattern extends Pattern {
   unify(
     state: State,
     env: UnificationEnvironment,
