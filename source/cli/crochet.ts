@@ -22,7 +22,7 @@ const argv = Yargs.usage("crochet <command> [options]")
     });
   })
   .command(
-    "run-web <filename>",
+    "run-web <directory>",
     "Runs the simulation in the browser",
     (Yargs) => {
       Yargs.option("entry", {
@@ -30,8 +30,8 @@ const argv = Yargs.usage("crochet <command> [options]")
         default: "main",
         type: "string",
       })
-        .positional("filename", {
-          description: "Path to the file to run",
+        .positional("directory", {
+          description: "Directory containing a crochet.json file",
           type: "string",
         })
         .option("port", {
@@ -104,7 +104,7 @@ switch (argv._[0]) {
   }
 
   case "run-web": {
-    Server.serve(argv["filename"] as string, argv["port"] as number);
+    Server.serve(argv["directory"] as string, argv["port"] as number);
     break;
   }
 

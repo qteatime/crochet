@@ -1,6 +1,6 @@
 {
   "bin": {
-    "crochet": "build/bin/crochet"
+    "crochet": "crochet.js"
   },
   "scripts": {
     "build": "just build",
