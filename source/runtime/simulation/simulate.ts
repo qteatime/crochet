@@ -97,7 +97,9 @@ export class Simulation {
   async *pick_action(state: State, actor: CrochetValue): Machine {
     const actions = this.context
       .available_actions(actor, state)
-      .map((x) => new ActionChoice(x.title, x.action, x.machine));
+      .map(
+        (x) => new ActionChoice(x.title, x.score, x.tags, x.action, x.machine)
+      );
 
     const selected = cvalue(
       yield _push(

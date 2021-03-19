@@ -1,7 +1,9 @@
 import { Action } from "./event";
 import {
   CrochetRecord,
+  CrochetStream,
   CrochetText,
+  CrochetThunk,
   CrochetType,
   CrochetUnknown,
   CrochetValue,
@@ -12,7 +14,8 @@ import { Machine } from "../vm";
 export class ActionChoice extends CrochetValue {
   constructor(
     readonly title: CrochetValue,
-    readonly score: number,
+    readonly score: CrochetValue,
+    readonly tags: CrochetValue[],
     readonly action: Action,
     readonly machine: Machine
   ) {
@@ -27,6 +30,8 @@ export class ActionChoice extends CrochetValue {
     return new CrochetRecord(
       new Map<string, CrochetValue>([
         ["Title", this.title],
+        ["Score", this.score],
+        ["Tags", new CrochetStream(this.tags)],
         ["Action", new CrochetUnknown(this.action)],
       ])
     );

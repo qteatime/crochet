@@ -2,7 +2,12 @@ import { Environment } from "../world";
 import { EInterpolate, Expression, SBlock, Statement } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
 import { State } from "../vm";
-import { CrochetInteger, CrochetText, CrochetValue } from "../primitives";
+import {
+  CrochetInteger,
+  CrochetText,
+  CrochetThunk,
+  CrochetValue,
+} from "../primitives";
 import { BagMap, iter } from "../../utils";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
 import { SimpleInterpolation } from "../ir/atomic";
@@ -35,7 +40,7 @@ export class Action {
   constructor(
     readonly title: SimpleInterpolation<string>,
     readonly predicate: Predicate,
-    readonly tags: string[],
+    readonly tags: CrochetValue[],
     readonly env: Environment,
     readonly rank: Expression,
     readonly body: Statement[]
@@ -56,6 +61,7 @@ export class Action {
       return {
         action: this,
         title: this.title.interpolate((x) => env.lookup(x)),
+        score: new CrochetThunk(this.rank, env),
         tags: this.tags,
         machine: block.evaluate(state.with_env(env)),
       };

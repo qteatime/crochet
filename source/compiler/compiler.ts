@@ -27,6 +27,7 @@ import {
   MatchSearchCase,
   RecordField,
   Interpolation,
+  Rank,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
@@ -687,6 +688,18 @@ export function compileTypeDef(t: TypeDef, fields: Parameter[]) {
   );
 }
 
+export function compileRank(r: Rank): IR.Expression {
+  return r.match<IR.Expression>({
+    Expr(e) {
+      return compileExpression(e);
+    },
+
+    Unranked(_) {
+      return new IR.EInteger(0n);
+    },
+  });
+}
+
 export function compileDeclaration(d: Declaration): IR.Declaration[] {
   return d.match<IR.Declaration[]>({
     Do(_, body) {
@@ -759,11 +772,13 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       return [new IR.DScene(name.name, body.map(compileStatement))];
     },
 
-    Action(_, title, predicate, body) {
+    Action(_, title, tags, predicate, rank, body) {
       return [
         new IR.DAction(
           compileInterpolation(title, (x) => x.name),
+          tags.map((x) => x.name),
           compilePredicate(predicate),
+          compileRank(rank),
           body.map(compileStatement)
         ),
       ];

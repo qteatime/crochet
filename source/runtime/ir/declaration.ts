@@ -165,7 +165,9 @@ export class DScene extends Declaration {
 export class DAction extends Declaration implements IContextualDeclaration {
   constructor(
     readonly title: SimpleInterpolation<string>,
+    readonly tags: string[],
     readonly predicate: Predicate,
+    readonly rank: Expression,
     readonly body: Statement[]
   ) {
     super();
@@ -173,7 +175,15 @@ export class DAction extends Declaration implements IContextualDeclaration {
 
   async apply_to_context(state: State, context: Context) {
     const env = new Environment(state.env, null);
-    const action = new Action(this.title, this.predicate, [], env, this.body);
+    const tags = this.tags.map((x) => state.world.globals.lookup(x));
+    const action = new Action(
+      this.title,
+      this.predicate,
+      tags,
+      env,
+      this.rank,
+      this.body
+    );
     context.actions.push(action);
   }
 
