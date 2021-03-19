@@ -1,11 +1,11 @@
 % crochet
 
 command (X is text) ++ (Y is text) = 
-  foreign crochet.text.concat(X, Y);
+  foreign crochet.native.text.concat(X, Y);
 
 
 command (X is interpolation) ++ (Y is interpolation) =
-  foreign crochet.interpolation.concat(X, Y);
+  foreign crochet.native.interpolation.concat(X, Y);
 
 command (X is text) ++ (Y is interpolation) do
   (X as interpolation) ++ Y;
@@ -17,10 +17,10 @@ end
 
 
 command (X is interpolation) parts = 
-  foreign crochet.interpolation.parts(X);
+  foreign crochet.native.interpolation.parts(X);
 
 command (X is interpolation) holes =
-  foreign crochet.interpolation.holes(X);
+  foreign crochet.native.interpolation.holes(X);
 
 command (X is interpolation) static-text =
-  foreign crochet.interpolation.static-text(X);
+  foreign crochet.native.interpolation.static-text(X);

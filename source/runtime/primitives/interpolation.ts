@@ -1,5 +1,7 @@
 import { iter } from "../../utils";
 import { gen } from "../../utils/utils";
+import { foreign, foreign_namespace, machine } from "../world";
+import { CrochetStream } from "./stream";
 import { CrochetText } from "./text";
 import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";

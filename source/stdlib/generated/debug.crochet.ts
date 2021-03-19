@@ -1,1 +1,1 @@
-export default "% crochet\r\n\r\ncommand X inspect =\r\n  foreign crochet.debug.inspect(X);\r\n\r\ncommand X debug-representation =\r\n  foreign crochet.debug.representation(X);"
+export default "% crochet\r\n\r\ncommand X inspect =\r\n  foreign crochet.native.debug.inspect(X);\r\n\r\ncommand X debug-representation =\r\n  foreign crochet.native.debug.representation(X);"

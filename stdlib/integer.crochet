@@ -5,19 +5,19 @@
 
 // == Arithmetic
 command (X is integer) + (Y is integer) =
-  foreign crochet.integer.add(X, Y);
+  foreign crochet.native.integer.add(X, Y);
 
 command (X is integer) - (Y is integer) =
-  foreign crochet.integer.sub(X, Y);
+  foreign crochet.native.integer.sub(X, Y);
 
 command (X is integer) * (Y is integer) =
-  foreign crochet.integer.mul(X, Y);
+  foreign crochet.native.integer.mul(X, Y);
 
 command (X is integer) divided-by: (Y is integer) =
-  foreign crochet.integer.div(X, Y);
+  foreign crochet.native.integer.div(X, Y);
 
 command (X is integer) remainder-of-division-by: (Y is integer) =
-  foreign crochet.integer.rem(X, Y);
+  foreign crochet.native.integer.rem(X, Y);
 
 command (X is integer) divide-by-with-remainder: (Y is integer) do
   [
@@ -28,16 +28,16 @@ end
 
 // == Relational
 command (X is integer) < (Y is integer) = 
-  foreign crochet.integer.lt(X, Y);
+  foreign crochet.native.integer.lt(X, Y);
 
 command (X is integer) <= (Y is integer) = 
-  foreign crochet.integer.lte(X, Y);
+  foreign crochet.native.integer.lte(X, Y);
 
 command (X is integer) > (Y is integer) = 
-  foreign crochet.integer.gt(X, Y);
+  foreign crochet.native.integer.gt(X, Y);
 
 command (X is integer) >= (Y is integer) = 
-  foreign crochet.integer.gte(X, Y);
+  foreign crochet.native.integer.gte(X, Y);
 
 
 

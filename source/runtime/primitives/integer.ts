@@ -1,5 +1,8 @@
 import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
+import { CrochetFloat } from "./float";
+import { foreign, foreign_namespace, machine } from "../world";
+import { from_bool } from "./core-ops";
 
 export class CrochetInteger extends CrochetValue {
   get type() {
@@ -11,7 +14,10 @@ export class CrochetInteger extends CrochetValue {
   }
 
   equals(other: CrochetValue): boolean {
-    return other instanceof CrochetInteger && other.value === this.value;
+    return (
+      (other instanceof CrochetInteger && other.value === this.value) ||
+      (other instanceof CrochetFloat && other.value === Number(this.value))
+    );
   }
 
   to_js() {

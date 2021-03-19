@@ -5,7 +5,7 @@ import {
   machine,
 } from "../../runtime/world/ffi-decorators";
 
-@foreign_namespace("crochet.debug")
+@foreign_namespace("crochet.native.debug")
 export class DebugFfi {
   @foreign("inspect")
   @machine()

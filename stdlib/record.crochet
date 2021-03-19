@@ -1,19 +1,13 @@
 % crochet
 
 command (X is record) ++ (Y is record) =
-  foreign crochet.record.merge(X, Y);
-
-command (X is record) at: (K is text) =
-  foreign crochet.record.at(X, K);
-
-command (X is record) at: (K is text) put: V =
-  foreign crochet.record.at-put(X, K, V);
+  foreign crochet.native.record.merge(X, Y);
 
 command (X is record) keys =
-  foreign crochet.record.keys(X);
+  foreign crochet.native.record.keys(X);
 
 command (X is record) values =
-  foreign crochet.record.values(X);
+  foreign crochet.native.record.values(X);
 
 command (X is record) count =
-  foreign crochet.record.count(X);
+  foreign crochet.native.record.count(X);

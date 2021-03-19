@@ -12,6 +12,7 @@ import { Machine } from "../vm";
 export class ActionChoice extends CrochetValue {
   constructor(
     readonly title: CrochetValue,
+    readonly score: number,
     readonly action: Action,
     readonly machine: Machine
   ) {

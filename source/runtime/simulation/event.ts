@@ -1,5 +1,5 @@
 import { Environment } from "../world";
-import { EInterpolate, SBlock, Statement } from "../ir";
+import { EInterpolate, Expression, SBlock, Statement } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
 import { State } from "../vm";
 import { CrochetInteger, CrochetText, CrochetValue } from "../primitives";
@@ -37,6 +37,7 @@ export class Action {
     readonly predicate: Predicate,
     readonly tags: string[],
     readonly env: Environment,
+    readonly rank: Expression,
     readonly body: Statement[]
   ) {}
 

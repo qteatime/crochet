@@ -1,8 +1,8 @@
 % crochet
 
-command X and Y = foreign crochet.core.band(X, Y);
-command X or Y = foreign crochet.core.bor(X, Y);
-command not X = foreign crochet.core.bnot(X);
+command X and Y = foreign crochet.native.core.band(X, Y);
+command X or Y = foreign crochet.native.core.bor(X, Y);
+command not X = foreign crochet.native.core.bnot(X);
 
-command X === Y = foreign crochet.core.eq(X, Y);
-command X =/= Y = foreign crochet.core.not-eq(X, Y);
+command X === Y = foreign crochet.native.core.eq(X, Y);
+command X =/= Y = foreign crochet.native.core.not-eq(X, Y);

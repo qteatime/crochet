@@ -1,6 +1,5 @@
 import { Type } from "../ir";
 import { from_bool, CrochetValue } from "../primitives";
-import { Core } from "../primitives";
 import { State } from "../vm";
 import { UnificationEnvironment } from "./unification";
 
@@ -15,9 +14,9 @@ export class And extends Constraint {
   }
 
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
-    return Core.band(
-      this.left.evaluate(env, state),
-      this.right.evaluate(env, state)
+    return from_bool(
+      this.left.evaluate(env, state).as_bool() &&
+        this.right.evaluate(env, state).as_bool()
     );
   }
 
@@ -32,9 +31,9 @@ export class Or extends Constraint {
   }
 
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
-    return Core.bor(
-      this.left.evaluate(env, state),
-      this.right.evaluate(env, state)
+    return from_bool(
+      this.left.evaluate(env, state).as_bool() ||
+        this.right.evaluate(env, state).as_bool()
     );
   }
 
@@ -49,7 +48,7 @@ export class Not extends Constraint {
   }
 
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
-    return Core.bnot(this.constraint.evaluate(env, state));
+    return from_bool(!this.constraint.evaluate(env, state).as_bool());
   }
 
   get variables(): string[] {
@@ -96,9 +95,8 @@ export class Equals extends Constraint {
   }
 
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
-    return Core.eq(
-      this.left.evaluate(env, state),
-      this.right.evaluate(env, state)
+    return from_bool(
+      this.left.evaluate(env, state).equals(this.right.evaluate(env, state))
     );
   }
 

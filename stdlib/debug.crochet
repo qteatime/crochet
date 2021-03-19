@@ -1,7 +1,7 @@
 % crochet
 
 command X inspect =
-  foreign crochet.debug.inspect(X);
+  foreign crochet.native.debug.inspect(X);
 
 command X debug-representation =
-  foreign crochet.debug.representation(X);
+  foreign crochet.native.debug.representation(X);

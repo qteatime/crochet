@@ -8,8 +8,9 @@ export * from "./record";
 export * from "./stream";
 export * from "./text";
 export * from "./unknown";
+export * from "./float";
+export * from "./thunk";
 
 export * from "./core-ops";
 export * from "./procedure";
 export * from "./types";
-export * from "./builtins";

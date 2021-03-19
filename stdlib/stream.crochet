@@ -1,31 +1,31 @@
 % crochet
 
 command (X is stream) count =
-  foreign crochet.stream.count(X);
+  foreign crochet.native.stream.count(X);
 
 command (X is stream) first =
-  foreign crochet.stream.first(X);
+  foreign crochet.native.stream.first(X);
 
 command (X is stream) last =
-  foreign crochet.stream.last(X);
+  foreign crochet.native.stream.last(X);
 
 command (X is stream) but-first = 
-  foreign crochet.stream.but-first(X);
+  foreign crochet.native.stream.but-first(X);
 
 command (X is stream) but-last = 
-  foreign crochet.stream.but-last(X);
+  foreign crochet.native.stream.but-last(X);
 
 command (X is stream) take: (N is integer) = 
-  foreign crochet.stream.take(X, N);
+  foreign crochet.native.stream.take(X, N);
 
 command (X is stream) drop: (N is integer) = 
-  foreign crochet.stream.drop(X, N);
+  foreign crochet.native.stream.drop(X, N);
 
 command (X is stream) ++ (Y is stream) = 
-  foreign crochet.stream.concat(X, Y);
+  foreign crochet.native.stream.concat(X, Y);
 
 command (X is stream) zip: (Y is stream) = 
-  foreign crochet.stream.zip(X, Y);
+  foreign crochet.snative.tream.zip(X, Y);
 
 command (X is stream) random-choice =
-  foreign crochet.stream.random-choice(X);
+  foreign crochet.native.stream.random-choice(X);
