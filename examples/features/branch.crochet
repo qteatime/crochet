@@ -2,25 +2,25 @@
 
 relation Who* at: Where;
 
-singleton lielle { at: foyer; }
-singleton karis { }
+singleton lielle with at: foyer; end
+singleton karis;
 
 singleton foyer;
 
-scene main {
-  condition {
-    when 1 > 2 { "1 > 2" }
-    when 1 < 2 { "1 < 2" }
-    always { "umpossible" }
-  } inspect;
+scene main do
+  condition
+    when 1 > 2 do "1 > 2" end
+    when 1 < 2 do "1 < 2" end
+    always do "umpossible" end
+  end inspect;
 
-  match {
-    when Who at: foyer { "[Who] at foyer" }
-    always { "Nah" }
-  } inspect;
+  match
+    when Who at: foyer do "[Who] at foyer" end
+    always do "Nah" end
+  end inspect;
 
-  condition {
-    when search karis at: foyer { "Nah" }
-    always { "That's right" }
-  } inspect;
-}
+  condition
+    when search karis at: foyer do "Nah" end
+    always do "That's right" end
+  end inspect;
+end

@@ -7,13 +7,13 @@ command (X is text) ++ (Y is text) =
 command (X is interpolation) ++ (Y is interpolation) =
   foreign crochet.interpolation.concat(X, Y);
 
-command (X is text) ++ (Y is interpolation) {
+command (X is text) ++ (Y is interpolation) do
   (X as interpolation) ++ Y;
-}
+end
 
-command (X is interpolation) ++ (Y is text) {
+command (X is interpolation) ++ (Y is text) do
   X ++ (Y as interpolation);
-}
+end
 
 
 command (X is interpolation) parts = 

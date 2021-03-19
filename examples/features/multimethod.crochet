@@ -1,33 +1,33 @@
 % crochet
 
-command any other {
+command any other do
   "any other" inspect;
-}
+end
 
-command any hello {
+command any hello do
   "any hello" inspect;
-}
+end
 
-command integer hello {
+command integer hello do
   "integer hello" inspect;
-}
+end
 
-command partial hello {
+command partial hello do
   "partial hello" inspect;
-}
+end
 
-command boolean hello {
+command boolean hello do
   "boolean hello" inspect;
-}
+end
 
-command true hello {
+command true hello do
   "true hello" inspect;
-}
+end
 
-scene main {
+scene main do
   1 other;
   1 hello;
   (_ + 1) hello;
   true hello;
   false hello;
-}
+end

@@ -1,21 +1,21 @@
 % crochet
 
-singleton erin {
-  command mark { "X" }
-  command name { "Erin" }
-}
+singleton erin with
+  command mark do "X" end
+  command name do "Erin" end
+end
 
-singleton saga {
-  command mark { "O" }
-  command name { "Saga" }
-}
+singleton saga with
+  command mark do "O" end
+  command name do "Saga" end
+end
 
-singleton empty {
-  command mark { "_" }
-}
+singleton empty with
+  command mark do "_" end
+end
 
-singleton board {
-  command render {
+singleton board with
+  command render do
     let S = (search l1 c1: M11 c2: M12 c3: M13,
                     l2 c1: M21 c2: M22 c3: M23,
                     l3 c1: M31 c2: M32 c3: M33) first;
@@ -25,18 +25,30 @@ singleton board {
       [S.M21 mark]|[S.M22 mark]|[S.M23 mark]
       [S.M31 mark]|[S.M32 mark]|[S.M33 mark]
       ";
-  }
-}
+  end
+end
 
 type line;
-singleton l1 is line { command to-html { "L1" text } }
-singleton l2 is line { command to-html { "L2" text } }
-singleton l3 is line { command to-html { "L3" text } }
+singleton l1 is line with
+  command to-html do "L1" text end
+end
+singleton l2 is line with
+  command to-html do "L2" text end
+end
+singleton l3 is line with
+  command to-html do "L3" text end
+end
 
 type column;
-singleton c1 is column { command to-html { "C1" text } }
-singleton c2 is column { command to-html { "C2" text } }
-singleton c3 is column { command to-html { "C3" text } }
+singleton c1 is column with
+  command to-html do "C1" text end
+end
+singleton c2 is column with
+  command to-html do "C2" text end
+end
+singleton c3 is column with
+  command to-html do "C3" text end
+end
 
 type state;
 singleton on-going is state;
@@ -51,25 +63,25 @@ define lines = [l1, l2, l3];
 define columns = [c1, c2, c3];
 
 
-predicate Line c1: M1 c2: M2 c3: M3 {
+predicate Line c1: M1 c2: M2 c3: M3 do
   when Line at: c1 mark: M1,
        Line at: c2 mark: M2,
        Line at: c3 mark: M3;
-}
+end
 
 
-do {
-  for L in lines {
-    for C in columns {
+prelude
+  for L in lines do
+    for C in columns do
       fact L at: C mark: empty;
-    }
-  };
+    end
+  end;
 
   fact on-going state;
-}
+end
 
 
-predicate X won {
+predicate X won do
   when L at: c1 mark: X,
        L at: c2 mark: X,
        L at: c3 mark: X;
@@ -85,9 +97,9 @@ predicate X won {
   when l1 at: c3 mark: X,
        l2 at: c2 mark: X,
        l3 at: c1 mark: X;
-}
+end
 
-scene main {
+scene main do
   (header: [
     title: "Tic-Tac-Toe",
     subtitle: "A small example of AI-driven game",
@@ -113,24 +125,24 @@ scene main {
 
   simulate for [erin, saga]
   until not on-going state
-  on pick-action: Actions for: Turn {
-    match {
-      when Turn player {
-        let Items = for Action in Actions {
+  on pick-action: Actions for: Turn do
+    match
+      when Turn player do
+        let Items = for Action in Actions do
           [Title -> Action.Title, Value -> Action]
-        };
+        end;
         (menu: Items) show selected;
-      }
+      end
 
-      always {
+      always do
         Actions random-choice;
-      }
-    } first;
-  };
-}
+      end
+    end first;
+  end;
+end
 
 action "Mark [L], [C]"
-when X simulate-turn, L at: C mark: empty {
+when X simulate-turn, L at: C mark: empty do
   fact L at: C mark: X;
 
   (section: [
@@ -138,14 +150,14 @@ when X simulate-turn, L at: C mark: empty {
     board render,
   ]) show;
   100 sleep;
-}
+end
 
-when X simulate-turn, X won {
+when X simulate-turn, X won do
   "[X name] won!" show;
   fact won state;
-}
+end
 
-when on-going state, not X won, not L at: C mark: empty {
+when on-going state, not X won, not L at: C mark: empty do
   "It's a draw!" show;
   fact draw state;
-}
+end

@@ -4,7 +4,7 @@ type point(X is integer, Y is integer);
 
 relation X* at: Y;
 
-scene main {
+scene main do
   let Point = [X -> 1, Y -> 2];
   [Point.X, Point.Y] inspect;
 
@@ -19,4 +19,4 @@ scene main {
   Location.Where inspect;
 
   Location.(Who as Quem, Where as Aonde) inspect;
-}
+end

@@ -4,24 +4,27 @@ role actor;
 role room;
 
 command X inspect = inspect(X);
-command (X is integer) hello { "Numbers can't say anything, miss..."; }
 
-singleton lielle :: actor {
+command (X is integer) hello do
+  "Numbers can't say anything, miss...";
+end
+
+singleton lielle :: actor with
   at: foyer;
   likes: kristine;
 
-  command hello {
+  command hello do
     "Lielle: hello!";
-  }
-}
+  end
+end
 
-singleton kristine :: actor {
+singleton kristine :: actor with
   at: foyer;
 
-  command hello {
+  command hello do
     "Kristine: hi.";
-  }
-}
+  end
+end
 
 singleton foyer :: room;
 
@@ -29,11 +32,11 @@ relation Who* at: Where;
 relation Who* likes: Whom*;
 relation Who* disabled;
 
-predicate Who kisses: Whom at: Where {
+predicate Who kisses: Whom at: Where do
   when Who at: Where, Whom at: Where, Who likes: Whom;
-}
+end
 
-do {
+prelude
   let Kisses = search lielle kisses: (Who :: actor) at: (Where :: room);
   let Multi = "This is
                a multiline
@@ -48,44 +51,44 @@ do {
     Search -> Kisses,
   ];
   Multi inspect;
-}
+end
 
-scene one {
+scene one do
   "One" inspect;
   call two;
   "One end" inspect;
-}
+end
 
-scene two {
+scene two do
   "Two" inspect;
-}
+end
 
-scene main {
+scene main do
   "Hello" inspect;
   simulate for [kristine, lielle] until action quiescence
-    on pick-action: Actions for: Turn {
+    on pick-action: Actions for: Turn do
       "Simulate for [Turn] with [Actions.Title]" inspect;
       Actions first;
-    };
+    end;
   call one;
   goto two;
   "End" inspect;
-}
+end
 
 action "Say hello"
-when X simulate-turn, not X disabled, X at: P, Y at: P if X =/= Y {
+when X simulate-turn, not X disabled, X at: P, Y at: P if X =/= Y do
   [X, "says hello to", Y] inspect;
   ["Stats", search Turn simulate-turn, Rounds simulate-rounds-elapsed] inspect;
   ["Acted", search X simulate-acted] inspect;
   ["Remaining", (search X simulate-actor, not X simulate-acted, not X simulate-turn)] inspect;
   fact X disabled;
-}
+end
 
 action "Say goodbye"
-when X simulate-turn, not X action-fired: _ {
+when X simulate-turn, not X action-fired: _ do
   "[X] says goodbye" inspect;
-}
+end
 
-when X simulate-turn {
+when X simulate-turn do
   [X, "ends her turn"] inspect;
-}
+end

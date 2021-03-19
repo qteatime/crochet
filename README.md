@@ -5,8 +5,8 @@
 > games I want to create, and how to generalise that.
 
 Crochet is a small engine for building, mainly, story and AI-driven simulations,
-particularly turn-based and text-based ones. This Crochet would work great for
-building Interactive Fiction games with AI-controlled NPCs, as well as
+particularly turn-based and text-based ones. This means that Crochet would work
+great for building Interactive Fiction games with AI-controlled NPCs, as well as
 Rogue-like games with a large amount of procedurally-generated content.
 
 The goal is to have Crochet eventually support building games that are less
@@ -40,6 +40,12 @@ examples in `examples/features`:
 
 ```shell
 $ node crochet.js run examples/features/search.crochet
+```
+
+Try also running some of the web games with:
+
+```
+$ node crochet.js run-web examples/web-games/cloak-of-darkness
 ```
 
 ## PL Details for PL People

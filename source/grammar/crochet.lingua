@@ -189,7 +189,7 @@ grammar Crochet : Program {
     | always_ p:predicate s<";">  -> PredicateClause(meta, Predicate.Always(meta), PredicateEffect.Trivial())
 
   doDeclaration =
-    | do_ xs:statementBlock<statement>
+    | prelude_ xs:list0<statement, s<";">> end_
       -> Declaration.Do(meta, xs)
 
   commandDeclaration =
@@ -203,7 +203,7 @@ grammar Crochet : Program {
       -> Declaration.Command(meta, s, b)
 
   foreignBody =
-    | n:namespace s<"("> xs:listOf<name, s<",">> s<")"> s<";">
+    | n:namespace s<"("> xs:list0<name, s<",">> s<")"> s<";">
       -> FFI(meta, n, xs)
 
   parameter =
@@ -240,12 +240,12 @@ grammar Crochet : Program {
     |                 -> null
 
   typeInitBlock =
-    | x:block<typeInit>   -> x
-    | s<";">              -> []
+    | with_ x:typeInit* end_    -> x
+    | s<";">                    -> []
 
   typeFields =
-    | s<"("> fs:nonemptyListOf<typeField, s<",">> s<")">  -> fs
-    |                                                     -> []
+    | s<"("> fs:list1<typeField, s<",">> s<")">  -> fs
+    |                                            -> []
 
   typeField =
     | n:name is_ t:typeApp                -> Parameter.Typed(meta, n, t)
@@ -448,7 +448,7 @@ grammar Crochet : Program {
     | applyExpression
 
   applyExpression =
-    | f:applyExpression s<"("> xs:nonemptyListOf<expression, s<",">> s<",">? s<")">
+    | f:applyExpression s<"("> xs:list1<expression, s<",">> s<")">
       -> Expression.Apply(meta, f, xs)
     | memberExpression
 
@@ -460,7 +460,7 @@ grammar Crochet : Program {
     | primaryExpression
 
   memberSelection =
-    | s<"("> xs:nonemptyListOf<fieldSelection, s<",">> s<",">? s<")">
+    | s<"("> xs:list1<fieldSelection, s<",">> s<")">
       -> xs
 
   fieldSelection =
@@ -486,7 +486,7 @@ grammar Crochet : Program {
     | s<"("> e:expression s<")">    -> Expression.Parens(meta, e)
 
   conditionExpression =
-    | condition_ s<"{"> cs:conditionCase+ s<"}">
+    | condition_ cs:conditionCase+ end_
       -> Expression.Condition(meta, cs)
 
   conditionCase =
@@ -496,7 +496,7 @@ grammar Crochet : Program {
       -> ConditionCase(meta, Expression.Lit(Literal.True(meta)), b)
 
   matchSearchExpression =
-    | match_ s<"{"> c:matchSearchCase+ s<"}">
+    | match_ c:matchSearchCase+ end_
       -> Expression.MatchSearch(meta, c)
 
   matchSearchCase =
@@ -513,16 +513,16 @@ grammar Crochet : Program {
     | new_ n:atom fs:newFields<e>   -> Expression.New(meta, n, fs)
 
   newFields<e> =
-    | s<"("> fs:nonemptyListOf<e, s<",">> s<")">    -> fs
-    |                                               -> []
+    | s<"("> fs:list1<e, s<",">> s<")">    -> fs
+    |                                      -> []
 
   listExpression<e> =
-    | s<"["> xs:listOf<e, s<",">> s<",">? s<"]">
+    | s<"["> xs:list0<e, s<",">> s<"]">
       -> Expression.List(meta, xs)
 
   recordExpression<e> =
-    | s<"["> s<"->"> s<"]">                                             -> Expression.Record(meta, [])
-    | s<"["> xs:nonemptyListOf<recordPair<e>, s<",">> s<",">? s<"]">    -> Expression.Record(meta, xs)
+    | s<"["> s<"->"> s<"]">                            -> Expression.Record(meta, [])
+    | s<"["> xs:list1<recordPair<e>, s<",">> s<"]">    -> Expression.Record(meta, xs)
 
   recordPair<e> =
     | n:recordField<e> s<"->"> v:e -> Pair(meta, n, v)
@@ -614,10 +614,16 @@ grammar Crochet : Program {
     | kws:signaturePair<t>+           -> Signature.KeywordSelfless(meta, kws)
 
   statementBlock<t> =
-    | s<"{"> xs:listOf<t, s<";">> s<";">? s<"}"> -> xs
+    | do_ xs:list0<t, s<";">> end_ -> xs
+
+  list0<t, s> =
+    | xs:listOf<t, s> s? -> xs
+
+  list1<t, s> =
+    | xs:nonemptyListOf<t, s> s? -> xs
 
   block<t> =
-    | s<"{"> xs:t* s<"}"> -> xs
+    | do_ xs:t* end_ -> xs
 
   s<p> = space* x:p -> x
 
@@ -715,6 +721,9 @@ grammar Crochet : Program {
   on_ = kw<"on">
   always_ = kw<"always">
   condition_ = kw<"condition">
+  end_ = kw<"end">
+  prelude_ = kw<"prelude">
+  with_ = kw<"with">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -722,5 +731,5 @@ grammar Crochet : Program {
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
-    | always_ | match_ | then_ | else_ | condition_
+    | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
 }

@@ -19,12 +19,12 @@ command (X is integer) divided-by: (Y is integer) =
 command (X is integer) remainder-of-division-by: (Y is integer) =
   foreign crochet.integer.rem(X, Y);
 
-command (X is integer) divide-by-with-remainder: (Y is integer) {
+command (X is integer) divide-by-with-remainder: (Y is integer) do
   [
     Quotient -> X divided-by: Y,
     Remainder -> X remainder-of-division-by: Y,
   ];
-}
+end
 
 // == Relational
 command (X is integer) < (Y is integer) = 

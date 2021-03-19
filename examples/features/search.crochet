@@ -2,39 +2,41 @@
 
 relation Who* at: Where;
 
-singleton lielle {
+singleton lielle with
   at: foyer;
-}
-singleton karis {
+end
+
+singleton karis with
   at: foyer;
-}
-singleton alice {
+end
+
+singleton alice with
   at: garden;
-}
+end
 
 singleton foyer;
 singleton garden;
 
-predicate A near: B {
+predicate A near: B do
   when A at: P, B at: P if A =/= B;
-}
+end
 
-scene main {
+scene main do
   (search Who at: garden) inspect;
   (search lielle at: Where) inspect;
 
   let R1 = search X near: Y, X at: P;
-  for R in R1 {
+  for R in R1 do
     "[R.X] and [R.Y] are flirting in the [R.P]";
-  } inspect;
+  end inspect;
 
   let R2 = search X at: P, not X near: Y;
-  for R in R2 {
+  for R in R2 do
     "[R.X] is vibing alone in the [R.P]";
-  } inspect;
+  end inspect;
 
-  match {
-    when lielle at: garden { "Umpossible!" }
-    always { "A fallback" }
-  } inspect;
-}
+  match
+    when lielle at: garden do "Umpossible!" end
+    always do "A fallback" end
+  end inspect;
+end

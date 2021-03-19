@@ -20,16 +20,35 @@ singleton lost is state;
 
 
 type direction;
-singleton north is direction { command to-html { "north" text } }
-singleton east is direction { command to-html { "east" text } }
-singleton south is direction { command to-html { "south" text } }
-singleton west is direction { command to-html { "west" text } }
+singleton north is direction with
+  command to-html do
+    "north" text
+  end
+end
+
+singleton east is direction with
+  command to-html do
+    "east" text
+  end
+end
+
+singleton south is direction with
+  command to-html do
+    "south" text
+  end
+end
+
+singleton west is direction with
+  command to-html do
+    "west" text
+  end
+end
 
 role place;
 type thing;
 type room is thing;
 
-singleton foyer is room {
+singleton foyer is room with
   name: "Foyer of the Opera House";
   short-name: "foyer";
   description:
@@ -39,9 +58,9 @@ singleton foyer is room {
   
   to: south lays: bar;
   to: west lays: cloakroom;
-}
+end
 
-singleton cloakroom is room {
+singleton cloakroom is room with
   name: "Cloakroom";
   short-name: "cloakroom";
   description:
@@ -49,18 +68,18 @@ singleton cloakroom is room {
     though now only one remains. The exit is a door to the east.";
   
   to: east lays: foyer;
-}
+end
 
-singleton hook is thing :: place {
+singleton hook is thing :: place with
   name: "Small Brass Hook";
   short-name: "hook";
   description:
     "It's just a small brass hook, screwed to the wall.";
   
   on: cloakroom;
-}
+end
 
-singleton bar is room {
+singleton bar is room with
   name: "Foyer Bar";
   short-name: "bar";
   description:
@@ -70,9 +89,9 @@ singleton bar is room {
 
   to: north lays: foyer;
   times-disturbed: 0;
-}
+end
 
-singleton cloak is thing {
+singleton cloak is thing with
   name: "Velvet Cloak";
   short-name: "cloak";
   description:
@@ -81,42 +100,42 @@ singleton cloak is thing {
     the room.";
 
   on: player;
-}
+end
 
-singleton player {
+singleton player with
   at: foyer;
-}
+end
 
-command Room describe-full {
+command Room describe-full do
   let R = (search Room name: Name, Room description: Description) first;
   section: [
     paragraph: (strong: R.Name),
     paragraph: R.Description
   ];
-}
+end
 
-command Room describe {
-  match {
-    when cloak on: player if Room === bar {
+command Room describe do
+  match
+    when cloak on: player if Room === bar do
       paragraph: "It's pitch dark here. You can't see a thing.";
-    }
+    end
 
-    when player visited: Room, Room short-name: Name {
+    when player visited: Room, Room short-name: Name do
       paragraph: "You're back at the [Name]";
-    }
+    end
 
-    when Room name: Name, Room description: Description {
+    when Room name: Name, Room description: Description do
       fact player visited: Room;
       Room describe-full;
-    }
-  } first;
-}
+    end
+  end first;
+end
 
-do {
+prelude
   fact on-going state;
-}
+end
 
-scene main {
+scene main do
   header: [
     title: "Cloak of Darkness",
     subtitle: "The classic interactive fiction demo"
@@ -132,11 +151,11 @@ scene main {
 
   simulate for [player]
   until not on-going state
-  on pick-action: Actions for: _ {
-    let Items = for X in Actions { [Title -> X.Title, Value -> X] };
+  on pick-action: Actions for: _ do
+    let Items = for X in Actions do [Title -> X.Title, Value -> X] end;
     (menu: Items) show selected;
-  }
-}
+  end
+end
 
 
 action "Go [Direction]"
@@ -144,10 +163,10 @@ when
   player at: Room,
   Room to: Direction lays: Target,
   not player visited: Target
-{
+do
   Target describe show;
   fact player at: Target;
-}
+end
 
 action "Go [Direction], to the [Name]"
 when
@@ -155,25 +174,25 @@ when
   Room to: Direction lays: Target,
   Target short-name: Name,
   player visited: Target
-{
+do
   Target describe show;
   fact player at: Target;
-}
+end
 
 action "Go north, to the street"
 when player at: foyer
-{
+do
   "You've only just arrived, and besides, the weather outside seems to be
   getting worse." show;
-}
+end
 
 action "Look around"
 when
   player at: Room,
   not (cloak on: player, player at: bar)
-{
+do
   Room describe-full show;
-}
+end
 
 
 // Bar actions
@@ -182,31 +201,31 @@ when
   player at: bar,
   cloak on: player,
   bar times-disturbed: N
-{
+do
   "In the dark? You could easily disturb something!" show;
 
   fact bar times-disturbed: (N + 1);
-}
+end
 
 action "Examine the message"
 when
   player at: bar,
   not cloak on: player,
   bar times-disturbed: N
-{
-  condition {
-    when N < 2 {
+do
+  condition
+    when N < 2 do
       "The message, neatly marked in the sawdust reads... [strong: "you won"]" show;
       fact won state;
-    }
+    end
 
-    always {
+    always do
       "The message has been carelessly trampled, making it difficult to read.
        You can just distinguish the words... [strong: "you have lost"]" show;
        fact lost state;
-    }
-  }
-}
+    end
+  end
+end
 
 
 // Cloakroom actions
@@ -217,11 +236,11 @@ when
   Thing on: cloakroom,
   Thing short-name: Name
   if Thing :: place
-{
+do
   "You place your cloak on [Name]." show;
 
   fact cloak on: Thing;
-}
+end
 
 action "Take cloak from the [Name]"
 when
@@ -230,8 +249,8 @@ when
   cloak on: Thing,
   Thing short-name: Name
   if Thing :: place
-{
+do
   "You take your cloak from [Name]." show;
 
   fact cloak on: player;
-}
+end

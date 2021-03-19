@@ -1,9 +1,9 @@
 % crochet
 
-singleton type player;
-singleton type foyer;
+singleton player;
+singleton foyer;
 
-scene main {
+scene main do
   "Hello" inspect;
   "Hello, [player]" inspect;
   "Hello, ["World"]" inspect;
@@ -16,4 +16,4 @@ scene main {
   Text parts inspect;
   Text holes inspect;
   Text static-text inspect;
-}
+end
