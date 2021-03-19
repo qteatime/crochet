@@ -115,7 +115,7 @@ export class SCall extends Statement {
   async *evaluate(state: State): Machine {
     const scene = state.world.scenes.lookup(this.name);
     const machine = scene.evaluate(state);
-    return yield _mark(scene.name, machine);
+    return yield _push(machine);
   }
 }
 

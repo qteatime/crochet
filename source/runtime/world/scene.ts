@@ -1,18 +1,26 @@
 import { SBlock, Statement } from "../ir";
-import { State } from "../vm";
+import { cvalue, Machine, State, _mark } from "../vm";
 import { Environment } from "../vm/environment";
 import { World } from "./world";
 
 export class Scene {
   constructor(
+    readonly filename: string,
     readonly name: string,
     readonly env: Environment,
     readonly body: Statement[]
   ) {}
 
-  evaluate(state: State) {
+  get full_name() {
+    return `scene ${this.name} (from ${this.filename})`;
+  }
+
+  async *evaluate(state: State): Machine {
     const env = new Environment(this.env, null);
     const block = new SBlock(this.body);
-    return block.evaluate(state.with_env(env));
+    const value = cvalue(
+      yield _mark(this.full_name, block.evaluate(state.with_env(env)))
+    );
+    return value;
   }
 }

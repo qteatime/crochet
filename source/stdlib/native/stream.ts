@@ -1,14 +1,21 @@
 import {
+  CrochetFloat,
   CrochetInteger,
+  CrochetPartial,
+  CrochetRecord,
   CrochetStream,
+  CrochetText,
   CrochetValue,
   cvalue,
   ErrIndexOutOfRange,
   foreign,
   foreign_namespace,
   machine,
+  State,
+  TCrochetFloat,
+  type_name,
 } from "../../runtime";
-import { pick, iter, gen } from "../../utils";
+import { pick, iter, gen, cast } from "../../utils";
 
 @foreign_namespace("crochet.native.stream")
 export class StreamFfi {
@@ -87,5 +94,47 @@ export class StreamFfi {
   @machine()
   static concat(a: CrochetStream, b: CrochetStream) {
     return new CrochetStream(a.values.concat(b.values));
+  }
+
+  @foreign("sort-by")
+  static async *sort(state: State, items: CrochetStream, key0: CrochetText) {
+    const key = key0.value;
+    const items1 = items.values.slice().sort((a, b) => {
+      const ra = cast(a, CrochetRecord);
+      const rb = cast(b, CrochetRecord);
+      return compare(ra.projection.project(key), rb.projection.project(key));
+    });
+    return new CrochetStream(items1);
+  }
+
+  @foreign("shuffle")
+  static async *shuffle(state: State, stream: CrochetStream) {
+    return new CrochetStream(stream.values.sort((a, b) => Math.random() - 0.5));
+  }
+
+  @foreign("reverse")
+  @machine()
+  static reverse(stream: CrochetStream) {
+    return new CrochetStream(stream.values.slice().reverse());
+  }
+}
+
+function compare(a: CrochetValue, b: CrochetValue): number {
+  if (a instanceof CrochetInteger && b instanceof CrochetInteger) {
+    return a.value < b.value
+      ? -1
+      : a.value > b.value
+      ? 1
+      : /* a.value === b.value */ 0;
+  } else if (a instanceof CrochetFloat && b instanceof CrochetFloat) {
+    return a.value - b.value;
+  } else if (a instanceof CrochetFloat) {
+    return compare(a, cast(TCrochetFloat.type.coerce(b), CrochetFloat));
+  } else if (b instanceof CrochetFloat) {
+    return compare(cast(TCrochetFloat.type.coerce(a), CrochetFloat), b);
+  } else {
+    throw new Error(
+      `unsupported comparison: ${type_name(a)} - ${type_name(b)}`
+    );
   }
 }

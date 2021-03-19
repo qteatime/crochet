@@ -37,9 +37,9 @@ export async function load(state: State) {
   state.world.ffi.add(TimeFfi as any);
 
   for (const source of sources) {
-    const ast = parse(source);
+    const ast = parse(source.source);
     const ir = compileProgram(ast);
-    await state.world.load_declarations(ir, state.env);
+    await state.world.load_declarations(source.filename, ir, state.env);
   }
 }
 

@@ -4,7 +4,7 @@ import { Context } from "./event";
 import { Goal } from "./goal";
 import { Environment } from "../world";
 import { maybe_cast, pick, zip } from "../../utils/utils";
-import { cvalue, Machine, State, _push } from "../vm";
+import { cvalue, Machine, State, _mark, _push } from "../vm";
 import {
   CrochetInteger,
   CrochetStream,
@@ -23,6 +23,10 @@ export class Signal {
     readonly body: Statement[]
   ) {}
 
+  get full_name() {
+    return `signal ${this.name}`;
+  }
+
   async *evaluate(state: State, args: CrochetValue[]) {
     const env = new Environment(state.env, state.env.raw_receiver);
     if (this.parameters.length !== args.length) {
@@ -33,7 +37,9 @@ export class Signal {
     }
     const block = new SBlock(this.body);
     const new_state = state.with_env(env);
-    const result = cvalue(yield _push(block.evaluate(new_state)));
+    const result = cvalue(
+      yield _mark(this.full_name, block.evaluate(new_state))
+    );
     return result;
   }
 }
@@ -74,9 +80,9 @@ export class Simulation {
       const action = maybe_cast(action0, ActionChoice);
       if (action != null) {
         action.action.fire(this.turn);
-        yield _push(action.machine);
+        yield _mark(action.full_name, action.machine);
         for (const reaction of this.context.available_events(state)) {
-          yield _push(reaction);
+          yield reaction;
         }
       }
       this.acted.add(this.turn);

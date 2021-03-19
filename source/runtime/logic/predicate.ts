@@ -119,7 +119,11 @@ interface IRelation {
 }
 
 export class ConcreteRelation implements IRelation {
-  constructor(readonly name: string, readonly tree: Tree) {}
+  constructor(
+    readonly filename: string,
+    readonly name: string,
+    readonly tree: Tree
+  ) {}
 
   search(
     state: State,
@@ -149,11 +153,17 @@ export class FunctionRelation implements IRelation {
 }
 
 export class PredicateProcedure implements IRelation {
+  readonly filename: string | null = null;
+
   constructor(
     readonly name: string,
     readonly parameters: string[],
     readonly clauses: PredicateClause[]
   ) {}
+
+  set_filename(filename: string) {
+    (this as any).filename = filename;
+  }
 
   search(
     state: State,

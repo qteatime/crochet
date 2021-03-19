@@ -60,10 +60,15 @@ export type NativeProcedureFn = (
 
 export class NativeProcedure implements IProcedure {
   constructor(
+    readonly filename: string,
     readonly name: string,
     readonly parameters: number[],
     readonly foreign_name: string
   ) {}
+
+  get full_name() {
+    return `${this.name} (from ${this.filename})`;
+  }
 
   async *invoke(state: State, values: CrochetValue[]): Machine {
     const args: CrochetValue[] = [];
@@ -71,19 +76,26 @@ export class NativeProcedure implements IProcedure {
       args.push(values[idx]);
     }
     const procedure = state.world.ffi.methods.lookup(this.foreign_name);
-    const result = cvalue(yield _mark(this.name, procedure(state, ...args)));
+    const result = cvalue(
+      yield _mark(this.full_name, procedure(state, ...args))
+    );
     return result;
   }
 }
 
 export class CrochetProcedure implements IProcedure {
   constructor(
+    readonly filename: string,
     readonly env: Environment,
     readonly world: World,
     readonly name: string,
     readonly parameters: string[],
     readonly body: Statement[]
   ) {}
+
+  get full_name() {
+    return `${this.name} (from ${this.filename})`;
+  }
 
   async *invoke(state: State, values: CrochetValue[]) {
     const env = new Environment(this.env, values[0]);
@@ -92,7 +104,7 @@ export class CrochetProcedure implements IProcedure {
     }
     const block = new SBlock(this.body);
     const result = cvalue(
-      yield _mark(this.name, block.evaluate(state.with_env(env)))
+      yield _mark(this.full_name, block.evaluate(state.with_env(env)))
     );
     return result;
   }

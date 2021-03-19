@@ -36,7 +36,7 @@ export abstract class CrochetType {
 }
 
 export class CrochetRole {
-  constructor(readonly name: string) {}
+  constructor(readonly filename: string, readonly name: string) {}
 }
 
 export class TCrochetAny extends CrochetType {

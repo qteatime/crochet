@@ -25,7 +25,30 @@ command (X is stream) ++ (Y is stream) =
   foreign crochet.native.stream.concat(X, Y);
 
 command (X is stream) zip: (Y is stream) = 
-  foreign crochet.snative.tream.zip(X, Y);
+  foreign crochet.native.stream.zip(X, Y);
 
 command (X is stream) random-choice =
   foreign crochet.native.stream.random-choice(X);
+
+command (X is stream) shuffle =
+  foreign crochet.native.stream.shuffle(X);
+
+command (X is stream) -sort-by: Key =
+  foreign crochet.native.stream.sort-by(X, Key);
+
+command stream sort: (Score is partial) do
+  let Stream = for X in self do [score -> Score(X), value -> X] end;
+  (Stream sort-by: "score").value;
+end
+
+command stream sort do
+  let Stream = for X in self do [score -> X, value -> X] end;
+  (Stream sort-by: "score").value;
+end
+
+command (Stream is stream) sort-by: (Key is text) do
+  Stream -sort-by: Key;
+end
+
+command (X is stream) reverse =
+  foreign crochet.native.stream.reverse(X);

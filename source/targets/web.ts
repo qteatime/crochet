@@ -18,16 +18,16 @@ export class Crochet {
     await stdlib.load(State.root(this.world));
   }
 
-  async load_from_source(source: string) {
+  async load_from_source(filename: string, source: string) {
     const ast = compiler.parse(source);
     const ir = compiler.compileProgram(ast);
     const state = State.root(this.world);
-    await state.world.load_declarations(ir, state.env);
+    await state.world.load_declarations(filename, ir, state.env);
   }
 
   async load_from_url(url: string) {
     const source = await (await fetch(url)).text();
-    await this.load_from_source(source);
+    await this.load_from_source(url, source);
   }
 
   async run(scene: string) {

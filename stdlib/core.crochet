@@ -1,5 +1,19 @@
 % crochet
 
+type any = foreign crochet.native.core.any;
+type unknown = foreign crochet.native.core.unknown;
+type true = foreign crochet.native.core.true;
+type false = foreign crochet.native.core.false;
+type boolean = foreign crochet.native.core.boolean;
+type float = foreign crochet.native.core.float;
+type integer = foreign crochet.native.core.integer;
+type text = foreign crochet.native.core.text;
+type interpolation = foreign crochet.native.core.interpolation;
+type partial = foreign crochet.native.core.partial;
+type record = foreign crochet.native.core.record;
+type stream = foreign crochet.native.core.stream;
+type thunk = foreign crochet.native.core.thunk;
+
 command X and Y = foreign crochet.native.core.band(X, Y);
 command X or Y = foreign crochet.native.core.bor(X, Y);
 command not X = foreign crochet.native.core.bnot(X);

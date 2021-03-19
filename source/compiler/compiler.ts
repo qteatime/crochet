@@ -117,7 +117,7 @@ export function signatureValues<T>(sig: Signature<T>): T[] {
 }
 
 export function compileNamespace(x: Namespace) {
-  return x.names.map((x) => x.name).join(".");
+  return x.names.join(".");
 }
 
 // -- Logic

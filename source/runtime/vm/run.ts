@@ -154,7 +154,7 @@ function format_error(error: MachineError | Error, trace: string[]) {
 function get_trace(frames: Frame[]) {
   const trace = [];
   let n = 10;
-  for (let i = frames.length - 1; i > 0 && n > 0; --i) {
+  for (let i = frames.length - 1; i >= 0 && n > 0; --i) {
     const frame = frames[i];
     if (frame instanceof FProcedure) {
       trace.push(frame.location);

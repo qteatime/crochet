@@ -55,10 +55,10 @@ const argv = Yargs.usage("crochet <command> [options]")
   })
   .demandCommand(1).argv;
 
-async function load(source: string, state: Runtime.State) {
+async function load(filename: string, source: string, state: Runtime.State) {
   const ast = Compiler.parse(source);
   const ir = Compiler.compileProgram(ast);
-  await state.world.load_declarations(ir, state.env);
+  await state.world.load_declarations(filename, ir, state.env);
 }
 
 async function initialise() {
@@ -76,7 +76,7 @@ async function run(filename: string, entry: string = "main") {
   try {
     const state = await initialise();
     const source = read(filename);
-    await load(source, state);
+    await load(filename, source, state);
     await state.world.run(entry);
   } catch (error) {
     console.error(error.stack);

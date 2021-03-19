@@ -155,7 +155,7 @@ type RelationPart =
 
 type Pair<K, V>(pos: Meta, key: K, value: V)
 type Name(pos: Meta, name: string)
-type Namespace(pos: Meta, names: Name[])
+type Namespace(pos: Meta, names: string[])
 type String(pos: Meta, text: string)
 
 
@@ -604,7 +604,7 @@ grammar Crochet : Program {
   and = x:and_                                -> Name(meta, x)
   or = x:or_                                  -> Name(meta, x)
 
-  namespace = x:nonemptyListOf<atom, s<".">>  -> Namespace(meta, x)
+  namespace = x:s<nonemptyListOf<t_atom, s<".">>>  -> Namespace(meta, x)
 
 
   // -- Higher-order
@@ -655,7 +655,7 @@ grammar Crochet : Program {
   token comment (a comment) = "//" line
   space += comment
 
-  token atom_start = "a".."z"
+  token atom_start = "a".."z" | "-"
   token atom_rest = letter | digit | "-"
   token t_atom (an atom) = atom_start atom_rest*
 
@@ -743,6 +743,8 @@ grammar Crochet : Program {
   end_ = kw<"end">
   prelude_ = kw<"prelude">
   with_ = kw<"with">
+  tags_ = kw<"tags">
+  rank_ = kw<"rank">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -751,4 +753,5 @@ grammar Crochet : Program {
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
+    | tags_ | rank_
 }

@@ -1,7 +1,7 @@
 import { Environment } from "../world";
 import { EInterpolate, Expression, SBlock, Statement } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
-import { State } from "../vm";
+import { State, _mark } from "../vm";
 import {
   CrochetInteger,
   CrochetText,
@@ -14,10 +14,15 @@ import { SimpleInterpolation } from "../ir/atomic";
 
 export class When {
   constructor(
+    readonly filename: string,
     readonly predicate: Predicate,
     readonly env: Environment,
     readonly body: Statement[]
   ) {}
+
+  get full_name() {
+    return `an event (from ${this.filename})`;
+  }
 
   executions(state: State) {
     const results = state.database.search(
@@ -38,6 +43,7 @@ export class Action {
   private fired_for = new BagMap<CrochetValue, bigint>();
 
   constructor(
+    readonly filename: string,
     readonly title: SimpleInterpolation<string>,
     readonly predicate: Predicate,
     readonly tags: CrochetValue[],
@@ -99,6 +105,8 @@ export class Context {
   }
 
   available_events(state: State) {
-    return this.events.flatMap((x) => x.executions(state));
+    return this.events.flatMap((x) =>
+      x.executions(state).map((e) => _mark(x.full_name, e))
+    );
   }
 }

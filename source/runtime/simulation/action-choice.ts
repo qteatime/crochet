@@ -26,6 +26,10 @@ export class ActionChoice extends CrochetValue {
     return TActionChoice.type;
   }
 
+  get full_name() {
+    return `action ${this.title.to_text()} (from ${this.action.filename})`;
+  }
+
   as_record() {
     return new CrochetRecord(
       new Map<string, CrochetValue>([

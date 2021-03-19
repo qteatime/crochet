@@ -64,10 +64,14 @@ export class World {
     this.queue.push(machine);
   }
 
-  async load_declarations(xs: Declaration[], env: Environment) {
+  async load_declarations(
+    filename: string,
+    xs: Declaration[],
+    env: Environment
+  ) {
     const state = new State(this, env, this.database);
     for (const x of xs) {
-      await x.apply(state);
+      await x.apply(filename, state);
     }
   }
 

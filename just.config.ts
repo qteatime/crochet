@@ -3,8 +3,11 @@ import { execSync } from "child_process";
 import * as FS from "fs";
 import * as Path from "path";
 
-function compile_crochet(source: string) {
-  return `export default ${JSON.stringify(source)}`;
+function compile_crochet(filename: string, source: string) {
+  return `export default ${JSON.stringify({
+    filename: `builtin ${filename}`,
+    source,
+  })}`;
 }
 
 task("build-stdlib", () => {
@@ -13,7 +16,7 @@ task("build-stdlib", () => {
   for (const file of FS.readdirSync(source_dir)) {
     const source = FS.readFileSync(Path.join(source_dir, file), "utf-8");
     const target = Path.join(target_dir, file + ".ts");
-    FS.writeFileSync(target, compile_crochet(source));
+    FS.writeFileSync(target, compile_crochet(Path.basename(file), source));
     logger.info(`Generated ${file}`);
   }
 });
