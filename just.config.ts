@@ -23,7 +23,7 @@ task("build-stdlib", () => {
 
 task("build-grammar", () => {
   execSync(
-    `node ./Linguist/dist/app.js source/grammar/crochet.lingua > source/generated/crochet-grammar.ts`
+    `./node_modules/.bin/lingua source/grammar/crochet.lingua > source/generated/crochet-grammar.ts`
   );
 });
 
