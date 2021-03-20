@@ -15,20 +15,8 @@ feasible.
 
 ## Building
 
-Crochet is written in TypeScript, but uses a small tool written in F# for
-generating the typed PEG grammar. So you'll need both Node and .NET 5 installed.
-
-First, build Linguist (the typed PEG grammar tool):
-
-```shell
-$ cd Linguist
-$ dotnet restore
-$ npm install
-$ npm run build-grammar
-$ npm run build
-```
-
-Then build Crochet (make sure you're back at the root of the repository):
+Crochet is written in TypeScript, so you'll need both Node installed. To build
+Crochet, run the following at the root of the repository:
 
 ```shell
 $ npm install
