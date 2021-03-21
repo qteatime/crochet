@@ -1,4 +1,6 @@
-import { zip } from "../../utils/utils";
+import { cast, zip } from "../../utils/utils";
+import { Type } from "../ir";
+import { TCrochetType } from "../primitives";
 import { State } from "../vm";
 import { World } from "../world";
 import { Constraint } from "./constraint";
@@ -95,6 +97,21 @@ export class LetPredicate extends Predicate {
     const newEnv = env.clone();
     newEnv.bind(this.name, this.expr.evaluate(state, env));
     return [newEnv];
+  }
+}
+
+export class TypePredicate extends Predicate {
+  constructor(readonly name: string, readonly type: Type) {
+    super();
+  }
+
+  search(state: State, env: UnificationEnvironment) {
+    const type = cast(this.type.realise(state.world), TCrochetType);
+    return type.registered_instances.map((v) => {
+      const newEnv = env.clone();
+      newEnv.bind(this.name, v);
+      return newEnv;
+    });
   }
 }
 

@@ -116,6 +116,7 @@ type Predicate =
   | Has(pos: Meta, signature: Signature<Pattern>)
   | Constrain(pos: Meta, pred: Predicate, constraint: Constraint)
   | Let(pos: Meta, name: Name, value: PredicateExpression)
+  | Typed(pos: Meta, name: Name, typ: TypeApp)
   | Always(pos: Meta)
   | Parens(pos: Meta, pred: Predicate)
 
@@ -354,10 +355,14 @@ grammar Crochet : Program {
     | p:predicateLet if_ c:constraint      -> Predicate.Constrain(meta, p, c)
     | if_ c:constraint                     -> Predicate.Constrain(meta, Predicate.Always(meta), c)
     | predicateLet
+    | predicateType
+    | predicatePrimary
+
+  predicateType =
+    | n:name is_ t:typeApp                 -> Predicate.Typed(meta, n, t)
 
   predicateLet =
     | let_ n:name s<"="> e:predicateExpr -> Predicate.Let(meta, n, e)
-    | predicatePrimary
 
   predicatePrimary =
     | always_                                 -> Predicate.Always(meta)

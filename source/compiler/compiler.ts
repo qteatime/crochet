@@ -326,6 +326,10 @@ export function compilePredicate(p: Predicate): Logic.Predicate {
       return new Logic.LetPredicate(name.name, compilePredicateExpr(value));
     },
 
+    Typed(_, name, typ) {
+      return new Logic.TypePredicate(name.name, compileTypeApp(typ));
+    },
+
     Always(_) {
       return new Logic.AlwaysPredicate();
     },
