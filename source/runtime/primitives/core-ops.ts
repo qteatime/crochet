@@ -51,7 +51,7 @@ export async function* apply(
   state: State,
   fn: CrochetPartial,
   args: PartialValue[]
-) {
+): Machine {
   if (fn.arity !== args.length) {
     return _throw(new ErrInvalidArity(fn, args.length));
   } else {

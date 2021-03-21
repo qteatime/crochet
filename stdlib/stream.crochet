@@ -33,7 +33,7 @@ command (X is stream) random-choice =
 command (X is stream) shuffle =
   foreign crochet.native.stream.shuffle(X);
 
-command (X is stream) -sort-by: Key =
+command (X is stream) internal-sort-by: Key =
   foreign crochet.native.stream.sort-by(X, Key);
 
 command stream sort: (Score is partial) do
@@ -47,8 +47,20 @@ command stream sort do
 end
 
 command (Stream is stream) sort-by: (Key is text) do
-  Stream -sort-by: Key;
+  Stream internal-sort-by: Key;
 end
 
 command (X is stream) reverse =
   foreign crochet.native.stream.reverse(X);
+
+command (X is stream) fold-from: Value with: (Partial is partial) =
+  foreign crochet.native.stream.fold(X, Value, Partial);
+
+command stream flatten = self fold-from: [] with: (_ ++ _);
+command stream sum = self fold-from: 0 with: (_ + _);
+
+command stream join-text-with: Separator =
+  stream fold-from: "" with: (_ ++ _);
+
+command (X is stream) interpolate =
+  foreign crochet.native.stream.interpolate(X);

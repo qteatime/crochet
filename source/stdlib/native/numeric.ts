@@ -5,6 +5,7 @@ import {
   foreign_namespace,
   from_bool,
   machine,
+  CrochetStream,
 } from "../../runtime";
 
 @foreign_namespace("crochet.native.integer")
@@ -61,6 +62,23 @@ export class IntegerFfi {
   @machine()
   static gte(x: CrochetInteger, y: CrochetInteger) {
     return from_bool(x.value >= y.value);
+  }
+
+  @foreign()
+  @machine()
+  static range(min: CrochetInteger, max: CrochetInteger) {
+    return new CrochetStream(
+      Array.from(
+        { length: Number(max.value - min.value) },
+        (_, i) => new CrochetInteger(min.value + BigInt(i))
+      )
+    );
+  }
+
+  @foreign()
+  @machine()
+  static power(x: CrochetInteger, p: CrochetInteger) {
+    return new CrochetInteger(x.value ** p.value);
   }
 }
 

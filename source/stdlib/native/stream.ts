@@ -1,6 +1,8 @@
 import {
+  apply,
   CrochetFloat,
   CrochetInteger,
+  CrochetInterpolation,
   CrochetPartial,
   CrochetRecord,
   CrochetStream,
@@ -10,10 +12,14 @@ import {
   ErrIndexOutOfRange,
   foreign,
   foreign_namespace,
+  InterpolationDynamic,
+  InterpolationStatic,
   machine,
+  PartialConcrete,
   State,
   TCrochetFloat,
   type_name,
+  _push,
 } from "../../runtime";
 import { pick, iter, gen, cast } from "../../utils";
 
@@ -116,6 +122,41 @@ export class StreamFfi {
   @machine()
   static reverse(stream: CrochetStream) {
     return new CrochetStream(stream.values.slice().reverse());
+  }
+
+  @foreign()
+  static async *fold(
+    state: State,
+    stream: CrochetStream,
+    initial: CrochetValue,
+    partial: CrochetPartial
+  ) {
+    let current = initial;
+    for (const x of stream.values) {
+      current = cvalue(
+        yield _push(
+          apply(state, partial, [
+            new PartialConcrete(current),
+            new PartialConcrete(x),
+          ])
+        )
+      );
+    }
+    return current;
+  }
+
+  @foreign()
+  @machine()
+  static interpolate(stream: CrochetStream) {
+    return new CrochetInterpolation(
+      stream.values.map((x) => {
+        if (x instanceof CrochetText) {
+          return new InterpolationStatic(x.value);
+        } else {
+          return new InterpolationDynamic(x);
+        }
+      })
+    );
   }
 }
 

@@ -570,9 +570,9 @@ grammar Crochet : Program {
       -> Expression.Condition(meta, cs)
 
   conditionCase =
-    | when_ e:expression b:statementBlock<statement>
+    | when_ e:expression b:eblock
       -> ConditionCase(meta, e, b)
-    | always_ b:statementBlock<statement>
+    | always_ b:eblock
       -> ConditionCase(meta, Expression.Lit(Literal.True(meta)), b)
 
   matchSearchExpression =
@@ -580,9 +580,9 @@ grammar Crochet : Program {
       -> Expression.MatchSearch(meta, c)
 
   matchSearchCase =
-    | when_ p:predicate b:statementBlock<statement>
+    | when_ p:predicate b:eblock
       -> MatchSearchCase(meta, p, b)
-    | always_ b:statementBlock<statement>
+    | always_ b:eblock
       -> MatchSearchCase(meta, Predicate.Always(meta), b)
 
   forExpression =
@@ -705,6 +705,10 @@ grammar Crochet : Program {
   block<t> =
     | do_ xs:t* end_ -> xs
 
+  eblock =
+    | s:statementBlock<statement>       -> s
+    | s<"=>"> e:expression s<";">       -> [Statement.Expr(e)]
+
   s<p> = space* x:p -> x
 
 
@@ -716,7 +720,7 @@ grammar Crochet : Program {
   token comment (a comment) = "//" line
   space += comment
 
-  token atom_start = "a".."z" | "-"
+  token atom_start = "a".."z"
   token atom_rest = letter | digit | "-"
   token t_atom (an atom) = atom_start atom_rest*
 
@@ -734,7 +738,7 @@ grammar Crochet : Program {
   token t_any_infix =
     | "++" | "+"
     | "-"
-    | "*"
+    | "**" | "*"
     | "/"
     | "<=" | "<"
     | ">=" | ">"

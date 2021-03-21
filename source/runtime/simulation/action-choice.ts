@@ -14,7 +14,7 @@ import { Machine } from "../vm";
 export class ActionChoice extends CrochetValue {
   constructor(
     readonly title: CrochetValue,
-    readonly score: CrochetValue,
+    readonly score: CrochetThunk,
     readonly tags: CrochetValue[],
     readonly action: Action,
     readonly machine: Machine

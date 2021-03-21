@@ -15,7 +15,29 @@ export function pick<A>(xs: A[]): A | null {
   if (xs.length === 0) {
     return null;
   } else {
-    return xs[Math.floor(Math.random() * xs.length)];
+    return xs[rand_int(0, xs.length)];
+  }
+}
+
+export function rand_int(min: number, max: number): number {
+  const chosen = Math.floor(Math.random() * (max - min));
+  return min + chosen;
+}
+
+export function weighted_pick<A>(xs: [bigint, A][]): A | null {
+  if (xs.length === 0) {
+    return null;
+  } else {
+    const total = xs.map((x) => x[0]).reduce((a, b) => a + b, 0n);
+    let choice = BigInt(rand_int(0, Number(total)));
+    for (const [score, item] of xs) {
+      if (choice <= score) {
+        return item;
+      } else {
+        choice -= score;
+      }
+    }
+    throw new Error(`internal: weighted picked none`);
   }
 }
 

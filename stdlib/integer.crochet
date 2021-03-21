@@ -26,6 +26,9 @@ command (X is integer) divide-by-with-remainder: (Y is integer) do
   ];
 end
 
+command (X is integer) ** (P is integer) =
+  foreign crochet.native.integer.power(X, P);
+
 // == Relational
 command (X is integer) < (Y is integer) = 
   foreign crochet.native.integer.lt(X, Y);
@@ -39,5 +42,10 @@ command (X is integer) > (Y is integer) =
 command (X is integer) >= (Y is integer) = 
   foreign crochet.native.integer.gte(X, Y);
 
+// == Ranges
+command (Min is integer) to: (Max is integer) =
+  foreign crochet.native.integer.range(Min, Max);
 
-
+command (Min is integer) until: (Max is integer) do
+  Min to: (Max - 1)
+end

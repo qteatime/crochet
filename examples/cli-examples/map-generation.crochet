@@ -1,0 +1,104 @@
+% crochet
+
+singleton dungeon;
+type dungeon-gen(Max-Rooms is integer);
+
+type room;
+
+relation Room* to: Direction* lays: Room;
+relation Dungeon-Generator* room: Room*;
+
+predicate Dungeon room-allowance: Allowance do
+  when let Rooms = count(Dungeon room: _),
+       let Allowance = Rooms - Dungeon.Max-Rooms;
+end
+
+enum direction = north, east, south, west;
+
+command north opposite = south;
+command east opposite = west;
+command south opposite = north;
+command west opposite = east;
+
+command dungeon generate-with-max-rooms: N do
+  let Dungeon = new dungeon-gen(N);
+  simulate for [Dungeon] until action quiescence;
+  Dungeon;  
+end
+
+action "Generate initial room"
+when Dungeon simulate-turn, not Dungeon room: _ do
+  fact Dungeon room: (new room);
+end
+
+action "Extrude room"
+when
+  Dungeon simulate-turn,
+  Dungeon room-allowance: Max,
+  if Max =/= 0,
+  Dungeon room: Room,
+  Direction is direction,
+  not Room to: Direction lays: _,
+  let Extrusions = count(Room to: _ lays: _)
+rank
+  100 - (Extrusions ** 3)
+do
+  let New-Room = new room;
+  fact Dungeon room: New-Room;
+  fact Room to: Direction lays: New-Room;
+  fact New-Room to: (Direction opposite) lays: Room;
+end
+
+
+relation X* y: Y* char: Char;
+relation Room* drawn;
+type point(X is integer, Y is integer);
+
+command dungeon-gen draw do
+  let Size = self.Max-Rooms;
+  let X = Size divided-by: 2;
+  let Y = Size divided-by: 2;
+  let Room = (search self room: Room).Room first;
+  Room draw-at: new point(X, Y);
+
+  for IX in 1 to: Size do
+    for IY in 1 to: Size do
+      match
+        when IX y: IY char: Char => Char;
+        always => " ";
+      end first;
+    end interpolate;
+  end
+end
+
+command room draw-at: Point do
+  match
+    when not self drawn => Point draw: "#";
+  end;
+  fact self drawn;
+
+  match
+    when self to: Direction lays: Room, not Room drawn do
+      let P1 = Point move: Direction;
+      P1 draw: "·";
+      Room draw-at: (P1 move: Direction);
+    end
+  end
+end
+
+command point move: north = new point(self.X, self.Y - 1);
+command point move: east  = new point(self.X + 1, self.Y);
+command point move: south = new point(self.X, self.Y + 1);
+command point move: west  = new point(self.X - 1, self.Y);
+command point draw: Char do
+  fact (self.X) y: (self.Y) char: Char;
+end
+
+scene main do
+  let Dungeon = dungeon generate-with-max-rooms: 20;
+  let Map = Dungeon draw;
+  for Line in Map do
+    Line inspect;
+  end
+end
+
