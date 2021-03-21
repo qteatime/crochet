@@ -1,4 +1,12 @@
-import { CrochetText, CrochetValue, False } from "../../runtime";
+import {
+  CrochetText,
+  CrochetThunk,
+  CrochetValue,
+  cvalue,
+  False,
+  State,
+  _push,
+} from "../../runtime";
 import {
   foreign,
   foreign_namespace,
@@ -18,5 +26,14 @@ export class DebugFfi {
   @machine()
   static representation(value: CrochetValue) {
     return new CrochetText(value.to_text());
+  }
+
+  @foreign("time")
+  static async *time(state: State, thunk: CrochetThunk, message: CrochetText) {
+    const start = new Date().getTime();
+    const value = cvalue(yield _push(thunk.force(state)));
+    const end = new Date().getTime();
+    console.log(`>> ${message.value} (${end - start}ms)`);
+    return value;
   }
 }

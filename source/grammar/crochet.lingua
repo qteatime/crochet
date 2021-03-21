@@ -78,6 +78,8 @@ type Expression =
   | Condition(pos: Meta, cases: ConditionCase[])
   | HasType(pos: Meta, value: Expression, typ: TypeApp)
   | HasRole(pos: Meta, value: Expression, role: Name)
+  | Force(pos: Meta, value: Expression)
+  | Lazy(pos: Meta, value: Expression)
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
@@ -487,11 +489,19 @@ grammar Crochet : Program {
   // -- Expressions
   expression =
     | searchExpression
+    | lazyExpression
+    | forceExpression
     | pipeExpression
 
   searchExpression =
     | search_ p:predicate
       -> Expression.Search(meta, p)
+
+  lazyExpression =
+    | lazy_ e:expression -> Expression.Lazy(meta, e)
+
+  forceExpression =
+    | force_ e:expression -> Expression.Force(meta, e)
 
   expressionBlock =
     | b:statementBlock<statement> -> Expression.Block(meta, b)
@@ -813,6 +823,8 @@ grammar Crochet : Program {
   count_ = kw<"count">
   set_ = kw<"set">
   abstract_ = kw<"abstract">
+  lazy_ = kw<"lazy">
+  force_ = kw<"force">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -821,5 +833,5 @@ grammar Crochet : Program {
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
-    | tags_ | rank_ | abstract_
+    | tags_ | rank_ | abstract_ | lazy_ | force_
 }

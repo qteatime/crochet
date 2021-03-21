@@ -95,8 +95,8 @@ command point draw: Char do
 end
 
 scene main do
-  let Dungeon = dungeon generate-with-max-rooms: 20;
-  let Map = Dungeon draw;
+  let Dungeon = debug time: (lazy dungeon generate-with-max-rooms: 20) tag: "Dungeon generate";
+  let Map = debug time: (lazy Dungeon draw) tag: "Dungeon draw";
   for Line in Map do
     Line inspect;
   end

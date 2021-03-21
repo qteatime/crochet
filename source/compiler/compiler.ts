@@ -553,6 +553,14 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.EHasRole(compileExpression(value), role.name);
     },
 
+    Force(_, value) {
+      return new IR.EForce(compileExpression(value));
+    },
+
+    Lazy(_, value) {
+      return new IR.ELazy(compileExpression(value));
+    },
+
     Hole(_) {
       throw new Error(`Hole found outside of function application.`);
     },

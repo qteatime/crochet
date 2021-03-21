@@ -9,6 +9,7 @@ import {
   CrochetRecord,
   CrochetStream,
   CrochetText,
+  CrochetThunk,
   CrochetValue,
   False,
   from_bool,
@@ -423,5 +424,30 @@ export class EHasRole extends Expression {
     const value = cvalue(yield _push(this.value.evaluate(state)));
     const role = state.world.roles.lookup(this.role);
     return from_bool(value.has_role(role));
+  }
+}
+
+export class ELazy extends Expression {
+  constructor(readonly value: Expression) {
+    super();
+  }
+
+  async *evaluate(state: State): Machine {
+    return new CrochetThunk(this.value, state.env);
+  }
+}
+
+export class EForce extends Expression {
+  constructor(readonly value: Expression) {
+    super();
+  }
+
+  async *evaluate(state: State): Machine {
+    const value = cvalue(yield _push(this.value.evaluate(state)));
+    if (value instanceof CrochetThunk) {
+      return cvalue(yield _push(value.force(state)));
+    } else {
+      return value;
+    }
   }
 }
