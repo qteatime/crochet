@@ -169,55 +169,55 @@ export abstract class Declaration extends Node {
   abstract match<$T>(p: $p_Declaration<$T>): $T;
 
   static get Relation() {
-    return $Declaration.Relation;
+    return $$Declaration$_Relation;
   }
 
   static get DefinePredicate() {
-    return $Declaration.DefinePredicate;
+    return $$Declaration$_DefinePredicate;
   }
 
   static get Do() {
-    return $Declaration.Do;
+    return $$Declaration$_Do;
   }
 
   static get ForeignCommand() {
-    return $Declaration.ForeignCommand;
+    return $$Declaration$_ForeignCommand;
   }
 
   static get Command() {
-    return $Declaration.Command;
+    return $$Declaration$_Command;
   }
 
   static get Define() {
-    return $Declaration.Define;
+    return $$Declaration$_Define;
   }
 
   static get Role() {
-    return $Declaration.Role;
+    return $$Declaration$_Role;
   }
 
   static get SingletonType() {
-    return $Declaration.SingletonType;
+    return $$Declaration$_SingletonType;
   }
 
   static get ForeignType() {
-    return $Declaration.ForeignType;
+    return $$Declaration$_ForeignType;
   }
 
   static get Type() {
-    return $Declaration.Type;
+    return $$Declaration$_Type;
   }
 
   static get Scene() {
-    return $Declaration.Scene;
+    return $$Declaration$_Scene;
   }
 
   static get Action() {
-    return $Declaration.Action;
+    return $$Declaration$_Action;
   }
 
   static get When() {
-    return $Declaration.When;
+    return $$Declaration$_When;
   }
 
   static has_instance(x: any) {
@@ -225,356 +225,335 @@ export abstract class Declaration extends Node {
   }
 }
 
-const $Declaration = (function () {
-  class Relation extends Declaration {
-    readonly tag!: "Relation";
+export class $$Declaration$_Relation extends Declaration {
+  readonly tag!: "Relation";
 
-    constructor(
-      readonly pos: Meta,
-      readonly signature: Signature<RelationPart>
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Relation" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<RelationPart>>(
-        signature,
-        "Signature<RelationPart>",
-        Signature
-      );
-    }
-
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Relation(this.pos, this.signature);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Relation;
-    }
+  constructor(readonly pos: Meta, readonly signature: Signature<RelationPart>) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Relation" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<RelationPart>>(
+      signature,
+      "Signature<RelationPart>",
+      Signature
+    );
   }
 
-  class DefinePredicate extends Declaration {
-    readonly tag!: "DefinePredicate";
-
-    constructor(
-      readonly pos: Meta,
-      readonly signature: Signature<Name>,
-      readonly clauses: PredicateClause[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "DefinePredicate" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<Name>>(signature, "Signature<Name>", Signature);
-      $assert_type<PredicateClause[]>(
-        clauses,
-        "PredicateClause[]",
-        $is_array(PredicateClause)
-      );
-    }
-
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.DefinePredicate(this.pos, this.signature, this.clauses);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof DefinePredicate;
-    }
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Relation(this.pos, this.signature);
   }
 
-  class Do extends Declaration {
-    readonly tag!: "Do";
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Relation;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly body: Statement[]) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Do" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
-    }
+export class $$Declaration$_DefinePredicate extends Declaration {
+  readonly tag!: "DefinePredicate";
 
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Do(this.pos, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Do;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly signature: Signature<Name>,
+    readonly clauses: PredicateClause[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "DefinePredicate" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<Name>>(signature, "Signature<Name>", Signature);
+    $assert_type<PredicateClause[]>(
+      clauses,
+      "PredicateClause[]",
+      $is_array(PredicateClause)
+    );
   }
 
-  class ForeignCommand extends Declaration {
-    readonly tag!: "ForeignCommand";
-
-    constructor(
-      readonly pos: Meta,
-      readonly signature: Signature<Parameter>,
-      readonly body: FFI
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "ForeignCommand" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<Parameter>>(
-        signature,
-        "Signature<Parameter>",
-        Signature
-      );
-      $assert_type<FFI>(body, "FFI", FFI);
-    }
-
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.ForeignCommand(this.pos, this.signature, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof ForeignCommand;
-    }
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.DefinePredicate(this.pos, this.signature, this.clauses);
   }
 
-  class Command extends Declaration {
-    readonly tag!: "Command";
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_DefinePredicate;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly signature: Signature<Parameter>,
-      readonly body: Statement[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Command" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<Parameter>>(
-        signature,
-        "Signature<Parameter>",
-        Signature
-      );
-      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
-    }
+export class $$Declaration$_Do extends Declaration {
+  readonly tag!: "Do";
 
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Command(this.pos, this.signature, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Command;
-    }
+  constructor(readonly pos: Meta, readonly body: Statement[]) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Do" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
   }
 
-  class Define extends Declaration {
-    readonly tag!: "Define";
-
-    constructor(
-      readonly pos: Meta,
-      readonly name: Name,
-      readonly value: Expression
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Define" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-      $assert_type<Expression>(value, "Expression", Expression);
-    }
-
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Define(this.pos, this.name, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Define;
-    }
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Do(this.pos, this.body);
   }
 
-  class Role extends Declaration {
-    readonly tag!: "Role";
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Do;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Role" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
+export class $$Declaration$_ForeignCommand extends Declaration {
+  readonly tag!: "ForeignCommand";
 
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Role(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Role;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly signature: Signature<Parameter>,
+    readonly body: FFI
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "ForeignCommand" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<Parameter>>(
+      signature,
+      "Signature<Parameter>",
+      Signature
+    );
+    $assert_type<FFI>(body, "FFI", FFI);
   }
 
-  class SingletonType extends Declaration {
-    readonly tag!: "SingletonType";
-
-    constructor(
-      readonly pos: Meta,
-      readonly typ: TypeDef,
-      readonly init: TypeInit[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "SingletonType" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
-      $assert_type<TypeInit[]>(init, "TypeInit[]", $is_array(TypeInit));
-    }
-
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.SingletonType(this.pos, this.typ, this.init);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof SingletonType;
-    }
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.ForeignCommand(this.pos, this.signature, this.body);
   }
 
-  class ForeignType extends Declaration {
-    readonly tag!: "ForeignType";
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_ForeignCommand;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly name: Name,
-      readonly foreign_name: Namespace
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "ForeignType" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-      $assert_type<Namespace>(foreign_name, "Namespace", Namespace);
-    }
+export class $$Declaration$_Command extends Declaration {
+  readonly tag!: "Command";
 
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.ForeignType(this.pos, this.name, this.foreign_name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof ForeignType;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly signature: Signature<Parameter>,
+    readonly body: Statement[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Command" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<Parameter>>(
+      signature,
+      "Signature<Parameter>",
+      Signature
+    );
+    $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
   }
 
-  class Type extends Declaration {
-    readonly tag!: "Type";
-
-    constructor(
-      readonly pos: Meta,
-      readonly typ: TypeDef,
-      readonly fields: Parameter[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Type" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
-      $assert_type<Parameter[]>(fields, "Parameter[]", $is_array(Parameter));
-    }
-
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Type(this.pos, this.typ, this.fields);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Type;
-    }
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Command(this.pos, this.signature, this.body);
   }
 
-  class Scene extends Declaration {
-    readonly tag!: "Scene";
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Command;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly name: Name,
-      readonly body: Statement[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Scene" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
-    }
+export class $$Declaration$_Define extends Declaration {
+  readonly tag!: "Define";
 
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Scene(this.pos, this.name, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Scene;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly name: Name,
+    readonly value: Expression
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Define" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<Expression>(value, "Expression", Expression);
   }
 
-  class Action extends Declaration {
-    readonly tag!: "Action";
-
-    constructor(
-      readonly pos: Meta,
-      readonly title: Interpolation<Name>,
-      readonly tags: Name[],
-      readonly pred: Predicate,
-      readonly rank: Rank,
-      readonly body: Statement[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Action" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Interpolation<Name>>(
-        title,
-        "Interpolation<Name>",
-        Interpolation
-      );
-      $assert_type<Name[]>(tags, "Name[]", $is_array(Name));
-      $assert_type<Predicate>(pred, "Predicate", Predicate);
-      $assert_type<Rank>(rank, "Rank", Rank);
-      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
-    }
-
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.Action(
-        this.pos,
-        this.title,
-        this.tags,
-        this.pred,
-        this.rank,
-        this.body
-      );
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Action;
-    }
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Define(this.pos, this.name, this.value);
   }
 
-  class When extends Declaration {
-    readonly tag!: "When";
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Define;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly pred: Predicate,
-      readonly body: Statement[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "When" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(pred, "Predicate", Predicate);
-      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
-    }
+export class $$Declaration$_Role extends Declaration {
+  readonly tag!: "Role";
 
-    match<$T>(p: $p_Declaration<$T>): $T {
-      return p.When(this.pos, this.pred, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof When;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Role" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  return {
-    Relation,
-    DefinePredicate,
-    Do,
-    ForeignCommand,
-    Command,
-    Define,
-    Role,
-    SingletonType,
-    ForeignType,
-    Type,
-    Scene,
-    Action,
-    When,
-  };
-})();
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Role(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Role;
+  }
+}
+
+export class $$Declaration$_SingletonType extends Declaration {
+  readonly tag!: "SingletonType";
+
+  constructor(
+    readonly pos: Meta,
+    readonly typ: TypeDef,
+    readonly init: TypeInit[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "SingletonType" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
+    $assert_type<TypeInit[]>(init, "TypeInit[]", $is_array(TypeInit));
+  }
+
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.SingletonType(this.pos, this.typ, this.init);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_SingletonType;
+  }
+}
+
+export class $$Declaration$_ForeignType extends Declaration {
+  readonly tag!: "ForeignType";
+
+  constructor(
+    readonly pos: Meta,
+    readonly name: Name,
+    readonly foreign_name: Namespace
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "ForeignType" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<Namespace>(foreign_name, "Namespace", Namespace);
+  }
+
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.ForeignType(this.pos, this.name, this.foreign_name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_ForeignType;
+  }
+}
+
+export class $$Declaration$_Type extends Declaration {
+  readonly tag!: "Type";
+
+  constructor(
+    readonly pos: Meta,
+    readonly typ: TypeDef,
+    readonly fields: Parameter[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Type" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<TypeDef>(typ, "TypeDef", TypeDef);
+    $assert_type<Parameter[]>(fields, "Parameter[]", $is_array(Parameter));
+  }
+
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Type(this.pos, this.typ, this.fields);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Type;
+  }
+}
+
+export class $$Declaration$_Scene extends Declaration {
+  readonly tag!: "Scene";
+
+  constructor(
+    readonly pos: Meta,
+    readonly name: Name,
+    readonly body: Statement[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Scene" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
+  }
+
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Scene(this.pos, this.name, this.body);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Scene;
+  }
+}
+
+export class $$Declaration$_Action extends Declaration {
+  readonly tag!: "Action";
+
+  constructor(
+    readonly pos: Meta,
+    readonly title: Interpolation<Name>,
+    readonly tags: Name[],
+    readonly pred: Predicate,
+    readonly rank: Rank,
+    readonly body: Statement[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Action" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Interpolation<Name>>(
+      title,
+      "Interpolation<Name>",
+      Interpolation
+    );
+    $assert_type<Name[]>(tags, "Name[]", $is_array(Name));
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
+    $assert_type<Rank>(rank, "Rank", Rank);
+    $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
+  }
+
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.Action(
+      this.pos,
+      this.title,
+      this.tags,
+      this.pred,
+      this.rank,
+      this.body
+    );
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_Action;
+  }
+}
+
+export class $$Declaration$_When extends Declaration {
+  readonly tag!: "When";
+
+  constructor(
+    readonly pos: Meta,
+    readonly pred: Predicate,
+    readonly body: Statement[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "When" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
+    $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
+  }
+
+  match<$T>(p: $p_Declaration<$T>): $T {
+    return p.When(this.pos, this.pred, this.body);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Declaration$_When;
+  }
+}
 
 export class TypeDef extends Node {
   readonly tag!: "TypeDef";
@@ -631,11 +610,11 @@ export abstract class Rank extends Node {
   abstract match<$T>(p: $p_Rank<$T>): $T;
 
   static get Expr() {
-    return $Rank.Expr;
+    return $$Rank$_Expr;
   }
 
   static get Unranked() {
-    return $Rank.Unranked;
+    return $$Rank$_Unranked;
   }
 
   static has_instance(x: any) {
@@ -643,45 +622,41 @@ export abstract class Rank extends Node {
   }
 }
 
-const $Rank = (function () {
-  class Expr extends Rank {
-    readonly tag!: "Expr";
+export class $$Rank$_Expr extends Rank {
+  readonly tag!: "Expr";
 
-    constructor(readonly expr: Expression) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Expr" });
-      $assert_type<Expression>(expr, "Expression", Expression);
-    }
-
-    match<$T>(p: $p_Rank<$T>): $T {
-      return p.Expr(this.expr);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Expr;
-    }
+  constructor(readonly expr: Expression) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Expr" });
+    $assert_type<Expression>(expr, "Expression", Expression);
   }
 
-  class Unranked extends Rank {
-    readonly tag!: "Unranked";
-
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Unranked" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
-
-    match<$T>(p: $p_Rank<$T>): $T {
-      return p.Unranked(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Unranked;
-    }
+  match<$T>(p: $p_Rank<$T>): $T {
+    return p.Expr(this.expr);
   }
 
-  return { Expr, Unranked };
-})();
+  static has_instance(x: any) {
+    return x instanceof $$Rank$_Expr;
+  }
+}
+
+export class $$Rank$_Unranked extends Rank {
+  readonly tag!: "Unranked";
+
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Unranked" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_Rank<$T>): $T {
+    return p.Unranked(this.pos);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Rank$_Unranked;
+  }
+}
 
 type $p_TypeInit<$T> = {
   Fact(pos: Meta, sig: PartialSignature<Expression>): $T;
@@ -700,15 +675,15 @@ export abstract class TypeInit extends Node {
   abstract match<$T>(p: $p_TypeInit<$T>): $T;
 
   static get Fact() {
-    return $TypeInit.Fact;
+    return $$TypeInit$_Fact;
   }
 
   static get Command() {
-    return $TypeInit.Command;
+    return $$TypeInit$_Command;
   }
 
   static get ForeignCommand() {
-    return $TypeInit.ForeignCommand;
+    return $$TypeInit$_ForeignCommand;
   }
 
   static has_instance(x: any) {
@@ -716,91 +691,84 @@ export abstract class TypeInit extends Node {
   }
 }
 
-const $TypeInit = (function () {
-  class Fact extends TypeInit {
-    readonly tag!: "Fact";
+export class $$TypeInit$_Fact extends TypeInit {
+  readonly tag!: "Fact";
 
-    constructor(
-      readonly pos: Meta,
-      readonly sig: PartialSignature<Expression>
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Fact" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<PartialSignature<Expression>>(
-        sig,
-        "PartialSignature<Expression>",
-        PartialSignature
-      );
-    }
-
-    match<$T>(p: $p_TypeInit<$T>): $T {
-      return p.Fact(this.pos, this.sig);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Fact;
-    }
+  constructor(readonly pos: Meta, readonly sig: PartialSignature<Expression>) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Fact" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<PartialSignature<Expression>>(
+      sig,
+      "PartialSignature<Expression>",
+      PartialSignature
+    );
   }
 
-  class Command extends TypeInit {
-    readonly tag!: "Command";
-
-    constructor(
-      readonly pos: Meta,
-      readonly sig: PartialSignature<Parameter>,
-      readonly body: Statement[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Command" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<PartialSignature<Parameter>>(
-        sig,
-        "PartialSignature<Parameter>",
-        PartialSignature
-      );
-      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
-    }
-
-    match<$T>(p: $p_TypeInit<$T>): $T {
-      return p.Command(this.pos, this.sig, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Command;
-    }
+  match<$T>(p: $p_TypeInit<$T>): $T {
+    return p.Fact(this.pos, this.sig);
   }
 
-  class ForeignCommand extends TypeInit {
-    readonly tag!: "ForeignCommand";
+  static has_instance(x: any) {
+    return x instanceof $$TypeInit$_Fact;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly signature: PartialSignature<Parameter>,
-      readonly body: FFI
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "ForeignCommand" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<PartialSignature<Parameter>>(
-        signature,
-        "PartialSignature<Parameter>",
-        PartialSignature
-      );
-      $assert_type<FFI>(body, "FFI", FFI);
-    }
+export class $$TypeInit$_Command extends TypeInit {
+  readonly tag!: "Command";
 
-    match<$T>(p: $p_TypeInit<$T>): $T {
-      return p.ForeignCommand(this.pos, this.signature, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof ForeignCommand;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly sig: PartialSignature<Parameter>,
+    readonly body: Statement[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Command" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<PartialSignature<Parameter>>(
+      sig,
+      "PartialSignature<Parameter>",
+      PartialSignature
+    );
+    $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
   }
 
-  return { Fact, Command, ForeignCommand };
-})();
+  match<$T>(p: $p_TypeInit<$T>): $T {
+    return p.Command(this.pos, this.sig, this.body);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$TypeInit$_Command;
+  }
+}
+
+export class $$TypeInit$_ForeignCommand extends TypeInit {
+  readonly tag!: "ForeignCommand";
+
+  constructor(
+    readonly pos: Meta,
+    readonly signature: PartialSignature<Parameter>,
+    readonly body: FFI
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "ForeignCommand" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<PartialSignature<Parameter>>(
+      signature,
+      "PartialSignature<Parameter>",
+      PartialSignature
+    );
+    $assert_type<FFI>(body, "FFI", FFI);
+  }
+
+  match<$T>(p: $p_TypeInit<$T>): $T {
+    return p.ForeignCommand(this.pos, this.signature, this.body);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$TypeInit$_ForeignCommand;
+  }
+}
 
 type $p_Parameter<$T> = {
   Untyped(pos: Meta, name: Name): $T;
@@ -815,15 +783,15 @@ export abstract class Parameter extends Node {
   abstract match<$T>(p: $p_Parameter<$T>): $T;
 
   static get Untyped() {
-    return $Parameter.Untyped;
+    return $$Parameter$_Untyped;
   }
 
   static get Typed() {
-    return $Parameter.Typed;
+    return $$Parameter$_Typed;
   }
 
   static get TypedOnly() {
-    return $Parameter.TypedOnly;
+    return $$Parameter$_TypedOnly;
   }
 
   static has_instance(x: any) {
@@ -831,71 +799,63 @@ export abstract class Parameter extends Node {
   }
 }
 
-const $Parameter = (function () {
-  class Untyped extends Parameter {
-    readonly tag!: "Untyped";
+export class $$Parameter$_Untyped extends Parameter {
+  readonly tag!: "Untyped";
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Untyped" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_Parameter<$T>): $T {
-      return p.Untyped(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Untyped;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Untyped" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class Typed extends Parameter {
-    readonly tag!: "Typed";
-
-    constructor(
-      readonly pos: Meta,
-      readonly name: Name,
-      readonly typ: TypeApp
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Typed" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-      $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
-    }
-
-    match<$T>(p: $p_Parameter<$T>): $T {
-      return p.Typed(this.pos, this.name, this.typ);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Typed;
-    }
+  match<$T>(p: $p_Parameter<$T>): $T {
+    return p.Untyped(this.pos, this.name);
   }
 
-  class TypedOnly extends Parameter {
-    readonly tag!: "TypedOnly";
+  static has_instance(x: any) {
+    return x instanceof $$Parameter$_Untyped;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly typ: TypeApp) {
-      super();
-      Object.defineProperty(this, "tag", { value: "TypedOnly" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
-    }
+export class $$Parameter$_Typed extends Parameter {
+  readonly tag!: "Typed";
 
-    match<$T>(p: $p_Parameter<$T>): $T {
-      return p.TypedOnly(this.pos, this.typ);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof TypedOnly;
-    }
+  constructor(readonly pos: Meta, readonly name: Name, readonly typ: TypeApp) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Typed" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
   }
 
-  return { Untyped, Typed, TypedOnly };
-})();
+  match<$T>(p: $p_Parameter<$T>): $T {
+    return p.Typed(this.pos, this.name, this.typ);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Parameter$_Typed;
+  }
+}
+
+export class $$Parameter$_TypedOnly extends Parameter {
+  readonly tag!: "TypedOnly";
+
+  constructor(readonly pos: Meta, readonly typ: TypeApp) {
+    super();
+    Object.defineProperty(this, "tag", { value: "TypedOnly" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
+  }
+
+  match<$T>(p: $p_Parameter<$T>): $T {
+    return p.TypedOnly(this.pos, this.typ);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Parameter$_TypedOnly;
+  }
+}
 
 type $p_TypeApp<$T> = {
   Named(pos: Meta, name: Name): $T;
@@ -906,7 +866,7 @@ export abstract class TypeApp extends Node {
   abstract match<$T>(p: $p_TypeApp<$T>): $T;
 
   static get Named() {
-    return $TypeApp.Named;
+    return $$TypeApp$_Named;
   }
 
   static has_instance(x: any) {
@@ -914,28 +874,24 @@ export abstract class TypeApp extends Node {
   }
 }
 
-const $TypeApp = (function () {
-  class Named extends TypeApp {
-    readonly tag!: "Named";
+export class $$TypeApp$_Named extends TypeApp {
+  readonly tag!: "Named";
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Named" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_TypeApp<$T>): $T {
-      return p.Named(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Named;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Named" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  return { Named };
-})();
+  match<$T>(p: $p_TypeApp<$T>): $T {
+    return p.Named(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$TypeApp$_Named;
+  }
+}
 
 export class PredicateClause extends Node {
   readonly tag!: "PredicateClause";
@@ -966,7 +922,7 @@ export abstract class PredicateEffect extends Node {
   abstract match<$T>(p: $p_PredicateEffect<$T>): $T;
 
   static get Trivial() {
-    return $PredicateEffect.Trivial;
+    return $$PredicateEffect$_Trivial;
   }
 
   static has_instance(x: any) {
@@ -974,26 +930,22 @@ export abstract class PredicateEffect extends Node {
   }
 }
 
-const $PredicateEffect = (function () {
-  class Trivial extends PredicateEffect {
-    readonly tag!: "Trivial";
+export class $$PredicateEffect$_Trivial extends PredicateEffect {
+  readonly tag!: "Trivial";
 
-    constructor() {
-      super();
-      Object.defineProperty(this, "tag", { value: "Trivial" });
-    }
-
-    match<$T>(p: $p_PredicateEffect<$T>): $T {
-      return p.Trivial();
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Trivial;
-    }
+  constructor() {
+    super();
+    Object.defineProperty(this, "tag", { value: "Trivial" });
   }
 
-  return { Trivial };
-})();
+  match<$T>(p: $p_PredicateEffect<$T>): $T {
+    return p.Trivial();
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateEffect$_Trivial;
+  }
+}
 
 type $p_Statement<$T> = {
   Fact(pos: Meta, signature: Signature<Expression>): $T;
@@ -1028,31 +980,31 @@ export abstract class Statement extends Node {
   abstract match<$T>(p: $p_Statement<$T>): $T;
 
   static get Fact() {
-    return $Statement.Fact;
+    return $$Statement$_Fact;
   }
 
   static get Forget() {
-    return $Statement.Forget;
+    return $$Statement$_Forget;
   }
 
   static get Goto() {
-    return $Statement.Goto;
+    return $$Statement$_Goto;
   }
 
   static get Call() {
-    return $Statement.Call;
+    return $$Statement$_Call;
   }
 
   static get Let() {
-    return $Statement.Let;
+    return $$Statement$_Let;
   }
 
   static get SimulateGlobal() {
-    return $Statement.SimulateGlobal;
+    return $$Statement$_SimulateGlobal;
   }
 
   static get Expr() {
-    return $Statement.Expr;
+    return $$Statement$_Expr;
   }
 
   static has_instance(x: any) {
@@ -1060,161 +1012,157 @@ export abstract class Statement extends Node {
   }
 }
 
-const $Statement = (function () {
-  class Fact extends Statement {
-    readonly tag!: "Fact";
+export class $$Statement$_Fact extends Statement {
+  readonly tag!: "Fact";
 
-    constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Fact" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<Expression>>(
-        signature,
-        "Signature<Expression>",
-        Signature
-      );
-    }
-
-    match<$T>(p: $p_Statement<$T>): $T {
-      return p.Fact(this.pos, this.signature);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Fact;
-    }
+  constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Fact" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<Expression>>(
+      signature,
+      "Signature<Expression>",
+      Signature
+    );
   }
 
-  class Forget extends Statement {
-    readonly tag!: "Forget";
-
-    constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Forget" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<Expression>>(
-        signature,
-        "Signature<Expression>",
-        Signature
-      );
-    }
-
-    match<$T>(p: $p_Statement<$T>): $T {
-      return p.Forget(this.pos, this.signature);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Forget;
-    }
+  match<$T>(p: $p_Statement<$T>): $T {
+    return p.Fact(this.pos, this.signature);
   }
 
-  class Goto extends Statement {
-    readonly tag!: "Goto";
+  static has_instance(x: any) {
+    return x instanceof $$Statement$_Fact;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Goto" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
+export class $$Statement$_Forget extends Statement {
+  readonly tag!: "Forget";
 
-    match<$T>(p: $p_Statement<$T>): $T {
-      return p.Goto(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Goto;
-    }
+  constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Forget" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<Expression>>(
+      signature,
+      "Signature<Expression>",
+      Signature
+    );
   }
 
-  class Call extends Statement {
-    readonly tag!: "Call";
-
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Call" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_Statement<$T>): $T {
-      return p.Call(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Call;
-    }
+  match<$T>(p: $p_Statement<$T>): $T {
+    return p.Forget(this.pos, this.signature);
   }
 
-  class Let extends Statement {
-    readonly tag!: "Let";
+  static has_instance(x: any) {
+    return x instanceof $$Statement$_Forget;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly name: Name,
-      readonly value: Expression
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Let" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-      $assert_type<Expression>(value, "Expression", Expression);
-    }
+export class $$Statement$_Goto extends Statement {
+  readonly tag!: "Goto";
 
-    match<$T>(p: $p_Statement<$T>): $T {
-      return p.Let(this.pos, this.name, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Let;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Goto" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class SimulateGlobal extends Statement {
-    readonly tag!: "SimulateGlobal";
-
-    constructor(
-      readonly pos: Meta,
-      readonly actors: Expression,
-      readonly goal: SimulationGoal,
-      readonly signals: Signal[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "SimulateGlobal" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(actors, "Expression", Expression);
-      $assert_type<SimulationGoal>(goal, "SimulationGoal", SimulationGoal);
-      $assert_type<Signal[]>(signals, "Signal[]", $is_array(Signal));
-    }
-
-    match<$T>(p: $p_Statement<$T>): $T {
-      return p.SimulateGlobal(this.pos, this.actors, this.goal, this.signals);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof SimulateGlobal;
-    }
+  match<$T>(p: $p_Statement<$T>): $T {
+    return p.Goto(this.pos, this.name);
   }
 
-  class Expr extends Statement {
-    readonly tag!: "Expr";
+  static has_instance(x: any) {
+    return x instanceof $$Statement$_Goto;
+  }
+}
 
-    constructor(readonly value: Expression) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Expr" });
-      $assert_type<Expression>(value, "Expression", Expression);
-    }
+export class $$Statement$_Call extends Statement {
+  readonly tag!: "Call";
 
-    match<$T>(p: $p_Statement<$T>): $T {
-      return p.Expr(this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Expr;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Call" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  return { Fact, Forget, Goto, Call, Let, SimulateGlobal, Expr };
-})();
+  match<$T>(p: $p_Statement<$T>): $T {
+    return p.Call(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Statement$_Call;
+  }
+}
+
+export class $$Statement$_Let extends Statement {
+  readonly tag!: "Let";
+
+  constructor(
+    readonly pos: Meta,
+    readonly name: Name,
+    readonly value: Expression
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Let" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<Expression>(value, "Expression", Expression);
+  }
+
+  match<$T>(p: $p_Statement<$T>): $T {
+    return p.Let(this.pos, this.name, this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Statement$_Let;
+  }
+}
+
+export class $$Statement$_SimulateGlobal extends Statement {
+  readonly tag!: "SimulateGlobal";
+
+  constructor(
+    readonly pos: Meta,
+    readonly actors: Expression,
+    readonly goal: SimulationGoal,
+    readonly signals: Signal[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "SimulateGlobal" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(actors, "Expression", Expression);
+    $assert_type<SimulationGoal>(goal, "SimulationGoal", SimulationGoal);
+    $assert_type<Signal[]>(signals, "Signal[]", $is_array(Signal));
+  }
+
+  match<$T>(p: $p_Statement<$T>): $T {
+    return p.SimulateGlobal(this.pos, this.actors, this.goal, this.signals);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Statement$_SimulateGlobal;
+  }
+}
+
+export class $$Statement$_Expr extends Statement {
+  readonly tag!: "Expr";
+
+  constructor(readonly value: Expression) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Expr" });
+    $assert_type<Expression>(value, "Expression", Expression);
+  }
+
+  match<$T>(p: $p_Statement<$T>): $T {
+    return p.Expr(this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Statement$_Expr;
+  }
+}
 
 export class Signal extends Node {
   readonly tag!: "Signal";
@@ -1316,95 +1264,95 @@ export abstract class Expression extends Node {
   abstract match<$T>(p: $p_Expression<$T>): $T;
 
   static get New() {
-    return $Expression.New;
+    return $$Expression$_New;
   }
 
   static get Invoke() {
-    return $Expression.Invoke;
+    return $$Expression$_Invoke;
   }
 
   static get Global() {
-    return $Expression.Global;
+    return $$Expression$_Global;
   }
 
   static get Variable() {
-    return $Expression.Variable;
+    return $$Expression$_Variable;
   }
 
   static get Self() {
-    return $Expression.Self;
+    return $$Expression$_Self;
   }
 
   static get List() {
-    return $Expression.List;
+    return $$Expression$_List;
   }
 
   static get Record() {
-    return $Expression.Record;
+    return $$Expression$_Record;
   }
 
   static get Cast() {
-    return $Expression.Cast;
+    return $$Expression$_Cast;
   }
 
   static get Search() {
-    return $Expression.Search;
+    return $$Expression$_Search;
   }
 
   static get MatchSearch() {
-    return $Expression.MatchSearch;
+    return $$Expression$_MatchSearch;
   }
 
   static get Project() {
-    return $Expression.Project;
+    return $$Expression$_Project;
   }
 
   static get Select() {
-    return $Expression.Select;
+    return $$Expression$_Select;
   }
 
   static get For() {
-    return $Expression.For;
+    return $$Expression$_For;
   }
 
   static get Block() {
-    return $Expression.Block;
+    return $$Expression$_Block;
   }
 
   static get Apply() {
-    return $Expression.Apply;
+    return $$Expression$_Apply;
   }
 
   static get Pipe() {
-    return $Expression.Pipe;
+    return $$Expression$_Pipe;
   }
 
   static get Interpolate() {
-    return $Expression.Interpolate;
+    return $$Expression$_Interpolate;
   }
 
   static get Condition() {
-    return $Expression.Condition;
+    return $$Expression$_Condition;
   }
 
   static get HasType() {
-    return $Expression.HasType;
+    return $$Expression$_HasType;
   }
 
   static get HasRole() {
-    return $Expression.HasRole;
+    return $$Expression$_HasRole;
   }
 
   static get Hole() {
-    return $Expression.Hole;
+    return $$Expression$_Hole;
   }
 
   static get Parens() {
-    return $Expression.Parens;
+    return $$Expression$_Parens;
   }
 
   static get Lit() {
-    return $Expression.Lit;
+    return $$Expression$_Lit;
   }
 
   static has_instance(x: any) {
@@ -1412,537 +1360,509 @@ export abstract class Expression extends Node {
   }
 }
 
-const $Expression = (function () {
-  class New extends Expression {
-    readonly tag!: "New";
+export class $$Expression$_New extends Expression {
+  readonly tag!: "New";
 
-    constructor(
-      readonly pos: Meta,
-      readonly typ: Name,
-      readonly fields: Expression[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "New" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(typ, "Name", Name);
-      $assert_type<Expression[]>(fields, "Expression[]", $is_array(Expression));
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.New(this.pos, this.typ, this.fields);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof New;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly typ: Name,
+    readonly fields: Expression[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "New" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(typ, "Name", Name);
+    $assert_type<Expression[]>(fields, "Expression[]", $is_array(Expression));
   }
 
-  class Invoke extends Expression {
-    readonly tag!: "Invoke";
-
-    constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Invoke" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<Expression>>(
-        signature,
-        "Signature<Expression>",
-        Signature
-      );
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Invoke(this.pos, this.signature);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Invoke;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.New(this.pos, this.typ, this.fields);
   }
 
-  class Global extends Expression {
-    readonly tag!: "Global";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_New;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Global" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
+export class $$Expression$_Invoke extends Expression {
+  readonly tag!: "Invoke";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Global(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Global;
-    }
+  constructor(readonly pos: Meta, readonly signature: Signature<Expression>) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Invoke" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<Expression>>(
+      signature,
+      "Signature<Expression>",
+      Signature
+    );
   }
 
-  class Variable extends Expression {
-    readonly tag!: "Variable";
-
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Variable" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Variable(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Variable;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Invoke(this.pos, this.signature);
   }
 
-  class Self extends Expression {
-    readonly tag!: "Self";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Invoke;
+  }
+}
 
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Self" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
+export class $$Expression$_Global extends Expression {
+  readonly tag!: "Global";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Self(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Self;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Global" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class List extends Expression {
-    readonly tag!: "List";
-
-    constructor(readonly pos: Meta, readonly values: Expression[]) {
-      super();
-      Object.defineProperty(this, "tag", { value: "List" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression[]>(values, "Expression[]", $is_array(Expression));
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.List(this.pos, this.values);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof List;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Global(this.pos, this.name);
   }
 
-  class Record extends Expression {
-    readonly tag!: "Record";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Global;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly pairs: Pair<RecordField, Expression>[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Record" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Pair<RecordField, Expression>[]>(
-        pairs,
-        "Pair<RecordField, Expression>[]",
-        $is_array(Pair)
-      );
-    }
+export class $$Expression$_Variable extends Expression {
+  readonly tag!: "Variable";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Record(this.pos, this.pairs);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Record;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Variable" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class Cast extends Expression {
-    readonly tag!: "Cast";
-
-    constructor(
-      readonly pos: Meta,
-      readonly typ: TypeApp,
-      readonly value: Expression
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Cast" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
-      $assert_type<Expression>(value, "Expression", Expression);
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Cast(this.pos, this.typ, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Cast;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Variable(this.pos, this.name);
   }
 
-  class Search extends Expression {
-    readonly tag!: "Search";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Variable;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly predicate: Predicate) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Search" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(predicate, "Predicate", Predicate);
-    }
+export class $$Expression$_Self extends Expression {
+  readonly tag!: "Self";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Search(this.pos, this.predicate);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Search;
-    }
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Self" });
+    $assert_type<Meta>(pos, "Meta", Meta);
   }
 
-  class MatchSearch extends Expression {
-    readonly tag!: "MatchSearch";
-
-    constructor(readonly pos: Meta, readonly cases: MatchSearchCase[]) {
-      super();
-      Object.defineProperty(this, "tag", { value: "MatchSearch" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<MatchSearchCase[]>(
-        cases,
-        "MatchSearchCase[]",
-        $is_array(MatchSearchCase)
-      );
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.MatchSearch(this.pos, this.cases);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof MatchSearch;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Self(this.pos);
   }
 
-  class Project extends Expression {
-    readonly tag!: "Project";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Self;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly object: Expression,
-      readonly field: RecordField
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Project" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(object, "Expression", Expression);
-      $assert_type<RecordField>(field, "RecordField", RecordField);
-    }
+export class $$Expression$_List extends Expression {
+  readonly tag!: "List";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Project(this.pos, this.object, this.field);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Project;
-    }
+  constructor(readonly pos: Meta, readonly values: Expression[]) {
+    super();
+    Object.defineProperty(this, "tag", { value: "List" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression[]>(values, "Expression[]", $is_array(Expression));
   }
 
-  class Select extends Expression {
-    readonly tag!: "Select";
-
-    constructor(
-      readonly pos: Meta,
-      readonly object: Expression,
-      readonly fields: Projection[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Select" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(object, "Expression", Expression);
-      $assert_type<Projection[]>(fields, "Projection[]", $is_array(Projection));
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Select(this.pos, this.object, this.fields);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Select;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.List(this.pos, this.values);
   }
 
-  class For extends Expression {
-    readonly tag!: "For";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_List;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly stream: Expression,
-      readonly name: Name,
-      readonly body: Expression
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "For" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(stream, "Expression", Expression);
-      $assert_type<Name>(name, "Name", Name);
-      $assert_type<Expression>(body, "Expression", Expression);
-    }
+export class $$Expression$_Record extends Expression {
+  readonly tag!: "Record";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.For(this.pos, this.stream, this.name, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof For;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly pairs: Pair<RecordField, Expression>[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Record" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Pair<RecordField, Expression>[]>(
+      pairs,
+      "Pair<RecordField, Expression>[]",
+      $is_array(Pair)
+    );
   }
 
-  class Block extends Expression {
-    readonly tag!: "Block";
-
-    constructor(readonly pos: Meta, readonly body: Statement[]) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Block" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Block(this.pos, this.body);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Block;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Record(this.pos, this.pairs);
   }
 
-  class Apply extends Expression {
-    readonly tag!: "Apply";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Record;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly partial: Expression,
-      readonly values: Expression[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Apply" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(partial, "Expression", Expression);
-      $assert_type<Expression[]>(values, "Expression[]", $is_array(Expression));
-    }
+export class $$Expression$_Cast extends Expression {
+  readonly tag!: "Cast";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Apply(this.pos, this.partial, this.values);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Apply;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly typ: TypeApp,
+    readonly value: Expression
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Cast" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
+    $assert_type<Expression>(value, "Expression", Expression);
   }
 
-  class Pipe extends Expression {
-    readonly tag!: "Pipe";
-
-    constructor(
-      readonly pos: Meta,
-      readonly left: Expression,
-      readonly right: Expression
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Pipe" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(left, "Expression", Expression);
-      $assert_type<Expression>(right, "Expression", Expression);
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Pipe(this.pos, this.left, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Pipe;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Cast(this.pos, this.typ, this.value);
   }
 
-  class Interpolate extends Expression {
-    readonly tag!: "Interpolate";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Cast;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly value: Interpolation<Expression>) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Interpolate" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Interpolation<Expression>>(
-        value,
-        "Interpolation<Expression>",
-        Interpolation
-      );
-    }
+export class $$Expression$_Search extends Expression {
+  readonly tag!: "Search";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Interpolate(this.pos, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Interpolate;
-    }
+  constructor(readonly pos: Meta, readonly predicate: Predicate) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Search" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(predicate, "Predicate", Predicate);
   }
 
-  class Condition extends Expression {
-    readonly tag!: "Condition";
-
-    constructor(readonly pos: Meta, readonly cases: ConditionCase[]) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Condition" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<ConditionCase[]>(
-        cases,
-        "ConditionCase[]",
-        $is_array(ConditionCase)
-      );
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Condition(this.pos, this.cases);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Condition;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Search(this.pos, this.predicate);
   }
 
-  class HasType extends Expression {
-    readonly tag!: "HasType";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Search;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly value: Expression,
-      readonly typ: TypeApp
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "HasType" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(value, "Expression", Expression);
-      $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
-    }
+export class $$Expression$_MatchSearch extends Expression {
+  readonly tag!: "MatchSearch";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.HasType(this.pos, this.value, this.typ);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof HasType;
-    }
+  constructor(readonly pos: Meta, readonly cases: MatchSearchCase[]) {
+    super();
+    Object.defineProperty(this, "tag", { value: "MatchSearch" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<MatchSearchCase[]>(
+      cases,
+      "MatchSearchCase[]",
+      $is_array(MatchSearchCase)
+    );
   }
 
-  class HasRole extends Expression {
-    readonly tag!: "HasRole";
-
-    constructor(
-      readonly pos: Meta,
-      readonly value: Expression,
-      readonly role: Name
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "HasRole" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(value, "Expression", Expression);
-      $assert_type<Name>(role, "Name", Name);
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.HasRole(this.pos, this.value, this.role);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof HasRole;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.MatchSearch(this.pos, this.cases);
   }
 
-  class Hole extends Expression {
-    readonly tag!: "Hole";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_MatchSearch;
+  }
+}
 
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Hole" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
+export class $$Expression$_Project extends Expression {
+  readonly tag!: "Project";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Hole(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Hole;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly object: Expression,
+    readonly field: RecordField
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Project" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(object, "Expression", Expression);
+    $assert_type<RecordField>(field, "RecordField", RecordField);
   }
 
-  class Parens extends Expression {
-    readonly tag!: "Parens";
-
-    constructor(readonly pos: Meta, readonly value: Expression) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Parens" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Expression>(value, "Expression", Expression);
-    }
-
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Parens(this.pos, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Parens;
-    }
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Project(this.pos, this.object, this.field);
   }
 
-  class Lit extends Expression {
-    readonly tag!: "Lit";
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Project;
+  }
+}
 
-    constructor(readonly value: Literal) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Lit" });
-      $assert_type<Literal>(value, "Literal", Literal);
-    }
+export class $$Expression$_Select extends Expression {
+  readonly tag!: "Select";
 
-    match<$T>(p: $p_Expression<$T>): $T {
-      return p.Lit(this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Lit;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly object: Expression,
+    readonly fields: Projection[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Select" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(object, "Expression", Expression);
+    $assert_type<Projection[]>(fields, "Projection[]", $is_array(Projection));
   }
 
-  return {
-    New,
-    Invoke,
-    Global,
-    Variable,
-    Self,
-    List,
-    Record,
-    Cast,
-    Search,
-    MatchSearch,
-    Project,
-    Select,
-    For,
-    Block,
-    Apply,
-    Pipe,
-    Interpolate,
-    Condition,
-    HasType,
-    HasRole,
-    Hole,
-    Parens,
-    Lit,
-  };
-})();
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Select(this.pos, this.object, this.fields);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Select;
+  }
+}
+
+export class $$Expression$_For extends Expression {
+  readonly tag!: "For";
+
+  constructor(
+    readonly pos: Meta,
+    readonly stream: Expression,
+    readonly name: Name,
+    readonly body: Expression
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "For" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(stream, "Expression", Expression);
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<Expression>(body, "Expression", Expression);
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.For(this.pos, this.stream, this.name, this.body);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_For;
+  }
+}
+
+export class $$Expression$_Block extends Expression {
+  readonly tag!: "Block";
+
+  constructor(readonly pos: Meta, readonly body: Statement[]) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Block" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Statement[]>(body, "Statement[]", $is_array(Statement));
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Block(this.pos, this.body);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Block;
+  }
+}
+
+export class $$Expression$_Apply extends Expression {
+  readonly tag!: "Apply";
+
+  constructor(
+    readonly pos: Meta,
+    readonly partial: Expression,
+    readonly values: Expression[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Apply" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(partial, "Expression", Expression);
+    $assert_type<Expression[]>(values, "Expression[]", $is_array(Expression));
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Apply(this.pos, this.partial, this.values);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Apply;
+  }
+}
+
+export class $$Expression$_Pipe extends Expression {
+  readonly tag!: "Pipe";
+
+  constructor(
+    readonly pos: Meta,
+    readonly left: Expression,
+    readonly right: Expression
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Pipe" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(left, "Expression", Expression);
+    $assert_type<Expression>(right, "Expression", Expression);
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Pipe(this.pos, this.left, this.right);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Pipe;
+  }
+}
+
+export class $$Expression$_Interpolate extends Expression {
+  readonly tag!: "Interpolate";
+
+  constructor(readonly pos: Meta, readonly value: Interpolation<Expression>) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Interpolate" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Interpolation<Expression>>(
+      value,
+      "Interpolation<Expression>",
+      Interpolation
+    );
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Interpolate(this.pos, this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Interpolate;
+  }
+}
+
+export class $$Expression$_Condition extends Expression {
+  readonly tag!: "Condition";
+
+  constructor(readonly pos: Meta, readonly cases: ConditionCase[]) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Condition" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<ConditionCase[]>(
+      cases,
+      "ConditionCase[]",
+      $is_array(ConditionCase)
+    );
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Condition(this.pos, this.cases);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Condition;
+  }
+}
+
+export class $$Expression$_HasType extends Expression {
+  readonly tag!: "HasType";
+
+  constructor(
+    readonly pos: Meta,
+    readonly value: Expression,
+    readonly typ: TypeApp
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "HasType" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(value, "Expression", Expression);
+    $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.HasType(this.pos, this.value, this.typ);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_HasType;
+  }
+}
+
+export class $$Expression$_HasRole extends Expression {
+  readonly tag!: "HasRole";
+
+  constructor(
+    readonly pos: Meta,
+    readonly value: Expression,
+    readonly role: Name
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "HasRole" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(value, "Expression", Expression);
+    $assert_type<Name>(role, "Name", Name);
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.HasRole(this.pos, this.value, this.role);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_HasRole;
+  }
+}
+
+export class $$Expression$_Hole extends Expression {
+  readonly tag!: "Hole";
+
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Hole" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Hole(this.pos);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Hole;
+  }
+}
+
+export class $$Expression$_Parens extends Expression {
+  readonly tag!: "Parens";
+
+  constructor(readonly pos: Meta, readonly value: Expression) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Parens" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Expression>(value, "Expression", Expression);
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Parens(this.pos, this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Parens;
+  }
+}
+
+export class $$Expression$_Lit extends Expression {
+  readonly tag!: "Lit";
+
+  constructor(readonly value: Literal) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Lit" });
+    $assert_type<Literal>(value, "Literal", Literal);
+  }
+
+  match<$T>(p: $p_Expression<$T>): $T {
+    return p.Lit(this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Expression$_Lit;
+  }
+}
 
 export class MatchSearchCase extends Node {
   readonly tag!: "MatchSearchCase";
@@ -1995,11 +1915,11 @@ export abstract class RecordField extends Node {
   abstract match<$T>(p: $p_RecordField<$T>): $T;
 
   static get FName() {
-    return $RecordField.FName;
+    return $$RecordField$_FName;
   }
 
   static get FText() {
-    return $RecordField.FText;
+    return $$RecordField$_FText;
   }
 
   static has_instance(x: any) {
@@ -2007,45 +1927,41 @@ export abstract class RecordField extends Node {
   }
 }
 
-const $RecordField = (function () {
-  class FName extends RecordField {
-    readonly tag!: "FName";
+export class $$RecordField$_FName extends RecordField {
+  readonly tag!: "FName";
 
-    constructor(readonly value: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "FName" });
-      $assert_type<Name>(value, "Name", Name);
-    }
-
-    match<$T>(p: $p_RecordField<$T>): $T {
-      return p.FName(this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof FName;
-    }
+  constructor(readonly value: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "FName" });
+    $assert_type<Name>(value, "Name", Name);
   }
 
-  class FText extends RecordField {
-    readonly tag!: "FText";
-
-    constructor(readonly value: String) {
-      super();
-      Object.defineProperty(this, "tag", { value: "FText" });
-      $assert_type<String>(value, "String", String);
-    }
-
-    match<$T>(p: $p_RecordField<$T>): $T {
-      return p.FText(this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof FText;
-    }
+  match<$T>(p: $p_RecordField<$T>): $T {
+    return p.FName(this.value);
   }
 
-  return { FName, FText };
-})();
+  static has_instance(x: any) {
+    return x instanceof $$RecordField$_FName;
+  }
+}
+
+export class $$RecordField$_FText extends RecordField {
+  readonly tag!: "FText";
+
+  constructor(readonly value: String) {
+    super();
+    Object.defineProperty(this, "tag", { value: "FText" });
+    $assert_type<String>(value, "String", String);
+  }
+
+  match<$T>(p: $p_RecordField<$T>): $T {
+    return p.FText(this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$RecordField$_FText;
+  }
+}
 
 export class Projection extends Node {
   readonly tag!: "Projection";
@@ -2099,15 +2015,15 @@ export abstract class InterpolationPart<T> extends Node {
   abstract match<$T>(p: $p_InterpolationPart<T, $T>): $T;
 
   static get Escape() {
-    return $InterpolationPart.Escape;
+    return $$InterpolationPart$_Escape;
   }
 
   static get Static() {
-    return $InterpolationPart.Static;
+    return $$InterpolationPart$_Static;
   }
 
   static get Dynamic() {
-    return $InterpolationPart.Dynamic;
+    return $$InterpolationPart$_Dynamic;
   }
 
   static has_instance(x: any) {
@@ -2115,65 +2031,61 @@ export abstract class InterpolationPart<T> extends Node {
   }
 }
 
-const $InterpolationPart = (function () {
-  class Escape<T> extends InterpolationPart<T> {
-    readonly tag!: "Escape";
+export class $$InterpolationPart$_Escape<T> extends InterpolationPart<T> {
+  readonly tag!: "Escape";
 
-    constructor(readonly pos: Meta, readonly character: string) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Escape" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<string>(character, "string", $is_type("string"));
-    }
-
-    match<$T>(p: $p_InterpolationPart<T, $T>): $T {
-      return p.Escape(this.pos, this.character);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Escape;
-    }
+  constructor(readonly pos: Meta, readonly character: string) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Escape" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<string>(character, "string", $is_type("string"));
   }
 
-  class Static<T> extends InterpolationPart<T> {
-    readonly tag!: "Static";
-
-    constructor(readonly pos: Meta, readonly text: string) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Static" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<string>(text, "string", $is_type("string"));
-    }
-
-    match<$T>(p: $p_InterpolationPart<T, $T>): $T {
-      return p.Static(this.pos, this.text);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Static;
-    }
+  match<$T>(p: $p_InterpolationPart<T, $T>): $T {
+    return p.Escape(this.pos, this.character);
   }
 
-  class Dynamic<T> extends InterpolationPart<T> {
-    readonly tag!: "Dynamic";
+  static has_instance(x: any) {
+    return x instanceof $$InterpolationPart$_Escape;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly value: T) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Dynamic" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
+export class $$InterpolationPart$_Static<T> extends InterpolationPart<T> {
+  readonly tag!: "Static";
 
-    match<$T>(p: $p_InterpolationPart<T, $T>): $T {
-      return p.Dynamic(this.pos, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Dynamic;
-    }
+  constructor(readonly pos: Meta, readonly text: string) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Static" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<string>(text, "string", $is_type("string"));
   }
 
-  return { Escape, Static, Dynamic };
-})();
+  match<$T>(p: $p_InterpolationPart<T, $T>): $T {
+    return p.Static(this.pos, this.text);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$InterpolationPart$_Static;
+  }
+}
+
+export class $$InterpolationPart$_Dynamic<T> extends InterpolationPart<T> {
+  readonly tag!: "Dynamic";
+
+  constructor(readonly pos: Meta, readonly value: T) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Dynamic" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_InterpolationPart<T, $T>): $T {
+    return p.Dynamic(this.pos, this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$InterpolationPart$_Dynamic;
+  }
+}
 
 type $p_Literal<$T> = {
   False(pos: Meta): $T;
@@ -2190,19 +2102,19 @@ export abstract class Literal extends Node {
   abstract match<$T>(p: $p_Literal<$T>): $T;
 
   static get False() {
-    return $Literal.False;
+    return $$Literal$_False;
   }
 
   static get True() {
-    return $Literal.True;
+    return $$Literal$_True;
   }
 
   static get Text() {
-    return $Literal.Text;
+    return $$Literal$_Text;
   }
 
   static get Integer() {
-    return $Literal.Integer;
+    return $$Literal$_Integer;
   }
 
   static has_instance(x: any) {
@@ -2210,83 +2122,79 @@ export abstract class Literal extends Node {
   }
 }
 
-const $Literal = (function () {
-  class False extends Literal {
-    readonly tag!: "False";
+export class $$Literal$_False extends Literal {
+  readonly tag!: "False";
 
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "False" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
-
-    match<$T>(p: $p_Literal<$T>): $T {
-      return p.False(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof False;
-    }
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "False" });
+    $assert_type<Meta>(pos, "Meta", Meta);
   }
 
-  class True extends Literal {
-    readonly tag!: "True";
-
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "True" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
-
-    match<$T>(p: $p_Literal<$T>): $T {
-      return p.True(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof True;
-    }
+  match<$T>(p: $p_Literal<$T>): $T {
+    return p.False(this.pos);
   }
 
-  class Text extends Literal {
-    readonly tag!: "Text";
+  static has_instance(x: any) {
+    return x instanceof $$Literal$_False;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly value: String) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Text" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<String>(value, "String", String);
-    }
+export class $$Literal$_True extends Literal {
+  readonly tag!: "True";
 
-    match<$T>(p: $p_Literal<$T>): $T {
-      return p.Text(this.pos, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Text;
-    }
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "True" });
+    $assert_type<Meta>(pos, "Meta", Meta);
   }
 
-  class Integer extends Literal {
-    readonly tag!: "Integer";
-
-    constructor(readonly pos: Meta, readonly digits: string) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Integer" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<string>(digits, "string", $is_type("string"));
-    }
-
-    match<$T>(p: $p_Literal<$T>): $T {
-      return p.Integer(this.pos, this.digits);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Integer;
-    }
+  match<$T>(p: $p_Literal<$T>): $T {
+    return p.True(this.pos);
   }
 
-  return { False, True, Text, Integer };
-})();
+  static has_instance(x: any) {
+    return x instanceof $$Literal$_True;
+  }
+}
+
+export class $$Literal$_Text extends Literal {
+  readonly tag!: "Text";
+
+  constructor(readonly pos: Meta, readonly value: String) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Text" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<String>(value, "String", String);
+  }
+
+  match<$T>(p: $p_Literal<$T>): $T {
+    return p.Text(this.pos, this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Literal$_Text;
+  }
+}
+
+export class $$Literal$_Integer extends Literal {
+  readonly tag!: "Integer";
+
+  constructor(readonly pos: Meta, readonly digits: string) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Integer" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<string>(digits, "string", $is_type("string"));
+  }
+
+  match<$T>(p: $p_Literal<$T>): $T {
+    return p.Integer(this.pos, this.digits);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Literal$_Integer;
+  }
+}
 
 type $p_SimulationGoal<$T> = {
   ActionQuiescence(pos: Meta): $T;
@@ -2307,19 +2215,19 @@ export abstract class SimulationGoal extends Node {
   abstract match<$T>(p: $p_SimulationGoal<$T>): $T;
 
   static get ActionQuiescence() {
-    return $SimulationGoal.ActionQuiescence;
+    return $$SimulationGoal$_ActionQuiescence;
   }
 
   static get EventQuiescence() {
-    return $SimulationGoal.EventQuiescence;
+    return $$SimulationGoal$_EventQuiescence;
   }
 
   static get TotalQuiescence() {
-    return $SimulationGoal.TotalQuiescence;
+    return $$SimulationGoal$_TotalQuiescence;
   }
 
   static get CustomGoal() {
-    return $SimulationGoal.CustomGoal;
+    return $$SimulationGoal$_CustomGoal;
   }
 
   static has_instance(x: any) {
@@ -2327,82 +2235,78 @@ export abstract class SimulationGoal extends Node {
   }
 }
 
-const $SimulationGoal = (function () {
-  class ActionQuiescence extends SimulationGoal {
-    readonly tag!: "ActionQuiescence";
+export class $$SimulationGoal$_ActionQuiescence extends SimulationGoal {
+  readonly tag!: "ActionQuiescence";
 
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "ActionQuiescence" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
-
-    match<$T>(p: $p_SimulationGoal<$T>): $T {
-      return p.ActionQuiescence(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof ActionQuiescence;
-    }
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "ActionQuiescence" });
+    $assert_type<Meta>(pos, "Meta", Meta);
   }
 
-  class EventQuiescence extends SimulationGoal {
-    readonly tag!: "EventQuiescence";
-
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "EventQuiescence" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
-
-    match<$T>(p: $p_SimulationGoal<$T>): $T {
-      return p.EventQuiescence(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof EventQuiescence;
-    }
+  match<$T>(p: $p_SimulationGoal<$T>): $T {
+    return p.ActionQuiescence(this.pos);
   }
 
-  class TotalQuiescence extends SimulationGoal {
-    readonly tag!: "TotalQuiescence";
+  static has_instance(x: any) {
+    return x instanceof $$SimulationGoal$_ActionQuiescence;
+  }
+}
 
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "TotalQuiescence" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
+export class $$SimulationGoal$_EventQuiescence extends SimulationGoal {
+  readonly tag!: "EventQuiescence";
 
-    match<$T>(p: $p_SimulationGoal<$T>): $T {
-      return p.TotalQuiescence(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof TotalQuiescence;
-    }
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "EventQuiescence" });
+    $assert_type<Meta>(pos, "Meta", Meta);
   }
 
-  class CustomGoal extends SimulationGoal {
-    readonly tag!: "CustomGoal";
-
-    constructor(readonly pos: Meta, readonly pred: Predicate) {
-      super();
-      Object.defineProperty(this, "tag", { value: "CustomGoal" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(pred, "Predicate", Predicate);
-    }
-
-    match<$T>(p: $p_SimulationGoal<$T>): $T {
-      return p.CustomGoal(this.pos, this.pred);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof CustomGoal;
-    }
+  match<$T>(p: $p_SimulationGoal<$T>): $T {
+    return p.EventQuiescence(this.pos);
   }
 
-  return { ActionQuiescence, EventQuiescence, TotalQuiescence, CustomGoal };
-})();
+  static has_instance(x: any) {
+    return x instanceof $$SimulationGoal$_EventQuiescence;
+  }
+}
+
+export class $$SimulationGoal$_TotalQuiescence extends SimulationGoal {
+  readonly tag!: "TotalQuiescence";
+
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "TotalQuiescence" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_SimulationGoal<$T>): $T {
+    return p.TotalQuiescence(this.pos);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$SimulationGoal$_TotalQuiescence;
+  }
+}
+
+export class $$SimulationGoal$_CustomGoal extends SimulationGoal {
+  readonly tag!: "CustomGoal";
+
+  constructor(readonly pos: Meta, readonly pred: Predicate) {
+    super();
+    Object.defineProperty(this, "tag", { value: "CustomGoal" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
+  }
+
+  match<$T>(p: $p_SimulationGoal<$T>): $T {
+    return p.CustomGoal(this.pos, this.pred);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$SimulationGoal$_CustomGoal;
+  }
+}
 
 type $p_Predicate<$T> = {
   And(pos: Meta, left: Predicate, right: Predicate): $T;
@@ -2414,6 +2318,8 @@ type $p_Predicate<$T> = {
   Has(pos: Meta, signature: Signature<Pattern>): $T;
 
   Constrain(pos: Meta, pred: Predicate, constraint: Constraint): $T;
+
+  Let(pos: Meta, name: Name, value: PredicateExpression): $T;
 
   Always(pos: Meta): $T;
 
@@ -2427,36 +2333,41 @@ export abstract class Predicate extends Node {
     | "Not"
     | "Has"
     | "Constrain"
+    | "Let"
     | "Always"
     | "Parens";
   abstract match<$T>(p: $p_Predicate<$T>): $T;
 
   static get And() {
-    return $Predicate.And;
+    return $$Predicate$_And;
   }
 
   static get Or() {
-    return $Predicate.Or;
+    return $$Predicate$_Or;
   }
 
   static get Not() {
-    return $Predicate.Not;
+    return $$Predicate$_Not;
   }
 
   static get Has() {
-    return $Predicate.Has;
+    return $$Predicate$_Has;
   }
 
   static get Constrain() {
-    return $Predicate.Constrain;
+    return $$Predicate$_Constrain;
+  }
+
+  static get Let() {
+    return $$Predicate$_Let;
   }
 
   static get Always() {
-    return $Predicate.Always;
+    return $$Predicate$_Always;
   }
 
   static get Parens() {
-    return $Predicate.Parens;
+    return $$Predicate$_Parens;
   }
 
   static has_instance(x: any) {
@@ -2464,160 +2375,487 @@ export abstract class Predicate extends Node {
   }
 }
 
-const $Predicate = (function () {
-  class And extends Predicate {
-    readonly tag!: "And";
+export class $$Predicate$_And extends Predicate {
+  readonly tag!: "And";
 
-    constructor(
-      readonly pos: Meta,
-      readonly left: Predicate,
-      readonly right: Predicate
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "And" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(left, "Predicate", Predicate);
-      $assert_type<Predicate>(right, "Predicate", Predicate);
-    }
-
-    match<$T>(p: $p_Predicate<$T>): $T {
-      return p.And(this.pos, this.left, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof And;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly left: Predicate,
+    readonly right: Predicate
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "And" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(left, "Predicate", Predicate);
+    $assert_type<Predicate>(right, "Predicate", Predicate);
   }
 
-  class Or extends Predicate {
-    readonly tag!: "Or";
-
-    constructor(
-      readonly pos: Meta,
-      readonly left: Predicate,
-      readonly right: Predicate
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Or" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(left, "Predicate", Predicate);
-      $assert_type<Predicate>(right, "Predicate", Predicate);
-    }
-
-    match<$T>(p: $p_Predicate<$T>): $T {
-      return p.Or(this.pos, this.left, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Or;
-    }
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.And(this.pos, this.left, this.right);
   }
 
-  class Not extends Predicate {
-    readonly tag!: "Not";
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_And;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly pred: Predicate) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Not" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(pred, "Predicate", Predicate);
-    }
+export class $$Predicate$_Or extends Predicate {
+  readonly tag!: "Or";
 
-    match<$T>(p: $p_Predicate<$T>): $T {
-      return p.Not(this.pos, this.pred);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Not;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly left: Predicate,
+    readonly right: Predicate
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Or" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(left, "Predicate", Predicate);
+    $assert_type<Predicate>(right, "Predicate", Predicate);
   }
 
-  class Has extends Predicate {
-    readonly tag!: "Has";
-
-    constructor(readonly pos: Meta, readonly signature: Signature<Pattern>) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Has" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Signature<Pattern>>(
-        signature,
-        "Signature<Pattern>",
-        Signature
-      );
-    }
-
-    match<$T>(p: $p_Predicate<$T>): $T {
-      return p.Has(this.pos, this.signature);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Has;
-    }
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.Or(this.pos, this.left, this.right);
   }
 
-  class Constrain extends Predicate {
-    readonly tag!: "Constrain";
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_Or;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly pred: Predicate,
-      readonly constraint: Constraint
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Constrain" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(pred, "Predicate", Predicate);
-      $assert_type<Constraint>(constraint, "Constraint", Constraint);
-    }
+export class $$Predicate$_Not extends Predicate {
+  readonly tag!: "Not";
 
-    match<$T>(p: $p_Predicate<$T>): $T {
-      return p.Constrain(this.pos, this.pred, this.constraint);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Constrain;
-    }
+  constructor(readonly pos: Meta, readonly pred: Predicate) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Not" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
   }
 
-  class Always extends Predicate {
-    readonly tag!: "Always";
-
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Always" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
-
-    match<$T>(p: $p_Predicate<$T>): $T {
-      return p.Always(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Always;
-    }
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.Not(this.pos, this.pred);
   }
 
-  class Parens extends Predicate {
-    readonly tag!: "Parens";
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_Not;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly pred: Predicate) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Parens" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Predicate>(pred, "Predicate", Predicate);
-    }
+export class $$Predicate$_Has extends Predicate {
+  readonly tag!: "Has";
 
-    match<$T>(p: $p_Predicate<$T>): $T {
-      return p.Parens(this.pos, this.pred);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Parens;
-    }
+  constructor(readonly pos: Meta, readonly signature: Signature<Pattern>) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Has" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Signature<Pattern>>(
+      signature,
+      "Signature<Pattern>",
+      Signature
+    );
   }
 
-  return { And, Or, Not, Has, Constrain, Always, Parens };
-})();
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.Has(this.pos, this.signature);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_Has;
+  }
+}
+
+export class $$Predicate$_Constrain extends Predicate {
+  readonly tag!: "Constrain";
+
+  constructor(
+    readonly pos: Meta,
+    readonly pred: Predicate,
+    readonly constraint: Constraint
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Constrain" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
+    $assert_type<Constraint>(constraint, "Constraint", Constraint);
+  }
+
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.Constrain(this.pos, this.pred, this.constraint);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_Constrain;
+  }
+}
+
+export class $$Predicate$_Let extends Predicate {
+  readonly tag!: "Let";
+
+  constructor(
+    readonly pos: Meta,
+    readonly name: Name,
+    readonly value: PredicateExpression
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Let" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+    $assert_type<PredicateExpression>(
+      value,
+      "PredicateExpression",
+      PredicateExpression
+    );
+  }
+
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.Let(this.pos, this.name, this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_Let;
+  }
+}
+
+export class $$Predicate$_Always extends Predicate {
+  readonly tag!: "Always";
+
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Always" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.Always(this.pos);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_Always;
+  }
+}
+
+export class $$Predicate$_Parens extends Predicate {
+  readonly tag!: "Parens";
+
+  constructor(readonly pos: Meta, readonly pred: Predicate) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Parens" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
+  }
+
+  match<$T>(p: $p_Predicate<$T>): $T {
+    return p.Parens(this.pos, this.pred);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Predicate$_Parens;
+  }
+}
+
+type $p_PredicateExpression<$T> = {
+  Lit(lit: Literal): $T;
+
+  Variable(pos: Meta, name: Name): $T;
+
+  Global(pos: Meta, name: Name): $T;
+
+  Self(pos: Meta): $T;
+
+  Project(pos: Meta, left: PredicateExpression, name: RecordField): $T;
+
+  BinOp(
+    pos: Meta,
+    op: PredicateOp,
+    left: PredicateExpression,
+    right: PredicateExpression
+  ): $T;
+
+  Count(pos: Meta, pred: Predicate): $T;
+
+  Set(pos: Meta, pred: Predicate): $T;
+};
+
+export abstract class PredicateExpression extends Node {
+  abstract tag:
+    | "Lit"
+    | "Variable"
+    | "Global"
+    | "Self"
+    | "Project"
+    | "BinOp"
+    | "Count"
+    | "Set";
+  abstract match<$T>(p: $p_PredicateExpression<$T>): $T;
+
+  static get Lit() {
+    return $$PredicateExpression$_Lit;
+  }
+
+  static get Variable() {
+    return $$PredicateExpression$_Variable;
+  }
+
+  static get Global() {
+    return $$PredicateExpression$_Global;
+  }
+
+  static get Self() {
+    return $$PredicateExpression$_Self;
+  }
+
+  static get Project() {
+    return $$PredicateExpression$_Project;
+  }
+
+  static get BinOp() {
+    return $$PredicateExpression$_BinOp;
+  }
+
+  static get Count() {
+    return $$PredicateExpression$_Count;
+  }
+
+  static get Set() {
+    return $$PredicateExpression$_Set;
+  }
+
+  static has_instance(x: any) {
+    return x instanceof PredicateExpression;
+  }
+}
+
+export class $$PredicateExpression$_Lit extends PredicateExpression {
+  readonly tag!: "Lit";
+
+  constructor(readonly lit: Literal) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Lit" });
+    $assert_type<Literal>(lit, "Literal", Literal);
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.Lit(this.lit);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_Lit;
+  }
+}
+
+export class $$PredicateExpression$_Variable extends PredicateExpression {
+  readonly tag!: "Variable";
+
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Variable" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.Variable(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_Variable;
+  }
+}
+
+export class $$PredicateExpression$_Global extends PredicateExpression {
+  readonly tag!: "Global";
+
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Global" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.Global(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_Global;
+  }
+}
+
+export class $$PredicateExpression$_Self extends PredicateExpression {
+  readonly tag!: "Self";
+
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Self" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.Self(this.pos);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_Self;
+  }
+}
+
+export class $$PredicateExpression$_Project extends PredicateExpression {
+  readonly tag!: "Project";
+
+  constructor(
+    readonly pos: Meta,
+    readonly left: PredicateExpression,
+    readonly name: RecordField
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Project" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<PredicateExpression>(
+      left,
+      "PredicateExpression",
+      PredicateExpression
+    );
+    $assert_type<RecordField>(name, "RecordField", RecordField);
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.Project(this.pos, this.left, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_Project;
+  }
+}
+
+export class $$PredicateExpression$_BinOp extends PredicateExpression {
+  readonly tag!: "BinOp";
+
+  constructor(
+    readonly pos: Meta,
+    readonly op: PredicateOp,
+    readonly left: PredicateExpression,
+    readonly right: PredicateExpression
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "BinOp" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<PredicateOp>(op, "PredicateOp", PredicateOp);
+    $assert_type<PredicateExpression>(
+      left,
+      "PredicateExpression",
+      PredicateExpression
+    );
+    $assert_type<PredicateExpression>(
+      right,
+      "PredicateExpression",
+      PredicateExpression
+    );
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.BinOp(this.pos, this.op, this.left, this.right);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_BinOp;
+  }
+}
+
+export class $$PredicateExpression$_Count extends PredicateExpression {
+  readonly tag!: "Count";
+
+  constructor(readonly pos: Meta, readonly pred: Predicate) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Count" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.Count(this.pos, this.pred);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_Count;
+  }
+}
+
+export class $$PredicateExpression$_Set extends PredicateExpression {
+  readonly tag!: "Set";
+
+  constructor(readonly pos: Meta, readonly pred: Predicate) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Set" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Predicate>(pred, "Predicate", Predicate);
+  }
+
+  match<$T>(p: $p_PredicateExpression<$T>): $T {
+    return p.Set(this.pos, this.pred);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateExpression$_Set;
+  }
+}
+
+type $p_PredicateOp<$T> = {
+  Add(): $T;
+
+  Sub(): $T;
+};
+
+export abstract class PredicateOp extends Node {
+  abstract tag: "Add" | "Sub";
+  abstract match<$T>(p: $p_PredicateOp<$T>): $T;
+
+  static get Add() {
+    return $$PredicateOp$_Add;
+  }
+
+  static get Sub() {
+    return $$PredicateOp$_Sub;
+  }
+
+  static has_instance(x: any) {
+    return x instanceof PredicateOp;
+  }
+}
+
+export class $$PredicateOp$_Add extends PredicateOp {
+  readonly tag!: "Add";
+
+  constructor() {
+    super();
+    Object.defineProperty(this, "tag", { value: "Add" });
+  }
+
+  match<$T>(p: $p_PredicateOp<$T>): $T {
+    return p.Add();
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateOp$_Add;
+  }
+}
+
+export class $$PredicateOp$_Sub extends PredicateOp {
+  readonly tag!: "Sub";
+
+  constructor() {
+    super();
+    Object.defineProperty(this, "tag", { value: "Sub" });
+  }
+
+  match<$T>(p: $p_PredicateOp<$T>): $T {
+    return p.Sub();
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PredicateOp$_Sub;
+  }
+}
 
 type $p_Pattern<$T> = {
   HasRole(pos: Meta, typ: Name, name: Pattern): $T;
@@ -2647,31 +2885,31 @@ export abstract class Pattern extends Node {
   abstract match<$T>(p: $p_Pattern<$T>): $T;
 
   static get HasRole() {
-    return $Pattern.HasRole;
+    return $$Pattern$_HasRole;
   }
 
   static get HasType() {
-    return $Pattern.HasType;
+    return $$Pattern$_HasType;
   }
 
   static get Global() {
-    return $Pattern.Global;
+    return $$Pattern$_Global;
   }
 
   static get Variable() {
-    return $Pattern.Variable;
+    return $$Pattern$_Variable;
   }
 
   static get Self() {
-    return $Pattern.Self;
+    return $$Pattern$_Self;
   }
 
   static get Wildcard() {
-    return $Pattern.Wildcard;
+    return $$Pattern$_Wildcard;
   }
 
   static get Lit() {
-    return $Pattern.Lit;
+    return $$Pattern$_Lit;
   }
 
   static has_instance(x: any) {
@@ -2679,149 +2917,141 @@ export abstract class Pattern extends Node {
   }
 }
 
-const $Pattern = (function () {
-  class HasRole extends Pattern {
-    readonly tag!: "HasRole";
+export class $$Pattern$_HasRole extends Pattern {
+  readonly tag!: "HasRole";
 
-    constructor(
-      readonly pos: Meta,
-      readonly typ: Name,
-      readonly name: Pattern
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "HasRole" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(typ, "Name", Name);
-      $assert_type<Pattern>(name, "Pattern", Pattern);
-    }
-
-    match<$T>(p: $p_Pattern<$T>): $T {
-      return p.HasRole(this.pos, this.typ, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof HasRole;
-    }
+  constructor(readonly pos: Meta, readonly typ: Name, readonly name: Pattern) {
+    super();
+    Object.defineProperty(this, "tag", { value: "HasRole" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(typ, "Name", Name);
+    $assert_type<Pattern>(name, "Pattern", Pattern);
   }
 
-  class HasType extends Pattern {
-    readonly tag!: "HasType";
-
-    constructor(
-      readonly pos: Meta,
-      readonly typ: TypeApp,
-      readonly name: Pattern
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "HasType" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
-      $assert_type<Pattern>(name, "Pattern", Pattern);
-    }
-
-    match<$T>(p: $p_Pattern<$T>): $T {
-      return p.HasType(this.pos, this.typ, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof HasType;
-    }
+  match<$T>(p: $p_Pattern<$T>): $T {
+    return p.HasRole(this.pos, this.typ, this.name);
   }
 
-  class Global extends Pattern {
-    readonly tag!: "Global";
+  static has_instance(x: any) {
+    return x instanceof $$Pattern$_HasRole;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Global" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
+export class $$Pattern$_HasType extends Pattern {
+  readonly tag!: "HasType";
 
-    match<$T>(p: $p_Pattern<$T>): $T {
-      return p.Global(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Global;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly typ: TypeApp,
+    readonly name: Pattern
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "HasType" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
+    $assert_type<Pattern>(name, "Pattern", Pattern);
   }
 
-  class Variable extends Pattern {
-    readonly tag!: "Variable";
-
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Variable" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_Pattern<$T>): $T {
-      return p.Variable(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Variable;
-    }
+  match<$T>(p: $p_Pattern<$T>): $T {
+    return p.HasType(this.pos, this.typ, this.name);
   }
 
-  class Self extends Pattern {
-    readonly tag!: "Self";
+  static has_instance(x: any) {
+    return x instanceof $$Pattern$_HasType;
+  }
+}
 
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Self" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
+export class $$Pattern$_Global extends Pattern {
+  readonly tag!: "Global";
 
-    match<$T>(p: $p_Pattern<$T>): $T {
-      return p.Self(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Self;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Global" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class Wildcard extends Pattern {
-    readonly tag!: "Wildcard";
-
-    constructor(readonly pos: Meta) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Wildcard" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-    }
-
-    match<$T>(p: $p_Pattern<$T>): $T {
-      return p.Wildcard(this.pos);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Wildcard;
-    }
+  match<$T>(p: $p_Pattern<$T>): $T {
+    return p.Global(this.pos, this.name);
   }
 
-  class Lit extends Pattern {
-    readonly tag!: "Lit";
+  static has_instance(x: any) {
+    return x instanceof $$Pattern$_Global;
+  }
+}
 
-    constructor(readonly lit: Literal) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Lit" });
-      $assert_type<Literal>(lit, "Literal", Literal);
-    }
+export class $$Pattern$_Variable extends Pattern {
+  readonly tag!: "Variable";
 
-    match<$T>(p: $p_Pattern<$T>): $T {
-      return p.Lit(this.lit);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Lit;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Variable" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  return { HasRole, HasType, Global, Variable, Self, Wildcard, Lit };
-})();
+  match<$T>(p: $p_Pattern<$T>): $T {
+    return p.Variable(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Pattern$_Variable;
+  }
+}
+
+export class $$Pattern$_Self extends Pattern {
+  readonly tag!: "Self";
+
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Self" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_Pattern<$T>): $T {
+    return p.Self(this.pos);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Pattern$_Self;
+  }
+}
+
+export class $$Pattern$_Wildcard extends Pattern {
+  readonly tag!: "Wildcard";
+
+  constructor(readonly pos: Meta) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Wildcard" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+  }
+
+  match<$T>(p: $p_Pattern<$T>): $T {
+    return p.Wildcard(this.pos);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Pattern$_Wildcard;
+  }
+}
+
+export class $$Pattern$_Lit extends Pattern {
+  readonly tag!: "Lit";
+
+  constructor(readonly lit: Literal) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Lit" });
+    $assert_type<Literal>(lit, "Literal", Literal);
+  }
+
+  match<$T>(p: $p_Pattern<$T>): $T {
+    return p.Lit(this.lit);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Pattern$_Lit;
+  }
+}
 
 type $p_Constraint<$T> = {
   And(pos: Meta, left: Constraint, right: Constraint): $T;
@@ -2860,43 +3090,43 @@ export abstract class Constraint extends Node {
   abstract match<$T>(p: $p_Constraint<$T>): $T;
 
   static get And() {
-    return $Constraint.And;
+    return $$Constraint$_And;
   }
 
   static get Or() {
-    return $Constraint.Or;
+    return $$Constraint$_Or;
   }
 
   static get Not() {
-    return $Constraint.Not;
+    return $$Constraint$_Not;
   }
 
   static get Equal() {
-    return $Constraint.Equal;
+    return $$Constraint$_Equal;
   }
 
   static get Variable() {
-    return $Constraint.Variable;
+    return $$Constraint$_Variable;
   }
 
   static get Global() {
-    return $Constraint.Global;
+    return $$Constraint$_Global;
   }
 
   static get HasRole() {
-    return $Constraint.HasRole;
+    return $$Constraint$_HasRole;
   }
 
   static get HasType() {
-    return $Constraint.HasType;
+    return $$Constraint$_HasType;
   }
 
   static get Parens() {
-    return $Constraint.Parens;
+    return $$Constraint$_Parens;
   }
 
   static get Lit() {
-    return $Constraint.Lit;
+    return $$Constraint$_Lit;
   }
 
   static has_instance(x: any) {
@@ -2904,234 +3134,219 @@ export abstract class Constraint extends Node {
   }
 }
 
-const $Constraint = (function () {
-  class And extends Constraint {
-    readonly tag!: "And";
+export class $$Constraint$_And extends Constraint {
+  readonly tag!: "And";
 
-    constructor(
-      readonly pos: Meta,
-      readonly left: Constraint,
-      readonly right: Constraint
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "And" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Constraint>(left, "Constraint", Constraint);
-      $assert_type<Constraint>(right, "Constraint", Constraint);
-    }
-
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.And(this.pos, this.left, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof And;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly left: Constraint,
+    readonly right: Constraint
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "And" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Constraint>(left, "Constraint", Constraint);
+    $assert_type<Constraint>(right, "Constraint", Constraint);
   }
 
-  class Or extends Constraint {
-    readonly tag!: "Or";
-
-    constructor(
-      readonly pos: Meta,
-      readonly left: Constraint,
-      readonly right: Constraint
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Or" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Constraint>(left, "Constraint", Constraint);
-      $assert_type<Constraint>(right, "Constraint", Constraint);
-    }
-
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.Or(this.pos, this.left, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Or;
-    }
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.And(this.pos, this.left, this.right);
   }
 
-  class Not extends Constraint {
-    readonly tag!: "Not";
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_And;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly value: Constraint) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Not" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Constraint>(value, "Constraint", Constraint);
-    }
+export class $$Constraint$_Or extends Constraint {
+  readonly tag!: "Or";
 
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.Not(this.pos, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Not;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly left: Constraint,
+    readonly right: Constraint
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Or" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Constraint>(left, "Constraint", Constraint);
+    $assert_type<Constraint>(right, "Constraint", Constraint);
   }
 
-  class Equal extends Constraint {
-    readonly tag!: "Equal";
-
-    constructor(
-      readonly pos: Meta,
-      readonly left: Constraint,
-      readonly right: Constraint
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Equal" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Constraint>(left, "Constraint", Constraint);
-      $assert_type<Constraint>(right, "Constraint", Constraint);
-    }
-
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.Equal(this.pos, this.left, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Equal;
-    }
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.Or(this.pos, this.left, this.right);
   }
 
-  class Variable extends Constraint {
-    readonly tag!: "Variable";
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_Or;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Variable" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
+export class $$Constraint$_Not extends Constraint {
+  readonly tag!: "Not";
 
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.Variable(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Variable;
-    }
+  constructor(readonly pos: Meta, readonly value: Constraint) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Not" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Constraint>(value, "Constraint", Constraint);
   }
 
-  class Global extends Constraint {
-    readonly tag!: "Global";
-
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Global" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.Global(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Global;
-    }
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.Not(this.pos, this.value);
   }
 
-  class HasRole extends Constraint {
-    readonly tag!: "HasRole";
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_Not;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly value: Constraint,
-      readonly role: Name
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "HasRole" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Constraint>(value, "Constraint", Constraint);
-      $assert_type<Name>(role, "Name", Name);
-    }
+export class $$Constraint$_Equal extends Constraint {
+  readonly tag!: "Equal";
 
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.HasRole(this.pos, this.value, this.role);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof HasRole;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly left: Constraint,
+    readonly right: Constraint
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Equal" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Constraint>(left, "Constraint", Constraint);
+    $assert_type<Constraint>(right, "Constraint", Constraint);
   }
 
-  class HasType extends Constraint {
-    readonly tag!: "HasType";
-
-    constructor(
-      readonly pos: Meta,
-      readonly value: Constraint,
-      readonly typ: TypeApp
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "HasType" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Constraint>(value, "Constraint", Constraint);
-      $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
-    }
-
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.HasType(this.pos, this.value, this.typ);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof HasType;
-    }
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.Equal(this.pos, this.left, this.right);
   }
 
-  class Parens extends Constraint {
-    readonly tag!: "Parens";
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_Equal;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly value: Constraint) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Parens" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Constraint>(value, "Constraint", Constraint);
-    }
+export class $$Constraint$_Variable extends Constraint {
+  readonly tag!: "Variable";
 
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.Parens(this.pos, this.value);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Parens;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Variable" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class Lit extends Constraint {
-    readonly tag!: "Lit";
-
-    constructor(readonly lit: Literal) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Lit" });
-      $assert_type<Literal>(lit, "Literal", Literal);
-    }
-
-    match<$T>(p: $p_Constraint<$T>): $T {
-      return p.Lit(this.lit);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Lit;
-    }
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.Variable(this.pos, this.name);
   }
 
-  return {
-    And,
-    Or,
-    Not,
-    Equal,
-    Variable,
-    Global,
-    HasRole,
-    HasType,
-    Parens,
-    Lit,
-  };
-})();
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_Variable;
+  }
+}
+
+export class $$Constraint$_Global extends Constraint {
+  readonly tag!: "Global";
+
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Global" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+  }
+
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.Global(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_Global;
+  }
+}
+
+export class $$Constraint$_HasRole extends Constraint {
+  readonly tag!: "HasRole";
+
+  constructor(
+    readonly pos: Meta,
+    readonly value: Constraint,
+    readonly role: Name
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "HasRole" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Constraint>(value, "Constraint", Constraint);
+    $assert_type<Name>(role, "Name", Name);
+  }
+
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.HasRole(this.pos, this.value, this.role);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_HasRole;
+  }
+}
+
+export class $$Constraint$_HasType extends Constraint {
+  readonly tag!: "HasType";
+
+  constructor(
+    readonly pos: Meta,
+    readonly value: Constraint,
+    readonly typ: TypeApp
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "HasType" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Constraint>(value, "Constraint", Constraint);
+    $assert_type<TypeApp>(typ, "TypeApp", TypeApp);
+  }
+
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.HasType(this.pos, this.value, this.typ);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_HasType;
+  }
+}
+
+export class $$Constraint$_Parens extends Constraint {
+  readonly tag!: "Parens";
+
+  constructor(readonly pos: Meta, readonly value: Constraint) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Parens" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Constraint>(value, "Constraint", Constraint);
+  }
+
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.Parens(this.pos, this.value);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_Parens;
+  }
+}
+
+export class $$Constraint$_Lit extends Constraint {
+  readonly tag!: "Lit";
+
+  constructor(readonly lit: Literal) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Lit" });
+    $assert_type<Literal>(lit, "Literal", Literal);
+  }
+
+  match<$T>(p: $p_Constraint<$T>): $T {
+    return p.Lit(this.lit);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Constraint$_Lit;
+  }
+}
 
 type $p_Signature<T, $T> = {
   Unary(pos: Meta, self: T, name: Name): $T;
@@ -3148,19 +3363,19 @@ export abstract class Signature<T> extends Node {
   abstract match<$T>(p: $p_Signature<T, $T>): $T;
 
   static get Unary() {
-    return $Signature.Unary;
+    return $$Signature$_Unary;
   }
 
   static get Binary() {
-    return $Signature.Binary;
+    return $$Signature$_Binary;
   }
 
   static get Keyword() {
-    return $Signature.Keyword;
+    return $$Signature$_Keyword;
   }
 
   static get KeywordSelfless() {
-    return $Signature.KeywordSelfless;
+    return $$Signature$_KeywordSelfless;
   }
 
   static has_instance(x: any) {
@@ -3168,94 +3383,90 @@ export abstract class Signature<T> extends Node {
   }
 }
 
-const $Signature = (function () {
-  class Unary<T> extends Signature<T> {
-    readonly tag!: "Unary";
+export class $$Signature$_Unary<T> extends Signature<T> {
+  readonly tag!: "Unary";
 
-    constructor(readonly pos: Meta, readonly self: T, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Unary" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_Signature<T, $T>): $T {
-      return p.Unary(this.pos, this.self, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Unary;
-    }
+  constructor(readonly pos: Meta, readonly self: T, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Unary" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class Binary<T> extends Signature<T> {
-    readonly tag!: "Binary";
-
-    constructor(
-      readonly pos: Meta,
-      readonly op: Name,
-      readonly left: T,
-      readonly right: T
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Binary" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(op, "Name", Name);
-    }
-
-    match<$T>(p: $p_Signature<T, $T>): $T {
-      return p.Binary(this.pos, this.op, this.left, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Binary;
-    }
+  match<$T>(p: $p_Signature<T, $T>): $T {
+    return p.Unary(this.pos, this.self, this.name);
   }
 
-  class Keyword<T> extends Signature<T> {
-    readonly tag!: "Keyword";
+  static has_instance(x: any) {
+    return x instanceof $$Signature$_Unary;
+  }
+}
 
-    constructor(
-      readonly pos: Meta,
-      readonly self: T,
-      readonly pairs: Pair<Name, T>[]
-    ) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Keyword" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
-    }
+export class $$Signature$_Binary<T> extends Signature<T> {
+  readonly tag!: "Binary";
 
-    match<$T>(p: $p_Signature<T, $T>): $T {
-      return p.Keyword(this.pos, this.self, this.pairs);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Keyword;
-    }
+  constructor(
+    readonly pos: Meta,
+    readonly op: Name,
+    readonly left: T,
+    readonly right: T
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Binary" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(op, "Name", Name);
   }
 
-  class KeywordSelfless<T> extends Signature<T> {
-    readonly tag!: "KeywordSelfless";
-
-    constructor(readonly pos: Meta, readonly pairs: Pair<Name, T>[]) {
-      super();
-      Object.defineProperty(this, "tag", { value: "KeywordSelfless" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
-    }
-
-    match<$T>(p: $p_Signature<T, $T>): $T {
-      return p.KeywordSelfless(this.pos, this.pairs);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof KeywordSelfless;
-    }
+  match<$T>(p: $p_Signature<T, $T>): $T {
+    return p.Binary(this.pos, this.op, this.left, this.right);
   }
 
-  return { Unary, Binary, Keyword, KeywordSelfless };
-})();
+  static has_instance(x: any) {
+    return x instanceof $$Signature$_Binary;
+  }
+}
+
+export class $$Signature$_Keyword<T> extends Signature<T> {
+  readonly tag!: "Keyword";
+
+  constructor(
+    readonly pos: Meta,
+    readonly self: T,
+    readonly pairs: Pair<Name, T>[]
+  ) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Keyword" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
+  }
+
+  match<$T>(p: $p_Signature<T, $T>): $T {
+    return p.Keyword(this.pos, this.self, this.pairs);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Signature$_Keyword;
+  }
+}
+
+export class $$Signature$_KeywordSelfless<T> extends Signature<T> {
+  readonly tag!: "KeywordSelfless";
+
+  constructor(readonly pos: Meta, readonly pairs: Pair<Name, T>[]) {
+    super();
+    Object.defineProperty(this, "tag", { value: "KeywordSelfless" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
+  }
+
+  match<$T>(p: $p_Signature<T, $T>): $T {
+    return p.KeywordSelfless(this.pos, this.pairs);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$Signature$_KeywordSelfless;
+  }
+}
 
 type $p_PartialSignature<T, $T> = {
   Unary(pos: Meta, name: Name): $T;
@@ -3270,15 +3481,15 @@ export abstract class PartialSignature<T> extends Node {
   abstract match<$T>(p: $p_PartialSignature<T, $T>): $T;
 
   static get Unary() {
-    return $PartialSignature.Unary;
+    return $$PartialSignature$_Unary;
   }
 
   static get Binary() {
-    return $PartialSignature.Binary;
+    return $$PartialSignature$_Binary;
   }
 
   static get Keyword() {
-    return $PartialSignature.Keyword;
+    return $$PartialSignature$_Keyword;
   }
 
   static has_instance(x: any) {
@@ -3286,66 +3497,62 @@ export abstract class PartialSignature<T> extends Node {
   }
 }
 
-const $PartialSignature = (function () {
-  class Unary<T> extends PartialSignature<T> {
-    readonly tag!: "Unary";
+export class $$PartialSignature$_Unary<T> extends PartialSignature<T> {
+  readonly tag!: "Unary";
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Unary" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_PartialSignature<T, $T>): $T {
-      return p.Unary(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Unary;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Unary" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class Binary<T> extends PartialSignature<T> {
-    readonly tag!: "Binary";
-
-    constructor(readonly pos: Meta, readonly op: Name, readonly right: T) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Binary" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(op, "Name", Name);
-    }
-
-    match<$T>(p: $p_PartialSignature<T, $T>): $T {
-      return p.Binary(this.pos, this.op, this.right);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Binary;
-    }
+  match<$T>(p: $p_PartialSignature<T, $T>): $T {
+    return p.Unary(this.pos, this.name);
   }
 
-  class Keyword<T> extends PartialSignature<T> {
-    readonly tag!: "Keyword";
+  static has_instance(x: any) {
+    return x instanceof $$PartialSignature$_Unary;
+  }
+}
 
-    constructor(readonly pos: Meta, readonly pairs: Pair<Name, T>[]) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Keyword" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
-    }
+export class $$PartialSignature$_Binary<T> extends PartialSignature<T> {
+  readonly tag!: "Binary";
 
-    match<$T>(p: $p_PartialSignature<T, $T>): $T {
-      return p.Keyword(this.pos, this.pairs);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Keyword;
-    }
+  constructor(readonly pos: Meta, readonly op: Name, readonly right: T) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Binary" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(op, "Name", Name);
   }
 
-  return { Unary, Binary, Keyword };
-})();
+  match<$T>(p: $p_PartialSignature<T, $T>): $T {
+    return p.Binary(this.pos, this.op, this.right);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PartialSignature$_Binary;
+  }
+}
+
+export class $$PartialSignature$_Keyword<T> extends PartialSignature<T> {
+  readonly tag!: "Keyword";
+
+  constructor(readonly pos: Meta, readonly pairs: Pair<Name, T>[]) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Keyword" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Pair<Name, T>[]>(pairs, "Pair<Name, T>[]", $is_array(Pair));
+  }
+
+  match<$T>(p: $p_PartialSignature<T, $T>): $T {
+    return p.Keyword(this.pos, this.pairs);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$PartialSignature$_Keyword;
+  }
+}
 
 type $p_RelationPart<$T> = {
   Many(pos: Meta, name: Name): $T;
@@ -3358,11 +3565,11 @@ export abstract class RelationPart extends Node {
   abstract match<$T>(p: $p_RelationPart<$T>): $T;
 
   static get Many() {
-    return $RelationPart.Many;
+    return $$RelationPart$_Many;
   }
 
   static get One() {
-    return $RelationPart.One;
+    return $$RelationPart$_One;
   }
 
   static has_instance(x: any) {
@@ -3370,47 +3577,43 @@ export abstract class RelationPart extends Node {
   }
 }
 
-const $RelationPart = (function () {
-  class Many extends RelationPart {
-    readonly tag!: "Many";
+export class $$RelationPart$_Many extends RelationPart {
+  readonly tag!: "Many";
 
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "Many" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_RelationPart<$T>): $T {
-      return p.Many(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof Many;
-    }
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "Many" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
   }
 
-  class One extends RelationPart {
-    readonly tag!: "One";
-
-    constructor(readonly pos: Meta, readonly name: Name) {
-      super();
-      Object.defineProperty(this, "tag", { value: "One" });
-      $assert_type<Meta>(pos, "Meta", Meta);
-      $assert_type<Name>(name, "Name", Name);
-    }
-
-    match<$T>(p: $p_RelationPart<$T>): $T {
-      return p.One(this.pos, this.name);
-    }
-
-    static has_instance(x: any) {
-      return x instanceof One;
-    }
+  match<$T>(p: $p_RelationPart<$T>): $T {
+    return p.Many(this.pos, this.name);
   }
 
-  return { Many, One };
-})();
+  static has_instance(x: any) {
+    return x instanceof $$RelationPart$_Many;
+  }
+}
+
+export class $$RelationPart$_One extends RelationPart {
+  readonly tag!: "One";
+
+  constructor(readonly pos: Meta, readonly name: Name) {
+    super();
+    Object.defineProperty(this, "tag", { value: "One" });
+    $assert_type<Meta>(pos, "Meta", Meta);
+    $assert_type<Name>(name, "Name", Name);
+  }
+
+  match<$T>(p: $p_RelationPart<$T>): $T {
+    return p.One(this.pos, this.name);
+  }
+
+  static has_instance(x: any) {
+    return x instanceof $$RelationPart$_One;
+  }
+}
 
 export class Pair<K, V> extends Node {
   readonly tag!: "Pair";
@@ -3473,7 +3676,7 @@ export class String extends Node {
 
 // == Grammar definition ============================================
 export const grammar = Ohm.grammar(
-  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | defineDeclaration  -- alt7\n | sceneDeclaration  -- alt8\n | actionDeclaration  -- alt9\n | whenDeclaration  -- alt10\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = prelude_ list0<statement, s<";">> end_  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> foreign_ foreignBody  -- alt1\n | command_ signature<parameter> s<"="> expression s<";">  -- alt2\n | command_ signature<parameter> statementBlock<statement>  -- alt3\n\n\nforeignBody  = namespace s<"("> list0<name, s<",">> s<")"> s<";">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeName  -- alt3\n\n\ntypeApp  = typeAppPrimary  -- alt1\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = singleton_ basicType typeInitBlock  -- alt1\n | type_ basicType typeFields s<";">  -- alt2\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt3\n\n\nbasicType  = atom typeDefParent roles  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = with_ typeInit* end_  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> list1<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = name is_ typeApp  -- alt1\n | name  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> s<"="> foreignBody  -- alt2\n | command_ partialSignature<parameter> statementBlock<statement>  -- alt3\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom statementBlock<statement>  -- alt1\n\n\nactionDeclaration  = action_ interpolateText<name> actionTags actionPredicate actionRank statementBlock<statement>  -- alt1\n\n\nactionTags  = tags_ list1<atom, s<",">>  -- alt1\n |   -- alt2\n\n\nactionPredicate  = when_ predicate  -- alt1\n |   -- alt2\n\n\nactionRank  = rank_ expression  -- alt1\n |   -- alt2\n\n\nwhenDeclaration  = when_ predicate statementBlock<statement>  -- alt1\n\n\npredicate  = predicateBinary  -- alt1\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicateConstrain  -- alt1\n | predicateConstrain  -- alt2\n\n\npredicateConstrain  = predicatePrimary if_ constraint  -- alt1\n | predicatePrimary  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | self_  -- alt3\n | literal  -- alt4\n | patternName  -- alt5\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and constraint  -- alt1\n | constraint or constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400 s<"=/="> constraint400  -- alt2\n | constraint400  -- alt3\n\n\nconstraint400  = constraint500 s<"::"> atom  -- alt1\n | constraint500 is_ typeApp  -- alt2\n | constraint500  -- alt3\n\n\nconstraint500  = name  -- alt1\n | atom  -- alt2\n | literal  -- alt3\n | s<"("> constraint s<")">  -- alt4\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | expression  -- alt7\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression until_ simulateGoal signal*  -- alt1\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> statementBlock<statement>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | pipeExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nexpressionBlock  = statementBlock<statement>  -- alt1\n\n\npipeExpression  = pipeExpression s<"|"> invokeInfixExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\ninvokeInfixExpression  = invokeInfixExpression infix_symbol invokeMixfix  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePostfix as_ typeAppPrimary  -- alt1\n | invokePostfix is_ typeAppPrimary  -- alt2\n | invokePostfix s<"::"> name  -- alt3\n | invokePostfix  -- alt4\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> list1<expression, s<",">> s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> recordField<expression>  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> list1<fieldSelection, s<",">> s<")">  -- alt1\n\n\nfieldSelection  = recordField<expression> as_ recordField<expression>  -- alt1\n | recordField<expression>  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | expressionBlock  -- alt9\n | hole  -- alt10\n | self_  -- alt11\n | atom  -- alt12\n | name  -- alt13\n | s<"("> expression s<")">  -- alt14\n\n\nconditionExpression  = condition_ conditionCase+ end_  -- alt1\n\n\nconditionCase  = when_ expression statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nmatchSearchExpression  = match_ matchSearchCase+ end_  -- alt1\n\n\nmatchSearchCase  = when_ predicate statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nforExpression  = for_ name in_ expression expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> list1<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> list0<e, s<",">> s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> list1<recordPair<e>, s<",">> s<"]">  -- alt2\n\n\nrecordPair<e>  = recordField<e> s<"->"> e  -- alt1\n\n\nrecordField<e>  = (name | atom)  -- alt1\n | string  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = s<"\'"> t_atom  -- alt1\n | ~reserved s<t_atom> ~":"  -- alt2\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = s<nonemptyListOf<t_atom, s<".">>>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = do_ list0<t, s<";">> end_  -- alt1\n\n\nlist0<t, s>  = listOf<t, s> s?  -- alt1\n\n\nlist1<t, s>  = nonemptyListOf<t, s> s?  -- alt1\n\n\nblock<t>  = do_ t* end_  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n | "-"  -- alt2\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "*"  -- alt4\n | "/"  -- alt5\n | "<="  -- alt6\n | "<"  -- alt7\n | ">="  -- alt8\n | ">"  -- alt9\n | "==="  -- alt10\n | "=/="  -- alt11\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nend_  = kw<"end">  -- alt1\n\n\nprelude_  = kw<"prelude">  -- alt1\n\n\nwith_  = kw<"with">  -- alt1\n\n\ntags_  = kw<"tags">  -- alt1\n\n\nrank_  = kw<"rank">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | role_  -- alt9\n | enum_  -- alt10\n | define_  -- alt11\n | singleton_  -- alt12\n | goto_  -- alt13\n | call_  -- alt14\n | let_  -- alt15\n | return_  -- alt16\n | fact_  -- alt17\n | forget_  -- alt18\n | new_  -- alt19\n | search_  -- alt20\n | if_  -- alt21\n | simulate_  -- alt22\n | true_  -- alt23\n | false_  -- alt24\n | not_  -- alt25\n | and_  -- alt26\n | or_  -- alt27\n | is_  -- alt28\n | self_  -- alt29\n | as_  -- alt30\n | event_  -- alt31\n | quiescence_  -- alt32\n | for_  -- alt33\n | until_  -- alt34\n | in_  -- alt35\n | foreign_  -- alt36\n | on_  -- alt37\n | always_  -- alt38\n | match_  -- alt39\n | then_  -- alt40\n | else_  -- alt41\n | condition_  -- alt42\n | end_  -- alt43\n | prelude_  -- alt44\n | with_  -- alt45\n | tags_  -- alt46\n | rank_  -- alt47\n\r\n  }\r\n  '
+  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | defineDeclaration  -- alt7\n | sceneDeclaration  -- alt8\n | actionDeclaration  -- alt9\n | whenDeclaration  -- alt10\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = prelude_ list0<statement, s<";">> end_  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> s<"="> foreign_ foreignBody  -- alt1\n | command_ signature<parameter> s<"="> expression s<";">  -- alt2\n | command_ signature<parameter> statementBlock<statement>  -- alt3\n\n\nforeignBody  = namespace s<"("> list0<name, s<",">> s<")"> s<";">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeName  -- alt3\n\n\ntypeApp  = typeAppPrimary  -- alt1\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = singleton_ basicType typeInitBlock  -- alt1\n | type_ basicType typeFields s<";">  -- alt2\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt3\n\n\nbasicType  = atom typeDefParent roles  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = with_ typeInit* end_  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> list1<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = name is_ typeApp  -- alt1\n | name  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> s<"="> foreignBody  -- alt2\n | command_ partialSignature<parameter> statementBlock<statement>  -- alt3\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom statementBlock<statement>  -- alt1\n\n\nactionDeclaration  = action_ interpolateText<name> actionTags actionPredicate actionRank statementBlock<statement>  -- alt1\n\n\nactionTags  = tags_ list1<atom, s<",">>  -- alt1\n |   -- alt2\n\n\nactionPredicate  = when_ predicate  -- alt1\n |   -- alt2\n\n\nactionRank  = rank_ expression  -- alt1\n |   -- alt2\n\n\nwhenDeclaration  = when_ predicate statementBlock<statement>  -- alt1\n\n\npredicate  = predicateBinary  -- alt1\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicateConstrain  -- alt1\n | predicateConstrain  -- alt2\n\n\npredicateConstrain  = predicateLet if_ constraint  -- alt1\n | if_ constraint  -- alt2\n | predicateLet  -- alt3\n\n\npredicateLet  = let_ name s<"="> predicateExpr  -- alt1\n | predicatePrimary  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npredicateExpr  = predicateExprMember predicateOp predicateExprMember  -- alt1\n | predicateExprMember  -- alt2\n\n\npredicateOp  = s<"+">  -- alt1\n | s<"-">  -- alt2\n\n\npredicateExprMember  = predicateExprMember s<"."> recordField  -- alt1\n | predicateExprApply  -- alt2\n\n\npredicateExprApply  = count_ s<"("> predicate s<")">  -- alt1\n | set_ s<"("> predicate s<")">  -- alt2\n | predicateExprPrimary  -- alt3\n\n\npredicateExprPrimary  = atom  -- alt1\n | name  -- alt2\n | self_  -- alt3\n | literal  -- alt4\n | s<"("> predicateExpr s<")">  -- alt5\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | self_  -- alt3\n | literal  -- alt4\n | patternName  -- alt5\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nconstraint  = constraint and constraint  -- alt1\n | constraint or constraint  -- alt2\n | constraint200  -- alt3\n\n\nconstraint200  = not_ constraint300  -- alt1\n | constraint300  -- alt2\n\n\nconstraint300  = constraint400 s<"==="> constraint400  -- alt1\n | constraint400 s<"=/="> constraint400  -- alt2\n | constraint400  -- alt3\n\n\nconstraint400  = constraint500 s<"::"> atom  -- alt1\n | constraint500 is_ typeApp  -- alt2\n | constraint500  -- alt3\n\n\nconstraint500  = name  -- alt1\n | atom  -- alt2\n | literal  -- alt3\n | s<"("> constraint s<")">  -- alt4\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | expression  -- alt7\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression until_ simulateGoal signal*  -- alt1\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> statementBlock<statement>  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | pipeExpression  -- alt2\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nexpressionBlock  = statementBlock<statement>  -- alt1\n\n\npipeExpression  = pipeExpression s<"|"> invokeInfixExpression  -- alt1\n | invokeInfixExpression  -- alt2\n\n\ninvokeInfixExpression  = invokeInfixExpression infix_symbol invokeMixfix  -- alt1\n | invokeMixfix  -- alt2\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePostfix as_ typeAppPrimary  -- alt1\n | invokePostfix is_ typeAppPrimary  -- alt2\n | invokePostfix s<"::"> name  -- alt3\n | invokePostfix  -- alt4\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> list1<expression, s<",">> s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> recordField  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> list1<fieldSelection, s<",">> s<")">  -- alt1\n\n\nfieldSelection  = recordField as_ recordField  -- alt1\n | recordField  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | expressionBlock  -- alt9\n | hole  -- alt10\n | self_  -- alt11\n | atom  -- alt12\n | name  -- alt13\n | s<"("> expression s<")">  -- alt14\n\n\nconditionExpression  = condition_ conditionCase+ end_  -- alt1\n\n\nconditionCase  = when_ expression statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nmatchSearchExpression  = match_ matchSearchCase+ end_  -- alt1\n\n\nmatchSearchCase  = when_ predicate statementBlock<statement>  -- alt1\n | always_ statementBlock<statement>  -- alt2\n\n\nforExpression  = for_ name in_ expression expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> list1<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> list0<e, s<",">> s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> list1<recordPair<e>, s<",">> s<"]">  -- alt2\n\n\nrecordPair<e>  = recordField s<"->"> e  -- alt1\n\n\nrecordField  = (name | atom)  -- alt1\n | string  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | integer  -- alt2\n | boolean  -- alt3\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = s<"\'"> t_atom  -- alt1\n | ~reserved s<t_atom> ~":"  -- alt2\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = s<nonemptyListOf<t_atom, s<".">>>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = do_ list0<t, s<";">> end_  -- alt1\n\n\nlist0<t, s>  = listOf<t, s> s?  -- alt1\n\n\nlist1<t, s>  = nonemptyListOf<t, s> s?  -- alt1\n\n\nblock<t>  = do_ t* end_  -- alt1\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n | "-"  -- alt2\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "*"  -- alt4\n | "/"  -- alt5\n | "<="  -- alt6\n | "<"  -- alt7\n | ">="  -- alt8\n | ">"  -- alt9\n | "==="  -- alt10\n | "=/="  -- alt11\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nend_  = kw<"end">  -- alt1\n\n\nprelude_  = kw<"prelude">  -- alt1\n\n\nwith_  = kw<"with">  -- alt1\n\n\ntags_  = kw<"tags">  -- alt1\n\n\nrank_  = kw<"rank">  -- alt1\n\n\ncount_  = kw<"count">  -- alt1\n\n\nset_  = kw<"set">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | role_  -- alt9\n | enum_  -- alt10\n | define_  -- alt11\n | singleton_  -- alt12\n | goto_  -- alt13\n | call_  -- alt14\n | let_  -- alt15\n | return_  -- alt16\n | fact_  -- alt17\n | forget_  -- alt18\n | new_  -- alt19\n | search_  -- alt20\n | if_  -- alt21\n | simulate_  -- alt22\n | true_  -- alt23\n | false_  -- alt24\n | not_  -- alt25\n | and_  -- alt26\n | or_  -- alt27\n | is_  -- alt28\n | self_  -- alt29\n | as_  -- alt30\n | event_  -- alt31\n | quiescence_  -- alt32\n | for_  -- alt33\n | until_  -- alt34\n | in_  -- alt35\n | foreign_  -- alt36\n | on_  -- alt37\n | always_  -- alt38\n | match_  -- alt39\n | then_  -- alt40\n | else_  -- alt41\n | condition_  -- alt42\n | end_  -- alt43\n | prelude_  -- alt44\n | with_  -- alt45\n | tags_  -- alt46\n | rank_  -- alt47\n\r\n  }\r\n  '
 );
 
 // == Parsing =======================================================
@@ -4200,7 +4403,36 @@ const toAstVisitor = {
     return new Predicate.Constrain($meta(this), p, c);
   },
 
-  predicateConstrain_alt2(this: Ohm.Node, _1: Ohm.Node): any {
+  predicateConstrain_alt2(this: Ohm.Node, _1: Ohm.Node, c$0: Ohm.Node): any {
+    const c = c$0.toAST();
+    return new Predicate.Constrain(
+      $meta(this),
+      new Predicate.Always($meta(this)),
+      c
+    );
+  },
+
+  predicateConstrain_alt3(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  predicateLet(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  predicateLet_alt1(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    n$0: Ohm.Node,
+    _3: Ohm.Node,
+    e$0: Ohm.Node
+  ): any {
+    const n = n$0.toAST();
+    const e = e$0.toAST();
+    return new Predicate.Let($meta(this), n, e);
+  },
+
+  predicateLet_alt2(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 
@@ -4225,6 +4457,120 @@ const toAstVisitor = {
   ): any {
     const p = p$0.toAST();
     return new Predicate.Parens($meta(this), p);
+  },
+
+  predicateExpr(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  predicateExpr_alt1(
+    this: Ohm.Node,
+    l$0: Ohm.Node,
+    op$0: Ohm.Node,
+    r$0: Ohm.Node
+  ): any {
+    const l = l$0.toAST();
+    const op = op$0.toAST();
+    const r = r$0.toAST();
+    return new PredicateExpression.BinOp($meta(this), op, l, r);
+  },
+
+  predicateExpr_alt2(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  predicateOp(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  predicateOp_alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return new PredicateOp.Add();
+  },
+
+  predicateOp_alt2(this: Ohm.Node, _1: Ohm.Node): any {
+    return new PredicateOp.Sub();
+  },
+
+  predicateExprMember(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  predicateExprMember_alt1(
+    this: Ohm.Node,
+    l$0: Ohm.Node,
+    _2: Ohm.Node,
+    r$0: Ohm.Node
+  ): any {
+    const l = l$0.toAST();
+    const r = r$0.toAST();
+    return new PredicateExpression.Project($meta(this), l, r);
+  },
+
+  predicateExprMember_alt2(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  predicateExprApply(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  predicateExprApply_alt1(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    _2: Ohm.Node,
+    p$0: Ohm.Node,
+    _4: Ohm.Node
+  ): any {
+    const p = p$0.toAST();
+    return new PredicateExpression.Count($meta(this), p);
+  },
+
+  predicateExprApply_alt2(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    _2: Ohm.Node,
+    p$0: Ohm.Node,
+    _4: Ohm.Node
+  ): any {
+    const p = p$0.toAST();
+    return new PredicateExpression.Set($meta(this), p);
+  },
+
+  predicateExprApply_alt3(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  predicateExprPrimary(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  predicateExprPrimary_alt1(this: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new PredicateExpression.Global($meta(this), n);
+  },
+
+  predicateExprPrimary_alt2(this: Ohm.Node, n$0: Ohm.Node): any {
+    const n = n$0.toAST();
+    return new PredicateExpression.Variable($meta(this), n);
+  },
+
+  predicateExprPrimary_alt3(this: Ohm.Node, _1: Ohm.Node): any {
+    return new PredicateExpression.Self($meta(this));
+  },
+
+  predicateExprPrimary_alt4(this: Ohm.Node, l$0: Ohm.Node): any {
+    const l = l$0.toAST();
+    return new PredicateExpression.Lit(l);
+  },
+
+  predicateExprPrimary_alt5(
+    this: Ohm.Node,
+    _1: Ohm.Node,
+    e$0: Ohm.Node,
+    _3: Ohm.Node
+  ): any {
+    const e = e$0.toAST();
+    return e;
   },
 
   pattern(x: Ohm.Node): any {
@@ -6092,6 +6438,22 @@ const toAstVisitor = {
   },
 
   rank__alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  count_(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  count__alt1(this: Ohm.Node, _1: Ohm.Node): any {
+    return this.children[0].toAST();
+  },
+
+  set_(x: Ohm.Node): any {
+    return x.toAST();
+  },
+
+  set__alt1(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 

@@ -28,6 +28,8 @@ import {
   RecordField,
   Interpolation,
   Rank,
+  PredicateExpression,
+  PredicateOp,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
@@ -231,6 +233,63 @@ export function compilePredicateEffect(eff: PredicateEffect) {
   });
 }
 
+export function compilePredicateOp(op: PredicateOp): Logic.BinOp {
+  return op.match<Logic.BinOp>({
+    Add() {
+      return Logic.BinOp.OP_ADD;
+    },
+
+    Sub() {
+      return Logic.BinOp.OP_SUB;
+    },
+  });
+}
+
+export function compilePredicateExpr(
+  expr: PredicateExpression
+): Logic.PredicateExpr {
+  return expr.match<Logic.PredicateExpr>({
+    BinOp(_, op, left, right) {
+      return new Logic.PEBinOp(
+        compilePredicateOp(op),
+        compilePredicateExpr(left),
+        compilePredicateExpr(right)
+      );
+    },
+
+    Count(_, p) {
+      return new Logic.PECount(compilePredicate(p));
+    },
+
+    Global(_, name) {
+      return new Logic.PEGlobal(name.name);
+    },
+
+    Lit(lit) {
+      return new Logic.PEValue(literalToValue(lit));
+    },
+
+    Project(_, l, f) {
+      return new Logic.PEProject(
+        compilePredicateExpr(l),
+        compileRecordField(f)
+      );
+    },
+
+    Self(_) {
+      return new Logic.PESelf();
+    },
+
+    Set(_, p) {
+      return new Logic.PESet(compilePredicate(p));
+    },
+
+    Variable(_, name) {
+      return new Logic.PEVariable(name.name);
+    },
+  });
+}
+
 export function compilePredicate(p: Predicate): Logic.Predicate {
   return p.match<Logic.Predicate>({
     And(_, l, r) {
@@ -261,6 +320,10 @@ export function compilePredicate(p: Predicate): Logic.Predicate {
         signatureName(sig),
         signatureValues(sig).map(compilePattern)
       );
+    },
+
+    Let(_, name, value) {
+      return new Logic.LetPredicate(name.name, compilePredicateExpr(value));
     },
 
     Always(_) {

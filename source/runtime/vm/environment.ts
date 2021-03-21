@@ -1,3 +1,4 @@
+import { UnificationEnvironment } from "../logic";
 import { CrochetValue } from "../primitives";
 
 export class Environment {
@@ -66,5 +67,11 @@ export class Environment {
       }
     }
     return result;
+  }
+
+  extend_with_unification(env: UnificationEnvironment) {
+    const newEnv = new Environment(this, this.raw_receiver);
+    (newEnv as any).bindings = env.boundValues;
+    return newEnv;
   }
 }

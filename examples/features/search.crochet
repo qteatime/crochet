@@ -35,8 +35,16 @@ scene main do
     "[R.X] is vibing alone in the [R.P]";
   end inspect;
 
+  let R3 = search let Place = garden,
+                  let N = count(Who at: Place),
+                  let S = set(Who at: Place);
+  R3 inspect;
+
   match
     when lielle at: garden do "Umpossible!" end
     always do "A fallback" end
   end inspect;
+
+  let Person = lielle;
+  (search Person at: Where) inspect;
 end

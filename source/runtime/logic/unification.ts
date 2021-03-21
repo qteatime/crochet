@@ -3,7 +3,7 @@ import { cast } from "../../utils/utils";
 import { Type } from "../ir";
 import { CrochetType, CrochetValue } from "../primitives";
 import { State } from "../vm";
-import { World } from "../world";
+import { Environment, World } from "../world";
 
 export class UnificationEnvironment {
   private bindings = new Map<string, CrochetValue>();
@@ -166,13 +166,20 @@ export class VariablePattern extends Pattern {
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
-    const bound = env.try_lookup(this.name);
+    const local_bound = env.try_lookup(this.name);
+    const bound = local_bound ?? state.env.try_lookup(this.name);
     if (bound == null) {
       const newEnv = env.clone();
       newEnv.bind(this.name, value);
       return newEnv;
     } else if (value.equals(bound)) {
-      return env;
+      if (local_bound == null) {
+        const newEnv = env.clone();
+        newEnv.bind(this.name, value);
+        return newEnv;
+      } else {
+        return env;
+      }
     } else {
       return null;
     }

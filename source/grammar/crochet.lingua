@@ -114,8 +114,23 @@ type Predicate =
   | Not(pos: Meta, pred: Predicate)
   | Has(pos: Meta, signature: Signature<Pattern>)
   | Constrain(pos: Meta, pred: Predicate, constraint: Constraint)
+  | Let(pos: Meta, name: Name, value: PredicateExpression)
   | Always(pos: Meta)
   | Parens(pos: Meta, pred: Predicate)
+
+type PredicateExpression =
+  | Lit(lit: Literal)
+  | Variable(pos: Meta, name: Name)
+  | Global(pos: Meta, name: Name)
+  | Self(pos: Meta)
+  | Project(pos: Meta, left: PredicateExpression, name: RecordField)
+  | BinOp(pos: Meta, op: PredicateOp, left: PredicateExpression, right: PredicateExpression)
+  | Count(pos: Meta, pred: Predicate)
+  | Set(pos: Meta, pred: Predicate)
+
+type PredicateOp =
+  | Add()
+  | Sub()
 
 type Pattern =
   | HasRole(pos: Meta, typ: Name, name: Pattern)
@@ -332,13 +347,44 @@ grammar Crochet : Program {
     | predicateConstrain
 
   predicateConstrain =
-    | p:predicatePrimary if_ c:constraint      -> Predicate.Constrain(meta, p, c)
+    | p:predicateLet if_ c:constraint      -> Predicate.Constrain(meta, p, c)
+    | if_ c:constraint                     -> Predicate.Constrain(meta, Predicate.Always(meta), c)
+    | predicateLet
+
+  predicateLet =
+    | let_ n:name s<"="> e:predicateExpr -> Predicate.Let(meta, n, e)
     | predicatePrimary
 
   predicatePrimary =
     | always_                                 -> Predicate.Always(meta)
     | r:logicSignature<pattern>               -> Predicate.Has(meta, r)
     | s<"("> p:predicate s<")">               -> Predicate.Parens(meta, p)
+
+  predicateExpr =
+    | l:predicateExprMember op:predicateOp r:predicateExprMember
+      -> PredicateExpression.BinOp(meta, op, l, r)
+    | predicateExprMember
+
+  predicateOp =
+    | s<"+">  -> PredicateOp.Add()
+    | s<"-">  -> PredicateOp.Sub()
+
+  predicateExprMember =
+    | l:predicateExprMember s<"."> r:recordField
+      -> PredicateExpression.Project(meta, l, r)
+    | predicateExprApply
+
+  predicateExprApply =
+    | count_ s<"("> p:predicate s<")">  -> PredicateExpression.Count(meta, p)
+    | set_ s<"("> p:predicate s<")">    -> PredicateExpression.Set(meta, p)
+    | predicateExprPrimary
+  
+  predicateExprPrimary =
+    | n:atom                        -> PredicateExpression.Global(meta, n)
+    | n:name                        -> PredicateExpression.Variable(meta, n)
+    | self_                         -> PredicateExpression.Self(meta)
+    | l:literal                     -> PredicateExpression.Lit(l)
+    | s<"("> e:predicateExpr s<")"> -> e
 
   pattern =
     | s<"("> c:patternComplex s<")">  -> c
@@ -472,7 +518,7 @@ grammar Crochet : Program {
     | memberExpression
 
   memberExpression =
-    | o:memberExpression s<"."> f:recordField<expression>
+    | o:memberExpression s<"."> f:recordField
       -> Expression.Project(meta, o, f)
     | o:memberExpression s<"."> p:memberSelection
       -> Expression.Select(meta, o, p)
@@ -483,9 +529,9 @@ grammar Crochet : Program {
       -> xs
 
   fieldSelection =
-    | n:recordField<expression> as_ a:recordField<expression>
+    | n:recordField as_ a:recordField
       -> Projection(meta, n, a)
-    | n:recordField<expression>
+    | n:recordField
       -> Projection(meta, n, n)
 
   primaryExpression =
@@ -544,9 +590,9 @@ grammar Crochet : Program {
     | s<"["> xs:list1<recordPair<e>, s<",">> s<"]">    -> Expression.Record(meta, xs)
 
   recordPair<e> =
-    | n:recordField<e> s<"->"> v:e -> Pair(meta, n, v)
+    | n:recordField s<"->"> v:e -> Pair(meta, n, v)
 
-  recordField<e> =
+  recordField =
     | n:(name | atom)    -> RecordField.FName(n)
     | t:string           -> RecordField.FText(t)
 
@@ -745,6 +791,8 @@ grammar Crochet : Program {
   with_ = kw<"with">
   tags_ = kw<"tags">
   rank_ = kw<"rank">
+  count_ = kw<"count">
+  set_ = kw<"set">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_

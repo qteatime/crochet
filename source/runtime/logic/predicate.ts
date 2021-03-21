@@ -4,52 +4,45 @@ import { World } from "../world";
 import { Constraint } from "./constraint";
 import { Database } from "./database";
 import { Effect } from "./effect";
+import { PredicateExpr } from "./predicate-expr";
 import { Tree } from "./tree";
 import { Pattern, UnificationEnvironment } from "./unification";
 
-export type Predicate =
-  | HasRelation
-  | NotPredicate
-  | AndPredicate
-  | OrPredicate
-  | ConstrainedPredicate
-  | AlwaysPredicate;
-
-interface IPredicateRelation {
-  search(state: State, env: UnificationEnvironment): UnificationEnvironment[];
-  variables: string[];
+export abstract class Predicate {
+  abstract search(
+    state: State,
+    env: UnificationEnvironment
+  ): UnificationEnvironment[];
 }
 
-export class ConstrainedPredicate implements IPredicateRelation {
-  constructor(readonly predicate: Predicate, readonly constraint: Constraint) {}
+export class ConstrainedPredicate extends Predicate {
+  constructor(readonly predicate: Predicate, readonly constraint: Constraint) {
+    super();
+  }
 
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
     return this.predicate
       .search(state, env)
       .filter((env) => this.constraint.evaluate(env, state).as_bool());
   }
-
-  get variables(): string[] {
-    return this.predicate.variables.concat(this.constraint.variables);
-  }
 }
 
-export class AndPredicate implements IPredicateRelation {
-  constructor(readonly left: Predicate, readonly right: Predicate) {}
+export class AndPredicate extends Predicate {
+  constructor(readonly left: Predicate, readonly right: Predicate) {
+    super();
+  }
 
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
     return this.left
       .search(state, env)
       .flatMap((env) => this.right.search(state, env));
   }
-
-  get variables(): string[] {
-    return this.left.variables.concat(this.right.variables);
-  }
 }
 
-export class OrPredicate implements IPredicateRelation {
-  constructor(readonly left: Predicate, readonly right: Predicate) {}
+export class OrPredicate extends Predicate {
+  constructor(readonly left: Predicate, readonly right: Predicate) {
+    super();
+  }
 
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
     const lresult = this.left.search(state, env);
@@ -59,27 +52,23 @@ export class OrPredicate implements IPredicateRelation {
       return this.right.search(state, env);
     }
   }
-
-  get variables(): string[] {
-    return this.left.variables.concat(this.right.variables);
-  }
 }
 
-export class HasRelation implements IPredicateRelation {
-  constructor(readonly name: string, readonly patterns: Pattern[]) {}
+export class HasRelation extends Predicate {
+  constructor(readonly name: string, readonly patterns: Pattern[]) {
+    super();
+  }
 
   search(state: State, env: UnificationEnvironment) {
     const relation = state.database.lookup(this.name);
     return relation.search(state, env, this.patterns);
   }
-
-  get variables(): string[] {
-    return this.patterns.flatMap((x) => x.variables);
-  }
 }
 
-export class NotPredicate implements IPredicateRelation {
-  constructor(readonly predicate: Predicate) {}
+export class NotPredicate extends Predicate {
+  constructor(readonly predicate: Predicate) {
+    super();
+  }
 
   search(state: State, env: UnificationEnvironment) {
     const result = this.predicate.search(state, env);
@@ -89,19 +78,23 @@ export class NotPredicate implements IPredicateRelation {
       return [];
     }
   }
-
-  get variables(): string[] {
-    return this.predicate.variables;
-  }
 }
 
-export class AlwaysPredicate implements IPredicateRelation {
+export class AlwaysPredicate extends Predicate {
   search(state: State, env: UnificationEnvironment) {
     return [env];
   }
+}
 
-  get variables(): string[] {
-    return [];
+export class LetPredicate extends Predicate {
+  constructor(readonly name: string, readonly expr: PredicateExpr) {
+    super();
+  }
+
+  search(state: State, env: UnificationEnvironment) {
+    const newEnv = env.clone();
+    newEnv.bind(this.name, this.expr.evaluate(state, env));
+    return [newEnv];
   }
 }
 

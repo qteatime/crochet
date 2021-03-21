@@ -49,7 +49,7 @@ end
 
 command X show-wait do
   X show;
-  wait-click;
+  html wait-click;
 end
 
 command ui mark do

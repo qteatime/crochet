@@ -13,6 +13,17 @@ The goal is to have Crochet eventually support building games that are less
 turn-based as well, such as The Sims-style games, but that's not currently
 feasible.
 
+## Running
+
+For now, you can install Crochet from npm:
+
+```shell
+$ npm install @origamitower/crochet
+```
+
+See `crochet --help` (or `./node_modules/.bin/crochet --help` if you've installed it locally)
+for usage information.
+
 ## Building
 
 Crochet is written in TypeScript, so you'll need both Node installed. To build

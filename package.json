@@ -1,4 +1,6 @@
 {
+  "name": "@origamitower/crochet",
+  "version": "0.1.0",
   "bin": {
     "crochet": "crochet.js"
   },
@@ -15,7 +17,7 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@origamitower/lingua": "^0.1.1",
+    "@origamitower/lingua": "^0.1.2",
     "@types/express": "^4.17.11",
     "@types/mkdirp": "^1.0.1",
     "@types/node": "^14.14.20",

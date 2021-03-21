@@ -91,15 +91,12 @@ export class EInteger extends Expression {
 }
 
 export class ESearch extends Expression {
-  readonly variables = this.predicate.variables;
   constructor(readonly predicate: Predicate) {
     super();
   }
 
   async *evaluate(state: State): Machine {
-    const env = UnificationEnvironment.from(
-      state.env.lookup_all(this.variables)
-    );
+    const env = UnificationEnvironment.empty();
     const results = state.database.search(state, this.predicate, env);
     return new CrochetStream(
       results.map((x) => new CrochetRecord(x.boundValues))
@@ -377,13 +374,10 @@ export class EMatchSearch extends Expression {
   }
 }
 export class MatchSearchCase {
-  readonly variables = this.predicate.variables;
   constructor(readonly predicate: Predicate, readonly body: SBlock) {}
 
   search(state: State) {
-    const env = UnificationEnvironment.from(
-      state.env.lookup_all(this.variables)
-    );
+    const env = UnificationEnvironment.empty();
     return state.database.search(state, this.predicate, env);
   }
 }

@@ -1,9 +1,10 @@
 import { Environment } from "../world";
 import { EInterpolate, Expression, SBlock, Statement } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
-import { State, _mark } from "../vm";
+import { Machine, State, _mark } from "../vm";
 import {
   CrochetInteger,
+  CrochetInterpolation,
   CrochetText,
   CrochetThunk,
   CrochetValue,
@@ -39,6 +40,14 @@ export class When {
   }
 }
 
+export type ReadyAction = {
+  action: Action
+  title: CrochetInterpolation
+  score: CrochetThunk
+  tags: CrochetValue[]
+  machine: Machine
+}
+
 export class Action {
   private fired_for = new BagMap<CrochetValue, bigint>();
 
@@ -52,7 +61,7 @@ export class Action {
     readonly body: Statement[]
   ) {}
 
-  ready_actions(actor: CrochetValue, state0: State) {
+  ready_actions(actor: CrochetValue, state0: State): ReadyAction[] {
     const db = new DatabaseLayer(state0.database, this.layer);
     const state = state0.with_database(db);
     const results = state.database.search(
