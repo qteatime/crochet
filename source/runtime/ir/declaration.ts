@@ -13,6 +13,7 @@ import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 import { SimpleInterpolation } from "./atomic";
+import { cast, maybe_cast } from "../../utils";
 
 export type ContextualDeclaration = DAction | DWhen;
 
@@ -148,6 +149,10 @@ export class DType extends Declaration {
       fields,
       layout
     );
+    const parentType = maybe_cast(parent, TCrochetType);
+    if (parentType != null) {
+      parentType.register_subtype(type);
+    }
     state.world.types.add(this.name, type);
   }
 }
@@ -228,5 +233,16 @@ export class DForeignType extends Declaration {
   async apply(filename: string, state: State) {
     const type = state.world.ffi.types.lookup(this.foreign_name);
     state.world.types.add(this.name, type);
+  }
+}
+
+export class DSealType extends Declaration {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  async apply(filename: string, state: State) {
+    const type = cast(state.world.types.lookup(this.name), TCrochetType);
+    type.seal();
   }
 }

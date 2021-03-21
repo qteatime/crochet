@@ -8,6 +8,7 @@ type Declaration =
   | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[])
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
+  | AbstractType(pos: Meta, typ: TypeDef)
   | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
   | ForeignType(pos: Meta, name: Name, foreign_name: Namespace)
   | Type(pos: Meta, typ: TypeDef, fields: Parameter[])
@@ -242,6 +243,9 @@ grammar Crochet : Program {
     | x:false_  -> Name(meta, x)
 
   typeDeclaration =
+    | abstract_ t:basicType
+      -> Declaration.AbstractType(meta, t)
+
     | singleton_ t:basicType i:typeInitBlock
       -> Declaration.SingletonType(meta, t, i)
 
@@ -793,6 +797,7 @@ grammar Crochet : Program {
   rank_ = kw<"rank">
   count_ = kw<"count">
   set_ = kw<"set">
+  abstract_ = kw<"abstract">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -801,5 +806,5 @@ grammar Crochet : Program {
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
-    | tags_ | rank_
+    | tags_ | rank_ | abstract_
 }

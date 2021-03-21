@@ -813,13 +813,22 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       return [new IR.DRole(name.name)];
     },
 
-    // FIXME: make sure no further possible instantiations of this type exist
     SingletonType(meta, type0, init) {
       const type = compileTypeDef(type0, []);
       return [
         new IR.DType(type.parent, type.name, type.roles, []),
         new IR.DDefine(type.name, new IR.ENew(type.name, [])),
+        new IR.DSealType(type.name),
+        new IR.DDo([new IR.SRegister(new IR.EGlobal(type.name))]),
         ...compileTypeInit(meta, type.name, init),
+      ];
+    },
+
+    AbstractType(_, t) {
+      const type = compileTypeDef(t, []);
+      return [
+        new IR.DType(type.parent, type.name, type.roles, []),
+        new IR.DSealType(type.name),
       ];
     },
 

@@ -1,7 +1,12 @@
 import { Bag } from "../../utils/bag";
 import { cast } from "../../utils/utils";
 import { ConcreteRelation } from "../logic";
-import { CrochetStream, CrochetValue, False } from "../primitives";
+import {
+  CrochetInstance,
+  CrochetStream,
+  CrochetValue,
+  False,
+} from "../primitives";
 import {
   avalue,
   cvalue,
@@ -155,5 +160,18 @@ export class SSimulate extends Statement {
     } else {
       return world.contexts.lookup(this.context);
     }
+  }
+}
+
+export class SRegister extends Statement {
+  constructor(readonly expr: Expression) {
+    super();
+  }
+
+  async *evaluate(state: State): Machine {
+    const value0 = cvalue(yield _push(this.expr.evaluate(state)));
+    const value = cast(value0, CrochetInstance);
+    value.type.register_instance(value);
+    return value;
   }
 }

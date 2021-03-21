@@ -60,6 +60,9 @@ export class InstanceSelection implements ISelection {
 
 export class TCrochetType extends CrochetType {
   private instance_count = 0n;
+  private subtypes = new Set<TCrochetType>();
+  private instances = new Set<CrochetInstance>();
+  private sealed = false;
 
   constructor(
     readonly filename: string,
@@ -92,7 +95,37 @@ export class TCrochetType extends CrochetType {
   }
 
   instantiate(data: CrochetValue[]) {
+    if (this.sealed) {
+      throw new Error(`internal: attempting to construct a sealed type`);
+    }
+
     this.validate(data);
     return new CrochetInstance(this, ++this.instance_count, data);
+  }
+
+  register_subtype(type: TCrochetType) {
+    this.subtypes.add(type);
+  }
+
+  register_instance(value: CrochetInstance) {
+    if (!this.accepts(value)) {
+      throw new Error(
+        `internal: invalid value ${type_name(value)} for type ${type_name(
+          this
+        )}`
+      );
+    }
+    this.instances.add(value);
+  }
+
+  get registered_instances(): CrochetInstance[] {
+    const sub_instances = [...this.subtypes].flatMap(
+      (x) => x.registered_instances
+    );
+    return [...this.instances, ...sub_instances];
+  }
+
+  seal() {
+    this.sealed = true;
   }
 }
