@@ -1,0 +1,14 @@
+% crochet
+
+relation Direction* y-axis;
+enum direction = north, east, south, west;
+
+scene main do
+  fact north y-axis;
+  fact south y-axis;
+
+  (search Direction is direction,
+          Direction y-axis,
+          let N = count(_ is direction)
+  ) inspect;
+end

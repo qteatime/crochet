@@ -9,6 +9,7 @@ type Declaration =
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
   | AbstractType(pos: Meta, typ: TypeDef)
+  | EnumType(pos: Meta, name: Name, variants: Name[])
   | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
   | ForeignType(pos: Meta, name: Name, foreign_name: Namespace)
   | Type(pos: Meta, typ: TypeDef, fields: Parameter[])
@@ -244,7 +245,10 @@ grammar Crochet : Program {
     | x:false_  -> Name(meta, x)
 
   typeDeclaration =
-    | abstract_ t:basicType
+    | enum_ t:typeName s<"="> vs:nonemptyListOf<typeName, s<",">> s<";">
+      -> Declaration.EnumType(meta, t, vs)
+
+    | abstract_ t:basicType s<";">
       -> Declaration.AbstractType(meta, t)
 
     | singleton_ t:basicType i:typeInitBlock
@@ -280,6 +284,8 @@ grammar Crochet : Program {
       -> TypeInit.Fact(meta, s)
     | command_ s:partialSignature<parameter> s<"="> b:foreignBody
       -> TypeInit.ForeignCommand(meta, s, b)
+    | command_ s:partialSignature<parameter> s<"="> e:expression s<";">
+      -> TypeInit.Command(meta, s, [Statement.Expr(e)])
     | command_ s:partialSignature<parameter> b:statementBlock<statement>
       -> TypeInit.Command(meta, s, b)
 

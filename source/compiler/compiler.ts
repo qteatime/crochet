@@ -33,7 +33,7 @@ import {
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
-import { SimpleInterpolation } from "../runtime/ir";
+import { SimpleInterpolation, TNamed } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
 import { cast } from "../utils/utils";
@@ -825,6 +825,18 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
         new IR.DSealType(type.name),
         new IR.DDo([new IR.SRegister(new IR.EGlobal(type.name))]),
         ...compileTypeInit(meta, type.name, init),
+      ];
+    },
+
+    EnumType(_, name, variants) {
+      const parent = new TypeApp.Named(name.pos, name);
+      const variantDecls = variants.map(
+        (v) =>
+          new Declaration.SingletonType(v.pos, new TypeDef(parent, v, []), [])
+      );
+      return [
+        new IR.DType(null, name.name, [], []),
+        ...variantDecls.flatMap((v) => compileDeclaration(v)),
       ];
     },
 
