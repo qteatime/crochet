@@ -19,7 +19,7 @@ import {
   _push,
   _throw,
 } from "../vm";
-import { Goal, Signal, Simulation } from "../simulation";
+import { AnyContext, Context, Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
 import { Expression } from "./expression";
 import { Type } from "./type";
@@ -124,9 +124,29 @@ export class SCall extends Statement {
   }
 }
 
+export abstract class SimulateContext {
+  abstract realise(state: State): Promise<Context>;
+}
+
+export class SCAny extends SimulateContext {
+  async realise(state: State) {
+    return AnyContext.instance;
+  }
+}
+
+export class SCNamed extends SimulateContext {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  async realise(state: State) {
+    return state.world.contexts.lookup(this.name);
+  }
+}
+
 export class SSimulate extends Statement {
   constructor(
-    readonly context: string | null,
+    readonly context: SimulateContext,
     readonly actors: Expression,
     readonly goal: Goal,
     readonly signals: Signal[]
@@ -139,7 +159,7 @@ export class SSimulate extends Statement {
       yield _push(this.actors.evaluate(state)),
       CrochetStream
     );
-    const context = this.lookup_context(state.world);
+    const context = await this.context.realise(state);
     const signals = new Bag<string, Signal>("signal");
     for (const signal of this.signals) {
       signals.add(signal.name, signal);
@@ -152,14 +172,6 @@ export class SSimulate extends Statement {
       signals
     );
     return yield _push(simulation.run(state));
-  }
-
-  lookup_context(world: World) {
-    if (this.context == null) {
-      return world.global_context;
-    } else {
-      return world.contexts.lookup(this.context);
-    }
   }
 }
 

@@ -1,7 +1,7 @@
 import { Environment } from "../world";
 import { EInterpolate, Expression, SBlock, Statement } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
-import { Machine, State, _mark } from "../vm";
+import { Machine, Mark, State, _mark } from "../vm";
 import {
   CrochetInteger,
   CrochetInterpolation,
@@ -9,7 +9,7 @@ import {
   CrochetThunk,
   CrochetValue,
 } from "../primitives";
-import { BagMap, iter } from "../../utils";
+import { Bag, BagMap, iter } from "../../utils";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
 import { SimpleInterpolation } from "../ir/atomic";
 
@@ -105,9 +105,50 @@ export class Action {
   }
 }
 
-export class Context {
+export class ContextBag extends Bag<string, Context> {
+  constructor() {
+    super("context");
+  }
+
+  get concrete_contexts(): ConcreteContext[] {
+    const result = [];
+    for (const x of this.map.values()) {
+      if (x instanceof ConcreteContext) {
+        result.push(x);
+      }
+    }
+    return result;
+  }
+}
+
+export abstract class Context {
+  add_action(action: Action): void {
+    throw new Error(`internal: can only add actions to concrete contexts`);
+  }
+
+  add_event(event: When): void {
+    throw new Error(`internal: can only add events to concrete contexts`);
+  }
+
+  abstract available_actions(actor: CrochetValue, state: State): ReadyAction[];
+  abstract available_events(state: State): Mark[];
+}
+
+export class ConcreteContext {
   readonly events: When[] = [];
   readonly actions: Action[] = [];
+
+  constructor(readonly filename: string, readonly name: string) {
+
+  }
+
+  add_action(action: Action) {
+    this.actions.push(action);
+  }
+
+  add_event(event: When) {
+    this.events.push(event);
+  }
 
   available_actions(actor: CrochetValue, state: State) {
     return this.actions.flatMap((x) => x.ready_actions(actor, state));
@@ -117,5 +158,17 @@ export class Context {
     return this.events.flatMap((x) =>
       x.executions(state).map((e) => _mark(x.full_name, e))
     );
+  }
+}
+
+export class AnyContext extends Context {
+  static instance = new AnyContext();
+
+  available_actions(actor: CrochetValue, state: State) {
+    return state.world.all_contexts.flatMap(x => x.available_actions(actor, state));
+  }
+
+  available_events(state: State) {
+    return state.world.all_contexts.flatMap(x => x.available_events(state));
   }
 }

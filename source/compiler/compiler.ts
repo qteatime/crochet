@@ -30,6 +30,7 @@ import {
   Rank,
   PredicateExpression,
   PredicateOp,
+  SimulationContext,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
@@ -666,6 +667,18 @@ export function compileSignal(signal: Signal): rt.Signal {
   return new rt.Signal(name, parameters, signal.body.map(compileStatement));
 }
 
+export function compileContext(context: SimulationContext): IR.SimulateContext {
+  return context.match<IR.SimulateContext>({
+    Global() {
+      return new IR.SCAny();
+    },
+
+    Named(_, name) {
+      return new IR.SCNamed(name.name);
+    },
+  });
+}
+
 export function compileStatement(stmt: Statement) {
   return stmt.match<IR.Statement>({
     Let(_, name, value) {
@@ -694,9 +707,9 @@ export function compileStatement(stmt: Statement) {
       return new IR.SGoto(name.name);
     },
 
-    SimulateGlobal(_, actors, goal, signals) {
+    Simulate(_, actors, context, goal, signals) {
       return new IR.SSimulate(
-        null,
+        compileContext(context),
         compileExpression(actors),
         compileSimulationGoal(goal),
         signals.map(compileSignal)
@@ -883,6 +896,15 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     When(_, predicate, body) {
       return [
         new IR.DWhen(compilePredicate(predicate), body.map(compileStatement)),
+      ];
+    },
+
+    Context(_, name, items) {
+      return [
+        new IR.DContext(
+          name.name,
+          (items.map(compileDeclaration) as any) as IR.IContextualDeclaration[]
+        ),
       ];
     },
 

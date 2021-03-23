@@ -9,7 +9,7 @@ import {
   Procedure,
 } from "../primitives";
 import { Machine, run, State } from "../vm";
-import { Context } from "../simulation";
+import { ConcreteContext, Context, ContextBag } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
@@ -56,12 +56,16 @@ export class World {
   readonly roles = new Bag<string, CrochetRole>("role");
   readonly globals = new Bag<string, CrochetValue>("global");
   readonly scenes = new Bag<string, Scene>("scene");
-  readonly contexts = new Bag<string, Context>("context");
-  readonly global_context = new Context();
+  readonly contexts = new ContextBag();
+  readonly global_context = new ConcreteContext("<intrinsic>", "global");
   readonly ffi = new ForeignInterface();
 
   schedule(machine: Machine) {
     this.queue.push(machine);
+  }
+
+  get all_contexts() {
+    return [this.global_context, ...this.contexts.concrete_contexts];
   }
 
   async load_declarations(

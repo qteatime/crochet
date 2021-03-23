@@ -1,5 +1,5 @@
 export class Bag<K, V> {
-  private map = new Map<K, V>();
+  readonly map = new Map<K, V>();
 
   constructor(readonly name: string) {}
 

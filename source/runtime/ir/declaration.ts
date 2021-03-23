@@ -1,4 +1,4 @@
-import { Action, Context, When } from "../simulation";
+import { Action, ConcreteContext, Context, When } from "../simulation";
 import {
   ConcreteRelation,
   Predicate,
@@ -18,10 +18,10 @@ import { cast, maybe_cast } from "../../utils";
 export type ContextualDeclaration = DAction | DWhen;
 
 export abstract class Declaration {
-  abstract apply(filename: string, state: State): Promise<void> | void;
+  abstract apply(filename: string, state: State): Promise<void>;
 }
 
-interface IContextualDeclaration {
+export interface IContextualDeclaration {
   apply_to_context(
     filename: string,
     state: State,
@@ -34,7 +34,7 @@ export class DRelation extends Declaration {
     super();
   }
 
-  apply(filename: string, state: State) {
+  async apply(filename: string, state: State) {
     const relation = new ConcreteRelation(
       filename,
       this.name,
@@ -49,7 +49,7 @@ export class DPredicate extends Declaration {
     super();
   }
 
-  apply(filename: string, state: State) {
+  async apply(filename: string, state: State) {
     this.procedure.set_filename(filename);
     state.world.database.add(this.name, this.procedure);
   }
@@ -60,7 +60,7 @@ export class DDo extends Declaration {
     super();
   }
 
-  apply(filename: string, state: State) {
+  async apply(filename: string, state: State) {
     const block = new SBlock(this.body);
     state.world.schedule(block.evaluate(state.with_new_env()));
   }
@@ -76,7 +76,7 @@ export class DForeignCommand extends Declaration {
     super();
   }
 
-  apply(filename: string, state: State) {
+  async apply(filename: string, state: State) {
     state.world.procedures.add_foreign(
       this.name,
       this.types.map((x) => x.realise(state.world)),
@@ -95,7 +95,7 @@ export class DCrochetCommand extends Declaration {
     super();
   }
 
-  apply(filename: string, state: State) {
+  async apply(filename: string, state: State) {
     const env = new Environment(state.env, null);
     const code = new CrochetProcedure(
       filename,
@@ -118,7 +118,7 @@ export class DRole extends Declaration {
     super();
   }
 
-  apply(filename: string, state: State) {
+  async apply(filename: string, state: State) {
     const role = new CrochetRole(filename, this.name);
     state.world.roles.add(this.name, role);
   }
@@ -134,7 +134,7 @@ export class DType extends Declaration {
     super();
   }
 
-  apply(filename: string, state: State) {
+  async apply(filename: string, state: State) {
     const roles = this.roles.map((x) => state.world.roles.lookup(x));
     const fields = this.fields.map((x) => x.parameter);
     const types = this.fields.map((x) => x.type.realise(state.world));
@@ -201,7 +201,7 @@ export class DAction extends Declaration implements IContextualDeclaration {
       this.rank,
       this.body
     );
-    context.actions.push(action);
+    context.add_action(action);
   }
 
   async apply(filename: string, state: State) {
@@ -217,7 +217,7 @@ export class DWhen extends Declaration implements IContextualDeclaration {
   async apply_to_context(filename: string, state: State, context: Context) {
     const env = new Environment(state.env, null);
     const event = new When(filename, this.predicate, env, this.body);
-    context.events.push(event);
+    context.add_event(event);
   }
 
   async apply(filename: string, state: State) {
@@ -244,5 +244,22 @@ export class DSealType extends Declaration {
   async apply(filename: string, state: State) {
     const type = cast(state.world.types.lookup(this.name), TCrochetType);
     type.seal();
+  }
+}
+
+export class DContext extends Declaration {
+  constructor(
+    readonly name: string,
+    readonly declarations: IContextualDeclaration[]
+  ) {
+    super();
+  }
+
+  async apply(filename: string, state: State) {
+    const context = new ConcreteContext(filename, this.name);
+    state.world.contexts.add(this.name, context);
+    for (const x of this.declarations) {
+      await x.apply_to_context(filename, state, context);
+    }
   }
 }

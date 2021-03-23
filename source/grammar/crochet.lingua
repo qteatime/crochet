@@ -16,6 +16,7 @@ type Declaration =
   | Scene(pos: Meta, name: Name, body: Statement[])
   | Action(pos: Meta, title: Interpolation<Name>, tags: Name[], pred: Predicate, rank: Rank, body: Statement[])
   | When(pos: Meta, pred: Predicate, body: Statement[])
+  | Context(pos: Meta, name: Name, items: Declaration[])
 
 type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
 type FFI(pos: Meta, name: Namespace, args: Name[])
@@ -52,8 +53,12 @@ type Statement =
   | Goto(pos: Meta, name: Name)
   | Call(pos: Meta, name: Name)
   | Let(pos: Meta, name: Name, value: Expression)
-  | SimulateGlobal(pos: Meta, actors: Expression, goal: SimulationGoal, signals: Signal[])
+  | Simulate(pos: Meta, actors: Expression, context: SimulationContext, goal: SimulationGoal, signals: Signal[])
   | Expr(value: Expression)
+
+type SimulationContext =
+  | Global()
+  | Named(pos: Meta, name: Name)
 
 type Signal(pos: Meta, signature: Signature<Parameter>, body: Statement[])
 
@@ -195,6 +200,7 @@ grammar Crochet : Program {
     | sceneDeclaration
     | actionDeclaration
     | whenDeclaration
+    | contextDeclaration
 
   relationDeclaration =
     | relation_ s:logicSignature<relationPart> s<";">
@@ -331,6 +337,13 @@ grammar Crochet : Program {
     | when_ p:predicate b:statementBlock<statement>
       -> Declaration.When(meta, p, b)
 
+  contextDeclaration =
+    | context_ n:atom with_ xs:contextItem* end_
+      -> Declaration.Context(meta, n, xs)
+
+  contextItem =
+    | actionDeclaration
+    | whenDeclaration
 
   // -- Logic
   predicate =
@@ -473,8 +486,12 @@ grammar Crochet : Program {
     | call_ n:atom  -> Statement.Call(meta, n)
 
   simulateStatement =
-    | simulate_ for_ e:expression until_ g:simulateGoal s:signal*
-      -> Statement.SimulateGlobal(meta, e, g, s)
+    | simulate_ for_ e:expression c:simulateContext until_ g:simulateGoal s:signal*
+      -> Statement.Simulate(meta, e, c, g, s)
+
+  simulateContext =
+    | in_ n:atom    -> SimulationContext.Named(meta, n)
+    |               -> SimulationContext.Global()
 
   simulateGoal =
     | action_ quiescence_ -> SimulationGoal.ActionQuiescence(meta)
@@ -825,6 +842,7 @@ grammar Crochet : Program {
   abstract_ = kw<"abstract">
   lazy_ = kw<"lazy">
   force_ = kw<"force">
+  context_ = kw<"context">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -833,5 +851,5 @@ grammar Crochet : Program {
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
-    | tags_ | rank_ | abstract_ | lazy_ | force_
+    | tags_ | rank_ | abstract_ | lazy_ | force_ | context_
 }
