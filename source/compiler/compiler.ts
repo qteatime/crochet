@@ -31,6 +31,7 @@ import {
   PredicateExpression,
   PredicateOp,
   SimulationContext,
+  ForExpression,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
@@ -431,6 +432,29 @@ export function compileRecordField(field: RecordField): string {
   });
 }
 
+export function compileForExpression(expr: ForExpression): IR.ForallExpr {
+  return expr.match<IR.ForallExpr>({
+    Map(_, name, stream, body) {
+      return new IR.ForallMap(
+        name.name,
+        compileExpression(stream),
+        compileForExpression(body)
+      );
+    },
+
+    If(_, cond, body) {
+      return new IR.ForallIf(
+        compileExpression(cond),
+        compileForExpression(body)
+      );
+    },
+
+    Do(_, body) {
+      return new IR.ForallDo(compileExpression(body));
+    },
+  });
+}
+
 export function compileExpression(expr: Expression): IR.Expression {
   return expr.match<IR.Expression>({
     Search(_, pred) {
@@ -509,12 +533,8 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.EBlock(body.map(compileStatement));
     },
 
-    For(_, stream, name, body) {
-      return new IR.EForall(
-        compileExpression(stream),
-        name.name,
-        compileExpression(body)
-      );
+    For(_, body) {
+      return new IR.EForall(compileForExpression(body));
     },
 
     Apply(_, partial, args) {

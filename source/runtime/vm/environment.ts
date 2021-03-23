@@ -74,4 +74,8 @@ export class Environment {
     (newEnv as any).bindings = env.boundValues;
     return newEnv;
   }
+
+  clone() {
+    return new Environment(this, this.raw_receiver);
+  }
 }

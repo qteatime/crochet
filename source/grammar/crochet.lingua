@@ -75,7 +75,7 @@ type Expression =
   | MatchSearch(pos: Meta, cases: MatchSearchCase[])
   | Project(pos: Meta, object: Expression, field: RecordField)
   | Select(pos: Meta, object: Expression, fields: Projection[])
-  | For(pos: Meta, stream: Expression, name: Name, body: Expression)
+  | For(pos: Meta, comprehension: ForExpression)
   | Block(pos: Meta, body: Statement[])
   | Apply(pos: Meta, partial: Expression, values: Expression[])
   | Pipe(pos: Meta, left: Expression, right: Expression)
@@ -88,6 +88,11 @@ type Expression =
   | Hole(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
+
+type ForExpression =
+  | Map(pos: Meta, name: Name, stream: Expression, body: ForExpression)
+  | If(pos: Meta, condition: Expression, body: ForExpression)
+  | Do(pos: Meta, body: Expression)
 
 type MatchSearchCase(pos: Meta, predicate: Predicate, body: Statement[])
 type ConditionCase(pos: Meta, guard: Expression, body: Statement[])
@@ -613,8 +618,20 @@ grammar Crochet : Program {
       -> MatchSearchCase(meta, Predicate.Always(meta), b)
 
   forExpression =
-    | for_ n:name in_ e:expression b:expressionBlock
-      -> Expression.For(meta, e, n, b)
+    | for_ b:forExprMap
+      -> Expression.For(meta, b)
+
+  forExprMap =
+    | n:name in_ e:expression r:forExprMap1
+      -> ForExpression.Map(meta, n, e, r)
+  
+  forExprMap1 =
+    | s<","> b:forExprMap             -> b
+    | if_ e:expression b:forExprDo    -> ForExpression.If(meta, e, b)
+  
+  forExprDo =
+    | b:expressionBlock -> ForExpression.Do(meta, b)
+
 
   newExpression<e> =
     | new_ n:atom fs:newFields<e>   -> Expression.New(meta, n, fs)
@@ -699,6 +716,7 @@ grammar Crochet : Program {
   logicSignature<t> =
     | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
     | s:t n:atom                      -> Signature.Unary(meta, s, n)
+    | kws:signaturePair<t>+           -> Signature.KeywordSelfless(meta, kws)
 
   signaturePair<t> =
     | kw:keyword v:t  -> Pair(meta, kw, v)

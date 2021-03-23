@@ -223,32 +223,73 @@ export class EProjectMany extends Expression {
   }
 }
 
-export class EForall extends Expression {
+export abstract class ForallExpr {
+  abstract evaluate(state: State, results: CrochetValue[]): Machine;
+}
+
+export class ForallMap extends ForallExpr {
   constructor(
-    readonly stream: Expression,
     readonly name: string,
-    readonly code: Expression
+    readonly stream: Expression,
+    readonly body: ForallExpr
   ) {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  async *evaluate(state: State, results: CrochetValue[]): Machine {
     const stream0 = cvalue(yield _push(this.stream.evaluate(state)));
     const stream = cast(
       yield _push(safe_cast(stream0, TCrochetStream.type)),
       CrochetStream
     );
-    const results: CrochetValue[] = [];
     for (const x of stream.values) {
-      const env = new Environment(state.env, state.env.raw_receiver);
+      const env = state.env.clone();
       env.define(this.name, x);
-      const value = cvalue(
-        yield _push(this.code.evaluate(state.with_env(env)))
-      );
-      results.push(value);
+      const newState = state.with_env(env);
+      yield* this.body.evaluate(newState, results);
     }
+    return False.instance;
+  }
+}
+
+export class ForallDo extends ForallExpr {
+  constructor(readonly body: Expression) {
+    super();
+  }
+
+  async *evaluate(state: State, results: CrochetValue[]): Machine {
+    const value = cvalue(yield _push(this.body.evaluate(state)));
+    results.push(value);
+    return False.instance;
+  }
+}
+
+export class ForallIf extends ForallExpr {
+  constructor(readonly condition: Expression, readonly body: ForallExpr) {
+    super();
+  }
+
+  async *evaluate(state: State, results: CrochetValue[]): Machine {
+    const condition = cvalue(yield _push(this.condition.evaluate(state)));
+    if (condition.as_bool()) {
+      yield* this.body.evaluate(state, results);
+    }
+    return False.instance;
+  }
+}
+
+export class EForall extends Expression {
+  constructor(readonly expr: ForallExpr) {
+    super();
+  }
+
+  async *evaluate(state: State): Machine {
+    const results: CrochetValue[] = [];
+    yield* this.expr.evaluate(state, results);
     return new CrochetStream(results);
   }
+
+  async *evaluate_stream(state: State, expr: Expression) {}
 }
 
 export class EBlock extends Expression {
