@@ -61,8 +61,8 @@ command dungeon-gen draw do
   let Room = (search self room: Room).Room first;
   Room draw-at: new point(X, Y);
 
-  for IX in 1 to: Size do
-    for IY in 1 to: Size do
+  for IY in 1 to: Size do
+    for IX in 1 to: Size do
       match
         when IX y: IY char: Char => Char;
         always => " ";
@@ -80,7 +80,7 @@ command room draw-at: Point do
   match
     when self to: Direction lays: Room, not Room drawn do
       let P1 = Point move: Direction;
-      P1 draw: "·";
+      P1 draw: Direction connecting-symbol;
       Room draw-at: (P1 move: Direction);
     end
   end
@@ -93,6 +93,11 @@ command point move: west  = new point(self.X - 1, self.Y);
 command point draw: Char do
   fact (self.X) y: (self.Y) char: Char;
 end
+
+command north connecting-symbol = "|";
+command south connecting-symbol = "|";
+command east connecting-symbol = "—";
+command west connecting-symbol = "—";
 
 scene main do
   let Dungeon = debug time: (lazy dungeon generate-with-max-rooms: 20) tag: "Dungeon generate";
