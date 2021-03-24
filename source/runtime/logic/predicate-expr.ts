@@ -7,6 +7,7 @@ import {
 } from "../primitives";
 import { State } from "../vm";
 import { Predicate } from "./predicate";
+import { do_bin_op, BinOp } from "./primitives";
 import { UnificationEnvironment } from "./unification";
 
 export abstract class PredicateExpr {
@@ -29,7 +30,7 @@ export class PEVariable extends PredicateExpr {
   }
 
   evaluate(state: State, env: UnificationEnvironment) {
-    return env.lookup(this.name);
+    return env.try_lookup(this.name) ?? state.env.lookup(this.name);
   }
 }
 
@@ -59,11 +60,6 @@ export class PEProject extends PredicateExpr {
   }
 }
 
-export enum BinOp {
-  OP_ADD,
-  OP_SUB,
-}
-
 export class PEBinOp extends PredicateExpr {
   constructor(
     readonly op: BinOp,
@@ -76,23 +72,7 @@ export class PEBinOp extends PredicateExpr {
   evaluate(state: State, env: UnificationEnvironment) {
     const left = this.left.evaluate(state, env);
     const right = this.right.evaluate(state, env);
-
-    switch (this.op) {
-      case BinOp.OP_ADD: {
-        return new CrochetInteger(
-          cast(left, CrochetInteger).value + cast(right, CrochetInteger).value
-        );
-      }
-
-      case BinOp.OP_SUB: {
-        return new CrochetInteger(
-          cast(left, CrochetInteger).value - cast(right, CrochetInteger).value
-        );
-      }
-
-      default:
-        throw new Error(`internal: invalid operation ${this.op}`);
-    }
+    return do_bin_op(this.op, left, right);
   }
 }
 

@@ -29,9 +29,9 @@ import {
   Interpolation,
   Rank,
   PredicateExpression,
-  PredicateOp,
   SimulationContext,
   ForExpression,
+  BinOp,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import * as IR from "../runtime/ir";
@@ -191,10 +191,11 @@ export function compileConstraint(c: Constraint): Logic.Constraint.Constraint {
       );
     },
 
-    Equal(_, l, r) {
-      return new Logic.Constraint.Equals(
-        compileConstraint(l),
-        compileConstraint(r)
+    BinOp(_, op, left, right) {
+      return new Logic.Constraint.BinaryConstraint(
+        compileBinaryOp(op),
+        compileConstraint(left),
+        compileConstraint(right)
       );
     },
 
@@ -235,7 +236,7 @@ export function compilePredicateEffect(eff: PredicateEffect) {
   });
 }
 
-export function compilePredicateOp(op: PredicateOp): Logic.BinOp {
+export function compileBinaryOp(op: BinOp): Logic.BinOp {
   return op.match<Logic.BinOp>({
     Add() {
       return Logic.BinOp.OP_ADD;
@@ -243,6 +244,34 @@ export function compilePredicateOp(op: PredicateOp): Logic.BinOp {
 
     Sub() {
       return Logic.BinOp.OP_SUB;
+    },
+
+    Multiply() {
+      return Logic.BinOp.OP_MUL;
+    },
+
+    Equal() {
+      return Logic.BinOp.OP_EQ;
+    },
+
+    NotEqual() {
+      return Logic.BinOp.OP_NOT_EQ;
+    },
+
+    GreaterOrEqual() {
+      return Logic.BinOp.OP_GTE;
+    },
+
+    GreaterThan() {
+      return Logic.BinOp.OP_GT;
+    },
+
+    LessOrEqual() {
+      return Logic.BinOp.OP_LTE;
+    },
+
+    LessThan() {
+      return Logic.BinOp.OP_LT;
     },
   });
 }
@@ -253,7 +282,7 @@ export function compilePredicateExpr(
   return expr.match<Logic.PredicateExpr>({
     BinOp(_, op, left, right) {
       return new Logic.PEBinOp(
-        compilePredicateOp(op),
+        compileBinaryOp(op),
         compilePredicateExpr(left),
         compilePredicateExpr(right)
       );
@@ -803,7 +832,7 @@ export function compileRank(r: Rank): IR.Expression {
     },
 
     Unranked(_) {
-      return new IR.EInteger(0n);
+      return new IR.EInteger(1n);
     },
   });
 }

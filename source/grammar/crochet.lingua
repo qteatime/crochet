@@ -139,13 +139,20 @@ type PredicateExpression =
   | Global(pos: Meta, name: Name)
   | Self(pos: Meta)
   | Project(pos: Meta, left: PredicateExpression, name: RecordField)
-  | BinOp(pos: Meta, op: PredicateOp, left: PredicateExpression, right: PredicateExpression)
+  | BinOp(pos: Meta, op: BinOp, left: PredicateExpression, right: PredicateExpression)
   | Count(pos: Meta, pred: Predicate)
   | Set(pos: Meta, pred: Predicate)
 
-type PredicateOp =
+type BinOp =
   | Add()
   | Sub()
+  | Multiply()
+  | Equal()
+  | NotEqual()
+  | GreaterThan()
+  | GreaterOrEqual()
+  | LessThan()
+  | LessOrEqual()
 
 type Pattern =
   | HasRole(pos: Meta, typ: Name, name: Pattern)
@@ -160,7 +167,7 @@ type Constraint =
   | And(pos: Meta, left: Constraint, right: Constraint)
   | Or(pos: Meta, left: Constraint, right: Constraint)
   | Not(pos: Meta, value: Constraint)
-  | Equal(pos: Meta, left: Constraint, right: Constraint)
+  | BinOp(pos: Meta, op: BinOp, left: Constraint, right: Constraint)
   | Variable(pos: Meta, name: Name)
   | Global(pos: Meta, name: Name)
   | HasRole(pos: Meta, value: Constraint, role: Name)
@@ -396,13 +403,20 @@ grammar Crochet : Program {
     | s<"("> p:predicate s<")">               -> Predicate.Parens(meta, p)
 
   predicateExpr =
-    | l:predicateExprMember op:predicateOp r:predicateExprMember
+    | l:predicateExprMember op:binOp r:predicateExprMember
       -> PredicateExpression.BinOp(meta, op, l, r)
     | predicateExprMember
 
-  predicateOp =
-    | s<"+">  -> PredicateOp.Add()
-    | s<"-">  -> PredicateOp.Sub()
+  binOp =
+    | s<"+">   -> BinOp.Add()
+    | s<"-">   -> BinOp.Sub()
+    | s<"*">   -> BinOp.Multiply()
+    | s<"==="> -> BinOp.Equal()
+    | s<"=/="> -> BinOp.NotEqual()
+    | s<">">   -> BinOp.GreaterThan()
+    | s<">=">  -> BinOp.GreaterOrEqual()
+    | s<"<">   -> BinOp.LessThan()
+    | s<"<=">  -> BinOp.LessOrEqual()
 
   predicateExprMember =
     | l:predicateExprMember s<"."> r:recordField
@@ -446,8 +460,7 @@ grammar Crochet : Program {
     | constraint300
 
   constraint300 =
-    | l:constraint400 s<"==="> r:constraint400  -> Constraint.Equal(meta, l, r)
-    | l:constraint400 s<"=/="> r:constraint400  -> Constraint.Not(meta, Constraint.Equal(meta, l, r))
+    | l:constraint400 op:binOp r:constraint400  -> Constraint.BinOp(meta, op, l, r)
     | constraint400
 
   constraint400 =
@@ -546,13 +559,21 @@ grammar Crochet : Program {
     | castExpression
 
   castExpression =
-    | s:invokePostfix as_ t:typeAppPrimary
+    | s:invokePrePost as_ t:typeAppPrimary
       -> Expression.Cast(meta, t, s)
-    | s:invokePostfix is_ t:typeAppPrimary
+    | s:invokePrePost is_ t:typeAppPrimary
       -> Expression.HasType(meta, s, t)
-    | s:invokePostfix s<"::"> r:name
+    | s:invokePrePost s<"::"> r:name
       -> Expression.HasRole(meta, s, r)
+    | invokePrePost
+
+  invokePrePost =
+    | invokePrefix
     | invokePostfix
+
+  invokePrefix =
+    | n:not p:applyExpression
+      -> Expression.Invoke(meta, Signature.Unary(meta, p, n))
 
   invokePostfix =
     | s:invokePostfix n:atom
@@ -628,6 +649,7 @@ grammar Crochet : Program {
   forExprMap1 =
     | s<","> b:forExprMap             -> b
     | if_ e:expression b:forExprDo    -> ForExpression.If(meta, e, b)
+    | forExprDo
   
   forExprDo =
     | b:expressionBlock -> ForExpression.Do(meta, b)

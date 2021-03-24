@@ -12,6 +12,7 @@ import {
   ErrIndexOutOfRange,
   foreign,
   foreign_namespace,
+  from_bool,
   InterpolationDynamic,
   InterpolationStatic,
   machine,
@@ -100,6 +101,12 @@ export class StreamFfi {
   @machine()
   static concat(a: CrochetStream, b: CrochetStream) {
     return new CrochetStream(a.values.concat(b.values));
+  }
+
+  @foreign()
+  @machine()
+  static contains(a: CrochetStream, x: CrochetValue) {
+    return from_bool(a.values.includes(x));
   }
 
   @foreign("sort-by")

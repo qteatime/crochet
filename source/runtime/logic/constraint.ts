@@ -1,11 +1,11 @@
 import { Type } from "../ir";
 import { from_bool, CrochetValue } from "../primitives";
 import { State } from "../vm";
+import { BinOp, do_bin_op } from "./primitives";
 import { UnificationEnvironment } from "./unification";
 
 export abstract class Constraint {
   abstract evaluate(env: UnificationEnvironment, state: State): CrochetValue;
-  abstract variables: string[];
 }
 
 export class And extends Constraint {
@@ -18,10 +18,6 @@ export class And extends Constraint {
       this.left.evaluate(env, state).as_bool() &&
         this.right.evaluate(env, state).as_bool()
     );
-  }
-
-  get variables(): string[] {
-    return this.left.variables.concat(this.right.variables);
   }
 }
 
@@ -36,10 +32,6 @@ export class Or extends Constraint {
         this.right.evaluate(env, state).as_bool()
     );
   }
-
-  get variables(): string[] {
-    return this.left.variables.concat(this.right.variables);
-  }
 }
 
 export class Not extends Constraint {
@@ -50,9 +42,21 @@ export class Not extends Constraint {
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
     return from_bool(!this.constraint.evaluate(env, state).as_bool());
   }
+}
 
-  get variables(): string[] {
-    return this.constraint.variables;
+export class BinaryConstraint extends Constraint {
+  constructor(
+    readonly op: BinOp,
+    readonly left: Constraint,
+    readonly right: Constraint
+  ) {
+    super();
+  }
+
+  evaluate(env: UnificationEnvironment, state: State): CrochetValue {
+    const left = this.left.evaluate(env, state);
+    const right = this.right.evaluate(env, state);
+    return do_bin_op(this.op, left, right);
   }
 }
 
@@ -69,10 +73,6 @@ export class Variable extends Constraint {
 
     return result;
   }
-
-  get variables() {
-    return [this.name];
-  }
 }
 
 export class Global extends Constraint {
@@ -82,10 +82,6 @@ export class Global extends Constraint {
 
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
     return state.world.globals.lookup(this.name);
-  }
-
-  get variables(): string[] {
-    return [];
   }
 }
 
@@ -99,10 +95,6 @@ export class Equals extends Constraint {
       this.left.evaluate(env, state).equals(this.right.evaluate(env, state))
     );
   }
-
-  get variables(): string[] {
-    return this.left.variables.concat(this.right.variables);
-  }
 }
 
 export class Value extends Constraint {
@@ -112,10 +104,6 @@ export class Value extends Constraint {
 
   evaluate(env: UnificationEnvironment, state: State): CrochetValue {
     return this.value;
-  }
-
-  get variables(): string[] {
-    return [];
   }
 }
 
@@ -129,10 +117,6 @@ export class HasRole extends Constraint {
     const role = state.world.roles.lookup(this.role);
     return from_bool(value.has_role(role));
   }
-
-  get variables(): string[] {
-    return [];
-  }
 }
 
 export class HasType extends Constraint {
@@ -144,9 +128,5 @@ export class HasType extends Constraint {
     const value = this.value.evaluate(env, state);
     const type = this.type.realise(state.world);
     return from_bool(type.accepts(value));
-  }
-
-  get variables(): string[] {
-    return [];
   }
 }

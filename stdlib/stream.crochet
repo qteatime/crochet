@@ -3,6 +3,9 @@
 command (X is stream) count =
   foreign crochet.native.stream.count(X);
 
+command (X is stream) is-empty =
+  X count === 0;
+
 command (X is stream) first =
   foreign crochet.native.stream.first(X);
 
@@ -64,3 +67,6 @@ command stream join-text-with: Separator =
 
 command (X is stream) interpolate =
   foreign crochet.native.stream.interpolate(X);
+
+command (X is stream) contains: V =
+  foreign crochet.native.stream.contains(X, V);
