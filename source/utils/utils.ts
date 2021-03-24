@@ -29,8 +29,9 @@ export function weighted_pick<A>(xs: [bigint, A][]): A | null {
     return null;
   } else {
     const total = xs.map((x) => x[0]).reduce((a, b) => a + b, 0n);
+    const sorted_xs = xs.sort(([s1, _1], [s2, _2]) => Number(s2 - s1));
     let choice = BigInt(rand_int(0, Number(total)));
-    for (const [score, item] of xs) {
+    for (const [score, item] of sorted_xs) {
       if (choice <= score) {
         return item;
       } else {

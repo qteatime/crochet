@@ -107,16 +107,6 @@ export class Simulation {
         (x) => new ActionChoice(x.title, x.score, x.tags, x.action, x.machine)
       );
 
-    const scores = avalue(
-      yield _push(run_all(actions.map((x) => x.score.force(state))))
-    ).map((x) => cast(x, CrochetInteger).value);
-
-    const scored_actions = [...zip(scores, actions)].sort(
-      ([s1, _1], [s2, _2]) => {
-        return Number(s1 - s2);
-      }
-    );
-
     const selected = cvalue(
       yield _push(
         this.trigger_signal(
@@ -124,6 +114,10 @@ export class Simulation {
           "pick-action:for:",
           [new CrochetStream(actions), actor],
           async function* (_state, _actions, _for) {
+            const scores = avalue(
+              yield _push(run_all(actions.map((x) => x.score.force(state))))
+            ).map((x) => cast(x, CrochetInteger).value);
+            const scored_actions = [...zip(scores, actions)];
             return weighted_pick(scored_actions) ?? False.instance;
           }
         )

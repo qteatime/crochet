@@ -80,6 +80,12 @@ export class IntegerFfi {
   static power(x: CrochetInteger, p: CrochetInteger) {
     return new CrochetInteger(x.value ** p.value);
   }
+
+  @foreign()
+  @machine()
+  static sqrt(x: CrochetInteger) {
+    return new CrochetInteger(BigInt(Math.floor(Math.sqrt(Number(x.value)))));
+  }
 }
 
 @foreign_namespace("crochet.native.float")

@@ -7,32 +7,26 @@ type point(X is integer, Y is integer);
 type cell(Position is point);
 
 relation y: Y* x: X* cell: Cell;
-relation Cell* cut;
-relation Cell* pending;
-relation Cell* visited;
+relation state: Cell-State* cell: Cell*;
+relation Cell* state: Cell-State;
+relation Cell* adjacent: Cell*;
 relation Maze-Gen* cell: Cell*;
 relation Maze-Gen* gen-current: Cell;
 relation Maze-Gen* gen-direction: Direction;
 relation Maze-Gen* phase: Phase;
 
-enum phase = start, cut;
+enum phase = start, cut, trace;
 enum direction = north, east, south, west;
+enum cell-state = cs-cut, cs-wall, cs-exposed, cs-unvisited,
+                  cs-path, cs-begin, cs-end;
 
 command point move: north = new point(self.X, self.Y - 1);
 command point move: east  = new point(self.X + 1, self.Y);
 command point move: south = new point(self.X, self.Y + 1);
 command point move: west  = new point(self.X - 1, self.Y);
 
-
-command cell is-cut = search self cut;
-
-command cell exposed-adjacent =
-  for C in self adjacent-cells if not (C is-cut) do C end;
-
-command cell open-adjacent =
-  for C in self adjacent-cells if C is-cut do C end;
-
-command cell can-be-cut = self open-adjacent count === 1;
+command point distance-to: (P is point) =
+  (((P.X - self.X) ** 2) + ((P.Y - self.Y) ** 2)) sqrt;
 
 command cell adjacent-cells do
   let Adjacency = [
@@ -56,14 +50,44 @@ command cell-at: (P is point) do
   end
 end
 
+command cell set-state: (State is cell-state) do
+  match
+    when self state: S do
+      forget state: S cell: self;
+    end
+  end;
+
+  fact state: State cell: self;
+  fact self state: State;
+end
+
+command cell cut do
+  self set-state: cs-cut;
+
+  match
+    when self adjacent: Cell, Cell state: cs-unvisited do
+      Cell set-state: cs-exposed;
+    end
+  end
+end
+
 command maze generate-width: Width height: Height do
   let Maze = new maze-gen(Width, Height);
+
   for IY in 1 to: Height, IX in 1 to: Width do
     let Point = new point(IX, IY);
     let Cell = new cell(Point);
     fact Maze cell: Cell;
     fact y: IY x: IX cell: Cell;
+    Cell set-state: cs-unvisited;
   end;
+
+  for Cell in (search Maze cell: C).C do
+    for Adjacent in Cell adjacent-cells do
+      fact Cell adjacent: Adjacent;
+    end
+  end;
+
   fact Maze phase: start;
   simulate for [Maze] until action quiescence;
   Maze;
@@ -73,34 +97,45 @@ action "Initialise [Maze]"
 when
   Maze simulate-turn,
   Maze phase: start,
-  Maze cell: Cell
+  state: cs-unvisited cell: Cell
 do
-  fact Cell cut;
+  Cell cut;
   fact Maze phase: cut;
-  for Exposed in Cell exposed-adjacent if Exposed can-be-cut do
-    fact Exposed pending;
-  end;
 end
 
 action "Cut [Cell]"
 when
   Maze simulate-turn,
   Maze phase: cut,
-  Cell pending,
-  not Cell visited
+  state: cs-exposed cell: Cell
 do
-  fact Cell visited;
-  condition
-    when Cell can-be-cut do
-      fact Cell cut;
+  match
+    when let C = count(Cell adjacent: C, C state: cs-cut), if C === 1 do
+      Cell cut;
     end
-    always do end
-  end;
 
-  for Exposed in Cell exposed-adjacent if Exposed can-be-cut do
-    fact Exposed pending;
+    always do
+      Cell set-state: cs-wall;
+    end
   end
 end
+
+action "Begin tracing"
+when
+  Maze phase: cut,
+  not state: cs-exposed cell: _,
+  state: cs-cut cell: Start,
+  state: cs-cut cell: Goal,
+  if Start =/= Goal,
+  not Start adjacent: Goal
+rank
+  Start.Position distance-to: Goal.Position
+do
+  fact Maze phase: trace;
+  Start set-state: cs-begin;
+  Goal set-state: cs-end;
+end
+
 
 command maze-gen draw do
   for IY in 1 to: self.Height do
@@ -112,8 +147,13 @@ end
 
 command cell draw do
   match
-    when self cut => " ";
-    always => "#";
+    when self state: cs-cut => " ";
+    when self state: cs-path => ".";
+    when self state: cs-begin => "B";
+    when self state: cs-end => "E";
+    when self state: cs-wall => "#";
+    when self state: cs-exposed => "!";
+    when self state: cs-unvisited => "?";
   end first;
 end
 

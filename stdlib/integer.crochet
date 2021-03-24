@@ -29,6 +29,9 @@ end
 command (X is integer) ** (P is integer) =
   foreign crochet.native.integer.power(X, P);
 
+command (X is integer) sqrt =
+  foreign crochet.native.integer.sqrt(X);
+
 // == Relational
 command (X is integer) < (Y is integer) = 
   foreign crochet.native.integer.lt(X, Y);
