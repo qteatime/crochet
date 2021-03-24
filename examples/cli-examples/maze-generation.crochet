@@ -11,8 +11,6 @@ relation state: Cell-State* cell: Cell*;
 relation Cell* state: Cell-State;
 relation Cell* adjacent: Cell*;
 relation Maze-Gen* cell: Cell*;
-relation Maze-Gen* gen-current: Cell;
-relation Maze-Gen* gen-direction: Direction;
 relation Maze-Gen* phase: Phase;
 
 enum phase = start, cut, trace;
