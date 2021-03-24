@@ -1,0 +1,123 @@
+% crochet
+
+singleton maze;
+type maze-gen(Width is integer, Height is integer);
+type point(X is integer, Y is integer);
+
+type cell(Position is point);
+
+relation y: Y* x: X* cell: Cell;
+relation Cell* cut;
+relation Cell* pending;
+relation Cell* visited;
+relation Maze-Gen* cell: Cell*;
+relation Maze-Gen* gen-current: Cell;
+relation Maze-Gen* gen-direction: Direction;
+relation Maze-Gen* phase: Phase;
+
+enum phase = start, cut;
+enum direction = north, east, south, west;
+
+command point move: north = new point(self.X, self.Y - 1);
+command point move: east  = new point(self.X + 1, self.Y);
+command point move: south = new point(self.X, self.Y + 1);
+command point move: west  = new point(self.X - 1, self.Y);
+
+
+command cell is-cut = search self cut;
+
+command cell exposed-adjacent =
+  for C in self adjacent-cells if not (C is-cut) do C end;
+
+command cell open-adjacent =
+  for C in self adjacent-cells if C is-cut do C end;
+
+command cell can-be-cut = self open-adjacent count === 1;
+
+command cell adjacent-cells do
+  let Adjacency = [
+    self.Position move: north,
+    self.Position move: east,
+    self.Position move: south,
+    self.Position move: west,
+  ];
+  for P in Adjacency, C in cells-at: P do C end
+end
+
+command cells-at: (P is point) do
+  (search let X = P.X, let Y = P.Y, y: Y x: X cell: Cell).Cell;
+end
+
+command cell-at: (P is point) do
+  let Cells = cells-at: P;
+  condition
+    when Cells is-empty => false;
+    always => Cells first;
+  end
+end
+
+command maze generate-width: Width height: Height do
+  let Maze = new maze-gen(Width, Height);
+  for IY in 1 to: Height, IX in 1 to: Width do
+    let Point = new point(IX, IY);
+    let Cell = new cell(Point);
+    fact Maze cell: Cell;
+    fact y: IY x: IX cell: Cell;
+  end;
+  fact Maze phase: start;
+  simulate for [Maze] until action quiescence;
+  Maze;
+end
+
+action "Initialise [Maze]"
+when
+  Maze simulate-turn,
+  Maze phase: start,
+  Maze cell: Cell
+do
+  fact Cell cut;
+  fact Maze phase: cut;
+  for Exposed in Cell exposed-adjacent if Exposed can-be-cut do
+    fact Exposed pending;
+  end;
+end
+
+action "Cut [Cell]"
+when
+  Maze simulate-turn,
+  Maze phase: cut,
+  Cell pending,
+  not Cell visited
+do
+  fact Cell visited;
+  condition
+    when Cell can-be-cut do
+      fact Cell cut;
+    end
+    always do end
+  end;
+
+  for Exposed in Cell exposed-adjacent if Exposed can-be-cut do
+    fact Exposed pending;
+  end
+end
+
+command maze-gen draw do
+  for IY in 1 to: self.Height do
+    for IX in 1 to: self.Width do
+      (cell-at: new point(IX, IY)) draw;
+    end interpolate inspect;
+  end
+end
+
+command cell draw do
+  match
+    when self cut => " ";
+    always => "#";
+  end first;
+end
+
+scene main do
+  let Maze = debug time: (lazy maze generate-width: 20 height: 20) tag: "Generate";
+  debug time: (lazy Maze draw) tag: "Draw";
+end
