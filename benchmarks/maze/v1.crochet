@@ -95,7 +95,7 @@ action "Initialise [Maze]"
 when
   Maze simulate-turn,
   Maze phase: start,
-  sample 1 of state: cs-unvisited cell: Cell
+  state: cs-unvisited cell: Cell
 do
   Cell cut;
   fact Maze phase: cut;
@@ -105,7 +105,7 @@ action "Cut [Cell]"
 when
   Maze simulate-turn,
   Maze phase: cut,
-  sample 1 of state: cs-exposed cell: Cell
+  state: cs-exposed cell: Cell
 do
   match
     when let C = count(Cell adjacent: C, C state: cs-cut), if C === 1 do
@@ -122,8 +122,8 @@ action "Begin tracing"
 when
   Maze phase: cut,
   not state: cs-exposed cell: _,
-  sample 5 of state: cs-cut cell: Start,
-  sample 5 of state: cs-cut cell: Goal,
+  state: cs-cut cell: Start,
+  state: cs-cut cell: Goal,
   if Start =/= Goal,
   not Start adjacent: Goal
 rank

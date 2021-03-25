@@ -19,6 +19,32 @@ export function pick<A>(xs: A[]): A | null {
   }
 }
 
+export function pick_and_tear<A>(xs: A[]): A | null {
+  if (xs.length === 0) {
+    return null;
+  } else {
+    const choice = rand_int(0, xs.length);
+    const result = xs[choice];
+    xs.splice(choice, 1);
+    return result;
+  }
+}
+
+export function pick_many<A>(size: number, xs: A[]): A[] {
+  const result = [];
+  const candidates = xs.slice();
+  while (result.length < size) {
+    const entry = pick_and_tear(candidates);
+    if (entry == null) {
+      return result;
+    } else {
+      result.push(entry);
+    }
+  }
+
+  return result;
+}
+
 export function rand_int(min: number, max: number): number {
   const chosen = Math.floor(Math.random() * (max - min));
   return min + chosen;

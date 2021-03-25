@@ -32,8 +32,10 @@ import {
   SimulationContext,
   ForExpression,
   BinOp,
+  SamplingPool,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
+import { CrochetInteger } from "../runtime";
 import * as IR from "../runtime/ir";
 import { SimpleInterpolation, TNamed } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
@@ -321,6 +323,17 @@ export function compilePredicateExpr(
   });
 }
 
+export function compileSamplingPool(pool: SamplingPool): Logic.SamplingPool {
+  return pool.match<Logic.SamplingPool>({
+    Relation(_, signature) {
+      return new Logic.SamplingRelation(
+        signatureName(signature),
+        signatureValues(signature).map(compilePattern)
+      );
+    },
+  });
+}
+
 export function compilePredicate(p: Predicate): Logic.Predicate {
   return p.match<Logic.Predicate>({
     And(_, l, r) {
@@ -359,6 +372,14 @@ export function compilePredicate(p: Predicate): Logic.Predicate {
 
     Typed(_, name, typ) {
       return new Logic.TypePredicate(name.name, compileTypeApp(typ));
+    },
+
+    Sample(_, size0, pool) {
+      const size = cast(literalToValue(size0), CrochetInteger);
+      return new Logic.SamplePredicate(
+        Number(size.value),
+        compileSamplingPool(pool)
+      );
     },
 
     Always(_) {

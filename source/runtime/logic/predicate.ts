@@ -1,4 +1,4 @@
-import { cast, zip } from "../../utils/utils";
+import { cast, pick_many, zip } from "../../utils/utils";
 import { Type } from "../ir";
 import { TCrochetType } from "../primitives";
 import { State } from "../vm";
@@ -115,25 +115,60 @@ export class TypePredicate extends Predicate {
   }
 }
 
-export type MappedRelation =
-  | ConcreteRelation
-  | PredicateProcedure
-  | FunctionRelation;
+export class SamplePredicate extends Predicate {
+  constructor(readonly size: number, readonly pool: SamplingPool) {
+    super();
+  }
 
-interface IRelation {
-  search(
+  search(state: State, env: UnificationEnvironment) {
+    return this.pool.sample(this.size, state, env);
+  }
+}
+
+export abstract class SamplingPool {
+  abstract sample(
+    size: number,
+    state: State,
+    env: UnificationEnvironment
+  ): UnificationEnvironment[];
+}
+
+export class SamplingRelation extends SamplingPool {
+  constructor(readonly name: string, readonly patterns: Pattern[]) {
+    super();
+  }
+
+  sample(size: number, state: State, env: UnificationEnvironment) {
+    const relation = state.database.lookup(this.name);
+    return relation.sample(size, state, env, this.patterns);
+  }
+}
+
+export abstract class MappedRelation {
+  abstract search(
     state: State,
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[];
+
+  sample(
+    size: number,
+    state: State,
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ) {
+    return pick_many(size, this.search(state, env, patterns));
+  }
 }
 
-export class ConcreteRelation implements IRelation {
+export class ConcreteRelation extends MappedRelation {
   constructor(
     readonly filename: string,
     readonly name: string,
     readonly tree: Tree
-  ) {}
+  ) {
+    super();
+  }
 
   search(
     state: State,
@@ -141,6 +176,15 @@ export class ConcreteRelation implements IRelation {
     patterns: Pattern[]
   ): UnificationEnvironment[] {
     return this.tree.search(state, env, patterns);
+  }
+
+  sample(
+    size: number,
+    state: State,
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[] {
+    return this.tree.sample(size, state, env, patterns);
   }
 }
 
@@ -150,8 +194,10 @@ export type FunctionRelationFn = (
   patterns: Pattern[]
 ) => UnificationEnvironment[];
 
-export class FunctionRelation implements IRelation {
-  constructor(readonly name: string, readonly code: FunctionRelationFn) {}
+export class FunctionRelation extends MappedRelation {
+  constructor(readonly name: string, readonly code: FunctionRelationFn) {
+    super();
+  }
 
   search(
     state: State,
@@ -162,14 +208,16 @@ export class FunctionRelation implements IRelation {
   }
 }
 
-export class PredicateProcedure implements IRelation {
+export class PredicateProcedure extends MappedRelation {
   readonly filename: string | null = null;
 
   constructor(
     readonly name: string,
     readonly parameters: string[],
     readonly clauses: PredicateClause[]
-  ) {}
+  ) {
+    super();
+  }
 
   set_filename(filename: string) {
     (this as any).filename = filename;

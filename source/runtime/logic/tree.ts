@@ -1,3 +1,4 @@
+import { pick_and_tear } from "../../utils";
 import { CrochetValue } from "../primitives";
 import { State } from "../vm";
 import { World } from "../world";
@@ -7,48 +8,59 @@ class Pair {
   constructor(readonly value: CrochetValue, public tree: Tree) {}
 }
 
-export type TreeType = TTOne | TTMany | TTEnd;
-
-interface IType {
-  realise(): Tree;
+export abstract class TreeType {
+  abstract realise(): Tree;
 }
 
-export class TTOne implements IType {
-  constructor(readonly next: TreeType) {}
+export class TTOne extends TreeType {
+  constructor(readonly next: TreeType) {
+    super();
+  }
 
   realise() {
     return new OneNode(this.next);
   }
 }
-export class TTMany implements IType {
-  constructor(readonly next: TreeType) {}
+export class TTMany extends TreeType {
+  constructor(readonly next: TreeType) {
+    super();
+  }
 
   realise() {
     return new ManyNode(this.next);
   }
 }
-export class TTEnd implements IType {
+export class TTEnd extends TreeType {
   realise() {
     return new EndNode();
   }
 }
 
-export type Tree = OneNode | ManyNode | EndNode;
+export abstract class Tree {
+  abstract type: TreeType;
 
-interface INode {
-  type: TreeType;
-  insert(values: CrochetValue[]): void;
-  remove(values: CrochetValue[]): Tree | null;
-  search(
+  abstract insert(values: CrochetValue[]): void;
+  abstract remove(values: CrochetValue[]): Tree | null;
+
+  abstract search(
+    state: State,
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[];
+
+  abstract sample(
+    size: number,
     state: State,
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[];
 }
 
-export class OneNode implements INode {
+export class OneNode extends Tree {
   private value: Pair | null = null;
-  constructor(readonly subtype: TreeType) {}
+  constructor(readonly subtype: TreeType) {
+    super();
+  }
 
   get type() {
     return new TTOne(this.subtype);
@@ -102,11 +114,32 @@ export class OneNode implements INode {
       return this.value.tree.search(state, newEnv, tail);
     }
   }
+
+  sample(
+    size: number,
+    state: State,
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[] {
+    if (this.value == null) {
+      return [];
+    }
+
+    const [head, ...tail] = patterns;
+    const newEnv = head.unify(state, env, this.value.value);
+    if (newEnv == null) {
+      return [];
+    } else {
+      return this.value.tree.sample(size, state, newEnv, tail);
+    }
+  }
 }
 
-export class ManyNode implements INode {
+export class ManyNode extends Tree {
   private pairs: Pair[] = [];
-  constructor(readonly subtype: TreeType) {}
+  constructor(readonly subtype: TreeType) {
+    super();
+  }
 
   get type() {
     return new TTMany(this.subtype);
@@ -164,9 +197,40 @@ export class ManyNode implements INode {
       }
     });
   }
+
+  sample(
+    size: number,
+    state: State,
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ): UnificationEnvironment[] {
+    const [head, ...tail] = patterns;
+
+    const result: UnificationEnvironment[] = [];
+    const envs = this.pairs.flatMap((pair) => {
+      const newEnv = head.unify(state, env, pair.value);
+      if (newEnv == null) {
+        return [];
+      } else {
+        return [{ env: newEnv, tree: pair.tree }];
+      }
+    });
+
+    while (result.length < size) {
+      const choice = pick_and_tear(envs);
+      if (choice == null) {
+        return result;
+      } else {
+        const envs = choice.tree.sample(size, state, choice.env, tail);
+        result.push.apply(result, envs);
+      }
+    }
+
+    return result;
+  }
 }
 
-export class EndNode implements INode {
+export class EndNode extends Tree {
   get type() {
     return new TTEnd();
   }
@@ -190,6 +254,19 @@ export class EndNode implements INode {
     env: UnificationEnvironment,
     patterns: Pattern[]
   ): UnificationEnvironment[] {
+    if (patterns.length !== 0) {
+      throw new Error(`non-empty search on end node`);
+    }
+
+    return [env];
+  }
+
+  sample(
+    size: number,
+    state: State,
+    env: UnificationEnvironment,
+    patterns: Pattern[]
+  ) {
     if (patterns.length !== 0) {
       throw new Error(`non-empty search on end node`);
     }

@@ -127,11 +127,15 @@ type Predicate =
   | Or(pos: Meta, left: Predicate, right: Predicate)
   | Not(pos: Meta, pred: Predicate)
   | Has(pos: Meta, signature: Signature<Pattern>)
+  | Sample(pos: Meta, size: Literal, pool: SamplingPool)
   | Constrain(pos: Meta, pred: Predicate, constraint: Constraint)
   | Let(pos: Meta, name: Name, value: PredicateExpression)
   | Typed(pos: Meta, name: Name, typ: TypeApp)
   | Always(pos: Meta)
   | Parens(pos: Meta, pred: Predicate)
+
+type SamplingPool =
+  | Relation(pos: Meta, signature: Signature<Pattern>)
 
 type PredicateExpression =
   | Lit(lit: Literal)
@@ -388,6 +392,7 @@ grammar Crochet : Program {
     | p:predicateLet if_ c:constraint      -> Predicate.Constrain(meta, p, c)
     | if_ c:constraint                     -> Predicate.Constrain(meta, Predicate.Always(meta), c)
     | predicateLet
+    | predicateSample
     | predicateType
     | predicatePrimary
 
@@ -396,6 +401,14 @@ grammar Crochet : Program {
 
   predicateLet =
     | let_ n:name s<"="> e:predicateExpr -> Predicate.Let(meta, n, e)
+
+  predicateSample =
+    | sample_ n:integer of_ p:samplingPool
+      -> Predicate.Sample(meta, n, p)
+
+  samplingPool =
+    | r:logicSignature<pattern>
+      -> SamplingPool.Relation(meta, r)
 
   predicatePrimary =
     | always_                                 -> Predicate.Always(meta)
@@ -883,6 +896,8 @@ grammar Crochet : Program {
   lazy_ = kw<"lazy">
   force_ = kw<"force">
   context_ = kw<"context">
+  sample_ = kw<"sample">
+  of_ = kw<"of">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -891,5 +906,5 @@ grammar Crochet : Program {
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
-    | tags_ | rank_ | abstract_ | lazy_ | force_ | context_
+    | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
 }
