@@ -1,2 +1,2 @@
-versions/generated/*          linguist-generated
+versions/*                    linguist-generated
 source/generated/*            linguist-generated
