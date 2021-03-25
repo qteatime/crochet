@@ -4,6 +4,8 @@ import * as FS from "fs";
 import { Crochet } from "../../targets/bench";
 const Crochet_v0_2 = require("../../../versions/crochet-v0.2.0")
   .Crochet as typeof Crochet;
+const Crochet_v0_3 = require("../../../versions/crochet-v0.3.0")
+  .Crochet as typeof Crochet;
 
 const root = Path.join(__dirname, "../../../");
 
@@ -40,6 +42,7 @@ const benchmarks = FS.readdirSync(benchmarkDir)
 
 const vms = [
   { version: "v0.2.0", vm: Crochet_v0_2 },
+  { version: "v0.3.0", vm: Crochet_v0_3 },
   { version: "current", vm: Crochet },
 ];
 
