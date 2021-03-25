@@ -1,0 +1,6 @@
+{
+  "title": "Maze generation",
+  "versions": {
+    "default": "examples/cli-examples/maze-generation.crochet"
+  }
+}
