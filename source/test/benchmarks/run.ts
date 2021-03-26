@@ -7,6 +7,8 @@ const Crochet_v0_2 = require("../../../versions/crochet-v0.2.0")
   .Crochet as typeof Crochet;
 const Crochet_v0_3 = require("../../../versions/crochet-v0.3.0")
   .Crochet as typeof Crochet;
+const Crochet_v0_3_1 = require("../../../versions/crochet-v0.3.1")
+  .Crochet as typeof Crochet;
 
 const root = Path.join(__dirname, "../../../");
 
@@ -44,6 +46,7 @@ const benchmarks = FS.readdirSync(benchmarkDir)
 const vms = [
   { version: "v0.2.0", random: true, vm: Crochet_v0_2 },
   { version: "v0.3.0", random: true, vm: Crochet_v0_3 },
+  { version: "v0.3.1", random: false, vm: Crochet_v0_3_1 },
   { version: "current", random: false, vm: Crochet },
 ];
 
