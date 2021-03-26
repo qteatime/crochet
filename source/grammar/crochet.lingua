@@ -830,7 +830,7 @@ grammar Crochet : Program {
   token dec_digit = "0".."9" | "_"
 
   token t_integer (an integer) =
-    | ~"_" dec_digit+
+    | ~"_" "-"? dec_digit+
 
   token text_character =
     | "\\" "\""
