@@ -22,7 +22,9 @@ export function cast<T extends Function & { prototype: any }>(
   if (x instanceof type) {
     return x as any;
   } else {
-    throw new TypeError(`internal: expected ${type_name(type)}`);
+    throw new TypeError(
+      `internal: expected ${type_name(type)}, got ${Util.inspect(x)}`
+    );
   }
 }
 
@@ -30,10 +32,10 @@ export function maybe_cast<T extends Function & { prototype: any }>(
   x: any,
   type: T
 ): T["prototype"] | null {
-  if (x == null) {
-    return null;
+  if (x instanceof type) {
+    return x as any;
   } else {
-    return cast(x, type);
+    return null;
   }
 }
 

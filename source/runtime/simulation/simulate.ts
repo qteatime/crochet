@@ -64,13 +64,17 @@ export class Simulation {
     const layered_db = new DatabaseLayer(state0.database, this.layer);
     const state = state0.with_database(layered_db);
     while (this.active) {
-      yield _push(this.simulate_round(state));
+      const acted = (yield _push(this.simulate_round(state))) as number;
+      if (acted === 0) {
+        break;
+      }
       this.rounds += 1n;
     }
     return False.instance;
   }
 
   async *simulate_round(state: State): Machine {
+    let actions_fired = 0;
     this.acted = new Set();
     this.goal.reset();
     const actor0 = yield _push(this.next_actor(state));
@@ -80,6 +84,7 @@ export class Simulation {
       const action0 = cvalue(yield _push(this.pick_action(state, this.turn)));
       const action = maybe_cast(action0, ActionChoice);
       if (action != null) {
+        actions_fired += 1;
         console.debug("[DEBUG] Chosen action", action.title.to_text());
         action.action.fire(this.turn);
         yield _mark(action.full_name, action.machine);
@@ -95,6 +100,8 @@ export class Simulation {
         return;
       }
     }
+
+    return actions_fired;
   }
 
   async *next_actor(state: State): Machine {

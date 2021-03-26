@@ -13,7 +13,7 @@ import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 import { SimpleInterpolation } from "./atomic";
-import { cast, maybe_cast } from "../../utils";
+import { cast } from "../../utils";
 
 export type ContextualDeclaration = DAction | DWhen;
 
@@ -149,8 +149,8 @@ export class DType extends Declaration {
       fields,
       layout
     );
-    const parentType = maybe_cast(parent, TCrochetType);
-    if (parentType != null) {
+    if (parent != null) {
+      const parentType = cast(parent, TCrochetType);
       parentType.register_subtype(type);
     }
     state.world.types.add(this.name, type);
