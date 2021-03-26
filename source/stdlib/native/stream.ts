@@ -22,7 +22,7 @@ import {
   type_name,
   _push,
 } from "../../runtime";
-import { pick, iter, gen, cast } from "../../utils";
+import { iter, gen, cast } from "../../utils";
 
 @foreign_namespace("crochet.native.stream")
 export class StreamFfi {
@@ -33,12 +33,11 @@ export class StreamFfi {
   }
 
   @foreign("random-choice")
-  @machine()
-  static random_choice(stream: CrochetStream) {
+  static async *random_choice(state: State, stream: CrochetStream) {
     if (stream.values.length === 0) {
       throw new ErrIndexOutOfRange(stream, 0);
     } else {
-      return cvalue(pick(stream.values));
+      return cvalue(state.random.random_choice(stream.values));
     }
   }
 
@@ -122,7 +121,9 @@ export class StreamFfi {
 
   @foreign("shuffle")
   static async *shuffle(state: State, stream: CrochetStream) {
-    return new CrochetStream(stream.values.sort((a, b) => Math.random() - 0.5));
+    return new CrochetStream(
+      stream.values.sort((a, b) => state.random.random() - 0.5)
+    );
   }
 
   @foreign("reverse")

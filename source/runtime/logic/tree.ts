@@ -1,4 +1,3 @@
-import { pick_and_tear } from "../../utils";
 import { CrochetValue } from "../primitives";
 import { State } from "../vm";
 import { World } from "../world";
@@ -217,7 +216,7 @@ export class ManyNode extends Tree {
     });
 
     while (result.length < size) {
-      const choice = pick_and_tear(envs);
+      const choice = state.random.random_choice_mut(envs);
       if (choice == null) {
         return result;
       } else {

@@ -14,6 +14,7 @@ import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
 import { Environment } from "../vm/environment";
+import { XorShift } from "../../utils";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
@@ -59,6 +60,7 @@ export class World {
   readonly contexts = new ContextBag();
   readonly global_context = new ConcreteContext("<intrinsic>", "global");
   readonly ffi = new ForeignInterface();
+  readonly global_random = XorShift.new_random();
 
   schedule(machine: Machine) {
     this.queue.push(machine);
@@ -73,7 +75,7 @@ export class World {
     xs: Declaration[],
     env: Environment
   ) {
-    const state = new State(this, env, this.database);
+    const state = new State(this.global_random, this, env, this.database);
     for (const x of xs) {
       await x.apply(filename, state);
     }

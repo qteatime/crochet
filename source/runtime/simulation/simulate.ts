@@ -3,7 +3,7 @@ import { Bag } from "../../utils/bag";
 import { Context } from "./event";
 import { Goal } from "./goal";
 import { Environment } from "../world";
-import { cast, maybe_cast, pick, weighted_pick, zip } from "../../utils/utils";
+import { cast, maybe_cast, zip } from "../../utils/utils";
 import { avalue, cvalue, Machine, run_all, State, _mark, _push } from "../vm";
 import {
   CrochetInteger,
@@ -116,9 +116,12 @@ export class Simulation {
           async function* (_state, _actions, _for) {
             const scores = avalue(
               yield _push(run_all(actions.map((x) => x.score.force(state))))
-            ).map((x) => cast(x, CrochetInteger).value);
+            ).map((x) => Number(cast(x, CrochetInteger).value));
             const scored_actions = [...zip(scores, actions)];
-            return weighted_pick(scored_actions) ?? False.instance;
+            return (
+              state.random.random_weighted_choice(scored_actions) ??
+              False.instance
+            );
           }
         )
       )

@@ -5,3 +5,4 @@ export * from "./spec";
 export * from "./types";
 export * from "./utils";
 export * from "./collections";
+export * from "./xorshift";

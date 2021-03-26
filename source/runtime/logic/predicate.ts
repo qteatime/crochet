@@ -1,4 +1,4 @@
-import { cast, pick_many, zip } from "../../utils/utils";
+import { cast, zip } from "../../utils/utils";
 import { Type } from "../ir";
 import { TCrochetType } from "../primitives";
 import { State } from "../vm";
@@ -157,7 +157,10 @@ export abstract class MappedRelation {
     env: UnificationEnvironment,
     patterns: Pattern[]
   ) {
-    return pick_many(size, this.search(state, env, patterns));
+    return state.random.random_choice_many(
+      size,
+      this.search(state, env, patterns)
+    );
   }
 }
 

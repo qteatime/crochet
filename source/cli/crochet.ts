@@ -16,10 +16,15 @@ const argv = Yargs.usage("crochet <command> [options]")
       description: "The initial scene to play",
       default: "main",
       type: "string",
-    }).positional("filename", {
-      description: "Path to the file to run",
-      type: "string",
-    });
+    })
+      .positional("filename", {
+        description: "Path to the file to run",
+        type: "string",
+      })
+      .option("seed", {
+        description: "The initial seed for the PRNG",
+        type: "string",
+      });
   })
   .command(
     "run-web <directory>",
@@ -61,8 +66,11 @@ async function load(filename: string, source: string, state: Runtime.State) {
   await state.world.load_declarations(filename, ir, state.env);
 }
 
-async function initialise() {
+async function initialise(seed: string | null) {
   const world = new World();
+  if (seed != null) {
+    world.global_random.reseed(Number(seed));
+  }
   const state = Runtime.State.root(world);
   await Stdlib.load(state);
   return state;
@@ -72,9 +80,14 @@ function read(filename: string) {
   return FS.readFileSync(filename, "utf-8");
 }
 
-async function run(filename: string, entry: string = "main") {
+async function run(
+  filename: string,
+  entry: string = "main",
+  seed: string | null
+) {
   try {
-    const state = await initialise();
+    const state = await initialise(seed);
+    console.debug("[DEBUG] Using seed:", state.random.seed);
     const source = read(filename);
     await load(filename, source, state);
     await state.world.run(entry);
@@ -99,7 +112,11 @@ function show_ir(filename: string) {
 
 switch (argv._[0]) {
   case "run": {
-    run(argv["filename"] as string, argv["entry"] as string);
+    run(
+      argv["filename"] as string,
+      argv["entry"] as string,
+      argv["seed"] as string | null
+    );
     break;
   }
 
