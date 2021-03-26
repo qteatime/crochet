@@ -58,6 +58,11 @@ const argv = Yargs.usage("crochet <command> [options]")
       type: "string",
     });
   })
+  .option("verbose", {
+    description: "Log debugging information",
+    default: false,
+    type: "boolean",
+  })
   .demandCommand(1).argv;
 
 async function load(filename: string, source: string, state: Runtime.State) {
@@ -108,6 +113,10 @@ function show_ir(filename: string) {
   const ast = Compiler.parse(source);
   const ir = Compiler.compileProgram(ast);
   console.log(show(ir));
+}
+
+if (!argv.verbose) {
+  console.debug = () => {};
 }
 
 switch (argv._[0]) {
