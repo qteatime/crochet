@@ -973,7 +973,9 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       return [
         new IR.DContext(
           name.name,
-          (items.map(compileDeclaration) as any) as IR.IContextualDeclaration[]
+          (items.flatMap(
+            compileDeclaration
+          ) as any) as IR.IContextualDeclaration[]
         ),
       ];
     },
