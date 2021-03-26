@@ -1,5 +1,6 @@
 import * as Path from "path";
 import * as FS from "fs";
+import * as Yargs from "yargs";
 
 import { Crochet } from "../../targets/bench";
 const Crochet_v0_2 = require("../../../versions/crochet-v0.2.0")
@@ -41,9 +42,9 @@ const benchmarks = FS.readdirSync(benchmarkDir)
   .map((x) => Benchmark.from_file(x));
 
 const vms = [
-  { version: "v0.2.0", vm: Crochet_v0_2 },
-  { version: "v0.3.0", vm: Crochet_v0_3 },
-  { version: "current", vm: Crochet },
+  { version: "v0.2.0", random: true, vm: Crochet_v0_2 },
+  { version: "v0.3.0", random: true, vm: Crochet_v0_3 },
+  { version: "current", random: false, vm: Crochet },
 ];
 
 async function time(label: string, code: () => Promise<any>) {
@@ -58,14 +59,22 @@ async function time(label: string, code: () => Promise<any>) {
 }
 
 void (async function () {
+  const seed0 = Yargs.argv["seed"];
+  const seed = seed0 ? Number(seed0) : new Date().getTime() | 0;
+  console.log("-- Using seed", seed, " (use --seed <seed> to reproduce)");
+
   for (const bench of benchmarks) {
     console.log("=".repeat(72));
     console.log("::", bench.title);
-    for (const { version, vm: Crochet } of vms) {
+    for (const { version, random, vm: Crochet } of vms) {
       const fullPath = bench.file_for_version(version);
       console.log("---");
       console.log(":: Crochet", version);
+      if (random) {
+        console.log("(Reproducible PRNG not supported in this version)");
+      }
       const vm = new Crochet();
+      vm.world.global_random?.reseed(seed);
       await time("Initialisation", () => vm.initialise());
       await time("Load file", () => vm.load_from_file(fullPath));
       await time("Run benchmark", () => vm.run("main"));
