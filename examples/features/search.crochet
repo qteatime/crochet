@@ -18,7 +18,7 @@ singleton foyer;
 singleton garden;
 
 predicate A near: B do
-  when A at: P, B at: P if A =/= B;
+  when A at: P, B at: P, if A =/= B;
 end
 
 scene main do

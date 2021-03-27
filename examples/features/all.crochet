@@ -76,7 +76,7 @@ scene main do
 end
 
 action "Say hello"
-when X simulate-turn, not X disabled, X at: P, Y at: P if X =/= Y do
+when X simulate-turn, not X disabled, X at: P, Y at: P, if X =/= Y do
   [X, "says hello to", Y] inspect;
   ["Stats", search Turn simulate-turn, Rounds simulate-rounds-elapsed] inspect;
   ["Acted", search X simulate-acted] inspect;

@@ -116,7 +116,7 @@ end
 
 command Room describe do
   match
-    when cloak on: player if Room === bar do
+    when cloak on: player, if Room === bar do
       paragraph: "It's pitch dark here. You can't see a thing.";
     end
 
@@ -234,7 +234,7 @@ when
   player at: cloakroom,
   cloak on: player,
   Thing on: cloakroom,
-  Thing short-name: Name
+  Thing short-name: Name,
   if Thing :: place
 do
   "You place your cloak on [Name]." show;
@@ -247,7 +247,7 @@ when
   player at: cloakroom,
   Thing on: cloakroom,
   cloak on: Thing,
-  Thing short-name: Name
+  Thing short-name: Name,
   if Thing :: place
 do
   "You take your cloak from [Name]." show;
