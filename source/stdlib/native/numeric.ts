@@ -6,67 +6,99 @@ import {
   from_bool,
   machine,
   CrochetStream,
+  CrochetValue,
 } from "../../runtime";
+import { cast } from "../../utils";
 
 @foreign_namespace("crochet.native.integer")
 export class IntegerFfi {
   @foreign()
   @machine()
-  static add(x: CrochetInteger, y: CrochetInteger) {
+  static add(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return new CrochetInteger(x.value + y.value);
   }
 
   @foreign()
   @machine()
-  static sub(x: CrochetInteger, y: CrochetInteger) {
+  static sub(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return new CrochetInteger(x.value - y.value);
   }
 
   @foreign()
   @machine()
-  static mul(x: CrochetInteger, y: CrochetInteger) {
+  static mul(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return new CrochetInteger(x.value * y.value);
   }
 
   @foreign()
   @machine()
-  static div(x: CrochetInteger, y: CrochetInteger) {
+  static div(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return new CrochetInteger(x.value / y.value);
   }
 
   @foreign()
   @machine()
-  static rem(x: CrochetInteger, y: CrochetInteger) {
+  static rem(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return new CrochetInteger(x.value % y.value);
   }
 
   @foreign()
   @machine()
-  static lt(x: CrochetInteger, y: CrochetInteger) {
+  static lt(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return from_bool(x.value < y.value);
   }
 
   @foreign()
   @machine()
-  static lte(x: CrochetInteger, y: CrochetInteger) {
+  static lte(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return from_bool(x.value <= y.value);
   }
 
   @foreign()
   @machine()
-  static gt(x: CrochetInteger, y: CrochetInteger) {
+  static gt(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return from_bool(x.value > y.value);
   }
 
   @foreign()
   @machine()
-  static gte(x: CrochetInteger, y: CrochetInteger) {
+  static gte(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const y = cast(y0, CrochetInteger);
+
     return from_bool(x.value >= y.value);
   }
 
   @foreign()
   @machine()
-  static range(min: CrochetInteger, max: CrochetInteger) {
+  static range(min0: CrochetValue, max0: CrochetValue) {
+    const min = cast(min0, CrochetInteger);
+    const max = cast(max0, CrochetInteger);
+
     return new CrochetStream(
       Array.from(
         { length: Number(max.value - min.value) },
@@ -77,70 +109,18 @@ export class IntegerFfi {
 
   @foreign()
   @machine()
-  static power(x: CrochetInteger, p: CrochetInteger) {
+  static power(x0: CrochetValue, p0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+    const p = cast(p0, CrochetInteger);
+
     return new CrochetInteger(x.value ** p.value);
   }
 
   @foreign()
   @machine()
-  static sqrt(x: CrochetInteger) {
+  static sqrt(x0: CrochetValue) {
+    const x = cast(x0, CrochetInteger);
+
     return new CrochetInteger(BigInt(Math.floor(Math.sqrt(Number(x.value)))));
-  }
-}
-
-@foreign_namespace("crochet.native.float")
-export class FloatFfi {
-  @foreign()
-  @machine()
-  static add(x: CrochetFloat, y: CrochetFloat) {
-    return new CrochetFloat(x.value + y.value);
-  }
-
-  @foreign()
-  @machine()
-  static sub(x: CrochetFloat, y: CrochetFloat) {
-    return new CrochetFloat(x.value - y.value);
-  }
-
-  @foreign()
-  @machine()
-  static mul(x: CrochetFloat, y: CrochetFloat) {
-    return new CrochetFloat(x.value * y.value);
-  }
-
-  @foreign()
-  @machine()
-  static div(x: CrochetFloat, y: CrochetFloat) {
-    return new CrochetFloat(x.value / y.value);
-  }
-
-  @foreign()
-  @machine()
-  static rem(x: CrochetFloat, y: CrochetFloat) {
-    return new CrochetFloat(x.value % y.value);
-  }
-
-  @foreign()
-  @machine()
-  static lt(x: CrochetFloat, y: CrochetFloat) {
-    return from_bool(x.value < y.value);
-  }
-
-  @foreign()
-  @machine()
-  static lte(x: CrochetFloat, y: CrochetFloat) {
-    return from_bool(x.value <= y.value);
-  }
-
-  @foreign()
-  @machine()
-  static gt(x: CrochetFloat, y: CrochetFloat) {
-    return from_bool(x.value > y.value);
-  }
-
-  @foreign()
-  @machine()
-  static gte(x: CrochetFloat, y: CrochetFloat) {
-    return from_bool(x.value >= y.value);
   }
 }

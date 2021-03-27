@@ -4,6 +4,7 @@ import {
   CrochetValue,
   cvalue,
   False,
+  Machine,
   State,
   _push,
 } from "../../runtime";
@@ -12,6 +13,7 @@ import {
   foreign_namespace,
   machine,
 } from "../../runtime/world/ffi-decorators";
+import { cast } from "../../utils";
 
 @foreign_namespace("crochet.native.debug")
 export class DebugFfi {
@@ -29,7 +31,14 @@ export class DebugFfi {
   }
 
   @foreign("time")
-  static async *time(state: State, thunk: CrochetThunk, message: CrochetText) {
+  static *time(
+    state: State,
+    thunk0: CrochetValue,
+    message0: CrochetValue
+  ): Machine {
+    const thunk = cast(thunk0, CrochetThunk);
+    const message = cast(message0, CrochetText);
+
     const start = new Date().getTime();
     const value = cvalue(yield _push(thunk.force(state)));
     const end = new Date().getTime();

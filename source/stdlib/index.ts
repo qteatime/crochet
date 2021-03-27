@@ -13,7 +13,6 @@ import Time from "./generated/time.crochet";
 import { HtmlFfi } from "./html/ffi";
 import {
   DebugFfi,
-  FloatFfi,
   IntegerFfi,
   InterpolationFfi,
   RecordFfi,
@@ -27,7 +26,6 @@ const sources = [Core, Integer, Record, Stream, Text, Debug, Time, HtmlUi];
 export async function load(state: State) {
   state.world.ffi.add(CoreFfi as any);
   state.world.ffi.add(IntegerFfi as any);
-  state.world.ffi.add(FloatFfi as any);
   state.world.ffi.add(InterpolationFfi as any);
   state.world.ffi.add(RecordFfi as any);
   state.world.ffi.add(StreamFfi as any);

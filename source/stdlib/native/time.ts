@@ -1,12 +1,20 @@
-import { CrochetInteger, False, State } from "../../runtime";
+import {
+  CrochetInteger,
+  CrochetValue,
+  False,
+  Machine,
+  State,
+  _await,
+} from "../../runtime";
 import { foreign, foreign_namespace } from "../../runtime/world/ffi-decorators";
-import { delay } from "../../utils";
+import { cast, delay } from "../../utils";
 
 @foreign_namespace("crochet.native.time")
 export class TimeFfi {
   @foreign("sleep")
-  static async *sleep(state: State, ms: CrochetInteger) {
-    await delay(Number(ms.value));
+  static *sleep(state: State, ms0: CrochetValue): Machine {
+    const ms = cast(ms0, CrochetInteger);
+    yield _await(delay(Number(ms.value)));
     return False.instance;
   }
 }

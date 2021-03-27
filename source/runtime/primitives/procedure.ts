@@ -70,7 +70,7 @@ export class NativeProcedure implements IProcedure {
     return `${this.name} (from ${this.filename})`;
   }
 
-  async *invoke(state: State, values: CrochetValue[]): Machine {
+  *invoke(state: State, values: CrochetValue[]): Machine {
     const args: CrochetValue[] = [];
     for (const idx of this.parameters) {
       args.push(values[idx]);
@@ -97,7 +97,7 @@ export class CrochetProcedure implements IProcedure {
     return `${this.name} (from ${this.filename})`;
   }
 
-  async *invoke(state: State, values: CrochetValue[]) {
+  *invoke(state: State, values: CrochetValue[]) {
     const env = new Environment(this.env, values[0]);
     for (const [k, v] of zip(this.parameters, values)) {
       env.define(k, v);

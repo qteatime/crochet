@@ -27,7 +27,7 @@ export class Signal {
     return `signal ${this.name}`;
   }
 
-  async *evaluate(state: State, args: CrochetValue[]) {
+  *evaluate(state: State, args: CrochetValue[]) {
     const env = new Environment(state.env, state.env.raw_receiver);
     if (this.parameters.length !== args.length) {
       throw new Error(`internal: Invalid arity in signal ${this.name}`);
@@ -58,7 +58,7 @@ export class Simulation {
     readonly signals: Bag<string, Signal>
   ) {}
 
-  async *run(state0: State): Machine {
+  *run(state0: State): Machine {
     this.active = true;
     this.rounds = 0n;
     const layered_db = new DatabaseLayer(state0.database, this.layer);
@@ -73,7 +73,7 @@ export class Simulation {
     return False.instance;
   }
 
-  async *simulate_round(state: State): Machine {
+  *simulate_round(state: State): Machine {
     let actions_fired = 0;
     this.acted = new Set();
     this.goal.reset();
@@ -104,12 +104,12 @@ export class Simulation {
     return actions_fired;
   }
 
-  async *next_actor(state: State): Machine {
+  *next_actor(state: State): Machine {
     const remaining = this.actors.filter((x) => !this.acted.has(x));
     return remaining[0] ?? null;
   }
 
-  async *pick_action(state: State, actor: CrochetValue): Machine {
+  *pick_action(state: State, actor: CrochetValue): Machine {
     const actions = this.context
       .available_actions(actor, state)
       .map(
@@ -122,7 +122,7 @@ export class Simulation {
           state,
           "pick-action:for:",
           [new CrochetStream(actions), actor],
-          async function* (_state, _actions, _for) {
+          function* (_state, _actions, _for) {
             const scores = avalue(
               yield _push(run_all(actions.map((x) => x.score.force(state))))
             ).map((x) => Number(cast(x, CrochetInteger).value));
@@ -138,7 +138,7 @@ export class Simulation {
     return selected;
   }
 
-  async *trigger_signal(
+  *trigger_signal(
     state: State,
     name: string,
     args: CrochetValue[],

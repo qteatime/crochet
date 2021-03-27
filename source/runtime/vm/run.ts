@@ -5,16 +5,29 @@ import { MachineError } from "./errors";
 // Error types
 
 // Yield types
-export type Yield = Push | Jump | Mark | Throw;
+export type Yield = Await | Push | Jump | Mark | Throw;
 
 export class Push {
   readonly tag = "push";
   constructor(readonly machine: Machine) {}
+
+  evaluate(thread: Thread) {
+    thread.save_machine();
+    thread.machine = this.machine;
+    thread.input = null;
+  }
 }
 
 export class Jump {
   readonly tag = "jump";
   constructor(readonly machine: Machine) {}
+
+  evaluate(thread: Thread) {
+    thread.unwind_to_procedure();
+    thread.save_machine();
+    thread.machine = this.machine;
+    thread.input = null;
+  }
 }
 
 export class Mark {
@@ -24,11 +37,38 @@ export class Mark {
     readonly machine: Machine,
     readonly k: Machine | null
   ) {}
+
+  evaluate(thread: Thread) {
+    thread.stack.push(new FProcedure(this.name, this.k ?? thread.machine));
+    thread.machine = this.machine;
+    thread.input = null;
+  }
 }
 
 export class Throw {
   readonly tag = "throw";
   constructor(readonly error: MachineError | Error) {}
+
+  evaluate(thread: Thread) {
+    const error = this.error;
+    const trace = thread.stack_trace();
+    const message = format_error(error, trace);
+    console.error(message);
+    throw { error: error, message: message };
+  }
+}
+
+export class Await {
+  readonly tag = "await";
+  constructor(readonly value: Promise<unknown>) {}
+
+  evaluate(thread: Thread) {
+    return new SRAwait(this.value, thread);
+  }
+}
+
+export function _await(value: Promise<unknown>) {
+  return new Await(value);
 }
 
 export function _push(machine: Machine) {
@@ -57,114 +97,141 @@ type Frame = FMachine | FProcedure;
 class FMachine {
   readonly tag = "machine";
   constructor(readonly machine: Machine) {}
+
+  evaluate(value: unknown, thread: Thread) {
+    thread.machine = this.machine;
+    thread.input = value;
+  }
 }
 
 class FProcedure {
   readonly tag = "continuation";
   constructor(readonly location: string, readonly k: Machine) {}
-}
 
-// Machine execution
-export type Machine = AsyncGenerator<Yield, unknown, unknown>;
-
-export async function run(machine0: Machine) {
-  const stack: Frame[] = [];
-  let machine: Machine = machine0;
-  let input: unknown = null;
-
-  while (true) {
-    const result = await machine.next(input);
-    // Return
-    if (result.done) {
-      const newFrame = stack.pop();
-      if (newFrame == null) {
-        return result.value;
-      } else {
-        switch (newFrame.tag) {
-          case "machine": {
-            machine = newFrame.machine;
-            input = result.value;
-            continue;
-          }
-
-          case "continuation": {
-            machine = newFrame.k;
-            input = result.value;
-            continue;
-          }
-
-          default:
-            throw unreachable(newFrame, "Unknown frame");
-        }
-      }
-      // Yield
-    } else {
-      const value = result.value;
-      switch (value.tag) {
-        case "push": {
-          stack.push(new FMachine(machine));
-          machine = value.machine;
-          input = null;
-          continue;
-        }
-
-        case "jump": {
-          let frame: Frame | null = null;
-          do {
-            frame = stack.pop() ?? null;
-          } while (frame != null && !(frame instanceof FProcedure));
-
-          stack.push(new FMachine(machine));
-          machine = value.machine;
-          input = null;
-          continue;
-        }
-
-        case "mark": {
-          stack.push(new FProcedure(value.name, value.k ?? machine));
-          machine = value.machine;
-          input = null;
-          continue;
-        }
-
-        case "throw": {
-          const error = value.error;
-          const trace = get_trace(stack);
-          const message = format_error(error, trace);
-          console.error(message);
-          throw { error: error, message: message };
-        }
-
-        default:
-          throw unreachable(value, "Unknown yield");
-      }
-    }
+  evaluate(value: unknown, thread: Thread) {
+    thread.machine = this.k;
+    thread.input = value;
   }
 }
 
+// Sync return types
+type SyncReturn = SRAwait | SRDone;
+
+class SRAwait {
+  readonly tag = "await";
+  constructor(readonly value: Promise<unknown>, readonly thread: Thread) {}
+}
+
+class SRDone {
+  readonly tag = "done";
+  constructor(readonly value: unknown) {}
+}
+
+export class Thread {
+  private constructor(
+    public stack: Frame[],
+    public machine: Machine,
+    public input: unknown
+  ) {}
+
+  static for_machine(machine: Machine) {
+    return new Thread([], machine, null);
+  }
+
+  save_machine() {
+    this.stack.push(new FMachine(this.machine));
+  }
+
+  unwind_to_procedure() {
+    let frame: Frame | null = null;
+    do {
+      frame = this.stack.pop() ?? null;
+    } while (frame != null && !(frame instanceof FProcedure));
+    return frame;
+  }
+
+  run(): SyncReturn {
+    while (true) {
+      const result = this.machine.next(this.input);
+      if (result.done) {
+        const newFrame = this.stack.pop();
+        if (newFrame == null) {
+          return new SRDone(result.value);
+        } else {
+          newFrame.evaluate(result.value, this);
+        }
+      } else {
+        const signal = result.value;
+        const sr = signal.evaluate(this);
+        if (sr != null) {
+          return sr;
+        }
+      }
+    }
+  }
+
+  run_sync(): unknown {
+    const result = this.run();
+    switch (result.tag) {
+      case "done":
+        return result.value;
+      case "await":
+        throw this.die(`The evaluation did not complete synchronously.`);
+      default:
+        throw unreachable(result, `SyncResult`);
+    }
+  }
+
+  async run_and_wait(): Promise<unknown> {
+    let input = this.input;
+    while (true) {
+      this.input = input;
+      const result = this.run();
+      switch (result.tag) {
+        case "done": {
+          return result.value;
+        }
+        case "await": {
+          input = await result.value;
+          continue;
+        }
+        default:
+          throw unreachable(result, `SyncReturn`);
+      }
+    }
+  }
+
+  stack_trace() {
+    const trace = [];
+    let n = 10;
+    for (let i = this.stack.length - 1; i >= 0 && n > 0; --i) {
+      const frame = this.stack[i];
+      if (frame instanceof FProcedure) {
+        trace.push(frame.location);
+        n--;
+      }
+    }
+    return trace;
+  }
+
+  die(message: string) {
+    throw new Error(`${message}\n\n  - ${this.stack_trace().join("\n  -")}`);
+  }
+}
+
+// Machine execution
+export type Machine = Generator<Yield, unknown, unknown>;
+
 function format_error(error: MachineError | Error, trace: string[]) {
+  const trace_string = trace.map((x) => `  - ${x}`).join("\n");
   if (error instanceof Error) {
-    return error.stack;
+    return `${error.stack}\n\n${trace_string}`;
   } else {
-    const trace_string = trace.map((x) => `  - ${x}`).join("\n");
     return `${error.format()}\n\n${trace_string}`;
   }
 }
 
-function get_trace(frames: Frame[]) {
-  const trace = [];
-  let n = 10;
-  for (let i = frames.length - 1; i >= 0 && n > 0; --i) {
-    const frame = frames[i];
-    if (frame instanceof FProcedure) {
-      trace.push(frame.location);
-      n--;
-    }
-  }
-  return trace;
-}
-
-export async function* run_all(machines: Machine[]): Machine {
+export function* run_all(machines: Machine[]): Machine {
   const result = [];
   for (const machine of machines) {
     const value = yield _push(machine);

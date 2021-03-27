@@ -7,7 +7,7 @@ import {
 } from "../logic";
 import { CrochetRole, TCrochetAny, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
-import { cvalue, run, State } from "../vm";
+import { cvalue, State, Thread } from "../vm";
 import { Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
@@ -18,7 +18,7 @@ import { cast } from "../../utils";
 export type ContextualDeclaration = DAction | DWhen;
 
 export abstract class Declaration {
-  abstract apply(filename: string, state: State): Promise<void>;
+  abstract apply(filename: string, state: State): Promise<void> | void;
 }
 
 export interface IContextualDeclaration {
@@ -162,7 +162,8 @@ export class DDefine extends Declaration {
     super();
   }
   async apply(filename: string, state: State) {
-    const value = cvalue(await run(this.value.evaluate(state.with_new_env())));
+    const machine = this.value.evaluate(state.with_new_env());
+    const value = cvalue(Thread.for_machine(machine).run_sync());
     state.world.globals.add(this.name, value);
   }
 }

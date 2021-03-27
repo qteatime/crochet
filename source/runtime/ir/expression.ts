@@ -48,12 +48,12 @@ export abstract class Expression {
 }
 
 export class EFalse extends Expression {
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     return False.instance;
   }
 }
 export class ETrue extends Expression {
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     return True.instance;
   }
 }
@@ -63,7 +63,7 @@ export class EVariable extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const value = state.env.try_lookup(this.name);
     if (value == null) {
       return cvalue(yield _throw(new ErrUndefinedVariable(this.name)));
@@ -77,7 +77,8 @@ export class EText extends Expression {
   constructor(readonly value: string) {
     super();
   }
-  async *evaluate(state: State): Machine {
+
+  *evaluate(state: State): Machine {
     return new CrochetText(this.value);
   }
 }
@@ -86,7 +87,8 @@ export class EInteger extends Expression {
   constructor(readonly value: bigint) {
     super();
   }
-  async *evaluate(state: State): Machine {
+
+  *evaluate(state: State): Machine {
     return new CrochetInteger(this.value);
   }
 }
@@ -96,7 +98,7 @@ export class ESearch extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const env = UnificationEnvironment.empty();
     const results = state.database.search(state, this.predicate, env);
     return new CrochetStream(
@@ -110,7 +112,7 @@ export class EInvoke extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const args = avalue(
       yield _push(run_all(this.args.map((x) => x.evaluate(state))))
     );
@@ -124,7 +126,7 @@ export class ENew extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const type = cast(state.world.types.lookup(this.name), TCrochetType);
     const values = avalue(
       yield _push(run_all(this.data.map((x) => x.evaluate(state))))
@@ -138,13 +140,13 @@ export class EGlobal extends Expression {
     super();
   }
 
-  async *evaluate(state: State) {
+  *evaluate(state: State) {
     return state.world.globals.lookup(this.name);
   }
 }
 
 export class ESelf extends Expression {
-  async *evaluate(state: State) {
+  *evaluate(state: State) {
     return state.env.receiver;
   }
 }
@@ -154,7 +156,7 @@ export class EList extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const values = avalue(
       yield _push(run_all(this.values.map((x) => x.evaluate(state))))
     );
@@ -166,7 +168,8 @@ export class ERecord extends Expression {
   constructor(readonly pairs: { key: string; value: Expression }[]) {
     super();
   }
-  async *evaluate(state: State): Machine {
+
+  *evaluate(state: State): Machine {
     const map = new Map<string, CrochetValue>();
     for (const pair of this.pairs) {
       const value = cvalue(yield _push(pair.value.evaluate(state)));
@@ -181,7 +184,7 @@ export class ECast extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const type = this.type.realise(state.world);
     const value0 = cvalue(yield _push(this.value.evaluate(state)));
     const value = type.coerce(value0);
@@ -198,7 +201,7 @@ export class EProject extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
     try {
       return object.projection.project(this.field);
@@ -213,7 +216,7 @@ export class EProjectMany extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
     try {
       return object.selection.select(this.fields);
@@ -236,7 +239,7 @@ export class ForallMap extends ForallExpr {
     super();
   }
 
-  async *evaluate(state: State, results: CrochetValue[]): Machine {
+  *evaluate(state: State, results: CrochetValue[]): Machine {
     const stream0 = cvalue(yield _push(this.stream.evaluate(state)));
     const stream = cast(
       yield _push(safe_cast(stream0, TCrochetStream.type)),
@@ -257,7 +260,7 @@ export class ForallDo extends ForallExpr {
     super();
   }
 
-  async *evaluate(state: State, results: CrochetValue[]): Machine {
+  *evaluate(state: State, results: CrochetValue[]): Machine {
     const value = cvalue(yield _push(this.body.evaluate(state)));
     results.push(value);
     return False.instance;
@@ -269,7 +272,7 @@ export class ForallIf extends ForallExpr {
     super();
   }
 
-  async *evaluate(state: State, results: CrochetValue[]): Machine {
+  *evaluate(state: State, results: CrochetValue[]): Machine {
     const condition = cvalue(yield _push(this.condition.evaluate(state)));
     if (condition.as_bool()) {
       yield* this.body.evaluate(state, results);
@@ -283,13 +286,13 @@ export class EForall extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const results: CrochetValue[] = [];
     yield* this.expr.evaluate(state, results);
     return new CrochetStream(results);
   }
 
-  async *evaluate_stream(state: State, expr: Expression) {}
+  *evaluate_stream(state: State, expr: Expression) {}
 }
 
 export class EBlock extends Expression {
@@ -307,7 +310,7 @@ export class EPartial extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const values = (yield _push(
       run_all(this.values.map((x) => x.evaluate(state)))
     )) as unknown[];
@@ -324,7 +327,7 @@ export class EApplyPartial extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const fn0 = cvalue(yield _push(this.partial.evaluate(state)));
     const fn = cast(
       yield _push(safe_cast(fn0, TAnyCrochetPartial.type)),
@@ -344,7 +347,7 @@ export abstract class PartialExpr {
 }
 
 export class EPartialHole extends PartialExpr {
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     return new PartialHole();
   }
 }
@@ -354,7 +357,7 @@ export class EPartialConcrete extends PartialExpr {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const value = cvalue(yield _push(this.expr.evaluate(state)));
     return new PartialConcrete(value);
   }
@@ -365,7 +368,7 @@ export class EInterpolate extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const values = (yield _push(
       run_all(this.parts.map((x) => x.evaluate(state)))
     )) as InteprolationPart[];
@@ -378,7 +381,7 @@ export type EInterpolationPart = EInterpolateStatic | EInterpolateDynamic;
 export class EInterpolateStatic {
   constructor(readonly text: string) {}
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     return new InterpolationStatic(this.text);
   }
 }
@@ -386,7 +389,7 @@ export class EInterpolateStatic {
 export class EInterpolateDynamic {
   constructor(readonly expr: Expression) {}
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     return new InterpolationDynamic(
       cvalue(yield _push(this.expr.evaluate(state)))
     );
@@ -398,7 +401,7 @@ export class EMatchSearch extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     for (const kase of this.cases) {
       const results = kase.search(state);
       if (results.length !== 0) {
@@ -429,7 +432,7 @@ export class ECondition extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     for (const kase of this.cases) {
       const valid = cvalue(yield _push(kase.test.evaluate(state)));
       if (valid.as_bool()) {
@@ -449,7 +452,7 @@ export class EHasType extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const value = cvalue(yield _push(this.value.evaluate(state)));
     const type = this.type.realise(state.world);
     return from_bool(type.accepts(value));
@@ -461,7 +464,7 @@ export class EHasRole extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const value = cvalue(yield _push(this.value.evaluate(state)));
     const role = state.world.roles.lookup(this.role);
     return from_bool(value.has_role(role));
@@ -473,7 +476,7 @@ export class ELazy extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     return new CrochetThunk(this.value, state.env);
   }
 }
@@ -483,7 +486,7 @@ export class EForce extends Expression {
     super();
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const value = cvalue(yield _push(this.value.evaluate(state)));
     if (value instanceof CrochetThunk) {
       return cvalue(yield _push(value.force(state)));

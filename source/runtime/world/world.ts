@@ -8,7 +8,7 @@ import {
   NativeProcedure,
   Procedure,
 } from "../primitives";
-import { Machine, run, State } from "../vm";
+import { Machine, State, Thread } from "../vm";
 import { ConcreteContext, Context, ContextBag } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
@@ -85,10 +85,10 @@ export class World {
     const state = State.root(this);
     let current = this.queue.shift();
     while (current != null) {
-      await run(current);
+      await Thread.for_machine(current).run_and_wait();
       current = this.queue.shift();
     }
     const scene = this.scenes.lookup(entry);
-    return await run(scene.evaluate(state));
+    return await Thread.for_machine(scene.evaluate(state)).run_and_wait();
   }
 }

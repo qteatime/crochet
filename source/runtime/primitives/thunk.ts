@@ -1,5 +1,6 @@
+import { cast } from "../../utils";
 import { Expression } from "../ir";
-import { cvalue, State, _push } from "../vm";
+import { cvalue, Machine, State, _push } from "../vm";
 import { Environment } from "../world";
 import {
   foreign,
@@ -19,7 +20,7 @@ export class CrochetThunk extends CrochetValue {
     super();
   }
 
-  async *force(state0: State) {
+  *force(state0: State) {
     if (this.value != null) {
       return this.value;
     } else {
@@ -58,7 +59,9 @@ export class ThunkFfi {
   }
 
   @foreign("force")
-  async *force(state: State, thunk: CrochetThunk) {
+  *force(state: State, thunk0: CrochetValue): Machine {
+    const thunk = cast(thunk0, CrochetThunk);
+
     const value = cvalue(yield _push(thunk.force(state)));
     return value;
   }

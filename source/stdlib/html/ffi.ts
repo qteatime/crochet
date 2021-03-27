@@ -5,10 +5,13 @@ import {
   CrochetText,
   CrochetType,
   CrochetValue,
+  cvalue,
   False,
   ForeignBag,
+  Machine,
   State,
   True,
+  _await,
 } from "../../runtime";
 import {
   foreign,
@@ -38,19 +41,20 @@ export class HtmlFfi {
   }
 
   @foreign("show")
-  static async *show(state: State, value: CrochetHtml) {
-    await canvas.show(value.value);
+  static *show(state: State, value0: CrochetValue): Machine {
+    const value = cast(value0, CrochetHtml);
+    yield _await(canvas.show(value.value));
     return value;
   }
 
   @foreign("wait")
-  static async *wait(state: State) {
-    await canvas.click_to_continue();
+  static *wait(state: State): Machine {
+    yield _await(canvas.click_to_continue());
     return False.instance;
   }
 
   @foreign("mark")
-  static async *mark(state: State) {
+  static *mark(state: State): Machine {
     if (canvas.is_empty()) {
       return;
     } else {
@@ -62,11 +66,16 @@ export class HtmlFfi {
   @foreign("box")
   @machine()
   static box(
-    name: CrochetText,
-    klass: CrochetText,
-    attributes: CrochetRecord,
-    children: CrochetStream
+    name0: CrochetValue,
+    klass0: CrochetValue,
+    attributes0: CrochetValue,
+    children0: CrochetValue
   ) {
+    const name = cast(name0, CrochetText);
+    const klass = cast(klass0, CrochetText);
+    const attributes = cast(attributes0, CrochetRecord);
+    const children = cast(children0, CrochetStream);
+
     const element = document.createElement(name.value);
     element.setAttribute("class", "crochet-box " + klass.value);
     for (const child of children.values) {
@@ -80,7 +89,9 @@ export class HtmlFfi {
 
   @foreign("text")
   @machine()
-  static text(value: CrochetText) {
+  static text(value0: CrochetValue) {
+    const value = cast(value0, CrochetText);
+
     const text = document.createTextNode(value.value);
     const el = document.createElement("span");
     el.className = "crochet-text-span";
@@ -90,7 +101,10 @@ export class HtmlFfi {
 
   @foreign("menu")
   @machine()
-  static menu(klass: CrochetText, items: CrochetStream) {
+  static menu(klass0: CrochetValue, items0: CrochetValue) {
+    const klass = cast(klass0, CrochetText);
+    const items = cast(items0, CrochetStream);
+
     const selection = defer<CrochetValue>();
 
     const menu = document.createElement("div");
@@ -118,12 +132,16 @@ export class HtmlFfi {
   }
 
   @foreign("menu-selected")
-  static async *menu_selected(state: State, menu: CrochetMenu) {
-    return await menu.selected;
+  static *menu_selected(state: State, menu0: CrochetValue): Machine {
+    const menu = cast(menu0, CrochetMenu);
+
+    return yield _await(menu.selected);
   }
 
   @foreign("preload")
-  static async *preload(state: State, url: CrochetText) {
+  static *preload(state: State, url0: CrochetValue): Machine {
+    const url = cast(url0, CrochetText);
+
     const deferred = defer<CrochetValue>();
 
     const image = new Image();
@@ -132,27 +150,32 @@ export class HtmlFfi {
       deferred.reject(new Error(`Failed to load image ${url.value}`));
     image.src = url.value;
 
-    return await deferred.promise;
+    const result = cvalue(yield _await(deferred.promise));
+    return result;
   }
 
   @foreign("animate")
-  static async *animate(
+  static *animate(
     state: State,
-    element: CrochetHtml,
-    time0: CrochetInteger
-  ) {
-    const time = Number(time0.value);
+    element0: CrochetValue,
+    time0: CrochetValue
+  ): Machine {
+    const element = cast(element0, CrochetHtml);
+    const time = Number(cast(time0, CrochetInteger));
+
     for (const child of Array.from(element.value.children)) {
       (child as HTMLElement).style.opacity = "1";
-      await delay(time);
+      yield _await(delay(time));
     }
     return element;
   }
 
   @foreign("make-animation")
-  static async *make_animation(state: State, children0: CrochetStream) {
+  static *make_animation(state: State, children0: CrochetValue) {
+    const children1 = cast(children0, CrochetStream);
+
     const element = document.createElement("div");
-    const children = children0.values.map((x) => cast(x, CrochetHtml).value);
+    const children = children1.values.map((x) => cast(x, CrochetHtml).value);
 
     element.className = "crochet-animation";
     for (const child of children) {

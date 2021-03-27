@@ -19,7 +19,7 @@ export function from_bool(x: boolean): CrochetValue {
   return x ? True.instance : False.instance;
 }
 
-export async function* safe_cast(x: any, type: CrochetType): Machine {
+export function* safe_cast(x: any, type: CrochetType): Machine {
   if (type.accepts(x)) {
     return x;
   } else {
@@ -27,7 +27,7 @@ export async function* safe_cast(x: any, type: CrochetType): Machine {
   }
 }
 
-export async function* invoke(
+export function* invoke(
   state: State,
   name: string,
   args: CrochetValue[]
@@ -47,7 +47,7 @@ export async function* invoke(
   return result;
 }
 
-export async function* apply(
+export function* apply(
   state: State,
   fn: CrochetPartial,
   args: PartialValue[]

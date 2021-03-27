@@ -14,7 +14,7 @@ import {
   _push,
   _throw,
 } from "../../runtime";
-import { copy_map } from "../../utils";
+import { cast, copy_map } from "../../utils";
 
 @foreign_namespace("crochet.native.record")
 export class RecordFfi {
@@ -24,7 +24,10 @@ export class RecordFfi {
 
   @foreign()
   @machine()
-  static merge(l: CrochetRecord, r: CrochetRecord) {
+  static merge(l0: CrochetValue, r0: CrochetValue) {
+    const l = cast(l0, CrochetRecord);
+    const r = cast(r0, CrochetRecord);
+
     const map = new Map<string, CrochetValue>();
     copy_map(l.values, map);
     copy_map(r.values, map);
@@ -33,7 +36,9 @@ export class RecordFfi {
 
   @foreign()
   @machine()
-  static keys(record: CrochetRecord) {
+  static keys(record0: CrochetValue) {
+    const record = cast(record0, CrochetRecord);
+
     return new CrochetStream(
       [...record.values.keys()].map((x) => new CrochetText(x))
     );
@@ -41,13 +46,17 @@ export class RecordFfi {
 
   @foreign()
   @machine()
-  values(record: CrochetRecord) {
+  values(record0: CrochetValue) {
+    const record = cast(record0, CrochetRecord);
+
     return new CrochetStream([...record.values.values()]);
   }
 
   @foreign()
   @machine()
-  count(record: CrochetRecord) {
+  count(record0: CrochetValue) {
+    const record = cast(record0, CrochetRecord);
+
     return new CrochetInteger(BigInt(record.values.size));
   }
 }

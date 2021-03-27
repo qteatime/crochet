@@ -15,6 +15,7 @@ import {
   from_bool,
   InterpolationDynamic,
   InterpolationStatic,
+  Machine,
   machine,
   PartialConcrete,
   State,
@@ -28,12 +29,16 @@ import { iter, gen, cast } from "../../utils";
 export class StreamFfi {
   @foreign()
   @machine()
-  static count(stream: CrochetStream) {
+  static count(stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     return new CrochetInteger(BigInt(stream.values.length));
   }
 
   @foreign("random-choice")
-  static async *random_choice(state: State, stream: CrochetStream) {
+  static *random_choice(state: State, stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     if (stream.values.length === 0) {
       throw new ErrIndexOutOfRange(stream, 0);
     } else {
@@ -43,7 +48,9 @@ export class StreamFfi {
 
   @foreign()
   @machine()
-  static first(stream: CrochetStream) {
+  static first(stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     if (stream.values.length === 0) {
       throw new ErrIndexOutOfRange(stream, 0);
     } else {
@@ -53,7 +60,9 @@ export class StreamFfi {
 
   @foreign()
   @machine()
-  static last(stream: CrochetStream) {
+  static last(stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     if (stream.values.length === 0) {
       throw new ErrIndexOutOfRange(stream, 0);
     } else {
@@ -63,31 +72,44 @@ export class StreamFfi {
 
   @foreign()
   @machine()
-  static but_first(stream: CrochetStream) {
+  static but_first(stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     return new CrochetStream(stream.values.slice(1));
   }
 
   @foreign()
   @machine()
-  static but_last(stream: CrochetStream) {
+  static but_last(stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     return new CrochetStream(stream.values.slice(0, -1));
   }
 
   @foreign()
   @machine()
-  static take(stream: CrochetStream, n: CrochetInteger) {
+  static take(stream0: CrochetValue, n0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+    const n = cast(n0, CrochetInteger);
+
     return new CrochetStream(stream.values.slice(0, Number(n.value)));
   }
 
   @foreign()
   @machine()
-  static drop(stream: CrochetStream, n: CrochetInteger) {
+  static drop(stream0: CrochetValue, n0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+    const n = cast(n0, CrochetInteger);
+
     return new CrochetStream(stream.values.slice(Number(n.value)));
   }
 
   @foreign()
   @machine()
-  static zip(a: CrochetStream, b: CrochetStream) {
+  static zip(a0: CrochetValue, b0: CrochetValue) {
+    const a = cast(a0, CrochetStream);
+    const b = cast(b0, CrochetStream);
+
     return new CrochetStream(
       iter<CrochetValue>(a.values)
         .zip<CrochetValue>(gen(b.values))
@@ -98,19 +120,30 @@ export class StreamFfi {
 
   @foreign()
   @machine()
-  static concat(a: CrochetStream, b: CrochetStream) {
+  static concat(a0: CrochetValue, b0: CrochetValue) {
+    const a = cast(a0, CrochetStream);
+    const b = cast(b0, CrochetStream);
+
     return new CrochetStream(a.values.concat(b.values));
   }
 
   @foreign()
   @machine()
-  static contains(a: CrochetStream, x: CrochetValue) {
+  static contains(a0: CrochetValue, x: CrochetValue) {
+    const a = cast(a0, CrochetStream);
+
     return from_bool(a.values.includes(x));
   }
 
   @foreign("sort-by")
-  static async *sort(state: State, items: CrochetStream, key0: CrochetText) {
-    const key = key0.value;
+  static *sort(
+    state: State,
+    items0: CrochetValue,
+    key0: CrochetValue
+  ): Machine {
+    const items = cast(items0, CrochetStream);
+    const key = cast(key0, CrochetText).value;
+
     const items1 = items.values.slice().sort((a, b) => {
       const ra = cast(a, CrochetRecord);
       const rb = cast(b, CrochetRecord);
@@ -120,7 +153,9 @@ export class StreamFfi {
   }
 
   @foreign("shuffle")
-  static async *shuffle(state: State, stream: CrochetStream) {
+  static *shuffle(state: State, stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     return new CrochetStream(
       stream.values.sort((a, b) => state.random.random() - 0.5)
     );
@@ -128,17 +163,22 @@ export class StreamFfi {
 
   @foreign("reverse")
   @machine()
-  static reverse(stream: CrochetStream) {
+  static reverse(stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     return new CrochetStream(stream.values.slice().reverse());
   }
 
   @foreign()
-  static async *fold(
+  static *fold(
     state: State,
-    stream: CrochetStream,
+    stream0: CrochetValue,
     initial: CrochetValue,
-    partial: CrochetPartial
+    partial0: CrochetValue
   ) {
+    const stream = cast(stream0, CrochetStream);
+    const partial = cast(partial0, CrochetPartial);
+
     let current = initial;
     for (const x of stream.values) {
       current = cvalue(
@@ -155,7 +195,9 @@ export class StreamFfi {
 
   @foreign()
   @machine()
-  static interpolate(stream: CrochetStream) {
+  static interpolate(stream0: CrochetValue) {
+    const stream = cast(stream0, CrochetStream);
+
     return new CrochetInterpolation(
       stream.values.map((x) => {
         if (x instanceof CrochetText) {

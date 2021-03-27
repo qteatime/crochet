@@ -6,25 +6,34 @@ import {
   CrochetStream,
   InterpolationDynamic,
   CrochetText,
+  CrochetValue,
 } from "../../runtime";
+import { cast } from "../../utils";
 
 @foreign_namespace("crochet.native.interpolation")
 export class InterpolationFfi {
   @foreign()
   @machine()
-  static concat(a: CrochetInterpolation, b: CrochetInterpolation) {
+  static concat(a0: CrochetValue, b0: CrochetValue) {
+    const a = cast(a0, CrochetInterpolation);
+    const b = cast(b0, CrochetInterpolation);
+
     return new CrochetInterpolation(a.parts.concat(b.parts));
   }
 
   @foreign()
   @machine()
-  static parts(a: CrochetInterpolation) {
+  static parts(a0: CrochetValue) {
+    const a = cast(a0, CrochetInterpolation);
+
     return new CrochetStream(a.parts.map((x) => x.to_part()));
   }
 
   @foreign()
   @machine()
-  static holes(a: CrochetInterpolation) {
+  static holes(a0: CrochetValue) {
+    const a = cast(a0, CrochetInterpolation);
+
     return new CrochetStream(
       a.parts
         .filter((x) => x instanceof InterpolationDynamic)
@@ -34,7 +43,9 @@ export class InterpolationFfi {
 
   @foreign("static-text")
   @machine()
-  static static_text(a: CrochetInterpolation) {
+  static static_text(a0: CrochetValue) {
+    const a = cast(a0, CrochetInterpolation);
+
     return new CrochetText(a.parts.map((x) => x.to_static()).join(""));
   }
 }
@@ -43,7 +54,10 @@ export class InterpolationFfi {
 export class TextFfi {
   @foreign()
   @machine()
-  static concat(a: CrochetText, b: CrochetText) {
+  static concat(a0: CrochetValue, b0: CrochetValue) {
+    const a = cast(a0, CrochetText);
+    const b = cast(b0, CrochetText);
+
     return new CrochetText(a.value + b.value);
   }
 }

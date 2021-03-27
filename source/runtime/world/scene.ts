@@ -15,7 +15,7 @@ export class Scene {
     return `scene ${this.name} (from ${this.filename})`;
   }
 
-  async *evaluate(state: State): Machine {
+  *evaluate(state: State): Machine {
     const env = new Environment(this.env, null);
     const block = new SBlock(this.body);
     const value = cvalue(
