@@ -9,6 +9,7 @@ const Crochet_v0_3 = require("../../../versions/crochet-v0.3.0")
   .Crochet as typeof Crochet;
 const Crochet_v0_3_1 = require("../../../versions/crochet-v0.3.1")
   .Crochet as typeof Crochet;
+const pkg = require("../../../package.json");
 
 const root = Path.join(__dirname, "../../../");
 
@@ -21,12 +22,47 @@ interface IBenchmark {
 
 const benchmarkDir = Path.join(root, "benchmarks");
 
+class Version {
+  constructor(readonly a: number, readonly b: number, readonly c: number) {}
+
+  static parse(v: string) {
+    const [a, b, c] = v.split(".").map(Number);
+    return new Version(a, b, c);
+  }
+
+  gte(x: Version) {
+    return (
+      this.a > x.a ||
+      (this.a === x.a && this.b > x.b) ||
+      (this.a === x.a && this.b === x.b && this.c >= x.c)
+    );
+  }
+
+  eq(x: Version) {
+    return this.a === x.a && this.b === x.b && this.c === x.c;
+  }
+
+  compare_to(x: Version) {
+    if (this.eq(x)) {
+      return 0;
+    } else if (this.gte(x)) {
+      return 1;
+    } else {
+      return -1;
+    }
+  }
+}
+
 class Benchmark {
   readonly title: string;
-  readonly versions: { [key: string]: string };
+  readonly versions: [Version, string][];
   constructor(data: IBenchmark) {
     this.title = data.title;
-    this.versions = data.versions;
+    this.versions = [];
+    for (const [version, file] of Object.entries(data.versions)) {
+      this.versions.push([Version.parse(version), file]);
+    }
+    this.versions.sort(([a, _1], [b, _2]) => b.compare_to(a));
   }
 
   static from_file(filename: string) {
@@ -34,7 +70,13 @@ class Benchmark {
   }
 
   file_for_version(version: string): string {
-    return Path.resolve(root, this.versions[version] ?? this.versions.default);
+    const v = Version.parse(version);
+    for (const [version, file] of this.versions) {
+      if (v.gte(version)) {
+        return Path.resolve(root, file);
+      }
+    }
+    throw new Error(`No suitable benchmark for ${version}`);
   }
 }
 
@@ -44,10 +86,10 @@ const benchmarks = FS.readdirSync(benchmarkDir)
   .map((x) => Benchmark.from_file(x));
 
 const vms = [
-  { version: "v0.2.0", random: true, vm: Crochet_v0_2 },
-  { version: "v0.3.0", random: true, vm: Crochet_v0_3 },
-  { version: "v0.3.1", random: false, vm: Crochet_v0_3_1 },
-  { version: "current", random: false, vm: Crochet },
+  { version: "0.2.0", random: true, vm: Crochet_v0_2 },
+  { version: "0.3.0", random: true, vm: Crochet_v0_3 },
+  { version: "0.3.1", random: false, vm: Crochet_v0_3_1 },
+  { version: pkg.version, random: false, vm: Crochet },
 ];
 
 async function time(label: string, code: () => Promise<any>) {
