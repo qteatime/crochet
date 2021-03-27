@@ -1,12 +1,10 @@
 import { cast, zip } from "../../utils/utils";
-import { Type } from "../ir";
+import { Expression, Type } from "../ir";
 import { TCrochetType } from "../primitives";
-import { State } from "../vm";
+import { cvalue, State, Thread } from "../vm";
 import { World } from "../world";
-import { Constraint } from "./constraint";
 import { Database } from "./database";
 import { Effect } from "./effect";
-import { PredicateExpr } from "./predicate-expr";
 import { Tree } from "./tree";
 import { Pattern, UnificationEnvironment } from "./unification";
 
@@ -18,14 +16,19 @@ export abstract class Predicate {
 }
 
 export class ConstrainedPredicate extends Predicate {
-  constructor(readonly predicate: Predicate, readonly constraint: Constraint) {
+  constructor(readonly predicate: Predicate, readonly constraint: Expression) {
     super();
   }
 
   search(state: State, env: UnificationEnvironment): UnificationEnvironment[] {
-    return this.predicate
-      .search(state, env)
-      .filter((env) => this.constraint.evaluate(env, state).as_bool());
+    return this.predicate.search(state, env).filter((env) => {
+      const evalEnv = state.env.extend_with_unification(env);
+      const evalState = state.with_env(evalEnv);
+      const machine = this.constraint.evaluate(evalState);
+      const value = cvalue(Thread.for_machine(machine).run_sync());
+
+      return value.as_bool();
+    });
   }
 }
 
@@ -89,13 +92,18 @@ export class AlwaysPredicate extends Predicate {
 }
 
 export class LetPredicate extends Predicate {
-  constructor(readonly name: string, readonly expr: PredicateExpr) {
+  constructor(readonly name: string, readonly expr: Expression) {
     super();
   }
 
   search(state: State, env: UnificationEnvironment) {
+    const evalEnv = state.env.extend_with_unification(env);
+    const evalState = state.with_env(evalEnv);
+    const machine = this.expr.evaluate(evalState);
+    const value = cvalue(Thread.for_machine(machine).run_sync());
+
     const newEnv = env.clone();
-    newEnv.bind(this.name, this.expr.evaluate(state, env));
+    newEnv.bind(this.name, value);
     return [newEnv];
   }
 }

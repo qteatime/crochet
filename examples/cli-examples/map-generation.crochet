@@ -9,7 +9,7 @@ relation Room* to: Direction* lays: Room;
 relation Dungeon-Generator* room: Room*;
 
 predicate Dungeon room-allowance: Allowance do
-  when let Rooms = count(Dungeon room: _),
+  when let Rooms = (search Dungeon room: _) count,
        let Allowance = Rooms - Dungeon.Max-Rooms;
 end
 
@@ -39,7 +39,7 @@ when
   Dungeon room: Room,
   Direction is direction,
   not Room to: Direction lays: _,
-  let Extrusions = count(Room to: _ lays: _)
+  let Extrusions = (search Room to: _ lays: _) count
 rank
   100 - (Extrusions ** 3)
 do

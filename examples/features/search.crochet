@@ -36,8 +36,8 @@ scene main do
   end inspect;
 
   let R3 = search let Place = garden,
-                  let N = count(Who at: Place),
-                  let S = set(Who at: Place);
+                  let N = (search Who at: Place) count,
+                  let S = (search Who at: Place);
   R3 inspect;
 
   match

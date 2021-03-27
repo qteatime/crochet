@@ -9,6 +9,6 @@ scene main do
 
   (search Direction is direction,
           Direction y-axis,
-          let N = count(_ is direction)
+          let N = (search _ is direction) count
   ) inspect;
 end

@@ -108,7 +108,9 @@ when
   sample 1 of state: cs-exposed cell: Cell
 do
   match
-    when let C = count(Cell adjacent: C, C state: cs-cut), if C === 1 do
+    when let Cells = (search Cell adjacent: C, C state: cs-cut),
+         if Cells count === 1
+    do
       Cell cut;
     end
 

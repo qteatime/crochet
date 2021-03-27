@@ -113,9 +113,9 @@ export class CoreFfi {
     return from_bool(x.equals(y));
   }
 
-  @foreign()
+  @foreign("not-eq")
   @machine()
   static not_eq(x: CrochetValue, y: CrochetValue) {
-    return from_bool(!x.equals(y));
+    return from_bool(x.not_equals(y));
   }
 }

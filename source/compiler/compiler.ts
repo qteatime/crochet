@@ -1,5 +1,4 @@
 import {
-  Constraint,
   Declaration,
   Expression,
   Literal,
@@ -28,10 +27,8 @@ import {
   RecordField,
   Interpolation,
   Rank,
-  PredicateExpression,
   SimulationContext,
   ForExpression,
-  BinOp,
   SamplingPool,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
@@ -173,152 +170,10 @@ export function compilePattern(p: Pattern): Logic.Pattern {
   });
 }
 
-export function compileConstraint(c: Constraint): Logic.Constraint.Constraint {
-  return c.match<Logic.Constraint.Constraint>({
-    And(_, l, r) {
-      return new Logic.Constraint.And(
-        compileConstraint(l),
-        compileConstraint(r)
-      );
-    },
-
-    Not(_, c) {
-      return new Logic.Constraint.Not(compileConstraint(c));
-    },
-
-    Or(_, l, r) {
-      return new Logic.Constraint.Or(
-        compileConstraint(l),
-        compileConstraint(r)
-      );
-    },
-
-    BinOp(_, op, left, right) {
-      return new Logic.Constraint.BinaryConstraint(
-        compileBinaryOp(op),
-        compileConstraint(left),
-        compileConstraint(right)
-      );
-    },
-
-    Variable(_, name) {
-      return new Logic.Constraint.Variable(name.name);
-    },
-
-    Global(_, name) {
-      return new Logic.Constraint.Global(name.name);
-    },
-
-    HasRole(_, value, name) {
-      return new Logic.Constraint.HasRole(compileConstraint(value), name.name);
-    },
-
-    HasType(_, value, type) {
-      return new Logic.Constraint.HasType(
-        compileConstraint(value),
-        compileTypeApp(type)
-      );
-    },
-
-    Lit(l) {
-      return new Logic.Constraint.Value(literalToValue(l));
-    },
-
-    Parens(_, c) {
-      return compileConstraint(c);
-    },
-  });
-}
-
 export function compilePredicateEffect(eff: PredicateEffect) {
   return eff.match({
     Trivial() {
       return new Logic.Effect.Trivial();
-    },
-  });
-}
-
-export function compileBinaryOp(op: BinOp): Logic.BinOp {
-  return op.match<Logic.BinOp>({
-    Add() {
-      return Logic.BinOp.OP_ADD;
-    },
-
-    Sub() {
-      return Logic.BinOp.OP_SUB;
-    },
-
-    Multiply() {
-      return Logic.BinOp.OP_MUL;
-    },
-
-    Equal() {
-      return Logic.BinOp.OP_EQ;
-    },
-
-    NotEqual() {
-      return Logic.BinOp.OP_NOT_EQ;
-    },
-
-    GreaterOrEqual() {
-      return Logic.BinOp.OP_GTE;
-    },
-
-    GreaterThan() {
-      return Logic.BinOp.OP_GT;
-    },
-
-    LessOrEqual() {
-      return Logic.BinOp.OP_LTE;
-    },
-
-    LessThan() {
-      return Logic.BinOp.OP_LT;
-    },
-  });
-}
-
-export function compilePredicateExpr(
-  expr: PredicateExpression
-): Logic.PredicateExpr {
-  return expr.match<Logic.PredicateExpr>({
-    BinOp(_, op, left, right) {
-      return new Logic.PEBinOp(
-        compileBinaryOp(op),
-        compilePredicateExpr(left),
-        compilePredicateExpr(right)
-      );
-    },
-
-    Count(_, p) {
-      return new Logic.PECount(compilePredicate(p));
-    },
-
-    Global(_, name) {
-      return new Logic.PEGlobal(name.name);
-    },
-
-    Lit(lit) {
-      return new Logic.PEValue(literalToValue(lit));
-    },
-
-    Project(_, l, f) {
-      return new Logic.PEProject(
-        compilePredicateExpr(l),
-        compileRecordField(f)
-      );
-    },
-
-    Self(_) {
-      return new Logic.PESelf();
-    },
-
-    Set(_, p) {
-      return new Logic.PESet(compilePredicate(p));
-    },
-
-    Variable(_, name) {
-      return new Logic.PEVariable(name.name);
     },
   });
 }
@@ -351,7 +206,7 @@ export function compilePredicate(p: Predicate): Logic.Predicate {
     Constrain(_, p, c) {
       return new Logic.ConstrainedPredicate(
         compilePredicate(p),
-        compileConstraint(c)
+        compileExpression(c)
       );
     },
 
@@ -367,7 +222,7 @@ export function compilePredicate(p: Predicate): Logic.Predicate {
     },
 
     Let(_, name, value) {
-      return new Logic.LetPredicate(name.name, compilePredicateExpr(value));
+      return new Logic.LetPredicate(name.name, compileExpression(value));
     },
 
     Typed(_, name, typ) {

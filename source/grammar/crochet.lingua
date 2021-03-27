@@ -128,35 +128,14 @@ type Predicate =
   | Not(pos: Meta, pred: Predicate)
   | Has(pos: Meta, signature: Signature<Pattern>)
   | Sample(pos: Meta, size: Literal, pool: SamplingPool)
-  | Constrain(pos: Meta, pred: Predicate, constraint: Constraint)
-  | Let(pos: Meta, name: Name, value: PredicateExpression)
+  | Constrain(pos: Meta, pred: Predicate, constraint: Expression)
+  | Let(pos: Meta, name: Name, value: Expression)
   | Typed(pos: Meta, name: Name, typ: TypeApp)
   | Always(pos: Meta)
   | Parens(pos: Meta, pred: Predicate)
 
 type SamplingPool =
   | Relation(pos: Meta, signature: Signature<Pattern>)
-
-type PredicateExpression =
-  | Lit(lit: Literal)
-  | Variable(pos: Meta, name: Name)
-  | Global(pos: Meta, name: Name)
-  | Self(pos: Meta)
-  | Project(pos: Meta, left: PredicateExpression, name: RecordField)
-  | BinOp(pos: Meta, op: BinOp, left: PredicateExpression, right: PredicateExpression)
-  | Count(pos: Meta, pred: Predicate)
-  | Set(pos: Meta, pred: Predicate)
-
-type BinOp =
-  | Add()
-  | Sub()
-  | Multiply()
-  | Equal()
-  | NotEqual()
-  | GreaterThan()
-  | GreaterOrEqual()
-  | LessThan()
-  | LessOrEqual()
 
 type Pattern =
   | HasRole(pos: Meta, typ: Name, name: Pattern)
@@ -165,18 +144,6 @@ type Pattern =
   | Variable(pos: Meta, name: Name)
   | Self(pos: Meta)
   | Wildcard(pos: Meta)
-  | Lit(lit: Literal)
-
-type Constraint =
-  | And(pos: Meta, left: Constraint, right: Constraint)
-  | Or(pos: Meta, left: Constraint, right: Constraint)
-  | Not(pos: Meta, value: Constraint)
-  | BinOp(pos: Meta, op: BinOp, left: Constraint, right: Constraint)
-  | Variable(pos: Meta, name: Name)
-  | Global(pos: Meta, name: Name)
-  | HasRole(pos: Meta, value: Constraint, role: Name)
-  | HasType(pos: Meta, value: Constraint, typ: TypeApp)
-  | Parens(pos: Meta, value: Constraint)
   | Lit(lit: Literal)
 
 type Signature<T> =
@@ -389,8 +356,8 @@ grammar Crochet : Program {
     | predicateConstrain
 
   predicateConstrain =
-    | p:predicateLet if_ c:constraint      -> Predicate.Constrain(meta, p, c)
-    | if_ c:constraint                     -> Predicate.Constrain(meta, Predicate.Always(meta), c)
+    | p:predicateLet if_ c:expression      -> Predicate.Constrain(meta, p, c)
+    | if_ c:expression                     -> Predicate.Constrain(meta, Predicate.Always(meta), c)
     | predicateLet
     | predicateSample
     | predicateType
@@ -400,7 +367,7 @@ grammar Crochet : Program {
     | n:name is_ t:typeApp                 -> Predicate.Typed(meta, n, t)
 
   predicateLet =
-    | let_ n:name s<"="> e:predicateExpr -> Predicate.Let(meta, n, e)
+    | let_ n:name s<"="> e:expression      -> Predicate.Let(meta, n, e)
 
   predicateSample =
     | sample_ n:integer of_ p:samplingPool
@@ -414,39 +381,6 @@ grammar Crochet : Program {
     | always_                                 -> Predicate.Always(meta)
     | r:logicSignature<pattern>               -> Predicate.Has(meta, r)
     | s<"("> p:predicate s<")">               -> Predicate.Parens(meta, p)
-
-  predicateExpr =
-    | l:predicateExprMember op:binOp r:predicateExprMember
-      -> PredicateExpression.BinOp(meta, op, l, r)
-    | predicateExprMember
-
-  binOp =
-    | s<"+">   -> BinOp.Add()
-    | s<"-">   -> BinOp.Sub()
-    | s<"*">   -> BinOp.Multiply()
-    | s<"==="> -> BinOp.Equal()
-    | s<"=/="> -> BinOp.NotEqual()
-    | s<">">   -> BinOp.GreaterThan()
-    | s<">=">  -> BinOp.GreaterOrEqual()
-    | s<"<">   -> BinOp.LessThan()
-    | s<"<=">  -> BinOp.LessOrEqual()
-
-  predicateExprMember =
-    | l:predicateExprMember s<"."> r:recordField
-      -> PredicateExpression.Project(meta, l, r)
-    | predicateExprApply
-
-  predicateExprApply =
-    | count_ s<"("> p:predicate s<")">  -> PredicateExpression.Count(meta, p)
-    | set_ s<"("> p:predicate s<")">    -> PredicateExpression.Set(meta, p)
-    | predicateExprPrimary
-  
-  predicateExprPrimary =
-    | n:atom                        -> PredicateExpression.Global(meta, n)
-    | n:name                        -> PredicateExpression.Variable(meta, n)
-    | self_                         -> PredicateExpression.Self(meta)
-    | l:literal                     -> PredicateExpression.Lit(l)
-    | s<"("> e:predicateExpr s<")"> -> e
 
   pattern =
     | s<"("> c:patternComplex s<")">  -> c
@@ -462,30 +396,6 @@ grammar Crochet : Program {
   patternName =
     | s<"_">        -> Pattern.Wildcard(meta)
     | n:name        -> Pattern.Variable(meta, n)
-
-  constraint =
-    | l:constraint and r:constraint  -> Constraint.And(meta, l, r)
-    | l:constraint or r:constraint   -> Constraint.Or(meta, l, r)
-    | constraint200
-
-  constraint200 =
-    | not_ c:constraint300            -> Constraint.Not(meta, c)
-    | constraint300
-
-  constraint300 =
-    | l:constraint400 op:binOp r:constraint400  -> Constraint.BinOp(meta, op, l, r)
-    | constraint400
-
-  constraint400 =
-    | l:constraint500 s<"::"> r:atom  -> Constraint.HasRole(meta, l, r)
-    | l:constraint500 is_ t:typeApp   -> Constraint.HasType(meta, l, t)
-    | constraint500
-
-  constraint500 =
-    | n:name                          -> Constraint.Variable(meta, n)
-    | n:atom                          -> Constraint.Global(meta, n)
-    | l:literal                       -> Constraint.Lit(l)
-    | s<"("> c:constraint s<")">      -> Constraint.Parens(meta, c)
 
 
   // -- Statement
@@ -890,8 +800,6 @@ grammar Crochet : Program {
   with_ = kw<"with">
   tags_ = kw<"tags">
   rank_ = kw<"rank">
-  count_ = kw<"count">
-  set_ = kw<"set">
   abstract_ = kw<"abstract">
   lazy_ = kw<"lazy">
   force_ = kw<"force">

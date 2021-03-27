@@ -1,9 +1,7 @@
-import * as Constraint from "./constraint";
 import * as Effect from "./effect";
 export * from "./database";
 export * from "./predicate";
 export * from "./unification";
 export * from "./tree";
-export * from "./predicate-expr";
 export * from "./primitives";
-export { Constraint, Effect };
+export { Effect };

@@ -23,6 +23,10 @@ export abstract class CrochetValue {
     return other === this;
   }
 
+  not_equals(other: CrochetValue): boolean {
+    return !this.equals(other);
+  }
+
   to_text(transparent?: boolean): string {
     return `<${type_name(this.type)}>`;
   }
