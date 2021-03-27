@@ -65,12 +65,6 @@ const argv = Yargs.usage("crochet <command> [options]")
   })
   .demandCommand(1).argv;
 
-async function load(filename: string, source: string, state: Runtime.State) {
-  const ast = Compiler.parse(source);
-  const ir = Compiler.compileProgram(ast);
-  await state.world.load_declarations(filename, ir, state.env);
-}
-
 async function initialise(seed: string | null) {
   const world = new World();
   if (seed != null) {
@@ -85,6 +79,37 @@ function read(filename: string) {
   return FS.readFileSync(filename, "utf-8");
 }
 
+async function load_file(filename: string, state: Runtime.State) {
+  const source = read(filename);
+  const ast = Compiler.parse(source);
+  const ir = Compiler.compileProgram(ast);
+  await state.world.load_declarations(filename, ir, state.env);
+}
+
+async function load_package(filename: string, state: Runtime.State) {
+  const data = JSON.parse(read(filename));
+  const root = Path.dirname(filename);
+  for (const native of data.native ?? []) {
+    require(Path.resolve(root, native));
+  }
+  for (const file of data.sources ?? []) {
+    await load_file(Path.resolve(root, file), state);
+  }
+}
+
+async function load(filename: string, state: Runtime.State) {
+  switch (Path.extname(filename)) {
+    case ".json": {
+      return load_package(filename, state);
+    }
+    case ".crochet": {
+      return load_file(filename, state);
+    }
+    default:
+      throw new Error(`Unsupported file ${filename}`);
+  }
+}
+
 async function run(
   filename: string,
   entry: string = "main",
@@ -93,8 +118,7 @@ async function run(
   try {
     const state = await initialise(seed);
     console.debug("[DEBUG] Using seed:", state.random.seed);
-    const source = read(filename);
-    await load(filename, source, state);
+    await load(filename, state);
     await state.world.run(entry);
   } catch (error) {
     console.error(error.stack);
