@@ -33,7 +33,19 @@ task("build-targets", () => {
   execSync(`./node_modules/.bin/webpack`);
 });
 
+task("build-web", () => {
+  execSync(
+    ` ./node_modules/.bin/browserify -e build/targets/web.js -s Crochet -o www/crochet.js`
+  );
+});
+
 task(
   "build",
-  series("build-grammar", "build-stdlib", "build-ts", "build-targets")
+  series(
+    "build-grammar",
+    "build-stdlib",
+    "build-ts",
+    "build-targets",
+    "build-web"
+  )
 );

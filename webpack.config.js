@@ -10,8 +10,8 @@ const benchTarget = {
     filename: `crochet-v${pkg.version}.js`,
     library: {
       name: "Crochet",
-      type: "umd"
-    }
+      type: "umd",
+    },
   },
 };
 
@@ -29,4 +29,4 @@ const clientTarget = {
   },
 };
 
-module.exports = [benchTarget, clientTarget];
+module.exports = [benchTarget];
