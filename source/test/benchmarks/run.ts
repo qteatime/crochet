@@ -9,6 +9,8 @@ const Crochet_v0_3 = require("../../../versions/crochet-v0.3.0")
   .Crochet as typeof Crochet;
 const Crochet_v0_3_1 = require("../../../versions/crochet-v0.3.1")
   .Crochet as typeof Crochet;
+const Crochet_v0_4_0 = require("../../../versions/crochet-v0.4.0")
+  .Crochet as typeof Crochet;
 const pkg = require("../../../package.json");
 
 const root = Path.join(__dirname, "../../../");
@@ -89,6 +91,7 @@ const vms = [
   { version: "0.2.0", random: true, vm: Crochet_v0_2 },
   { version: "0.3.0", random: true, vm: Crochet_v0_3 },
   { version: "0.3.1", random: false, vm: Crochet_v0_3_1 },
+  { version: "0.4.0", random: false, vm: Crochet_v0_4_0 },
   { version: pkg.version, random: false, vm: Crochet },
 ];
 
