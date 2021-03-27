@@ -9,11 +9,11 @@ import {
   CrochetValue,
   TCrochetAny,
 } from "../primitives";
-import { Machine } from "../vm";
+import { Machine, Thread } from "../vm";
 
 export class ActionChoice extends CrochetValue {
   constructor(
-    readonly title: CrochetValue,
+    readonly title: CrochetThunk,
     readonly score: CrochetThunk,
     readonly tags: CrochetValue[],
     readonly action: Action,

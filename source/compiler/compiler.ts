@@ -809,7 +809,7 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     Action(_, title, tags, predicate, rank, body) {
       return [
         new IR.DAction(
-          compileInterpolation(title, (x) => x.name),
+          compileExpression(title),
           tags.map((x) => x.name),
           compilePredicate(predicate),
           compileRank(rank),

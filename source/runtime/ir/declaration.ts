@@ -181,7 +181,7 @@ export class DScene extends Declaration {
 
 export class DAction extends Declaration implements IContextualDeclaration {
   constructor(
-    readonly title: SimpleInterpolation<string>,
+    readonly title: Expression,
     readonly tags: string[],
     readonly predicate: Predicate,
     readonly rank: Expression,

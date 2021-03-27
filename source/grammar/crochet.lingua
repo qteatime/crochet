@@ -14,7 +14,7 @@ type Declaration =
   | ForeignType(pos: Meta, name: Name, foreign_name: Namespace)
   | Type(pos: Meta, typ: TypeDef, fields: Parameter[])
   | Scene(pos: Meta, name: Name, body: Statement[])
-  | Action(pos: Meta, title: Interpolation<Name>, tags: Name[], pred: Predicate, rank: Rank, body: Statement[])
+  | Action(pos: Meta, title: Expression, tags: Name[], pred: Predicate, rank: Rank, body: Statement[])
   | When(pos: Meta, pred: Predicate, body: Statement[])
   | Context(pos: Meta, name: Name, items: Declaration[])
 
@@ -296,13 +296,16 @@ grammar Crochet : Program {
       -> Declaration.Scene(meta, n, b)
 
   actionDeclaration =
-    | action_ t:interpolateText<name>
+    | action_ t:actionTitle
         tags:actionTags
         p:actionPredicate
         r:actionRank
         b:statementBlock<statement>
       -> Declaration.Action(meta, t, tags, p, r, b)
   
+  actionTitle =
+    | t:interpolateText<expression> -> Expression.Interpolate(meta, t)
+
   actionTags =
     | tags_ es:list1<atom, s<",">> -> es
     |                              -> []
@@ -486,7 +489,7 @@ grammar Crochet : Program {
       -> Expression.Cast(meta, t, s)
     | s:invokePrePost is_ t:typeAppPrimary
       -> Expression.HasType(meta, s, t)
-    | s:invokePrePost s<"::"> r:name
+    | s:invokePrePost s<"::"> r:atom
       -> Expression.HasRole(meta, s, r)
     | invokePrePost
 

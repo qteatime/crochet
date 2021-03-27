@@ -41,19 +41,19 @@ export class When {
 }
 
 export type ReadyAction = {
-  action: Action
-  title: CrochetInterpolation
-  score: CrochetThunk
-  tags: CrochetValue[]
-  machine: Machine
-}
+  action: Action;
+  title: CrochetThunk;
+  score: CrochetThunk;
+  tags: CrochetValue[];
+  machine: Machine;
+};
 
 export class Action {
   private fired_for = new BagMap<CrochetValue, bigint>();
 
   constructor(
     readonly filename: string,
-    readonly title: SimpleInterpolation<string>,
+    readonly title: Expression,
     readonly predicate: Predicate,
     readonly tags: CrochetValue[],
     readonly env: Environment,
@@ -75,7 +75,7 @@ export class Action {
       const block = new SBlock(this.body);
       return {
         action: this,
-        title: this.title.interpolate((x) => env.lookup(x)),
+        title: new CrochetThunk(this.title, env),
         score: new CrochetThunk(this.rank, env),
         tags: this.tags,
         machine: block.evaluate(state.with_env(env)),
@@ -138,9 +138,7 @@ export class ConcreteContext {
   readonly events: When[] = [];
   readonly actions: Action[] = [];
 
-  constructor(readonly filename: string, readonly name: string) {
-
-  }
+  constructor(readonly filename: string, readonly name: string) {}
 
   add_action(action: Action) {
     this.actions.push(action);
@@ -165,10 +163,12 @@ export class AnyContext extends Context {
   static instance = new AnyContext();
 
   available_actions(actor: CrochetValue, state: State) {
-    return state.world.all_contexts.flatMap(x => x.available_actions(actor, state));
+    return state.world.all_contexts.flatMap((x) =>
+      x.available_actions(actor, state)
+    );
   }
 
   available_events(state: State) {
-    return state.world.all_contexts.flatMap(x => x.available_events(state));
+    return state.world.all_contexts.flatMap((x) => x.available_events(state));
   }
 }

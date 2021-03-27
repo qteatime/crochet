@@ -72,6 +72,10 @@ command (X is interpolation) to-html do
   X parts to-html;
 end
 
+command (X is thunk) to-html do
+  (force X) to-html;
+end
+
 command (Xs is stream) to-html do
   let Items = for X in Xs do X to-html end;
   html box: "span"
