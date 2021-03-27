@@ -64,6 +64,10 @@ async function time(label: string, code: () => Promise<any>) {
 void (async function () {
   const seed0 = Yargs.argv["seed"];
   const seed = seed0 ? Number(seed0) : new Date().getTime() | 0;
+  const verbose = Boolean(Yargs.argv["verbose"]);
+  if (!verbose) {
+    console.debug = () => {};
+  }
   console.log("-- Using seed", seed, " (use --seed <seed> to reproduce)");
 
   for (const bench of benchmarks) {
