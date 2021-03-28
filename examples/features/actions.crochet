@@ -1,0 +1,38 @@
+% crochet
+
+type person;
+singleton karis is person with
+  command name = "Karis";
+end
+singleton lielle is person with
+  command name = "Lielle";
+end
+
+enum state = greet, part, halt;
+
+relation Person* state: State;
+
+action "Say hello" for karis
+when karis state: greet do
+  "[karis name] says: Hello!" inspect;
+end
+
+action "Say hello" for lielle
+when lielle state: greet do
+  "[lielle name] greets in kind." inspect;
+end
+
+action "Part"
+when P simulate-turn, P state: part do
+  "[P name] leaves." inspect;
+end
+
+when P simulate-turn, P state: S, if S < state higher-bound do
+  fact P state: (S successor);
+end
+
+scene main do
+  fact karis state: greet;
+  fact lielle state: greet;
+  simulate for [karis, lielle] until action quiescence;
+end

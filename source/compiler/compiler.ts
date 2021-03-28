@@ -654,6 +654,10 @@ export function compileTypeApp(x: TypeApp): IR.Type {
     Named(_, name) {
       return new IR.TNamed(name.name);
     },
+
+    Any(_) {
+      return new IR.TAny();
+    },
   });
 }
 
@@ -857,9 +861,10 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       return [new IR.DScene(name.name, body.map(compileStatement))];
     },
 
-    Action(_, title, tags, predicate, rank, body) {
+    Action(_, typ, title, tags, predicate, rank, body) {
       return [
         new IR.DAction(
+          compileTypeApp(typ),
           compileExpression(title),
           tags.map((x) => x.name),
           compilePredicate(predicate),

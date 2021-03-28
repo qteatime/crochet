@@ -181,6 +181,7 @@ export class DScene extends Declaration {
 
 export class DAction extends Declaration implements IContextualDeclaration {
   constructor(
+    readonly type_resctiction: Type,
     readonly title: Expression,
     readonly tags: string[],
     readonly predicate: Predicate,
@@ -200,7 +201,8 @@ export class DAction extends Declaration implements IContextualDeclaration {
       tags,
       env,
       this.rank,
-      this.body
+      this.body,
+      this.type_resctiction
     );
     context.add_action(action);
   }

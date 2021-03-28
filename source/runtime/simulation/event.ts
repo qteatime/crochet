@@ -1,5 +1,5 @@
 import { Environment } from "../world";
-import { EInterpolate, Expression, SBlock, Statement } from "../ir";
+import { EInterpolate, Expression, SBlock, Statement, Type } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
 import { Machine, Mark, State, _mark } from "../vm";
 import {
@@ -58,10 +58,16 @@ export class Action {
     readonly tags: CrochetValue[],
     readonly env: Environment,
     readonly rank: Expression,
-    readonly body: Statement[]
+    readonly body: Statement[],
+    readonly for_type: Type
   ) {}
 
   ready_actions(actor: CrochetValue, state0: State): ReadyAction[] {
+    const type = this.for_type.realise(state0.world);
+    if (!type.accepts(actor)) {
+      return [];
+    }
+
     const db = new DatabaseLayer(state0.database, this.layer);
     const state = state0.with_database(db);
     const results = state.database.search(
