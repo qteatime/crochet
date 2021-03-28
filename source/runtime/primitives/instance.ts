@@ -129,3 +129,13 @@ export class TCrochetType extends CrochetType {
     this.sealed = true;
   }
 }
+
+export const baseEnum = new TCrochetType(
+  "(builtin)",
+  TCrochetAny.type,
+  "enum",
+  new Set(),
+  [],
+  [],
+  new Map()
+);

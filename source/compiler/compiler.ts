@@ -30,6 +30,7 @@ import {
   SimulationContext,
   ForExpression,
   SamplingPool,
+  ConditionCase,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetInteger } from "../runtime";
@@ -776,13 +777,63 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
 
     EnumType(_, name, variants) {
       const parent = new TypeApp.Named(name.pos, name);
-      const variantDecls = variants.map(
-        (v) =>
-          new Declaration.SingletonType(v.pos, new TypeDef(parent, v, []), [])
-      );
+      const variantDecls = variants.flatMap((v, i) => [
+        new Declaration.SingletonType(v.pos, new TypeDef(parent, v, []), []),
+        new Declaration.Command(
+          v.pos,
+          new Signature.Unary(
+            v.pos,
+            new Parameter.TypedOnly(v.pos, new TypeApp.Named(v.pos, v)),
+            new Name(v.pos, "to-enum-integer")
+          ),
+          [
+            new Statement.Expr(
+              new Expression.Lit(new Literal.Integer(v.pos, (i + 1).toString()))
+            ),
+          ]
+        ),
+      ]);
       return [
-        new IR.DType(null, name.name, [], []),
+        new IR.DType(new IR.TNamed("enum"), name.name, [], []),
         ...variantDecls.flatMap((v) => compileDeclaration(v)),
+        new IR.DDefine(name.name, new IR.ENew(name.name, [])),
+        new IR.DSealType(name.name),
+        new IR.DCrochetCommand(
+          "_ lower-bound",
+          ["Self"],
+          [new IR.TNamed(name.name)],
+          [new IR.SExpression(new IR.EGlobal(variants[0].name))]
+        ),
+        new IR.DCrochetCommand(
+          "_ higher-bound",
+          ["Self"],
+          [new IR.TNamed(name.name)],
+          [
+            new IR.SExpression(
+              new IR.EGlobal(variants[variants.length - 1].name)
+            ),
+          ]
+        ),
+        new IR.DCrochetCommand(
+          "_ from-enum-integer:",
+          ["Self", "N"],
+          [new IR.TNamed(name.name), new IR.TNamed("integer")],
+          [
+            new IR.SExpression(
+              new IR.ECondition(
+                variants.map((n, i) => {
+                  return new IR.ConditionCase(
+                    new IR.EInvoke("_ === _", [
+                      new IR.EVariable("N"),
+                      new IR.EInteger(BigInt(i + 1)),
+                    ]),
+                    new IR.SBlock([new IR.EGlobal(n.name)])
+                  );
+                })
+              )
+            ),
+          ]
+        ),
       ];
     },
 

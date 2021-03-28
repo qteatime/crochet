@@ -101,7 +101,7 @@ export class IntegerFfi {
 
     return new CrochetStream(
       Array.from(
-        { length: Number(max.value - min.value) },
+        { length: Number(max.value - min.value) + 1 },
         (_, i) => new CrochetInteger(min.value + BigInt(i))
       )
     );

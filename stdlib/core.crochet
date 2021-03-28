@@ -13,6 +13,7 @@ type partial = foreign crochet.native.core.partial;
 type record = foreign crochet.native.core.record;
 type stream = foreign crochet.native.core.stream;
 type thunk = foreign crochet.native.core.thunk;
+type 'enum = foreign crochet.native.core.enum;
 
 command X and Y = foreign crochet.native.core.band(X, Y);
 command X or Y = foreign crochet.native.core.bor(X, Y);
@@ -20,3 +21,26 @@ command not X = foreign crochet.native.core.bnot(X);
 
 command X === Y = foreign crochet.native.core.eq(X, Y);
 command X =/= Y = foreign crochet.native.core.not-eq(X, Y);
+
+command X <= Y = (X === Y) or (X < Y);
+command X >= Y = (X === Y) or (X > Y);
+
+command 'enum < (O is 'enum) =
+  self to-enum-integer < O to-enum-integer;
+
+command 'enum > (O is 'enum) =
+  self to-enum-integer > O to-enum-integer;
+
+command 'enum successor do
+  self from-enum-integer: (self to-enum-integer + 1);
+end
+
+command 'enum predecessor do
+  self from-enum-integer: (self to-enum-integer - 1);
+end
+
+command (From0 is 'enum) to: (To0 is 'enum) do
+  let From = From0 to-enum-integer;
+  let To = To0 to-enum-integer;
+  for I in From to: To do From0 from-enum-integer: I end
+end

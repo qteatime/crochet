@@ -267,8 +267,10 @@ grammar Crochet : Program {
     |                                            -> []
 
   typeField =
-    | n:name is_ t:typeApp                -> Parameter.Typed(meta, n, t)
-    | n:name                              -> Parameter.Untyped(meta, n)
+    | n:typeFieldName is_ t:typeApp                -> Parameter.Typed(meta, n, t)
+    | n:typeFieldName                              -> Parameter.Untyped(meta, n)
+
+  typeFieldName = name | atom
 
   typeInit =
     | s:partialLogicSignature<invokePostfix> s<";">

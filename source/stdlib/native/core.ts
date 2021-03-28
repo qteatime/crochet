@@ -20,7 +20,11 @@ import {
   TCrochetRecord,
   TCrochetStream,
   TCrochetThunk,
+  CrochetInstance,
+  CrochetInteger,
+  baseEnum,
 } from "../../runtime";
+import { cast } from "../../utils";
 
 @foreign_namespace("crochet.native.core")
 export class CoreFfi {
@@ -82,6 +86,11 @@ export class CoreFfi {
   @foreign_type("stream")
   static get type_stream(): CrochetType {
     return TCrochetStream.type;
+  }
+
+  @foreign_type("enum")
+  static get type_enum(): CrochetType {
+    return baseEnum;
   }
 
   @foreign_type("thunk")

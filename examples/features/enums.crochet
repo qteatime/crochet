@@ -1,0 +1,24 @@
+% crochet
+
+enum state =
+  neat,
+  messy,
+  trampled;
+
+scene main do
+  [state lower-bound, state higher-bound] inspect;
+
+  [
+    neat to-enum-integer,
+    messy to-enum-integer,
+    trampled to-enum-integer,
+  ] inspect;
+
+  [neat < messy, messy < trampled, trampled < neat] inspect;
+  [neat > messy, messy > trampled, trampled > neat] inspect;
+
+  [neat successor, messy successor] inspect;
+  [messy predecessor, trampled predecessor] inspect;
+
+  [neat to: trampled] inspect;
+end
