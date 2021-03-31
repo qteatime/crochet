@@ -49,6 +49,10 @@ end
 
 command X show-wait do
   X show;
+  ui wait-click;
+end
+
+command ui wait-click do
   html wait-click;
 end
 

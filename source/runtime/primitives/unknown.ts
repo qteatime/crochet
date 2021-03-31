@@ -1,3 +1,4 @@
+import { die } from "../vm";
 import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
 
@@ -9,7 +10,7 @@ export class CrochetUnknown extends CrochetValue {
   constructor(readonly value: unknown) {
     super();
     if (value instanceof CrochetUnknown) {
-      throw new Error(`internal: double-wrapping an unknown value`);
+      throw die(`double-wrapping an unknown value`);
     }
   }
 

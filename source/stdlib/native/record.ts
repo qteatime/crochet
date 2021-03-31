@@ -12,7 +12,6 @@ import {
   machine,
   State,
   _push,
-  _throw,
 } from "../../runtime";
 import { cast, copy_map } from "../../utils";
 

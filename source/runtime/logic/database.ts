@@ -1,4 +1,4 @@
-import { State } from "../vm";
+import { die, State } from "../vm";
 import { World } from "../world";
 import { MappedRelation, Predicate } from "./predicate";
 import { UnificationEnvironment } from "./unification";
@@ -8,7 +8,7 @@ export class Database implements IDatabase {
 
   add(name: string, relation: MappedRelation) {
     if (this.relations.has(name)) {
-      throw new Error(`internal: duplicated database predicate: ${name}`);
+      throw die(`duplicated database predicate: ${name}`);
     }
 
     this.relations.set(name, relation);
@@ -25,7 +25,7 @@ export class Database implements IDatabase {
   lookup(name: string) {
     const relation = this.try_lookup(name);
     if (relation == null) {
-      throw new Error(`internal: undefined relation: ${name}`);
+      throw die(`undefined relation: ${name}`);
     }
     return relation;
   }

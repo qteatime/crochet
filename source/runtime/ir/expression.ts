@@ -37,7 +37,6 @@ import {
   run_all,
   State,
   _push,
-  _throw,
 } from "../vm";
 import { Environment } from "../world";
 import { SBlock, Statement } from "./statement";
@@ -66,7 +65,7 @@ export class EVariable extends Expression {
   *evaluate(state: State): Machine {
     const value = state.env.try_lookup(this.name);
     if (value == null) {
-      return cvalue(yield _throw(new ErrUndefinedVariable(this.name)));
+      throw new ErrUndefinedVariable(this.name);
     } else {
       return value;
     }
@@ -191,7 +190,7 @@ export class ECast extends Expression {
     if (value != null) {
       return value;
     } else {
-      return yield _throw(new ErrNoConversionAvailable(type, value0));
+      throw new ErrNoConversionAvailable(type, value0);
     }
   }
 }
@@ -203,11 +202,7 @@ export class EProject extends Expression {
 
   *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
-    try {
-      return object.projection.project(this.field);
-    } catch (error) {
-      return yield _throw(error);
-    }
+    return object.projection.project(this.field);
   }
 }
 
@@ -218,11 +213,7 @@ export class EProjectMany extends Expression {
 
   *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
-    try {
-      return object.selection.select(this.fields);
-    } catch (error) {
-      return yield _throw(error);
-    }
+    return object.selection.select(this.fields);
   }
 }
 

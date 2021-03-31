@@ -187,6 +187,10 @@ export function compileSamplingPool(pool: SamplingPool): Logic.SamplingPool {
         signatureValues(signature).map(compilePattern)
       );
     },
+
+    Type(_, name, type) {
+      return new Logic.SamplingType(name.name, compileTypeApp(type));
+    },
   });
 }
 

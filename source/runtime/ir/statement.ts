@@ -17,7 +17,6 @@ import {
   _jump,
   _mark,
   _push,
-  _throw,
 } from "../vm";
 import { AnyContext, Context, Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
@@ -83,7 +82,7 @@ export class SLet extends Statement {
   *evaluate(state: State): Machine {
     let value = cvalue(yield _push(this.expr.evaluate(state)));
     if (state.env.has(this.name)) {
-      value = cvalue(yield _throw(new ErrVariableAlreadyBound(this.name)));
+      throw new ErrVariableAlreadyBound(this.name);
     }
     state.env.define(this.name, value);
     return value;

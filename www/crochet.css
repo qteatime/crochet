@@ -62,7 +62,7 @@ body {
   display: block;
   width: 50%;
   height: 2px;
-  margin: 1em auto 2em auto;
+  margin: 2em auto 2em auto;
   background: #ddd;
   border: none;
 }
@@ -95,6 +95,8 @@ body {
   font-weight: normal;
   font-size: 1.3em;
   color: #777;
+  margin-top: -1.2em;
+  margin-bottom: 1.5em;
 }
 
 .crochet-error {

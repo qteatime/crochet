@@ -152,6 +152,23 @@ export class SamplingRelation extends SamplingPool {
   }
 }
 
+export class SamplingType extends SamplingPool {
+  constructor(readonly name: string, readonly type: Type) {
+    super();
+  }
+
+  sample(size: number, state: State, env: UnificationEnvironment) {
+    const type = cast(this.type.realise(state.world), TCrochetType);
+    const instances = type.registered_instances;
+    const sampled = state.random.random_choice_many(size, instances);
+    return sampled.map((s) => {
+      const newEnv = env.clone();
+      newEnv.bind(this.name, s);
+      return newEnv;
+    });
+  }
+}
+
 export abstract class MappedRelation {
   abstract search(
     state: State,

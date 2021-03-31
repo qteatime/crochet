@@ -8,7 +8,7 @@ import {
   NativeProcedure,
   Procedure,
 } from "../primitives";
-import { Machine, State, Thread } from "../vm";
+import { die, Machine, State, Thread } from "../vm";
 import { ConcreteContext, Context, ContextBag } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
@@ -44,7 +44,7 @@ export class ProcedureBag {
     if (value != null) {
       return value;
     } else {
-      throw new Error(`internal: undefined procedure: ${name}`);
+      throw die(`undefined procedure: ${name}`);
     }
   }
 }

@@ -1,4 +1,5 @@
 import { cast } from "../../utils/utils";
+import { die } from "../vm";
 import { Environment } from "../world";
 import { CrochetType, TCrochetAny } from "./types";
 import { CrochetValue } from "./value";
@@ -45,7 +46,7 @@ export class CrochetPartial extends CrochetValue {
     }
 
     if (candidate_index < candidates.length) {
-      throw new Error(`Invalid arity`);
+      throw die(`Invalid arity`);
     } else {
       return new CrochetPartial(this.name, this.env, values);
     }

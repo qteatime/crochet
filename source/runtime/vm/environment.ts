@@ -1,5 +1,6 @@
 import { UnificationEnvironment } from "../logic";
 import { CrochetValue } from "../primitives";
+import { die } from "./run";
 
 export class Environment {
   readonly bindings = new Map<string, CrochetValue>();
@@ -11,7 +12,7 @@ export class Environment {
 
   get receiver() {
     if (this.raw_receiver == null) {
-      throw new Error(`internal: requesting receiver outside of command`);
+      throw die(`requesting receiver outside of command`);
     }
     return this.raw_receiver;
   }
@@ -36,7 +37,7 @@ export class Environment {
     if (result != null) {
       return result;
     } else {
-      throw new Error(`internal: undefined variable ${name}`);
+      throw die(`undefined variable ${name}`);
     }
   }
 
@@ -46,7 +47,7 @@ export class Environment {
     }
 
     if (this.bindings.has(name)) {
-      throw new Error(`Duplicate binding ${name}`);
+      throw die(`Duplicate binding ${name}`);
     }
 
     this.bindings.set(name, value);

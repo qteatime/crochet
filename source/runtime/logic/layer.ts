@@ -1,5 +1,5 @@
 import { Bag } from "../../utils/bag";
-import { State } from "../vm";
+import { die, State } from "../vm";
 import { World } from "../world";
 import { Database, IDatabase } from "./database";
 import {
@@ -50,7 +50,7 @@ export class DatabaseLayer implements IDatabase {
   lookup(name: string) {
     const relation = this.try_lookup(name);
     if (relation == null) {
-      throw new Error(`internal: undefined relation or function: ${name}`);
+      throw die(`undefined relation or function: ${name}`);
     }
     return relation;
   }

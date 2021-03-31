@@ -1,7 +1,7 @@
 import { Environment } from "../world";
 import { EInterpolate, Expression, SBlock, Statement, Type } from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
-import { Machine, Mark, State, _mark } from "../vm";
+import { die, Machine, Mark, State, _mark } from "../vm";
 import {
   CrochetInteger,
   CrochetInterpolation,
@@ -129,11 +129,11 @@ export class ContextBag extends Bag<string, Context> {
 
 export abstract class Context {
   add_action(action: Action): void {
-    throw new Error(`internal: can only add actions to concrete contexts`);
+    throw die(`can only add actions to concrete contexts`);
   }
 
   add_event(event: When): void {
-    throw new Error(`internal: can only add events to concrete contexts`);
+    throw die(`can only add events to concrete contexts`);
   }
 
   abstract available_actions(actor: CrochetValue, state: State): ReadyAction[];

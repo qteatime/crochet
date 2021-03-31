@@ -7,7 +7,6 @@ import {
   Machine,
   State,
   _push,
-  _throw,
 } from "../vm";
 import { ProcedureBranch } from "./procedure";
 import { CrochetType } from "./types";
@@ -23,7 +22,7 @@ export function* safe_cast(x: any, type: CrochetType): Machine {
   if (type.accepts(x)) {
     return x;
   } else {
-    return yield _throw(new ErrUnexpectedType(type, x));
+    throw new ErrUnexpectedType(type, x);
   }
 }
 
@@ -36,10 +35,7 @@ export function* invoke(
   const branch0 = procedure.select(args);
   let branch: ProcedureBranch;
   if (branch0 == null) {
-    branch = cast(
-      yield _throw(new ErrNoBranchMatched(procedure, args)),
-      ProcedureBranch
-    );
+    throw new ErrNoBranchMatched(procedure, args);
   } else {
     branch = branch0;
   }
@@ -53,7 +49,7 @@ export function* apply(
   args: PartialValue[]
 ): Machine {
   if (fn.arity !== args.length) {
-    return _throw(new ErrInvalidArity(fn, args.length));
+    throw new ErrInvalidArity(fn, args.length);
   } else {
     const new_fn = fn.merge(args);
     if (new_fn.is_saturated) {

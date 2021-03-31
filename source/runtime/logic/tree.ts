@@ -1,5 +1,5 @@
 import { CrochetValue } from "../primitives";
-import { State } from "../vm";
+import { die, State } from "../vm";
 import { World } from "../world";
 import { Pattern, UnificationEnvironment } from "./unification";
 
@@ -236,13 +236,13 @@ export class EndNode extends Tree {
 
   insert(values: CrochetValue[]) {
     if (values.length !== 0) {
-      throw new Error(`non-empty insertion on end node`);
+      throw die(`non-empty insertion on end node`);
     }
   }
 
   remove(values: CrochetValue[]) {
     if (values.length !== 0) {
-      throw new Error(`non-empty deletion on end node`);
+      throw die(`non-empty deletion on end node`);
     } else {
       return null;
     }
@@ -254,7 +254,7 @@ export class EndNode extends Tree {
     patterns: Pattern[]
   ): UnificationEnvironment[] {
     if (patterns.length !== 0) {
-      throw new Error(`non-empty search on end node`);
+      throw die(`non-empty search on end node`);
     }
 
     return [env];
@@ -267,7 +267,7 @@ export class EndNode extends Tree {
     patterns: Pattern[]
   ) {
     if (patterns.length !== 0) {
-      throw new Error(`non-empty search on end node`);
+      throw die(`non-empty search on end node`);
     }
 
     return [env];

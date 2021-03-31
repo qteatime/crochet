@@ -1,6 +1,6 @@
 import * as stdlib from "../stdlib";
 import * as compiler from "../compiler";
-import { MachineError, State, World } from "../runtime";
+import { CrochetError, MachineError, State, World } from "../runtime";
 
 export class Crochet {
   readonly world: World;
@@ -34,7 +34,7 @@ export class Crochet {
     return this.world.run(scene);
   }
 
-  async show_error(error: { message: string }) {
-    await stdlib.Html.canvas.show_error(error.message);
+  async show_error(error: Error | CrochetError) {
+    await stdlib.Html.canvas.show_error(error.stack ?? error.message);
   }
 }

@@ -2,7 +2,7 @@ import { TypeApp } from "../../generated/crochet-grammar";
 import { cast } from "../../utils/utils";
 import { Type } from "../ir";
 import { CrochetType, CrochetValue } from "../primitives";
-import { State } from "../vm";
+import { die, State } from "../vm";
 import { Environment, World } from "../world";
 
 export class UnificationEnvironment {
@@ -19,7 +19,7 @@ export class UnificationEnvironment {
   lookup(name: string) {
     const result = this.try_lookup(name);
     if (result == null) {
-      throw new Error(`internal: undefined logical variable ${name}`);
+      throw die(`undefined logical variable ${name}`);
     }
     return result;
   }

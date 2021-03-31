@@ -1,11 +1,23 @@
 import { unreachable } from "../../utils/utils";
 import { CrochetValue } from "../primitives";
-import { MachineError } from "./errors";
+import { ErrNativeError, MachineError } from "./errors";
 
 // Error types
+export class CrochetError {
+  constructor(readonly error: MachineError, readonly frames: string[]) {}
+
+  get message() {
+    return this.error.format();
+  }
+
+  get stack() {
+    const trace = this.frames.map((x) => `  - ${x}`).join("\n");
+    return `${this.message}\n\nExecution trace:\n${trace}`;
+  }
+}
 
 // Yield types
-export type Yield = Await | Push | Jump | Mark | Throw;
+export type Yield = Await | Push | Jump | Mark;
 
 export class Push {
   readonly tag = "push";
@@ -45,19 +57,6 @@ export class Mark {
   }
 }
 
-export class Throw {
-  readonly tag = "throw";
-  constructor(readonly error: MachineError | Error) {}
-
-  evaluate(thread: Thread) {
-    const error = this.error;
-    const trace = thread.stack_trace();
-    const message = format_error(error, trace);
-    console.error(message);
-    throw { error: error, message: message };
-  }
-}
-
 export class Await {
   readonly tag = "await";
   constructor(readonly value: Promise<unknown>) {}
@@ -85,10 +84,6 @@ export function _mark(
   k: Machine | null = null
 ) {
   return new Mark(name, machine, k);
-}
-
-export function _throw(error: MachineError | Error) {
-  return new Throw(error);
 }
 
 // Frame types
@@ -151,21 +146,30 @@ export class Thread {
   }
 
   run(): SyncReturn {
-    while (true) {
-      const result = this.machine.next(this.input);
-      if (result.done) {
-        const newFrame = this.stack.pop();
-        if (newFrame == null) {
-          return new SRDone(result.value);
+    try {
+      while (true) {
+        const result = this.machine.next(this.input);
+        if (result.done) {
+          const newFrame = this.stack.pop();
+          if (newFrame == null) {
+            return new SRDone(result.value);
+          } else {
+            newFrame.evaluate(result.value, this);
+          }
         } else {
-          newFrame.evaluate(result.value, this);
+          const signal = result.value;
+          const sr = signal.evaluate(this);
+          if (sr != null) {
+            return sr;
+          }
         }
+      }
+    } catch (error) {
+      if (error instanceof MachineError) {
+        const trace = this.stack_trace();
+        throw new CrochetError(error, trace);
       } else {
-        const signal = result.value;
-        const sr = signal.evaluate(this);
-        if (sr != null) {
-          return sr;
-        }
+        throw error;
       }
     }
   }
@@ -222,15 +226,6 @@ export class Thread {
 // Machine execution
 export type Machine = Generator<Yield, unknown, unknown>;
 
-function format_error(error: MachineError | Error, trace: string[]) {
-  const trace_string = trace.map((x) => `  - ${x}`).join("\n");
-  if (error instanceof Error) {
-    return `${error.stack}\n\n${trace_string}`;
-  } else {
-    return `${error.format()}\n\n${trace_string}`;
-  }
-}
-
 export function* run_all(machines: Machine[]): Machine {
   const result = [];
   for (const machine of machines) {
@@ -244,7 +239,7 @@ export function cvalue(x: unknown): CrochetValue {
   if (x instanceof CrochetValue) {
     return x;
   } else {
-    throw new Error(`internal: expected a crochet value`);
+    throw die(`expected a crochet value`);
   }
 }
 
@@ -252,6 +247,10 @@ export function avalue(x: unknown): CrochetValue[] {
   if (Array.isArray(x) && x.every((z) => z instanceof CrochetValue)) {
     return x;
   } else {
-    throw new Error(`internal: expected an array of crochet values`);
+    throw die(`expected an array of crochet values`);
   }
+}
+
+export function die(x: string): never {
+  throw new ErrNativeError(new Error(x));
 }

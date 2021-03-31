@@ -143,6 +143,7 @@ type Predicate =
 
 type SamplingPool =
   | Relation(pos: Meta, signature: Signature<Pattern>)
+  | Type(pos: Meta, name: Name, typ: TypeApp)
 
 type Pattern =
   | HasRole(pos: Meta, typ: Name, name: Pattern)
@@ -394,6 +395,8 @@ grammar Crochet : Program {
   samplingPool =
     | r:logicSignature<pattern>
       -> SamplingPool.Relation(meta, r)
+    | l:name is_ t:typeApp
+      -> SamplingPool.Type(meta, l, t)
 
   predicatePrimary =
     | always_                                 -> Predicate.Always(meta)

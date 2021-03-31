@@ -1,3 +1,5 @@
+import { die } from "../runtime";
+
 export class Bag<K, V> {
   readonly map = new Map<K, V>();
 
@@ -5,7 +7,7 @@ export class Bag<K, V> {
 
   add(name: K, value: V) {
     if (this.map.has(name)) {
-      throw new Error(`internal: duplicated ${this.name}: ${name}`);
+      throw die(`internal: duplicated ${this.name}: ${name}`);
     }
     this.map.set(name, value);
   }
@@ -27,7 +29,7 @@ export class Bag<K, V> {
     if (value != null) {
       return value;
     } else {
-      throw new Error(`internal: undefined ${this.name}: ${name}`);
+      throw die(`internal: undefined ${this.name}: ${name}`);
     }
   }
 }

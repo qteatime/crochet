@@ -1,4 +1,5 @@
 import { zip } from "../../utils";
+import { die } from "../vm";
 import { CrochetRecord } from "./record";
 import { CrochetRole, CrochetType, TCrochetAny, type_name } from "./types";
 import { CrochetValue, IProjection, ISelection, Selection } from "./value";
@@ -33,7 +34,7 @@ export class CrochetInstance extends CrochetValue {
   get_field(name: string) {
     const value = this.data[this.type.layout.get(name) ?? -1];
     if (!value) {
-      throw new Error(`Invalid field ${name}`);
+      throw die(`Invalid field ${name}`);
     }
     return value;
   }
@@ -82,12 +83,12 @@ export class TCrochetType extends CrochetType {
 
   validate(data: CrochetValue[]) {
     if (data.length !== this.types.length) {
-      throw new Error(`Invalid data`);
+      throw die(`Invalid data`);
     }
 
     for (const [v, type] of zip(data, this.types)) {
       if (!type.accepts(v)) {
-        throw new Error(
+        throw die(
           `Invalid type: expected ${type.type_name}, got ${type_name(v)}`
         );
       }
@@ -96,7 +97,7 @@ export class TCrochetType extends CrochetType {
 
   instantiate(data: CrochetValue[]) {
     if (this.sealed) {
-      throw new Error(`internal: attempting to construct a sealed type`);
+      throw die(`attempting to construct a sealed type`);
     }
 
     this.validate(data);
@@ -109,10 +110,8 @@ export class TCrochetType extends CrochetType {
 
   register_instance(value: CrochetInstance) {
     if (!this.accepts(value)) {
-      throw new Error(
-        `internal: invalid value ${type_name(value)} for type ${type_name(
-          this
-        )}`
+      throw die(
+        `invalid value ${type_name(value)} for type ${type_name(this)}`
       );
     }
     this.instances.add(value);

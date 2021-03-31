@@ -4,7 +4,16 @@ import { Context } from "./event";
 import { Goal } from "./goal";
 import { Environment } from "../world";
 import { cast, maybe_cast, zip } from "../../utils/utils";
-import { avalue, cvalue, Machine, run_all, State, _mark, _push } from "../vm";
+import {
+  avalue,
+  cvalue,
+  die,
+  Machine,
+  run_all,
+  State,
+  _mark,
+  _push,
+} from "../vm";
 import {
   CrochetInteger,
   CrochetStream,
@@ -30,7 +39,7 @@ export class Signal {
   *evaluate(state: State, args: CrochetValue[]) {
     const env = new Environment(state.env, state.env.raw_receiver);
     if (this.parameters.length !== args.length) {
-      throw new Error(`internal: Invalid arity in signal ${this.name}`);
+      throw die(`Invalid arity in signal ${this.name}`);
     }
     for (const [key, value] of zip(this.parameters, args)) {
       env.define(key, value);

@@ -9,6 +9,7 @@ import {
   CrochetText,
   CrochetValue,
   cvalue,
+  die,
   ErrIndexOutOfRange,
   foreign,
   foreign_namespace,
@@ -224,8 +225,6 @@ function compare(a: CrochetValue, b: CrochetValue): number {
   } else if (b instanceof CrochetFloat) {
     return compare(cast(TCrochetFloat.type.coerce(a), CrochetFloat), b);
   } else {
-    throw new Error(
-      `unsupported comparison: ${type_name(a)} - ${type_name(b)}`
-    );
+    throw die(`unsupported comparison: ${type_name(a)} - ${type_name(b)}`);
   }
 }

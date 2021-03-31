@@ -1,3 +1,4 @@
+import { die } from "../../runtime";
 import { defer } from "../../utils";
 import { lazy } from "../../utils/decorators";
 
@@ -28,7 +29,7 @@ export class Canvas {
 
   get canvas() {
     if (this._canvas == null) {
-      throw new Error(`internal: HTML canvas has not been initialised`);
+      throw die(`HTML canvas has not been initialised`);
     }
     return this._canvas;
   }
