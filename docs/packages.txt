@@ -1,0 +1,17 @@
+# Packages
+
+A simple form of packages with hierarchical, static capabilities
+can be defined as such:
+
+  - each package defines what its sources are
+  - what packages it depends on
+    - possibly restricting what capabilities it confers them
+  - what are the capabilities it requires to run
+  - and what additional capabilities it provides
+
+When loading a package we check if the union of the capabilities
+it provides and requires is a subset of the the currently afforded
+capabilities, and we reject loading otherwise.
+
+This means that a package must require a superset of the capabilities
+its dependencies do.

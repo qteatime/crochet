@@ -1,0 +1,15 @@
+{
+  "name": "crochet.core",
+  "target": ["*"],
+  "sources": [
+    "core.crochet",
+    "integer.crochet",
+    "record.crochet",
+    "stream.crochet",
+    "text.crochet"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

@@ -6,6 +6,16 @@ export class Crochet extends CrochetVM {
     super();
   }
 
+  get prelude() {
+    return ["crochet.core", "crochet.debug", "crochet.time", "crochet.ui.html"];
+  }
+
+  load_native(
+    filename: string
+  ): Promise<(_: CrochetVM) => void | Promise<void>> {
+    throw new Error("Native extensions are not supported in yet.");
+  }
+
   async read_file(filename: string) {
     return (await fetch(filename)).text();
   }
@@ -13,6 +23,28 @@ export class Crochet extends CrochetVM {
   async initialise() {
     stdlib.Html.canvas.render_to(this.root);
     await stdlib.load(State.root(this.world));
+    for (const x of this.prelude) {
+      await this.register_package_from_directory("/stdlib", x);
+    }
+  }
+
+  async register_package_from_directory(root: string, name: string) {
+    const pkg = await this.read_package_from_file(
+      root + "/" + name + "/crochet.json"
+    );
+    this.register_package(pkg.name, pkg);
+  }
+
+  async get_package(name: string) {
+    if (!this.registered_packages.has(name)) {
+      await this.register_package_from_directory("/library", name);
+    }
+    return super.get_package(name);
+  }
+
+  async show_error(error: unknown) {
+    console.error(error);
+    await stdlib.Html.canvas.show_error(this.format_error(error));
   }
 }
 

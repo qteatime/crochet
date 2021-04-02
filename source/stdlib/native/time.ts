@@ -9,7 +9,7 @@ import {
 import { foreign, foreign_namespace } from "../../runtime/world/ffi-decorators";
 import { cast, delay } from "../../utils";
 
-@foreign_namespace("crochet.native.time")
+@foreign_namespace("crochet.time:time")
 export class TimeFfi {
   @foreign("sleep")
   static *sleep(state: State, ms0: CrochetValue): Machine {

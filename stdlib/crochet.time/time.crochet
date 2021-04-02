@@ -1,0 +1,4 @@
+% crochet
+
+command (X is integer) sleep =
+  foreign time.sleep(X);

@@ -1,0 +1,12 @@
+% crochet
+
+singleton debug;
+
+command X inspect =
+  foreign debug.inspect(X);
+
+command X debug-representation =
+  foreign debug.representation(X);
+
+command debug time: X tag: Tag =
+  foreign debug.time(X, Tag);

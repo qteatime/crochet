@@ -15,7 +15,7 @@ import {
 } from "../../runtime";
 import { cast, copy_map } from "../../utils";
 
-@foreign_namespace("crochet.native.record")
+@foreign_namespace("crochet.core:record")
 export class RecordFfi {
   static at(record: CrochetRecord, key: CrochetText) {
     return record.values.get(key.value);

@@ -1,1 +1,0 @@
-export default {"filename":"builtin debug.crochet","source":"% crochet\r\n\r\nsingleton debug;\r\n\r\ncommand X inspect =\r\n  foreign crochet.native.debug.inspect(X);\r\n\r\ncommand X debug-representation =\r\n  foreign crochet.native.debug.representation(X);\r\n\r\ncommand debug time: X tag: Tag =\r\n  foreign crochet.native.debug.time(X, Tag);"}

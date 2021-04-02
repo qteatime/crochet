@@ -26,7 +26,7 @@ import {
 } from "../../runtime";
 import { cast } from "../../utils";
 
-@foreign_namespace("crochet.native.core")
+@foreign_namespace("crochet.core:core")
 export class CoreFfi {
   @foreign_type("any")
   static get type_any(): CrochetType {

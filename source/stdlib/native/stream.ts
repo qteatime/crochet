@@ -26,7 +26,7 @@ import {
 } from "../../runtime";
 import { iter, gen, cast } from "../../utils";
 
-@foreign_namespace("crochet.native.stream")
+@foreign_namespace("crochet.core:stream")
 export class StreamFfi {
   @foreign()
   @machine()

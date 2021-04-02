@@ -42,3 +42,20 @@ export class BagMap<K extends IEquality, V> {
     }
   }
 }
+
+export function difference<A>(s1: Set<A>, s2: Set<A>) {
+  const result = new Set<A>();
+  for (const x of s2.values()) {
+    if (!s1.has(x)) {
+      result.add(x);
+    }
+  }
+  return result;
+}
+
+export function union<A>(s1: Set<A>, s2: Set<A>) {
+  const result = new Set<A>();
+  for (const x of s1.values()) result.add(x);
+  for (const x of s2.values()) result.add(x);
+  return result;
+}

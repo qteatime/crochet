@@ -1,1 +1,0 @@
-export default {"filename":"builtin time.crochet","source":"% crochet\r\n\r\ncommand (X is integer) sleep =\r\n  foreign crochet.native.time.sleep(X);"}

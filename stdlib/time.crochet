@@ -1,4 +1,0 @@
-% crochet
-
-command (X is integer) sleep =
-  foreign crochet.native.time.sleep(X);

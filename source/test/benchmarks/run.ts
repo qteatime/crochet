@@ -100,11 +100,13 @@ const all_vms = [
 
 async function time(label: string, code: () => Promise<any>) {
   const log = console.log;
+  const debug = console.debug;
   console.log = () => {};
   const start = new Date().getTime();
   const result = await code();
   const end = new Date().getTime();
   console.log = log;
+  console.debug = debug;
   console.log(`--> ${label} (${end - start}ms)`);
   return result;
 }

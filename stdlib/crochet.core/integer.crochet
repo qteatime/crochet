@@ -1,0 +1,54 @@
+% crochet
+
+// Note: we don't provide the non-integral division operator (/) yet because
+// we neither have fractional numbers nor floats.
+
+// == Arithmetic
+command (X is integer) + (Y is integer) =
+  foreign integer.add(X, Y);
+
+command (X is integer) - (Y is integer) =
+  foreign integer.sub(X, Y);
+
+command (X is integer) * (Y is integer) =
+  foreign integer.mul(X, Y);
+
+command (X is integer) divided-by: (Y is integer) =
+  foreign integer.div(X, Y);
+
+command (X is integer) remainder-of-division-by: (Y is integer) =
+  foreign integer.rem(X, Y);
+
+command (X is integer) divide-by-with-remainder: (Y is integer) do
+  [
+    Quotient -> X divided-by: Y,
+    Remainder -> X remainder-of-division-by: Y,
+  ];
+end
+
+command (X is integer) ** (P is integer) =
+  foreign integer.power(X, P);
+
+command (X is integer) sqrt =
+  foreign integer.sqrt(X);
+
+// == Relational
+command (X is integer) < (Y is integer) = 
+  foreign integer.lt(X, Y);
+
+command (X is integer) <= (Y is integer) = 
+  foreign integer.lte(X, Y);
+
+command (X is integer) > (Y is integer) = 
+  foreign integer.gt(X, Y);
+
+command (X is integer) >= (Y is integer) = 
+  foreign integer.gte(X, Y);
+
+// == Ranges
+command (Min is integer) to: (Max is integer) =
+  foreign integer.range(Min, Max);
+
+command (Min is integer) until: (Max is integer) do
+  Min to: (Max - 1)
+end

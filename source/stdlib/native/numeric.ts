@@ -10,7 +10,7 @@ import {
 } from "../../runtime";
 import { cast } from "../../utils";
 
-@foreign_namespace("crochet.native.integer")
+@foreign_namespace("crochet.core:integer")
 export class IntegerFfi {
   @foreign()
   @machine()

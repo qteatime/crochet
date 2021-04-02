@@ -4,7 +4,7 @@ import * as Stdlib from "../stdlib";
 import * as Server from "./crochet-server";
 import { Crochet } from "../targets/cli";
 
-import { show } from "../utils";
+import { logger, show } from "../utils";
 import * as FS from "fs";
 import * as Path from "path";
 
@@ -81,11 +81,11 @@ async function run(
       vm.reseed(Number(seed));
     }
     await vm.initialise();
-    console.debug("[DEBUG] Using seed:", vm.world.global_random.seed);
+    logger.debug("Using seed:", vm.world.global_random.seed);
     await vm.load(filename);
     await vm.run(entry);
   } catch (error) {
-    vm.show_error(error);
+    await vm.show_error(error);
     process.exit(1);
   }
 }

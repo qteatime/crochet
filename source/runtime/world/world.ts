@@ -15,6 +15,7 @@ import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
 import { Environment } from "../vm/environment";
 import { XorShift } from "../../utils";
+import { CrochetPackage } from "../vm/pkg";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
@@ -73,11 +74,16 @@ export class World {
   async load_declarations(
     filename: string,
     xs: Declaration[],
-    env: Environment
+    env: Environment,
+    pkg: CrochetPackage
   ) {
+    const context = {
+      filename,
+      package: pkg,
+    };
     const state = new State(this.global_random, this, env, this.database);
     for (const x of xs) {
-      await x.apply(filename, state);
+      await x.apply(context, state);
     }
   }
 

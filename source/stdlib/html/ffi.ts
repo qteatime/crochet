@@ -28,7 +28,7 @@ import {
   TCrochetMenu,
 } from "./element";
 
-@foreign_namespace("crochet.ui.html")
+@foreign_namespace("crochet.ui.html:html")
 export class HtmlFfi {
   @foreign_type("element")
   static get type_element(): CrochetType {

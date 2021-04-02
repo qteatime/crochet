@@ -10,7 +10,7 @@ import {
 } from "../../runtime";
 import { cast } from "../../utils";
 
-@foreign_namespace("crochet.native.interpolation")
+@foreign_namespace("crochet.core:interpolation")
 export class InterpolationFfi {
   @foreign()
   @machine()
@@ -50,7 +50,7 @@ export class InterpolationFfi {
   }
 }
 
-@foreign_namespace("crochet.text")
+@foreign_namespace("crochet.core:text")
 export class TextFfi {
   @foreign()
   @machine()

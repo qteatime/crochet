@@ -1,0 +1,46 @@
+% crochet
+
+type any = foreign core.any;
+type unknown = foreign core.unknown;
+type true = foreign core.true;
+type false = foreign core.false;
+type boolean = foreign core.boolean;
+type float = foreign core.float;
+type integer = foreign core.integer;
+type text = foreign core.text;
+type interpolation = foreign core.interpolation;
+type partial = foreign core.partial;
+type record = foreign core.record;
+type stream = foreign core.stream;
+type thunk = foreign core.thunk;
+type 'enum = foreign core.enum;
+
+command X and Y = foreign core.band(X, Y);
+command X or Y = foreign core.bor(X, Y);
+command not X = foreign core.bnot(X);
+
+command X === Y = foreign core.eq(X, Y);
+command X =/= Y = foreign core.not-eq(X, Y);
+
+command X <= Y = (X === Y) or (X < Y);
+command X >= Y = (X === Y) or (X > Y);
+
+command 'enum < (O is 'enum) =
+  self to-enum-integer < O to-enum-integer;
+
+command 'enum > (O is 'enum) =
+  self to-enum-integer > O to-enum-integer;
+
+command 'enum successor do
+  self from-enum-integer: (self to-enum-integer + 1);
+end
+
+command 'enum predecessor do
+  self from-enum-integer: (self to-enum-integer - 1);
+end
+
+command (From0 is 'enum) to: (To0 is 'enum) do
+  let From = From0 to-enum-integer;
+  let To = To0 to-enum-integer;
+  for I in From to: To do From0 from-enum-integer: I end
+end

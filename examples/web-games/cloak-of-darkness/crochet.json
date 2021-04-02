@@ -1,5 +1,10 @@
 {
   "name": "crochet.examples.cloak-of-darkness",
-  "target": "web",
-  "sources": ["cloak-of-darkness.crochet"]
+  "target": ["web"],
+  "sources": ["cloak-of-darkness.crochet"],
+  "dependencies": ["crochet.core", "crochet.ui.html"],
+  "capabilities": {
+    "requires": ["html"],
+    "provides": []
+  }
 }

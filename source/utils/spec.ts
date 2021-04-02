@@ -32,6 +32,12 @@ function collect<A>(xs: Valid<A>[]): Valid<A[]> {
 
 export type SpecType<T> = T extends AnySpec<infer U> ? U : never;
 
+export type SpecTypes<Ts> = Ts extends [AnySpec<infer U>]
+  ? U
+  : Ts extends [AnySpec<infer U>, ...infer Rest]
+  ? U | SpecTypes<Rest>
+  : never;
+
 export type RecordSpecType<R> = R extends Record<infer K, infer T>
   ? { [K0 in K]: SpecType<R[K0]> }
   : never;
@@ -151,9 +157,9 @@ export function equal<A>(x: A): SpecFun<A> {
   };
 }
 
-export function anyOf<A>(fs: [AnySpec<A>]): SpecFun<A>;
-export function anyOf<A, B>(fs: [SpecFun<A>, SpecFun<B>]): SpecFun<A | B>;
-export function anyOf<T extends AnySpec<any>[]>(fs: T): SpecFun<Union<T>> {
+export function anyOf<T extends AnySpec<any>[]>(
+  fs: [...T]
+): SpecFun<SpecTypes<T>> {
   return (value: any) => {
     return fs.map(toSpec).reduce((r: Result<any, EAnyOf>, f: SpecFun<any>) => {
       return r.recover((rs: EAnyOf) => {
@@ -173,11 +179,7 @@ export function spec<A extends Record<string, AnySpec<any>>, B>(
     if (value !== null && typeof value === "object") {
       const entries = collect(
         Object.entries(type).map(([k, f]: [string, any]) => {
-          if (k in value) {
-            return toSpec(f)(value[k]).chain((v: any) => new Ok([k, v]));
-          } else {
-            return new Err(new ENoKey(k));
-          }
+          return toSpec(f)(value[k] ?? null).chain((v: any) => new Ok([k, v]));
         })
       );
       return entries.chain((xs: any[]) => {
@@ -199,12 +201,18 @@ export function optional<A>(spec: AnySpec<A>, default_value: A): SpecFun<A> {
   };
 }
 
+export function map_spec<A, B>(spec: AnySpec<A>, f: (_: A) => B): SpecFun<B> {
+  return (value: any) => {
+    return toSpec(spec)(value).chain((v) => new Ok(f(v)));
+  };
+}
+
 export function parse<A>(x: any, spec: AnySpec<A>): A {
   const result = toSpec(spec)(x);
   if (result instanceof Ok) {
     return result.value;
   } else {
     console.error(result.reason);
-    throw new Error(`Failed to parse`);
+    throw new Error(`Failed to parse: ${result.reason}`);
   }
 }

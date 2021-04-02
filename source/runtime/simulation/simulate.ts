@@ -24,6 +24,7 @@ import { Pattern, UnificationEnvironment } from "../logic";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
 import { Error } from "../../utils/result";
 import { ActionChoice } from "./action-choice";
+import { logger } from "../../utils";
 
 export class Signal {
   constructor(
@@ -89,12 +90,12 @@ export class Simulation {
     const actor0 = yield _push(this.next_actor(state));
     this.turn = maybe_cast(actor0, CrochetValue);
     while (this.turn != null) {
-      console.debug("[DEBUG] New turn", this.turn.to_text());
+      logger.debug("New turn", this.turn.to_text());
       const action0 = cvalue(yield _push(this.pick_action(state, this.turn)));
       const action = maybe_cast(action0, ActionChoice);
       if (action != null) {
         actions_fired += 1;
-        console.debug("[DEBUG] Chosen action", action.title.to_text());
+        logger.debug("Chosen action", action.title.to_text());
         action.action.fire(this.turn);
         yield _mark(action.full_name, action.machine);
         for (const reaction of this.context.available_events(state)) {
