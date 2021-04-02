@@ -30,12 +30,11 @@ function collect<A>(xs: Valid<A>[]): Valid<A[]> {
   }, new Ok([]));
 }
 
-export type SpecType<T> =
-  T extends AnySpec<infer U> ? U : never;
+export type SpecType<T> = T extends AnySpec<infer U> ? U : never;
 
-export type RecordSpecType<R> = 
-  R extends Record<infer K, infer T> ? { [K0 in K]: SpecType<R[K0]> }
-: never;
+export type RecordSpecType<R> = R extends Record<infer K, infer T>
+  ? { [K0 in K]: SpecType<R[K0]> }
+  : never;
 
 type Result<A, B> = Ok<A, B> | Err<A, B>;
 
@@ -152,6 +151,8 @@ export function equal<A>(x: A): SpecFun<A> {
   };
 }
 
+export function anyOf<A>(fs: [AnySpec<A>]): SpecFun<A>;
+export function anyOf<A, B>(fs: [SpecFun<A>, SpecFun<B>]): SpecFun<A | B>;
 export function anyOf<T extends AnySpec<any>[]>(fs: T): SpecFun<Union<T>> {
   return (value: any) => {
     return fs.map(toSpec).reduce((r: Result<any, EAnyOf>, f: SpecFun<any>) => {

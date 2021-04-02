@@ -1,40 +1,34 @@
 import * as stdlib from "../stdlib";
-import * as compiler from "../compiler";
-import { CrochetError, MachineError, State, World } from "../runtime";
+import { CrochetVM, State } from "../runtime";
 
-export class Crochet {
-  readonly world: World;
-
+export class Crochet extends CrochetVM {
   constructor(readonly root: HTMLElement) {
-    this.world = new World();
+    super();
   }
 
-  get ffi() {
-    return this.world.ffi;
+  async read_file(filename: string) {
+    return (await fetch(filename)).text();
   }
 
   async initialise() {
     stdlib.Html.canvas.render_to(this.root);
     await stdlib.load(State.root(this.world));
   }
-
-  async load_from_source(filename: string, source: string) {
-    const ast = compiler.parse(source);
-    const ir = compiler.compileProgram(ast);
-    const state = State.root(this.world);
-    await state.world.load_declarations(filename, ir, state.env);
-  }
-
-  async load_from_url(url: string) {
-    const source = await (await fetch(url)).text();
-    await this.load_from_source(url, source);
-  }
-
-  async run(scene: string) {
-    return this.world.run(scene);
-  }
-
-  async show_error(error: Error | CrochetError) {
-    await stdlib.Html.canvas.show_error(error.stack ?? error.message);
-  }
 }
+
+void (async function () {
+  const root = document.querySelector("#crochet");
+  if (root == null) {
+    throw new Error(`Missing #crochet element in the page.`);
+  }
+
+  const game = new Crochet(root as HTMLElement);
+
+  try {
+    await game.initialise();
+    await game.load("/game/crochet.json");
+    await game.run("main");
+  } catch (error) {
+    await game.show_error(error);
+  }
+})();

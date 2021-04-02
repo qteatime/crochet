@@ -8,3 +8,4 @@ bin/
 dist/
 .fable/
 www/crochet.js
+tsconfig.tsbuildinfo

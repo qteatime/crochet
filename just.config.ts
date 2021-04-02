@@ -35,7 +35,7 @@ task("build-targets", () => {
 
 task("build-web", () => {
   execSync(
-    ` ./node_modules/.bin/browserify -e build/targets/web.js -s Crochet -o www/crochet.js`
+    ` ./node_modules/.bin/browserify -e build/targets/web.js -o www/crochet.js`
   );
 });
 

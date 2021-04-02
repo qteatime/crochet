@@ -7,7 +7,8 @@
     "target": "ES2020",
     "lib": ["ESNext", "DOM"],
     "experimentalDecorators": true,
-    "declaration": true
+    "declaration": true,
+    "incremental": true
   },
-  "include": ["source/**/*.ts"]
+  "include": ["./source"]
 }

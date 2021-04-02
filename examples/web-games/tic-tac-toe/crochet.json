@@ -1,3 +1,5 @@
 {
+  "name": "crochet.examples.tic-tac-toe",
+  "target": "web",
   "sources": ["tic-tac-toe.crochet"]
 }
