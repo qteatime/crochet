@@ -154,7 +154,11 @@ export abstract class CrochetVM {
     if (error instanceof MachineError) {
       return error.format();
     } else if (error instanceof Error) {
-      return error.stack ?? error.message;
+      if (logger.verbose) {
+        return error.stack;
+      } else {
+        return `${error.name}: ${error.message}`;
+      }
     } else if (error instanceof CrochetError) {
       return error.stack;
     } else {

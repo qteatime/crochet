@@ -1,4 +1,6 @@
 export class Logger {
+  public verbose = false;
+
   meta(level: string) {
     return `[${level}]`;
   }
@@ -8,7 +10,9 @@ export class Logger {
   }
 
   debug(...xs: any[]) {
-    console.debug(this.meta("debug"), ...xs);
+    if (this.verbose) {
+      console.debug(this.meta("debug"), ...xs);
+    }
   }
 
   error(...xs: any[]) {

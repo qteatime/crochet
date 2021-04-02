@@ -128,6 +128,7 @@ function show_ir(filename: string) {
 if (!argv.verbose) {
   console.debug = () => {};
 }
+logger.verbose = argv.verbose;
 
 switch (argv._[0]) {
   case "run": {
