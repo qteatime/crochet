@@ -4,12 +4,13 @@ import * as Stdlib from "../stdlib";
 import * as Server from "./crochet-server";
 import { Crochet } from "../targets/cli";
 
-import { logger, show } from "../utils";
+import { array, logger, parse, show } from "../utils";
 import * as FS from "fs";
 import * as Path from "path";
 
 import * as Yargs from "yargs";
 import { World } from "../runtime";
+import { Capabilities, CrochetCapability } from "../runtime/vm/pkg";
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {
@@ -25,6 +26,11 @@ const argv = Yargs.usage("crochet <command> [options]")
       .option("seed", {
         description: "The initial seed for the PRNG",
         type: "string",
+      })
+      .option("capabilities", {
+        description: "The capabilities to grant the program",
+        type: "array",
+        default: [],
       });
   })
   .command(
@@ -44,6 +50,11 @@ const argv = Yargs.usage("crochet <command> [options]")
           description: "Port to bind to",
           default: 8080,
           type: "number",
+        })
+        .option("capabilities", {
+          description: "The capabilities to grant the program",
+          type: "array",
+          default: [],
         });
     }
   )
@@ -73,7 +84,8 @@ function read(filename: string) {
 async function run(
   filename: string,
   entry: string = "main",
-  seed: string | null
+  seed: string | null,
+  capabilities: Capabilities
 ) {
   const vm = new Crochet();
   try {
@@ -82,11 +94,21 @@ async function run(
     }
     await vm.initialise();
     logger.debug("Using seed:", vm.world.global_random.seed);
-    await vm.load(filename);
+    await vm.load_with_capabilities(filename, capabilities);
     await vm.run(entry);
   } catch (error) {
     await vm.show_error(error);
     process.exit(1);
+  }
+}
+
+function parse_capabilities(capabilities: string[] | null) {
+  if (capabilities == null) {
+    return new Capabilities(new Set());
+  } else {
+    return new Capabilities(
+      new Set(parse(capabilities, array(CrochetCapability)))
+    );
   }
 }
 
@@ -112,7 +134,8 @@ switch (argv._[0]) {
     run(
       argv["filename"] as string,
       argv["entry"] as string,
-      argv["seed"] as string | null
+      argv["seed"] as string | null,
+      parse_capabilities(argv["capabilities"] as string[])
     );
     break;
   }

@@ -1,0 +1,9 @@
+{
+  "name": "map",
+  "sources": ["map-generation.crochet"],
+  "dependencies": ["crochet.core", "crochet.debug"],
+  "capabilities": {
+    "requires": ["reflection"],
+    "provides": []
+  }
+}

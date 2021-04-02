@@ -1,5 +1,6 @@
 import * as stdlib from "../stdlib";
 import { CrochetVM, State } from "../runtime";
+import { Capabilities } from "../runtime/vm/pkg";
 
 export class Crochet extends CrochetVM {
   constructor(readonly root: HTMLElement) {
@@ -14,6 +15,13 @@ export class Crochet extends CrochetVM {
     filename: string
   ): Promise<(_: CrochetVM) => void | Promise<void>> {
     throw new Error("Native extensions are not supported in yet.");
+  }
+
+  async load(filename: string) {
+    return this.load_with_capabilities(
+      filename,
+      new Capabilities(new Set(["html"]))
+    );
   }
 
   async read_file(filename: string) {

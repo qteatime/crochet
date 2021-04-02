@@ -107,17 +107,29 @@ export abstract class CrochetVM {
   }
 
   async load(filename: string) {
+    return this.load_with_capabilities(filename, new Capabilities(new Set()));
+  }
+
+  async load_with_capabilities(filename: string, capabilities: Capabilities) {
     switch (Path.extname(filename)) {
       case ".json": {
         const pkg = await this.read_package_from_file(filename);
-        const cap = new Capabilities(pkg.capabilities.requires);
+        const cap = capabilities.restrict(pkg.capabilities.requires);
         return await this.load_package(pkg, cap);
       }
       case ".crochet": {
-        const capabilities = new Capabilities(new Set());
         for (const pkg_name of this.prelude) {
           const pkg = await this.get_package(pkg_name);
-          await this.load_package(pkg, capabilities);
+          const missing = capabilities.require(pkg.required_capabilities);
+          if (missing.size === 0) {
+            await this.load_package(pkg, capabilities);
+          } else {
+            logger.debug(
+              `Not loading ${pkg.name} due to missing capabilities: ${[
+                ...missing,
+              ].join(", ")}`
+            );
+          }
         }
         return await this.load_crochet(
           filename,
