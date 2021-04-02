@@ -7,7 +7,7 @@ const benchTarget = {
   entry: "./build/targets/bench.js",
   output: {
     path: path.resolve(__dirname, "versions"),
-    filename: `crochet-v${pkg.version}.js`,
+    filename: `current.js`,
     library: {
       name: "Crochet",
       type: "umd",

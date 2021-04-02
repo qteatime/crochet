@@ -9,3 +9,4 @@ dist/
 .fable/
 www/crochet.js
 tsconfig.tsbuildinfo
+versions/current.js

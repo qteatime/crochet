@@ -27,16 +27,16 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Html = exports.load = void 0;
 const compiler_1 = __webpack_require__(3);
 const compiler_2 = __webpack_require__(54);
-const core_crochet_1 = __webpack_require__(112);
-const html_ui_crochet_1 = __webpack_require__(113);
-const integer_crochet_1 = __webpack_require__(114);
-const record_crochet_1 = __webpack_require__(115);
-const stream_crochet_1 = __webpack_require__(116);
-const text_crochet_1 = __webpack_require__(117);
-const debug_crochet_1 = __webpack_require__(118);
-const time_crochet_1 = __webpack_require__(119);
-const ffi_1 = __webpack_require__(120);
-const native_1 = __webpack_require__(123);
+const core_crochet_1 = __webpack_require__(110);
+const html_ui_crochet_1 = __webpack_require__(111);
+const integer_crochet_1 = __webpack_require__(112);
+const record_crochet_1 = __webpack_require__(113);
+const stream_crochet_1 = __webpack_require__(114);
+const text_crochet_1 = __webpack_require__(115);
+const debug_crochet_1 = __webpack_require__(116);
+const time_crochet_1 = __webpack_require__(117);
+const ffi_1 = __webpack_require__(118);
+const native_1 = __webpack_require__(121);
 const sources = [core_crochet_1.default, integer_crochet_1.default, record_crochet_1.default, stream_crochet_1.default, text_crochet_1.default, debug_crochet_1.default, time_crochet_1.default, html_ui_crochet_1.default];
 async function load(state) {
     state.world.ffi.add(native_1.CoreFfi);
@@ -54,7 +54,7 @@ async function load(state) {
     }
 }
 exports.load = load;
-const Html = __webpack_require__(131);
+const Html = __webpack_require__(129);
 exports.Html = Html;
 
 
@@ -11470,7 +11470,7 @@ const rt = __webpack_require__(55);
 const runtime_1 = __webpack_require__(55);
 const IR = __webpack_require__(56);
 const ir_1 = __webpack_require__(56);
-const Logic = __webpack_require__(98);
+const Logic = __webpack_require__(96);
 const Sim = __webpack_require__(58);
 const utils_1 = __webpack_require__(63);
 // -- Utilities
@@ -12118,7 +12118,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.IR = void 0;
 const IR = __webpack_require__(56);
 exports.IR = IR;
-__exportStar(__webpack_require__(98), exports);
+__exportStar(__webpack_require__(96), exports);
 __exportStar(__webpack_require__(64), exports);
 __exportStar(__webpack_require__(60), exports);
 __exportStar(__webpack_require__(58), exports);
@@ -12143,10 +12143,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(57), exports);
+__exportStar(__webpack_require__(106), exports);
+__exportStar(__webpack_require__(107), exports);
 __exportStar(__webpack_require__(108), exports);
 __exportStar(__webpack_require__(109), exports);
-__exportStar(__webpack_require__(110), exports);
-__exportStar(__webpack_require__(111), exports);
 
 
 /***/ }),
@@ -12158,13 +12158,13 @@ __exportStar(__webpack_require__(111), exports);
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DContext = exports.DSealType = exports.DForeignType = exports.DWhen = exports.DAction = exports.DScene = exports.DDefine = exports.DType = exports.DRole = exports.DCrochetCommand = exports.DForeignCommand = exports.DDo = exports.DPredicate = exports.DRelation = exports.Declaration = void 0;
 const simulation_1 = __webpack_require__(58);
-const logic_1 = __webpack_require__(98);
+const logic_1 = __webpack_require__(96);
 const primitives_1 = __webpack_require__(64);
-const procedure_1 = __webpack_require__(93);
+const procedure_1 = __webpack_require__(91);
 const vm_1 = __webpack_require__(66);
 const world_1 = __webpack_require__(60);
-const statement_1 = __webpack_require__(108);
-const utils_1 = __webpack_require__(71);
+const statement_1 = __webpack_require__(106);
+const utils_1 = __webpack_require__(73);
 class Declaration {
 }
 exports.Declaration = Declaration;
@@ -12386,8 +12386,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(59), exports);
-__exportStar(__webpack_require__(105), exports);
-__exportStar(__webpack_require__(106), exports);
+__exportStar(__webpack_require__(103), exports);
+__exportStar(__webpack_require__(104), exports);
 
 
 /***/ }),
@@ -12400,11 +12400,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AnyContext = exports.ConcreteContext = exports.Context = exports.ContextBag = exports.Action = exports.When = void 0;
 const world_1 = __webpack_require__(60);
 const ir_1 = __webpack_require__(56);
-const logic_1 = __webpack_require__(98);
+const logic_1 = __webpack_require__(96);
 const vm_1 = __webpack_require__(66);
 const primitives_1 = __webpack_require__(64);
-const utils_1 = __webpack_require__(71);
-const layer_1 = __webpack_require__(104);
+const utils_1 = __webpack_require__(73);
+const layer_1 = __webpack_require__(102);
 class When {
     constructor(filename, predicate, env, body) {
         this.filename = filename;
@@ -12553,10 +12553,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(61), exports);
-__exportStar(__webpack_require__(94), exports);
-__exportStar(__webpack_require__(96), exports);
-__exportStar(__webpack_require__(97), exports);
 __exportStar(__webpack_require__(92), exports);
+__exportStar(__webpack_require__(94), exports);
+__exportStar(__webpack_require__(95), exports);
+__exportStar(__webpack_require__(90), exports);
 
 
 /***/ }),
@@ -12994,20 +12994,20 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(65), exports);
-__exportStar(__webpack_require__(80), exports);
+__exportStar(__webpack_require__(70), exports);
+__exportStar(__webpack_require__(72), exports);
 __exportStar(__webpack_require__(82), exports);
 __exportStar(__webpack_require__(84), exports);
 __exportStar(__webpack_require__(86), exports);
+__exportStar(__webpack_require__(81), exports);
+__exportStar(__webpack_require__(87), exports);
+__exportStar(__webpack_require__(85), exports);
 __exportStar(__webpack_require__(88), exports);
 __exportStar(__webpack_require__(83), exports);
 __exportStar(__webpack_require__(89), exports);
-__exportStar(__webpack_require__(87), exports);
-__exportStar(__webpack_require__(90), exports);
-__exportStar(__webpack_require__(85), exports);
+__exportStar(__webpack_require__(71), exports);
 __exportStar(__webpack_require__(91), exports);
-__exportStar(__webpack_require__(81), exports);
-__exportStar(__webpack_require__(93), exports);
-__exportStar(__webpack_require__(79), exports);
+__exportStar(__webpack_require__(69), exports);
 
 
 /***/ }),
@@ -13019,7 +13019,7 @@ __exportStar(__webpack_require__(79), exports);
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CrochetValue = void 0;
 const vm_1 = __webpack_require__(66);
-const types_1 = __webpack_require__(79);
+const types_1 = __webpack_require__(69);
 class CrochetValue {
     constructor() {
         this._projection = null;
@@ -13085,8 +13085,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(67), exports);
 __exportStar(__webpack_require__(68), exports);
 __exportStar(__webpack_require__(62), exports);
-__exportStar(__webpack_require__(69), exports);
-__exportStar(__webpack_require__(61), exports);
 
 
 /***/ }),
@@ -13261,98 +13259,346 @@ exports.State = State;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CrochetVM = exports.CrochetPackage = void 0;
-const Path = __webpack_require__(70);
-const utils_1 = __webpack_require__(71);
-const Compiler = __webpack_require__(3);
-const state_1 = __webpack_require__(68);
-const world_1 = __webpack_require__(60);
-class CrochetPackage {
-    constructor(filename, data) {
+exports.type_name = exports.TCrochetAny = exports.CrochetRole = exports.CrochetType = void 0;
+const value_1 = __webpack_require__(65);
+class CrochetType {
+    accepts(x) {
+        return x.type.is_subtype(this);
+    }
+    is_subtype(type) {
+        if (this === type) {
+            return true;
+        }
+        else if (this.parent != null) {
+            return this.parent.is_subtype(type);
+        }
+        else {
+            return false;
+        }
+    }
+    distance() {
+        if (this.parent == null) {
+            return 0;
+        }
+        else {
+            return -1 + this.parent.distance();
+        }
+    }
+    coerce(x) {
+        if (this.accepts(x)) {
+            return x;
+        }
+        else {
+            return null;
+        }
+    }
+}
+exports.CrochetType = CrochetType;
+class CrochetRole {
+    constructor(filename, name) {
         this.filename = filename;
-        this.data = data;
-        this.root = Path.resolve(Path.dirname(filename));
-    }
-    get sources() {
-        return this.data.sources.map((x) => this.resolve(x));
-    }
-    resolve(source) {
-        const resolved = Path.resolve(this.root, source);
-        if (resolved.indexOf(this.root + "/") !== 0) {
-            throw new Error(`${source} is outside of its package URL scope`);
-        }
-        return resolved;
-    }
-    static get spec() {
-        return utils_1.spec({
-            name: utils_1.string,
-            sources: utils_1.array(utils_1.string),
-            target: utils_1.anyOf([utils_1.equal("web"), utils_1.equal("cli")]),
-        }, (x) => (filename) => new CrochetPackage(filename, x));
-    }
-    static parse(x, filename) {
-        return utils_1.parse(x, this.spec)(filename);
+        this.name = name;
     }
 }
-exports.CrochetPackage = CrochetPackage;
-class CrochetVM {
+exports.CrochetRole = CrochetRole;
+class TCrochetAny extends CrochetType {
     constructor() {
-        this.world = new world_1.World();
+        super(...arguments);
+        this.type_name = "any";
+        this.parent = null;
     }
-    get ffi() {
-        return this.world.ffi;
-    }
-    reseed(seed) {
-        this.world.global_random.reseed(seed);
-    }
-    async load_crochet(filename) {
-        const source = await this.read_file(filename);
-        const ast = Compiler.parse(source);
-        const ir = Compiler.compileProgram(ast);
-        const state = state_1.State.root(this.world);
-        await state.world.load_declarations(filename, ir, state.env);
-    }
-    async load_package(filename) {
-        const source = await this.read_file(filename);
-        const pkg = CrochetPackage.parse(JSON.parse(source), filename);
-        for (const x of pkg.sources) {
-            await this.load_crochet(x);
-        }
-    }
-    async load(filename) {
-        switch (Path.extname(filename)) {
-            case ".json": {
-                return await this.load_package(filename);
-            }
-            case ".crochet": {
-                return await this.load_crochet(filename);
-            }
-            default:
-                throw new Error(`Unsupported file ${filename}`);
-        }
-    }
-    async run(scene) {
-        return await this.world.run(scene);
-    }
-    async show_error(error) {
-        console.error(this.format_error(error));
-    }
-    format_error(error) {
-        return error.stack ?? error.message;
+    coerce(x) {
+        return x;
     }
 }
-exports.CrochetVM = CrochetVM;
+exports.TCrochetAny = TCrochetAny;
+TCrochetAny.type = new TCrochetAny();
+function type_name(x) {
+    if (x instanceof value_1.CrochetValue) {
+        return x.type.type_name;
+    }
+    else if (x instanceof CrochetType) {
+        return x.type_name;
+    }
+    else {
+        return `<host value: ${x?.name ?? typeof x}>`;
+    }
+}
+exports.type_name = type_name;
 
 
 /***/ }),
 /* 70 */
-/***/ ((module) => {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
-module.exports = require("path");;
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TCrochetFalse = exports.TCrochetTrue = exports.TCrochetBoolean = exports.False = exports.True = void 0;
+const core_ops_1 = __webpack_require__(71);
+const types_1 = __webpack_require__(69);
+const value_1 = __webpack_require__(65);
+class True extends value_1.CrochetValue {
+    get type() {
+        return TCrochetTrue.type;
+    }
+    equals(other) {
+        return !(other instanceof False);
+    }
+    as_bool() {
+        return true;
+    }
+    to_js() {
+        return true;
+    }
+    to_text() {
+        return "true";
+    }
+}
+exports.True = True;
+True.instance = new True();
+class False extends value_1.CrochetValue {
+    get type() {
+        return TCrochetFalse.type;
+    }
+    equals(other) {
+        return other instanceof False;
+    }
+    as_bool() {
+        return false;
+    }
+    to_js() {
+        return false;
+    }
+    to_text() {
+        return "false";
+    }
+}
+exports.False = False;
+False.instance = new False();
+class TCrochetBoolean extends types_1.CrochetType {
+    constructor() {
+        super(...arguments);
+        this.parent = types_1.TCrochetAny.type;
+        this.type_name = "boolean";
+    }
+    coerce(x) {
+        return core_ops_1.from_bool(x.as_bool());
+    }
+}
+exports.TCrochetBoolean = TCrochetBoolean;
+TCrochetBoolean.type = new TCrochetBoolean();
+class TCrochetTrue extends types_1.CrochetType {
+    constructor() {
+        super(...arguments);
+        this.parent = TCrochetBoolean.type;
+        this.type_name = "true";
+    }
+    coerce(x) {
+        if (x.as_bool()) {
+            return True.instance;
+        }
+        else {
+            return null;
+        }
+    }
+}
+exports.TCrochetTrue = TCrochetTrue;
+TCrochetTrue.type = new TCrochetTrue();
+class TCrochetFalse extends types_1.CrochetType {
+    constructor() {
+        super(...arguments);
+        this.parent = TCrochetBoolean.type;
+        this.type_name = "false";
+    }
+    coerce(x) {
+        if (!x.as_bool()) {
+            return False.instance;
+        }
+        else {
+            return null;
+        }
+    }
+}
+exports.TCrochetFalse = TCrochetFalse;
+TCrochetFalse.type = new TCrochetFalse();
+
 
 /***/ }),
 /* 71 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.apply = exports.invoke = exports.safe_cast = exports.from_bool = void 0;
+const vm_1 = __webpack_require__(66);
+const boolean_1 = __webpack_require__(70);
+function from_bool(x) {
+    return x ? boolean_1.True.instance : boolean_1.False.instance;
+}
+exports.from_bool = from_bool;
+function* safe_cast(x, type) {
+    if (type.accepts(x)) {
+        return x;
+    }
+    else {
+        throw new vm_1.ErrUnexpectedType(type, x);
+    }
+}
+exports.safe_cast = safe_cast;
+function* invoke(state, name, args) {
+    const procedure = state.world.procedures.lookup(name);
+    const branch0 = procedure.select(args);
+    let branch;
+    if (branch0 == null) {
+        throw new vm_1.ErrNoBranchMatched(procedure, args);
+    }
+    else {
+        branch = branch0;
+    }
+    const result = vm_1.cvalue(yield vm_1._push(branch.procedure.invoke(state, args)));
+    return result;
+}
+exports.invoke = invoke;
+function* apply(state, fn, args) {
+    if (fn.arity !== args.length) {
+        throw new vm_1.ErrInvalidArity(fn, args.length);
+    }
+    else {
+        const new_fn = fn.merge(args);
+        if (new_fn.is_saturated) {
+            return yield vm_1._push(invoke(state, new_fn.name, new_fn.concrete_args));
+        }
+        else {
+            return new_fn;
+        }
+    }
+}
+exports.apply = apply;
+
+
+/***/ }),
+/* 72 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.baseEnum = exports.TCrochetType = exports.InstanceSelection = exports.InstanceProjection = exports.CrochetInstance = void 0;
+const utils_1 = __webpack_require__(73);
+const vm_1 = __webpack_require__(66);
+const record_1 = __webpack_require__(81);
+const types_1 = __webpack_require__(69);
+const value_1 = __webpack_require__(65);
+class CrochetInstance extends value_1.CrochetValue {
+    constructor(type, id, data) {
+        super();
+        this.type = type;
+        this.id = id;
+        this.data = data;
+        this._projection = new InstanceProjection(this);
+        this._selection = new InstanceSelection(this);
+    }
+    has_role(role) {
+        return this.type.roles.has(role);
+    }
+    equals(other) {
+        return other === this;
+    }
+    to_text() {
+        const fields = this.data.map((x) => x.to_text()).join(", ");
+        return `<${this.type.type_name}#${this.id}(${fields})>`;
+    }
+    as_record() {
+        const data = new Map(utils_1.zip(this.type.fields, this.data));
+        return new record_1.CrochetRecord(data);
+    }
+    get_field(name) {
+        const value = this.data[this.type.layout.get(name) ?? -1];
+        if (!value) {
+            throw vm_1.die(`Invalid field ${name}`);
+        }
+        return value;
+    }
+}
+exports.CrochetInstance = CrochetInstance;
+class InstanceProjection {
+    constructor(instance) {
+        this.instance = instance;
+    }
+    project(name) {
+        return this.instance.get_field(name);
+    }
+}
+exports.InstanceProjection = InstanceProjection;
+class InstanceSelection {
+    constructor(instance) {
+        this.instance = instance;
+    }
+    select(selections) {
+        return this.instance.as_record().selection.select(selections);
+    }
+}
+exports.InstanceSelection = InstanceSelection;
+class TCrochetType extends types_1.CrochetType {
+    constructor(filename, parent, name, roles, types, fields, layout) {
+        super();
+        this.filename = filename;
+        this.parent = parent;
+        this.name = name;
+        this.roles = roles;
+        this.types = types;
+        this.fields = fields;
+        this.layout = layout;
+        this.instance_count = 0n;
+        this.subtypes = new Set();
+        this.instances = new Set();
+        this.sealed = false;
+    }
+    get type_name() {
+        return this.name;
+    }
+    validate(data) {
+        if (data.length !== this.types.length) {
+            throw vm_1.die(`Invalid data`);
+        }
+        for (const [v, type] of utils_1.zip(data, this.types)) {
+            if (!type.accepts(v)) {
+                throw vm_1.die(`Invalid type: expected ${type.type_name}, got ${types_1.type_name(v)}`);
+            }
+        }
+    }
+    instantiate(data) {
+        if (this.sealed) {
+            throw vm_1.die(`attempting to construct a sealed type`);
+        }
+        this.validate(data);
+        return new CrochetInstance(this, ++this.instance_count, data);
+    }
+    register_subtype(type) {
+        this.subtypes.add(type);
+    }
+    register_instance(value) {
+        if (!this.accepts(value)) {
+            throw vm_1.die(`invalid value ${types_1.type_name(value)} for type ${types_1.type_name(this)}`);
+        }
+        this.instances.add(value);
+    }
+    get registered_instances() {
+        const sub_instances = [...this.subtypes].flatMap((x) => x.registered_instances);
+        return [...this.instances, ...sub_instances];
+    }
+    seal() {
+        this.sealed = true;
+    }
+}
+exports.TCrochetType = TCrochetType;
+exports.baseEnum = new TCrochetType("(builtin)", types_1.TCrochetAny.type, "enum", new Set(), [], [], new Map());
+
+
+/***/ }),
+/* 73 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -13368,18 +13614,18 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(72), exports);
-__exportStar(__webpack_require__(73), exports);
 __exportStar(__webpack_require__(74), exports);
 __exportStar(__webpack_require__(75), exports);
 __exportStar(__webpack_require__(76), exports);
-__exportStar(__webpack_require__(63), exports);
 __exportStar(__webpack_require__(77), exports);
 __exportStar(__webpack_require__(78), exports);
+__exportStar(__webpack_require__(63), exports);
+__exportStar(__webpack_require__(79), exports);
+__exportStar(__webpack_require__(80), exports);
 
 
 /***/ }),
-/* 72 */
+/* 74 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -13421,7 +13667,7 @@ exports.Bag = Bag;
 
 
 /***/ }),
-/* 73 */
+/* 75 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -13477,7 +13723,7 @@ exports.BetterIterable = BetterIterable;
 
 
 /***/ }),
-/* 74 */
+/* 76 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -13515,7 +13761,7 @@ exports.coercePrimitiveArray = coercePrimitiveArray;
 
 
 /***/ }),
-/* 75 */
+/* 77 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -13736,7 +13982,7 @@ exports.parse = parse;
 
 
 /***/ }),
-/* 76 */
+/* 78 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -13745,7 +13991,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
-/* 77 */
+/* 79 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -13796,7 +14042,7 @@ exports.BagMap = BagMap;
 
 
 /***/ }),
-/* 78 */
+/* 80 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -13907,352 +14153,7 @@ function random_int(min, max) {
 
 
 /***/ }),
-/* 79 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.type_name = exports.TCrochetAny = exports.CrochetRole = exports.CrochetType = void 0;
-const value_1 = __webpack_require__(65);
-class CrochetType {
-    accepts(x) {
-        return x.type.is_subtype(this);
-    }
-    is_subtype(type) {
-        if (this === type) {
-            return true;
-        }
-        else if (this.parent != null) {
-            return this.parent.is_subtype(type);
-        }
-        else {
-            return false;
-        }
-    }
-    distance() {
-        if (this.parent == null) {
-            return 0;
-        }
-        else {
-            return -1 + this.parent.distance();
-        }
-    }
-    coerce(x) {
-        if (this.accepts(x)) {
-            return x;
-        }
-        else {
-            return null;
-        }
-    }
-}
-exports.CrochetType = CrochetType;
-class CrochetRole {
-    constructor(filename, name) {
-        this.filename = filename;
-        this.name = name;
-    }
-}
-exports.CrochetRole = CrochetRole;
-class TCrochetAny extends CrochetType {
-    constructor() {
-        super(...arguments);
-        this.type_name = "any";
-        this.parent = null;
-    }
-    coerce(x) {
-        return x;
-    }
-}
-exports.TCrochetAny = TCrochetAny;
-TCrochetAny.type = new TCrochetAny();
-function type_name(x) {
-    if (x instanceof value_1.CrochetValue) {
-        return x.type.type_name;
-    }
-    else if (x instanceof CrochetType) {
-        return x.type_name;
-    }
-    else {
-        return `<host value: ${x?.name ?? typeof x}>`;
-    }
-}
-exports.type_name = type_name;
-
-
-/***/ }),
-/* 80 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TCrochetFalse = exports.TCrochetTrue = exports.TCrochetBoolean = exports.False = exports.True = void 0;
-const core_ops_1 = __webpack_require__(81);
-const types_1 = __webpack_require__(79);
-const value_1 = __webpack_require__(65);
-class True extends value_1.CrochetValue {
-    get type() {
-        return TCrochetTrue.type;
-    }
-    equals(other) {
-        return !(other instanceof False);
-    }
-    as_bool() {
-        return true;
-    }
-    to_js() {
-        return true;
-    }
-    to_text() {
-        return "true";
-    }
-}
-exports.True = True;
-True.instance = new True();
-class False extends value_1.CrochetValue {
-    get type() {
-        return TCrochetFalse.type;
-    }
-    equals(other) {
-        return other instanceof False;
-    }
-    as_bool() {
-        return false;
-    }
-    to_js() {
-        return false;
-    }
-    to_text() {
-        return "false";
-    }
-}
-exports.False = False;
-False.instance = new False();
-class TCrochetBoolean extends types_1.CrochetType {
-    constructor() {
-        super(...arguments);
-        this.parent = types_1.TCrochetAny.type;
-        this.type_name = "boolean";
-    }
-    coerce(x) {
-        return core_ops_1.from_bool(x.as_bool());
-    }
-}
-exports.TCrochetBoolean = TCrochetBoolean;
-TCrochetBoolean.type = new TCrochetBoolean();
-class TCrochetTrue extends types_1.CrochetType {
-    constructor() {
-        super(...arguments);
-        this.parent = TCrochetBoolean.type;
-        this.type_name = "true";
-    }
-    coerce(x) {
-        if (x.as_bool()) {
-            return True.instance;
-        }
-        else {
-            return null;
-        }
-    }
-}
-exports.TCrochetTrue = TCrochetTrue;
-TCrochetTrue.type = new TCrochetTrue();
-class TCrochetFalse extends types_1.CrochetType {
-    constructor() {
-        super(...arguments);
-        this.parent = TCrochetBoolean.type;
-        this.type_name = "false";
-    }
-    coerce(x) {
-        if (!x.as_bool()) {
-            return False.instance;
-        }
-        else {
-            return null;
-        }
-    }
-}
-exports.TCrochetFalse = TCrochetFalse;
-TCrochetFalse.type = new TCrochetFalse();
-
-
-/***/ }),
 /* 81 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.apply = exports.invoke = exports.safe_cast = exports.from_bool = void 0;
-const vm_1 = __webpack_require__(66);
-const boolean_1 = __webpack_require__(80);
-function from_bool(x) {
-    return x ? boolean_1.True.instance : boolean_1.False.instance;
-}
-exports.from_bool = from_bool;
-function* safe_cast(x, type) {
-    if (type.accepts(x)) {
-        return x;
-    }
-    else {
-        throw new vm_1.ErrUnexpectedType(type, x);
-    }
-}
-exports.safe_cast = safe_cast;
-function* invoke(state, name, args) {
-    const procedure = state.world.procedures.lookup(name);
-    const branch0 = procedure.select(args);
-    let branch;
-    if (branch0 == null) {
-        throw new vm_1.ErrNoBranchMatched(procedure, args);
-    }
-    else {
-        branch = branch0;
-    }
-    const result = vm_1.cvalue(yield vm_1._push(branch.procedure.invoke(state, args)));
-    return result;
-}
-exports.invoke = invoke;
-function* apply(state, fn, args) {
-    if (fn.arity !== args.length) {
-        throw new vm_1.ErrInvalidArity(fn, args.length);
-    }
-    else {
-        const new_fn = fn.merge(args);
-        if (new_fn.is_saturated) {
-            return yield vm_1._push(invoke(state, new_fn.name, new_fn.concrete_args));
-        }
-        else {
-            return new_fn;
-        }
-    }
-}
-exports.apply = apply;
-
-
-/***/ }),
-/* 82 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.baseEnum = exports.TCrochetType = exports.InstanceSelection = exports.InstanceProjection = exports.CrochetInstance = void 0;
-const utils_1 = __webpack_require__(71);
-const vm_1 = __webpack_require__(66);
-const record_1 = __webpack_require__(83);
-const types_1 = __webpack_require__(79);
-const value_1 = __webpack_require__(65);
-class CrochetInstance extends value_1.CrochetValue {
-    constructor(type, id, data) {
-        super();
-        this.type = type;
-        this.id = id;
-        this.data = data;
-        this._projection = new InstanceProjection(this);
-        this._selection = new InstanceSelection(this);
-    }
-    has_role(role) {
-        return this.type.roles.has(role);
-    }
-    equals(other) {
-        return other === this;
-    }
-    to_text() {
-        const fields = this.data.map((x) => x.to_text()).join(", ");
-        return `<${this.type.type_name}#${this.id}(${fields})>`;
-    }
-    as_record() {
-        const data = new Map(utils_1.zip(this.type.fields, this.data));
-        return new record_1.CrochetRecord(data);
-    }
-    get_field(name) {
-        const value = this.data[this.type.layout.get(name) ?? -1];
-        if (!value) {
-            throw vm_1.die(`Invalid field ${name}`);
-        }
-        return value;
-    }
-}
-exports.CrochetInstance = CrochetInstance;
-class InstanceProjection {
-    constructor(instance) {
-        this.instance = instance;
-    }
-    project(name) {
-        return this.instance.get_field(name);
-    }
-}
-exports.InstanceProjection = InstanceProjection;
-class InstanceSelection {
-    constructor(instance) {
-        this.instance = instance;
-    }
-    select(selections) {
-        return this.instance.as_record().selection.select(selections);
-    }
-}
-exports.InstanceSelection = InstanceSelection;
-class TCrochetType extends types_1.CrochetType {
-    constructor(filename, parent, name, roles, types, fields, layout) {
-        super();
-        this.filename = filename;
-        this.parent = parent;
-        this.name = name;
-        this.roles = roles;
-        this.types = types;
-        this.fields = fields;
-        this.layout = layout;
-        this.instance_count = 0n;
-        this.subtypes = new Set();
-        this.instances = new Set();
-        this.sealed = false;
-    }
-    get type_name() {
-        return this.name;
-    }
-    validate(data) {
-        if (data.length !== this.types.length) {
-            throw vm_1.die(`Invalid data`);
-        }
-        for (const [v, type] of utils_1.zip(data, this.types)) {
-            if (!type.accepts(v)) {
-                throw vm_1.die(`Invalid type: expected ${type.type_name}, got ${types_1.type_name(v)}`);
-            }
-        }
-    }
-    instantiate(data) {
-        if (this.sealed) {
-            throw vm_1.die(`attempting to construct a sealed type`);
-        }
-        this.validate(data);
-        return new CrochetInstance(this, ++this.instance_count, data);
-    }
-    register_subtype(type) {
-        this.subtypes.add(type);
-    }
-    register_instance(value) {
-        if (!this.accepts(value)) {
-            throw vm_1.die(`invalid value ${types_1.type_name(value)} for type ${types_1.type_name(this)}`);
-        }
-        this.instances.add(value);
-    }
-    get registered_instances() {
-        const sub_instances = [...this.subtypes].flatMap((x) => x.registered_instances);
-        return [...this.instances, ...sub_instances];
-    }
-    seal() {
-        this.sealed = true;
-    }
-}
-exports.TCrochetType = TCrochetType;
-exports.baseEnum = new TCrochetType("(builtin)", types_1.TCrochetAny.type, "enum", new Set(), [], [], new Map());
-
-
-/***/ }),
-/* 83 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -14260,7 +14161,7 @@ exports.baseEnum = new TCrochetType("(builtin)", types_1.TCrochetAny.type, "enum
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TCrochetRecord = exports.RecordSelection = exports.RecordProjection = exports.CrochetRecord = void 0;
 const vm_1 = __webpack_require__(66);
-const types_1 = __webpack_require__(79);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetRecord extends value_1.CrochetValue {
     constructor(values) {
@@ -14350,16 +14251,16 @@ TCrochetRecord.type = new TCrochetRecord();
 
 
 /***/ }),
-/* 84 */
+/* 82 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TCrochetInteger = exports.CrochetInteger = void 0;
-const types_1 = __webpack_require__(79);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
-const float_1 = __webpack_require__(85);
+const float_1 = __webpack_require__(83);
 class CrochetInteger extends value_1.CrochetValue {
     constructor(value) {
         super();
@@ -14392,15 +14293,15 @@ TCrochetInteger.type = new TCrochetInteger();
 
 
 /***/ }),
-/* 85 */
+/* 83 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TCrochetFloat = exports.CrochetFloat = void 0;
-const integer_1 = __webpack_require__(84);
-const types_1 = __webpack_require__(79);
+const integer_1 = __webpack_require__(82);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetFloat extends value_1.CrochetValue {
     constructor(value) {
@@ -14434,17 +14335,17 @@ TCrochetFloat.type = new TCrochetFloat();
 
 
 /***/ }),
-/* 86 */
+/* 84 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.InterpolationDynamic = exports.InterpolationStatic = exports.InteprolationPart = exports.TCrochetInterpolation = exports.CrochetInterpolation = void 0;
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 const utils_2 = __webpack_require__(63);
-const text_1 = __webpack_require__(87);
-const types_1 = __webpack_require__(79);
+const text_1 = __webpack_require__(85);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetInterpolation extends value_1.CrochetValue {
     constructor(parts) {
@@ -14537,14 +14438,14 @@ exports.InterpolationDynamic = InterpolationDynamic;
 
 
 /***/ }),
-/* 87 */
+/* 85 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TCrochetText = exports.CrochetText = void 0;
-const types_1 = __webpack_require__(79);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetText extends value_1.CrochetValue {
     constructor(value) {
@@ -14582,7 +14483,7 @@ TCrochetText.type = new TCrochetText();
 
 
 /***/ }),
-/* 88 */
+/* 86 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -14591,7 +14492,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PartialConcrete = exports.PartialHole = exports.PartialValue = exports.partial_holes = exports.TAnyCrochetPartial = exports.TCrochetPartial = exports.CrochetPartial = void 0;
 const utils_1 = __webpack_require__(63);
 const vm_1 = __webpack_require__(66);
-const types_1 = __webpack_require__(79);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetPartial extends value_1.CrochetValue {
     constructor(name, env, values) {
@@ -14686,7 +14587,7 @@ exports.PartialConcrete = PartialConcrete;
 
 
 /***/ }),
-/* 89 */
+/* 87 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -14694,8 +14595,8 @@ exports.PartialConcrete = PartialConcrete;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TCrochetStream = exports.StreamSelection = exports.StreamProjection = exports.CrochetStream = void 0;
 const utils_1 = __webpack_require__(63);
-const boolean_1 = __webpack_require__(80);
-const types_1 = __webpack_require__(79);
+const boolean_1 = __webpack_require__(70);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetStream extends value_1.CrochetValue {
     constructor(values) {
@@ -14772,7 +14673,7 @@ TCrochetStream.type = new TCrochetStream();
 
 
 /***/ }),
-/* 90 */
+/* 88 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -14780,7 +14681,7 @@ TCrochetStream.type = new TCrochetStream();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TCrochetUnknown = exports.CrochetUnknown = void 0;
 const vm_1 = __webpack_require__(66);
-const types_1 = __webpack_require__(79);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetUnknown extends value_1.CrochetValue {
     constructor(value) {
@@ -14829,7 +14730,7 @@ TCrochetUnknown.type = new TCrochetUnknown();
 
 
 /***/ }),
-/* 91 */
+/* 89 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -14842,10 +14743,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ThunkFfi = exports.TCrochetThunk = exports.CrochetThunk = void 0;
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 const vm_1 = __webpack_require__(66);
-const ffi_decorators_1 = __webpack_require__(92);
-const types_1 = __webpack_require__(79);
+const ffi_decorators_1 = __webpack_require__(90);
+const types_1 = __webpack_require__(69);
 const value_1 = __webpack_require__(65);
 class CrochetThunk extends value_1.CrochetValue {
     constructor(expr, env) {
@@ -14911,7 +14812,7 @@ exports.ThunkFfi = ThunkFfi;
 
 
 /***/ }),
-/* 92 */
+/* 90 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -14955,7 +14856,7 @@ exports.foreign_namespace = foreign_namespace;
 
 
 /***/ }),
-/* 93 */
+/* 91 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -15053,15 +14954,15 @@ exports.CrochetProcedure = CrochetProcedure;
 
 
 /***/ }),
-/* 94 */
+/* 92 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ForeignInterface = void 0;
-const utils_1 = __webpack_require__(71);
-const result_1 = __webpack_require__(95);
+const utils_1 = __webpack_require__(73);
+const result_1 = __webpack_require__(93);
 class ForeignInterface {
     constructor() {
         this.methods = new utils_1.Bag("foreign function");
@@ -15084,7 +14985,7 @@ exports.ForeignInterface = ForeignInterface;
 
 
 /***/ }),
-/* 95 */
+/* 93 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -15123,7 +15024,7 @@ exports.Error = Error;
 
 
 /***/ }),
-/* 96 */
+/* 94 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -15154,20 +15055,20 @@ exports.Scene = Scene;
 
 
 /***/ }),
-/* 97 */
+/* 95 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.World = exports.ProcedureBag = void 0;
-const logic_1 = __webpack_require__(98);
+const logic_1 = __webpack_require__(96);
 const primitives_1 = __webpack_require__(64);
 const vm_1 = __webpack_require__(66);
 const simulation_1 = __webpack_require__(58);
-const foreign_1 = __webpack_require__(94);
-const bag_1 = __webpack_require__(72);
-const utils_1 = __webpack_require__(71);
+const foreign_1 = __webpack_require__(92);
+const bag_1 = __webpack_require__(74);
+const utils_1 = __webpack_require__(73);
 class ProcedureBag {
     constructor() {
         this.map = new Map();
@@ -15240,7 +15141,7 @@ exports.World = World;
 
 
 /***/ }),
-/* 98 */
+/* 96 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -15257,16 +15158,16 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Effect = void 0;
-const Effect = __webpack_require__(99);
+const Effect = __webpack_require__(97);
 exports.Effect = Effect;
+__exportStar(__webpack_require__(98), exports);
+__exportStar(__webpack_require__(99), exports);
 __exportStar(__webpack_require__(100), exports);
 __exportStar(__webpack_require__(101), exports);
-__exportStar(__webpack_require__(102), exports);
-__exportStar(__webpack_require__(103), exports);
 
 
 /***/ }),
-/* 99 */
+/* 97 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -15282,7 +15183,7 @@ exports.Trivial = Trivial;
 
 
 /***/ }),
-/* 100 */
+/* 98 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -15321,7 +15222,7 @@ exports.Database = Database;
 
 
 /***/ }),
-/* 101 */
+/* 99 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -15591,7 +15492,7 @@ function join(state, env0, resultEnv, bindings) {
 
 
 /***/ }),
-/* 102 */
+/* 100 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -15767,7 +15668,7 @@ exports.WildcardPattern = WildcardPattern;
 
 
 /***/ }),
-/* 103 */
+/* 101 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -15997,16 +15898,16 @@ exports.EndNode = EndNode;
 
 
 /***/ }),
-/* 104 */
+/* 102 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DatabaseLayer = exports.FunctionLayer = void 0;
-const bag_1 = __webpack_require__(72);
+const bag_1 = __webpack_require__(74);
 const vm_1 = __webpack_require__(66);
-const predicate_1 = __webpack_require__(101);
+const predicate_1 = __webpack_require__(99);
 class FunctionLayer extends bag_1.Bag {
     constructor(parent) {
         super("function");
@@ -16061,14 +15962,14 @@ exports.DatabaseLayer = DatabaseLayer;
 
 
 /***/ }),
-/* 105 */
+/* 103 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CustomGoal = exports.TotalQuiescence = exports.EventQuiescence = exports.ActionQuiescence = void 0;
-const logic_1 = __webpack_require__(98);
+const logic_1 = __webpack_require__(96);
 class ActionQuiescence {
     constructor() {
         this._reached = true;
@@ -16145,7 +16046,7 @@ exports.CustomGoal = CustomGoal;
 
 
 /***/ }),
-/* 106 */
+/* 104 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -16157,8 +16058,8 @@ const world_1 = __webpack_require__(60);
 const utils_1 = __webpack_require__(63);
 const vm_1 = __webpack_require__(66);
 const primitives_1 = __webpack_require__(64);
-const layer_1 = __webpack_require__(104);
-const action_choice_1 = __webpack_require__(107);
+const layer_1 = __webpack_require__(102);
+const action_choice_1 = __webpack_require__(105);
 class Signal {
     constructor(name, parameters, body) {
         this.name = name;
@@ -16287,7 +16188,7 @@ function unify(pattern, value, state, env) {
 
 
 /***/ }),
-/* 107 */
+/* 105 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -16334,16 +16235,16 @@ TActionChoice.type = new TActionChoice();
 
 
 /***/ }),
-/* 108 */
+/* 106 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SRegister = exports.SSimulate = exports.SCNamed = exports.SCAny = exports.SimulateContext = exports.SCall = exports.SGoto = exports.SBlock = exports.SLet = exports.SExpression = exports.SForget = exports.SFact = exports.Statement = void 0;
-const bag_1 = __webpack_require__(72);
+const bag_1 = __webpack_require__(74);
 const utils_1 = __webpack_require__(63);
-const logic_1 = __webpack_require__(98);
+const logic_1 = __webpack_require__(96);
 const primitives_1 = __webpack_require__(64);
 const vm_1 = __webpack_require__(66);
 const simulation_1 = __webpack_require__(58);
@@ -16498,7 +16399,7 @@ exports.SRegister = SRegister;
 
 
 /***/ }),
-/* 109 */
+/* 107 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -16506,11 +16407,11 @@ exports.SRegister = SRegister;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.EForce = exports.ELazy = exports.EHasRole = exports.EHasType = exports.ConditionCase = exports.ECondition = exports.MatchSearchCase = exports.EMatchSearch = exports.EInterpolateDynamic = exports.EInterpolateStatic = exports.EInterpolate = exports.EPartialConcrete = exports.EPartialHole = exports.PartialExpr = exports.EApplyPartial = exports.EPartial = exports.EBlock = exports.EForall = exports.ForallIf = exports.ForallDo = exports.ForallMap = exports.ForallExpr = exports.EProjectMany = exports.EProject = exports.ECast = exports.ERecord = exports.EList = exports.ESelf = exports.EGlobal = exports.ENew = exports.EInvoke = exports.ESearch = exports.EInteger = exports.EText = exports.EVariable = exports.ETrue = exports.EFalse = exports.Expression = void 0;
 const utils_1 = __webpack_require__(63);
-const logic_1 = __webpack_require__(98);
+const logic_1 = __webpack_require__(96);
 const primitives_1 = __webpack_require__(64);
 const vm_1 = __webpack_require__(66);
 const world_1 = __webpack_require__(60);
-const statement_1 = __webpack_require__(108);
+const statement_1 = __webpack_require__(106);
 class Expression {
 }
 exports.Expression = Expression;
@@ -16945,7 +16846,7 @@ exports.EForce = EForce;
 
 
 /***/ }),
-/* 110 */
+/* 108 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -16971,16 +16872,16 @@ exports.TNamed = TNamed;
 
 
 /***/ }),
-/* 111 */
+/* 109 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SIPDynamic = exports.SIPStatic = exports.SimpleInterpolationPart = exports.SimpleInterpolation = void 0;
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 const primitives_1 = __webpack_require__(64);
-const expression_1 = __webpack_require__(109);
+const expression_1 = __webpack_require__(107);
 class SimpleInterpolation {
     constructor(parts) {
         this.parts = parts;
@@ -17074,7 +16975,7 @@ exports.SIPDynamic = SIPDynamic;
 
 
 /***/ }),
-/* 112 */
+/* 110 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17084,7 +16985,7 @@ exports.default = { "filename": "builtin core.crochet", "source": "% crochet\r\n
 
 
 /***/ }),
-/* 113 */
+/* 111 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17094,7 +16995,7 @@ exports.default = { "filename": "builtin html-ui.crochet", "source": "% crochet\
 
 
 /***/ }),
-/* 114 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17104,7 +17005,7 @@ exports.default = { "filename": "builtin integer.crochet", "source": "% crochet\
 
 
 /***/ }),
-/* 115 */
+/* 113 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17114,7 +17015,7 @@ exports.default = { "filename": "builtin record.crochet", "source": "% crochet\r
 
 
 /***/ }),
-/* 116 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17124,7 +17025,7 @@ exports.default = { "filename": "builtin stream.crochet", "source": "% crochet\r
 
 
 /***/ }),
-/* 117 */
+/* 115 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17134,7 +17035,7 @@ exports.default = { "filename": "builtin text.crochet", "source": "% crochet\r\n
 
 
 /***/ }),
-/* 118 */
+/* 116 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17144,7 +17045,7 @@ exports.default = { "filename": "builtin debug.crochet", "source": "% crochet\r\
 
 
 /***/ }),
-/* 119 */
+/* 117 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -17154,7 +17055,7 @@ exports.default = { "filename": "builtin time.crochet", "source": "% crochet\r\n
 
 
 /***/ }),
-/* 120 */
+/* 118 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -17168,10 +17069,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.HtmlFfi = void 0;
 const runtime_1 = __webpack_require__(55);
-const ffi_decorators_1 = __webpack_require__(92);
-const utils_1 = __webpack_require__(71);
-const canvas_1 = __webpack_require__(121);
-const element_1 = __webpack_require__(122);
+const ffi_decorators_1 = __webpack_require__(90);
+const utils_1 = __webpack_require__(73);
+const canvas_1 = __webpack_require__(119);
+const element_1 = __webpack_require__(120);
 let HtmlFfi = class HtmlFfi {
     static get type_element() {
         return element_1.TCrochetHtml.type;
@@ -17341,7 +17242,7 @@ exports.HtmlFfi = HtmlFfi;
 
 
 /***/ }),
-/* 121 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -17349,7 +17250,7 @@ exports.HtmlFfi = HtmlFfi;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.canvas = exports.Canvas = exports.Rect = void 0;
 const runtime_1 = __webpack_require__(55);
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 class Rect {
     constructor(left, top, width, height) {
         this.left = left;
@@ -17488,7 +17389,7 @@ exports.canvas = new Canvas();
 
 
 /***/ }),
-/* 122 */
+/* 120 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
@@ -17550,7 +17451,7 @@ exports.CrochetMenu = CrochetMenu;
 
 
 /***/ }),
-/* 123 */
+/* 121 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -17566,17 +17467,17 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(122), exports);
+__exportStar(__webpack_require__(123), exports);
 __exportStar(__webpack_require__(124), exports);
 __exportStar(__webpack_require__(125), exports);
 __exportStar(__webpack_require__(126), exports);
 __exportStar(__webpack_require__(127), exports);
 __exportStar(__webpack_require__(128), exports);
-__exportStar(__webpack_require__(129), exports);
-__exportStar(__webpack_require__(130), exports);
 
 
 /***/ }),
-/* 124 */
+/* 122 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -17590,8 +17491,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DebugFfi = void 0;
 const runtime_1 = __webpack_require__(55);
-const ffi_decorators_1 = __webpack_require__(92);
-const utils_1 = __webpack_require__(71);
+const ffi_decorators_1 = __webpack_require__(90);
+const utils_1 = __webpack_require__(73);
 let DebugFfi = class DebugFfi {
     static inspect(value) {
         console.log(">>", value.to_text());
@@ -17628,7 +17529,7 @@ exports.DebugFfi = DebugFfi;
 
 
 /***/ }),
-/* 125 */
+/* 123 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -17642,8 +17543,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TimeFfi = void 0;
 const runtime_1 = __webpack_require__(55);
-const ffi_decorators_1 = __webpack_require__(92);
-const utils_1 = __webpack_require__(71);
+const ffi_decorators_1 = __webpack_require__(90);
+const utils_1 = __webpack_require__(73);
 let TimeFfi = class TimeFfi {
     static *sleep(state, ms0) {
         const ms = utils_1.cast(ms0, runtime_1.CrochetInteger);
@@ -17661,7 +17562,7 @@ exports.TimeFfi = TimeFfi;
 
 
 /***/ }),
-/* 126 */
+/* 124 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -17803,7 +17704,7 @@ exports.CoreFfi = CoreFfi;
 
 
 /***/ }),
-/* 127 */
+/* 125 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -17817,7 +17718,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.IntegerFfi = void 0;
 const runtime_1 = __webpack_require__(55);
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 let IntegerFfi = class IntegerFfi {
     static add(x0, y0) {
         const x = utils_1.cast(x0, runtime_1.CrochetInteger);
@@ -17934,7 +17835,7 @@ exports.IntegerFfi = IntegerFfi;
 
 
 /***/ }),
-/* 128 */
+/* 126 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -17948,7 +17849,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RecordFfi = void 0;
 const runtime_1 = __webpack_require__(55);
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 let RecordFfi = class RecordFfi {
     static at(record, key) {
         return record.values.get(key.value);
@@ -17997,7 +17898,7 @@ exports.RecordFfi = RecordFfi;
 
 
 /***/ }),
-/* 129 */
+/* 127 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -18011,7 +17912,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StreamFfi = void 0;
 const runtime_1 = __webpack_require__(55);
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 let StreamFfi = class StreamFfi {
     static count(stream0) {
         const stream = utils_1.cast(stream0, runtime_1.CrochetStream);
@@ -18209,7 +18110,7 @@ function compare(a, b) {
 
 
 /***/ }),
-/* 130 */
+/* 128 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -18223,7 +18124,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TextFfi = exports.InterpolationFfi = void 0;
 const runtime_1 = __webpack_require__(55);
-const utils_1 = __webpack_require__(71);
+const utils_1 = __webpack_require__(73);
 let InterpolationFfi = class InterpolationFfi {
     static concat(a0, b0) {
         const a = utils_1.cast(a0, runtime_1.CrochetInterpolation);
@@ -18283,7 +18184,7 @@ exports.TextFfi = TextFfi;
 
 
 /***/ }),
-/* 131 */
+/* 129 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -18299,9 +18200,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(122), exports);
 __exportStar(__webpack_require__(120), exports);
-__exportStar(__webpack_require__(121), exports);
+__exportStar(__webpack_require__(118), exports);
+__exportStar(__webpack_require__(119), exports);
 
 
 /***/ })

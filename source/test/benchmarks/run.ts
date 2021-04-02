@@ -11,6 +11,8 @@ const Crochet_v0_3_1 = require("../../../versions/crochet-v0.3.1")
   .Crochet as typeof Crochet;
 const Crochet_v0_4_0 = require("../../../versions/crochet-v0.4.0")
   .Crochet as typeof Crochet;
+const Crochet_v0_5_0 = require("../../../versions/crochet-v0.5.0")
+  .Crochet as typeof Crochet;
 const pkg = require("../../../package.json");
 
 const root = Path.join(__dirname, "../../../");
@@ -87,12 +89,13 @@ const benchmarks = FS.readdirSync(benchmarkDir)
   .filter((x) => FS.statSync(x).isFile())
   .map((x) => Benchmark.from_file(x));
 
-const vms = [
+const all_vms = [
   { version: "0.2.0", random: true, vm: Crochet_v0_2 },
   { version: "0.3.0", random: true, vm: Crochet_v0_3 },
   { version: "0.3.1", random: false, vm: Crochet_v0_3_1 },
   { version: "0.4.0", random: false, vm: Crochet_v0_4_0 },
-  { version: pkg.version, random: false, vm: Crochet },
+  { version: "0.5.0", random: false, vm: Crochet_v0_5_0 },
+  { version: `${pkg.version} (current)`, random: false, vm: Crochet },
 ];
 
 async function time(label: string, code: () => Promise<any>) {
@@ -110,6 +113,13 @@ void (async function () {
   const seed0 = Yargs.argv["seed"];
   const seed = seed0 ? Number(seed0) : new Date().getTime() | 0;
   const verbose = Boolean(Yargs.argv["verbose"]);
+  const test_all = Boolean(Yargs.argv["full-regression"]);
+  const vms = test_all ? all_vms : all_vms.slice(-4);
+  if (!test_all) {
+    console.log(
+      "-- Benchmarking the 4 last releases (use --full-regression benchmark all)"
+    );
+  }
   if (!verbose) {
     console.debug = () => {};
   }
@@ -117,7 +127,7 @@ void (async function () {
 
   for (const bench of benchmarks) {
     console.log("=".repeat(72));
-    console.log("::", bench.title);
+    console.log("##", bench.title);
     for (const { version, random, vm: Crochet } of vms) {
       const fullPath = bench.file_for_version(version);
       console.log("---");
