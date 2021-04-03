@@ -15,15 +15,43 @@ type stream = foreign core.stream;
 type thunk = foreign core.thunk;
 type 'enum = foreign core.enum;
 
-command X and Y = foreign core.band(X, Y);
-command X or Y = foreign core.bor(X, Y);
-command not X = foreign core.bnot(X);
+command X and Y =
+  foreign core.band(X, Y)
+test
+  assert (true and true) === true;
+  assert (true and false) === false;
+  assert (false and true) === false;
+  assert (false and false) === false;
+end
 
-command X === Y = foreign core.eq(X, Y);
-command X =/= Y = foreign core.not-eq(X, Y);
 
-command X <= Y = (X === Y) or (X < Y);
-command X >= Y = (X === Y) or (X > Y);
+command X or Y =
+  foreign core.bor(X, Y)
+test
+  assert (true or true) === true;
+  assert (true or false) === true;
+  assert (false or true) === true;
+  assert (false or false) === false;
+end
+
+command not X =
+  foreign core.bnot(X)
+test
+  assert (not true) === false;
+  assert (not false) === true;
+end
+
+command X === Y =
+  foreign core.eq(X, Y);
+
+command X =/= Y =
+  foreign core.not-eq(X, Y);
+
+command X <= Y =
+  (X === Y) or (X < Y);
+
+command X >= Y =
+  (X === Y) or (X > Y);
 
 command 'enum < (O is 'enum) =
   self to-enum-integer < O to-enum-integer;

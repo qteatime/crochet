@@ -5,10 +5,26 @@
 
 // == Arithmetic
 command (X is integer) + (Y is integer) =
-  foreign integer.add(X, Y);
+  foreign integer.add(X, Y)
+test
+  assert (0 + 1) === 0;
+  assert (0 + 1) === 1;
+  assert (1 + 0) === 1;
+  assert (-3 + 1) === -2;
+  assert (5 + 3) === 8;
+  assert (1234567890123456789 + 1234567890123456789) === 2469135780246913578;
+end
 
 command (X is integer) - (Y is integer) =
-  foreign integer.sub(X, Y);
+  foreign integer.sub(X, Y)
+test
+  assert (0 - 0) === 0;
+  assert (0 - 1) === -1;
+  assert (1 - 0) === 1;
+  assert (-3 - 1) === -4;
+  assert (5 - 3) === 2;
+  assert (1234567890123456789 - 1) === 1234567890123456788;
+end
 
 command (X is integer) * (Y is integer) =
   foreign integer.mul(X, Y);

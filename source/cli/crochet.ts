@@ -9,7 +9,7 @@ import * as FS from "fs";
 import * as Path from "path";
 
 import * as Yargs from "yargs";
-import { World } from "../runtime";
+import { CrochetVM, World } from "../runtime";
 import { Capabilities, CliTarget, CrochetCapability } from "../runtime/pkg";
 
 const argv = Yargs.usage("crochet <command> [options]")
@@ -33,6 +33,25 @@ const argv = Yargs.usage("crochet <command> [options]")
         default: [],
       });
   })
+  .command(
+    "run-tests <filename>",
+    "Runs tests for the given package",
+    (Yargs) => {
+      Yargs.positional("filename", {
+        description: "Path to the file to run",
+        type: "string",
+      })
+        .option("seed", {
+          description: "The initial seed for the PRNG",
+          type: "string",
+        })
+        .option("capabilities", {
+          description: "The capabilities to grant the program",
+          type: "array",
+          default: [],
+        });
+    }
+  )
   .command(
     "run-web <directory>",
     "Runs the simulation in the browser",
@@ -81,6 +100,24 @@ function read(filename: string) {
   return FS.readFileSync(filename, "utf-8");
 }
 
+async function setup_vm(
+  vm: CrochetVM,
+  filename: string,
+  seed: string | null,
+  capabilities: Capabilities
+) {
+  if (seed != null) {
+    vm.reseed(Number(seed));
+  }
+  await vm.initialise();
+  logger.debug(
+    "Granting capabilities:",
+    [...capabilities.capabilities].join(", ")
+  );
+  logger.debug("Using seed:", vm.world.global_random.seed);
+  await vm.load_with_capabilities(filename, new CliTarget(), capabilities);
+}
+
 async function run(
   filename: string,
   entry: string = "main",
@@ -89,17 +126,24 @@ async function run(
 ) {
   const vm = new Crochet();
   try {
-    if (seed != null) {
-      vm.reseed(Number(seed));
-    }
-    await vm.initialise();
-    logger.debug(
-      "Granting capabilities:",
-      [...capabilities.capabilities].join(", ")
-    );
-    logger.debug("Using seed:", vm.world.global_random.seed);
-    await vm.load_with_capabilities(filename, new CliTarget(), capabilities);
+    await setup_vm(vm, filename, seed, capabilities);
     await vm.run(entry);
+  } catch (error) {
+    await vm.show_error(error);
+    process.exit(1);
+  }
+}
+
+async function run_tests(
+  filename: string,
+  seed: string | null,
+  capabilities: Capabilities
+) {
+  const vm = new Crochet();
+  try {
+    await setup_vm(vm, filename, seed, capabilities);
+    const results = await vm.run_tests((x) => true);
+    process.exit(results.length);
   } catch (error) {
     await vm.show_error(error);
     process.exit(1);
@@ -139,6 +183,15 @@ switch (argv._[0]) {
     run(
       argv["filename"] as string,
       argv["entry"] as string,
+      argv["seed"] as string | null,
+      parse_capabilities(argv["capabilities"] as string[])
+    );
+    break;
+  }
+
+  case "run-tests": {
+    run_tests(
+      argv["filename"] as string,
       argv["seed"] as string | null,
       parse_capabilities(argv["capabilities"] as string[])
     );

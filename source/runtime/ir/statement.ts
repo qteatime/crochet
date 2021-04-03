@@ -22,6 +22,7 @@ import { AnyContext, Context, Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
 import { Expression } from "./expression";
 import { Type } from "./type";
+import { Meta } from "../../generated/crochet-grammar";
 
 export abstract class Statement {
   abstract evaluate(state: State): Machine;
@@ -187,6 +188,20 @@ export class SRegister extends Statement {
     const value0 = cvalue(yield _push(this.expr.evaluate(state)));
     const value = cast(value0, CrochetInstance);
     value.type.register_instance(value);
+    return value;
+  }
+}
+
+export class SAssert extends Statement {
+  constructor(readonly meta: Meta, readonly expr: Expression) {
+    super();
+  }
+
+  *evaluate(state: State): Machine {
+    const value = cvalue(yield _push(this.expr.evaluate(state)));
+    if (!value.as_bool()) {
+      throw new Error(`assertion failed: ${this.meta.source_slice}`);
+    }
     return value;
   }
 }

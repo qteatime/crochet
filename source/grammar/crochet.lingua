@@ -66,6 +66,7 @@ type Statement =
   | Call(pos: Meta, name: Name)
   | Let(pos: Meta, name: Name, value: Expression)
   | Simulate(pos: Meta, actors: Expression, context: SimulationContext, goal: SimulationGoal, signals: Signal[])
+  | Assert(pos: Meta, expr: Expression)
   | Expr(value: Expression)
 
 type SimulationContext =
@@ -463,6 +464,7 @@ grammar Crochet : Program {
     | gotoStatement
     | callStatement
     | simulateStatement
+    | assertStatement
     | e:expression    -> Statement.Expr(e)
 
   letStatement =
@@ -500,6 +502,10 @@ grammar Crochet : Program {
   signal =
     | on_ s:signature<parameter> do_ b:statements end_
       -> Signal(meta, s, b)
+
+  assertStatement =
+    | assert_ e:expression
+      -> Statement.Assert(meta, e)
 
   // -- Expressions
   expression =
@@ -872,6 +878,7 @@ grammar Crochet : Program {
   open_ = kw<"open">
   local_ = kw<"local">
   test_ = kw<"test">
+  assert_ = kw<"assert">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -881,5 +888,5 @@ grammar Crochet : Program {
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
-    | open_ | local_ | test_
+    | open_ | local_ | test_ | assert_
 }

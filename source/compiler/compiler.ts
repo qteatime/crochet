@@ -668,6 +668,10 @@ export function compileStatement(stmt: Statement) {
       );
     },
 
+    Assert(pos, expr) {
+      return new IR.SAssert(pos, compileExpression(expr));
+    },
+
     Expr(value) {
       return new IR.SExpression(compileExpression(value));
     },
@@ -714,13 +718,17 @@ export function compileParameter(x: Parameter) {
 
 export function compileTrailingTest(
   title: string,
+  types: IR.Type[],
   test: TrailingTest | null
 ): IR.Declaration[] {
   if (test == null) {
     return [];
   } else {
     return [
-      new IR.DTest(title, new IR.SBlock(test.body.map(compileStatement))),
+      new IR.DTest(
+        `${title} (${types.map((x) => x.static_name).join(", ")})`,
+        new IR.SBlock(test.body.map(compileStatement))
+      ),
     ];
   }
 }
@@ -795,7 +803,7 @@ export function compileDeclaration(
       const args = body.args.map((x) => parameters.indexOf(x.name));
       return [
         new IR.DForeignCommand(name, types, compileNamespace(body.name), args),
-        ...compileTrailingTest(name, test),
+        ...compileTrailingTest(name, types, test),
       ];
     },
 
@@ -809,7 +817,7 @@ export function compileDeclaration(
           types,
           body.map(compileStatement)
         ),
-        ...compileTrailingTest(name, test),
+        ...compileTrailingTest(name, types, test),
       ];
     },
 

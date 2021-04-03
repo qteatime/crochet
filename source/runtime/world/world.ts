@@ -106,4 +106,15 @@ export class World {
     const scene = this.scenes.lookup(entry);
     return await Thread.for_machine(scene.evaluate(state)).run_and_wait();
   }
+
+  get grouped_tests() {
+    const groups = new Map<string, CrochetTest[]>();
+    for (const test of this.tests) {
+      const key = test.module.pkg.name;
+      const tests = groups.get(key) ?? [];
+      tests.push(test);
+      groups.set(key, tests);
+    }
+    return groups;
+  }
 }

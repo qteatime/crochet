@@ -1,8 +1,8 @@
 import * as Path from "path";
 import * as Compiler from "../../compiler";
 import { State } from "./state";
-import { World } from "../world";
-import { CrochetError } from "./run";
+import { CrochetTest, World } from "../world";
+import { CrochetError, Thread } from "./run";
 import {
   AnyTarget,
   Capabilities,
@@ -133,6 +133,46 @@ export abstract class CrochetVM {
   async run(scene: string) {
     logger.debug(`Running scene ${scene}`);
     return await this.world.run(scene);
+  }
+
+  async run_tests(filter: (_: CrochetTest) => boolean) {
+    let failures = [];
+    let total = 0;
+    let skipped = 0;
+    const state = State.root(this.world);
+    for (const [group, tests] of this.world.grouped_tests) {
+      console.log("");
+      console.log(group);
+      console.log("=".repeat(72));
+      for (const test of tests) {
+        total += 1;
+
+        if (!filter(test)) {
+          skipped += 1;
+          continue;
+        }
+
+        try {
+          const machine = test.evaluate(state);
+          await Thread.for_machine(machine).run_and_wait();
+          console.log(`[OK]    ${test.title}`);
+        } catch (error) {
+          console.log("-".repeat(3));
+          console.log(`[ERROR] ${test.title}`);
+          console.log(this.format_error(error));
+          console.log("-".repeat(3));
+          failures.push(error);
+        }
+      }
+    }
+
+    console.log("");
+    console.log("-".repeat(72));
+    console.log(
+      `${total} tests  |  ${skipped} skipped  |  ${failures.length} failures`
+    );
+
+    return failures;
   }
 
   async show_error(error: unknown) {
