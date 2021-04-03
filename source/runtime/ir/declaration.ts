@@ -14,7 +14,7 @@ import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 import { SimpleInterpolation } from "./atomic";
 import { cast } from "../../utils";
-import { CrochetPackage } from "../vm/pkg";
+import { CrochetPackage } from "../pkg";
 
 export type ContextualDeclaration = DAction | DWhen;
 

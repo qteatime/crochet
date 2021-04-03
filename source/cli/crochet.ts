@@ -10,7 +10,7 @@ import * as Path from "path";
 
 import * as Yargs from "yargs";
 import { World } from "../runtime";
-import { Capabilities, CrochetCapability } from "../runtime/vm/pkg";
+import { Capabilities, CrochetCapability } from "../runtime/pkg";
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {

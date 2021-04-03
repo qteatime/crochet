@@ -8,7 +8,7 @@ import {
   Capability,
   CrochetCapability,
   CrochetPackage,
-} from "./pkg";
+} from "../pkg";
 import { logger } from "../../utils";
 import { MachineError } from "./errors";
 
@@ -150,11 +150,11 @@ export abstract class CrochetVM {
     console.error(this.format_error(error));
   }
 
-  format_error(error: unknown) {
+  format_error(error: unknown): string {
     if (error instanceof MachineError) {
       return error.format();
     } else if (error instanceof Error) {
-      if (logger.verbose) {
+      if (logger.verbose && error.stack != null) {
         return error.stack;
       } else {
         return `${error.name}: ${error.message}`;

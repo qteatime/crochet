@@ -11,31 +11,12 @@ import {
   string,
   union,
 } from "../../utils";
-
-export type Capability = "native" | "timing" | "reflection" | "html";
-
-export class Dependency {
-  constructor(
-    readonly name: string,
-    readonly capabilities: Set<Capability> | null
-  ) {}
-
-  static get spec() {
-    return anyOf([
-      map_spec(string, (x) => new Dependency(x, null)),
-      spec(
-        {
-          name: string,
-          capabilities: array(CrochetCapability),
-        },
-        (x) => new Dependency(x.name, new Set(x.capabilities))
-      ),
-    ]);
-  }
-}
+import { Capabilities, Capability, CrochetCapability } from "./capability";
+import { Dependency } from "./dependency";
+import { AnyTarget, Target } from "./target";
 
 export interface PackageData {
-  target: ("web" | "cli" | "*")[];
+  target: Target;
   name: string;
   sources: string[];
   native_sources: string[];
@@ -44,45 +25,6 @@ export interface PackageData {
     requires: Set<Capability>;
     provides: Set<Capability>;
   };
-}
-
-export class Capabilities {
-  constructor(readonly capabilities: Set<Capability>) {}
-
-  static get all() {
-    return new Capabilities(
-      new Set(["native", "timing", "reflection", "html"])
-    );
-  }
-
-  allows(capability: Capability) {
-    return this.capabilities.has(capability);
-  }
-
-  require(set: Set<Capability>) {
-    return difference(this.capabilities, set);
-  }
-
-  restrict(new_set: Set<Capability>) {
-    const missing = this.require(new_set);
-    if (missing.size !== 0) {
-      throw new Error(
-        `Missing capabilities: ${[...missing.values()].join(", ")}`
-      );
-    }
-    return new Capabilities(new_set);
-  }
-}
-
-export abstract class CrochetCapability {
-  static get spec() {
-    return anyOf([
-      equal("native" as "native"),
-      equal("timing" as "timing"),
-      equal("reflection" as "reflection"),
-      equal("html" as "html"),
-    ]);
-  }
 }
 
 export class CrochetPackage {
@@ -139,16 +81,7 @@ export class CrochetPackage {
         name: string,
         sources: array(string),
         native_sources: optional(array(string), []),
-        target: optional(
-          array(
-            anyOf([
-              equal("web" as "web"),
-              equal("cli" as "cli"),
-              equal("*" as "*"),
-            ])
-          ),
-          ["*" as "*"]
-        ),
+        target: Target,
         dependencies: optional(array(Dependency), []),
         capabilities: optional(
           spec(
@@ -180,7 +113,7 @@ export class CrochetPackage {
     return new CrochetPackage(filename, {
       name: "(empty)",
       sources: [],
-      target: ["*"],
+      target: new AnyTarget(),
       native_sources: [],
       dependencies: dependencies.map(
         (x) => new Dependency(x, capabilities.capabilities)

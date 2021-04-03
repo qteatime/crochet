@@ -1,6 +1,6 @@
 import * as stdlib from "../stdlib";
 import { CrochetVM, State } from "../runtime";
-import { Capabilities } from "../runtime/vm/pkg";
+import { Capabilities } from "../runtime/pkg";
 
 export class Crochet extends CrochetVM {
   constructor(readonly root: HTMLElement) {

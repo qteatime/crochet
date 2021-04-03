@@ -15,7 +15,7 @@ import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
 import { Environment } from "../vm/environment";
 import { XorShift } from "../../utils";
-import { CrochetPackage } from "../vm/pkg";
+import { CrochetPackage } from "../pkg";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
