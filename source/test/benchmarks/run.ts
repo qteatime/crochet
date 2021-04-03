@@ -98,17 +98,21 @@ const all_vms = [
   { version: pkg.version, tag: "(current)", random: false, vm: Crochet },
 ];
 
-async function time(label: string, code: () => Promise<any>) {
+async function time(
+  label: string,
+  code: () => Promise<unknown>
+): Promise<number> {
   const log = console.log;
   const debug = console.debug;
   console.log = () => {};
   const start = new Date().getTime();
   const result = await code();
   const end = new Date().getTime();
+  const diff = end - start;
   console.log = log;
   console.debug = debug;
-  console.log(`--> ${label} (${end - start}ms)`);
-  return result;
+  console.log(`--> ${label} (${diff}ms)`);
+  return diff;
 }
 
 void (async function () {
@@ -140,9 +144,11 @@ void (async function () {
       const vm = new Crochet();
       vm.world.global_random?.reseed(seed);
       try {
-        await time("Initialisation", () => vm.initialise());
-        await time("Load file", () => vm.load_from_file(fullPath));
-        await time("Run benchmark", () => vm.run("main"));
+        let total = 0;
+        total += await time("Initialisation", () => vm.initialise());
+        total += await time("Load file", () => vm.load_from_file(fullPath));
+        total += await time("Run benchmark", () => vm.run("main"));
+        console.log(`--> Total: ${total}ms`);
       } catch (error) {
         console.error(
           `Failed to execute ${version}:\n`,
