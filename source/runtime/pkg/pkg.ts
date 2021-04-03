@@ -2,7 +2,7 @@ import * as Path from "path";
 import { array, optional, parse, spec, string, union } from "../../utils";
 import { Capabilities, Capability, CrochetCapability } from "./capability";
 import { Dependency } from "./dependency";
-import { Target } from "./target";
+import { AnyTarget, Target } from "./target";
 import { File } from "./file";
 
 export interface PackageData {
@@ -38,8 +38,8 @@ export class CrochetPackage {
       .map((x) => this.resolve(x.filename));
   }
 
-  get dependencies() {
-    return this.data.dependencies;
+  dependencies_for(target: Target) {
+    return this.data.dependencies.filter((x) => x.is_valid(target));
   }
 
   get capabilities() {
@@ -107,7 +107,7 @@ export class CrochetPackage {
       sources: [],
       native_sources: [],
       dependencies: dependencies.map(
-        (x) => new Dependency(x, capabilities.capabilities)
+        (x) => new Dependency(x, capabilities.capabilities, new AnyTarget())
       ),
       capabilities: {
         requires: capabilities.capabilities,
@@ -128,5 +128,9 @@ export class RestrictedCrochetPackage extends CrochetPackage {
 
   get native_sources() {
     return this.native_sources_for(this.target);
+  }
+
+  get dependencies() {
+    return this.dependencies_for(this.target);
   }
 }

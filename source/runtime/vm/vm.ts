@@ -56,7 +56,9 @@ export abstract class CrochetVM {
             requires: capabilities.capabilities,
             provides: new Set(),
           },
-          dependencies: this.prelude.map((x) => new Dependency(x, null)),
+          dependencies: this.prelude.map(
+            (x) => new Dependency(x, null, new AnyTarget())
+          ),
         });
       }
       default:

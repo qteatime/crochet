@@ -20,7 +20,7 @@ export class PackageGraph {
   ): Promise<PackageGraph> {
     const packages = new Map<string, RestrictedCrochetPackage>();
 
-    const resolve = async (pkg: CrochetPackage) => {
+    const resolve = async (pkg: RestrictedCrochetPackage) => {
       for (const dep_meta of pkg.dependencies) {
         if (!packages.has(dep_meta.name)) {
           logger.debug(`Resolving package ${dep_meta.name} from ${pkg.name}`);
@@ -30,14 +30,16 @@ export class PackageGraph {
               `${pkg.name} includes a dependency on ${dep_meta.name}, but the loader returned the package ${dep.name}`
             );
           }
-          packages.set(dep.name, dep.restricted_to(target));
-          resolve(dep);
+          const restricted_dep = dep.restricted_to(target);
+          packages.set(dep.name, restricted_dep);
+          resolve(restricted_dep);
         }
       }
     };
 
-    packages.set(pkg.name, pkg.restricted_to(target));
-    await resolve(pkg);
+    const restricted_pkg = pkg.restricted_to(target);
+    packages.set(pkg.name, restricted_pkg);
+    await resolve(restricted_pkg);
     return new PackageGraph(target, packages);
   }
 
