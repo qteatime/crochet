@@ -156,6 +156,6 @@ command cell draw do
 end
 
 scene main do
-  let Maze = debug time: (lazy maze generate-width: 20 height: 20) tag: "Generate";
-  debug time: (lazy Maze draw) tag: "Draw";
+  let Maze = maze generate-width: 20 height: 20;
+  Maze draw;
 end

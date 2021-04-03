@@ -1,6 +1,7 @@
 {
   "title": "Maze generation",
   "versions": {
+    "0.6.0": "benchmarks/maze/v4.crochet",
     "0.4.0": "benchmarks/maze/v3.crochet",
     "0.3.0": "benchmarks/maze/v2.crochet",
     "0.2.0": "benchmarks/maze/v1.crochet"

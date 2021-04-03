@@ -95,7 +95,7 @@ const all_vms = [
   { version: "0.3.1", random: false, vm: Crochet_v0_3_1 },
   { version: "0.4.0", random: false, vm: Crochet_v0_4_0 },
   { version: "0.5.0", random: false, vm: Crochet_v0_5_0 },
-  { version: `${pkg.version} (current)`, random: false, vm: Crochet },
+  { version: pkg.version, tag: "(current)", random: false, vm: Crochet },
 ];
 
 async function time(label: string, code: () => Promise<any>) {
@@ -130,18 +130,25 @@ void (async function () {
   for (const bench of benchmarks) {
     console.log("=".repeat(72));
     console.log("##", bench.title);
-    for (const { version, random, vm: Crochet } of vms) {
+    for (const { version, tag, random, vm: Crochet } of vms) {
       const fullPath = bench.file_for_version(version);
       console.log("---");
-      console.log(":: Crochet", version);
+      console.log(":: Crochet", version, tag ?? "");
       if (random) {
         console.log("(Reproducible PRNG not supported in this version)");
       }
       const vm = new Crochet();
       vm.world.global_random?.reseed(seed);
-      await time("Initialisation", () => vm.initialise());
-      await time("Load file", () => vm.load_from_file(fullPath));
-      await time("Run benchmark", () => vm.run("main"));
+      try {
+        await time("Initialisation", () => vm.initialise());
+        await time("Load file", () => vm.load_from_file(fullPath));
+        await time("Run benchmark", () => vm.run("main"));
+      } catch (error) {
+        console.error(
+          `Failed to execute ${version}:\n`,
+          vm.format_error(error)
+        );
+      }
     }
     console.log("\n");
   }

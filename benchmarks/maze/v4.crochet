@@ -108,7 +108,7 @@ when
   sample 1 of state: cs-exposed cell: Cell
 do
   match
-    when let C = count(Cell adjacent: C, C state: cs-cut), if C === 1 do
+    when let C = (search Cell adjacent: C, C state: cs-cut), if C count === 1 do
       Cell cut;
     end
 
@@ -137,9 +137,10 @@ end
 
 command maze-gen draw do
   for IY in 1 to: self.Height do
-    for IX in 1 to: self.Width do
-      (cell-at: new point(IX, IY)) draw;
-    end interpolate inspect;
+    transcript write-line:
+      for IX in 1 to: self.Width do
+        (cell-at: new point(IX, IY)) draw;
+      end interpolate;
   end
 end
 
