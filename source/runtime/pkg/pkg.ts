@@ -7,6 +7,7 @@ import { File } from "./file";
 
 export interface PackageData {
   name: string;
+  target: Target;
   sources: File[];
   native_sources: File[];
   dependencies: Dependency[];
@@ -24,6 +25,10 @@ export class CrochetPackage {
 
   get name() {
     return this.data.name;
+  }
+
+  get target() {
+    return this.data.target;
   }
 
   sources_for(target: Target) {
@@ -72,6 +77,7 @@ export class CrochetPackage {
     return spec(
       {
         name: string,
+        target: optional(Target, new AnyTarget()),
         sources: array(File),
         native_sources: optional(array(File), []),
         dependencies: optional(array(Dependency), []),
@@ -104,6 +110,7 @@ export class CrochetPackage {
   ) {
     return new CrochetPackage(filename, {
       name: "(empty)",
+      target: new AnyTarget(),
       sources: [],
       native_sources: [],
       dependencies: dependencies.map(
@@ -118,19 +125,19 @@ export class CrochetPackage {
 }
 
 export class RestrictedCrochetPackage extends CrochetPackage {
-  constructor(readonly target: Target, pkg: CrochetPackage) {
+  constructor(readonly target_restriction: Target, pkg: CrochetPackage) {
     super(pkg.filename, (pkg as any).data);
   }
 
   get sources() {
-    return this.sources_for(this.target);
+    return this.sources_for(this.target_restriction);
   }
 
   get native_sources() {
-    return this.native_sources_for(this.target);
+    return this.native_sources_for(this.target_restriction);
   }
 
   get dependencies() {
-    return this.dependencies_for(this.target);
+    return this.dependencies_for(this.target_restriction);
   }
 }

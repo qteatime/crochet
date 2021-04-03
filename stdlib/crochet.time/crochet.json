@@ -1,6 +1,6 @@
 {
   "name": "crochet.time",
-  "target": ["*"],
+  "target": "*",
   "sources": ["time.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {

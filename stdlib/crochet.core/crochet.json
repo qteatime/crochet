@@ -1,6 +1,6 @@
 {
   "name": "crochet.core",
-  "target": ["*"],
+  "target": "*",
   "sources": [
     "core.crochet",
     "integer.crochet",

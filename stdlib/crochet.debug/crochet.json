@@ -1,6 +1,6 @@
 {
   "name": "crochet.debug",
-  "target": ["*"],
+  "target": "*",
   "sources": ["debug.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {

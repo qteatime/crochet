@@ -1,4 +1,4 @@
-import { logger } from "../../utils";
+import { difference, logger } from "../../utils";
 import { Capabilities } from "./capability";
 import { CrochetPackage, RestrictedCrochetPackage } from "./pkg";
 import { Target } from "./target";
@@ -52,24 +52,15 @@ export class PackageGraph {
   }
 
   parents(name: string) {
-    const visited = new Set<string>([name]);
-
-    const collect = (pkg: RestrictedCrochetPackage) => {
-      const result = [];
-      for (const x of pkg.dependencies) {
-        if (x.name === name) {
-          result.push(x);
-        }
-        if (!visited.has(x.name)) {
-          visited.add(x.name);
-          result.push.apply(result, collect(this.get_package(x.name)));
+    const result = [];
+    for (const pkg of this.packages.values()) {
+      for (const dep of pkg.dependencies) {
+        if (dep.name === name) {
+          result.push(dep);
         }
       }
-      return result;
-    };
-
-    const pkg = this.get_package(name);
-    return collect(pkg);
+    }
+    return result;
   }
 
   check_capabilities(name: string, capabilities: Capabilities) {
@@ -111,7 +102,11 @@ export class PackageGraph {
       }
     };
 
-    logger.debug("Checking for capability violations");
+    logger.debug(
+      `Checking for capability violations (capabilities: ${[
+        ...capabilities.capabilities,
+      ].join(", ")})`
+    );
     for (const [k, v] of this.packages.entries()) {
       logger.debug(
         `- ${k} requires: ${[...v.required_capabilities].join(", ")}`
@@ -119,6 +114,30 @@ export class PackageGraph {
     }
 
     check([], "(root)", this.get_package(name), capabilities);
+  }
+
+  check_target(root: string) {
+    logger.debug(
+      `Checking for target violations (target: ${this.target.describe()})`
+    );
+    for (const pkg of this.serialise(root)) {
+      logger.debug(`- ${pkg.name} has target: ${pkg.target.describe()}`);
+      if (!pkg.target.accepts(this.target)) {
+        const parents = this.parents(pkg.name)
+          .map((x) => x.name)
+          .join(", ");
+        throw new Error(
+          `Cannot load package ${
+            pkg.name
+          } (included in ${parents}) for target ${this.target.describe()} because it requires the target ${pkg.target.describe()}`
+        );
+      }
+    }
+  }
+
+  check(root: string, capabilities: Capabilities) {
+    this.check_capabilities(root, capabilities);
+    this.check_target(root);
   }
 
   *serialise(root: string) {

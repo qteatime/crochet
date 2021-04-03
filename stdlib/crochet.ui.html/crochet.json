@@ -1,6 +1,6 @@
 {
   "name": "crochet.ui.html",
-  "target": ["web"],
+  "target": "web",
   "sources": ["html-ui.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {

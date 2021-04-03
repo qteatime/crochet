@@ -50,6 +50,7 @@ export abstract class CrochetVM {
       case ".crochet": {
         return new CrochetPackage(filename, {
           name: Path.basename(filename),
+          target: new AnyTarget(),
           sources: [new File(Path.basename(filename), new AnyTarget())],
           native_sources: [],
           capabilities: {
@@ -123,7 +124,7 @@ export abstract class CrochetVM {
   ) {
     const pkg = await this.entry_to_package(filename, capabilities);
     const graph = await PackageGraph.resolve(target, this, pkg);
-    graph.check_capabilities(pkg.name, capabilities);
+    graph.check(pkg.name, capabilities);
     for (const x of graph.serialise(pkg.name)) {
       await this.load_package(x);
     }
