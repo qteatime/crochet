@@ -67,7 +67,7 @@ export abstract class CrochetVM {
     }
   }
 
-  async load_crochet(filename: string, pkg: CrochetPackage) {
+  async load_crochet(filename: string, pkg: RestrictedCrochetPackage) {
     logger.debug(`Loading ${filename} from package ${pkg.name}`);
     const source = await this.read_file(filename);
     const ast = Compiler.parse(source);

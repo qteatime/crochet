@@ -10,6 +10,10 @@ import {
 
 export abstract class MachineError {
   abstract format(): string;
+
+  format_verbose() {
+    return this.format();
+  }
 }
 
 export class ErrUndefinedVariable extends MachineError {
@@ -129,5 +133,13 @@ export class ErrNativeError extends MachineError {
 
   format() {
     return `internal: ${this.error.name}: ${this.error.message}`;
+  }
+
+  format_verbose() {
+    if (this.error.stack != null) {
+      return `internal: ${this.error.stack}`;
+    } else {
+      return this.format();
+    }
   }
 }

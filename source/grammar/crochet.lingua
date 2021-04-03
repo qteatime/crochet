@@ -23,6 +23,7 @@ type Declaration =
           , body: Statement[])
   | When(pos: Meta, pred: Predicate, body: Statement[])
   | Context(pos: Meta, name: Name, items: Declaration[])
+  | Open(pos: Meta, ns: Namespace)
 
 type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
 type FFI(pos: Meta, name: Namespace, args: Name[])
@@ -192,6 +193,11 @@ grammar Crochet : Program {
     | actionDeclaration
     | whenDeclaration
     | contextDeclaration
+    | openDeclaration
+
+  openDeclaration =
+    | open_ ns:namespace s<";">
+      -> Declaration.Open(meta, ns)
 
   relationDeclaration =
     | relation_ s:logicSignature<relationPart> s<";">
@@ -827,6 +833,7 @@ grammar Crochet : Program {
   context_ = kw<"context">
   sample_ = kw<"sample">
   of_ = kw<"of">
+  open_ = kw<"open">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -836,4 +843,5 @@ grammar Crochet : Program {
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
+    | open_
 }

@@ -76,7 +76,7 @@ export class TypePattern extends Pattern {
     env: UnificationEnvironment,
     value: CrochetValue
   ): UnificationEnvironment | null {
-    const type = this.type.realise(state.world);
+    const type = this.type.realise(state);
     if (type.accepts(value)) {
       return this.pattern.unify(state, env, value);
     } else {
@@ -132,7 +132,7 @@ export class GlobalPattern extends Pattern {
     env: UnificationEnvironment,
     other: CrochetValue
   ): UnificationEnvironment | null {
-    const value = state.world.globals.lookup(this.name);
+    const value = state.env.module.lookup_value(this.name);
     if (other.equals(value)) {
       return env;
     } else {

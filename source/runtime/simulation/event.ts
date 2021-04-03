@@ -32,7 +32,7 @@ export class When {
       UnificationEnvironment.empty()
     );
     return results.map((uenv) => {
-      const env = new Environment(this.env, null);
+      const env = this.env.clone_with_receiver(null);
       env.define_all(uenv.boundValues);
       const block = new SBlock(this.body);
       return block.evaluate(state.with_env(env));
@@ -63,7 +63,7 @@ export class Action {
   ) {}
 
   ready_actions(actor: CrochetValue, state0: State): ReadyAction[] {
-    const type = this.for_type.realise(state0.world);
+    const type = this.for_type.realise(state0);
     if (!type.accepts(actor)) {
       return [];
     }
@@ -76,7 +76,7 @@ export class Action {
       UnificationEnvironment.empty()
     );
     return results.map((uenv) => {
-      const env = new Environment(this.env, null);
+      const env = this.env.clone_with_receiver(null);
       env.define_all(uenv.boundValues);
       const block = new SBlock(this.body);
       return {

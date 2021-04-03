@@ -38,7 +38,7 @@ export class Signal {
   }
 
   *evaluate(state: State, args: CrochetValue[]) {
-    const env = new Environment(state.env, state.env.raw_receiver);
+    const env = state.env.clone();
     if (this.parameters.length !== args.length) {
       throw die(`Invalid arity in signal ${this.name}`);
     }

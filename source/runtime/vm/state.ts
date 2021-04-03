@@ -1,6 +1,7 @@
 import { XorShift } from "../../utils";
 import { IDatabase } from "../logic";
 import { Environment, World } from "../world";
+import { CrochetModule } from "./module";
 
 export class State {
   constructor(
@@ -14,7 +15,7 @@ export class State {
     return new State(
       world.global_random,
       world,
-      new Environment(null, null),
+      new Environment(null, null, null),
       world.database
     );
   }
@@ -31,7 +32,7 @@ export class State {
     return new State(
       this.random,
       this.world,
-      new Environment(this.env, null),
+      this.env.clone_with_receiver(null),
       this.database
     );
   }

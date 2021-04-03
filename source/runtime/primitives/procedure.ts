@@ -98,7 +98,7 @@ export class CrochetProcedure implements IProcedure {
   }
 
   *invoke(state: State, values: CrochetValue[]) {
-    const env = new Environment(this.env, values[0]);
+    const env = this.env.clone_with_receiver(values[0]);
     for (const [k, v] of zip(this.parameters, values)) {
       env.define(k, v);
     }

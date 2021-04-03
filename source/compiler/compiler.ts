@@ -701,8 +701,10 @@ export function compileParameters(xs0: Parameter[]) {
 export function compileTypeDef(t: TypeDef, fields: Parameter[]) {
   const params = fields.map(compileParameter);
   const parent = t.parent ? compileTypeApp(t.parent) : null;
+  const local = false;
 
   return new IR.DType(
+    local,
     parent,
     t.name.name,
     t.roles.map((x) => x.name),
@@ -773,10 +775,11 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     SingletonType(meta, type0, init) {
+      const local = false;
       const type = compileTypeDef(type0, []);
       return [
-        new IR.DType(type.parent, type.name, type.roles, []),
-        new IR.DDefine(type.name, new IR.ENew(type.name, [])),
+        new IR.DType(local, type.parent, type.name, type.roles, []),
+        new IR.DDefine(local, type.name, new IR.ENew(type.name, [])),
         new IR.DSealType(type.name),
         new IR.DDo([new IR.SRegister(new IR.EGlobal(type.name))]),
         ...compileTypeInit(meta, type.name, init),
@@ -784,6 +787,7 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     EnumType(_, name, variants) {
+      const local = false;
       const parent = new TypeApp.Named(name.pos, name);
       const variantDecls = variants.flatMap((v, i) => [
         new Declaration.SingletonType(v.pos, new TypeDef(parent, v, []), []),
@@ -802,9 +806,9 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
         ),
       ]);
       return [
-        new IR.DType(new IR.TNamed("enum"), name.name, [], []),
+        new IR.DType(local, new IR.TNamed("enum"), name.name, [], []),
         ...variantDecls.flatMap((v) => compileDeclaration(v)),
-        new IR.DDefine(name.name, new IR.ENew(name.name, [])),
+        new IR.DDefine(local, name.name, new IR.ENew(name.name, [])),
         new IR.DSealType(name.name),
         new IR.DCrochetCommand(
           "_ lower-bound",
@@ -846,9 +850,10 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     AbstractType(_, t) {
+      const local = false;
       const type = compileTypeDef(t, []);
       return [
-        new IR.DType(type.parent, type.name, type.roles, []),
+        new IR.DType(local, type.parent, type.name, type.roles, []),
         new IR.DSealType(type.name),
       ];
     },
@@ -858,7 +863,8 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     Define(_, name, value) {
-      return [new IR.DDefine(name.name, compileExpression(value))];
+      const local = false;
+      return [new IR.DDefine(local, name.name, compileExpression(value))];
     },
 
     Scene(_, name, body) {
@@ -896,7 +902,14 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     ForeignType(_, name, foreign_name) {
-      return [new IR.DForeignType(name.name, compileNamespace(foreign_name))];
+      const local = false;
+      return [
+        new IR.DForeignType(local, name.name, compileNamespace(foreign_name)),
+      ];
+    },
+
+    Open(_, ns) {
+      return [new IR.DOpen(compileNamespace(ns))];
     },
   });
 }

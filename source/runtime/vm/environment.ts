@@ -1,5 +1,6 @@
 import { UnificationEnvironment } from "../logic";
 import { CrochetValue } from "../primitives";
+import { CrochetModule } from "./module";
 import { die } from "./run";
 
 export class Environment {
@@ -7,6 +8,7 @@ export class Environment {
 
   constructor(
     readonly parent: Environment | null,
+    readonly raw_module: CrochetModule | null,
     readonly raw_receiver: CrochetValue | null
   ) {}
 
@@ -15,6 +17,13 @@ export class Environment {
       throw die(`requesting receiver outside of command`);
     }
     return this.raw_receiver;
+  }
+
+  get module() {
+    if (this.raw_module == null) {
+      throw die(`requesting module outside of a module`);
+    }
+    return this.raw_module;
   }
 
   has(name: string): boolean {
@@ -71,12 +80,20 @@ export class Environment {
   }
 
   extend_with_unification(env: UnificationEnvironment) {
-    const newEnv = new Environment(this, this.raw_receiver);
+    const newEnv = new Environment(this, this.raw_module, this.raw_receiver);
     (newEnv as any).bindings = env.boundValues;
     return newEnv;
   }
 
   clone() {
-    return new Environment(this, this.raw_receiver);
+    return new Environment(this, this.raw_module, this.raw_receiver);
+  }
+
+  clone_with_receiver(receiver: CrochetValue | null) {
+    return new Environment(this, this.raw_module, receiver);
+  }
+
+  clone_with_module(module: CrochetModule | null) {
+    return new Environment(this, module, this.raw_receiver);
   }
 }

@@ -8,14 +8,14 @@ import {
   NativeProcedure,
   Procedure,
 } from "../primitives";
-import { die, Machine, State, Thread } from "../vm";
+import { CrochetModule, die, Machine, State, Thread } from "../vm";
 import { ConcreteContext, Context, ContextBag } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
 import { Environment } from "../vm/environment";
 import { XorShift } from "../../utils";
-import { CrochetPackage } from "../pkg";
+import { CrochetPackage, RestrictedCrochetPackage } from "../pkg";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
@@ -75,13 +75,20 @@ export class World {
     filename: string,
     xs: Declaration[],
     env: Environment,
-    pkg: CrochetPackage
+    pkg: RestrictedCrochetPackage
   ) {
+    const module = new CrochetModule(this, filename, pkg);
     const context = {
       filename,
+      module,
       package: pkg,
     };
-    const state = new State(this.global_random, this, env, this.database);
+    const state = new State(
+      this.global_random,
+      this,
+      env.clone_with_module(module),
+      this.database
+    );
     for (const x of xs) {
       await x.apply(context, state);
     }

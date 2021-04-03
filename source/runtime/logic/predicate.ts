@@ -114,7 +114,7 @@ export class TypePredicate extends Predicate {
   }
 
   search(state: State, env: UnificationEnvironment) {
-    const type = cast(this.type.realise(state.world), TCrochetType);
+    const type = cast(this.type.realise(state), TCrochetType);
     return type.registered_instances.map((v) => {
       const newEnv = env.clone();
       newEnv.bind(this.name, v);
@@ -158,7 +158,7 @@ export class SamplingType extends SamplingPool {
   }
 
   sample(size: number, state: State, env: UnificationEnvironment) {
-    const type = cast(this.type.realise(state.world), TCrochetType);
+    const type = cast(this.type.realise(state), TCrochetType);
     const instances = type.registered_instances;
     const sampled = state.random.random_choice_many(size, instances);
     return sampled.map((s) => {

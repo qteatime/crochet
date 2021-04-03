@@ -1,14 +1,15 @@
 import { CrochetType, TCrochetAny } from "../primitives";
+import { State } from "../vm";
 import { World } from "../world";
 
 export type Type = TNamed | TAny;
 
 interface IType {
-  realise(world: World): CrochetType;
+  realise(state: State): CrochetType;
 }
 
 export class TAny implements IType {
-  realise(world: World): CrochetType {
+  realise(state: State): CrochetType {
     return TCrochetAny.type;
   }
 }
@@ -16,7 +17,7 @@ export class TAny implements IType {
 export class TNamed implements IType {
   constructor(readonly name: string) {}
 
-  realise(world: World): CrochetType {
-    return world.types.lookup(this.name);
+  realise(state: State): CrochetType {
+    return state.env.module.lookup_type(this.name);
   }
 }

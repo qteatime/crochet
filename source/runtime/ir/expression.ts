@@ -126,7 +126,7 @@ export class ENew extends Expression {
   }
 
   *evaluate(state: State): Machine {
-    const type = cast(state.world.types.lookup(this.name), TCrochetType);
+    const type = cast(state.env.module.lookup_type(this.name), TCrochetType);
     const values = avalue(
       yield _push(run_all(this.data.map((x) => x.evaluate(state))))
     );
@@ -140,7 +140,7 @@ export class EGlobal extends Expression {
   }
 
   *evaluate(state: State) {
-    return state.world.globals.lookup(this.name);
+    return state.env.module.lookup_value(this.name);
   }
 }
 
@@ -184,7 +184,7 @@ export class ECast extends Expression {
   }
 
   *evaluate(state: State): Machine {
-    const type = this.type.realise(state.world);
+    const type = this.type.realise(state);
     const value0 = cvalue(yield _push(this.value.evaluate(state)));
     const value = type.coerce(value0);
     if (value != null) {
@@ -397,7 +397,7 @@ export class EMatchSearch extends Expression {
       const results = kase.search(state);
       if (results.length !== 0) {
         const machines = results.map((uenv) => {
-          const new_env = new Environment(state.env, state.env.raw_receiver);
+          const new_env = state.env.clone();
           new_env.define_all(uenv.boundValues);
           const new_state = state.with_env(new_env);
           return kase.body.evaluate(new_state);
@@ -445,7 +445,7 @@ export class EHasType extends Expression {
 
   *evaluate(state: State): Machine {
     const value = cvalue(yield _push(this.value.evaluate(state)));
-    const type = this.type.realise(state.world);
+    const type = this.type.realise(state);
     return from_bool(type.accepts(value));
   }
 }

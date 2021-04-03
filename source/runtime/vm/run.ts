@@ -1,3 +1,4 @@
+import { logger } from "../../utils";
 import { unreachable } from "../../utils/utils";
 import { CrochetValue } from "../primitives";
 import { ErrNativeError, MachineError } from "./errors";
@@ -11,8 +12,12 @@ export class CrochetError {
   }
 
   get stack() {
+    const message = logger.verbose
+      ? this.error.format_verbose()
+      : this.error.format();
+
     const trace = this.frames.map((x) => `  - ${x}`).join("\n");
-    return `${this.message}\n\nExecution trace:\n${trace}`;
+    return `${message}\n\nExecution trace:\n${trace}`;
   }
 }
 

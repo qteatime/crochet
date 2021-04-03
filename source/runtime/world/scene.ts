@@ -16,7 +16,7 @@ export class Scene {
   }
 
   *evaluate(state: State): Machine {
-    const env = new Environment(this.env, null);
+    const env = this.env.clone_with_receiver(null);
     const block = new SBlock(this.body);
     const value = cvalue(
       yield _mark(this.full_name, block.evaluate(state.with_env(env)))

@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.ui.html;
+
 singleton erin with
   command mark do "X" end
   command name do "Erin" end
@@ -149,7 +151,8 @@ when X simulate-turn, L at: C mark: empty do
     "[X name] marks [L], [C]",
     board render,
   ]) show;
-  100 sleep;
+
+  ui wait-click;
 end
 
 when X simulate-turn, X won do
