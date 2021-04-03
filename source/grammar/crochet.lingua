@@ -500,7 +500,7 @@ grammar Crochet : Program {
     | b:statementBlock<statement> -> Expression.Block(meta, b)
 
   pipeExpression =
-    | l:pipeExpression s<"|"> r:invokeInfixExpression
+    | l:pipeExpression s<"|>"> r:invokeInfixExpression
       -> Expression.Pipe(meta, l, r)
     | invokeInfixExpression
 
