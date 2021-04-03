@@ -4,13 +4,19 @@ import { State } from "./state";
 import { World } from "../world";
 import { CrochetError } from "./run";
 import {
+  AnyTarget,
   Capabilities,
   Capability,
   CrochetCapability,
   CrochetPackage,
+  Dependency,
+  PackageGraph,
+  RestrictedCrochetPackage,
+  Target,
 } from "../pkg";
 import { logger } from "../../utils";
 import { MachineError } from "./errors";
+import { File } from "../pkg/file";
 
 export abstract class CrochetVM {
   readonly world: World;
@@ -36,8 +42,30 @@ export abstract class CrochetVM {
   abstract initialise(): Promise<void>;
   abstract prelude: string[];
 
+  private async entry_to_package(filename: string, capabilities: Capabilities) {
+    switch (Path.extname(filename)) {
+      case ".json": {
+        return await this.read_package_from_file(filename);
+      }
+      case ".crochet": {
+        return new CrochetPackage(filename, {
+          name: Path.basename(filename),
+          sources: [new File(Path.basename(filename), new AnyTarget())],
+          native_sources: [],
+          capabilities: {
+            requires: capabilities.capabilities,
+            provides: new Set(),
+          },
+          dependencies: this.prelude.map((x) => new Dependency(x, null)),
+        });
+      }
+      default:
+        throw new Error(`Unsupported file ${filename}`);
+    }
+  }
+
   async load_crochet(filename: string, pkg: CrochetPackage) {
-    logger.debug(`Loading ${filename} in ${pkg.name}`);
+    logger.debug(`Loading ${filename} from package ${pkg.name}`);
     const source = await this.read_file(filename);
     const ast = Compiler.parse(source);
     const ir = Compiler.compileProgram(ast);
@@ -69,33 +97,9 @@ export abstract class CrochetVM {
     return pkg;
   }
 
-  async load_package(pkg: CrochetPackage, capabilities: Capabilities) {
-    logger.debug(
-      `Loading package ${pkg.name} with capabilities: ${[
-        ...capabilities.capabilities,
-      ].join(", ")}`
-    );
+  async load_package(pkg: RestrictedCrochetPackage) {
+    logger.debug(`Loading package ${pkg.name}`);
 
-    // We still need to recursively verify capabilities are consistent
-    for (const x of pkg.dependencies) {
-      const dep = await this.get_package(x.name);
-      const cap0 =
-        x.capabilities == null
-          ? capabilities
-          : capabilities.restrict(x.capabilities);
-      const cap = cap0.restrict(dep.required_capabilities);
-      await this.load_package(dep, cap);
-    }
-    if (this.loaded_packages.has(pkg.name)) {
-      return;
-    }
-    this.loaded_packages.add(pkg.name);
-
-    if (!capabilities.allows("native") && pkg.native_sources.length != 0) {
-      throw new Error(
-        `${pkg.name} (${pkg.filename}) defines native extensions, but has not been granted tne 'native' capability`
-      );
-    }
     for (const x of pkg.native_sources) {
       logger.debug(`Loading native module ${x} from package ${pkg.name}`);
       const module = await this.load_native(x);
@@ -106,38 +110,20 @@ export abstract class CrochetVM {
     }
   }
 
-  async load(filename: string) {
-    return this.load_with_capabilities(filename, new Capabilities(new Set()));
+  async load(filename: string, target: Target) {
+    return this.load_with_capabilities(filename, target, Capabilities.safe);
   }
 
-  async load_with_capabilities(filename: string, capabilities: Capabilities) {
-    switch (Path.extname(filename)) {
-      case ".json": {
-        const pkg = await this.read_package_from_file(filename);
-        const cap = capabilities.restrict(pkg.capabilities.requires);
-        return await this.load_package(pkg, cap);
-      }
-      case ".crochet": {
-        for (const pkg_name of this.prelude) {
-          const pkg = await this.get_package(pkg_name);
-          const missing = capabilities.require(pkg.required_capabilities);
-          if (missing.size === 0) {
-            await this.load_package(pkg, capabilities);
-          } else {
-            logger.debug(
-              `Not loading ${pkg.name} due to missing capabilities: ${[
-                ...missing,
-              ].join(", ")}`
-            );
-          }
-        }
-        return await this.load_crochet(
-          filename,
-          CrochetPackage.empty(filename, capabilities, this.prelude)
-        );
-      }
-      default:
-        throw new Error(`Unsupported file ${filename}`);
+  async load_with_capabilities(
+    filename: string,
+    target: Target,
+    capabilities: Capabilities
+  ) {
+    const pkg = await this.entry_to_package(filename, capabilities);
+    const graph = await PackageGraph.resolve(target, this, pkg);
+    graph.check_capabilities(pkg.name, capabilities);
+    for (const x of graph.serialise(pkg.name)) {
+      await this.load_package(x);
     }
   }
 

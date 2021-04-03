@@ -1,4 +1,4 @@
-import { anyOf, difference, equal } from "../../utils";
+import { anyOf, difference, equal, intersect } from "../../utils";
 
 export type Capability = "native" | "timing" | "reflection" | "html";
 
@@ -20,17 +20,11 @@ export class Capabilities {
   }
 
   require(set: Set<Capability>) {
-    return difference(this.capabilities, set);
+    return difference(set, this.capabilities);
   }
 
   restrict(new_set: Set<Capability>) {
-    const missing = this.require(new_set);
-    if (missing.size !== 0) {
-      throw new Error(
-        `Missing capabilities: ${[...missing.values()].join(", ")}`
-      );
-    }
-    return new Capabilities(new_set);
+    return new Capabilities(intersect(this.capabilities, new_set));
   }
 }
 

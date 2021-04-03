@@ -1,6 +1,6 @@
 import * as stdlib from "../stdlib";
 import { CrochetVM, State } from "../runtime";
-import { Capabilities } from "../runtime/pkg";
+import { Capabilities, WebTarget } from "../runtime/pkg";
 
 export class Crochet extends CrochetVM {
   constructor(readonly root: HTMLElement) {
@@ -20,6 +20,7 @@ export class Crochet extends CrochetVM {
   async load(filename: string) {
     return this.load_with_capabilities(
       filename,
+      new WebTarget(),
       new Capabilities(new Set(["html"]))
     );
   }

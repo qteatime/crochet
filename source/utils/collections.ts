@@ -59,3 +59,13 @@ export function union<A>(s1: Set<A>, s2: Set<A>) {
   for (const x of s2.values()) result.add(x);
   return result;
 }
+
+export function intersect<A>(s1: Set<A>, s2: Set<A>) {
+  const result = new Set<A>();
+  for (const x of s1.values()) {
+    if (s2.has(x)) {
+      result.add(x);
+    }
+  }
+  return result;
+}

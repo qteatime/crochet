@@ -1,25 +1,14 @@
 import * as Path from "path";
-import {
-  anyOf,
-  array,
-  difference,
-  equal,
-  map_spec,
-  optional,
-  parse,
-  spec,
-  string,
-  union,
-} from "../../utils";
+import { array, optional, parse, spec, string, union } from "../../utils";
 import { Capabilities, Capability, CrochetCapability } from "./capability";
 import { Dependency } from "./dependency";
-import { AnyTarget, Target } from "./target";
+import { Target } from "./target";
+import { File } from "./file";
 
 export interface PackageData {
-  target: Target;
   name: string;
-  sources: string[];
-  native_sources: string[];
+  sources: File[];
+  native_sources: File[];
   dependencies: Dependency[];
   capabilities: {
     requires: Set<Capability>;
@@ -37,16 +26,16 @@ export class CrochetPackage {
     return this.data.name;
   }
 
-  get targets() {
-    return this.data.target;
+  sources_for(target: Target) {
+    return this.data.sources
+      .filter((x) => x.is_valid(target))
+      .map((x) => this.resolve(x.filename));
   }
 
-  get sources() {
-    return this.data.sources.map((x) => this.resolve(x));
-  }
-
-  get native_sources() {
-    return this.data.native_sources.map((x) => this.resolve(x));
+  native_sources_for(target: Target) {
+    return this.data.native_sources
+      .filter((x) => x.is_valid(target))
+      .map((x) => this.resolve(x.filename));
   }
 
   get dependencies() {
@@ -75,13 +64,16 @@ export class CrochetPackage {
     return resolved;
   }
 
+  restricted_to(target: Target) {
+    return new RestrictedCrochetPackage(target, this);
+  }
+
   static get spec() {
     return spec(
       {
         name: string,
-        sources: array(string),
-        native_sources: optional(array(string), []),
-        target: Target,
+        sources: array(File),
+        native_sources: optional(array(File), []),
         dependencies: optional(array(Dependency), []),
         capabilities: optional(
           spec(
@@ -113,7 +105,6 @@ export class CrochetPackage {
     return new CrochetPackage(filename, {
       name: "(empty)",
       sources: [],
-      target: new AnyTarget(),
       native_sources: [],
       dependencies: dependencies.map(
         (x) => new Dependency(x, capabilities.capabilities)
@@ -123,5 +114,19 @@ export class CrochetPackage {
         provides: new Set(),
       },
     });
+  }
+}
+
+export class RestrictedCrochetPackage extends CrochetPackage {
+  constructor(readonly target: Target, pkg: CrochetPackage) {
+    super(pkg.filename, (pkg as any).data);
+  }
+
+  get sources() {
+    return this.sources_for(this.target);
+  }
+
+  get native_sources() {
+    return this.native_sources_for(this.target);
   }
 }

@@ -1,11 +1,19 @@
 import { anyOf, array, map_spec, spec, string } from "../../utils";
-import { Capability, CrochetCapability } from "./capability";
+import { Capabilities, Capability, CrochetCapability } from "./capability";
 
 export class Dependency {
   constructor(
     readonly name: string,
-    readonly capabilities: Set<Capability> | null
+    readonly raw_capabilities: Set<Capability> | null
   ) {}
+
+  get capabilities() {
+    if (this.raw_capabilities == null) {
+      return Capabilities.safe.capabilities;
+    } else {
+      return this.raw_capabilities;
+    }
+  }
 
   static get spec() {
     return anyOf([

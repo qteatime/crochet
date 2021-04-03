@@ -10,7 +10,7 @@ import * as Path from "path";
 
 import * as Yargs from "yargs";
 import { World } from "../runtime";
-import { Capabilities, CrochetCapability } from "../runtime/pkg";
+import { Capabilities, CliTarget, CrochetCapability } from "../runtime/pkg";
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {
@@ -93,8 +93,12 @@ async function run(
       vm.reseed(Number(seed));
     }
     await vm.initialise();
+    logger.debug(
+      "Granting capabilities:",
+      [...capabilities.capabilities].join(", ")
+    );
     logger.debug("Using seed:", vm.world.global_random.seed);
-    await vm.load_with_capabilities(filename, capabilities);
+    await vm.load_with_capabilities(filename, new CliTarget(), capabilities);
     await vm.run(entry);
   } catch (error) {
     await vm.show_error(error);
