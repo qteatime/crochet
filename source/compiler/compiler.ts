@@ -31,6 +31,7 @@ import {
   ForExpression,
   SamplingPool,
   ConditionCase,
+  TrailingTest,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetInteger } from "../runtime";
@@ -563,22 +564,22 @@ export function compileTypeInit(
         return new Statement.Fact(meta, sig);
       },
 
-      Command(meta, sig0, body) {
+      Command(meta, sig0, body, test) {
         const self_param: Parameter = new Parameter.TypedOnly(
           meta,
           new TypeApp.Named(meta, new Name(meta, self))
         );
         const sig = materialiseSignature(self_param, sig0);
-        return new Declaration.Command(meta, sig, body);
+        return new Declaration.Command(meta, sig, body, test);
       },
 
-      ForeignCommand(meta, sig0, body) {
+      ForeignCommand(meta, sig0, body, test) {
         const self_param: Parameter = new Parameter.TypedOnly(
           meta,
           new TypeApp.Named(meta, new Name(meta, self))
         );
         const sig = materialiseSignature(self_param, sig0);
-        return new Declaration.ForeignCommand(meta, sig, body);
+        return new Declaration.ForeignCommand(meta, sig, body, test);
       },
     })
   );
@@ -711,6 +712,19 @@ export function compileParameter(x: Parameter) {
   });
 }
 
+export function compileTrailingTest(
+  title: string,
+  test: TrailingTest | null
+): IR.Declaration[] {
+  if (test == null) {
+    return [];
+  } else {
+    return [
+      new IR.DTest(title, new IR.SBlock(test.body.map(compileStatement))),
+    ];
+  }
+}
+
 export function compileParameters(xs0: Parameter[]) {
   const xs = xs0.map(compileParameter);
   return {
@@ -775,16 +789,17 @@ export function compileDeclaration(
       ];
     },
 
-    ForeignCommand(meta, sig, body) {
+    ForeignCommand(meta, sig, body, test) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
       const args = body.args.map((x) => parameters.indexOf(x.name));
       return [
         new IR.DForeignCommand(name, types, compileNamespace(body.name), args),
+        ...compileTrailingTest(name, test),
       ];
     },
 
-    Command(meta, sig, body) {
+    Command(meta, sig, body, test) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
       return [
@@ -794,6 +809,7 @@ export function compileDeclaration(
           types,
           body.map(compileStatement)
         ),
+        ...compileTrailingTest(name, test),
       ];
     },
 
@@ -829,7 +845,8 @@ export function compileDeclaration(
             new Statement.Expr(
               new Expression.Lit(new Literal.Integer(v.pos, (i + 1).toString()))
             ),
-          ]
+          ],
+          null
         ),
       ]);
       return [
@@ -942,6 +959,11 @@ export function compileDeclaration(
 
     Local(_, decl) {
       return compileDeclaration(decl, DeclarationLocality.LOCAL);
+    },
+
+    Test(_, title0, body) {
+      const title = parseString(title0);
+      return [new IR.DTest(title, new IR.SBlock(body.map(compileStatement)))];
     },
   });
 }

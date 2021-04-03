@@ -4,8 +4,8 @@ type Declaration =
   | Relation(pos: Meta, signature: Signature<RelationPart>)
   | DefinePredicate(pos: Meta, signature: Signature<Name>, clauses: PredicateClause[])
   | Do(pos: Meta, body: Statement[])
-  | ForeignCommand(pos: Meta, signature: Signature<Parameter>, body: FFI)
-  | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[])
+  | ForeignCommand(pos: Meta, signature: Signature<Parameter>, body: FFI, ttest: TrailingTest?)
+  | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[], ttest: TrailingTest?)
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
   | AbstractType(pos: Meta, typ: TypeDef)
@@ -25,6 +25,9 @@ type Declaration =
   | Context(pos: Meta, name: Name, items: Declaration[])
   | Open(pos: Meta, ns: Namespace)
   | Local(pos: Meta, decl: Declaration)
+  | Test(pos: Meta, title: String, body: Statement[])
+
+type TrailingTest(pos: Meta, body: Statement[])
 
 type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
 type FFI(pos: Meta, name: Namespace, args: Name[])
@@ -35,8 +38,8 @@ type Rank =
 
 type TypeInit =
   | Fact(pos: Meta, sig: PartialSignature<Expression>)
-  | Command(pos: Meta, sig: PartialSignature<Parameter>, body: Statement[])
-  | ForeignCommand(pos: Meta, signature: PartialSignature<Parameter>, body: FFI)
+  | Command(pos: Meta, sig: PartialSignature<Parameter>, body: Statement[], ttest: TrailingTest?)
+  | ForeignCommand(pos: Meta, signature: PartialSignature<Parameter>, body: FFI, ttest: TrailingTest?)
 
 type Parameter =
   | Untyped(pos: Meta, name: Name)
@@ -197,6 +200,19 @@ grammar Crochet : Program {
     | contextDeclaration
     | openDeclaration
     | localDeclaration
+    | testDeclaration
+
+  testDeclaration =
+    | test_ s:string do_ b:statements end_
+      -> Declaration.Test(meta, s, b)
+
+  trailingTest =
+    | oneTrailingTest
+    | s<";">  -> null
+
+  oneTrailingTest =
+    | test_ b:statements end_
+      -> TrailingTest(meta, b)
 
   localDeclaration =
     | local_ d:defineDeclaration
@@ -225,21 +241,24 @@ grammar Crochet : Program {
     | always_ p:predicate s<";">  -> PredicateClause(meta, Predicate.Always(meta), PredicateEffect.Trivial())
 
   doDeclaration =
-    | prelude_ xs:list0<statement, s<";">> end_
+    | prelude_ xs:statements end_
       -> Declaration.Do(meta, xs)
 
   commandDeclaration =
-    | command_ s:signature<parameter> s<"="> foreign_ b:foreignBody
-      -> Declaration.ForeignCommand(meta, s, b)
+    | command_ s:signature<parameter> s<"="> foreign_ b:foreignBody t:trailingTest
+      -> Declaration.ForeignCommand(meta, s, b, t)
 
-    | command_ s:signature<parameter> s<"="> e:expression s<";">
-      -> Declaration.Command(meta, s, [Statement.Expr(e)])
+    | command_ s:signature<parameter> s<"="> e:expression t:trailingTest 
+      -> Declaration.Command(meta, s, [Statement.Expr(e)], t)
 
-    | command_ s:signature<parameter> b:statementBlock<statement>
-      -> Declaration.Command(meta, s, b)
+    | command_ s:signature<parameter> do_ b:statements t:oneTrailingTest end_
+      -> Declaration.Command(meta, s, b, t)
+
+    | command_ s:signature<parameter> do_ b:statements end_
+      -> Declaration.Command(meta, s, b, null)
 
   foreignBody =
-    | n:namespace s<"("> xs:list0<name, s<",">> s<")"> s<";">
+    | n:namespace s<"("> xs:list0<name, s<",">> s<")">
       -> FFI(meta, n, xs)
 
   parameter =
@@ -298,12 +317,14 @@ grammar Crochet : Program {
   typeInit =
     | s:partialLogicSignature<invokePostfix> s<";">
       -> TypeInit.Fact(meta, s)
-    | command_ s:partialSignature<parameter> s<"="> b:foreignBody
-      -> TypeInit.ForeignCommand(meta, s, b)
-    | command_ s:partialSignature<parameter> s<"="> e:expression s<";">
-      -> TypeInit.Command(meta, s, [Statement.Expr(e)])
-    | command_ s:partialSignature<parameter> b:statementBlock<statement>
-      -> TypeInit.Command(meta, s, b)
+    | command_ s:partialSignature<parameter> s<"="> b:foreignBody t:trailingTest
+      -> TypeInit.ForeignCommand(meta, s, b, t)
+    | command_ s:partialSignature<parameter> s<"="> e:expression t:trailingTest
+      -> TypeInit.Command(meta, s, [Statement.Expr(e)], t)
+    | command_ s:partialSignature<parameter> do_ b:statements t:oneTrailingTest end_
+      -> TypeInit.Command(meta, s, b, t)
+    | command_ s:partialSignature<parameter> do_ b:statements end_
+      -> TypeInit.Command(meta, s, b, null)
 
   roleDeclaration =
     | role_ n:atom s<";">           -> Declaration.Role(meta, n)
@@ -317,7 +338,7 @@ grammar Crochet : Program {
       -> Declaration.Define(meta, n, e)
 
   sceneDeclaration =
-    | scene_ n:atom b:statementBlock<statement>
+    | scene_ n:atom do_ b:statements end_
       -> Declaration.Scene(meta, n, b)
 
   actionDeclaration =
@@ -327,7 +348,7 @@ grammar Crochet : Program {
         tags:actionTags
         p:actionPredicate
         r:actionRank
-        b:statementBlock<statement>
+        do_ b:statements end_
       -> Declaration.Action(meta, typ, t, tags, p, r, b)
   
   actionType =
@@ -351,7 +372,7 @@ grammar Crochet : Program {
     |                    -> Rank.Unranked(meta)
 
   whenDeclaration =
-    | when_ p:predicate b:statementBlock<statement>
+    | when_ p:predicate do_ b:statements end_
       -> Declaration.When(meta, p, b)
 
   contextDeclaration =
@@ -477,7 +498,7 @@ grammar Crochet : Program {
     | p:predicate         -> SimulationGoal.CustomGoal(meta, p)
 
   signal =
-    | on_ s:signature<parameter> b:statementBlock<statement>
+    | on_ s:signature<parameter> do_ b:statements end_
       -> Signal(meta, s, b)
 
   // -- Expressions
@@ -498,7 +519,7 @@ grammar Crochet : Program {
     | force_ e:expression -> Expression.Force(meta, e)
 
   expressionBlock =
-    | b:statementBlock<statement> -> Expression.Block(meta, b)
+    | do_ b:statements end_ -> Expression.Block(meta, b)
 
   pipeExpression =
     | l:pipeExpression s<"|>"> r:invokeInfixExpression
@@ -694,7 +715,6 @@ grammar Crochet : Program {
 
   namespace = x:s<nonemptyListOf<t_atom, s<".">>>  -> Namespace(meta, x)
 
-
   // -- Higher-order
   logicSignature<t> =
     | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
@@ -733,8 +753,11 @@ grammar Crochet : Program {
   block<t> =
     | do_ xs:t* end_ -> xs
 
+  statements =
+    | list0<statement, s<";">>
+
   eblock =
-    | s:statementBlock<statement>       -> s
+    | do_ b:statements end_             -> b
     | s<"=>"> e:expression s<";">       -> [Statement.Expr(e)]
 
   s<p> = space* x:p -> x
@@ -747,6 +770,8 @@ grammar Crochet : Program {
   token line = (~nl any)*
   token comment (a comment) = "//" line
   space += comment
+
+  semi = s<";">
 
   token atom_start = "a".."z"
   token atom_rest = letter | digit | "-"
@@ -846,6 +871,7 @@ grammar Crochet : Program {
   of_ = kw<"of">
   open_ = kw<"open">
   local_ = kw<"local">
+  test_ = kw<"test">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -855,5 +881,5 @@ grammar Crochet : Program {
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
-    | open_ | local_
+    | open_ | local_ | test_
 }

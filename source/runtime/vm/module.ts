@@ -1,8 +1,7 @@
-import { Environment } from "./environment";
 import { Bag, logger } from "../../utils";
 import { RestrictedCrochetPackage } from "../pkg";
 import { CrochetType, CrochetValue } from "../primitives";
-import { World } from "../world";
+import { CrochetTest, World } from "../world";
 
 export class CrochetModule {
   readonly local_types = new Bag<string, CrochetType>("type");
@@ -116,5 +115,9 @@ export class CrochetModule {
       );
       this.world.globals.add(ns_name, value);
     }
+  }
+
+  add_test(test: CrochetTest) {
+    this.world.tests.push(test);
   }
 }

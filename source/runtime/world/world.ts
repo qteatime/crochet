@@ -16,6 +16,7 @@ import { Bag } from "../../utils/bag";
 import { Environment } from "../vm/environment";
 import { XorShift } from "../../utils";
 import { CrochetPackage, RestrictedCrochetPackage } from "../pkg";
+import { CrochetTest } from "./test";
 
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
@@ -62,6 +63,7 @@ export class World {
   readonly global_context = new ConcreteContext("<intrinsic>", "global");
   readonly ffi = new ForeignInterface();
   readonly global_random = XorShift.new_random();
+  readonly tests: CrochetTest[] = [];
 
   schedule(machine: Machine) {
     this.queue.push(machine);

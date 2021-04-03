@@ -8,7 +8,7 @@ import {
 import { CrochetRole, TCrochetAny, TCrochetType } from "../primitives";
 import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
 import { CrochetModule, cvalue, State, Thread } from "../vm";
-import { Environment, Scene, World } from "../world";
+import { CrochetTest, Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
@@ -317,5 +317,21 @@ export class DOpen extends Declaration {
   async apply(declaration_context: DeclarationContext, state: State) {
     const module = declaration_context.module;
     module.open_namespace(this.ns);
+  }
+}
+
+export class DTest extends Declaration {
+  constructor(readonly title: string, readonly body: SBlock) {
+    super();
+  }
+
+  async apply(declaration_context: DeclarationContext, state: State) {
+    const test = new CrochetTest(
+      declaration_context.module,
+      this.title,
+      state.env,
+      this.body
+    );
+    declaration_context.module.add_test(test);
   }
 }
