@@ -480,6 +480,11 @@ export function compileExpression(expr: Expression): IR.Expression {
       ]);
     },
 
+    PipeInvoke(meta, left, sig0) {
+      const sig = materialiseSignature(left, sig0);
+      return compileExpression(new Expression.Invoke(meta, sig));
+    },
+
     Condition(_, cases) {
       return new IR.ECondition(
         cases.map(

@@ -88,6 +88,7 @@ type Expression =
   | Block(pos: Meta, body: Statement[])
   | Apply(pos: Meta, partial: Expression, values: Expression[])
   | Pipe(pos: Meta, left: Expression, right: Expression)
+  | PipeInvoke(pos: Meta, left: Expression, right: PartialSignature<Expression>)
   | Interpolate(pos: Meta, value: Interpolation<Expression>)
   | Condition(pos: Meta, cases: ConditionCase[])
   | HasType(pos: Meta, value: Expression, typ: TypeApp)
@@ -502,6 +503,8 @@ grammar Crochet : Program {
   pipeExpression =
     | l:pipeExpression s<"|>"> r:invokeInfixExpression
       -> Expression.Pipe(meta, l, r)
+    | l:pipeExpression s<"|"> r:partialSignature<invokeInfixExpression>
+      -> Expression.PipeInvoke(meta, l, r)
     | invokeInfixExpression
 
   invokeInfixExpression =
