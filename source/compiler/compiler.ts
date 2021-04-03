@@ -38,7 +38,12 @@ import * as IR from "../runtime/ir";
 import { SimpleInterpolation, TNamed } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
-import { cast } from "../utils/utils";
+import { cast, unreachable } from "../utils/utils";
+
+enum DeclarationLocality {
+  LOCAL,
+  PUBLIC,
+}
 
 // -- Utilities
 function parseInteger(x: string): bigint {
@@ -122,6 +127,17 @@ export function signatureValues<T>(sig: Signature<T>): T[] {
 
 export function compileNamespace(x: Namespace) {
   return x.names.join(".");
+}
+
+function compileLocality(x: DeclarationLocality) {
+  switch (x) {
+    case DeclarationLocality.LOCAL:
+      return true;
+    case DeclarationLocality.PUBLIC:
+      return false;
+    default:
+      throw unreachable(x, "Locality");
+  }
 }
 
 // -- Logic
@@ -698,10 +714,13 @@ export function compileParameters(xs0: Parameter[]) {
   };
 }
 
-export function compileTypeDef(t: TypeDef, fields: Parameter[]) {
+export function compileTypeDef(
+  local: boolean,
+  t: TypeDef,
+  fields: Parameter[]
+) {
   const params = fields.map(compileParameter);
   const parent = t.parent ? compileTypeApp(t.parent) : null;
-  const local = false;
 
   return new IR.DType(
     local,
@@ -724,7 +743,10 @@ export function compileRank(r: Rank): IR.Expression {
   });
 }
 
-export function compileDeclaration(d: Declaration): IR.Declaration[] {
+export function compileDeclaration(
+  d: Declaration,
+  locality: DeclarationLocality
+): IR.Declaration[] {
   return d.match<IR.Declaration[]>({
     Do(_, body) {
       return [new IR.DDo(body.map(compileStatement))];
@@ -775,8 +797,8 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     SingletonType(meta, type0, init) {
-      const local = false;
-      const type = compileTypeDef(type0, []);
+      const local = compileLocality(locality);
+      const type = compileTypeDef(local, type0, []);
       return [
         new IR.DType(local, type.parent, type.name, type.roles, []),
         new IR.DDefine(local, type.name, new IR.ENew(type.name, [])),
@@ -787,7 +809,7 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     EnumType(_, name, variants) {
-      const local = false;
+      const local = compileLocality(locality);
       const parent = new TypeApp.Named(name.pos, name);
       const variantDecls = variants.flatMap((v, i) => [
         new Declaration.SingletonType(v.pos, new TypeDef(parent, v, []), []),
@@ -807,7 +829,7 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
       ]);
       return [
         new IR.DType(local, new IR.TNamed("enum"), name.name, [], []),
-        ...variantDecls.flatMap((v) => compileDeclaration(v)),
+        ...variantDecls.flatMap((v) => compileDeclaration(v, locality)),
         new IR.DDefine(local, name.name, new IR.ENew(name.name, [])),
         new IR.DSealType(name.name),
         new IR.DCrochetCommand(
@@ -850,8 +872,8 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     AbstractType(_, t) {
-      const local = false;
-      const type = compileTypeDef(t, []);
+      const local = compileLocality(locality);
+      const type = compileTypeDef(local, t, []);
       return [
         new IR.DType(local, type.parent, type.name, type.roles, []),
         new IR.DSealType(type.name),
@@ -859,11 +881,12 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     Type(_, t, fields) {
-      return [compileTypeDef(t, fields)];
+      const local = compileLocality(locality);
+      return [compileTypeDef(local, t, fields)];
     },
 
     Define(_, name, value) {
-      const local = false;
+      const local = compileLocality(locality);
       return [new IR.DDefine(local, name.name, compileExpression(value))];
     },
 
@@ -902,7 +925,7 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     },
 
     ForeignType(_, name, foreign_name) {
-      const local = false;
+      const local = compileLocality(locality);
       return [
         new IR.DForeignType(local, name.name, compileNamespace(foreign_name)),
       ];
@@ -911,9 +934,15 @@ export function compileDeclaration(d: Declaration): IR.Declaration[] {
     Open(_, ns) {
       return [new IR.DOpen(compileNamespace(ns))];
     },
+
+    Local(_, decl) {
+      return compileDeclaration(decl, DeclarationLocality.LOCAL);
+    },
   });
 }
 
 export function compileProgram(p: Program) {
-  return p.declarations.flatMap(compileDeclaration);
+  return p.declarations.flatMap((x) =>
+    compileDeclaration(x, DeclarationLocality.PUBLIC)
+  );
 }

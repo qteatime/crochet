@@ -24,6 +24,7 @@ type Declaration =
   | When(pos: Meta, pred: Predicate, body: Statement[])
   | Context(pos: Meta, name: Name, items: Declaration[])
   | Open(pos: Meta, ns: Namespace)
+  | Local(pos: Meta, decl: Declaration)
 
 type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
 type FFI(pos: Meta, name: Namespace, args: Name[])
@@ -194,6 +195,13 @@ grammar Crochet : Program {
     | whenDeclaration
     | contextDeclaration
     | openDeclaration
+    | localDeclaration
+
+  localDeclaration =
+    | local_ d:defineDeclaration
+      -> Declaration.Local(meta, d)
+    | local_ t:typeDeclaration
+      -> Declaration.Local(meta, t)
 
   openDeclaration =
     | open_ ns:namespace s<";">
@@ -834,6 +842,7 @@ grammar Crochet : Program {
   sample_ = kw<"sample">
   of_ = kw<"of">
   open_ = kw<"open">
+  local_ = kw<"local">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -843,5 +852,5 @@ grammar Crochet : Program {
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
-    | open_
+    | open_ | local_
 }
