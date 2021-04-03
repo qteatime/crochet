@@ -6,7 +6,11 @@ import {
   TreeType,
 } from "../logic";
 import { CrochetRole, TCrochetAny, TCrochetType } from "../primitives";
-import { CrochetProcedure, NativeProcedure } from "../primitives/procedure";
+import {
+  Contract,
+  CrochetProcedure,
+  NativeProcedure,
+} from "../primitives/procedure";
 import { CrochetModule, cvalue, State, Thread } from "../vm";
 import { CrochetTest, Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
@@ -81,7 +85,8 @@ export class DForeignCommand extends Declaration {
     readonly name: string,
     readonly types: Type[],
     readonly foreign_name: string,
-    readonly args: number[]
+    readonly args: number[],
+    readonly contract: Contract
   ) {
     super();
   }
@@ -94,7 +99,8 @@ export class DForeignCommand extends Declaration {
         context.filename,
         this.name,
         this.args,
-        `${context.package.name}:${this.foreign_name}`
+        `${context.package.name}:${this.foreign_name}`,
+        this.contract
       )
     );
   }
@@ -105,7 +111,8 @@ export class DCrochetCommand extends Declaration {
     readonly name: string,
     readonly parameters: string[],
     readonly types: Type[],
-    readonly body: Statement[]
+    readonly body: Statement[],
+    readonly contract: Contract
   ) {
     super();
   }
@@ -118,7 +125,8 @@ export class DCrochetCommand extends Declaration {
       state.world,
       this.name,
       this.parameters,
-      this.body
+      this.body,
+      this.contract
     );
     state.world.procedures.add_crochet(
       this.name,

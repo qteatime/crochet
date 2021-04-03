@@ -1,0 +1,20 @@
+% crochet
+
+command integer abs
+ensures
+  positive   = return >= 0;
+  same-value = (return === self) or (return === (self * -1))
+do
+  condition
+    when self >= 0 => self;
+    always         => self * -1;
+  end
+test
+  assert 0 abs === 0;
+  assert 1 abs === 1;
+  assert -1 abs === 1;
+end
+
+scene main do
+  transcript inspect-line: 1 abs;
+end

@@ -1,10 +1,74 @@
 import { every, zip } from "../../utils/utils";
-import { SBlock, Statement } from "../ir";
-import { cvalue, Machine, State, _mark } from "../vm";
+import { Expression, SBlock, Statement } from "../ir";
+import { cvalue, Machine, State, _mark, _push } from "../vm";
 import { Environment, World } from "../world";
 import { CrochetValue } from "./value";
 import { CrochetType } from "./types";
 import { Comparison } from "../../utils/comparison";
+import { Meta } from "../ir";
+import { False } from "./boolean";
+
+export class ContractCondition {
+  constructor(
+    readonly meta: Meta,
+    readonly tag: string,
+    readonly expr: Expression
+  ) {}
+
+  *is_valid(state: State): Machine {
+    const value = cvalue(yield _push(this.expr.evaluate(state)));
+    return value;
+  }
+
+  format_error() {
+    return `${this.tag}: ${this.meta.source_slice}`;
+  }
+}
+
+export class Contract {
+  constructor(
+    readonly pre: ContractCondition[],
+    readonly post: ContractCondition[]
+  ) {}
+
+  *check_pre(state: State, name: string, args: CrochetValue[]): Machine {
+    for (const condition of this.pre) {
+      const valid = cvalue(yield _push(condition.is_valid(state)));
+      if (!valid.as_bool()) {
+        throw new Error(
+          `Pre-condition violated when calling ${name}\nArguments: (${args
+            .map((x) => x.to_text())
+            .join(", ")})\n\n${condition.format_error()}`
+        );
+      }
+    }
+    return False.instance;
+  }
+
+  *check_post(
+    state0: State,
+    name: string,
+    args: CrochetValue[],
+    result: CrochetValue
+  ): Machine {
+    const env = state0.env.clone();
+    env.define("contract:return", result);
+    const state = state0.with_env(env);
+    for (const condition of this.post) {
+      const valid = cvalue(yield _push(condition.is_valid(state)));
+      if (!valid.as_bool()) {
+        throw new Error(
+          `Post-condition violated from ${name}\nArguments: (${args
+            .map((x) => x.to_text())
+            .join(
+              ", "
+            )})\nReturn: ${result.to_text()}\n\n${condition.format_error()}`
+        );
+      }
+    }
+    return result;
+  }
+}
 
 // -- Procedures
 export interface IProcedure {
@@ -63,7 +127,8 @@ export class NativeProcedure implements IProcedure {
     readonly filename: string,
     readonly name: string,
     readonly parameters: number[],
-    readonly foreign_name: string
+    readonly foreign_name: string,
+    readonly contract: Contract
   ) {}
 
   get full_name() {
@@ -76,8 +141,12 @@ export class NativeProcedure implements IProcedure {
       args.push(values[idx]);
     }
     const procedure = state.world.ffi.methods.lookup(this.foreign_name);
+    yield _push(this.contract.check_pre(state, this.full_name, values));
     const result = cvalue(
       yield _mark(this.full_name, procedure(state, ...args))
+    );
+    yield _push(
+      this.contract.check_post(state, this.full_name, values, result)
     );
     return result;
   }
@@ -90,21 +159,25 @@ export class CrochetProcedure implements IProcedure {
     readonly world: World,
     readonly name: string,
     readonly parameters: string[],
-    readonly body: Statement[]
+    readonly body: Statement[],
+    readonly contract: Contract
   ) {}
 
   get full_name() {
     return `${this.name} (from ${this.filename})`;
   }
 
-  *invoke(state: State, values: CrochetValue[]) {
+  *invoke(state0: State, values: CrochetValue[]) {
     const env = this.env.clone_with_receiver(values[0]);
     for (const [k, v] of zip(this.parameters, values)) {
       env.define(k, v);
     }
+    const state = state0.with_env(env);
     const block = new SBlock(this.body);
-    const result = cvalue(
-      yield _mark(this.full_name, block.evaluate(state.with_env(env)))
+    yield _push(this.contract.check_pre(state, this.full_name, values));
+    const result = cvalue(yield _mark(this.full_name, block.evaluate(state)));
+    yield _push(
+      this.contract.check_post(state, this.full_name, values, result)
     );
     return result;
   }

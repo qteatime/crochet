@@ -29,8 +29,9 @@ end
 command (X is integer) * (Y is integer) =
   foreign integer.mul(X, Y);
 
-command (X is integer) divided-by: (Y is integer) =
-  foreign integer.div(X, Y);
+command (X is integer) divided-by: (Y is integer)
+requires non-zero = Y =/= 0
+  = foreign integer.div(X, Y);
 
 command (X is integer) remainder-of-division-by: (Y is integer) =
   foreign integer.rem(X, Y);

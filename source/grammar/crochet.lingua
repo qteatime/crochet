@@ -4,8 +4,8 @@ type Declaration =
   | Relation(pos: Meta, signature: Signature<RelationPart>)
   | DefinePredicate(pos: Meta, signature: Signature<Name>, clauses: PredicateClause[])
   | Do(pos: Meta, body: Statement[])
-  | ForeignCommand(pos: Meta, signature: Signature<Parameter>, body: FFI, ttest: TrailingTest?)
-  | Command(pos: Meta, signature: Signature<Parameter>, body: Statement[], ttest: TrailingTest?)
+  | ForeignCommand(pos: Meta, signature: Signature<Parameter>, contract: Contract, body: FFI, ttest: TrailingTest?)
+  | Command(pos: Meta, signature: Signature<Parameter>, contract: Contract, body: Statement[], ttest: TrailingTest?)
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
   | Role(pos: Meta, name: Name)
   | AbstractType(pos: Meta, typ: TypeDef)
@@ -29,6 +29,9 @@ type Declaration =
 
 type TrailingTest(pos: Meta, body: Statement[])
 
+type Contract(pos: Meta, pre: ContractCondition[], post: ContractCondition[])
+type ContractCondition(pos: Meta, name: Name, expr: Expression)
+
 type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
 type FFI(pos: Meta, name: Namespace, args: Name[])
 
@@ -38,8 +41,8 @@ type Rank =
 
 type TypeInit =
   | Fact(pos: Meta, sig: PartialSignature<Expression>)
-  | Command(pos: Meta, sig: PartialSignature<Parameter>, body: Statement[], ttest: TrailingTest?)
-  | ForeignCommand(pos: Meta, signature: PartialSignature<Parameter>, body: FFI, ttest: TrailingTest?)
+  | Command(pos: Meta, sig: PartialSignature<Parameter>, contract: Contract, body: Statement[], ttest: TrailingTest?)
+  | ForeignCommand(pos: Meta, signature: PartialSignature<Parameter>, contract: Contract, body: FFI, ttest: TrailingTest?)
 
 type Parameter =
   | Untyped(pos: Meta, name: Name)
@@ -100,6 +103,7 @@ type Expression =
   | Force(pos: Meta, value: Expression)
   | Lazy(pos: Meta, value: Expression)
   | Hole(pos: Meta)
+  | Return(pos: Meta)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
@@ -246,17 +250,35 @@ grammar Crochet : Program {
       -> Declaration.Do(meta, xs)
 
   commandDeclaration =
-    | command_ s:signature<parameter> s<"="> foreign_ b:foreignBody t:trailingTest
-      -> Declaration.ForeignCommand(meta, s, b, t)
+    | command_ s:signature<parameter> c:contractDefinition s<"="> foreign_ b:foreignBody t:trailingTest
+      -> Declaration.ForeignCommand(meta, s, c, b, t)
 
-    | command_ s:signature<parameter> s<"="> e:expression t:trailingTest 
-      -> Declaration.Command(meta, s, [Statement.Expr(e)], t)
+    | command_ s:signature<parameter> c:contractDefinition s<"="> e:expression t:trailingTest 
+      -> Declaration.Command(meta, s, c, [Statement.Expr(e)], t)
 
-    | command_ s:signature<parameter> do_ b:statements t:oneTrailingTest end_
-      -> Declaration.Command(meta, s, b, t)
+    | command_ s:signature<parameter> c:contractDefinition do_ b:statements t:oneTrailingTest
+      -> Declaration.Command(meta, s, c, b, t)
 
-    | command_ s:signature<parameter> do_ b:statements end_
-      -> Declaration.Command(meta, s, b, null)
+    | command_ s:signature<parameter> c:contractDefinition do_ b:statements end_
+      -> Declaration.Command(meta, s, c, b, null)
+
+  contractDefinition =
+    | pre:preContractDefinition post:postContractDefinition
+      -> Contract(meta, pre, post)
+
+  preContractDefinition =
+    | requires_ cs:list1<contractCondition, s<";">>
+      -> cs
+    | -> []
+  
+  postContractDefinition =
+    | ensures_ cs:list1<contractCondition, s<";">>
+      -> cs
+    | -> []
+
+  contractCondition =
+    | n:atom s<"="> e:expression
+      -> ContractCondition(meta, n, e)
 
   foreignBody =
     | n:namespace s<"("> xs:list0<name, s<",">> s<")">
@@ -318,14 +340,14 @@ grammar Crochet : Program {
   typeInit =
     | s:partialLogicSignature<invokePostfix> s<";">
       -> TypeInit.Fact(meta, s)
-    | command_ s:partialSignature<parameter> s<"="> b:foreignBody t:trailingTest
-      -> TypeInit.ForeignCommand(meta, s, b, t)
-    | command_ s:partialSignature<parameter> s<"="> e:expression t:trailingTest
-      -> TypeInit.Command(meta, s, [Statement.Expr(e)], t)
-    | command_ s:partialSignature<parameter> do_ b:statements t:oneTrailingTest end_
-      -> TypeInit.Command(meta, s, b, t)
-    | command_ s:partialSignature<parameter> do_ b:statements end_
-      -> TypeInit.Command(meta, s, b, null)
+    | command_ s:partialSignature<parameter> c:contractDefinition s<"="> b:foreignBody t:trailingTest
+      -> TypeInit.ForeignCommand(meta, s, c, b, t)
+    | command_ s:partialSignature<parameter> c:contractDefinition s<"="> e:expression t:trailingTest
+      -> TypeInit.Command(meta, s, c, [Statement.Expr(e)], t)
+    | command_ s:partialSignature<parameter> c:contractDefinition do_ b:statements t:oneTrailingTest
+      -> TypeInit.Command(meta, s, c, b, t)
+    | command_ s:partialSignature<parameter> c:contractDefinition do_ b:statements end_
+      -> TypeInit.Command(meta, s, c, b, null)
 
   roleDeclaration =
     | role_ n:atom s<";">           -> Declaration.Role(meta, n)
@@ -601,6 +623,7 @@ grammar Crochet : Program {
     | listExpression<expression>
     | expressionBlock
     | hole
+    | return_                       -> Expression.Return(meta)
     | self_                         -> Expression.Self(meta)
     | n:atom                        -> Expression.Global(meta, n)
     | n:name                        -> Expression.Variable(meta, n)
@@ -879,6 +902,8 @@ grammar Crochet : Program {
   local_ = kw<"local">
   test_ = kw<"test">
   assert_ = kw<"assert">
+  requires_ = kw<"requires">
+  ensures_ = kw<"ensures">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -888,5 +913,5 @@ grammar Crochet : Program {
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
-    | open_ | local_ | test_ | assert_
+    | open_ | local_ | test_ | assert_ | requires_ | ensures_
 }

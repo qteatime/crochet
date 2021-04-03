@@ -141,6 +141,11 @@ export abstract class CrochetVM {
     let skipped = 0;
     const state = State.root(this.world);
     for (const [group, tests] of this.world.grouped_tests) {
+      const valid_tests = tests.filter(filter);
+      if (valid_tests.length === 0) {
+        continue;
+      }
+
       console.log("");
       console.log(group);
       console.log("=".repeat(72));

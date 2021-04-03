@@ -45,6 +45,10 @@ const argv = Yargs.usage("crochet <command> [options]")
           description: "The initial seed for the PRNG",
           type: "string",
         })
+        .option("package", {
+          description: "Test only a set of packages",
+          type: "array",
+        })
         .option("capabilities", {
           description: "The capabilities to grant the program",
           type: "array",
@@ -137,12 +141,15 @@ async function run(
 async function run_tests(
   filename: string,
   seed: string | null,
+  packages: string[] | null,
   capabilities: Capabilities
 ) {
   const vm = new Crochet();
   try {
     await setup_vm(vm, filename, seed, capabilities);
-    const results = await vm.run_tests((x) => true);
+    const results = await vm.run_tests((x) =>
+      packages == null ? true : packages.includes(x.module.pkg.name)
+    );
     process.exit(results.length);
   } catch (error) {
     await vm.show_error(error);
@@ -193,6 +200,7 @@ switch (argv._[0]) {
     run_tests(
       argv["filename"] as string,
       argv["seed"] as string | null,
+      argv["package"] as string[] | null,
       parse_capabilities(argv["capabilities"] as string[])
     );
     break;

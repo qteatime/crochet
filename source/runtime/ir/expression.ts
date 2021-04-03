@@ -486,3 +486,9 @@ export class EForce extends Expression {
     }
   }
 }
+
+export class EReturn extends Expression {
+  *evaluate(state: State): Machine {
+    return state.env.lookup("contract:return");
+  }
+}

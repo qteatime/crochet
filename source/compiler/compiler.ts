@@ -32,6 +32,8 @@ import {
   SamplingPool,
   ConditionCase,
   TrailingTest,
+  Contract,
+  ContractCondition,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetInteger } from "../runtime";
@@ -518,6 +520,10 @@ export function compileExpression(expr: Expression): IR.Expression {
       throw new Error(`Hole found outside of function application.`);
     },
 
+    Return(_) {
+      return new IR.EReturn();
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },
@@ -548,6 +554,23 @@ export function materialiseSignature<T>(
   });
 }
 
+export function compileContractCondition(
+  c: ContractCondition
+): rt.ContractCondition {
+  return new rt.ContractCondition(
+    c.pos,
+    c.name.name,
+    compileExpression(c.expr)
+  );
+}
+
+export function compileContract(c: Contract): rt.Contract {
+  return new rt.Contract(
+    c.pre.map(compileContractCondition),
+    c.post.map(compileContractCondition)
+  );
+}
+
 export function compileTypeInit(
   meta: Meta,
   self: string,
@@ -564,22 +587,22 @@ export function compileTypeInit(
         return new Statement.Fact(meta, sig);
       },
 
-      Command(meta, sig0, body, test) {
+      Command(meta, sig0, contract, body, test) {
         const self_param: Parameter = new Parameter.TypedOnly(
           meta,
           new TypeApp.Named(meta, new Name(meta, self))
         );
         const sig = materialiseSignature(self_param, sig0);
-        return new Declaration.Command(meta, sig, body, test);
+        return new Declaration.Command(meta, sig, contract, body, test);
       },
 
-      ForeignCommand(meta, sig0, body, test) {
+      ForeignCommand(meta, sig0, contract, body, test) {
         const self_param: Parameter = new Parameter.TypedOnly(
           meta,
           new TypeApp.Named(meta, new Name(meta, self))
         );
         const sig = materialiseSignature(self_param, sig0);
-        return new Declaration.ForeignCommand(meta, sig, body, test);
+        return new Declaration.ForeignCommand(meta, sig, contract, body, test);
       },
     })
   );
@@ -797,17 +820,23 @@ export function compileDeclaration(
       ];
     },
 
-    ForeignCommand(meta, sig, body, test) {
+    ForeignCommand(meta, sig, contract, body, test) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
       const args = body.args.map((x) => parameters.indexOf(x.name));
       return [
-        new IR.DForeignCommand(name, types, compileNamespace(body.name), args),
+        new IR.DForeignCommand(
+          name,
+          types,
+          compileNamespace(body.name),
+          args,
+          compileContract(contract)
+        ),
         ...compileTrailingTest(name, types, test),
       ];
     },
 
-    Command(meta, sig, body, test) {
+    Command(meta, sig, contract, body, test) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
       return [
@@ -815,7 +844,8 @@ export function compileDeclaration(
           name,
           parameters,
           types,
-          body.map(compileStatement)
+          body.map(compileStatement),
+          compileContract(contract)
         ),
         ...compileTrailingTest(name, types, test),
       ];
@@ -837,7 +867,7 @@ export function compileDeclaration(
       ];
     },
 
-    EnumType(_, name, variants) {
+    EnumType(meta, name, variants) {
       const local = compileLocality(locality);
       const parent = new TypeApp.Named(name.pos, name);
       const variantDecls = variants.flatMap((v, i) => [
@@ -849,6 +879,7 @@ export function compileDeclaration(
             new Parameter.TypedOnly(v.pos, new TypeApp.Named(v.pos, v)),
             new Name(v.pos, "to-enum-integer")
           ),
+          new Contract(meta, [], []),
           [
             new Statement.Expr(
               new Expression.Lit(new Literal.Integer(v.pos, (i + 1).toString()))
@@ -866,7 +897,8 @@ export function compileDeclaration(
           "_ lower-bound",
           ["Self"],
           [new IR.TNamed(name.name)],
-          [new IR.SExpression(new IR.EGlobal(variants[0].name))]
+          [new IR.SExpression(new IR.EGlobal(variants[0].name))],
+          new rt.Contract([], [])
         ),
         new IR.DCrochetCommand(
           "_ higher-bound",
@@ -876,7 +908,8 @@ export function compileDeclaration(
             new IR.SExpression(
               new IR.EGlobal(variants[variants.length - 1].name)
             ),
-          ]
+          ],
+          new rt.Contract([], [])
         ),
         new IR.DCrochetCommand(
           "_ from-enum-integer:",
@@ -896,7 +929,8 @@ export function compileDeclaration(
                 })
               )
             ),
-          ]
+          ],
+          new rt.Contract([], [])
         ),
       ];
     },
