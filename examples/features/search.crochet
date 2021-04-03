@@ -22,29 +22,30 @@ predicate A near: B do
 end
 
 scene main do
-  (search Who at: garden) inspect;
-  (search lielle at: Where) inspect;
+  transcript inspect-line: (search Who at: garden);
+  transcript inspect-line: (search lielle at: Where);
 
   let R1 = search X near: Y, X at: P;
   for R in R1 do
-    "[R.X] and [R.Y] are flirting in the [R.P]";
-  end inspect;
+    transcript inspect-line: "[R.X] and [R.Y] are flirting in the [R.P]";
+  end;
 
   let R2 = search X at: P, not X near: Y;
   for R in R2 do
-    "[R.X] is vibing alone in the [R.P]";
-  end inspect;
+    transcript inspect-line: "[R.X] is vibing alone in the [R.P]";
+  end;
 
   let R3 = search let Place = garden,
                   let N = (search Who at: Place) count,
                   let S = (search Who at: Place);
-  R3 inspect;
+  transcript inspect-line: R3;
 
-  match
-    when lielle at: garden do "Umpossible!" end
-    always do "A fallback" end
-  end inspect;
+  transcript inspect-line:
+    match
+      when lielle at: garden do "Umpossible!" end
+      always do "A fallback" end
+    end;
 
   let Person = lielle;
-  (search Person at: Where) inspect;
+  transcript inspect-line: (search Person at: Where);
 end

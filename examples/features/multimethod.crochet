@@ -1,27 +1,27 @@
 % crochet
 
 command any other do
-  "any other" inspect;
+  transcript write-line: "any other";
 end
 
 command any hello do
-  "any hello" inspect;
+  transcript write-line: "any hello";
 end
 
 command integer hello do
-  "integer hello" inspect;
+  transcript write-line: "integer hello";
 end
 
 command partial hello do
-  "partial hello" inspect;
+  transcript write-line: "partial hello";
 end
 
 command boolean hello do
-  "boolean hello" inspect;
+  transcript write-line: "boolean hello";
 end
 
 command true hello do
-  "true hello" inspect;
+  transcript write-line: "true hello";
 end
 
 scene main do

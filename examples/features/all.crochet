@@ -50,45 +50,49 @@ prelude
     ],
     Search -> Kisses,
   ];
-  Multi inspect;
+  transcript inspect-line: Multi;
 end
 
 scene one do
-  "One" inspect;
+  transcript write-line: "One";
   call two;
-  "One end" inspect;
+  transcript write-line: "One end";
 end
 
 scene two do
-  "Two" inspect;
+  transcript write-line: "Two";
 end
 
 scene main do
-  "Hello" inspect;
+  transcript write-line: "Hello";
   simulate for [kristine, lielle] until action quiescence
     on pick-action: Actions for: Turn do
-      "Simulate for [Turn] with [Actions.Title]" inspect;
+      transcript inspect-line: "Simulate for [Turn] with [Actions.Title]";
       Actions first;
     end;
   call one;
   goto two;
-  "End" inspect;
+  transcript write-line: "End";
 end
 
 action "Say hello"
 when X simulate-turn, not X disabled, X at: P, Y at: P, if X =/= Y do
-  [X, "says hello to", Y] inspect;
-  ["Stats", search Turn simulate-turn, Rounds simulate-rounds-elapsed] inspect;
-  ["Acted", search X simulate-acted] inspect;
-  ["Remaining", (search X simulate-actor, not X simulate-acted, not X simulate-turn)] inspect;
+  transcript inspect-line: "[X] says hello to [Y]";
+  transcript inspect-line:
+    ["Stats:", search Turn simulate-turn, Rounds simulate-rounds-elapsed];
+  transcript inspect-line:
+    ["Acted:", search X simulate-acted];
+  transcript inspect-line:
+    ["Remaining:", (search X simulate-actor, not X simulate-acted, not X simulate-turn)];
+
   fact X disabled;
 end
 
 action "Say goodbye"
 when X simulate-turn, not X action-fired: _ do
-  "[X] says goodbye" inspect;
+  transcript inspect-line: "[X] says goodbye";
 end
 
 when X simulate-turn do
-  [X, "ends her turn"] inspect;
+  transcript inspect-line: "[X] ends her turn";
 end

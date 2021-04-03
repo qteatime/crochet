@@ -3,10 +3,9 @@
 scene main do
   let N = [1, 2, 3, 4];
   let Succ =
-    for X in N do
-      for Y in N do
-        "[X] + [Y] = [X + Y]"
-      end
+    for X in N, Y in N do
+      "[X] + [Y] = [X + Y]"
     end;
-  Succ inspect;
+  
+  transcript inspect-line: Succ;
 end

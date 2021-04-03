@@ -4,16 +4,16 @@ singleton player;
 singleton foyer;
 
 scene main do
-  "Hello" inspect;
-  "Hello, [player]" inspect;
-  "Hello, ["World"]" inspect;
-  ("[1] " ++ " [2]") inspect;
-  ("1 " ++ " [2]") inspect;
-  ("[1] " ++ " 2") inspect;
+  transcript inspect-line: "Hello";
+  transcript inspect-line: "Hello, [player]";
+  transcript inspect-line: "Hello, ["World"]";
+  transcript inspect-line: ("[1] " ++ " [2]");
+  transcript inspect-line: ("1 " ++ " [2]");
+  transcript inspect-line: ("[1] " ++ " 2");
 
   let Text = "[player] is at the [foyer]";
-  Text inspect;
-  Text parts inspect;
-  Text holes inspect;
-  Text static-text inspect;
+  transcript inspect-line: Text;
+  transcript inspect-line: Text parts;
+  transcript inspect-line: Text holes;
+  transcript inspect-line: Text static-text;
 end

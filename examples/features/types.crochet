@@ -17,8 +17,8 @@ type point(X is integer, Y is integer);
 
 scene main do
   let P = new point(1, 2);
-  P inspect;
+  transcript inspect-line: P;
 
   let Directions = search Direction is direction;
-  Directions inspect;
+  transcript inspect-line: Directions;
 end

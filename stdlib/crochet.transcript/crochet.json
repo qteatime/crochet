@@ -1,0 +1,10 @@
+{
+  "name": "crochet.transcript",
+  "target": "*",
+  "sources": ["transcript.crochet"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

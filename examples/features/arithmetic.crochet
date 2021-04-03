@@ -1,5 +1,5 @@
 % crochet
 
 scene main do
-  "1 + 2 * 4 = [1 + 2 * 4]" inspect;
+  transcript inspect-line: "1 + 2 * 4 = [1 + 2 * 4]";
 end

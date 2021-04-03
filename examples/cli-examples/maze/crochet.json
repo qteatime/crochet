@@ -1,0 +1,10 @@
+{
+  "name": "crochet.examples.cli-examples.maze",
+  "target": "cli",
+  "sources": ["maze-generation.crochet"],
+  "dependencies": ["crochet.core", "crochet.transcript"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

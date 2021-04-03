@@ -11,6 +11,7 @@ import {
   StreamFfi,
   TimeFfi,
   CoreFfi,
+  TranscriptFfi,
 } from "./native";
 
 export async function load(state: State) {
@@ -23,6 +24,7 @@ export async function load(state: State) {
   state.world.ffi.add(HtmlFfi as any);
   state.world.ffi.add(DebugFfi as any);
   state.world.ffi.add(TimeFfi as any);
+  state.world.ffi.add(TranscriptFfi as any);
 }
 
 import * as Html from "./html";

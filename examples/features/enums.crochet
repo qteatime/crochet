@@ -6,19 +6,28 @@ enum state =
   trampled;
 
 scene main do
-  [state lower-bound, state higher-bound] inspect;
+  transcript inspect-line:
+    [state lower-bound, state higher-bound];
 
-  [
-    neat to-enum-integer,
-    messy to-enum-integer,
-    trampled to-enum-integer,
-  ] inspect;
+  transcript inspect-line:
+    [
+      neat to-enum-integer,
+      messy to-enum-integer,
+      trampled to-enum-integer,
+    ];
 
-  [neat < messy, messy < trampled, trampled < neat] inspect;
-  [neat > messy, messy > trampled, trampled > neat] inspect;
+  transcript inspect-line:
+    [neat < messy, messy < trampled, trampled < neat];
 
-  [neat successor, messy successor] inspect;
-  [messy predecessor, trampled predecessor] inspect;
+  transcript inspect-line:
+    [neat > messy, messy > trampled, trampled > neat];
 
-  [neat to: trampled] inspect;
+  transcript inspect-line:
+    [neat successor, messy successor];
+  
+  transcript inspect-line:
+    [messy predecessor, trampled predecessor];
+
+  transcript inspect-line:
+    [neat to: trampled];
 end

@@ -4,8 +4,8 @@ command X id = X;
 
 scene main do
   let Stream = [1, 2, 3, 4, 5, 6] shuffle;
-  Stream inspect;
-  Stream sort: _ id | _ inspect;
-  Stream sort | _ inspect;
-  Stream sort reverse | _ inspect;
+  transcript inspect-line: (Stream);
+  transcript inspect-line: (Stream sort: _ id);
+  transcript inspect-line: (Stream sort);
+  transcript inspect-line: (Stream sort reverse);
 end

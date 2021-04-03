@@ -1,7 +1,7 @@
 % crochet
 
 command A says: X to: B do
-  "[A] says [X] to [B]" inspect;
+  transcript inspect-line: "[A] says [X] to [B]";
 end
 
 scene main do

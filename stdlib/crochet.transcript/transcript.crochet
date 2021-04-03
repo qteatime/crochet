@@ -1,0 +1,34 @@
+% crochet
+
+singleton transcript;
+
+command (Self is transcript) write: (Text is text)
+  = foreign transcript.write(Self, Text);
+
+command (Self is transcript) inspect: Value
+  = foreign transcript.write-inspect(Self, Value);
+
+command (Self is transcript) flush
+  = foreign transcript.flush(Self);
+
+
+command transcript write: (Text is interpolation) do
+  for Part in Text parts do
+    self write: Part;
+  end
+end
+
+command transcript write-line: Thing do
+  self write: Thing;
+  self flush;
+end
+
+command transcript inspect-line: Thing tag: (Tag is text) do
+  self write: Tag;
+  self inspect-line: Thing;
+end
+
+command transcript inspect-line: Thing do
+  self inspect: Thing;
+  self flush;
+end

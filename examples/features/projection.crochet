@@ -6,17 +6,17 @@ relation X* at: Y;
 
 scene main do
   let Point = [X -> 1, Y -> 2];
-  [Point.X, Point.Y] inspect;
+  transcript inspect-line: [Point.X, Point.Y];
 
   let Point2 = new point(1, 2);
-  [Point2.X] inspect;
+  transcript inspect-line: [Point2.X];
 
   fact "player" at: "foyer";
   fact "npc" at: "foyer";
   let Location = search Who at: Where;
   let Who = Location.Who;
-  Location.Who inspect;
-  Location.Where inspect;
+  transcript inspect-line: Location.Who;
+  transcript inspect-line: Location.Where;
 
-  Location.(Who as Quem, Where as Aonde) inspect;
+  transcript inspect-line: Location.(Who as Quem, Where as Aonde);
 end

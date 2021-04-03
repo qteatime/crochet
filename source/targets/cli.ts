@@ -7,7 +7,7 @@ const StdlibPath = Path.join(__dirname, "../../stdlib");
 
 export class Crochet extends CrochetVM {
   get prelude() {
-    return ["crochet.core", "crochet.debug", "crochet.time"];
+    return ["crochet.core", "crochet.transcript"];
   }
 
   async read_file(filename: string) {

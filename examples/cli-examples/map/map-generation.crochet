@@ -100,10 +100,10 @@ command east connecting-symbol = "—";
 command west connecting-symbol = "—";
 
 scene main do
-  let Dungeon = debug time: (lazy dungeon generate-with-max-rooms: 20) tag: "Dungeon generate";
-  let Map = debug time: (lazy Dungeon draw) tag: "Dungeon draw";
+  let Dungeon = dungeon generate-with-max-rooms: 20;
+  let Map = Dungeon draw;
   for Line in Map do
-    Line inspect;
+    transcript write-line: Line;
   end
 end
 

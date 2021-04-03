@@ -14,17 +14,17 @@ relation Person* state: State;
 
 action "Say hello" for karis
 when karis state: greet do
-  "[karis name] says: Hello!" inspect;
+  transcript write-line: "[karis name] says: Hello!";
 end
 
 action "Say hello" for lielle
 when lielle state: greet do
-  "[lielle name] greets in kind." inspect;
+  transcript write-line: "[lielle name] greets in kind.";
 end
 
 action "Part"
 when P simulate-turn, P state: part do
-  "[P name] leaves." inspect;
+  transcript write-line: "[P name] leaves.";
 end
 
 when P simulate-turn, P state: S, if S < state higher-bound do

@@ -139,9 +139,10 @@ end
 
 command maze-gen draw do
   for IY in 1 to: self.Height do
-    for IX in 1 to: self.Width do
-      (cell-at: new point(IX, IY)) draw;
-    end interpolate inspect;
+    transcript write-line:
+      for IX in 1 to: self.Width do
+        (cell-at: new point(IX, IY)) draw;
+      end interpolate;
   end
 end
 
@@ -158,6 +159,6 @@ command cell draw do
 end
 
 scene main do
-  let Maze = debug time: (lazy maze generate-width: 20 height: 20) tag: "Generate";
-  debug time: (lazy Maze draw) tag: "Draw";
+  let Maze = maze generate-width: 20 height: 20;
+  Maze draw;
 end

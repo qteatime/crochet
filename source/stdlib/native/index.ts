@@ -5,3 +5,4 @@ export * from "./numeric";
 export * from "./record";
 export * from "./stream";
 export * from "./text";
+export * from "./transcript";
