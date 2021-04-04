@@ -206,3 +206,27 @@ test
   assert tc > tb;
   assert not (ta > tc);
 end
+
+
+// # Text and interpolation
+local type relational-interpolation;
+command #relational-interpolation equal: X and: Y =
+  foreign interpolation.equals(X, Y);
+
+command (X is interpolation) === (Y is interpolation) do
+  #relational-interpolation equal: X and: Y
+test
+  assert "a["b"]c" === ("abc" as interpolation);
+end
+
+command (X is interpolation) === (Y is text) do
+  X === (Y as interpolation)
+test
+  assert "a["b"]c" === "abc";
+end
+
+command (X is text) === (Y is interpolation) do
+  (X as interpolation) === Y
+test
+  assert "a["b"]c" === "abc";
+end

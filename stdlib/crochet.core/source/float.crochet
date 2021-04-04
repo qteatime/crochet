@@ -1,0 +1,29 @@
+% crochet
+
+command (X is float) is-nan = foreign float.is-nan(X)
+test
+  assert #float nan is-nan;
+  assert not (1.0 is-nan);
+end
+
+command (X is float) is-finite = foreign float.is-finite(X)
+test
+  assert not (#float positive-infinity is-finite);
+  assert not (#float negative-infinity is-finite);
+  assert 1.0 is-finite;
+end
+
+command #float nan = foreign float.nan()
+test
+  #float nan;
+end
+
+command #float positive-infinity = foreign float.infinity()
+test
+  #float positive-infinity
+end
+
+command #float negative-infinity = foreign float.negative-infinity()
+test
+  #float negative-infinity
+end

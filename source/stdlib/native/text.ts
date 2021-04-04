@@ -7,6 +7,7 @@ import {
   InterpolationDynamic,
   CrochetText,
   CrochetValue,
+  from_bool,
 } from "../../runtime";
 import { cast } from "../../utils";
 
@@ -47,6 +48,21 @@ export class InterpolationFfi {
     const a = cast(a0, CrochetInterpolation);
 
     return new CrochetText(a.parts.map((x) => x.to_static()).join(""));
+  }
+
+  @foreign()
+  @machine()
+  static normalise(x0: CrochetValue) {
+    const a = cast(x0, CrochetInterpolation);
+    return a.normalize();
+  }
+
+  @foreign()
+  @machine()
+  static equals(x0: CrochetValue, y0: CrochetValue) {
+    const x = cast(x0, CrochetInterpolation);
+    const y = cast(y0, CrochetInterpolation);
+    return from_bool(x.normalize().equals(y.normalize()));
   }
 }
 

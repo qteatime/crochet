@@ -1,5 +1,6 @@
 % crochet
 
+/// Concatenates two pieces of text
 command (X is text) ++ (Y is text) = 
   foreign text.concat(X, Y)
 test
@@ -9,24 +10,66 @@ test
   assert ("abc" ++ "def") === "abcdef";
 end
 
+/// Converts an interpolation to its normal form, collapsing textual parts
+command (X is interpolation) normalise
+  = foreign interpolation.normalise(X)
+test
+  let A = "A";
+  let B = "B";
+  assert "a[A]b[B]" normalise === "aAbB";
+  assert "a[1]b[B]" normalise === "a[1]bB";
+end
 
+/// Concatenates interpolations and texts
 command (X is interpolation) ++ (Y is interpolation) =
-  foreign interpolation.concat(X, Y);
+  foreign interpolation.concat(X, Y)
+test
+  assert ("[1]a[2]x" ++ "y[3]b[4]") === "[1]a[2]xy[3]b[4]";
+end
 
 command (X is text) ++ (Y is interpolation) do
   (X as interpolation) ++ Y;
+test
+  assert ("abc" ++ "d[1]f") === "abcd[1]f";
 end
 
 command (X is interpolation) ++ (Y is text) do
   X ++ (Y as interpolation);
+test
+  assert ("a[1]c" ++ "def") === "a[1]cdef";
 end
 
-
+/// Returns all parts of an interpolation
 command (X is interpolation) parts = 
-  foreign interpolation.parts(X);
+  foreign interpolation.parts(X)
+test
+  assert ("abc" as interpolation) parts === ["abc"];
+  assert "abc[1]def" parts === ["abc", 1, "def"];
+  assert "[1][2]" parts === [1, 2];
+end
 
+/// Returns all dynamic parts of an interpolation
 command (X is interpolation) holes =
-  foreign interpolation.holes(X);
+  foreign interpolation.holes(X)
+test
+  assert ("abc" as interpolation) holes === [];
+  assert "abc[1]def" holes === [1];
+  assert "[1][2]" holes === [1, 2];
+end
 
+/// Returns a static textual representation of the interpolation
 command (X is interpolation) static-text =
-  foreign interpolation.static-text(X);
+  foreign interpolation.static-text(X)
+test
+  assert ("abc" as interpolation) static-text === "abc";
+  assert "abc[1]def" static-text === "abc_def";
+  assert "[1][2]" static-text === "__";
+end
+
+/// Tries to build a simple text from an interpolation
+command (X is interpolation) to-text =
+  X parts fold-from: "" with: (_ ++ _)
+test
+  assert ("abc" as interpolation) to-text === "abc";
+  assert "a["b"]c" to-text === "abc";
+end

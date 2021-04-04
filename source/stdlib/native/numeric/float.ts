@@ -150,6 +150,40 @@ export class FloatFfi {
 
     return new CrochetFloat(Math.sqrt(x.value));
   }
+
+  @foreign("is-nan")
+  @machine()
+  static is_nan(x0: CrochetValue) {
+    const x = cast(x0, CrochetFloat);
+
+    return from_bool(Number.isNaN(x.value));
+  }
+
+  @foreign("is-finite")
+  @machine()
+  static is_finite(x0: CrochetValue) {
+    const x = cast(x0, CrochetFloat);
+
+    return from_bool(Number.isFinite(x.value));
+  }
+
+  @foreign()
+  @machine()
+  static nan() {
+    return new CrochetFloat(NaN);
+  }
+
+  @foreign()
+  @machine()
+  static infinity() {
+    return new CrochetFloat(Number.POSITIVE_INFINITY);
+  }
+
+  @foreign("negative-infinity")
+  @machine()
+  static negative_infinity() {
+    return new CrochetFloat(Number.NEGATIVE_INFINITY);
+  }
 }
 
 export default [FloatFfi];

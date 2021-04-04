@@ -1,5 +1,11 @@
 import { iter } from "../../utils";
 import { gen } from "../../utils/utils";
+import {
+  SimpleInterpolation,
+  SimpleInterpolationPart,
+  SIPDynamic,
+  SIPStatic,
+} from "../ir";
 import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 import { CrochetText } from "./text";
 
@@ -29,6 +35,11 @@ export class CrochetInterpolation extends CrochetValue {
       return `"${text}"`;
     }
   }
+
+  normalize() {
+    const parts = this.parts.map((x) => x.to_simple_part());
+    return new SimpleInterpolation(parts).optimise().interpolate((x) => x);
+  }
 }
 
 export class TCrochetInterpolation extends CrochetType {
@@ -55,6 +66,7 @@ export abstract class InteprolationPart {
   abstract to_text(transparent?: boolean): string;
   abstract to_part(): CrochetValue;
   abstract to_static(): string;
+  abstract to_simple_part(): SimpleInterpolationPart<CrochetValue>;
 }
 
 export class InterpolationStatic extends InteprolationPart {
@@ -75,6 +87,10 @@ export class InterpolationStatic extends InteprolationPart {
 
   to_static() {
     return this.text;
+  }
+
+  to_simple_part() {
+    return new SIPStatic<CrochetValue>(this.text);
   }
 }
 
@@ -99,5 +115,13 @@ export class InterpolationDynamic extends InteprolationPart {
 
   to_static() {
     return "_";
+  }
+
+  to_simple_part() {
+    if (this.value instanceof CrochetText) {
+      return new SIPStatic<CrochetValue>(this.value.value);
+    } else {
+      return new SIPDynamic(this.value);
+    }
   }
 }

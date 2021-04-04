@@ -12,7 +12,8 @@
     "source/ranges.crochet",
     "source/partial.crochet",
     "source/stream.crochet",
-    "source/text.crochet"
+    "source/text.crochet",
+    "source/float.crochet"
   ],
   "capabilities": {
     "requires": [],
