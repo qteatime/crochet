@@ -137,7 +137,7 @@ export class NativeProcedure implements IProcedure {
 
   *invoke(state0: State, values: CrochetValue[]): Machine {
     const env = this.env.clone_with_receiver(values[0]);
-    for (const [k, v] of zip(this.parameters, values)) {
+    for (const [k, v] of zip(this.parameter_names, values)) {
       env.define(k, v);
     }
     const state = state0.with_env(env);

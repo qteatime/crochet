@@ -7,6 +7,7 @@ import Stream from "./stream";
 import Text from "./text";
 import Transcript from "./transcript";
 import Html from "./html";
+import Conversion from "./conversion";
 
 export default [
   ...Debug,
@@ -18,4 +19,5 @@ export default [
   ...Text,
   ...Transcript,
   ...Html,
+  ...Conversion,
 ];

@@ -6,9 +6,10 @@
     "source/traits/relational.crochet",
     "source/traits/boolean.crochet",
     "source/traits/arithmetic.crochet",
+    "source/traits/ordering.crochet",
+    "source/traits/conversion.crochet",
     "source/fractional.crochet",
-    "source/enums.crochet",
-    "source/integers.crochet",
+    "source/ranges.crochet",
     "source/partial.crochet",
     "source/stream.crochet",
     "source/text.crochet"

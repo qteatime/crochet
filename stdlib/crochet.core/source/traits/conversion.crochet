@@ -1,0 +1,18 @@
+% crochet
+
+command #float coerce: (X is integer)
+  = foreign conversion.integer-to-float(X)
+test
+  assert (#float coerce: 1) === 1.0;
+  assert (#float coerce: 0) === 0.0;
+  assert (#float coerce: -1) === -1.0;
+end
+
+command #integer coerce: (X is float)
+requires integral = X === X truncate
+  = foreign conversion.float-to-integer(X)
+test
+  assert (#integer coerce: 1.0) === 1;
+  assert (#integer coerce: 0.0) === 0;
+  assert (#integer coerce: -1.0) === -1;
+end

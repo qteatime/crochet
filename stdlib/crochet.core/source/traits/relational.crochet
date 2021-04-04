@@ -8,10 +8,9 @@ local type eq-test-instance;
 command X === Y =
   foreign core.eq(X, Y)
 test
-  // Equality is still segregated by types
+  // Equality is still segregated by types (but this can be overriden)
   assert 1 === 1;
   assert not (1 === "1");
-  assert not (1 === 1.0);  // FIXME: no floating points yet
 
   // Equality does not violate sealing
   assert not (1 === (1 as unknown));
@@ -155,17 +154,55 @@ end
 
 
 // # Relational operators across numeric types
-command (X is integer) <  (Y is float) = (X as float) < Y;
-command (X is integer) <= (Y is float) = (X as float) <= Y;
-command (X is integer) >  (Y is float) = (X as float) > Y;
-command (X is integer) >= (Y is float) = (X as float) >= Y;
+command (X is integer) <  (Y is float) = (#float coerce: X) < Y;
+command (X is integer) <= (Y is float) = (#float coerce: X) <= Y;
+command (X is integer) >  (Y is float) = (#float coerce: X) > Y;
+command (X is integer) >= (Y is float) = (#float coerce: X) >= Y;
 
-command (X is float) <  (Y is integer) = X < (Y as float);
-command (X is float) <= (Y is integer) = X <= (Y as float);
-command (X is float) >  (Y is integer) = X > (Y as float);
-command (X is float) >= (Y is integer) = X >= (Y as float);
+command (X is float) <  (Y is integer) = X <  (#float coerce: Y);
+command (X is float) <= (Y is integer) = X <= (#float coerce: Y);
+command (X is float) >  (Y is integer) = X >  (#float coerce: Y);
+command (X is float) >= (Y is integer) = X >= (#float coerce: Y);
 
-command (X is integer) === (Y is float) = (X as float) === Y;
-command (X is integer) =/= (Y is float) = (X as float) =/= Y;
-command (X is float) === (Y is integer) = X === (Y as float);
-command (X is float) =/= (Y is integer) = X === (Y as float);
+command (X is integer) === (Y is float) = (#float coerce: X) === Y;
+command (X is integer) =/= (Y is float) = (#float coerce: X) =/= Y;
+command (X is float) === (Y is integer) = X === (#float coerce: Y);
+command (X is float) =/= (Y is integer) = X =/= (#float coerce: Y);
+
+test "Relational conversions" do
+  assert (0 < 1.1);
+  assert (0 <= 0.0);
+  assert (1 > 0.0);
+  assert (1 >= 0.9);
+
+  assert (0.9 < 1);
+  assert (0.0 <= 0);
+  assert (1.1 > 0);
+  assert (0.0 >= 0);
+
+  assert (1.0 === 1);
+  assert (1.1 =/= 1);
+  assert (1 === 1.0);
+  assert (1 =/= 1.1);
+end
+
+// # Enums
+local enum test-enum = ta, tb, tc;
+
+/// Less than relationship
+command 'enum < (Other is 'enum) =
+  self to-enum-integer < Other to-enum-integer
+test
+  assert ta < tb;
+  assert tb < tc;
+  assert not (tc < ta);
+end
+
+/// Greater than relationship
+command 'enum > (Other is 'enum) =
+  self to-enum-integer > Other to-enum-integer
+test
+  assert tb > ta;
+  assert tc > tb;
+  assert not (ta > tc);
+end

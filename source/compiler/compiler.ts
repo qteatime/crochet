@@ -848,8 +848,8 @@ export function compileDeclaration(
           name,
           types,
           compileNamespace(body.name),
-          body.args.map((x) => x.name),
           parameters,
+          body.args.map((x) => x.name),
           compileContract(contract)
         ),
         ...compileTrailingTest(name, types, test),

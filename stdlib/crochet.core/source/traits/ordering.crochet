@@ -1,0 +1,53 @@
+% crochet
+
+enum ordering = less-than, equal, greater-than;
+
+command X compare-to: Y do
+  condition
+    when X === Y => equal;
+    when X < Y   => less-than;
+    when X > Y   => greater-than;
+  end
+test
+  assert (1 compare-to: 1) === equal;
+  assert (-1 compare-to: 0) === less-than;
+  assert (1 compare-to: 0) === greater-than;
+end
+
+// # Enums
+local enum test-enum = ta, tb, tc;
+
+/// Successor of the current enum
+command 'enum successor
+requires not-last = self to-enum-integer < self upper-bound to-enum-integer
+do
+  self from-enum-integer: (self to-enum-integer + 1);
+test
+  assert ta successor === tb;
+  assert tb successor === tc;
+end
+
+/// Predecessor of the current enum
+command 'enum predecessor
+requires not-first = self to-enum-integer > 1
+do
+  self from-enum-integer: (self to-enum-integer - 1);
+test
+  assert tb predecessor === ta;
+  assert tc predecessor === tb;
+end
+
+// # Integers
+command integer successor = self + 1
+test
+  assert -1 successor === 0;
+  assert 0 successor === 1;
+  assert 1 successor === 2;
+end
+
+command integer predecessor = self - 1
+test
+  assert -1 predecessor === -2;
+  assert 0 predecessor === -1;
+  assert 1 predecessor === 0;
+end
