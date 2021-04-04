@@ -1,0 +1,5 @@
+% crochet
+
+scene main do
+  transcript inspect-line: (["a", "b", "c"] join-text-with: " and ");
+end

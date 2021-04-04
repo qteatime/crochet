@@ -1,0 +1,29 @@
+% crochet
+
+/// Universal logical conjunction
+command X and Y =
+  foreign core.band(X, Y)
+test
+  assert (true and true) === true;
+  assert (true and false) === false;
+  assert (false and true) === false;
+  assert (false and false) === false;
+end
+
+/// Universal logical disjunction
+command X or Y =
+  foreign core.bor(X, Y)
+test
+  assert (true or true) === true;
+  assert (true or false) === true;
+  assert (false or true) === true;
+  assert (false or false) === false;
+end
+
+/// Universal logical negation
+command not X =
+  foreign core.bnot(X)
+test
+  assert (not true) === false;
+  assert (not false) === true;
+end

@@ -85,19 +85,23 @@ export class DForeignCommand extends Declaration {
     readonly name: string,
     readonly types: Type[],
     readonly foreign_name: string,
-    readonly args: number[],
+    readonly parameters: string[],
+    readonly args: string[],
     readonly contract: Contract
   ) {
     super();
   }
 
   async apply(context: DeclarationContext, state: State) {
+    const env = new Environment(state.env, context.module, null);
     state.world.procedures.add_foreign(
       this.name,
       this.types.map((x) => x.realise(state)),
       new NativeProcedure(
         context.filename,
+        env,
         this.name,
+        this.parameters,
         this.args,
         `${context.package.name}:${this.foreign_name}`,
         this.contract

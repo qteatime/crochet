@@ -1,0 +1,174 @@
+% crochet
+
+// Note: we don't provide the non-integral division operator (/) yet because
+// we neither have fractional numbers nor floats.
+
+// # Arithmetic
+
+/// Arithmetic addition
+command (X is integer) + (Y is integer) =
+  foreign integer.add(X, Y)
+test
+  assert (0 + 1) === 1;
+  assert (0 + 1) === 1;
+  assert (1 + 0) === 1;
+  assert (-3 + 1) === -2;
+  assert (5 + 3) === 8;
+  assert (1234567890123456789 + 1234567890123456789) === 2469135780246913578;
+end
+
+/// Arithmetic subtraction
+command (X is integer) - (Y is integer) =
+  foreign integer.sub(X, Y)
+test
+  assert (0 - 0) === 0;
+  assert (0 - 1) === -1;
+  assert (1 - 0) === 1;
+  assert (-3 - 1) === -4;
+  assert (5 - 3) === 2;
+  assert (1234567890123456789 - 1) === 1234567890123456788;
+end
+
+/// Arithmetic multiplication
+command (X is integer) * (Y is integer) =
+  foreign integer.mul(X, Y)
+test
+  assert (0 * 0) === 0;
+  assert (0 * 1) === 0;
+  assert (1 * 0) === 0;
+  assert (3 * -1) === -3;
+  assert (-1 * 3) === -3;
+  assert (3 * 3) === 9;
+  assert (123456789 * 123456789) === 15241578750190521;
+end
+
+/// Truncating arithmetic division
+command (X is integer) divided-by: (Y is integer)
+requires non-zero-divisor = Y =/= 0
+  = foreign integer.div(X, Y)
+test
+  assert (4 divided-by: 2) === 2;
+  assert (3 divided-by: 2) === 1;
+  assert (1 divided-by: 3) === 0;
+  assert (0 divided-by: 1) === 0;
+  assert (3 divided-by: -1) === -3;
+  assert (123456789 divided-by: 12) === 10288065;
+end
+
+/// Remainder of an arithmetic division
+command (X is integer) remainder-of-division-by: (Y is integer)
+requires non-zero-divisor = Y =/= 0
+  = foreign integer.rem(X, Y)
+test
+  assert (4 remainder-of-division-by: 2) === 0;
+  assert (3 remainder-of-division-by: 2) === 1;
+  assert (1 remainder-of-division-by: 3) === 1;
+  assert (0 remainder-of-division-by: 1) === 0;
+  assert (3 remainder-of-division-by: -1) === 0;
+  assert (123456789 remainder-of-division-by: 12) === 9;  
+end
+
+/// Convenience function for getting the quotient and remainder
+/// of a division
+command (X is integer) divide-by-with-remainder: (Y is integer) do
+  [
+    quotient -> X divided-by: Y,
+    remainder -> X remainder-of-division-by: Y,
+  ];
+test
+  assert (5 divide-by-with-remainder: 2) === [
+    quotient -> 2,
+    remainder -> 1,
+  ];
+end
+
+/// Arithmetic exponentiation
+command (X is integer) ** (P is integer)
+requires positive-exponent = P >= 0
+  = foreign integer.power(X, P)
+test
+  assert (1 ** 0) === 1;
+  assert (0 ** 0) === 1;
+  assert (3 ** 0) === 1;
+  assert (1 ** 1) === 1;
+  assert (-1 ** 1) === -1;
+  assert (2 ** 6) === 64;
+end
+
+// FIXME: This will be removed and moved to floating maths
+command (X is integer) sqrt =
+  foreign integer.sqrt(X)
+test
+  assert 9 sqrt === 3;
+  assert 6 sqrt === 2;
+end
+
+
+// # Relational
+
+/// Relational less than operator
+command (X is integer) < (Y is integer) = 
+  foreign integer.lt(X, Y)
+test
+  assert 0 < 1;
+  assert -1 < 0;
+  assert not (0 < 0);
+  assert not (1 < 0);
+end
+
+/// Relational less than or equal operator (provided for perf)
+command (X is integer) <= (Y is integer) = 
+  foreign integer.lte(X, Y)
+test
+  assert 0 <= 1;
+  assert -1 <= 0;
+  assert 0 <= 0;
+  assert not (1 <= 0);
+end
+
+/// Relational greater than operator
+command (X is integer) > (Y is integer) = 
+  foreign integer.gt(X, Y)
+test
+  assert 1 > 0;
+  assert 0 > -1;
+  assert not (0 > 0);
+  assert not (0 > 1);
+end
+
+/// Relational greater or equal operator (provided for perf)
+command (X is integer) >= (Y is integer) = 
+  foreign integer.gte(X, Y)
+test
+  assert 1 >= 0;
+  assert 0 >= -1;
+  assert 0 >= 0;
+  assert not (0 >= 1);
+end
+
+
+// # Ranges
+
+/// The range of integers from Min to: Max, inclusive on both bounds.
+command (Min is integer) to: (Max is integer)
+requires ordered = Min <= Max
+  = foreign integer.range(Min, Max)
+test
+  assert (1 to: 3) === [1, 2, 3];
+  assert (2 to: 3) === [2, 3];
+  assert (3 to: 3) === [3];
+end
+
+/// The range of integers from Min until: Max, not inclusive on Max.
+command (Min is integer) until: (Max is integer)
+requires ordered = Min <= Max
+do
+  condition
+    when Min === Max => [];
+    always => Min to: (Max - 1);
+  end
+test
+  assert (1 until: 3) === [1, 2];
+  assert (2 until: 3) === [2];
+  assert (3 until: 3) === [];
+end

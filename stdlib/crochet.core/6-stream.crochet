@@ -1,0 +1,210 @@
+% crochet
+
+command (X is stream) count =
+  foreign stream.count(X)
+test
+  assert [] count === 0;
+  assert [1] count === 1;
+  assert [1, 2, 3] count === 3;
+end
+
+command (X is stream) is-empty =
+  X count === 0
+test
+  assert [] is-empty;
+  assert not ([0] is-empty);
+end
+
+command (X is stream) first
+requires non-empty = not (X is-empty)
+  = foreign stream.first(X)
+test
+  assert [1] first === 1;
+  assert [1, 2, 3] first === 1;
+end
+
+command (X is stream) last
+requires non-empty = not (X is-empty)
+  = foreign stream.last(X)
+test
+  assert [1] last === 1;
+  assert [1, 2, 3] last === 3;
+end
+
+command (X is stream) but-first = 
+  foreign stream.but-first(X)
+test
+  assert [] but-first === [];
+  assert [1] but-first === [];
+  assert [1, 2, 3] but-first === [2, 3];
+end
+
+command (X is stream) but-last = 
+  foreign stream.but-last(X)
+test
+  assert [] but-last === [];
+  assert [1] but-last === [];
+  assert [1, 2, 3] but-last === [1, 2];
+end
+
+command (X is stream) take: (N is integer)
+requires positive-size = N >= 0
+  = foreign stream.take(X, N)
+test
+  assert ([] take: 0) === [];
+  assert ([1, 2, 3] take: 0) === [];
+  assert ([1, 2, 3] take: 2) === [1, 2];
+end
+
+command (X is stream) drop: (N is integer)
+requires positive-size = N >= 0
+  = foreign stream.drop(X, N)
+test
+  assert ([] drop: 0) === [];
+  assert ([1, 2, 3] drop: 0) === [1, 2, 3];
+  assert ([1, 2, 3] drop: 2) === [3];
+end
+
+command (X is stream) ++ (Y is stream) = 
+  foreign stream.concat(X, Y)
+test
+  assert ([] ++ []) === [];
+  assert ([1, 2, 3] ++ []) === [1, 2, 3];
+  assert ([] ++ [1, 2, 3]) === [1, 2, 3];
+  assert ([1, 2] ++ [3, 4, 5]) === [1, 2, 3, 4, 5];
+end
+
+command (X is stream) zip: (Y is stream)
+requires equal-count = X count === Y count
+  = foreign stream.zip(X, Y)
+test
+  assert ([] zip: []) === [];
+  assert ([1] zip: [3]) === [[1, 3]];
+  assert ([1, 2] zip: [3, 4]) === [[1, 3], [2, 4]];
+end
+
+// FIXME: not testable until algebraic effects are implemented
+command (X is stream) random-choice
+requires non-empty = not (X is-empty)
+ensures element-of-stream = X contains: return
+  = foreign stream.random-choice(X)
+test
+  assert [1, 2, 3] random-choice;
+end
+
+// FIXME: there's no good way of describing in a contract that the
+// elements of the returned stream should be a permutation of the elements
+// of the original stream
+command (X is stream) shuffle
+ensures same-size = return count === X count
+  = foreign stream.shuffle(X)
+test
+  let Shuffled = [1, 2, 3, 4] shuffle;
+  assert Shuffled sort === [1, 2, 3, 4];
+  assert [] shuffle === [];
+  assert [1] shuffle === [1];
+end
+
+command (X is stream) internal-sort-by: (Key is text)
+ensures same-size = return count === X count
+  = foreign stream.sort-by(X, Key)
+test
+  let A = [[a -> 3], [a -> 1], [a -> 2]];
+  assert (A internal-sort-by: "a") === [[a -> 1], [a -> 2], [a -> 3]];
+  assert ([] internal-sort-by: "a") === [];
+  assert ([[a -> 1]] internal-sort-by: "a") === [[a -> 1]];
+end
+
+// FIXME: partial types don't include their arities right now
+command stream sort: (Score is partial)
+ensures same-size = self count === return count
+do
+  let Stream = for X in self do [score -> Score(X), value -> X] end;
+  (Stream sort-by: "score").value;
+test
+  assert ([] sort: _ identity) === [];
+  assert ([1] sort: _ identity) === [1];
+  assert ([3, 1, 2, 4] sort: _ identity) === [1, 2, 3, 4];
+end
+
+command stream sort
+ensures same-size = self count === return count
+do
+  let Stream = for X in self do [score -> X, value -> X] end;
+  (Stream sort-by: "score").value;
+test
+  assert [] sort === [];
+  assert [1] sort === [1];
+  assert [3, 1, 2, 4] sort === [1, 2, 3, 4];
+end
+
+command (Stream is stream) sort-by: (Key is text) do
+  Stream internal-sort-by: Key;
+test
+  assert [[a -> 1]] sort-by: "a";
+end
+
+command (X is stream) reverse
+ensures same-size = X count === return count
+  = foreign stream.reverse(X)
+test
+  assert [] reverse === [];
+  assert [1] reverse === [1];
+  assert [1, 2, 3, 4] reverse === [4, 3, 2, 1];
+  assert [1, 2, 3, 4] reverse reverse === [1, 2, 3, 4];
+end
+
+command (X is stream) fold-from: Value with: (Partial is partial) =
+  foreign stream.fold(X, Value, Partial)
+test
+  assert ([] fold-from: 0 with: (_ + _)) === 0;
+  assert ([1] fold-from: 0 with: (_ + _)) === (0 + 1);
+  assert ([1, 2, 3] fold-from: 0 with: (_ + _)) === (0 + 1 + 2 + 3);
+end
+
+command stream flatten
+  = self fold-from: [] with: (_ ++ _)
+test
+  assert [] flatten === [];
+  assert [[1]] flatten === [1];
+  assert [[1], [2, 3], [4, [5]]] flatten === [1, 2, 3, 4, [5]];
+end
+
+command stream sum
+  = self fold-from: 0 with: (_ + _)
+test
+  assert [] sum === 0;
+  assert [1] sum === 1;
+  assert [1, 2, 3] sum === 6;
+  assert [-1, 0, 1, 2] sum === 2;
+end
+
+// FIXME: this will be removed and moved to a proper linguistics package
+local type text-join;
+command #text-join left: (A is text) separator: (S is text) right: (B is text) =
+  A ++ S ++ B;
+
+command stream join-text-with: Separator =
+  condition
+    when self is-empty => "";
+    always =>
+      self but-first
+        fold-from: self first
+        with: (#text-join left: _ separator: Separator right: _);
+  end
+test
+  assert (["a", "b", "c"] join-text-with: " and ")
+    === "a and b and c";
+end
+
+command (X is stream) interpolate =
+  foreign stream.interpolate(X);
+
+command (X is stream) contains: V =
+  foreign stream.contains(X, V)
+test
+  assert not ([] contains: 1);
+  assert [1] contains: 1;
+  assert [-1, 0, 1, 2, 3] contains: 1;
+  assert not ([-1, 0, 1, 2, 3] contains: -2);
+end

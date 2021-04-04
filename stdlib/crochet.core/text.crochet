@@ -1,7 +1,13 @@
 % crochet
 
 command (X is text) ++ (Y is text) = 
-  foreign text.concat(X, Y);
+  foreign text.concat(X, Y)
+test
+  assert ("" ++ "") === "";
+  assert ("" ++ "abc") === "abc";
+  assert ("abc" ++ "") === "abc";
+  assert ("abc" ++ "def") === "abcdef";
+end
 
 
 command (X is interpolation) ++ (Y is interpolation) =

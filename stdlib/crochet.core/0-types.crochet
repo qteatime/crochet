@@ -1,0 +1,49 @@
+% crochet
+
+/// The base type for all values in Crochet
+type any = foreign core.any;
+
+/// A sealed type for any value in Crochet
+type unknown = foreign core.unknown;
+
+
+/// The base type for two-valued logical values
+type boolean = foreign core.boolean;
+/// The true case of booleans
+type true = foreign core.true;
+/// The false case of booleans
+type false = foreign core.false;
+
+
+/// The type for IEEE-754 64-bit floating point numbers
+type float = foreign core.float;
+
+/// The type of arbitrary-precision integers
+type integer = foreign core.integer;
+
+
+/// The type of textual values
+type text = foreign core.text;
+
+/// The type of interpolation sequences
+/// (treated as a kind of mixed textual value)
+type interpolation = foreign core.interpolation;
+
+
+/// The type of partially-applied functions
+type partial = foreign core.partial;
+
+/// The type of lazy expressions
+type thunk = foreign core.thunk;
+
+
+/// The type of records
+type record = foreign core.record;
+
+
+/// The type of streams
+type stream = foreign core.stream;
+
+
+/// The base type of enumerations
+type 'enum = foreign core.enum;

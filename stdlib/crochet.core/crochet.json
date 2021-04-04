@@ -2,10 +2,13 @@
   "name": "crochet.core",
   "target": "*",
   "sources": [
-    "core.crochet",
-    "integer.crochet",
-    "record.crochet",
-    "stream.crochet",
+    "0-types.crochet",
+    "1-boolean.crochet",
+    "2-relational.crochet",
+    "3-enums.crochet",
+    "4-integers.crochet",
+    "5-partial.crochet",
+    "6-stream.crochet",
     "text.crochet"
   ],
   "capabilities": {

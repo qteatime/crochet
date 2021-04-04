@@ -71,7 +71,7 @@ export class StreamFfi {
     }
   }
 
-  @foreign()
+  @foreign("but-first")
   @machine()
   static but_first(stream0: CrochetValue) {
     const stream = cast(stream0, CrochetStream);
@@ -79,7 +79,7 @@ export class StreamFfi {
     return new CrochetStream(stream.values.slice(1));
   }
 
-  @foreign()
+  @foreign("but-last")
   @machine()
   static but_last(stream0: CrochetValue) {
     const stream = cast(stream0, CrochetStream);
@@ -133,7 +133,7 @@ export class StreamFfi {
   static contains(a0: CrochetValue, x: CrochetValue) {
     const a = cast(a0, CrochetStream);
 
-    return from_bool(a.values.includes(x));
+    return from_bool(a.values.some((v) => v.equals(x)));
   }
 
   @foreign("sort-by")

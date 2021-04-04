@@ -123,8 +123,10 @@ export type NativeProcedureFn = (
 export class NativeProcedure implements IProcedure {
   constructor(
     readonly filename: string,
+    readonly env: Environment,
     readonly name: string,
-    readonly parameters: number[],
+    readonly parameter_names: string[],
+    readonly parameters: string[],
     readonly foreign_name: string,
     readonly contract: Contract
   ) {}
@@ -133,10 +135,15 @@ export class NativeProcedure implements IProcedure {
     return `${this.name} (from ${this.filename})`;
   }
 
-  *invoke(state: State, values: CrochetValue[]): Machine {
+  *invoke(state0: State, values: CrochetValue[]): Machine {
+    const env = this.env.clone_with_receiver(values[0]);
+    for (const [k, v] of zip(this.parameters, values)) {
+      env.define(k, v);
+    }
+    const state = state0.with_env(env);
     const args: CrochetValue[] = [];
-    for (const idx of this.parameters) {
-      args.push(values[idx]);
+    for (const name of this.parameters) {
+      args.push(env.lookup(name));
     }
     const procedure = state.world.ffi.methods.lookup(this.foreign_name);
     yield _push(this.contract.check_pre(state, this.full_name, values));

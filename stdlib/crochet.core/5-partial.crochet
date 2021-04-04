@@ -1,0 +1,7 @@
+% crochet
+
+/// The identity function always returns the argument it's given
+command X identity = X
+test
+  assert 1 === (1 identity);
+end

@@ -136,6 +136,7 @@ export abstract class CrochetVM {
   }
 
   async run_tests(filter: (_: CrochetTest) => boolean) {
+    const start = new Date();
     let failures = [];
     let total = 0;
     let skipped = 0;
@@ -171,10 +172,12 @@ export abstract class CrochetVM {
       }
     }
 
+    const end = new Date();
+    const diff = end.getTime() - start.getTime();
     console.log("");
     console.log("-".repeat(72));
     console.log(
-      `${total} tests  |  ${skipped} skipped  |  ${failures.length} failures`
+      `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failures`
     );
 
     return failures;

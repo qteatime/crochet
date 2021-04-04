@@ -1,0 +1,69 @@
+% crochet
+
+local type eq-test-instance;
+
+/// Universal equality
+command X === Y =
+  foreign core.eq(X, Y)
+test
+  // Equality is still segregated by types
+  assert 1 === 1;
+  assert not (1 === "1");
+  // assert not (1 === 1.0);  // FIXME: no floating points yet
+
+  // Equality does not violate sealing
+  assert not (1 === (1 as unknown));
+
+  // Equality does not automatically coerce booleans
+  assert not (false === []);
+
+  // Equality is structural on structural types
+  assert [1, 2, 3] === [1, 2, 3];
+  assert [a -> 1] === [a -> 1];
+  assert not ([1, 2, 3] === [1, 2, 4]);
+  assert not ([a -> 1] === [a -> 2]);
+
+  // Equality for records is strict
+  assert not ([a -> 1] === [a -> 1, b -> 2]);
+
+  // User-defined types are not structural by default
+  // (this is extremely important for capabilities)
+  let A = new eq-test-instance;
+  let B = new eq-test-instance;
+  assert A === A;
+  assert B === B;
+  assert not (A === B);
+
+  // FIXME: Incidentally, partials are not structural either
+  let F1 = _ === _;
+  let F2 = _ === _;
+  assert F1 === F1;
+  assert F2 === F2;
+  assert not (F1 === F2);
+end
+
+/// Universal non-equality
+command X =/= Y =
+  not (X === Y)
+test
+  assert 1 =/= 2;
+end
+
+// FIXME: Defined so enums and etc get them for free, but it looks weird here.
+//        This will be fixed once Crochet gets some kind of trait definition.
+
+/// Universal less or equal to
+command X <= Y =
+  (X === Y) or (X < Y)
+test
+  assert 1 <= 1;
+  assert 1 <= 2;
+end
+
+/// Universal greater or equal to
+command X >= Y =
+  (X === Y) or (X > Y)
+test
+  assert 1 >= 1;
+  assert 2 >= 1;
+end

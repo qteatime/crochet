@@ -831,13 +831,13 @@ export function compileDeclaration(
     ForeignCommand(meta, sig, contract, body, test) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
-      const args = body.args.map((x) => parameters.indexOf(x.name));
       return [
         new IR.DForeignCommand(
           name,
           types,
           compileNamespace(body.name),
-          args,
+          body.args.map((x) => x.name),
+          parameters,
           compileContract(contract)
         ),
         ...compileTrailingTest(name, types, test),
@@ -909,7 +909,7 @@ export function compileDeclaration(
           new rt.Contract([], [])
         ),
         new IR.DCrochetCommand(
-          "_ higher-bound",
+          "_ upper-bound",
           ["Self"],
           [new IR.TNamed(name.name)],
           [
