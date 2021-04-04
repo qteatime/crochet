@@ -10,6 +10,26 @@ test
   assert ("abc" ++ "def") === "abcdef";
 end
 
+/// Repeats a piece of text N times
+command (X is text) repeat: (N is integer)
+requires positive-non-zero = N >= 0
+  = foreign text.repeat(X, N)
+test
+  assert ("" repeat: 1) === "";
+  assert ("a" repeat: 1) === "a";
+  assert ("a" repeat: 5) === "aaaaa";
+end
+
+/// True if a piece of text is empty
+command (X is text) is-empty
+  = foreign text.is-empty(X)
+test
+  assert "" is-empty;
+  assert not ("abc" is-empty);
+  assert not ("​" is-empty); // zero-width space (FIXME: add unicode escapes)
+end
+
+
 /// Converts an interpolation to its normal form, collapsing textual parts
 command (X is interpolation) normalise
   = foreign interpolation.normalise(X)

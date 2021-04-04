@@ -1,0 +1,135 @@
+% crochet
+
+// Manipulating text as ASCII is usually enough for a lot of use cases.
+local type ascii-view(text is text);
+
+command text ascii 
+requires ascii-text = self is-ascii
+  = new ascii-view(self)
+test
+  "abc" ascii;
+end
+
+command (X is text) is-ascii
+  = foreign text.is-ascii(X)
+test
+  assert "abc" is-ascii;
+  assert not ("á" is-ascii);
+  assert not ("🌷" is-ascii);
+end
+
+command ascii-view ends-with: (Text is text)
+requires
+  ascii-text = Text is-ascii;
+  non-empty = not (Text is-empty);
+do
+  #ascii-view ascii: self.text ends-with: Text
+test
+  assert "abc" ascii ends-with: "c";
+  assert not ("" ascii ends-with: "c");
+  assert "hello" ascii ends-with: "llo";
+  assert not ("hello" ascii ends-with: "he");
+end
+
+command ascii-view starts-with: (Text is text)
+requires
+  ascii-text = Text is-ascii;
+  non-empty = not (Text is-empty);
+do
+  #ascii-view ascii: self.text starts-with: Text
+test
+  assert "abc" ascii starts-with: "a";
+  assert not ("" ascii starts-with: "c");
+  assert "hello" ascii starts-with: "he";
+  assert not ("hello" ascii starts-with: "llo");
+end
+
+command ascii-view contains: (Text is text)
+requires
+  ascii-text = Text is-ascii;
+  non-empty = not (Text is-empty);
+do
+  #ascii-view ascii: self.text contains: Text
+test
+  assert not ("" ascii contains: "a");
+  assert "hello" ascii contains: "he";
+  assert "hello" ascii contains: "ell";
+  assert "hello" ascii contains: "lo";
+  assert not ("hello" ascii contains: "oll");
+end
+
+command ascii-view trim-start
+  = new ascii-view(#ascii-view trim-start: self.text)
+test
+  assert "" ascii trim-start to-text === "";
+  assert "abc" ascii trim-start to-text === "abc";
+  assert "  \t\n\r abc" ascii trim-start to-text === "abc";
+  assert "  abc  " ascii trim-start to-text === "abc  ";
+end
+
+command ascii-view trim-end
+  = new ascii-view(#ascii-view trim-end: self.text)
+test
+  assert "" ascii trim-end to-text === "";
+  assert "abc" ascii trim-end to-text === "abc";
+  assert "abc  \t\n\r" ascii trim-end to-text === "abc";
+  assert "  abc  " ascii trim-end to-text === "  abc";
+end
+
+command ascii-view trim
+  = new ascii-view(#ascii-view trim: self.text)
+test
+  assert "" ascii trim to-text === "";
+  assert "abc" ascii trim to-text === "abc";
+  assert "  \t\n\r abc" ascii trim to-text === "abc";
+  assert "abc  \t\n\r" ascii trim to-text === "abc";
+  assert "  abc  " ascii trim to-text === "abc";
+end
+
+command ascii-view to-lower-case
+  = new ascii-view(#ascii-view to-lower-case: self.text)
+test
+  assert "" ascii to-lower-case to-text === "";
+  assert "abc" ascii to-lower-case to-text === "abc";
+  assert "ABC" ascii to-lower-case to-text === "abc";
+  assert "AbC" ascii to-lower-case to-text === "abc";
+end
+
+command ascii-view to-upper-case
+  = new ascii-view(#ascii-view to-upper-case: self.text)
+test
+  assert "" ascii to-upper-case to-text === "";
+  assert "abc" ascii to-upper-case to-text === "ABC";
+  assert "ABC" ascii to-upper-case to-text === "ABC";
+  assert "AbC" ascii to-upper-case to-text === "ABC";
+end
+
+command ascii-view to-text
+  = self.text;
+
+
+// # The native implementations
+command #ascii-view ascii: View ends-with: Text
+  = foreign text.ascii-ends-with(View, Text);
+
+command #ascii-view ascii: View starts-with: Text
+  = foreign text.ascii-starts-with(View, Text);
+
+command #ascii-view ascii: View contains: Text
+  = foreign text.ascii-contains(View, Text);
+
+command #ascii-view trim-start: View
+  = foreign text.ascii-trim-start(View);
+
+command #ascii-view trim-end: View
+  = foreign text.ascii-trim-end(View);
+
+command #ascii-view trim: View
+  = foreign text.ascii-trim(View);
+
+command #ascii-view to-lower-case: View
+  = foreign text.ascii-to-lower(View);
+
+command #ascii-view to-upper-case: View
+  = foreign text.ascii-to-upper(View);
+

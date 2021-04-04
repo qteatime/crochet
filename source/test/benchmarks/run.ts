@@ -73,14 +73,14 @@ class Benchmark {
     return new Benchmark(JSON.parse(FS.readFileSync(filename, "utf8")));
   }
 
-  file_for_version(version: string): string {
+  file_for_version(version: string): string | null {
     const v = Version.parse(version);
     for (const [version, file] of this.versions) {
       if (v.gte(version)) {
         return Path.resolve(root, file);
       }
     }
-    throw new Error(`No suitable benchmark for ${version}`);
+    return null;
   }
 }
 
@@ -115,6 +115,10 @@ async function time(
   return diff;
 }
 
+function mb(x: number) {
+  return `${(x / 1024 / 1024).toFixed(3)}MB`;
+}
+
 void (async function () {
   const seed0 = Yargs.argv["seed"];
   const seed = seed0 ? Number(seed0) : new Date().getTime() | 0;
@@ -136,6 +140,13 @@ void (async function () {
     console.log("##", bench.title);
     for (const { version, tag, random, vm: Crochet } of vms) {
       const fullPath = bench.file_for_version(version);
+      if (fullPath == null) {
+        console.log(`Skipping ${version}, no suitable benchmark found`);
+        continue;
+      }
+
+      global.gc();
+
       console.log("---");
       console.log(":: Crochet", version, tag ?? "");
       if (random) {
@@ -149,6 +160,12 @@ void (async function () {
         total += await time("Load file", () => vm.load_from_file(fullPath));
         total += await time("Run benchmark", () => vm.run("main"));
         console.log(`--> Total: ${total}ms`);
+        const end_memory = process.memoryUsage();
+        console.log(
+          `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
+            end_memory.heapTotal
+          )} | RSS ${mb(end_memory.rss)}`
+        );
       } catch (error) {
         console.error(
           `Failed to execute ${version}:\n`,

@@ -23,7 +23,7 @@ end
 command #text from-lines: (Lines is stream) do
   condition
     when Lines is-empty => "";
-    always => Lines non-empty-fold-with: { A, B in (A ++ "\n" ++ B) };
+    always => Lines non-empty-fold-with: { A, B in A ++ "\n" ++ B };
   end
 test
   assert #text from-lines: ("a\nb\nc" lines) === "a\nb\nc";

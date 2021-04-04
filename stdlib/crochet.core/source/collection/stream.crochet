@@ -193,7 +193,7 @@ command stream join-text-with: Separator =
     always =>
       self but-first
         fold-from: self first
-        with: { A, B in (A ++ Separator) ++ B };
+        with: { A, B in A ++ Separator ++ B };
   end
 test
   assert (["a", "b", "c"] join-text-with: " and ")

@@ -14,6 +14,7 @@
     "source/collection/stream.crochet",
     "source/text/basics.crochet",
     "source/text/views.crochet",
+    "source/text/ascii.crochet",
     "source/partial.crochet"
   ],
   "capabilities": {
