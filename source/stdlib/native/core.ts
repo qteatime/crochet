@@ -23,6 +23,9 @@ import {
   CrochetInstance,
   CrochetInteger,
   baseEnum,
+  TCrochetNumeric,
+  TCrochetIntegral,
+  TCrochetFractional,
 } from "../../runtime";
 import { cast } from "../../utils";
 
@@ -51,6 +54,21 @@ export class CoreFfi {
   @foreign_type("boolean")
   static get type_boolean(): CrochetType {
     return TCrochetBoolean.type;
+  }
+
+  @foreign_type("numeric")
+  static get type_numeric(): CrochetType {
+    return TCrochetNumeric.type;
+  }
+
+  @foreign_type("integral")
+  static get type_integral(): CrochetType {
+    return TCrochetIntegral.type;
+  }
+
+  @foreign_type("fractional")
+  static get type_fractional(): CrochetType {
+    return TCrochetFractional.type;
   }
 
   @foreign_type("float")
@@ -128,3 +146,5 @@ export class CoreFfi {
     return from_bool(x.not_equals(y));
   }
 }
+
+export default [CoreFfi];

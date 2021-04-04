@@ -1,6 +1,5 @@
-import { die } from "../../runtime";
-import { defer } from "../../utils";
-import { lazy } from "../../utils/decorators";
+import { die } from "../../../runtime";
+import { defer } from "../../../utils";
 
 export class Rect {
   constructor(

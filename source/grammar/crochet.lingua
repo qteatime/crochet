@@ -135,6 +135,7 @@ type Literal =
   | True(pos: Meta)
   | Text(pos: Meta, value: String)
   | Integer(pos: Meta, digits: string)
+  | Float(pos: Meta, digits: string)
 
 type SimulationGoal =
   | ActionQuiescence(pos: Meta)
@@ -718,6 +719,7 @@ grammar Crochet : Program {
   // -- Literals
   literal =
     | text
+    | float
     | integer
     | boolean
 
@@ -730,6 +732,9 @@ grammar Crochet : Program {
 
   integer =
     | x:s<t_integer>        -> Literal.Integer(meta, x)
+
+  float =
+    | x:s<t_float>          -> Literal.Float(meta, x)
 
   string =
     | x:s<t_text>           -> String(meta, x)
@@ -840,6 +845,9 @@ grammar Crochet : Program {
 
   token t_integer (an integer) =
     | ~"_" "-"? dec_digit+
+
+  token t_float (a floating point number) =
+    | ~"_" "-"? dec_digit+ "." dec_digit+
 
   token text_character =
     | "\\" "\""

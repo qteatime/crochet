@@ -1,4 +1,4 @@
-import { CrochetType, TCrochetAny, CrochetValue } from "./core";
+import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 
 export class CrochetText extends CrochetValue {
   get type() {

@@ -2,6 +2,7 @@ import { cast } from "../../utils/utils";
 import { Predicate, UnificationEnvironment } from "../logic";
 import {
   apply,
+  CrochetFloat,
   CrochetInstance,
   CrochetInteger,
   CrochetInterpolation,
@@ -501,5 +502,15 @@ export class EStaticType extends Expression {
   *evaluate(state: State): Machine {
     const type = this.type.realise(state);
     return type.static_type;
+  }
+}
+
+export class EFloat extends Expression {
+  constructor(readonly value: number) {
+    super();
+  }
+
+  *evaluate(state: State): Machine {
+    return new CrochetFloat(this.value);
   }
 }

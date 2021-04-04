@@ -18,3 +18,5 @@ export class TimeFfi {
     return False.instance;
   }
 }
+
+export default [TimeFfi];

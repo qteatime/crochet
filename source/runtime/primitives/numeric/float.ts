@@ -1,5 +1,5 @@
-import { CrochetType, TCrochetAny, CrochetValue } from "./core";
-import { CrochetInteger } from "./integer";
+import { CrochetType, CrochetValue } from "../0-core";
+import { TCrochetFractional } from "./0-core";
 
 export class CrochetFloat extends CrochetValue {
   get type() {
@@ -11,10 +11,7 @@ export class CrochetFloat extends CrochetValue {
   }
 
   equals(other: CrochetValue): boolean {
-    return (
-      (other instanceof CrochetFloat && other.value === this.value) ||
-      (other instanceof CrochetInteger && Number(other.value) === this.value)
-    );
+    return other instanceof CrochetFloat && other.value === this.value;
   }
 
   to_js() {
@@ -27,7 +24,7 @@ export class CrochetFloat extends CrochetValue {
 }
 
 export class TCrochetFloat extends CrochetType {
-  readonly parent = TCrochetAny.type;
+  readonly parent = TCrochetFractional.type;
   readonly type_name = "float-64bit";
 
   static type = new TCrochetFloat();

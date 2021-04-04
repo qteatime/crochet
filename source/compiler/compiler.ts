@@ -38,7 +38,7 @@ import {
 import * as rt from "../runtime";
 import { CrochetInteger } from "../runtime";
 import * as IR from "../runtime/ir";
-import { SimpleInterpolation, TNamed } from "../runtime/ir";
+import { EFloat, SimpleInterpolation, TNamed } from "../runtime/ir";
 import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
 import { cast, unreachable } from "../utils/utils";
@@ -51,6 +51,10 @@ enum DeclarationLocality {
 // -- Utilities
 function parseInteger(x: string): bigint {
   return BigInt(x.replace(/_/g, ""));
+}
+
+function parseNumber(x: string): number {
+  return Number(x.replace(/_/g, ""));
 }
 
 function parseString(x: String): string {
@@ -82,6 +86,10 @@ export function literalToValue(lit: Literal) {
 
     Integer(_, digits) {
       return new rt.CrochetInteger(parseInteger(digits));
+    },
+
+    Float(_, digits) {
+      return new rt.CrochetFloat(parseNumber(digits));
     },
   });
 }
@@ -291,6 +299,10 @@ export function literalToExpression(lit: Literal) {
 
     Integer(_, digits) {
       return new IR.EInteger(parseInteger(digits));
+    },
+
+    Float(_, digits) {
+      return new EFloat(parseNumber(digits));
     },
   });
 }

@@ -1,4 +1,4 @@
-import { CrochetType, TCrochetAny, CrochetValue } from "./core";
+import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 import { from_bool } from "./core-ops";
 
 export class True extends CrochetValue {

@@ -7,8 +7,8 @@ import {
   machine,
   CrochetStream,
   CrochetValue,
-} from "../../runtime";
-import { cast } from "../../utils";
+} from "../../../runtime";
+import { cast } from "../../../utils";
 
 @foreign_namespace("crochet.core:integer")
 export class IntegerFfi {
@@ -124,3 +124,5 @@ export class IntegerFfi {
     return new CrochetInteger(BigInt(Math.floor(Math.sqrt(Number(x.value)))));
   }
 }
+
+export default [IntegerFfi];

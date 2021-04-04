@@ -1,6 +1,6 @@
 import { iter } from "../../utils";
 import { gen } from "../../utils/utils";
-import { CrochetType, TCrochetAny, CrochetValue } from "./core";
+import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 import { CrochetText } from "./text";
 
 export class CrochetInterpolation extends CrochetValue {

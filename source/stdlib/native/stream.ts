@@ -228,3 +228,5 @@ function compare(a: CrochetValue, b: CrochetValue): number {
     throw die(`unsupported comparison: ${type_name(a)} - ${type_name(b)}`);
   }
 }
+
+export default [StreamFfi];

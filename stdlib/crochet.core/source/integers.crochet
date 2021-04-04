@@ -1,0 +1,42 @@
+% crochet
+
+// Note: we don't provide the non-integral division operator (/) yet because
+// we neither have fractional numbers nor floats.
+
+// # Arithmetic
+
+
+
+// FIXME: This will be removed and moved to floating maths
+command (X is integer) sqrt =
+  foreign integer.sqrt(X)
+test
+  assert 9 sqrt === 3;
+  assert 6 sqrt === 2;
+end
+
+// # Ranges
+
+/// The range of integers from Min to: Max, inclusive on both bounds.
+command (Min is integer) to: (Max is integer)
+requires ordered = Min <= Max
+  = foreign integer.range(Min, Max)
+test
+  assert (1 to: 3) === [1, 2, 3];
+  assert (2 to: 3) === [2, 3];
+  assert (3 to: 3) === [3];
+end
+
+/// The range of integers from Min until: Max, not inclusive on Max.
+command (Min is integer) until: (Max is integer)
+requires ordered = Min <= Max
+do
+  condition
+    when Min === Max => [];
+    always => Min to: (Max - 1);
+  end
+test
+  assert (1 until: 3) === [1, 2];
+  assert (2 until: 3) === [2];
+  assert (3 until: 3) === [];
+end

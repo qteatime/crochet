@@ -59,3 +59,5 @@ export class RecordFfi {
     return new CrochetInteger(BigInt(record.values.size));
   }
 }
+
+export default [RecordFfi];

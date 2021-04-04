@@ -9,7 +9,7 @@ import {
   ISelection,
   Selection,
   type_name,
-} from "./core";
+} from "./0-core";
 import { CrochetRecord } from "./record";
 
 export class CrochetInstance extends CrochetValue {

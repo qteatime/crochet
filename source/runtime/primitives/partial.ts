@@ -1,7 +1,7 @@
 import { cast } from "../../utils/utils";
 import { die } from "../vm";
 import { Environment } from "../world";
-import { CrochetType, TCrochetAny, CrochetValue } from "./core";
+import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 
 export class CrochetPartial extends CrochetValue {
   readonly type: TCrochetPartial;

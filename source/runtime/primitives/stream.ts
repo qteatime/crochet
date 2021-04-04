@@ -6,7 +6,7 @@ import {
   IProjection,
   ISelection,
   Selection,
-} from "./core";
+} from "./0-core";
 import { False } from "./boolean";
 
 export class CrochetStream extends CrochetValue {

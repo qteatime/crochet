@@ -61,3 +61,5 @@ export class TextFfi {
     return new CrochetText(a.value + b.value);
   }
 }
+
+export default [TextFfi, InterpolationFfi];

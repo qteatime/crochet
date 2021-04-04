@@ -12,14 +12,14 @@ import {
   State,
   True,
   _await,
-} from "../../runtime";
+} from "../../../runtime";
 import {
   foreign,
   foreign_namespace,
   foreign_type,
   machine,
-} from "../../runtime/world/ffi-decorators";
-import { cast, defer, delay } from "../../utils";
+} from "../../../runtime/world/ffi-decorators";
+import { cast, defer, delay } from "../../../utils";
 import { canvas } from "./canvas";
 import {
   CrochetHtml,
@@ -205,3 +205,5 @@ export class HtmlFfi {
     return new CrochetHtml(element);
   }
 }
+
+export default [HtmlFfi];

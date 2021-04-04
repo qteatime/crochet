@@ -39,3 +39,5 @@ export class TranscriptFfi {
     return self;
   }
 }
+
+export default [TranscriptFfi];

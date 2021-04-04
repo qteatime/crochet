@@ -6,7 +6,7 @@ import {
   IProjection,
   ISelection,
   Selection,
-} from "./core";
+} from "./0-core";
 
 export class CrochetRecord extends CrochetValue {
   get type() {

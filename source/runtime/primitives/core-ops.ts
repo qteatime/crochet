@@ -1,4 +1,4 @@
-import { CrochetType, CrochetValue } from "./core";
+import { CrochetType, CrochetValue } from "./0-core";
 import {
   cvalue,
   ErrInvalidArity,

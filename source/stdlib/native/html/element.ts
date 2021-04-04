@@ -1,4 +1,4 @@
-import { CrochetType, CrochetValue, TCrochetAny } from "../../runtime";
+import { CrochetType, CrochetValue, TCrochetAny } from "../../../runtime";
 
 export class TCrochetHtml extends CrochetType {
   readonly parent = TCrochetAny.type;

@@ -46,3 +46,5 @@ export class DebugFfi {
     return value;
   }
 }
+
+export default [DebugFfi];
