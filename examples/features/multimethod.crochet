@@ -12,8 +12,8 @@ command integer hello do
   transcript write-line: "integer hello";
 end
 
-command partial hello do
-  transcript write-line: "partial hello";
+command function hello do
+  transcript write-line: "function hello";
 end
 
 command boolean hello do

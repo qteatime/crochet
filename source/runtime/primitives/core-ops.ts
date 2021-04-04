@@ -9,7 +9,12 @@ import {
   _push,
 } from "../vm";
 import { ProcedureBranch } from "./procedure";
-import { CrochetPartial, PartialValue } from "./partial";
+import {
+  CrochetLambda,
+  CrochetPartial,
+  PartialConcrete,
+  PartialValue,
+} from "./partial";
 import { False, True } from "./boolean";
 
 export function from_bool(x: boolean): CrochetValue {
@@ -41,7 +46,7 @@ export function* invoke(
   return result;
 }
 
-export function* apply(
+export function* apply_partial(
   state: State,
   fn: CrochetPartial,
   args: PartialValue[]
@@ -55,5 +60,25 @@ export function* apply(
     } else {
       return new_fn;
     }
+  }
+}
+
+export function* apply(
+  state: State,
+  fn: CrochetValue,
+  args: CrochetValue[]
+): Machine {
+  if (fn instanceof CrochetPartial) {
+    return yield _push(
+      apply_partial(
+        state,
+        fn,
+        args.map((x) => new PartialConcrete(x))
+      )
+    );
+  } else if (fn instanceof CrochetLambda) {
+    return yield _push(fn.apply(state, args));
+  } else {
+    throw new Error(`Expected a function, got ${fn.to_text()}`);
   }
 }

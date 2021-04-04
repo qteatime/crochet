@@ -106,6 +106,7 @@ type Expression =
   | Hole(pos: Meta)
   | Return(pos: Meta)
   | Type(pos: Meta, typ: TypeApp)
+  | Lambda(pos: Meta, params: Name[], body: Expression)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
@@ -628,6 +629,7 @@ grammar Crochet : Program {
     | literalExpression
     | recordExpression<expression>
     | listExpression<expression>
+    | lambdaExpression
     | expressionBlock
     | hole
     | s<"#"> t:typeAppPrimary       -> Expression.Type(meta, t)
@@ -698,6 +700,12 @@ grammar Crochet : Program {
 
   literalExpression =
     | l:literal             -> Expression.Lit(l)
+
+  lambdaExpression =
+    | s<"{"> e:expression s<"}">
+      -> Expression.Lambda(meta, [], e)
+    | s<"{"> p:list1<name, s<",">> in_ e:expression s<"}">
+      -> Expression.Lambda(meta, p, e)
 
   atomicExpression =
     | a:atom                                -> Expression.Global(meta, a)

@@ -24,19 +24,19 @@ end
 command (X is interpolation) ++ (Y is interpolation) =
   foreign interpolation.concat(X, Y)
 test
-  assert ("[1]a[2]x" ++ "y[3]b[4]") === "[1]a[2]xy[3]b[4]";
+  assert ("[1]a[2]x" ++ "y[3]b[4]") normalise === "[1]a[2]xy[3]b[4]" normalise;
 end
 
 command (X is text) ++ (Y is interpolation) do
   (X as interpolation) ++ Y;
 test
-  assert ("abc" ++ "d[1]f") === "abcd[1]f";
+  assert ("abc" ++ "d[1]f") normalise === "abcd[1]f" normalise;
 end
 
 command (X is interpolation) ++ (Y is text) do
   X ++ (Y as interpolation);
 test
-  assert ("a[1]c" ++ "def") === "a[1]cdef";
+  assert ("a[1]c" ++ "def") normalise === "a[1]cdef" normalise;
 end
 
 /// Returns all parts of an interpolation

@@ -16,7 +16,7 @@ import {
   TCrochetText,
   TCrochetInterpolation,
   TCrochetPartial,
-  TAnyCrochetPartial,
+  TAnyFunction,
   TCrochetRecord,
   TCrochetStream,
   TCrochetThunk,
@@ -26,6 +26,7 @@ import {
   TCrochetNumeric,
   TCrochetIntegral,
   TCrochetFractional,
+  TFunctionWithArity,
 } from "../../runtime";
 import { cast } from "../../utils";
 
@@ -91,9 +92,44 @@ export class CoreFfi {
     return TCrochetInterpolation.type;
   }
 
-  @foreign_type("partial")
-  static get type_partial(): CrochetType {
-    return TAnyCrochetPartial.type;
+  @foreign_type("function")
+  static get type_function(): CrochetType {
+    return TAnyFunction.type;
+  }
+
+  @foreign_type("function-0")
+  static get type_function0(): CrochetType {
+    return TFunctionWithArity.for_arity(0);
+  }
+
+  @foreign_type("function-1")
+  static get type_function1(): CrochetType {
+    return TFunctionWithArity.for_arity(1);
+  }
+
+  @foreign_type("function-2")
+  static get type_function2(): CrochetType {
+    return TFunctionWithArity.for_arity(2);
+  }
+
+  @foreign_type("function-3")
+  static get type_function3(): CrochetType {
+    return TFunctionWithArity.for_arity(3);
+  }
+
+  @foreign_type("function-4")
+  static get type_function4(): CrochetType {
+    return TFunctionWithArity.for_arity(4);
+  }
+
+  @foreign_type("function-5")
+  static get type_function5(): CrochetType {
+    return TFunctionWithArity.for_arity(5);
+  }
+
+  @foreign_type("function-6")
+  static get type_function6(): CrochetType {
+    return TFunctionWithArity.for_arity(6);
   }
 
   @foreign_type("record")

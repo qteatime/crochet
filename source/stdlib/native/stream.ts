@@ -1,5 +1,6 @@
 import {
   apply,
+  apply_partial,
   CrochetFloat,
   CrochetInteger,
   CrochetInterpolation,
@@ -175,21 +176,13 @@ export class StreamFfi {
     state: State,
     stream0: CrochetValue,
     initial: CrochetValue,
-    partial0: CrochetValue
+    fn: CrochetValue
   ) {
     const stream = cast(stream0, CrochetStream);
-    const partial = cast(partial0, CrochetPartial);
 
     let current = initial;
     for (const x of stream.values) {
-      current = cvalue(
-        yield _push(
-          apply(state, partial, [
-            new PartialConcrete(current),
-            new PartialConcrete(x),
-          ])
-        )
-      );
+      current = cvalue(yield _push(apply(state, fn, [current, x])));
     }
     return current;
   }

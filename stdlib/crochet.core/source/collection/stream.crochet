@@ -115,8 +115,7 @@ test
   assert ([[a -> 1]] internal-sort-by: "a") === [[a -> 1]];
 end
 
-// FIXME: partial types don't include their arities right now
-command stream sort: (Score is partial)
+command stream sort: (Score is function-1)
 ensures same-size = self count === return count
 do
   let Stream = for X in self do [score -> Score(X), value -> X] end;
@@ -154,12 +153,20 @@ test
   assert [1, 2, 3, 4] reverse reverse === [1, 2, 3, 4];
 end
 
-command (X is stream) fold-from: Value with: (Partial is partial) =
-  foreign stream.fold(X, Value, Partial)
+command (X is stream) fold-from: Value with: (F is function-2) =
+  foreign stream.fold(X, Value, F)
 test
   assert ([] fold-from: 0 with: (_ + _)) === 0;
   assert ([1] fold-from: 0 with: (_ + _)) === (0 + 1);
   assert ([1, 2, 3] fold-from: 0 with: (_ + _)) === (0 + 1 + 2 + 3);
+end
+
+command stream non-empty-fold-with: (F is function-2)
+requires non-empty = not (self is-empty)
+do
+  self but-first fold-from: self first with: F;
+test
+  assert ([3, 2, 1] non-empty-fold-with: (_ - _)) === 0;
 end
 
 command stream flatten
@@ -180,17 +187,13 @@ test
 end
 
 // FIXME: this will be removed and moved to a proper linguistics package
-local type text-join;
-command #text-join left: (A is text) separator: (S is text) right: (B is text) =
-  A ++ S ++ B;
-
 command stream join-text-with: Separator =
   condition
     when self is-empty => "";
     always =>
       self but-first
         fold-from: self first
-        with: (#text-join left: _ separator: Separator right: _);
+        with: { A, B in (A ++ Separator) ++ B };
   end
 test
   assert (["a", "b", "c"] join-text-with: " and ")

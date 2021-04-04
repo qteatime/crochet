@@ -8,12 +8,13 @@
     "source/traits/arithmetic.crochet",
     "source/traits/ordering.crochet",
     "source/traits/conversion.crochet",
-    "source/fractional.crochet",
-    "source/ranges.crochet",
-    "source/partial.crochet",
-    "source/stream.crochet",
-    "source/text.crochet",
-    "source/float.crochet"
+    "source/numeric/fractional.crochet",
+    "source/numeric/float.crochet",
+    "source/collection/ranges.crochet",
+    "source/collection/stream.crochet",
+    "source/text/basics.crochet",
+    "source/text/views.crochet",
+    "source/partial.crochet"
   ],
   "capabilities": {
     "requires": [],

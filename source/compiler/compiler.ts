@@ -479,7 +479,7 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
 
     Apply(_, partial, args) {
-      return new IR.EApplyPartial(
+      return new IR.EApply(
         compileExpression(partial),
         args.map(compileArgument)
       );
@@ -490,7 +490,7 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
 
     Pipe(_, left, right) {
-      return new IR.EApplyPartial(compileExpression(right), [
+      return new IR.EApply(compileExpression(right), [
         new IR.EPartialConcrete(compileExpression(left)),
       ]);
     },
@@ -538,6 +538,13 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     Type(_, type) {
       return new IR.EStaticType(compileTypeApp(type));
+    },
+
+    Lambda(_, params, body) {
+      return new IR.ELambda(
+        params.map((x) => x.name),
+        compileExpression(body)
+      );
     },
 
     Parens(_, value) {

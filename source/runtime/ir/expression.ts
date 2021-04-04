@@ -1,11 +1,14 @@
+import { Meta } from "../../generated/crochet-grammar";
 import { cast } from "../../utils/utils";
 import { Predicate, UnificationEnvironment } from "../logic";
 import {
   apply,
+  apply_partial,
   CrochetFloat,
   CrochetInstance,
   CrochetInteger,
   CrochetInterpolation,
+  CrochetLambda,
   CrochetPartial,
   CrochetRecord,
   CrochetStream,
@@ -23,7 +26,7 @@ import {
   PartialValue,
   safe_cast,
   Selection,
-  TAnyCrochetPartial,
+  TAnyFunction,
   TCrochetStream,
   TCrochetType,
   True,
@@ -314,23 +317,26 @@ export class EPartial extends Expression {
   }
 }
 
-export class EApplyPartial extends Expression {
+export class EApply extends Expression {
   constructor(readonly partial: Expression, readonly values: PartialExpr[]) {
     super();
   }
 
   *evaluate(state: State): Machine {
     const fn0 = cvalue(yield _push(this.partial.evaluate(state)));
-    const fn = cast(
-      yield _push(safe_cast(fn0, TAnyCrochetPartial.type)),
-      CrochetPartial
-    );
     const values0 = (yield _push(
       run_all(this.values.map((x) => x.evaluate(state)))
     )) as unknown[];
     const values = values0.map((x) => cast(x, PartialValue));
 
-    return yield _push(apply(state, fn, values));
+    if (fn0 instanceof CrochetPartial) {
+      return yield _push(apply_partial(state, fn0, values));
+    } else if (fn0 instanceof CrochetLambda) {
+      const args = values.map((x) => cast(x, PartialConcrete).value);
+      return fn0.apply(state, args);
+    } else {
+      throw new Error(`Expected a function`);
+    }
   }
 }
 
@@ -512,5 +518,15 @@ export class EFloat extends Expression {
 
   *evaluate(state: State): Machine {
     return new CrochetFloat(this.value);
+  }
+}
+
+export class ELambda extends Expression {
+  constructor(readonly parameters: string[], readonly body: Expression) {
+    super();
+  }
+
+  *evaluate(state: State): Machine {
+    return new CrochetLambda(state.env, this.parameters, this.body);
   }
 }

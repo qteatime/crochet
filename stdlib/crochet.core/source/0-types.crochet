@@ -33,8 +33,17 @@ type text = foreign core.text;
 type interpolation = foreign core.interpolation;
 
 
-/// The type of partially-applied functions
-type partial = foreign core.partial;
+/// The type of any applicable function
+type function = foreign core.function;
+type function-0 = foreign core.function-0;
+type function-1 = foreign core.function-1;
+type function-2 = foreign core.function-2;
+type function-3 = foreign core.function-3;
+type function-4 = foreign core.function-4;
+type function-5 = foreign core.function-5;
+type function-6 = foreign core.function-6;
+
+
 /// The type of lazy expressions
 type thunk = foreign core.thunk;
 
