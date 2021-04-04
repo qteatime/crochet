@@ -1,4 +1,4 @@
-import { cast } from "../../utils";
+import { CrochetType, CrochetValue } from "./core";
 import {
   cvalue,
   ErrInvalidArity,
@@ -9,8 +9,6 @@ import {
   _push,
 } from "../vm";
 import { ProcedureBranch } from "./procedure";
-import { CrochetType } from "./types";
-import { CrochetValue } from "./value";
 import { CrochetPartial, PartialValue } from "./partial";
 import { False, True } from "./boolean";
 

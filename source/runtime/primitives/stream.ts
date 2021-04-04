@@ -1,7 +1,13 @@
 import { every, zip } from "../../utils/utils";
+import {
+  CrochetType,
+  TCrochetAny,
+  CrochetValue,
+  IProjection,
+  ISelection,
+  Selection,
+} from "./core";
 import { False } from "./boolean";
-import { CrochetType, TCrochetAny } from "./types";
-import { CrochetValue, IProjection, ISelection, Selection } from "./value";
 
 export class CrochetStream extends CrochetValue {
   get type() {

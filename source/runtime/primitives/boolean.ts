@@ -1,6 +1,5 @@
+import { CrochetType, TCrochetAny, CrochetValue } from "./core";
 import { from_bool } from "./core-ops";
-import { CrochetType, TCrochetAny } from "./types";
-import { CrochetValue } from "./value";
 
 export class True extends CrochetValue {
   get type() {

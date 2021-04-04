@@ -1,8 +1,16 @@
 import { zip } from "../../utils";
 import { die } from "../vm";
+import {
+  CrochetRole,
+  CrochetType,
+  TCrochetAny,
+  CrochetValue,
+  IProjection,
+  ISelection,
+  Selection,
+  type_name,
+} from "./core";
 import { CrochetRecord } from "./record";
-import { CrochetRole, CrochetType, TCrochetAny, type_name } from "./types";
-import { CrochetValue, IProjection, ISelection, Selection } from "./value";
 
 export class CrochetInstance extends CrochetValue {
   constructor(

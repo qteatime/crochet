@@ -1,4 +1,4 @@
-export * from "./value";
+export * from "./core";
 export * from "./boolean";
 export * from "./instance";
 export * from "./integer";
@@ -13,4 +13,3 @@ export * from "./thunk";
 
 export * from "./core-ops";
 export * from "./procedure";
-export * from "./types";

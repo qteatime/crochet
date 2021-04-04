@@ -7,8 +7,7 @@ import {
   foreign_namespace,
   foreign_type,
 } from "../world/ffi-decorators";
-import { CrochetType, TCrochetAny } from "./types";
-import { CrochetValue } from "./value";
+import { CrochetType, TCrochetAny, CrochetValue } from "./core";
 
 export class CrochetThunk extends CrochetValue {
   get type() {

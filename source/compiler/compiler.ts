@@ -524,6 +524,10 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.EReturn();
     },
 
+    Type(_, type) {
+      return new IR.EStaticType(compileTypeApp(type));
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },
@@ -706,6 +710,10 @@ export function compileTypeApp(x: TypeApp): IR.Type {
   return x.match<IR.Type>({
     Named(_, name) {
       return new IR.TNamed(name.name);
+    },
+
+    Static(_, type) {
+      return new IR.TStatic(compileTypeApp(type));
     },
 
     Any(_) {

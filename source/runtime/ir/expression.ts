@@ -492,3 +492,14 @@ export class EReturn extends Expression {
     return state.env.lookup("contract:return");
   }
 }
+
+export class EStaticType extends Expression {
+  constructor(readonly type: Type) {
+    super();
+  }
+
+  *evaluate(state: State): Machine {
+    const type = this.type.realise(state);
+    return type.static_type;
+  }
+}

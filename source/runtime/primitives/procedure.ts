@@ -2,9 +2,7 @@ import { every, zip } from "../../utils/utils";
 import { Expression, SBlock, Statement } from "../ir";
 import { cvalue, Machine, State, _mark, _push } from "../vm";
 import { Environment, World } from "../world";
-import { CrochetValue } from "./value";
-import { CrochetType } from "./types";
-import { Comparison } from "../../utils/comparison";
+import { CrochetValue, CrochetType } from "./core";
 import { Meta } from "../ir";
 import { False } from "./boolean";
 

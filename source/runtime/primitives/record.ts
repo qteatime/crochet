@@ -1,6 +1,12 @@
 import { ErrNoRecordKey } from "../vm";
-import { CrochetType, TCrochetAny } from "./types";
-import { CrochetValue, IProjection, ISelection, Selection } from "./value";
+import {
+  CrochetType,
+  TCrochetAny,
+  CrochetValue,
+  IProjection,
+  ISelection,
+  Selection,
+} from "./core";
 
 export class CrochetRecord extends CrochetValue {
   get type() {

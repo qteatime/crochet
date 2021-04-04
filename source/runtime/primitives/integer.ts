@@ -1,8 +1,5 @@
-import { CrochetType, TCrochetAny } from "./types";
-import { CrochetValue } from "./value";
+import { CrochetType, TCrochetAny, CrochetValue } from "./core";
 import { CrochetFloat } from "./float";
-import { foreign, foreign_namespace, machine } from "../world";
-import { from_bool } from "./core-ops";
 
 export class CrochetInteger extends CrochetValue {
   get type() {

@@ -22,7 +22,6 @@ import {
 } from "../primitives";
 import { Pattern, UnificationEnvironment } from "../logic";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
-import { Error } from "../../utils/result";
 import { ActionChoice } from "./action-choice";
 import { logger } from "../../utils";
 

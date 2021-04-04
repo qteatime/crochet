@@ -51,6 +51,7 @@ type Parameter =
 
 type TypeApp =
   | Named(pos: Meta, name: Name)
+  | Static(pos: Meta, typ: TypeApp)
   | Any(pos: Meta)
 
 type PredicateClause(
@@ -104,6 +105,7 @@ type Expression =
   | Lazy(pos: Meta, value: Expression)
   | Hole(pos: Meta)
   | Return(pos: Meta)
+  | Type(pos: Meta, typ: TypeApp)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
@@ -287,9 +289,13 @@ grammar Crochet : Program {
   parameter =
     | n:name                              -> Parameter.Untyped(meta, n)
     | s<"("> n:name is_ t:typeApp s<")">  -> Parameter.Typed(meta, n, t)
-    | t:typeName                          -> Parameter.TypedOnly(meta, TypeApp.Named(meta, t))
+    | t:typeAppStatic                     -> Parameter.TypedOnly(meta, t)
 
   typeApp =
+    | typeAppStatic
+
+  typeAppStatic =
+    | s<"#"> t:typeAppPrimary     -> TypeApp.Static(meta, t)
     | typeAppPrimary
 
   typeAppPrimary =
@@ -623,6 +629,7 @@ grammar Crochet : Program {
     | listExpression<expression>
     | expressionBlock
     | hole
+    | s<"#"> t:typeAppPrimary       -> Expression.Type(meta, t)
     | return_                       -> Expression.Return(meta)
     | self_                         -> Expression.Self(meta)
     | n:atom                        -> Expression.Global(meta, n)

@@ -1,6 +1,5 @@
+import { CrochetType, TCrochetAny, CrochetValue } from "./core";
 import { CrochetInteger } from "./integer";
-import { CrochetType, TCrochetAny } from "./types";
-import { CrochetValue } from "./value";
 
 export class CrochetFloat extends CrochetValue {
   get type() {

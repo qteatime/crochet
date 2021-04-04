@@ -1,6 +1,5 @@
 import { die } from "../vm";
-import { CrochetType, TCrochetAny } from "./types";
-import { CrochetValue } from "./value";
+import { CrochetType, TCrochetAny, CrochetValue } from "./core";
 
 export class CrochetUnknown extends CrochetValue {
   get type() {
