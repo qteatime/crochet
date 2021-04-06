@@ -107,6 +107,7 @@ type Expression =
   | Return(pos: Meta)
   | Type(pos: Meta, typ: TypeApp)
   | Lambda(pos: Meta, params: Name[], body: Expression)
+  | IntrinsicEqual(pos: Meta, left: Expression, right: Expression)
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
 
@@ -565,6 +566,8 @@ grammar Crochet : Program {
     | invokeInfixExpression
 
   invokeInfixExpression =
+    | l:invokeMixfix s<"=:="> r:invokeMixfix
+      -> Expression.IntrinsicEqual(meta, l, r)
     | l:invokeInfixExpression op:infix_symbol r:invokeMixfix
       -> Expression.Invoke(meta, Signature.Binary(meta, op, l, r))
     | invokeMixfix

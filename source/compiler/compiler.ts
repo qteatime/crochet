@@ -547,6 +547,10 @@ export function compileExpression(expr: Expression): IR.Expression {
       );
     },
 
+    IntrinsicEqual(_, l, r) {
+      return new IR.EIntrinsicEqual(compileExpression(l), compileExpression(r));
+    },
+
     Parens(_, value) {
       return compileExpression(value);
     },

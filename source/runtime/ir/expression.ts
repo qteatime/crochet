@@ -530,3 +530,15 @@ export class ELambda extends Expression {
     return new CrochetLambda(state.env, this.parameters, this.body);
   }
 }
+
+export class EIntrinsicEqual extends Expression {
+  constructor(readonly left: Expression, readonly right: Expression) {
+    super();
+  }
+
+  *evaluate(state: State): Machine {
+    const left = cvalue(yield _push(this.left.evaluate(state)));
+    const right = cvalue(yield _push(this.right.evaluate(state)));
+    return from_bool(left.equals(right));
+  }
+}
