@@ -4,7 +4,7 @@ export * from "./instance";
 export * from "./interpolation";
 export * from "./partial";
 export * from "./record";
-export * from "./stream";
+export * from "./tuple";
 export * from "./text";
 export * from "./unknown";
 export * from "./thunk";

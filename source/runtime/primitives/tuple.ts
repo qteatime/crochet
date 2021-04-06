@@ -9,9 +9,9 @@ import {
 } from "./0-core";
 import { False } from "./boolean";
 
-export class CrochetStream extends CrochetValue {
+export class CrochetTuple extends CrochetValue {
   get type() {
-    return TCrochetStream.type;
+    return TCrochetTuple.type;
   }
 
   constructor(readonly values: CrochetValue[]) {
@@ -20,7 +20,7 @@ export class CrochetStream extends CrochetValue {
 
   equals(other: CrochetValue): boolean {
     return (
-      other instanceof CrochetStream &&
+      other instanceof CrochetTuple &&
       other.values.length === this.values.length &&
       every(zip(other.values, this.values), ([a, b]) => a.equals(b))
     );
@@ -38,47 +38,47 @@ export class CrochetStream extends CrochetValue {
     return `[${this.values.map((x) => x.to_text()).join(", ")}]`;
   }
 
-  _projection = new StreamProjection(this);
-  _selection = new StreamSelection(this);
+  _projection = new TupleProjection(this);
+  _selection = new TupleSelection(this);
 }
 
-export class StreamProjection implements IProjection {
-  constructor(readonly stream: CrochetStream) {}
+export class TupleProjection implements IProjection {
+  constructor(readonly stream: CrochetTuple) {}
 
   project(name: string): CrochetValue {
     const result = [];
     for (const value of this.stream.values) {
       result.push(value.projection.project(name));
     }
-    return new CrochetStream(result);
+    return new CrochetTuple(result);
   }
 }
 
-export class StreamSelection implements ISelection {
-  constructor(readonly stream: CrochetStream) {}
+export class TupleSelection implements ISelection {
+  constructor(readonly stream: CrochetTuple) {}
 
   select(selections: Selection[]) {
     const result = [];
     for (const value of this.stream.values) {
       result.push(value.selection.select(selections));
     }
-    return new CrochetStream(result);
+    return new CrochetTuple(result);
   }
 }
 
-export class TCrochetStream extends CrochetType {
+export class TCrochetTuple extends CrochetType {
   readonly parent = TCrochetAny.type;
-  readonly type_name = "stream";
+  readonly type_name = "tuple";
 
   coerce(x: CrochetValue): CrochetValue | null {
-    if (x instanceof CrochetStream) {
+    if (x instanceof CrochetTuple) {
       return x;
     } else if (x instanceof False) {
       return null;
     } else {
-      return new CrochetStream([x]);
+      return new CrochetTuple([x]);
     }
   }
 
-  static type = new TCrochetStream();
+  static type = new TCrochetTuple();
 }

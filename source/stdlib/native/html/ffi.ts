@@ -1,7 +1,7 @@
 import {
   CrochetInteger,
   CrochetRecord,
-  CrochetStream,
+  CrochetTuple,
   CrochetText,
   CrochetType,
   CrochetValue,
@@ -74,7 +74,7 @@ export class HtmlFfi {
     const name = cast(name0, CrochetText);
     const klass = cast(klass0, CrochetText);
     const attributes = cast(attributes0, CrochetRecord);
-    const children = cast(children0, CrochetStream);
+    const children = cast(children0, CrochetTuple);
 
     const element = document.createElement(name.value);
     element.setAttribute("class", "crochet-box " + klass.value);
@@ -103,7 +103,7 @@ export class HtmlFfi {
   @machine()
   static menu(klass0: CrochetValue, items0: CrochetValue) {
     const klass = cast(klass0, CrochetText);
-    const items = cast(items0, CrochetStream);
+    const items = cast(items0, CrochetTuple);
 
     const selection = defer<CrochetValue>();
 
@@ -172,7 +172,7 @@ export class HtmlFfi {
 
   @foreign("make-animation")
   static *make_animation(state: State, children0: CrochetValue) {
-    const children1 = cast(children0, CrochetStream);
+    const children1 = cast(children0, CrochetTuple);
 
     const element = document.createElement("div");
     const children = children1.values.map((x) => cast(x, CrochetHtml).value);

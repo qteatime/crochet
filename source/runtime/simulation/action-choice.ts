@@ -1,7 +1,7 @@
 import { Action } from "./event";
 import {
   CrochetRecord,
-  CrochetStream,
+  CrochetTuple,
   CrochetText,
   CrochetThunk,
   CrochetType,
@@ -35,7 +35,7 @@ export class ActionChoice extends CrochetValue {
       new Map<string, CrochetValue>([
         ["Title", this.title],
         ["Score", this.score],
-        ["Tags", new CrochetStream(this.tags)],
+        ["Tags", new CrochetTuple(this.tags)],
         ["Action", new CrochetUnknown(this.action)],
       ])
     );

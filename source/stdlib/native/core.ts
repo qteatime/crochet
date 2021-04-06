@@ -18,7 +18,7 @@ import {
   TCrochetPartial,
   TAnyFunction,
   TCrochetRecord,
-  TCrochetStream,
+  TCrochetTuple,
   TCrochetThunk,
   CrochetInstance,
   CrochetInteger,
@@ -137,9 +137,9 @@ export class CoreFfi {
     return TCrochetRecord.type;
   }
 
-  @foreign_type("stream")
-  static get type_stream(): CrochetType {
-    return TCrochetStream.type;
+  @foreign_type("tuple")
+  static get type_tuple(): CrochetType {
+    return TCrochetTuple.type;
   }
 
   @foreign_type("enum")

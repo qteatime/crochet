@@ -1,7 +1,7 @@
 import {
   CrochetInteger,
   CrochetRecord,
-  CrochetStream,
+  CrochetTuple,
   CrochetText,
   CrochetValue,
   cvalue,
@@ -38,7 +38,7 @@ export class RecordFfi {
   static keys(record0: CrochetValue) {
     const record = cast(record0, CrochetRecord);
 
-    return new CrochetStream(
+    return new CrochetTuple(
       [...record.values.keys()].map((x) => new CrochetText(x))
     );
   }
@@ -48,7 +48,7 @@ export class RecordFfi {
   values(record0: CrochetValue) {
     const record = cast(record0, CrochetRecord);
 
-    return new CrochetStream([...record.values.values()]);
+    return new CrochetTuple([...record.values.values()]);
   }
 
   @foreign()

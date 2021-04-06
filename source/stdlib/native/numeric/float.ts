@@ -4,7 +4,7 @@ import {
   foreign_namespace,
   from_bool,
   machine,
-  CrochetStream,
+  CrochetTuple,
   CrochetValue,
 } from "../../../runtime";
 import { cast } from "../../../utils";
@@ -98,7 +98,7 @@ export class FloatFfi {
     const min = cast(min0, CrochetFloat);
     const max = cast(max0, CrochetFloat);
 
-    return new CrochetStream(
+    return new CrochetTuple(
       Array.from(
         { length: max.value - min.value + 1 },
         (_, i) => new CrochetFloat(min.value + i)

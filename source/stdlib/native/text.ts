@@ -4,7 +4,7 @@ import {
   foreign,
   machine,
   CrochetInterpolation,
-  CrochetStream,
+  CrochetTuple,
   InterpolationDynamic,
   CrochetText,
   CrochetValue,
@@ -31,7 +31,7 @@ export class InterpolationFfi {
   static parts(a0: CrochetValue) {
     const a = cast(a0, CrochetInterpolation);
 
-    return new CrochetStream(a.parts.map((x) => x.to_part()));
+    return new CrochetTuple(a.parts.map((x) => x.to_part()));
   }
 
   @foreign()
@@ -39,7 +39,7 @@ export class InterpolationFfi {
   static holes(a0: CrochetValue) {
     const a = cast(a0, CrochetInterpolation);
 
-    return new CrochetStream(
+    return new CrochetTuple(
       a.parts
         .filter((x) => x instanceof InterpolationDynamic)
         .map((x) => x.to_part())
@@ -77,7 +77,7 @@ export class TextFfi {
   @machine()
   static lines(x0: CrochetValue) {
     const x = cast(x0, CrochetText);
-    return new CrochetStream(
+    return new CrochetTuple(
       x.value.split(/\r\n|\r|\n/).map((x) => new CrochetText(x))
     );
   }
@@ -90,13 +90,13 @@ export class TextFfi {
     for (const point of x.value) {
       points.push(new CrochetInteger(BigInt(point.codePointAt(0))));
     }
-    return new CrochetStream(points);
+    return new CrochetTuple(points);
   }
 
   @foreign("from-code-points")
   @machine()
   static from_code_points(x0: CrochetValue) {
-    const x = cast(x0, CrochetStream);
+    const x = cast(x0, CrochetTuple);
     const points = x.values.map((a) => Number(cast(a, CrochetInteger).value));
     const text = String.fromCodePoint(...points);
     return new CrochetText(text);

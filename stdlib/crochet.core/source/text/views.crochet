@@ -14,13 +14,13 @@ test
   assert "abc❤🌹✨" unicode-code-points =:= [97, 98, 99, 10084, 127801, 10024];
 end
 
-command #text from-code-points: (Points is stream)
+command #text from-code-points: (Points is tuple)
   = foreign text.from-code-points(Points)
 test
   assert #text from-code-points: ("abc❤🌹✨" unicode-code-points) =:= "abc❤🌹✨";
 end
 
-command #text from-lines: (Lines is stream) do
+command #text from-lines: (Lines is tuple) do
   condition
     when Lines is-empty => "";
     always => Lines non-empty-fold-with: { A, B in A ++ "\n" ++ B };

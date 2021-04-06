@@ -16,7 +16,7 @@ import {
 } from "../vm";
 import {
   CrochetInteger,
-  CrochetStream,
+  CrochetTuple,
   CrochetValue,
   False,
 } from "../primitives";
@@ -130,7 +130,7 @@ export class Simulation {
         this.trigger_signal(
           state,
           "pick-action:for:",
-          [new CrochetStream(actions), actor],
+          [new CrochetTuple(actions), actor],
           function* (_state, _actions, _for) {
             const scores = avalue(
               yield _push(run_all(actions.map((x) => x.score.force(state))))

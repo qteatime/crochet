@@ -52,8 +52,8 @@ type thunk = foreign core.thunk;
 type record = foreign core.record;
 
 
-/// The type of streams
-type stream = foreign core.stream;
+/// The type of fixed-length sequences
+type tuple = foreign core.tuple;
 
 /// The type of linked lists
 abstract list;

@@ -3,7 +3,7 @@ import { cast } from "../../utils/utils";
 import { ConcreteRelation } from "../logic";
 import {
   CrochetInstance,
-  CrochetStream,
+  CrochetTuple,
   CrochetValue,
   False,
 } from "../primitives";
@@ -159,10 +159,7 @@ export class SSimulate extends Statement {
   }
 
   *evaluate(state: State): Machine {
-    const actors = cast(
-      yield _push(this.actors.evaluate(state)),
-      CrochetStream
-    );
+    const actors = cast(yield _push(this.actors.evaluate(state)), CrochetTuple);
     const context = this.context.realise(state);
     const signals = new Bag<string, Signal>("signal");
     for (const signal of this.signals) {

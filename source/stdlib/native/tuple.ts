@@ -6,7 +6,7 @@ import {
   CrochetInterpolation,
   CrochetPartial,
   CrochetRecord,
-  CrochetStream,
+  CrochetTuple,
   CrochetText,
   CrochetValue,
   cvalue,
@@ -27,19 +27,19 @@ import {
 } from "../../runtime";
 import { iter, gen, cast } from "../../utils";
 
-@foreign_namespace("crochet.core:stream")
-export class StreamFfi {
+@foreign_namespace("crochet.core:tuple")
+export class TupleFfi {
   @foreign()
   @machine()
   static count(stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
     return new CrochetInteger(BigInt(stream.values.length));
   }
 
   @foreign("random-choice")
   static *random_choice(state: State, stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
     if (stream.values.length === 0) {
       throw new ErrIndexOutOfRange(stream, 0);
@@ -51,7 +51,7 @@ export class StreamFfi {
   @foreign()
   @machine()
   static first(stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
     if (stream.values.length === 0) {
       throw new ErrIndexOutOfRange(stream, 0);
@@ -63,7 +63,7 @@ export class StreamFfi {
   @foreign()
   @machine()
   static last(stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
     if (stream.values.length === 0) {
       throw new ErrIndexOutOfRange(stream, 0);
@@ -75,64 +75,64 @@ export class StreamFfi {
   @foreign("but-first")
   @machine()
   static but_first(stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
-    return new CrochetStream(stream.values.slice(1));
+    return new CrochetTuple(stream.values.slice(1));
   }
 
   @foreign("but-last")
   @machine()
   static but_last(stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
-    return new CrochetStream(stream.values.slice(0, -1));
+    return new CrochetTuple(stream.values.slice(0, -1));
   }
 
   @foreign()
   @machine()
   static take(stream0: CrochetValue, n0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
     const n = cast(n0, CrochetInteger);
 
-    return new CrochetStream(stream.values.slice(0, Number(n.value)));
+    return new CrochetTuple(stream.values.slice(0, Number(n.value)));
   }
 
   @foreign()
   @machine()
   static drop(stream0: CrochetValue, n0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
     const n = cast(n0, CrochetInteger);
 
-    return new CrochetStream(stream.values.slice(Number(n.value)));
+    return new CrochetTuple(stream.values.slice(Number(n.value)));
   }
 
   @foreign()
   @machine()
   static zip(a0: CrochetValue, b0: CrochetValue) {
-    const a = cast(a0, CrochetStream);
-    const b = cast(b0, CrochetStream);
+    const a = cast(a0, CrochetTuple);
+    const b = cast(b0, CrochetTuple);
 
-    return new CrochetStream(
+    return new CrochetTuple(
       iter<CrochetValue>(a.values)
         .zip<CrochetValue>(gen(b.values))
         .to_array()
-        .map(([x, y]) => new CrochetStream([x, y]))
+        .map(([x, y]) => new CrochetTuple([x, y]))
     );
   }
 
   @foreign()
   @machine()
   static concat(a0: CrochetValue, b0: CrochetValue) {
-    const a = cast(a0, CrochetStream);
-    const b = cast(b0, CrochetStream);
+    const a = cast(a0, CrochetTuple);
+    const b = cast(b0, CrochetTuple);
 
-    return new CrochetStream(a.values.concat(b.values));
+    return new CrochetTuple(a.values.concat(b.values));
   }
 
   @foreign()
   @machine()
   static contains(a0: CrochetValue, x: CrochetValue) {
-    const a = cast(a0, CrochetStream);
+    const a = cast(a0, CrochetTuple);
 
     return from_bool(a.values.some((v) => v.equals(x)));
   }
@@ -143,7 +143,7 @@ export class StreamFfi {
     items0: CrochetValue,
     key0: CrochetValue
   ): Machine {
-    const items = cast(items0, CrochetStream);
+    const items = cast(items0, CrochetTuple);
     const key = cast(key0, CrochetText).value;
 
     const items1 = items.values.slice().sort((a, b) => {
@@ -151,14 +151,14 @@ export class StreamFfi {
       const rb = cast(b, CrochetRecord);
       return compare(ra.projection.project(key), rb.projection.project(key));
     });
-    return new CrochetStream(items1);
+    return new CrochetTuple(items1);
   }
 
   @foreign("shuffle")
   static *shuffle(state: State, stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
-    return new CrochetStream(
+    return new CrochetTuple(
       stream.values.sort((a, b) => state.random.random() - 0.5)
     );
   }
@@ -166,9 +166,9 @@ export class StreamFfi {
   @foreign("reverse")
   @machine()
   static reverse(stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
-    return new CrochetStream(stream.values.slice().reverse());
+    return new CrochetTuple(stream.values.slice().reverse());
   }
 
   @foreign()
@@ -178,7 +178,7 @@ export class StreamFfi {
     initial: CrochetValue,
     fn: CrochetValue
   ) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
     let current = initial;
     for (const x of stream.values) {
@@ -190,7 +190,7 @@ export class StreamFfi {
   @foreign()
   @machine()
   static interpolate(stream0: CrochetValue) {
-    const stream = cast(stream0, CrochetStream);
+    const stream = cast(stream0, CrochetTuple);
 
     return new CrochetInterpolation(
       stream.values.map((x) => {
@@ -222,4 +222,4 @@ function compare(a: CrochetValue, b: CrochetValue): number {
   }
 }
 
-export default [StreamFfi];
+export default [TupleFfi];

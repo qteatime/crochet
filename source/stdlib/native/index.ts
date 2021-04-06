@@ -3,7 +3,7 @@ import Time from "./time";
 import Core from "./core";
 import Numeric from "./numeric";
 import Record from "./record";
-import Stream from "./stream";
+import Stream from "./tuple";
 import Text from "./text";
 import Transcript from "./transcript";
 import Html from "./html";

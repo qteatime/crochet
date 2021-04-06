@@ -60,4 +60,4 @@ test
   assert not (ta === tb);
 end
 
-// TODO: Add equality to streams and records without exposing reflection
+// TODO: Add equality to tuples and records without exposing reflection

@@ -11,7 +11,7 @@ import {
   CrochetLambda,
   CrochetPartial,
   CrochetRecord,
-  CrochetStream,
+  CrochetTuple,
   CrochetText,
   CrochetThunk,
   CrochetValue,
@@ -27,7 +27,7 @@ import {
   safe_cast,
   Selection,
   TAnyFunction,
-  TCrochetStream,
+  TCrochetTuple,
   TCrochetType,
   True,
 } from "../primitives";
@@ -104,7 +104,7 @@ export class ESearch extends Expression {
   *evaluate(state: State): Machine {
     const env = UnificationEnvironment.empty();
     const results = state.database.search(state, this.predicate, env);
-    return new CrochetStream(
+    return new CrochetTuple(
       results.map((x) => new CrochetRecord(x.boundValues))
     );
   }
@@ -163,7 +163,7 @@ export class EList extends Expression {
     const values = avalue(
       yield _push(run_all(this.values.map((x) => x.evaluate(state))))
     );
-    return new CrochetStream(values);
+    return new CrochetTuple(values);
   }
 }
 
@@ -237,8 +237,8 @@ export class ForallMap extends ForallExpr {
   *evaluate(state: State, results: CrochetValue[]): Machine {
     const stream0 = cvalue(yield _push(this.stream.evaluate(state)));
     const stream = cast(
-      yield _push(safe_cast(stream0, TCrochetStream.type)),
-      CrochetStream
+      yield _push(safe_cast(stream0, TCrochetTuple.type)),
+      CrochetTuple
     );
     for (const x of stream.values) {
       const env = state.env.clone();
@@ -284,7 +284,7 @@ export class EForall extends Expression {
   *evaluate(state: State): Machine {
     const results: CrochetValue[] = [];
     yield* this.expr.evaluate(state, results);
-    return new CrochetStream(results);
+    return new CrochetTuple(results);
   }
 
   *evaluate_stream(state: State, expr: Expression) {}
@@ -410,10 +410,10 @@ export class EMatchSearch extends Expression {
           return kase.body.evaluate(new_state);
         });
         const values = avalue(yield _push(run_all(machines)));
-        return new CrochetStream(values);
+        return new CrochetTuple(values);
       }
     }
-    return new CrochetStream([]);
+    return new CrochetTuple([]);
   }
 }
 export class MatchSearchCase {

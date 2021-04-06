@@ -80,10 +80,10 @@ command (X is thunk) to-html do
   (force X) to-html;
 end
 
-command (Xs is stream) to-html do
+command (Xs is tuple) to-html do
   let Items = for X in Xs do X to-html end;
   html box: "span"
-       class: "crochet-stream"
+       class: "crochet-tuple"
        attributes: [->]
        children: Items;
 end
@@ -108,7 +108,7 @@ command image: (Url is text) do
        children: [];
 end
 
-command animation: (Elements is stream) do
+command animation: (Elements is tuple) do
   html make-animation: (for X in Elements do X to-html end);
 end
 
@@ -199,7 +199,7 @@ command button: X do
     children: [X to-html];
 end
 
-command menu: (Items0 is stream) do
+command menu: (Items0 is tuple) do
   let Items = for X in Items0 do
     [
       Title -> (button: X.Title to-html),

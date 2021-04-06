@@ -44,7 +44,7 @@ prelude
                   a bit weird tho";
   [
     Hello -> [
-      (lielle hello as stream) as stream,
+      (lielle hello as tuple) as tuple,
       kristine hello as unknown,
       1 hello as any
     ],
