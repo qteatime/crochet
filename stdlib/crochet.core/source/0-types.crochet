@@ -55,6 +55,11 @@ type record = foreign core.record;
 /// The type of streams
 type stream = foreign core.stream;
 
+/// The type of linked lists
+abstract list;
+type list-node is list(Value, Rest is list);
+singleton list-end is list;
+
 
 /// The base type of enumerations
 type 'enum = foreign core.enum;

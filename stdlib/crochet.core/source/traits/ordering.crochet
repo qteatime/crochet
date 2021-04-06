@@ -2,6 +2,32 @@
 
 enum ordering = less-than, equal, greater-than;
 
+// Ordering
+//
+// - Required: `_ < _` and `_ > _` with equality
+// - Get: `_ <= _`, and `_ >= _` for free.
+//
+// We could derive `<` from `>` and vice-versa, but Crochet doesn't offer
+// good features for checking this yet, and that causes recursion issues...
+
+/// Default less or equal to
+command X <= Y =
+  (X === Y) or (X < Y)
+test
+  assert 1 <= 1;
+  assert 1 <= 2;
+end
+
+/// Default greater or equal to
+command X >= Y =
+  (X === Y) or (X > Y)
+test
+  assert 1 >= 1;
+  assert 2 >= 1;
+end
+
+
+// # Generic comparison
 command X compare-to: Y do
   condition
     when X === Y => equal;
@@ -9,45 +35,138 @@ command X compare-to: Y do
     when X > Y   => greater-than;
   end
 test
-  assert (1 compare-to: 1) === equal;
-  assert (-1 compare-to: 0) === less-than;
-  assert (1 compare-to: 0) === greater-than;
+  assert (1 compare-to: 1) =:= equal;
+  assert (-1 compare-to: 0) =:= less-than;
+  assert (1 compare-to: 0) =:= greater-than;
 end
+
 
 // # Enums
 local enum test-enum = ta, tb, tc;
 
-/// Successor of the current enum
-command 'enum successor
-requires not-last = self to-enum-integer < self upper-bound to-enum-integer
-do
-  self from-enum-integer: (self to-enum-integer + 1);
+/// Less than relationship
+command 'enum < (Other is 'enum) =
+  self to-enum-integer < Other to-enum-integer
 test
-  assert ta successor === tb;
-  assert tb successor === tc;
+  assert ta < tb;
+  assert tb < tc;
+  assert not (tc < ta);
 end
 
-/// Predecessor of the current enum
-command 'enum predecessor
-requires not-first = self to-enum-integer > 1
-do
-  self from-enum-integer: (self to-enum-integer - 1);
+/// Greater than relationship
+command 'enum > (Other is 'enum) =
+  self to-enum-integer > Other to-enum-integer
 test
-  assert tb predecessor === ta;
-  assert tc predecessor === tb;
+  assert tb > ta;
+  assert tc > tb;
+  assert not (ta > tc);
 end
 
-// # Integers
-command integer successor = self + 1
+
+// # Numbers
+
+/// Relational less than operator for integers
+command (X is integer) < (Y is integer) = 
+  foreign integer.lt(X, Y)
 test
-  assert -1 successor === 0;
-  assert 0 successor === 1;
-  assert 1 successor === 2;
+  assert 0 < 1;
+  assert -1 < 0;
+  assert not (0 < 0);
+  assert not (1 < 0);
 end
 
-command integer predecessor = self - 1
+/// Relational less than or equal operator for integers (provided for perf)
+command (X is integer) <= (Y is integer) = 
+  foreign integer.lte(X, Y)
 test
-  assert -1 predecessor === -2;
-  assert 0 predecessor === -1;
-  assert 1 predecessor === 0;
+  assert 0 <= 1;
+  assert -1 <= 0;
+  assert 0 <= 0;
+  assert not (1 <= 0);
+end
+
+/// Relational greater than operator for integers
+command (X is integer) > (Y is integer) = 
+  foreign integer.gt(X, Y)
+test
+  assert 1 > 0;
+  assert 0 > -1;
+  assert not (0 > 0);
+  assert not (0 > 1);
+end
+
+/// Relational greater or equal operator for integers (provided for perf)
+command (X is integer) >= (Y is integer) = 
+  foreign integer.gte(X, Y)
+test
+  assert 1 >= 0;
+  assert 0 >= -1;
+  assert 0 >= 0;
+  assert not (0 >= 1);
+end
+
+
+/// Relational less than operator for floats
+command (X is float) < (Y is float) = 
+  foreign float.lt(X, Y)
+test
+  assert 0.0 < 1.0;
+  assert -1.0 < 0.0;
+  assert not (0.0 < 0.0);
+  assert not (1.0 < 0.0);
+end
+
+/// Relational less than or equal operator for floats (provided for perf)
+command (X is float) <= (Y is float) = 
+  foreign float.lte(X, Y)
+test
+  assert 0.0 <= 1.0;
+  assert -1.0 <= 0.0;
+  assert 0.0 <= 0.0;
+  assert not (1.0 <= 0.0);
+end
+
+/// Relational greater than operator for floats
+command (X is float) > (Y is float) = 
+  foreign float.gt(X, Y)
+test
+  assert 1.0 > 0.0;
+  assert 0.0 > -1.0;
+  assert not (0.0 > 0.0);
+  assert not (0.0 > 1.0);
+end
+
+/// Relational greater or equal operator for floats (provided for perf)
+command (X is float) >= (Y is float) = 
+  foreign float.gte(X, Y)
+test
+  assert 1.0 >= 0.0;
+  assert 0.0 >= -1.0;
+  assert 0.0 >= 0.0;
+  assert not (0.0 >= 1.0);
+end
+
+
+// # Relational operators across numeric types
+command (X is integer) <  (Y is float) = (#float coerce: X) < Y;
+command (X is integer) <= (Y is float) = (#float coerce: X) <= Y;
+command (X is integer) >  (Y is float) = (#float coerce: X) > Y;
+command (X is integer) >= (Y is float) = (#float coerce: X) >= Y;
+
+command (X is float) <  (Y is integer) = X <  (#float coerce: Y);
+command (X is float) <= (Y is integer) = X <= (#float coerce: Y);
+command (X is float) >  (Y is integer) = X >  (#float coerce: Y);
+command (X is float) >= (Y is integer) = X >= (#float coerce: Y);
+
+
+test "Relational conversions" do
+  assert (0 < 1.1);
+  assert (0 <= 0.0);
+  assert (1 > 0.0);
+  assert (1 >= 0.9);
+
+  assert (0.9 < 1);
+  assert (0.0 <= 0);
+  assert (1.1 > 0);
+  assert (0.0 >= 0);
 end

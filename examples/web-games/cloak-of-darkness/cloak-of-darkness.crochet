@@ -118,7 +118,7 @@ end
 
 command Room describe do
   match
-    when cloak on: player, if Room === bar do
+    when cloak on: player, if Room =:= bar do
       paragraph: "It's pitch dark here. You can't see a thing.";
     end
 

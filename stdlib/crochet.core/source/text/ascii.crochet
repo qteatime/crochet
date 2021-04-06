@@ -61,47 +61,47 @@ end
 command ascii-view trim-start
   = new ascii-view(#ascii-view trim-start: self.text)
 test
-  assert "" ascii trim-start to-text === "";
-  assert "abc" ascii trim-start to-text === "abc";
-  assert "  \t\n\r abc" ascii trim-start to-text === "abc";
-  assert "  abc  " ascii trim-start to-text === "abc  ";
+  assert "" ascii trim-start to-text =:= "";
+  assert "abc" ascii trim-start to-text =:= "abc";
+  assert "  \t\n\r abc" ascii trim-start to-text =:= "abc";
+  assert "  abc  " ascii trim-start to-text =:= "abc  ";
 end
 
 command ascii-view trim-end
   = new ascii-view(#ascii-view trim-end: self.text)
 test
-  assert "" ascii trim-end to-text === "";
-  assert "abc" ascii trim-end to-text === "abc";
-  assert "abc  \t\n\r" ascii trim-end to-text === "abc";
-  assert "  abc  " ascii trim-end to-text === "  abc";
+  assert "" ascii trim-end to-text =:= "";
+  assert "abc" ascii trim-end to-text =:= "abc";
+  assert "abc  \t\n\r" ascii trim-end to-text =:= "abc";
+  assert "  abc  " ascii trim-end to-text =:= "  abc";
 end
 
 command ascii-view trim
   = new ascii-view(#ascii-view trim: self.text)
 test
-  assert "" ascii trim to-text === "";
-  assert "abc" ascii trim to-text === "abc";
-  assert "  \t\n\r abc" ascii trim to-text === "abc";
-  assert "abc  \t\n\r" ascii trim to-text === "abc";
-  assert "  abc  " ascii trim to-text === "abc";
+  assert "" ascii trim to-text =:= "";
+  assert "abc" ascii trim to-text =:= "abc";
+  assert "  \t\n\r abc" ascii trim to-text =:= "abc";
+  assert "abc  \t\n\r" ascii trim to-text =:= "abc";
+  assert "  abc  " ascii trim to-text =:= "abc";
 end
 
 command ascii-view to-lower-case
   = new ascii-view(#ascii-view to-lower-case: self.text)
 test
-  assert "" ascii to-lower-case to-text === "";
-  assert "abc" ascii to-lower-case to-text === "abc";
-  assert "ABC" ascii to-lower-case to-text === "abc";
-  assert "AbC" ascii to-lower-case to-text === "abc";
+  assert "" ascii to-lower-case to-text =:= "";
+  assert "abc" ascii to-lower-case to-text =:= "abc";
+  assert "ABC" ascii to-lower-case to-text =:= "abc";
+  assert "AbC" ascii to-lower-case to-text =:= "abc";
 end
 
 command ascii-view to-upper-case
   = new ascii-view(#ascii-view to-upper-case: self.text)
 test
-  assert "" ascii to-upper-case to-text === "";
-  assert "abc" ascii to-upper-case to-text === "ABC";
-  assert "ABC" ascii to-upper-case to-text === "ABC";
-  assert "AbC" ascii to-upper-case to-text === "ABC";
+  assert "" ascii to-upper-case to-text =:= "";
+  assert "abc" ascii to-upper-case to-text =:= "ABC";
+  assert "ABC" ascii to-upper-case to-text =:= "ABC";
+  assert "AbC" ascii to-upper-case to-text =:= "ABC";
 end
 
 command ascii-view to-text

@@ -3,19 +3,18 @@
   "target": "*",
   "sources": [
     "source/0-types.crochet",
-    "source/traits/relational.crochet",
-    "source/traits/boolean.crochet",
     "source/traits/arithmetic.crochet",
-    "source/traits/ordering.crochet",
+    "source/traits/boolean.crochet",
     "source/traits/conversion.crochet",
-    "source/numeric/fractional.crochet",
+    "source/traits/enumeration.crochet",
+    "source/traits/equality.crochet",
+    "source/traits/fractional.crochet",
+    "source/traits/ordering.crochet",
     "source/numeric/float.crochet",
-    "source/collection/ranges.crochet",
     "source/collection/stream.crochet",
     "source/text/basics.crochet",
     "source/text/views.crochet",
-    "source/text/ascii.crochet",
-    "source/partial.crochet"
+    "source/text/ascii.crochet"
   ],
   "capabilities": {
     "requires": [],

@@ -1,29 +1,29 @@
 % crochet
 
 /// Universal logical conjunction
-command X and Y =
+command (X is boolean) and (Y is boolean) =
   foreign core.band(X, Y)
 test
-  assert (true and true) === true;
-  assert (true and false) === false;
-  assert (false and true) === false;
-  assert (false and false) === false;
+  assert (true and true) =:= true;
+  assert (true and false) =:= false;
+  assert (false and true) =:= false;
+  assert (false and false) =:= false;
 end
 
 /// Universal logical disjunction
-command X or Y =
+command (X is boolean) or (Y is boolean) =
   foreign core.bor(X, Y)
 test
-  assert (true or true) === true;
-  assert (true or false) === true;
-  assert (false or true) === true;
-  assert (false or false) === false;
+  assert (true or true) =:= true;
+  assert (true or false) =:= true;
+  assert (false or true) =:= true;
+  assert (false or false) =:= false;
 end
 
 /// Universal logical negation
-command not X =
+command not (X is boolean) =
   foreign core.bnot(X)
 test
-  assert (not true) === false;
-  assert (not false) === true;
+  assert (not true) =:= false;
+  assert (not false) =:= true;
 end

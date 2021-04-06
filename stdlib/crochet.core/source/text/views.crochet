@@ -3,21 +3,21 @@
 command (X is text) lines
   = foreign text.lines(X)
 test
-  assert "" lines === [""];
-  assert "a\nb\nc" lines === ["a", "b", "c"];
-  assert "a\r\nb\rc\nd" lines === ["a", "b", "c", "d"];
+  assert "" lines =:= [""];
+  assert "a\nb\nc" lines =:= ["a", "b", "c"];
+  assert "a\r\nb\rc\nd" lines =:= ["a", "b", "c", "d"];
 end
 
 command (X is text) unicode-code-points 
   = foreign text.code-points(X)
 test
-  assert "abc❤🌹✨" unicode-code-points === [97, 98, 99, 10084, 127801, 10024];
+  assert "abc❤🌹✨" unicode-code-points =:= [97, 98, 99, 10084, 127801, 10024];
 end
 
 command #text from-code-points: (Points is stream)
   = foreign text.from-code-points(Points)
 test
-  assert #text from-code-points: ("abc❤🌹✨" unicode-code-points) === "abc❤🌹✨";
+  assert #text from-code-points: ("abc❤🌹✨" unicode-code-points) =:= "abc❤🌹✨";
 end
 
 command #text from-lines: (Lines is stream) do
@@ -26,6 +26,6 @@ command #text from-lines: (Lines is stream) do
     always => Lines non-empty-fold-with: { A, B in A ++ "\n" ++ B };
   end
 test
-  assert #text from-lines: ("a\nb\nc" lines) === "a\nb\nc";
-  assert #text from-lines: ("a\r\nb\r\nc" lines) === "a\nb\nc";
+  assert #text from-lines: ("a\nb\nc" lines) =:= "a\nb\nc";
+  assert #text from-lines: ("a\r\nb\r\nc" lines) =:= "a\nb\nc";
 end
