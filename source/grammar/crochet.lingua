@@ -7,7 +7,6 @@ type Declaration =
   | ForeignCommand(pos: Meta, signature: Signature<Parameter>, contract: Contract, body: FFI, ttest: TrailingTest?)
   | Command(pos: Meta, signature: Signature<Parameter>, contract: Contract, body: Statement[], ttest: TrailingTest?)
   | Define(pos: Meta, name: Name, value: Expression)  // requires atomicity
-  | Role(pos: Meta, name: Name)
   | AbstractType(pos: Meta, typ: TypeDef)
   | EnumType(pos: Meta, name: Name, variants: Name[])
   | SingletonType(pos: Meta, typ: TypeDef, init: TypeInit[])
@@ -32,7 +31,7 @@ type TrailingTest(pos: Meta, body: Statement[])
 type Contract(pos: Meta, pre: ContractCondition[], post: ContractCondition[])
 type ContractCondition(pos: Meta, name: Name, expr: Expression)
 
-type TypeDef(parent: TypeApp?, name: Name, roles: Name[])
+type TypeDef(parent: TypeApp?, name: Name)
 type FFI(pos: Meta, name: Namespace, args: Name[])
 
 type Rank =
@@ -100,7 +99,6 @@ type Expression =
   | Interpolate(pos: Meta, value: Interpolation<Expression>)
   | Condition(pos: Meta, cases: ConditionCase[])
   | HasType(pos: Meta, value: Expression, typ: TypeApp)
-  | HasRole(pos: Meta, value: Expression, role: Name)
   | Force(pos: Meta, value: Expression)
   | Lazy(pos: Meta, value: Expression)
   | Hole(pos: Meta)
@@ -162,7 +160,6 @@ type SamplingPool =
   | Type(pos: Meta, name: Name, typ: TypeApp)
 
 type Pattern =
-  | HasRole(pos: Meta, typ: Name, name: Pattern)
   | HasType(pos: Meta, typ: TypeApp, name: Pattern)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
@@ -201,7 +198,6 @@ grammar Crochet : Program {
     | predicateDeclaration
     | doDeclaration
     | commandDeclaration
-    | roleDeclaration
     | typeDeclaration
     | defineDeclaration
     | sceneDeclaration
@@ -326,7 +322,7 @@ grammar Crochet : Program {
       -> Declaration.ForeignType(meta, n, ns)
   
   basicType =
-    | n:atom p:typeDefParent r:roles    -> TypeDef(p, n, r)
+    | n:atom p:typeDefParent    -> TypeDef(p, n)
 
   typeDefParent =
     | is_ t:typeApp   -> t
@@ -357,13 +353,6 @@ grammar Crochet : Program {
       -> TypeInit.Command(meta, s, c, b, t)
     | command_ s:partialSignature<parameter> c:contractDefinition do_ b:statements end_
       -> TypeInit.Command(meta, s, c, b, null)
-
-  roleDeclaration =
-    | role_ n:atom s<";">           -> Declaration.Role(meta, n)
-
-  roles =
-    | s<"::"> r:nonemptyListOf<atom, s<",">>   -> r
-    |                                          -> []
 
   defineDeclaration =
     | define_ n:atom s<"="> e:atomicExpression s<";">
@@ -480,7 +469,6 @@ grammar Crochet : Program {
 
   patternComplex =
     | n:patternName is_ t:typeApp   -> Pattern.HasType(meta, t, n)
-    | n:patternName s<"::"> t:atom  -> Pattern.HasRole(meta, t, n)
 
   patternName =
     | s<"_">        -> Pattern.Wildcard(meta)
@@ -584,8 +572,6 @@ grammar Crochet : Program {
       -> Expression.Cast(meta, t, s)
     | s:invokePrePost is_ t:typeAppPrimary
       -> Expression.HasType(meta, s, t)
-    | s:invokePrePost s<"::"> r:atom
-      -> Expression.HasRole(meta, s, r)
     | invokePrePost
 
   invokePrePost =
@@ -877,7 +863,6 @@ grammar Crochet : Program {
   do_ = kw<"do">
   command_ = kw<"command">
   type_ = kw<"type">
-  role_ = kw<"role">
   enum_ = kw<"enum">
   define_ = kw<"define">
   singleton_ = kw<"singleton">
@@ -933,7 +918,7 @@ grammar Crochet : Program {
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
-    | type_ | role_ | enum_ | define_ | singleton_ | goto_ | call_
+    | type_ | enum_ | define_ | singleton_ | goto_ | call_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_

@@ -1,7 +1,6 @@
 import { zip } from "../../utils";
 import { die } from "../vm";
 import {
-  CrochetRole,
   CrochetType,
   TCrochetAny,
   CrochetValue,
@@ -19,10 +18,6 @@ export class CrochetInstance extends CrochetValue {
     readonly data: CrochetValue[]
   ) {
     super();
-  }
-
-  has_role(role: CrochetRole): boolean {
-    return this.type.roles.has(role);
   }
 
   equals(other: CrochetValue): boolean {
@@ -77,7 +72,6 @@ export class TCrochetType extends CrochetType {
     readonly filename: string,
     readonly parent: CrochetType,
     readonly name: string,
-    readonly roles: Set<CrochetRole>,
     readonly types: CrochetType[],
     readonly fields: string[],
     readonly layout: Map<string, number>
@@ -141,7 +135,6 @@ export const baseEnum = new TCrochetType(
   "(builtin)",
   TCrochetAny.type,
   "enum",
-  new Set(),
   [],
   [],
   new Map()

@@ -1,7 +1,6 @@
 import { Declaration } from "../ir";
 import { Database, Predicate, UnificationEnvironment } from "../logic";
 import {
-  CrochetRole,
   CrochetType,
   CrochetValue,
   CrochetProcedure,
@@ -56,7 +55,6 @@ export class World {
   readonly database = new Database();
   readonly procedures = new ProcedureBag();
   readonly types = new Bag<string, CrochetType>("type");
-  readonly roles = new Bag<string, CrochetRole>("role");
   readonly globals = new Bag<string, CrochetValue>("global");
   readonly scenes = new Bag<string, Scene>("scene");
   readonly contexts = new ContextBag();

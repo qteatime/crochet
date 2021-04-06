@@ -141,8 +141,6 @@ type $p_Declaration<$T> = {
 
   Define(pos: Meta, name: Name, value: Expression): $T;
 
-  Role(pos: Meta, name: Name): $T;
-
   AbstractType(pos: Meta, typ: TypeDef): $T;
 
   EnumType(pos: Meta, name: Name, variants: Name[]): $T;
@@ -184,7 +182,6 @@ export abstract class Declaration extends Node {
     | "ForeignCommand"
     | "Command"
     | "Define"
-    | "Role"
     | "AbstractType"
     | "EnumType"
     | "SingletonType"
@@ -221,10 +218,6 @@ export abstract class Declaration extends Node {
 
   static get Define() {
     return $$Declaration$_Define;
-  }
-
-  static get Role() {
-    return $$Declaration$_Role;
   }
 
   static get AbstractType() {
@@ -455,25 +448,6 @@ export class $$Declaration$_Define extends Declaration {
 
   static has_instance(x: any) {
     return x instanceof $$Declaration$_Define;
-  }
-}
-
-export class $$Declaration$_Role extends Declaration {
-  readonly tag!: "Role";
-
-  constructor(readonly pos: Meta, readonly name: Name) {
-    super();
-    Object.defineProperty(this, "tag", { value: "Role" });
-    $assert_type<Meta>(pos, "Meta", Meta);
-    $assert_type<Name>(name, "Name", Name);
-  }
-
-  match<$T>(p: $p_Declaration<$T>): $T {
-    return p.Role(this.pos, this.name);
-  }
-
-  static has_instance(x: any) {
-    return x instanceof $$Declaration$_Role;
   }
 }
 
@@ -832,11 +806,7 @@ export class ContractCondition extends Node {
 export class TypeDef extends Node {
   readonly tag!: "TypeDef";
 
-  constructor(
-    readonly parent: TypeApp | null,
-    readonly name: Name,
-    readonly roles: Name[]
-  ) {
+  constructor(readonly parent: TypeApp | null, readonly name: Name) {
     super();
     Object.defineProperty(this, "tag", { value: "TypeDef" });
     $assert_type<TypeApp | null>(
@@ -845,7 +815,6 @@ export class TypeDef extends Node {
       $is_maybe(TypeApp)
     );
     $assert_type<Name>(name, "Name", Name);
-    $assert_type<Name[]>(roles, "Name[]", $is_array(Name));
   }
 
   static has_instance(x: any) {
@@ -1684,8 +1653,6 @@ type $p_Expression<$T> = {
 
   HasType(pos: Meta, value: Expression, typ: TypeApp): $T;
 
-  HasRole(pos: Meta, value: Expression, role: Name): $T;
-
   Force(pos: Meta, value: Expression): $T;
 
   Lazy(pos: Meta, value: Expression): $T;
@@ -1727,7 +1694,6 @@ export abstract class Expression extends Node {
     | "Interpolate"
     | "Condition"
     | "HasType"
-    | "HasRole"
     | "Force"
     | "Lazy"
     | "Hole"
@@ -1817,10 +1783,6 @@ export abstract class Expression extends Node {
 
   static get HasType() {
     return $$Expression$_HasType;
-  }
-
-  static get HasRole() {
-    return $$Expression$_HasRole;
   }
 
   static get Force() {
@@ -2307,30 +2269,6 @@ export class $$Expression$_HasType extends Expression {
 
   static has_instance(x: any) {
     return x instanceof $$Expression$_HasType;
-  }
-}
-
-export class $$Expression$_HasRole extends Expression {
-  readonly tag!: "HasRole";
-
-  constructor(
-    readonly pos: Meta,
-    readonly value: Expression,
-    readonly role: Name
-  ) {
-    super();
-    Object.defineProperty(this, "tag", { value: "HasRole" });
-    $assert_type<Meta>(pos, "Meta", Meta);
-    $assert_type<Expression>(value, "Expression", Expression);
-    $assert_type<Name>(role, "Name", Name);
-  }
-
-  match<$T>(p: $p_Expression<$T>): $T {
-    return p.HasRole(this.pos, this.value, this.role);
-  }
-
-  static has_instance(x: any) {
-    return x instanceof $$Expression$_HasRole;
   }
 }
 
@@ -3446,8 +3384,6 @@ export class $$SamplingPool$_Type extends SamplingPool {
 }
 
 type $p_Pattern<$T> = {
-  HasRole(pos: Meta, typ: Name, name: Pattern): $T;
-
   HasType(pos: Meta, typ: TypeApp, name: Pattern): $T;
 
   Global(pos: Meta, name: Name): $T;
@@ -3462,19 +3398,8 @@ type $p_Pattern<$T> = {
 };
 
 export abstract class Pattern extends Node {
-  abstract tag:
-    | "HasRole"
-    | "HasType"
-    | "Global"
-    | "Variable"
-    | "Self"
-    | "Wildcard"
-    | "Lit";
+  abstract tag: "HasType" | "Global" | "Variable" | "Self" | "Wildcard" | "Lit";
   abstract match<$T>(p: $p_Pattern<$T>): $T;
-
-  static get HasRole() {
-    return $$Pattern$_HasRole;
-  }
 
   static get HasType() {
     return $$Pattern$_HasType;
@@ -3502,26 +3427,6 @@ export abstract class Pattern extends Node {
 
   static has_instance(x: any) {
     return x instanceof Pattern;
-  }
-}
-
-export class $$Pattern$_HasRole extends Pattern {
-  readonly tag!: "HasRole";
-
-  constructor(readonly pos: Meta, readonly typ: Name, readonly name: Pattern) {
-    super();
-    Object.defineProperty(this, "tag", { value: "HasRole" });
-    $assert_type<Meta>(pos, "Meta", Meta);
-    $assert_type<Name>(typ, "Name", Name);
-    $assert_type<Pattern>(name, "Pattern", Pattern);
-  }
-
-  match<$T>(p: $p_Pattern<$T>): $T {
-    return p.HasRole(this.pos, this.typ, this.name);
-  }
-
-  static has_instance(x: any) {
-    return x instanceof $$Pattern$_HasRole;
   }
 }
 
@@ -3969,7 +3874,7 @@ export class String extends Node {
 
 // == Grammar definition ============================================
 export const grammar = Ohm.grammar(
-  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | roleDeclaration  -- alt5\n | typeDeclaration  -- alt6\n | defineDeclaration  -- alt7\n | sceneDeclaration  -- alt8\n | actionDeclaration  -- alt9\n | whenDeclaration  -- alt10\n | contextDeclaration  -- alt11\n | openDeclaration  -- alt12\n | localDeclaration  -- alt13\n | testDeclaration  -- alt14\n\n\ntestDeclaration  = test_ string do_ statements end_  -- alt1\n\n\ntrailingTest  = oneTrailingTest  -- alt1\n | s<";">  -- alt2\n\n\noneTrailingTest  = test_ statements end_  -- alt1\n\n\nlocalDeclaration  = local_ defineDeclaration  -- alt1\n | local_ typeDeclaration  -- alt2\n\n\nopenDeclaration  = open_ namespace s<";">  -- alt1\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = prelude_ statements end_  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> contractDefinition s<"="> foreign_ foreignBody trailingTest  -- alt1\n | command_ signature<parameter> contractDefinition s<"="> expression trailingTest  -- alt2\n | command_ signature<parameter> contractDefinition do_ statements oneTrailingTest  -- alt3\n | command_ signature<parameter> contractDefinition do_ statements end_  -- alt4\n\n\ncontractDefinition  = preContractDefinition postContractDefinition  -- alt1\n\n\npreContractDefinition  = requires_ list1<contractCondition, s<";">>  -- alt1\n |   -- alt2\n\n\npostContractDefinition  = ensures_ list1<contractCondition, s<";">>  -- alt1\n |   -- alt2\n\n\ncontractCondition  = atom s<"="> expression  -- alt1\n\n\nforeignBody  = namespace s<"("> list0<name, s<",">> s<")">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeAppStatic  -- alt3\n\n\ntypeApp  = typeAppStatic  -- alt1\n\n\ntypeAppStatic  = s<"#"> typeAppPrimary  -- alt1\n | typeAppPrimary  -- alt2\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = enum_ typeName s<"="> nonemptyListOf<typeName, s<",">> s<";">  -- alt1\n | abstract_ basicType s<";">  -- alt2\n | singleton_ basicType typeInitBlock  -- alt3\n | type_ basicType typeFields s<";">  -- alt4\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt5\n\n\nbasicType  = atom typeDefParent roles  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = with_ typeInit* end_  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> list1<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = typeFieldName is_ typeApp  -- alt1\n | typeFieldName  -- alt2\n\n\ntypeFieldName  = name  -- alt1\n | atom  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> contractDefinition s<"="> foreignBody trailingTest  -- alt2\n | command_ partialSignature<parameter> contractDefinition s<"="> expression trailingTest  -- alt3\n | command_ partialSignature<parameter> contractDefinition do_ statements oneTrailingTest  -- alt4\n | command_ partialSignature<parameter> contractDefinition do_ statements end_  -- alt5\n\n\nroleDeclaration  = role_ atom s<";">  -- alt1\n\n\nroles  = s<"::"> nonemptyListOf<atom, s<",">>  -- alt1\n |   -- alt2\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom do_ statements end_  -- alt1\n\n\nactionDeclaration  = action_ actionTitle actionType actionTags actionPredicate actionRank do_ statements end_  -- alt1\n\n\nactionType  = for_ typeApp  -- alt1\n |   -- alt2\n\n\nactionTitle  = interpolateText<expression>  -- alt1\n\n\nactionTags  = tags_ list1<atom, s<",">>  -- alt1\n |   -- alt2\n\n\nactionPredicate  = when_ predicate  -- alt1\n |   -- alt2\n\n\nactionRank  = rank_ expression  -- alt1\n |   -- alt2\n\n\nwhenDeclaration  = when_ predicate do_ statements end_  -- alt1\n\n\ncontextDeclaration  = context_ atom with_ contextItem* end_  -- alt1\n\n\ncontextItem  = actionDeclaration  -- alt1\n | whenDeclaration  -- alt2\n\n\npredicate  = predicateBinary  -- alt1\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicateConstrain  -- alt1\n | predicateConstrain  -- alt2\n\n\npredicateConstrain  = predicateLet if_ expression  -- alt1\n | if_ expression  -- alt2\n | predicateLet  -- alt3\n | predicateSample  -- alt4\n | predicateType  -- alt5\n | predicatePrimary  -- alt6\n\n\npredicateType  = name is_ typeApp  -- alt1\n\n\npredicateLet  = let_ name s<"="> expression  -- alt1\n\n\npredicateSample  = sample_ integer of_ samplingPool  -- alt1\n\n\nsamplingPool  = logicSignature<pattern>  -- alt1\n | name is_ typeApp  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | self_  -- alt3\n | literal  -- alt4\n | patternName  -- alt5\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n | patternName s<"::"> atom  -- alt2\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | assertStatement  -- alt7\n | expression  -- alt8\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression simulateContext until_ simulateGoal signal*  -- alt1\n\n\nsimulateContext  = in_ atom  -- alt1\n |   -- alt2\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> do_ statements end_  -- alt1\n\n\nassertStatement  = assert_ expression  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | lazyExpression  -- alt2\n | forceExpression  -- alt3\n | pipeExpression  -- alt4\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nlazyExpression  = lazy_ expression  -- alt1\n\n\nforceExpression  = force_ expression  -- alt1\n\n\nexpressionBlock  = do_ statements end_  -- alt1\n\n\npipeExpression  = pipeExpression s<"|>"> invokeInfixExpression  -- alt1\n | pipeExpression s<"|"> partialSignature<invokeInfixExpression>  -- alt2\n | invokeInfixExpression  -- alt3\n\n\ninvokeInfixExpression  = invokeMixfix s<"=:="> invokeMixfix  -- alt1\n | invokeInfixExpression infix_symbol invokeMixfix  -- alt2\n | invokeMixfix  -- alt3\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePrePost as_ typeAppPrimary  -- alt1\n | invokePrePost is_ typeAppPrimary  -- alt2\n | invokePrePost s<"::"> atom  -- alt3\n | invokePrePost  -- alt4\n\n\ninvokePrePost  = invokePrefix  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePrefix  = not applyExpression  -- alt1\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> list1<expression, s<",">> s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> recordField  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> list1<fieldSelection, s<",">> s<")">  -- alt1\n\n\nfieldSelection  = recordField as_ recordField  -- alt1\n | recordField  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | lambdaExpression  -- alt9\n | expressionBlock  -- alt10\n | hole  -- alt11\n | s<"#"> typeAppPrimary  -- alt12\n | return_  -- alt13\n | self_  -- alt14\n | atom  -- alt15\n | name  -- alt16\n | s<"("> expression s<")">  -- alt17\n\n\nconditionExpression  = condition_ conditionCase+ end_  -- alt1\n\n\nconditionCase  = when_ expression eblock  -- alt1\n | always_ eblock  -- alt2\n\n\nmatchSearchExpression  = match_ matchSearchCase+ end_  -- alt1\n\n\nmatchSearchCase  = when_ predicate eblock  -- alt1\n | always_ eblock  -- alt2\n\n\nforExpression  = for_ forExprMap  -- alt1\n\n\nforExprMap  = name in_ expression forExprMap1  -- alt1\n\n\nforExprMap1  = s<","> forExprMap  -- alt1\n | if_ expression forExprDo  -- alt2\n | forExprDo  -- alt3\n\n\nforExprDo  = expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> list1<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> list0<e, s<",">> s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> list1<recordPair<e>, s<",">> s<"]">  -- alt2\n\n\nrecordPair<e>  = recordField s<"->"> e  -- alt1\n\n\nrecordField  = (name | atom)  -- alt1\n | string  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\nlambdaExpression  = s<"{"> expression s<"}">  -- alt1\n | s<"{"> list1<name, s<",">> in_ expression s<"}">  -- alt2\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | float  -- alt2\n | integer  -- alt3\n | boolean  -- alt4\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nfloat  = s<t_float>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = s<"\'"> t_atom  -- alt1\n | ~reserved s<t_atom> ~":"  -- alt2\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = s<nonemptyListOf<t_atom, s<".">>>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n | signaturePair<t>+  -- alt3\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = do_ list0<t, s<";">> end_  -- alt1\n\n\nlist0<t, s>  = listOf<t, s> s?  -- alt1\n\n\nlist1<t, s>  = nonemptyListOf<t, s> s?  -- alt1\n\n\nblock<t>  = do_ t* end_  -- alt1\n\n\nstatements  = list0<statement, s<";">>  -- alt1\n\n\neblock  = do_ statements end_  -- alt1\n | s<"=>"> expression s<";">  -- alt2\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\nsemi  = s<";">  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "**"  -- alt4\n | "*"  -- alt5\n | "/"  -- alt6\n | "<="  -- alt7\n | "<"  -- alt8\n | ">="  -- alt9\n | ">"  -- alt10\n | "==="  -- alt11\n | "=/="  -- alt12\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" "-"? dec_digit+  -- alt1\n\n\nt_float (a floating point number) = ~"_" "-"? dec_digit+ "." dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nrole_  = kw<"role">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nend_  = kw<"end">  -- alt1\n\n\nprelude_  = kw<"prelude">  -- alt1\n\n\nwith_  = kw<"with">  -- alt1\n\n\ntags_  = kw<"tags">  -- alt1\n\n\nrank_  = kw<"rank">  -- alt1\n\n\nabstract_  = kw<"abstract">  -- alt1\n\n\nlazy_  = kw<"lazy">  -- alt1\n\n\nforce_  = kw<"force">  -- alt1\n\n\ncontext_  = kw<"context">  -- alt1\n\n\nsample_  = kw<"sample">  -- alt1\n\n\nof_  = kw<"of">  -- alt1\n\n\nopen_  = kw<"open">  -- alt1\n\n\nlocal_  = kw<"local">  -- alt1\n\n\ntest_  = kw<"test">  -- alt1\n\n\nassert_  = kw<"assert">  -- alt1\n\n\nrequires_  = kw<"requires">  -- alt1\n\n\nensures_  = kw<"ensures">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | role_  -- alt9\n | enum_  -- alt10\n | define_  -- alt11\n | singleton_  -- alt12\n | goto_  -- alt13\n | call_  -- alt14\n | let_  -- alt15\n | return_  -- alt16\n | fact_  -- alt17\n | forget_  -- alt18\n | new_  -- alt19\n | search_  -- alt20\n | if_  -- alt21\n | simulate_  -- alt22\n | true_  -- alt23\n | false_  -- alt24\n | not_  -- alt25\n | and_  -- alt26\n | or_  -- alt27\n | is_  -- alt28\n | self_  -- alt29\n | as_  -- alt30\n | event_  -- alt31\n | quiescence_  -- alt32\n | for_  -- alt33\n | until_  -- alt34\n | in_  -- alt35\n | foreign_  -- alt36\n | on_  -- alt37\n | always_  -- alt38\n | match_  -- alt39\n | then_  -- alt40\n | else_  -- alt41\n | condition_  -- alt42\n | end_  -- alt43\n | prelude_  -- alt44\n | with_  -- alt45\n | tags_  -- alt46\n | rank_  -- alt47\n | abstract_  -- alt48\n | lazy_  -- alt49\n | force_  -- alt50\n | context_  -- alt51\n | sample_  -- alt52\n | of_  -- alt53\n | open_  -- alt54\n | local_  -- alt55\n | test_  -- alt56\n | assert_  -- alt57\n | requires_  -- alt58\n | ensures_  -- alt59\n\r\n  }\r\n  '
+  '\r\n  Crochet {\r\n    program  = header declaration* space* end  -- alt1\n\n\ndeclaration  = relationDeclaration  -- alt1\n | predicateDeclaration  -- alt2\n | doDeclaration  -- alt3\n | commandDeclaration  -- alt4\n | typeDeclaration  -- alt5\n | defineDeclaration  -- alt6\n | sceneDeclaration  -- alt7\n | actionDeclaration  -- alt8\n | whenDeclaration  -- alt9\n | contextDeclaration  -- alt10\n | openDeclaration  -- alt11\n | localDeclaration  -- alt12\n | testDeclaration  -- alt13\n\n\ntestDeclaration  = test_ string do_ statements end_  -- alt1\n\n\ntrailingTest  = oneTrailingTest  -- alt1\n | s<";">  -- alt2\n\n\noneTrailingTest  = test_ statements end_  -- alt1\n\n\nlocalDeclaration  = local_ defineDeclaration  -- alt1\n | local_ typeDeclaration  -- alt2\n\n\nopenDeclaration  = open_ namespace s<";">  -- alt1\n\n\nrelationDeclaration  = relation_ logicSignature<relationPart> s<";">  -- alt1\n\n\nrelationPart  = name s<"*">  -- alt1\n | name  -- alt2\n\n\npredicateDeclaration  = predicate_ logicSignature<name> block<predicateClause>  -- alt1\n\n\npredicateClause  = when_ predicate s<";">  -- alt1\n | always_ predicate s<";">  -- alt2\n\n\ndoDeclaration  = prelude_ statements end_  -- alt1\n\n\ncommandDeclaration  = command_ signature<parameter> contractDefinition s<"="> foreign_ foreignBody trailingTest  -- alt1\n | command_ signature<parameter> contractDefinition s<"="> expression trailingTest  -- alt2\n | command_ signature<parameter> contractDefinition do_ statements oneTrailingTest  -- alt3\n | command_ signature<parameter> contractDefinition do_ statements end_  -- alt4\n\n\ncontractDefinition  = preContractDefinition postContractDefinition  -- alt1\n\n\npreContractDefinition  = requires_ list1<contractCondition, s<";">>  -- alt1\n |   -- alt2\n\n\npostContractDefinition  = ensures_ list1<contractCondition, s<";">>  -- alt1\n |   -- alt2\n\n\ncontractCondition  = atom s<"="> expression  -- alt1\n\n\nforeignBody  = namespace s<"("> list0<name, s<",">> s<")">  -- alt1\n\n\nparameter  = name  -- alt1\n | s<"("> name is_ typeApp s<")">  -- alt2\n | typeAppStatic  -- alt3\n\n\ntypeApp  = typeAppStatic  -- alt1\n\n\ntypeAppStatic  = s<"#"> typeAppPrimary  -- alt1\n | typeAppPrimary  -- alt2\n\n\ntypeAppPrimary  = typeName  -- alt1\n\n\ntypeName  = atom  -- alt1\n | true_  -- alt2\n | false_  -- alt3\n\n\ntypeDeclaration  = enum_ typeName s<"="> nonemptyListOf<typeName, s<",">> s<";">  -- alt1\n | abstract_ basicType s<";">  -- alt2\n | singleton_ basicType typeInitBlock  -- alt3\n | type_ basicType typeFields s<";">  -- alt4\n | type_ typeName s<"="> foreign_ namespace s<";">  -- alt5\n\n\nbasicType  = atom typeDefParent  -- alt1\n\n\ntypeDefParent  = is_ typeApp  -- alt1\n |   -- alt2\n\n\ntypeInitBlock  = with_ typeInit* end_  -- alt1\n | s<";">  -- alt2\n\n\ntypeFields  = s<"("> list1<typeField, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\ntypeField  = typeFieldName is_ typeApp  -- alt1\n | typeFieldName  -- alt2\n\n\ntypeFieldName  = name  -- alt1\n | atom  -- alt2\n\n\ntypeInit  = partialLogicSignature<invokePostfix> s<";">  -- alt1\n | command_ partialSignature<parameter> contractDefinition s<"="> foreignBody trailingTest  -- alt2\n | command_ partialSignature<parameter> contractDefinition s<"="> expression trailingTest  -- alt3\n | command_ partialSignature<parameter> contractDefinition do_ statements oneTrailingTest  -- alt4\n | command_ partialSignature<parameter> contractDefinition do_ statements end_  -- alt5\n\n\ndefineDeclaration  = define_ atom s<"="> atomicExpression s<";">  -- alt1\n\n\nsceneDeclaration  = scene_ atom do_ statements end_  -- alt1\n\n\nactionDeclaration  = action_ actionTitle actionType actionTags actionPredicate actionRank do_ statements end_  -- alt1\n\n\nactionType  = for_ typeApp  -- alt1\n |   -- alt2\n\n\nactionTitle  = interpolateText<expression>  -- alt1\n\n\nactionTags  = tags_ list1<atom, s<",">>  -- alt1\n |   -- alt2\n\n\nactionPredicate  = when_ predicate  -- alt1\n |   -- alt2\n\n\nactionRank  = rank_ expression  -- alt1\n |   -- alt2\n\n\nwhenDeclaration  = when_ predicate do_ statements end_  -- alt1\n\n\ncontextDeclaration  = context_ atom with_ contextItem* end_  -- alt1\n\n\ncontextItem  = actionDeclaration  -- alt1\n | whenDeclaration  -- alt2\n\n\npredicate  = predicateBinary  -- alt1\n\n\npredicateBinary  = predicateAnd  -- alt1\n | predicateOr  -- alt2\n | predicateNot  -- alt3\n\n\npredicateAnd  = predicateNot s<","> predicateAnd1  -- alt1\n\n\npredicateAnd1  = predicateNot s<","> predicateAnd1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateOr  = predicateNot s<"|"> predicateOr1  -- alt1\n\n\npredicateOr1  = predicateNot s<"|"> predicateOr1  -- alt1\n | predicateNot  -- alt2\n\n\npredicateNot  = not_ predicateConstrain  -- alt1\n | predicateConstrain  -- alt2\n\n\npredicateConstrain  = predicateLet if_ expression  -- alt1\n | if_ expression  -- alt2\n | predicateLet  -- alt3\n | predicateSample  -- alt4\n | predicateType  -- alt5\n | predicatePrimary  -- alt6\n\n\npredicateType  = name is_ typeApp  -- alt1\n\n\npredicateLet  = let_ name s<"="> expression  -- alt1\n\n\npredicateSample  = sample_ integer of_ samplingPool  -- alt1\n\n\nsamplingPool  = logicSignature<pattern>  -- alt1\n | name is_ typeApp  -- alt2\n\n\npredicatePrimary  = always_  -- alt1\n | logicSignature<pattern>  -- alt2\n | s<"("> predicate s<")">  -- alt3\n\n\npattern  = s<"("> patternComplex s<")">  -- alt1\n | atom  -- alt2\n | self_  -- alt3\n | literal  -- alt4\n | patternName  -- alt5\n\n\npatternComplex  = patternName is_ typeApp  -- alt1\n\n\npatternName  = s<"_">  -- alt1\n | name  -- alt2\n\n\nstatement  = letStatement  -- alt1\n | factStatement  -- alt2\n | forgetStatement  -- alt3\n | gotoStatement  -- alt4\n | callStatement  -- alt5\n | simulateStatement  -- alt6\n | assertStatement  -- alt7\n | expression  -- alt8\n\n\nletStatement  = let_ name s<"="> expression  -- alt1\n\n\nfactStatement  = fact_ logicSignature<primaryExpression>  -- alt1\n\n\nforgetStatement  = forget_ logicSignature<primaryExpression>  -- alt1\n\n\ngotoStatement  = goto_ atom  -- alt1\n\n\ncallStatement  = call_ atom  -- alt1\n\n\nsimulateStatement  = simulate_ for_ expression simulateContext until_ simulateGoal signal*  -- alt1\n\n\nsimulateContext  = in_ atom  -- alt1\n |   -- alt2\n\n\nsimulateGoal  = action_ quiescence_  -- alt1\n | event_ quiescence_  -- alt2\n | quiescence_  -- alt3\n | predicate  -- alt4\n\n\nsignal  = on_ signature<parameter> do_ statements end_  -- alt1\n\n\nassertStatement  = assert_ expression  -- alt1\n\n\nexpression  = searchExpression  -- alt1\n | lazyExpression  -- alt2\n | forceExpression  -- alt3\n | pipeExpression  -- alt4\n\n\nsearchExpression  = search_ predicate  -- alt1\n\n\nlazyExpression  = lazy_ expression  -- alt1\n\n\nforceExpression  = force_ expression  -- alt1\n\n\nexpressionBlock  = do_ statements end_  -- alt1\n\n\npipeExpression  = pipeExpression s<"|>"> invokeInfixExpression  -- alt1\n | pipeExpression s<"|"> partialSignature<invokeInfixExpression>  -- alt2\n | invokeInfixExpression  -- alt3\n\n\ninvokeInfixExpression  = invokeMixfix s<"=:="> invokeMixfix  -- alt1\n | invokeInfixExpression infix_symbol invokeMixfix  -- alt2\n | invokeMixfix  -- alt3\n\n\ninvokeMixfix  = castExpression signaturePair<invokePostfix>+  -- alt1\n | signaturePair<invokePostfix>+  -- alt2\n | castExpression  -- alt3\n\n\ncastExpression  = invokePrePost as_ typeAppPrimary  -- alt1\n | invokePrePost is_ typeAppPrimary  -- alt2\n | invokePrePost  -- alt3\n\n\ninvokePrePost  = invokePrefix  -- alt1\n | invokePostfix  -- alt2\n\n\ninvokePrefix  = not applyExpression  -- alt1\n\n\ninvokePostfix  = invokePostfix atom  -- alt1\n | applyExpression  -- alt2\n\n\napplyExpression  = applyExpression s<"("> list1<expression, s<",">> s<")">  -- alt1\n | memberExpression  -- alt2\n\n\nmemberExpression  = memberExpression s<"."> recordField  -- alt1\n | memberExpression s<"."> memberSelection  -- alt2\n | primaryExpression  -- alt3\n\n\nmemberSelection  = s<"("> list1<fieldSelection, s<",">> s<")">  -- alt1\n\n\nfieldSelection  = recordField as_ recordField  -- alt1\n | recordField  -- alt2\n\n\nprimaryExpression  = matchSearchExpression  -- alt1\n | conditionExpression  -- alt2\n | forExpression  -- alt3\n | newExpression<expression>  -- alt4\n | interpolateText<expression>  -- alt5\n | literalExpression  -- alt6\n | recordExpression<expression>  -- alt7\n | listExpression<expression>  -- alt8\n | lambdaExpression  -- alt9\n | expressionBlock  -- alt10\n | hole  -- alt11\n | s<"#"> typeAppPrimary  -- alt12\n | return_  -- alt13\n | self_  -- alt14\n | atom  -- alt15\n | name  -- alt16\n | s<"("> expression s<")">  -- alt17\n\n\nconditionExpression  = condition_ conditionCase+ end_  -- alt1\n\n\nconditionCase  = when_ expression eblock  -- alt1\n | always_ eblock  -- alt2\n\n\nmatchSearchExpression  = match_ matchSearchCase+ end_  -- alt1\n\n\nmatchSearchCase  = when_ predicate eblock  -- alt1\n | always_ eblock  -- alt2\n\n\nforExpression  = for_ forExprMap  -- alt1\n\n\nforExprMap  = name in_ expression forExprMap1  -- alt1\n\n\nforExprMap1  = s<","> forExprMap  -- alt1\n | if_ expression forExprDo  -- alt2\n | forExprDo  -- alt3\n\n\nforExprDo  = expressionBlock  -- alt1\n\n\nnewExpression<e>  = new_ atom newFields<e>  -- alt1\n\n\nnewFields<e>  = s<"("> list1<e, s<",">> s<")">  -- alt1\n |   -- alt2\n\n\nlistExpression<e>  = s<"["> list0<e, s<",">> s<"]">  -- alt1\n\n\nrecordExpression<e>  = s<"["> s<"->"> s<"]">  -- alt1\n | s<"["> list1<recordPair<e>, s<",">> s<"]">  -- alt2\n\n\nrecordPair<e>  = recordField s<"->"> e  -- alt1\n\n\nrecordField  = (name | atom)  -- alt1\n | string  -- alt2\n\n\nliteralExpression  = literal  -- alt1\n\n\nlambdaExpression  = s<"{"> expression s<"}">  -- alt1\n | s<"{"> list1<name, s<",">> in_ expression s<"}">  -- alt2\n\n\natomicExpression  = atom  -- alt1\n | newExpression<atomicExpression>  -- alt2\n | literalExpression  -- alt3\n | recordExpression<atomicExpression>  -- alt4\n | listExpression<atomicExpression>  -- alt5\n\n\ninterpolateText<t>  = s<"\\""> interpolatePart<t>* "\\""  -- alt1\n\n\ninterpolatePart<p>  = "\\\\" any  -- alt1\n | "[" s<p> s<"]">  -- alt2\n | ~"\\"" any  -- alt3\n\n\nliteral  = text  -- alt1\n | float  -- alt2\n | integer  -- alt3\n | boolean  -- alt4\n\n\nboolean  = true_  -- alt1\n | false_  -- alt2\n\n\ntext  = string  -- alt1\n\n\ninteger  = s<t_integer>  -- alt1\n\n\nfloat  = s<t_float>  -- alt1\n\n\nstring  = s<t_text>  -- alt1\n\n\nhole  = s<"_"> ~name_rest  -- alt1\n\n\natom  = s<"\'"> t_atom  -- alt1\n | ~reserved s<t_atom> ~":"  -- alt2\n\n\nname  = s<t_name>  -- alt1\n\n\nkeyword  = s<t_keyword>  -- alt1\n\n\ninfix_symbol  = s<t_infix_symbol>  -- alt1\n\n\nnot  = not_  -- alt1\n\n\nand  = and_  -- alt1\n\n\nor  = or_  -- alt1\n\n\nnamespace  = s<nonemptyListOf<t_atom, s<".">>>  -- alt1\n\n\nlogicSignature<t>  = t signaturePair<t>+  -- alt1\n | t atom  -- alt2\n | signaturePair<t>+  -- alt3\n\n\nsignaturePair<t>  = keyword t  -- alt1\n\n\npartialLogicSignature<t>  = signaturePair<t>+  -- alt1\n | atom  -- alt2\n\n\npartialSignature<t>  = signaturePair<t>+  -- alt1\n | infix_symbol t  -- alt2\n | atom  -- alt3\n | not  -- alt4\n\n\nsignature<t>  = t infix_symbol t  -- alt1\n | t signaturePair<t>+  -- alt2\n | t atom  -- alt3\n | not t  -- alt4\n | signaturePair<t>+  -- alt5\n\n\nstatementBlock<t>  = do_ list0<t, s<";">> end_  -- alt1\n\n\nlist0<t, s>  = listOf<t, s> s?  -- alt1\n\n\nlist1<t, s>  = nonemptyListOf<t, s> s?  -- alt1\n\n\nblock<t>  = do_ t* end_  -- alt1\n\n\nstatements  = list0<statement, s<";">>  -- alt1\n\n\neblock  = do_ statements end_  -- alt1\n | s<"=>"> expression s<";">  -- alt2\n\n\ns<p>  = space* p  -- alt1\n\n\nheader (a file header) = space* "%" hs* "crochet" nl  -- alt1\n\n\nhs  = " "  -- alt1\n | "\\t"  -- alt2\n\n\nnl  = "\\n"  -- alt1\n | "\\r"  -- alt2\n\n\nline  = (~nl any)*  -- alt1\n\n\ncomment (a comment) = "//" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\nsemi  = s<";">  -- alt1\n\n\natom_start  = "a".."z"  -- alt1\n\n\natom_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_atom (an atom) = atom_start atom_rest*  -- alt1\n\n\nt_keyword (a keyword) = t_atom ":"  -- alt1\n\n\nname_start  = "A".."Z"  -- alt1\n | "_"  -- alt2\n\n\nname_rest  = letter  -- alt1\n | digit  -- alt2\n | "-"  -- alt3\n\n\nt_name (a name) = name_start name_rest*  -- alt1\n\n\nt_infix_symbol  = t_any_infix ~infix_character  -- alt1\n | and_  -- alt2\n | or_  -- alt3\n\n\nt_any_infix  = "++"  -- alt1\n | "+"  -- alt2\n | "-"  -- alt3\n | "**"  -- alt4\n | "*"  -- alt5\n | "/"  -- alt6\n | "<="  -- alt7\n | "<"  -- alt8\n | ">="  -- alt9\n | ">"  -- alt10\n | "==="  -- alt11\n | "=/="  -- alt12\n\n\ninfix_character  = "+"  -- alt1\n | "-"  -- alt2\n | "*"  -- alt3\n | "/"  -- alt4\n | "<"  -- alt5\n | ">"  -- alt6\n | "="  -- alt7\n\n\ndec_digit  = "0".."9"  -- alt1\n | "_"  -- alt2\n\n\nt_integer (an integer) = ~"_" "-"? dec_digit+  -- alt1\n\n\nt_float (a floating point number) = ~"_" "-"? dec_digit+ "." dec_digit+  -- alt1\n\n\ntext_character  = "\\\\" "\\""  -- alt1\n | ~"\\"" any  -- alt2\n\n\nt_text (a text) = "\\"" text_character* "\\""  -- alt1\n\n\nkw<w>  = s<w> ~atom_rest  -- alt1\n\n\nrelation_  = kw<"relation">  -- alt1\n\n\npredicate_  = kw<"predicate">  -- alt1\n\n\nwhen_  = kw<"when">  -- alt1\n\n\ndo_  = kw<"do">  -- alt1\n\n\ncommand_  = kw<"command">  -- alt1\n\n\ntype_  = kw<"type">  -- alt1\n\n\nenum_  = kw<"enum">  -- alt1\n\n\ndefine_  = kw<"define">  -- alt1\n\n\nsingleton_  = kw<"singleton">  -- alt1\n\n\nscene_  = kw<"scene">  -- alt1\n\n\naction_  = kw<"action">  -- alt1\n\n\nlet_  = kw<"let">  -- alt1\n\n\nreturn_  = kw<"return">  -- alt1\n\n\nfact_  = kw<"fact">  -- alt1\n\n\nforget_  = kw<"forget">  -- alt1\n\n\nnew_  = kw<"new">  -- alt1\n\n\nsearch_  = kw<"search">  -- alt1\n\n\nif_  = kw<"if">  -- alt1\n\n\nthen_  = kw<"then">  -- alt1\n\n\nelse_  = kw<"else">  -- alt1\n\n\ngoto_  = kw<"goto">  -- alt1\n\n\ncall_  = kw<"call">  -- alt1\n\n\nsimulate_  = kw<"simulate">  -- alt1\n\n\nmatch_  = kw<"match">  -- alt1\n\n\ntrue_  = kw<"true">  -- alt1\n\n\nfalse_  = kw<"false">  -- alt1\n\n\nnot_  = kw<"not">  -- alt1\n\n\nand_  = kw<"and">  -- alt1\n\n\nor_  = kw<"or">  -- alt1\n\n\nis_  = kw<"is">  -- alt1\n\n\nself_  = kw<"self">  -- alt1\n\n\nas_  = kw<"as">  -- alt1\n\n\nevent_  = kw<"event">  -- alt1\n\n\nquiescence_  = kw<"quiescence">  -- alt1\n\n\nfor_  = kw<"for">  -- alt1\n\n\nuntil_  = kw<"until">  -- alt1\n\n\nin_  = kw<"in">  -- alt1\n\n\nforeign_  = kw<"foreign">  -- alt1\n\n\non_  = kw<"on">  -- alt1\n\n\nalways_  = kw<"always">  -- alt1\n\n\ncondition_  = kw<"condition">  -- alt1\n\n\nend_  = kw<"end">  -- alt1\n\n\nprelude_  = kw<"prelude">  -- alt1\n\n\nwith_  = kw<"with">  -- alt1\n\n\ntags_  = kw<"tags">  -- alt1\n\n\nrank_  = kw<"rank">  -- alt1\n\n\nabstract_  = kw<"abstract">  -- alt1\n\n\nlazy_  = kw<"lazy">  -- alt1\n\n\nforce_  = kw<"force">  -- alt1\n\n\ncontext_  = kw<"context">  -- alt1\n\n\nsample_  = kw<"sample">  -- alt1\n\n\nof_  = kw<"of">  -- alt1\n\n\nopen_  = kw<"open">  -- alt1\n\n\nlocal_  = kw<"local">  -- alt1\n\n\ntest_  = kw<"test">  -- alt1\n\n\nassert_  = kw<"assert">  -- alt1\n\n\nrequires_  = kw<"requires">  -- alt1\n\n\nensures_  = kw<"ensures">  -- alt1\n\n\nreserved  = relation_  -- alt1\n | predicate_  -- alt2\n | when_  -- alt3\n | do_  -- alt4\n | command_  -- alt5\n | scene_  -- alt6\n | action_  -- alt7\n | type_  -- alt8\n | enum_  -- alt9\n | define_  -- alt10\n | singleton_  -- alt11\n | goto_  -- alt12\n | call_  -- alt13\n | let_  -- alt14\n | return_  -- alt15\n | fact_  -- alt16\n | forget_  -- alt17\n | new_  -- alt18\n | search_  -- alt19\n | if_  -- alt20\n | simulate_  -- alt21\n | true_  -- alt22\n | false_  -- alt23\n | not_  -- alt24\n | and_  -- alt25\n | or_  -- alt26\n | is_  -- alt27\n | self_  -- alt28\n | as_  -- alt29\n | event_  -- alt30\n | quiescence_  -- alt31\n | for_  -- alt32\n | until_  -- alt33\n | in_  -- alt34\n | foreign_  -- alt35\n | on_  -- alt36\n | always_  -- alt37\n | match_  -- alt38\n | then_  -- alt39\n | else_  -- alt40\n | condition_  -- alt41\n | end_  -- alt42\n | prelude_  -- alt43\n | with_  -- alt44\n | tags_  -- alt45\n | rank_  -- alt46\n | abstract_  -- alt47\n | lazy_  -- alt48\n | force_  -- alt49\n | context_  -- alt50\n | sample_  -- alt51\n | of_  -- alt52\n | open_  -- alt53\n | local_  -- alt54\n | test_  -- alt55\n | assert_  -- alt56\n | requires_  -- alt57\n | ensures_  -- alt58\n\r\n  }\r\n  '
 );
 
 // == Parsing =======================================================
@@ -4085,10 +3990,6 @@ const toAstVisitor = {
   },
 
   declaration_alt13(this: Ohm.Node, _1: Ohm.Node): any {
-    return this.children[0].toAST();
-  },
-
-  declaration_alt14(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 
@@ -4544,16 +4445,10 @@ const toAstVisitor = {
     return x.toAST();
   },
 
-  basicType_alt1(
-    this: Ohm.Node,
-    n$0: Ohm.Node,
-    p$0: Ohm.Node,
-    r$0: Ohm.Node
-  ): any {
+  basicType_alt1(this: Ohm.Node, n$0: Ohm.Node, p$0: Ohm.Node): any {
     const n = n$0.toAST();
     const p = p$0.toAST();
-    const r = r$0.toAST();
-    return new TypeDef(p, n, r);
+    return new TypeDef(p, n);
   },
 
   typeDefParent(x: Ohm.Node): any {
@@ -4707,33 +4602,6 @@ const toAstVisitor = {
     const c = c$0.toAST();
     const b = b$0.toAST();
     return new TypeInit.Command($meta(this), s, c, b, null);
-  },
-
-  roleDeclaration(x: Ohm.Node): any {
-    return x.toAST();
-  },
-
-  roleDeclaration_alt1(
-    this: Ohm.Node,
-    _1: Ohm.Node,
-    n$0: Ohm.Node,
-    _3: Ohm.Node
-  ): any {
-    const n = n$0.toAST();
-    return new Declaration.Role($meta(this), n);
-  },
-
-  roles(x: Ohm.Node): any {
-    return x.toAST();
-  },
-
-  roles_alt1(this: Ohm.Node, _1: Ohm.Node, r$0: Ohm.Node): any {
-    const r = r$0.toAST();
-    return r;
-  },
-
-  roles_alt2(this: Ohm.Node): any {
-    return [];
   },
 
   defineDeclaration(x: Ohm.Node): any {
@@ -5179,17 +5047,6 @@ const toAstVisitor = {
     return new Pattern.HasType($meta(this), t, n);
   },
 
-  patternComplex_alt2(
-    this: Ohm.Node,
-    n$0: Ohm.Node,
-    _2: Ohm.Node,
-    t$0: Ohm.Node
-  ): any {
-    const n = n$0.toAST();
-    const t = t$0.toAST();
-    return new Pattern.HasRole($meta(this), t, n);
-  },
-
   patternName(x: Ohm.Node): any {
     return x.toAST();
   },
@@ -5549,18 +5406,7 @@ const toAstVisitor = {
     return new Expression.HasType($meta(this), s, t);
   },
 
-  castExpression_alt3(
-    this: Ohm.Node,
-    s$0: Ohm.Node,
-    _2: Ohm.Node,
-    r$0: Ohm.Node
-  ): any {
-    const s = s$0.toAST();
-    const r = r$0.toAST();
-    return new Expression.HasRole($meta(this), s, r);
-  },
-
-  castExpression_alt4(this: Ohm.Node, _1: Ohm.Node): any {
+  castExpression_alt3(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 
@@ -6798,14 +6644,6 @@ const toAstVisitor = {
     return this.children[0].toAST();
   },
 
-  role_(x: Ohm.Node): any {
-    return x.toAST();
-  },
-
-  role__alt1(this: Ohm.Node, _1: Ohm.Node): any {
-    return this.children[0].toAST();
-  },
-
   enum_(x: Ohm.Node): any {
     return x.toAST();
   },
@@ -7455,10 +7293,6 @@ const toAstVisitor = {
   },
 
   reserved_alt58(this: Ohm.Node, _1: Ohm.Node): any {
-    return this.children[0].toAST();
-  },
-
-  reserved_alt59(this: Ohm.Node, _1: Ohm.Node): any {
     return this.children[0].toAST();
   },
 };

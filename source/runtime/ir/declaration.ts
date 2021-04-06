@@ -5,7 +5,7 @@ import {
   PredicateProcedure,
   TreeType,
 } from "../logic";
-import { CrochetRole, TCrochetAny, TCrochetType } from "../primitives";
+import { TCrochetAny, TCrochetType } from "../primitives";
 import {
   Contract,
   CrochetProcedure,
@@ -140,30 +140,17 @@ export class DCrochetCommand extends Declaration {
   }
 }
 
-export class DRole extends Declaration {
-  constructor(readonly name: string) {
-    super();
-  }
-
-  async apply(context: DeclarationContext, state: State) {
-    const role = new CrochetRole(context.filename, this.name);
-    state.world.roles.add(this.name, role);
-  }
-}
-
 export class DType extends Declaration {
   constructor(
     readonly local: boolean,
     readonly parent: Type | null,
     readonly name: string,
-    readonly roles: string[],
     readonly fields: { parameter: string; type: Type }[]
   ) {
     super();
   }
 
   async apply(context: DeclarationContext, state: State) {
-    const roles = this.roles.map((x) => state.world.roles.lookup(x));
     const fields = this.fields.map((x) => x.parameter);
     const types = this.fields.map((x) => x.type.realise(state));
     const layout = new Map(this.fields.map((x, i) => [x.parameter, i]));
@@ -172,7 +159,6 @@ export class DType extends Declaration {
       context.filename,
       parent ?? TCrochetAny.type,
       this.name,
-      new Set(roles),
       types,
       fields,
       layout

@@ -6,10 +6,6 @@ export abstract class CrochetValue {
   readonly _projection: IProjection | null = null;
   readonly _selection: ISelection | null = null;
 
-  has_role(role: CrochetRole): boolean {
-    return false;
-  }
-
   as_bool(): boolean {
     return true;
   }
@@ -129,10 +125,6 @@ export class CrochetTypeInstance extends CrochetValue {
     super();
     this.type = new TCrochetTypeInstance(this.type_wrapped.type_name);
   }
-}
-
-export class CrochetRole {
-  constructor(readonly filename: string, readonly name: string) {}
 }
 
 export class TCrochetAny extends CrochetType {

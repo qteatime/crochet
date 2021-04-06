@@ -85,25 +85,6 @@ export class TypePattern extends Pattern {
   }
 }
 
-export class RolePattern extends Pattern {
-  constructor(readonly pattern: Pattern, readonly role: string) {
-    super();
-  }
-
-  unify(
-    state: State,
-    env: UnificationEnvironment,
-    value: CrochetValue
-  ): UnificationEnvironment | null {
-    const role = state.world.roles.lookup(this.role);
-    if (value.has_role(role)) {
-      return this.pattern.unify(state, env, value);
-    } else {
-      return null;
-    }
-  }
-}
-
 export class ValuePattern extends Pattern {
   constructor(readonly value: CrochetValue) {
     super();

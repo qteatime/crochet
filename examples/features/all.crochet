@@ -1,8 +1,5 @@
 % crochet
 
-role actor;
-role room;
-
 command X inspect = inspect(X);
 
 command (X is integer) hello do

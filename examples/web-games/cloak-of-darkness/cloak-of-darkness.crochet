@@ -46,7 +46,6 @@ singleton west is direction with
   end
 end
 
-role place;
 type thing;
 type room is thing;
 

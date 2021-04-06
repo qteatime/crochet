@@ -168,10 +168,6 @@ export function compileRelationTypes(types: RelationPart[]): Logic.TreeType {
 
 export function compilePattern(p: Pattern): Logic.Pattern {
   return p.match<Logic.Pattern>({
-    HasRole(_, type, name) {
-      return new Logic.RolePattern(compilePattern(name), type.name);
-    },
-
     HasType(_, type, name) {
       return new Logic.TypePattern(compilePattern(name), compileTypeApp(type));
     },
@@ -516,10 +512,6 @@ export function compileExpression(expr: Expression): IR.Expression {
       return new IR.EHasType(compileExpression(value), compileTypeApp(type));
     },
 
-    HasRole(_, value, role) {
-      return new IR.EHasRole(compileExpression(value), role.name);
-    },
-
     Force(_, value) {
       return new IR.EForce(compileExpression(value));
     },
@@ -803,13 +795,7 @@ export function compileTypeDef(
   const params = fields.map(compileParameter);
   const parent = t.parent ? compileTypeApp(t.parent) : null;
 
-  return new IR.DType(
-    local,
-    parent,
-    t.name.name,
-    t.roles.map((x) => x.name),
-    params
-  );
+  return new IR.DType(local, parent, t.name.name, params);
 }
 
 export function compileRank(r: Rank): IR.Expression {
@@ -882,15 +868,11 @@ export function compileDeclaration(
       ];
     },
 
-    Role(_, name) {
-      return [new IR.DRole(name.name)];
-    },
-
     SingletonType(meta, type0, init) {
       const local = compileLocality(locality);
       const type = compileTypeDef(local, type0, []);
       return [
-        new IR.DType(local, type.parent, type.name, type.roles, []),
+        new IR.DType(local, type.parent, type.name, []),
         new IR.DDefine(local, type.name, new IR.ENew(type.name, [])),
         new IR.DSealType(type.name),
         new IR.DDo([new IR.SRegister(new IR.EGlobal(type.name))]),
@@ -902,7 +884,7 @@ export function compileDeclaration(
       const local = compileLocality(locality);
       const parent = new TypeApp.Named(name.pos, name);
       const variantDecls = variants.flatMap((v, i) => [
-        new Declaration.SingletonType(v.pos, new TypeDef(parent, v, []), []),
+        new Declaration.SingletonType(v.pos, new TypeDef(parent, v), []),
         new Declaration.Command(
           v.pos,
           new Signature.Unary(
@@ -920,7 +902,7 @@ export function compileDeclaration(
         ),
       ]);
       return [
-        new IR.DType(local, new IR.TNamed("enum"), name.name, [], []),
+        new IR.DType(local, new IR.TNamed("enum"), name.name, []),
         ...variantDecls.flatMap((v) => compileDeclaration(v, locality)),
         new IR.DDefine(local, name.name, new IR.ENew(name.name, [])),
         new IR.DSealType(name.name),
@@ -970,7 +952,7 @@ export function compileDeclaration(
       const local = compileLocality(locality);
       const type = compileTypeDef(local, t, []);
       return [
-        new IR.DType(local, type.parent, type.name, type.roles, []),
+        new IR.DType(local, type.parent, type.name, []),
         new IR.DSealType(type.name),
       ];
     },

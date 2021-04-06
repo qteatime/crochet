@@ -457,18 +457,6 @@ export class EHasType extends Expression {
   }
 }
 
-export class EHasRole extends Expression {
-  constructor(readonly value: Expression, readonly role: string) {
-    super();
-  }
-
-  *evaluate(state: State): Machine {
-    const value = cvalue(yield _push(this.value.evaluate(state)));
-    const role = state.world.roles.lookup(this.role);
-    return from_bool(value.has_role(role));
-  }
-}
-
 export class ELazy extends Expression {
   constructor(readonly value: Expression) {
     super();
