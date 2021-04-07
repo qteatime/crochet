@@ -16,3 +16,10 @@ test
   assert (#integer coerce: 0.0) =:= 0;
   assert (#integer coerce: -1.0) =:= -1;
 end
+
+command #interpolation coerce: (X is tuple)
+  = foreign conversion.tuple-to-interpolation(X)
+test
+  assert (#interpolation coerce: []) =:= ("" as interpolation)
+  assert (#interpolation coerce: ["a", 1, "c"]) =:= "a[1]c";
+end

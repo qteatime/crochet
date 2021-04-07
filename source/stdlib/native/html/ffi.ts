@@ -3,23 +3,17 @@ import {
   CrochetRecord,
   CrochetTuple,
   CrochetText,
-  CrochetType,
   CrochetValue,
   cvalue,
   False,
-  ForeignBag,
   Machine,
-  State,
   True,
   _await,
+  ForeignInterface,
+  ValuePattern,
 } from "../../../runtime";
-import {
-  foreign,
-  foreign_namespace,
-  foreign_type,
-  machine,
-} from "../../../runtime/world/ffi-decorators";
 import { cast, defer, delay } from "../../../utils";
+import { ForeignNamespace } from "../../ffi-def";
 import { canvas } from "./canvas";
 import {
   CrochetHtml,
@@ -28,182 +22,130 @@ import {
   TCrochetMenu,
 } from "./element";
 
-@foreign_namespace("crochet.ui.html:html")
-export class HtmlFfi {
-  @foreign_type("element")
-  static get type_element(): CrochetType {
-    return TCrochetHtml.type;
-  }
+export function html_ffi(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.ui.html:html")
+    .deftype("element", TCrochetHtml.type)
+    .deftype("menu", TCrochetMenu.type)
+    .defmachine("show", [CrochetHtml], function* (_, html): Machine {
+      yield _await(canvas.show(html.value));
+      return ValuePattern;
+    })
+    .defmachine("wait", [], function* (_): Machine {
+      yield _await(canvas.click_to_continue());
+      return False.instance;
+    })
+    .defun("mark", [], () => {
+      if (!canvas.is_empty()) {
+        canvas.set_mark();
+      }
+      return False.instance;
+    })
+    .defun(
+      "box",
+      [CrochetText, CrochetText, CrochetRecord, CrochetTuple],
+      (name, klass, attributes, children) => {
+        const element = document.createElement(name.value);
+        element.setAttribute("class", "crochet-box " + klass.value);
+        for (const child of children.values) {
+          element.appendChild(cast(child, CrochetHtml).value);
+        }
+        for (const [key, value] of attributes.values.entries()) {
+          element.setAttribute(key, cast(value, CrochetText).value);
+        }
+        return new CrochetHtml(element);
+      }
+    )
+    .defun("text", [CrochetText], (text0) => {
+      const text = document.createTextNode(text0.value);
+      const el = document.createElement("span");
+      el.className = "crochet-text-span";
+      el.appendChild(text);
+      return new CrochetHtml(el);
+    })
+    .defun("menu", [CrochetText, CrochetTuple], (klass, items) => {
+      const selection = defer<CrochetValue>();
 
-  @foreign_type("menu")
-  static get type_menu(): CrochetType {
-    return TCrochetMenu.type;
-  }
-
-  @foreign("show")
-  static *show(state: State, value0: CrochetValue): Machine {
-    const value = cast(value0, CrochetHtml);
-    yield _await(canvas.show(value.value));
-    return value;
-  }
-
-  @foreign("wait")
-  static *wait(state: State): Machine {
-    yield _await(canvas.click_to_continue());
-    return False.instance;
-  }
-
-  @foreign("mark")
-  static *mark(state: State): Machine {
-    if (canvas.is_empty()) {
-      return;
-    } else {
-      canvas.set_mark();
-    }
-    return False.instance;
-  }
-
-  @foreign("box")
-  @machine()
-  static box(
-    name0: CrochetValue,
-    klass0: CrochetValue,
-    attributes0: CrochetValue,
-    children0: CrochetValue
-  ) {
-    const name = cast(name0, CrochetText);
-    const klass = cast(klass0, CrochetText);
-    const attributes = cast(attributes0, CrochetRecord);
-    const children = cast(children0, CrochetTuple);
-
-    const element = document.createElement(name.value);
-    element.setAttribute("class", "crochet-box " + klass.value);
-    for (const child of children.values) {
-      element.appendChild(cast(child, CrochetHtml).value);
-    }
-    for (const [key, value] of attributes.values.entries()) {
-      element.setAttribute(key, cast(value, CrochetText).value);
-    }
-    return new CrochetHtml(element);
-  }
-
-  @foreign("text")
-  @machine()
-  static text(value0: CrochetValue) {
-    const value = cast(value0, CrochetText);
-
-    const text = document.createTextNode(value.value);
-    const el = document.createElement("span");
-    el.className = "crochet-text-span";
-    el.appendChild(text);
-    return new CrochetHtml(el);
-  }
-
-  @foreign("menu")
-  @machine()
-  static menu(klass0: CrochetValue, items0: CrochetValue) {
-    const klass = cast(klass0, CrochetText);
-    const items = cast(items0, CrochetTuple);
-
-    const selection = defer<CrochetValue>();
-
-    const menu = document.createElement("div");
-    menu.setAttribute("data-interactive", "true");
-    menu.className = "crochet-box " + klass.value;
-    for (const child of items.values) {
-      const record = cast(child, CrochetRecord);
-      const title = cast(record.projection.project("Title"), CrochetHtml);
-      const value = record.projection.project("Value");
-      menu.appendChild(title.value);
-      title.value.addEventListener(
-        "click",
-        (ev) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-          title.value.setAttribute("data-selected", "true");
-          menu.setAttribute("data-selected", "true");
-          selection.resolve(value);
-        },
-        { once: true }
-      );
-    }
-
-    return new CrochetMenu(menu, selection.promise);
-  }
-
-  @foreign("menu-selected")
-  static *menu_selected(state: State, menu0: CrochetValue): Machine {
-    const menu = cast(menu0, CrochetMenu);
-
-    return yield _await(menu.selected);
-  }
-
-  @foreign("preload")
-  static *preload(state: State, url0: CrochetValue): Machine {
-    const url = cast(url0, CrochetText);
-
-    const deferred = defer<CrochetValue>();
-
-    const image = new Image();
-    image.onload = () => deferred.resolve(True.instance);
-    image.onerror = () =>
-      deferred.reject(new Error(`Failed to load image ${url.value}`));
-    image.src = url.value;
-
-    const result = cvalue(yield _await(deferred.promise));
-    return result;
-  }
-
-  @foreign("animate")
-  static *animate(
-    state: State,
-    element0: CrochetValue,
-    time0: CrochetValue
-  ): Machine {
-    const element = cast(element0, CrochetHtml);
-    const time = Number(cast(time0, CrochetInteger));
-
-    for (const child of Array.from(element.value.children)) {
-      (child as HTMLElement).style.opacity = "1";
-      yield _await(delay(time));
-    }
-    return element;
-  }
-
-  @foreign("make-animation")
-  static *make_animation(state: State, children0: CrochetValue) {
-    const children1 = cast(children0, CrochetTuple);
-
-    const element = document.createElement("div");
-    const children = children1.values.map((x) => cast(x, CrochetHtml).value);
-
-    element.className = "crochet-animation";
-    for (const child of children) {
-      element.appendChild(child);
-    }
-    children[0].style.opacity = "1";
-
-    let last_width = 0;
-    let last_height = 0;
-    const interval = setInterval(() => {
-      if (element.parentNode == null) {
-        return;
+      const menu = document.createElement("div");
+      menu.setAttribute("data-interactive", "true");
+      menu.className = "crochet-box " + klass.value;
+      for (const child of items.values) {
+        const record = cast(child, CrochetRecord);
+        const title = cast(record.projection.project("Title"), CrochetHtml);
+        const value = record.projection.project("Value");
+        menu.appendChild(title.value);
+        title.value.addEventListener(
+          "click",
+          (ev) => {
+            ev.stopPropagation();
+            ev.preventDefault();
+            title.value.setAttribute("data-selected", "true");
+            menu.setAttribute("data-selected", "true");
+            selection.resolve(value);
+          },
+          { once: true }
+        );
       }
 
-      const width = Math.max(...children.map((x) => x.offsetWidth));
-      const height = Math.max(...children.map((x) => x.offsetHeight));
-      element.style.width = `${width}px`;
-      element.style.height = `${height}px`;
-      if (width == last_width && height == last_height) {
-        clearInterval(interval);
-      } else {
-        last_width = width;
-        last_height = height;
-      }
-    }, 250);
+      return new CrochetMenu(menu, selection.promise);
+    })
+    .defmachine("menu-selected", [CrochetMenu], function* (_, menu): Machine {
+      return yield _await(menu.selected);
+    })
+    .defmachine("preload", [CrochetText], function* (_, url): Machine {
+      const deferred = defer<CrochetValue>();
 
-    return new CrochetHtml(element);
-  }
+      const image = new Image();
+      image.onload = () => deferred.resolve(True.instance);
+      image.onerror = () =>
+        deferred.reject(new Error(`Failed to load image ${url.value}`));
+      image.src = url.value;
+
+      const result = cvalue(yield _await(deferred.promise));
+      return result;
+    })
+    .defmachine(
+      "animate",
+      [CrochetHtml, CrochetInteger],
+      function* (_, element, time0) {
+        const time = Number(time0.value);
+        for (const child of Array.from(element.value.children)) {
+          (child as HTMLElement).style.opacity = "1";
+          yield _await(delay(time));
+        }
+        return element;
+      }
+    )
+    .defun("make-animation", [CrochetTuple], (children1) => {
+      const element = document.createElement("div");
+      const children = children1.values.map((x) => cast(x, CrochetHtml).value);
+
+      element.className = "crochet-animation";
+      for (const child of children) {
+        element.appendChild(child);
+      }
+      children[0].style.opacity = "1";
+
+      let last_width = 0;
+      let last_height = 0;
+      const interval = setInterval(() => {
+        if (element.parentNode == null) {
+          return False.instance;
+        }
+
+        const width = Math.max(...children.map((x) => x.offsetWidth));
+        const height = Math.max(...children.map((x) => x.offsetHeight));
+        element.style.width = `${width}px`;
+        element.style.height = `${height}px`;
+        if (width == last_width && height == last_height) {
+          clearInterval(interval);
+        } else {
+          last_width = width;
+          last_height = height;
+        }
+      }, 250);
+
+      return new CrochetHtml(element);
+    });
 }
 
-export default [HtmlFfi];
+export default [html_ffi];

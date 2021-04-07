@@ -1,0 +1,10 @@
+{
+  "name": "crochet.mathematics",
+  "target": "*",
+  "sources": ["source/trigonometry.crochet"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

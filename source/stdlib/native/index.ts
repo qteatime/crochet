@@ -1,23 +1,10 @@
 import Debug from "./debug";
 import Time from "./time";
 import Core from "./core";
-import Numeric from "./numeric";
-import Record from "./record";
-import Stream from "./tuple";
 import Text from "./text";
-import Transcript from "./transcript";
 import Html from "./html";
-import Conversion from "./conversion";
+import Mathematics from "./mathematics";
 
-export default [
-  ...Debug,
-  ...Time,
-  ...Core,
-  ...Numeric,
-  ...Record,
-  ...Stream,
-  ...Text,
-  ...Transcript,
-  ...Html,
-  ...Conversion,
-];
+export default [...Text];
+
+export const funs = [...Debug, ...Time, ...Core, ...Mathematics, ...Html];

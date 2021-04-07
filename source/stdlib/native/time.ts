@@ -1,22 +1,16 @@
-import {
-  CrochetInteger,
-  CrochetValue,
-  False,
-  Machine,
-  State,
-  _await,
-} from "../../runtime";
-import { foreign, foreign_namespace } from "../../runtime/world/ffi-decorators";
-import { cast, delay } from "../../utils";
+import { CrochetInteger, False, ForeignInterface, _await } from "../../runtime";
+import { delay } from "../../utils";
+import { ForeignNamespace } from "../ffi-def";
 
-@foreign_namespace("crochet.time:time")
-export class TimeFfi {
-  @foreign("sleep")
-  static *sleep(state: State, ms0: CrochetValue): Machine {
-    const ms = cast(ms0, CrochetInteger);
-    yield _await(delay(Number(ms.value)));
-    return False.instance;
-  }
+export function time_ffi(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.time:time").defmachine(
+    "sleep",
+    [CrochetInteger],
+    function* (_, ms) {
+      yield _await(delay(Number(ms.value)));
+      return False.instance;
+    }
+  );
 }
 
-export default [TimeFfi];
+export default [time_ffi];

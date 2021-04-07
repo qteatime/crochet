@@ -1,50 +1,33 @@
 import {
   CrochetText,
-  CrochetThunk,
   CrochetValue,
-  cvalue,
-  False,
-  Machine,
-  State,
+  ForeignInterface,
   _push,
 } from "../../runtime";
-import {
-  foreign,
-  foreign_namespace,
-  machine,
-} from "../../runtime/world/ffi-decorators";
-import { cast, logger } from "../../utils";
+import { logger } from "../../utils";
+import { ForeignNamespace } from "../ffi-def";
 
-@foreign_namespace("crochet.debug:debug")
-export class DebugFfi {
-  @foreign("inspect")
-  @machine()
-  static inspect(value: CrochetValue) {
-    console.log(">>", value.to_text());
-    return False.instance;
-  }
+export function debug_transcript(ffi: ForeignInterface) {
+  let buffer: string[] = [];
 
-  @foreign("representation")
-  @machine()
-  static representation(value: CrochetValue) {
-    return new CrochetText(value.to_text());
-  }
-
-  @foreign("time")
-  static *time(
-    state: State,
-    thunk0: CrochetValue,
-    message0: CrochetValue
-  ): Machine {
-    const thunk = cast(thunk0, CrochetThunk);
-    const message = cast(message0, CrochetText);
-
-    const start = new Date().getTime();
-    const value = cvalue(yield _push(thunk.force(state)));
-    const end = new Date().getTime();
-    console.log(`>> ${message.value} (${end - start}ms)`);
-    return value;
-  }
+  new ForeignNamespace(ffi, "crochet.debug:transcript")
+    .defun("flush", [CrochetValue], (self) => {
+      if (buffer.length === 0) {
+        logger.debug(`Flushing transcript with empty buffer`);
+      } else {
+        console.log(buffer.join(""));
+        buffer = [];
+      }
+      return self;
+    })
+    .defun("write", [CrochetValue, CrochetText], (self, text) => {
+      buffer.push(text.value);
+      return self;
+    })
+    .defun("write-inspect", [CrochetValue, CrochetValue], (self, value) => {
+      buffer.push(value.to_text());
+      return self;
+    });
 }
 
-export default [DebugFfi];
+export default [debug_transcript];
