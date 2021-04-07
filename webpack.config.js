@@ -1,5 +1,4 @@
 const path = require("path");
-const pkg = require("./package.json");
 
 const benchTarget = {
   target: "node",
@@ -11,6 +10,20 @@ const benchTarget = {
     library: {
       name: "Crochet",
       type: "umd",
+    },
+  },
+};
+
+const cliTarget = {
+  target: "node",
+  mode: "none",
+  entry: "./build/cli/crochet.js",
+  output: {
+    path: path.resolve(__dirname, "build/cli/"),
+    filename: `crochet-bundle.js`,
+    library: {
+      name: "Crochet",
+      type: "commonjs",
     },
   },
 };
@@ -29,4 +42,4 @@ const clientTarget = {
   },
 };
 
-module.exports = [benchTarget];
+module.exports = [benchTarget, cliTarget];

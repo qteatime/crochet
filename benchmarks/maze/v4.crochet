@@ -124,7 +124,7 @@ when
   not state: cs-exposed cell: _,
   sample 5 of state: cs-cut cell: Start,
   sample 5 of state: cs-cut cell: Goal,
-  if Start =/= Goal,
+  if not (Start =:= Goal),
   not Start adjacent: Goal
 rank
   Start.Position distance-to: Goal.Position

@@ -3,16 +3,19 @@ import * as FS from "fs";
 import * as Yargs from "yargs";
 
 import { Crochet } from "../../targets/bench";
+
+type Crochet0 = { new (): Crochet };
+
 const Crochet_v0_2 = require("../../../versions/crochet-v0.2.0")
-  .Crochet as typeof Crochet;
+  .Crochet as Crochet0;
 const Crochet_v0_3 = require("../../../versions/crochet-v0.3.0")
-  .Crochet as typeof Crochet;
+  .Crochet as Crochet0;
 const Crochet_v0_3_1 = require("../../../versions/crochet-v0.3.1")
-  .Crochet as typeof Crochet;
+  .Crochet as Crochet0;
 const Crochet_v0_4_0 = require("../../../versions/crochet-v0.4.0")
-  .Crochet as typeof Crochet;
+  .Crochet as Crochet0;
 const Crochet_v0_5_0 = require("../../../versions/crochet-v0.5.0")
-  .Crochet as typeof Crochet;
+  .Crochet as Crochet0;
 const pkg = require("../../../package.json");
 
 const root = Path.join(__dirname, "../../../");
@@ -89,13 +92,20 @@ const benchmarks = FS.readdirSync(benchmarkDir)
   .filter((x) => FS.statSync(x).isFile())
   .map((x) => Benchmark.from_file(x));
 
+const StdlibPath = Path.join(__dirname, "../../../stdlib");
+
 const all_vms = [
-  { version: "0.2.0", random: true, vm: Crochet_v0_2 },
-  { version: "0.3.0", random: true, vm: Crochet_v0_3 },
-  { version: "0.3.1", random: false, vm: Crochet_v0_3_1 },
-  { version: "0.4.0", random: false, vm: Crochet_v0_4_0 },
-  { version: "0.5.0", random: false, vm: Crochet_v0_5_0 },
-  { version: pkg.version, tag: "(current)", random: false, vm: Crochet },
+  { version: "0.2.0", random: true, vm: () => new Crochet_v0_2() },
+  { version: "0.3.0", random: true, vm: () => new Crochet_v0_3() },
+  { version: "0.3.1", random: false, vm: () => new Crochet_v0_3_1() },
+  { version: "0.4.0", random: false, vm: () => new Crochet_v0_4_0() },
+  { version: "0.5.0", random: false, vm: () => new Crochet_v0_5_0() },
+  {
+    version: pkg.version,
+    tag: "(current)",
+    random: false,
+    vm: () => new Crochet(StdlibPath),
+  },
 ];
 
 async function time(
@@ -152,7 +162,7 @@ void (async function () {
       if (random) {
         console.log("(Reproducible PRNG not supported in this version)");
       }
-      const vm = new Crochet();
+      const vm = Crochet();
       vm.world.global_random?.reseed(seed);
       try {
         let total = 0;

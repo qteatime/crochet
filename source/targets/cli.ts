@@ -3,9 +3,9 @@ import * as FS from "fs";
 import * as stdlib from "../stdlib";
 import { CrochetVM, State } from "../runtime";
 
-const StdlibPath = Path.join(__dirname, "../../stdlib");
-
 export class Crochet extends CrochetVM {
+  stdlib_path = Path.join(__dirname, "../../stdlib");
+
   get prelude() {
     return ["crochet.core", "crochet.transcript"];
   }
@@ -22,7 +22,7 @@ export class Crochet extends CrochetVM {
 
   async initialise() {
     await stdlib.load(State.root(this.world));
-    await this.register_packages_from_directory(StdlibPath);
+    await this.register_packages_from_directory(this.stdlib_path);
   }
 
   async register_packages_from_directory(root: string) {
