@@ -29,13 +29,20 @@ export class Contract {
     readonly post: ContractCondition[]
   ) {}
 
-  *check_pre(state: State, name: string, args: CrochetValue[]): Machine {
+  *check_pre(
+    state: State,
+    name: string,
+    params: string[],
+    args: CrochetValue[]
+  ): Machine {
     for (const condition of this.pre) {
       const valid = cvalue(yield _push(condition.is_valid(state)));
       if (!valid.as_bool()) {
         throw new Error(
-          `Pre-condition violated when calling ${name}\nArguments: (${args
-            .map((x) => x.to_text())
+          `Pre-condition violated when calling ${name}\nArguments: (${[
+            ...zip(params, args),
+          ]
+            .map(([k, x]) => `${k} = ${x.to_text()}`)
             .join(", ")})\n\n${condition.format_error()}`
         );
       }
@@ -46,6 +53,7 @@ export class Contract {
   *check_post(
     state0: State,
     name: string,
+    params: string[],
     args: CrochetValue[],
     result: CrochetValue
   ): Machine {
@@ -56,8 +64,10 @@ export class Contract {
       const valid = cvalue(yield _push(condition.is_valid(state)));
       if (!valid.as_bool()) {
         throw new Error(
-          `Post-condition violated from ${name}\nArguments: (${args
-            .map((x) => x.to_text())
+          `Post-condition violated from ${name}\nArguments: (${[
+            ...zip(params, args),
+          ]
+            .map(([k, x]) => `${k} = ${x.to_text()}`)
             .join(
               ", "
             )})\nReturn: ${result.to_text()}\n\n${condition.format_error()}`
@@ -146,12 +156,25 @@ export class NativeProcedure implements IProcedure {
       args.push(env.lookup(name));
     }
     const procedure = state.world.ffi.methods.lookup(this.foreign_name);
-    yield _push(this.contract.check_pre(state, this.full_name, values));
+    yield _push(
+      this.contract.check_pre(
+        state,
+        this.full_name,
+        this.parameter_names,
+        values
+      )
+    );
     const result = cvalue(
       yield _mark(this.full_name, procedure(state, ...args))
     );
     yield _push(
-      this.contract.check_post(state, this.full_name, values, result)
+      this.contract.check_post(
+        state,
+        this.full_name,
+        this.parameter_names,
+        values,
+        result
+      )
     );
     return result;
   }
@@ -179,10 +202,18 @@ export class CrochetProcedure implements IProcedure {
     }
     const state = state0.with_env(env);
     const block = new SBlock(this.body);
-    yield _push(this.contract.check_pre(state, this.full_name, values));
+    yield _push(
+      this.contract.check_pre(state, this.full_name, this.parameters, values)
+    );
     const result = cvalue(yield _mark(this.full_name, block.evaluate(state)));
     yield _push(
-      this.contract.check_post(state, this.full_name, values, result)
+      this.contract.check_post(
+        state,
+        this.full_name,
+        this.parameters,
+        values,
+        result
+      )
     );
     return result;
   }

@@ -1,10 +1,10 @@
 {
   "name": "crochet.debug",
   "target": "*",
-  "sources": ["debug.crochet"],
+  "sources": ["transcript.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
-    "provides": ["reflection"]
+    "provides": []
   }
 }

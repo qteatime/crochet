@@ -28,6 +28,7 @@ import {
   CrochetText,
   InterpolationStatic,
 } from "../../runtime";
+import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
 
 export function core_types(ffi: ForeignInterface) {
@@ -90,6 +91,21 @@ export function core_conversion(ffi: ForeignInterface) {
             return new InterpolationDynamic(x);
           }
         })
+      );
+    })
+    .defun("interpolation-to-text", [CrochetInterpolation], (x) => {
+      return new CrochetText(
+        x.parts
+          .map((x) => {
+            if (x instanceof InterpolationStatic) {
+              return x.text;
+            } else if (x instanceof InterpolationDynamic) {
+              return cast(x.value, CrochetText).value;
+            } else {
+              throw new Error(`unreachable`);
+            }
+          })
+          .join("")
       );
     });
 }
@@ -181,7 +197,7 @@ export function core_integer(ffi: ForeignInterface) {
       [CrochetInteger, CrochetInteger, CrochetInteger],
       (x, y, z) => {
         const result = [];
-        for (let i = x.value; i < y.value; i += z.value) {
+        for (let i = x.value; i <= y.value; i += z.value) {
           result.push(new CrochetInteger(i));
         }
         return new CrochetTuple(result);
@@ -290,7 +306,7 @@ export function core_tuple(ffi: ForeignInterface) {
       [CrochetTuple, CrochetInteger, CrochetInteger],
       (xs, from, to) => {
         return new CrochetTuple(
-          xs.values.slice(Number(from.value - 1n), Number(to.value - 1n))
+          xs.values.slice(Number(from.value - 1n), Number(to.value))
         );
       }
     );

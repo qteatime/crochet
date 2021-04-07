@@ -4,7 +4,7 @@
 local type ascii-view(text is text);
 
 command text ascii 
-requires ascii-text = self is-ascii
+requires ascii-text :: self is-ascii
   = new ascii-view(self)
 test
   "abc" ascii;
@@ -20,8 +20,8 @@ end
 
 command ascii-view ends-with: (Text is text)
 requires
-  ascii-text = Text is-ascii;
-  non-empty = not (Text is-empty);
+  ascii-text :: Text is-ascii;
+  non-empty :: not (Text is-empty);
 do
   #ascii-view ascii: self.text ends-with: Text
 test
@@ -33,8 +33,8 @@ end
 
 command ascii-view starts-with: (Text is text)
 requires
-  ascii-text = Text is-ascii;
-  non-empty = not (Text is-empty);
+  ascii-text :: Text is-ascii;
+  non-empty :: not (Text is-empty);
 do
   #ascii-view ascii: self.text starts-with: Text
 test
@@ -46,8 +46,8 @@ end
 
 command ascii-view contains: (Text is text)
 requires
-  ascii-text = Text is-ascii;
-  non-empty = not (Text is-empty);
+  ascii-text :: Text is-ascii;
+  non-empty :: not (Text is-empty);
 do
   #ascii-view ascii: self.text contains: Text
 test

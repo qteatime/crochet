@@ -16,9 +16,9 @@ test
 end
 
 command (X is tuple) at: (Index is integer)
-requires within-bounds :: (Index >= 1) and (Index < X count)
+requires within-bounds :: (Index >= 1) and (Index <= X count)
   = foreign tuple.at(X, Index)
-do
+test
   assert (["a", "b", "c"] at: 1) =:= "a";
   assert (["a", "b", "c"] at: 2) =:= "b";
   assert (["a", "b", "c"] at: 3) =:= "c";
@@ -39,20 +39,24 @@ end
 /// Inclusive on both bounds
 command (X is tuple) slice-from: (Start is integer) to: (End is integer)
 requires
-  positive :: Start >= 1
-  progressive :: Start <= End
+  positive :: Start >= 1;
+  progressive :: Start <= End;
   = foreign tuple.slice(X, Start, End)
 test
   assert ([] slice-from: 1 to: 4) =:= [];
   assert ([0, 1, 2, 3] slice-from: 1 to: 4) =:= [0, 1, 2, 3];
   assert ([0, 1, 2, 3] slice-from: 1 to: 1) =:= [0];
-  assert ([0, 1, 2, 3] slice-from: 4 to: 4) =:= [4];
+  assert ([0, 1, 2, 3] slice-from: 4 to: 4) =:= [3];
   assert ([0, 1, 2, 3] slice-from: 2 to: 3) =:= [1, 2];
   assert ([0, 1, 2, 3] slice-from: 3 to: 5) =:= [2, 3];
 end
 
 
-command tuple but-first = self slice-from: 2 to: self count;
+command tuple but-first =
+  condition
+    when self count < 2 => [];
+    always => self slice-from: 2 to: self count;
+  end
 test
   assert [] but-first =:= [];
   assert [1] but-first =:= [];
@@ -61,7 +65,7 @@ end
 
 command tuple but-last =
   condition
-    when self is-empty => [];
+    when self count < 2 => [];
     always => self slice-from: 1 to: (self count - 1);
   end
 test
@@ -71,9 +75,10 @@ test
 end
 
 command tuple take: (N is integer)
-requires positive-size = N >= 0
+requires positive-size :: N >= 0
 do
   condition
+    when N === 0 => [];
     when self is-empty => [];
     always => self slice-from: 1 to: N;
   end
@@ -84,9 +89,10 @@ test
 end
 
 command tuple drop: (N is integer)
-requires positive-size = N >= 0
+requires positive-size :: N >= 0
 do
   condition
+    when N === 0 => self;
     when self is-empty => [];
     always => self slice-from: (N + 1) to: self count;
   end

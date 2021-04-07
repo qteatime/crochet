@@ -41,7 +41,7 @@ end
 
 /// Truncating arithmetic division for integers
 command (X is integer) divided-by: (Y is integer)
-requires non-zero-divisor = Y =/= 0
+requires non-zero-divisor :: Y =/= 0
   = foreign integer.div(X, Y)
 test
   assert (4 divided-by: 2) =:= 2;
@@ -54,7 +54,7 @@ end
 
 /// Remainder of an arithmetic division for integers
 command (X is integer) remainder-of-division-by: (Y is integer)
-requires non-zero-divisor = Y =/= 0
+requires non-zero-divisor :: Y =/= 0
   = foreign integer.rem(X, Y)
 test
   assert (4 remainder-of-division-by: 2) =:= 0;
@@ -81,7 +81,7 @@ end
 
 /// Arithmetic exponentiation for integers
 command (X is integer) ** (P is integer)
-requires positive-exponent = P >= 0
+requires positive-exponent :: P >= 0
   = foreign integer.power(X, P)
 test
   assert (1 ** 0) =:= 1;
@@ -132,7 +132,7 @@ end
 command (X is float) / (Y is float)
 // Technically, IEEE754 allows division by zero, but we choose to be
 // consistent with the other numeric types in Crochet instead
-requires non-zero-divisor = Y =/= 0.0
+requires non-zero-divisor :: Y =/= 0.0
   = foreign float.div(X, Y)
 test
   assert (4.0 / 2.0) =:= 2.0;
@@ -144,7 +144,7 @@ end
 
 /// Truncating arithmetic division for floats
 command (X is float) divided-by: (Y is float)
-requires non-zero-divisor = Y =/= 0.0 do
+requires non-zero-divisor :: Y =/= 0.0 do
   (X / Y) truncate;
 test
   assert (4.0 divided-by: 2.0) =:= 2.0;
@@ -157,7 +157,7 @@ end
 
 /// Remainder of an arithmetic division for floats
 command (X is float) remainder-of-division-by: (Y is float)
-requires non-zero-divisor = Y =/= 0.0
+requires non-zero-divisor :: Y =/= 0.0
   = foreign float.rem(X, Y)
 test
   assert (4.0 remainder-of-division-by: 2.0) =:= 0.0;
@@ -184,7 +184,7 @@ end
 
 /// Arithmetic exponentiation for floats
 command (X is float) ** (P is float)
-requires positive-exponent = P >= 0.0
+requires positive-exponent :: P >= 0.0
   = foreign float.power(X, P)
 test
   assert (1.0 ** 0.0) =:= 1.0;

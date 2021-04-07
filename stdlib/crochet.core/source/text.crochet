@@ -12,7 +12,7 @@ end
 
 /// Repeats a piece of text N times
 command (X is text) repeat: (N is integer)
-requires positive-non-zero = N >= 0
+requires positive-non-zero :: N >= 0
   = foreign text.repeat(X, N)
 test
   assert ("" repeat: 1) =:= "";
@@ -84,12 +84,4 @@ test
   assert ("abc" as interpolation) static-text =:= "abc";
   assert "abc[1]def" static-text =:= "abc_def";
   assert "[1][2]" static-text =:= "__";
-end
-
-/// Tries to build a simple text from an interpolation
-command (X is interpolation) to-text =
-  X parts fold-from: "" with: (_ ++ _)
-test
-  assert ("abc" as interpolation) to-text =:= "abc";
-  assert "a["b"]c" to-text =:= "abc";
 end

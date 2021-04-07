@@ -9,7 +9,7 @@ test
 end
 
 command #integer coerce: (X is float)
-requires integral = X =:= X truncate
+requires integral :: X =:= X truncate
   = foreign conversion.float-to-integer(X)
 test
   assert (#integer coerce: 1.0) =:= 1;
@@ -20,6 +20,13 @@ end
 command #interpolation coerce: (X is tuple)
   = foreign conversion.tuple-to-interpolation(X)
 test
-  assert (#interpolation coerce: []) =:= ("" as interpolation)
+  assert (#interpolation coerce: []) =:= ("" as interpolation);
   assert (#interpolation coerce: ["a", 1, "c"]) =:= "a[1]c";
+end
+
+command #text coerce: (X is interpolation)
+  = foreign conversion.interpolation-to-text(X)
+test
+  assert (#text coerce: ("abc" as interpolation)) =:= "abc";
+  assert (#text coerce: "a["b"]c") =:= "abc";
 end

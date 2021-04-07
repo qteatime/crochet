@@ -5,7 +5,7 @@ enum ordering = less-than, equal, greater-than;
 // Ordering
 //
 // - Required: `_ < _` and `_ > _` with equality
-// - Get: `_ <= _`, and `_ >= _` for free.
+// - Get: `_ <= _`, `_ >= _`, `greater-of:and:`, `lesser-of:and:` for free.
 //
 // We could derive `<` from `>` and vice-versa, but Crochet doesn't offer
 // good features for checking this yet, and that causes recursion issues...
@@ -24,6 +24,30 @@ command X >= Y =
 test
   assert 1 >= 1;
   assert 2 >= 1;
+end
+
+command greater-of: X and: Y =
+  condition
+    when X >= Y => X;
+    always => Y;
+  end
+test
+  assert (greater-of: 1 and: 2) =:= 2;
+  assert (greater-of: 5 and: 2) =:= 5;
+  assert (greater-of: 0 and: 0) =:= 0;
+  assert (greater-of: 1 and: -1) =:= 1;
+end
+
+command lesser-of: X and: Y =
+  condition
+    when X <= Y => X;
+    always => Y;
+  end
+test
+  assert (lesser-of: 1 and: 2) =:= 1;
+  assert (lesser-of: 5 and: 2) =:= 2;
+  assert (lesser-of: 0 and: 0) =:= 0;
+  assert (lesser-of: 1 and: -1) =:= -1;
 end
 
 

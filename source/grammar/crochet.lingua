@@ -278,7 +278,7 @@ grammar Crochet : Program {
     | -> []
 
   contractCondition =
-    | n:atom s<"="> e:expression
+    | n:atom s<"::"> e:expression
       -> ContractCondition(meta, n, e)
 
   foreignBody =
