@@ -61,11 +61,6 @@ export class CrochetPackage {
 
   resolve(source: string) {
     const resolved = Path.resolve(this.root, source);
-    if (resolved.indexOf(this.root + "/") !== 0) {
-      throw new Error(
-        `${source} is outside of its package(${this.name})'s scope`
-      );
-    }
     return resolved;
   }
 
