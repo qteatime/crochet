@@ -1,4 +1,10 @@
-import { CrochetInteger, False, ForeignInterface, _await } from "../../runtime";
+import {
+  CrochetInteger,
+  CrochetNothing,
+  False,
+  ForeignInterface,
+  _await,
+} from "../../runtime";
 import { delay } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
 

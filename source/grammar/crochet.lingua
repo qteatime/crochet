@@ -307,8 +307,9 @@ grammar Crochet : Program {
 
   typeName =
     | atom
-    | x:true_   -> Name(meta, x)
-    | x:false_  -> Name(meta, x)
+    | x:nothing_  -> Name(meta, x)
+    | x:true_     -> Name(meta, x)
+    | x:false_    -> Name(meta, x)
 
   typeDeclaration =
     | enum_ t:typeName s<"="> vs:nonemptyListOf<typeName, s<",">> s<";">

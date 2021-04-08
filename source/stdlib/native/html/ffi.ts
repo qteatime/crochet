@@ -11,6 +11,7 @@ import {
   _await,
   ForeignInterface,
   ValuePattern,
+  CrochetNothing,
 } from "../../../runtime";
 import { cast, defer, delay } from "../../../utils";
 import { ForeignNamespace } from "../../ffi-def";

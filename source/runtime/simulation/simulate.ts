@@ -16,6 +16,7 @@ import {
 } from "../vm";
 import {
   CrochetInteger,
+  CrochetNothing,
   CrochetTuple,
   CrochetValue,
   False,

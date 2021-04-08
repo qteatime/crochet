@@ -10,6 +10,7 @@
     "source/traits/equality.crochet",
     "source/traits/fractional.crochet",
     "source/traits/ordering.crochet",
+    "source/traits/collection.crochet",
     "source/float.crochet",
     "source/tuple.crochet",
     "source/text.crochet"

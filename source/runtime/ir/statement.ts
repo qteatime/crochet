@@ -3,6 +3,7 @@ import { cast } from "../../utils/utils";
 import { ConcreteRelation } from "../logic";
 import {
   CrochetInstance,
+  CrochetNothing,
   CrochetTuple,
   CrochetValue,
   False,

@@ -311,6 +311,9 @@ export function core_tuple(ffi: ForeignInterface) {
           xs.values.slice(Number(from.value - 1n), Number(to.value))
         );
       }
+    )
+    .defun("contains", [CrochetTuple, CrochetValue], (xs, x) =>
+      from_bool(xs.values.some((y) => x.equals(y)))
     );
 }
 

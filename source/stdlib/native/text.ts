@@ -12,6 +12,7 @@ import {
   CrochetInteger,
   False,
   True,
+  CrochetNothing,
 } from "../../runtime";
 import { cast } from "../../utils";
 

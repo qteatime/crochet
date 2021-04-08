@@ -102,11 +102,3 @@ test
   assert ([1, 2, 3] drop: 2) =:= [3];
 end
 
-command (X is tuple) ++ (Y is tuple) = 
-  foreign tuple.concat(X, Y)
-test
-  assert ([] ++ []) =:= [];
-  assert ([1, 2, 3] ++ []) =:= [1, 2, 3];
-  assert ([] ++ [1, 2, 3]) =:= [1, 2, 3];
-  assert ([1, 2] ++ [3, 4, 5]) =:= [1, 2, 3, 4, 5];
-end
