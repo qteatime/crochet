@@ -138,6 +138,28 @@ export class TCrochetAny extends CrochetType {
   static type = new TCrochetAny();
 }
 
+export class TCrochetNothing extends CrochetType {
+  readonly type_name = "nothing";
+  readonly parent = TCrochetAny.type;
+  static type = new TCrochetNothing();
+}
+
+export class CrochetNothing extends CrochetValue {
+  get type() {
+    return TCrochetNothing.type;
+  }
+
+  as_bool() {
+    return false;
+  }
+
+  to_text() {
+    return "nothing";
+  }
+
+  static instance = new CrochetNothing();
+}
+
 export function type_name(x: any) {
   if (x instanceof CrochetValue) {
     return x.type.type_name;

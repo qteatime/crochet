@@ -111,7 +111,7 @@ export class TextFfi {
     const a = cast(a0, CrochetText);
     for (const x of a.value) {
       if ((x.codePointAt(0) ?? 0) >= 128) {
-        return False.instance;
+        return CrochetNothing.instance;
       }
     }
     return True.instance;

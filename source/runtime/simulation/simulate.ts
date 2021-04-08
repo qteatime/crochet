@@ -79,7 +79,7 @@ export class Simulation {
       }
       this.rounds += 1n;
     }
-    return False.instance;
+    return CrochetNothing.instance;
   }
 
   *simulate_round(state: State): Machine {
@@ -138,7 +138,7 @@ export class Simulation {
             const scored_actions = [...zip(scores, actions)];
             return (
               state.random.random_weighted_choice(scored_actions) ??
-              False.instance
+              CrochetNothing.instance
             );
           }
         )
@@ -168,7 +168,7 @@ export class Simulation {
   get layer() {
     const layer = new FunctionLayer(null);
     layer.add("_ simulate-turn", (state, env, [pattern]) =>
-      unify(pattern, this.turn ?? False.instance, state, env)
+      unify(pattern, this.turn ?? CrochetNothing.instance, state, env)
     );
     layer.add("_ simulate-actor", (state, env, [pattern]) =>
       this.actors.flatMap((x) => unify(pattern, x, state, env))

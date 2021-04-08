@@ -4,7 +4,8 @@
 type any = foreign core.any;
 /// A sealed type for any value in Crochet
 type unknown = foreign core.unknown;
-
+/// The unit type which represents the absense of useful values
+type nothing = foreign core.nothing;
 
 /// The base type for two-valued logical values
 type boolean = foreign core.boolean;

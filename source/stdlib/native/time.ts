@@ -8,7 +8,7 @@ export function time_ffi(ffi: ForeignInterface) {
     [CrochetInteger],
     function* (_, ms) {
       yield _await(delay(Number(ms.value)));
-      return False.instance;
+      return CrochetNothing.instance;
     }
   );
 }

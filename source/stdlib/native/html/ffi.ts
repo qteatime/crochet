@@ -32,13 +32,13 @@ export function html_ffi(ffi: ForeignInterface) {
     })
     .defmachine("wait", [], function* (_): Machine {
       yield _await(canvas.click_to_continue());
-      return False.instance;
+      return CrochetNothing.instance;
     })
     .defun("mark", [], () => {
       if (!canvas.is_empty()) {
         canvas.set_mark();
       }
-      return False.instance;
+      return CrochetNothing.instance;
     })
     .defun(
       "box",
@@ -129,7 +129,7 @@ export function html_ffi(ffi: ForeignInterface) {
       let last_height = 0;
       const interval = setInterval(() => {
         if (element.parentNode == null) {
-          return False.instance;
+          return CrochetNothing.instance;
         }
 
         const width = Math.max(...children.map((x) => x.offsetWidth));

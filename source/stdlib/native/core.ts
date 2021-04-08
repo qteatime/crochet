@@ -27,6 +27,7 @@ import {
   InterpolationDynamic,
   CrochetText,
   InterpolationStatic,
+  TCrochetNothing,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -35,6 +36,7 @@ export function core_types(ffi: ForeignInterface) {
   new ForeignNamespace(ffi, "crochet.core:core")
     .deftype("any", TCrochetAny.type)
     .deftype("unknown", TCrochetUnknown.type)
+    .deftype("nothing", TCrochetNothing.type)
     .deftype("true", TCrochetTrue.type)
     .deftype("false", TCrochetFalse.type)
     .deftype("boolean", TCrochetBoolean.type)

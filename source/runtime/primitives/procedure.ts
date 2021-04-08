@@ -47,7 +47,7 @@ export class Contract {
         );
       }
     }
-    return False.instance;
+    return CrochetNothing.instance;
   }
 
   *check_post(

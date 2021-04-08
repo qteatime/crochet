@@ -30,6 +30,7 @@ import {
   TCrochetTuple,
   TCrochetType,
   True,
+  CrochetNothing,
 } from "../primitives";
 import {
   avalue,
@@ -246,7 +247,7 @@ export class ForallMap extends ForallExpr {
       const newState = state.with_env(env);
       yield* this.body.evaluate(newState, results);
     }
-    return False.instance;
+    return CrochetNothing.instance;
   }
 }
 
@@ -258,7 +259,7 @@ export class ForallDo extends ForallExpr {
   *evaluate(state: State, results: CrochetValue[]): Machine {
     const value = cvalue(yield _push(this.body.evaluate(state)));
     results.push(value);
-    return False.instance;
+    return CrochetNothing.instance;
   }
 }
 
@@ -272,7 +273,7 @@ export class ForallIf extends ForallExpr {
     if (condition.as_bool()) {
       yield* this.body.evaluate(state, results);
     }
-    return False.instance;
+    return CrochetNothing.instance;
   }
 }
 
@@ -437,7 +438,7 @@ export class ECondition extends Expression {
         return cvalue(yield _push(kase.body.evaluate(state)));
       }
     }
-    return False.instance;
+    return CrochetNothing.instance;
   }
 }
 
@@ -528,5 +529,11 @@ export class EIntrinsicEqual extends Expression {
     const left = cvalue(yield _push(this.left.evaluate(state)));
     const right = cvalue(yield _push(this.right.evaluate(state)));
     return from_bool(left.equals(right));
+  }
+}
+
+export class ENothing extends Expression {
+  *evaluate(state: State): Machine {
+    return CrochetNothing.instance;
   }
 }

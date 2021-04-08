@@ -42,7 +42,7 @@ export class SFact extends Statement {
       yield _push(run_all(this.exprs.map((x) => x.evaluate(state))))
     );
     relation.tree.insert(values);
-    return False.instance;
+    return CrochetNothing.instance;
   }
 }
 
@@ -60,7 +60,7 @@ export class SForget extends Statement {
       yield _push(run_all(this.exprs.map((x) => x.evaluate(state))))
     );
     relation.tree.remove(values);
-    return False.instance;
+    return CrochetNothing.instance;
   }
 }
 
@@ -96,7 +96,7 @@ export class SBlock extends Statement {
   }
 
   *evaluate(state: State): Machine {
-    let result: CrochetValue = False.instance;
+    let result: CrochetValue = CrochetNothing.instance;
     for (const stmt of this.statements) {
       result = cvalue(yield _push(stmt.evaluate(state)));
     }

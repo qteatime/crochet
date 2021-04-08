@@ -80,6 +80,10 @@ export function literalToValue(lit: Literal) {
       return rt.True.instance;
     },
 
+    Nothing(_) {
+      return rt.CrochetNothing.instance;
+    },
+
     Text(_, value) {
       return new rt.CrochetText(parseString(value));
     },
@@ -287,6 +291,10 @@ export function literalToExpression(lit: Literal) {
 
     True(_) {
       return new IR.ETrue();
+    },
+
+    Nothing(_) {
+      return new IR.ENothing();
     },
 
     Text(_, value) {

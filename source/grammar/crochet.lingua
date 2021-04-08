@@ -133,6 +133,7 @@ type InterpolationPart<T> =
 type Literal =
   | False(pos: Meta)
   | True(pos: Meta)
+  | Nothing(pos: Meta)
   | Text(pos: Meta, value: String)
   | Integer(pos: Meta, digits: string)
   | Float(pos: Meta, digits: string)
@@ -723,6 +724,9 @@ grammar Crochet : Program {
     | float
     | integer
     | boolean
+    | nothing
+
+  nothing = nothing_ -> Literal.Nothing(meta)
 
   boolean =
     | true_                 -> Literal.True(meta)
@@ -919,6 +923,7 @@ grammar Crochet : Program {
   assert_ = kw<"assert">
   requires_ = kw<"requires">
   ensures_ = kw<"ensures">
+  nothing_ = kw<"nothing">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -928,5 +933,5 @@ grammar Crochet : Program {
     | event_ | quiescence_ | for_ | until_ | in_ | foreign_ | on_
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
-    | open_ | local_ | test_ | assert_ | requires_ | ensures_
+    | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
 }
