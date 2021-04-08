@@ -24,6 +24,29 @@ $ npm install @origamitower/crochet
 See `crochet --help` (or `./node_modules/.bin/crochet --help` if you've installed it locally)
 for usage information.
 
+## REPL
+
+There's a basic command-line based REPL currently which you can run with:
+
+```shell
+$ crochet repl <path/to/your/crochet.json>
+```
+
+You do need to specify a package currently because that's how Crochet tracks
+dependencies and capabilities. All code you type in the REPL will be executed
+in the context of the given package. And all dependencies of that package
+will be loaded first.
+
+The REPL accepts both declarations and statements/expressions. Multi-line
+input currently works by allowing the reporting of a parser error to be
+delayed until an empty line is entered.
+
+E.g.: if you type `define hello =` and press return, you'll get a "continuation
+input" (marked with `...`), since that piece of text is not a complete `define`
+declaration. Typing the rest of it, e.g.: `"hello";` will then allow the
+declaration to be executed. Entering an empty line by just pressing return
+will accept the partial declaration and present the parser error on the screen.
+
 ## Building
 
 Crochet is written in TypeScript, so you'll need both Node installed. To build
