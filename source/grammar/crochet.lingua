@@ -193,6 +193,10 @@ grammar Crochet : Program {
     | header ds:declaration* space* end
       -> Program(meta, ds)
 
+  repl =
+    | declaration
+    | statement
+
   declaration =
     | relationDeclaration
     | predicateDeclaration

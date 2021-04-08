@@ -43,7 +43,7 @@ import * as Logic from "../runtime/logic";
 import * as Sim from "../runtime/simulation";
 import { cast, unreachable } from "../utils/utils";
 
-enum DeclarationLocality {
+export enum DeclarationLocality {
   LOCAL,
   PUBLIC,
 }

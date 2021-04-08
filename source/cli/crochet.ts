@@ -1,8 +1,7 @@
 import * as Compiler from "../compiler";
-import * as Runtime from "../runtime";
-import * as Stdlib from "../stdlib";
 import * as Server from "./crochet-server";
 import { Crochet } from "../targets/cli";
+import * as REPL from "./repl";
 
 import { array, logger, parse, show } from "../utils";
 import * as FS from "fs";
@@ -27,12 +26,31 @@ const argv = Yargs.usage("crochet <command> [options]")
         description: "The initial seed for the PRNG",
         type: "string",
       })
-      .option("capabilities", {
+      .option("capability", {
         description: "The capabilities to grant the program",
         type: "array",
         default: [],
       });
   })
+  .command(
+    "repl <filename>",
+    "Starts a REPL for the given package",
+    (Yargs) => {
+      Yargs.positional("filename", {
+        description: "The package context",
+        type: "string",
+      })
+        .option("capability", {
+          description: "The capabilities to grant the program",
+          type: "array",
+          default: [],
+        })
+        .option("seed", {
+          description: "The initial seed for the PRNG",
+          type: "string",
+        });
+    }
+  )
   .command(
     "run-tests <filename>",
     "Runs tests for the given package",
@@ -138,6 +156,22 @@ async function run(
   }
 }
 
+async function run_repl(
+  filename: string,
+  seed: string | null,
+  capabilities: Capabilities
+) {
+  const vm = new Crochet();
+  try {
+    await setup_vm(vm, filename, seed, capabilities);
+    const pkg = await vm.read_package_from_file(filename);
+    await REPL.repl(vm, pkg.name);
+  } catch (error) {
+    await vm.show_error(error);
+    process.exit(1);
+  }
+}
+
 async function run_tests(
   filename: string,
   seed: string | null,
@@ -190,6 +224,15 @@ switch (argv._[0]) {
     run(
       argv["filename"] as string,
       argv["entry"] as string,
+      argv["seed"] as string | null,
+      parse_capabilities(argv["capabilities"] as string[])
+    );
+    break;
+  }
+
+  case "repl": {
+    run_repl(
+      argv["filename"] as string,
       argv["seed"] as string | null,
       parse_capabilities(argv["capabilities"] as string[])
     );

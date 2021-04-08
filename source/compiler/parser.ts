@@ -8,3 +8,14 @@ export function parse(source: string) {
     throw new SyntaxError(result.error);
   }
 }
+
+export function parse_repl(
+  source: string
+): Crochet.Declaration | Crochet.Statement {
+  const matched = Crochet.grammar.match(source, "repl");
+  if (matched.failed()) {
+    throw new SyntaxError(matched.message!);
+  } else {
+    return Crochet.toAst(matched);
+  }
+}
