@@ -135,8 +135,14 @@ export abstract class CrochetVM {
     return await this.world.run(scene);
   }
 
+  async run_initialisation() {
+    await this.world.run_init();
+  }
+
   async run_tests(filter: (_: CrochetTest) => boolean) {
     const start = new Date();
+    await this.run_initialisation();
+
     let failures = [];
     let total = 0;
     let skipped = 0;

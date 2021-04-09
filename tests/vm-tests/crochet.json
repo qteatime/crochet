@@ -1,0 +1,17 @@
+{
+  "name": "crochet.internal.vm.tests",
+  "target": "*",
+  "dependencies": ["crochet.core", "crochet.debug"],
+  "sources": [
+    "types.crochet",
+    "actions.crochet",
+    "branch.crochet",
+    "for-all.crochet",
+    "interpolation.crochet",
+    "multimethod.crochet"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

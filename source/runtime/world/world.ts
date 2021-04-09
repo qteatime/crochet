@@ -94,13 +94,17 @@ export class World {
     }
   }
 
-  async run(entry: string) {
-    const state = State.root(this);
+  async run_init() {
     let current = this.queue.shift();
     while (current != null) {
       await Thread.for_machine(current).run_and_wait();
       current = this.queue.shift();
     }
+  }
+
+  async run(entry: string) {
+    await this.run_init();
+    const state = State.root(this);
     const scene = this.scenes.lookup(entry);
     return await Thread.for_machine(scene.evaluate(state)).run_and_wait();
   }

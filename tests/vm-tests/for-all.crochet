@@ -1,0 +1,24 @@
+% crochet
+
+test "For .. in" do
+  let M = [1, 2];
+  let N = [1, 2, 3, 4];
+
+  let Succ = for X in N do X + 1 end;
+  assert Succ =:= [2, 3, 4, 5];
+
+  let Pair = for X in M, Y in N do [X, Y] end;
+  assert Pair =:= [
+    [1, 1],
+    [1, 2],
+    [1, 3],
+    [1, 4],
+    [2, 1],
+    [2, 2],
+    [2, 3],
+    [2, 4]
+  ];
+
+  let Filter = for X in N if (X % 2) === 0 do X end;
+  assert Filter =:= [2, 4];
+end

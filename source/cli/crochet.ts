@@ -165,6 +165,7 @@ async function run_repl(
   try {
     await setup_vm(vm, filename, seed, capabilities);
     const pkg = await vm.read_package_from_file(filename);
+    await vm.run_initialisation();
     await REPL.repl(vm, pkg.name);
   } catch (error) {
     await vm.show_error(error);

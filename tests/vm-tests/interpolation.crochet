@@ -1,0 +1,17 @@
+% crochet
+
+local singleton player;
+
+test "Interpolation" do
+  assert ("Hello" as interpolation) parts =:= ["Hello"];
+  assert ("Hello, [player]" parts) =:= ["Hello, ", player];
+  assert ("Hello, ["World"]" parts) =:= ["Hello, ", "World"];
+  assert ("a [player] greets a [player]" parts) =:= [
+    "a ", player, " greets a ", player
+  ];
+
+  // FIXME: fix multiline support
+  // assert "Multiline
+  //         [player]
+  //         Goes" =:= ["Multiline", player, "Goes"];
+end

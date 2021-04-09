@@ -1,0 +1,82 @@
+% crochet
+
+// Types of types
+abstract abstract-type;
+singleton singleton-type;
+type regular-type;
+type regular-type-parameters(a, b, c);
+
+// Extensions on types
+abstract list;
+type list-node is list(value, rest is list);
+singleton list-end is list;
+type list-a is list;
+
+singleton list1;
+type list-node1 is list1(value, rest is list1);
+singleton list-end1 is list1;
+type list-a1 is list1;
+
+type list2;
+type list-node2 is list2(value, rest is list2);
+singleton list-end2 is list2;
+type list-a2 is list2;
+
+// Using types
+test "Constructing types" do
+  let A = new regular-type;
+  let B = new regular-type-parameters(1, 2, 3);
+
+  let C = new list-node(1, list-end);
+
+  // FIXME: allow assert failures
+  // assert fail new abstract-type;
+  // assert fail new singleton-type;
+end
+
+test "Projecting from types" do
+  let A = new regular-type-parameters(1, 2, 3);
+  
+  assert A.a =:= 1;
+  assert A.b =:= 2;
+  assert A.c =:= 3;
+
+  assert A.(a, b) =:= [a -> 1, b -> 2];
+  assert A.(a as x, b as y) =:= [x -> 1, y -> 2];
+
+  assert [A, A].(a, b as c) =:= [[a -> 1, c -> 2], [a -> 1, c -> 2]];
+end
+
+// Defining commands on types
+command list-node count = 1 + self.rest count;
+command list-end count = 0;
+command #list empty = list-end;
+
+test "Dispatch on types" do
+  let A = new list-node(1, new list-node(2, list-end));
+
+  assert A count =:= 2;
+  assert A.rest count =:= 1;
+  assert list-end count =:= 0;
+  assert #list empty count =:= 0;
+end
+
+// Local types
+local type a;
+local singleton b;
+local abstract c;
+
+command a name = 1;
+command b name = 2;
+command #c name = 3;
+
+test "Local types are usable" do
+  let A = new a;
+  let B = b;
+
+  assert A name =:= 1;
+  assert B name =:= 2;
+  assert #c name =:= 3;
+end
+
+// FIXME: check that local types can't be accessible in the global registry

@@ -1,5 +1,5 @@
 {
-  "name": "crochet.prelude.cli",
+  "name": "crochet.prelude",
   "type": "group",
   "target": "*",
   "dependencies": [

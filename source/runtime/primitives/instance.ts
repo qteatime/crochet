@@ -99,7 +99,7 @@ export class TCrochetType extends CrochetType {
 
   instantiate(data: CrochetValue[]) {
     if (this.sealed) {
-      throw die(`attempting to construct a sealed type`);
+      throw die(`attempting to construct a sealed type: ${this.name}`);
     }
 
     this.validate(data);

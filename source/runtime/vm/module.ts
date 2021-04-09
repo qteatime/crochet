@@ -13,11 +13,7 @@ export class CrochetModule {
     readonly filename: string,
     readonly pkg: RestrictedCrochetPackage
   ) {
-    this.open_namespaces = new Set([
-      "crochet.core",
-      "crochet.transcript",
-      pkg.name,
-    ]);
+    this.open_namespaces = new Set([pkg.name, "crochet.core"]);
   }
 
   namespace_allowed(ns: string) {

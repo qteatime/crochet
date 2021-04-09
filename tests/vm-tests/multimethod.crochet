@@ -1,0 +1,19 @@
+% crochet
+
+command any multimethod-test-other = "any other";
+command any multimethod-test = "any test";
+command integer multimethod-test = "integer test";
+command function multimethod-test = "function test";
+command boolean multimethod-test = "boolean test";
+command true multimethod-test = "true test";
+command #integer multimethod-test = "#integer test";
+
+test "Multimethod selection and dispatch" do
+  assert 1 multimethod-test-other =:= "any other";
+  assert 1 multimethod-test =:= "integer test";
+  assert (_ + 1) multimethod-test =:= "function test";
+  assert true multimethod-test =:= "true test";
+  assert false multimethod-test =:= "boolean test";
+  assert #integer multimethod-test =:= "#integer test";
+  assert #integral multimethod-test =:= "any test";
+end

@@ -1,0 +1,37 @@
+% crochet
+
+test "Conditions" do
+  let Res = 
+    condition
+      when 1 =:= 2 => "no";
+      when 1 =:= 1 do "ok" end
+      always => "impossible";
+    end;
+  
+  assert Res =:= "ok";
+end
+
+relation Who* branch-at: Where;
+local singleton lielle with branch-at: foyer; end
+local singleton karis;
+local singleton foyer;
+
+test "Match" do
+  let Res =
+    match
+      when Who branch-at: foyer do "[Who] at foyer" end
+      always => "Nah";
+    end;
+
+  assert Res =:= ["[lielle] at foyer"];
+end
+
+test "Condition + Match" do
+  let Res =
+    condition
+      when search karis branch-at: foyer do "nope" end
+      always do "ok" end
+    end;
+
+  assert Res =:= "ok";
+end
