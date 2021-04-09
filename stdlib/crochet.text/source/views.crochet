@@ -21,10 +21,14 @@ test
 end
 
 command #text from-lines: (Lines is tuple) do
-  condition
-    when Lines is-empty => "";
-    always => Lines non-empty-fold-with: { A, B in A ++ "\n" ++ B };
-  end
+  let Go = { Xs in 
+    condition
+      when Xs is-empty => "";
+      when Xs count === 1 => Xs first;
+      always => Xs first ++ "\n" ++ Go(Xs but-first);
+    end
+  };
+  Go(Lines);
 test
   assert #text from-lines: ("a\nb\nc" lines) =:= "a\nb\nc";
   assert #text from-lines: ("a\r\nb\r\nc" lines) =:= "a\nb\nc";

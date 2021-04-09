@@ -334,7 +334,7 @@ export class EApply extends Expression {
       return yield _push(apply_partial(state, fn0, values));
     } else if (fn0 instanceof CrochetLambda) {
       const args = values.map((x) => cast(x, PartialConcrete).value);
-      return fn0.apply(state, args);
+      return yield _push(fn0.apply(state, args));
     } else {
       throw new Error(`Expected a function`);
     }
