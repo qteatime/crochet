@@ -8,7 +8,8 @@
     "build": "just build",
     "build-ts": "just build-ts",
     "build-grammar": "just build-grammar",
-    "build-stdlib": "just build-stdlib"
+    "build-stdlib": "just build-stdlib",
+    "test": "node crochet.js run-tests stdlib/crochet.prelude/crochet.json"
   },
   "dependencies": {
     "express": "^4.17.1",
