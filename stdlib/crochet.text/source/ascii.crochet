@@ -1,0 +1,49 @@
+% crochet
+
+// Manipulating text as ASCII is usually enough for a lot of use cases.
+local type ascii-view(text is text);
+
+command text ascii 
+requires ascii-text :: self is-ascii
+  = new ascii-view(self)
+test
+  "abc" ascii;
+end
+
+command (X is text) is-ascii
+  = foreign ascii.is-ascii(X)
+test
+  assert "abc" is-ascii;
+  assert not ("á" is-ascii);
+  assert not ("🌷" is-ascii);
+end
+
+command ascii-view to-lower-case
+  = new ascii-view(#ascii-view to-lower-case: self.text)
+test
+  assert "" ascii to-lower-case to-text =:= "";
+  assert "abc" ascii to-lower-case to-text =:= "abc";
+  assert "ABC" ascii to-lower-case to-text =:= "abc";
+  assert "AbC" ascii to-lower-case to-text =:= "abc";
+end
+
+command ascii-view to-upper-case
+  = new ascii-view(#ascii-view to-upper-case: self.text)
+test
+  assert "" ascii to-upper-case to-text =:= "";
+  assert "abc" ascii to-upper-case to-text =:= "ABC";
+  assert "ABC" ascii to-upper-case to-text =:= "ABC";
+  assert "AbC" ascii to-upper-case to-text =:= "ABC";
+end
+
+command ascii-view to-text
+  = self.text;
+
+
+// # The native implementations
+command #ascii-view to-lower-case: View
+  = foreign text.ascii-to-lower(View);
+
+command #ascii-view to-upper-case: View
+  = foreign text.ascii-to-upper(View);
+

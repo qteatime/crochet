@@ -13,125 +13,76 @@ import {
   False,
   True,
   CrochetNothing,
+  ForeignInterface,
 } from "../../runtime";
 import { cast } from "../../utils";
+import { ForeignNamespace } from "../ffi-def";
 
-@foreign_namespace("crochet.core:text")
-export class TextFfi {
-  @foreign()
-  @machine()
-  static lines(x0: CrochetValue) {
-    const x = cast(x0, CrochetText);
-    return new CrochetTuple(
-      x.value.split(/\r\n|\r|\n/).map((x) => new CrochetText(x))
-    );
-  }
-
-  @foreign("code-points")
-  @machine()
-  static code_points(x0: CrochetValue) {
-    const x = cast(x0, CrochetText);
-    const points = [];
-    for (const point of x.value) {
-      points.push(new CrochetInteger(BigInt(point.codePointAt(0))));
-    }
-    return new CrochetTuple(points);
-  }
-
-  @foreign("from-code-points")
-  @machine()
-  static from_code_points(x0: CrochetValue) {
-    const x = cast(x0, CrochetTuple);
-    const points = x.values.map((a) => Number(cast(a, CrochetInteger).value));
-    const text = String.fromCodePoint(...points);
-    return new CrochetText(text);
-  }
-
-  @foreign("ascii-ends-with")
-  @machine()
-  static ascii_ends_with(a0: CrochetValue, b0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    const b = cast(b0, CrochetText);
-    return from_bool(a.value.endsWith(b.value));
-  }
-
-  @foreign("ascii-starts-with")
-  @machine()
-  static ascii_starts_with(a0: CrochetValue, b0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    const b = cast(b0, CrochetText);
-    return from_bool(a.value.startsWith(b.value));
-  }
-
-  @foreign("ascii-contains")
-  @machine()
-  static ascii_contains(a0: CrochetValue, b0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    const b = cast(b0, CrochetText);
-    return from_bool(a.value.includes(b.value));
-  }
-
-  @foreign("ascii-trim-start")
-  @machine()
-  static ascii_trim_start(a0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    return new CrochetText(a.value.trimStart());
-  }
-
-  @foreign("ascii-trim-end")
-  @machine()
-  static ascii_trim_end(a0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    return new CrochetText(a.value.trimEnd());
-  }
-
-  @foreign("ascii-trim")
-  @machine()
-  static ascii_trim(a0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    return new CrochetText(a.value.trim());
-  }
-
-  @foreign("ascii-to-upper")
-  @machine()
-  static ascii_to_upper(a0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    return new CrochetText(a.value.toUpperCase());
-  }
-
-  @foreign("ascii-to-lower")
-  @machine()
-  static ascii_to_lower(a0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    return new CrochetText(a.value.toLowerCase());
-  }
-
-  @foreign("is-ascii")
-  @machine()
-  static is_ascii(a0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    for (const x of a.value) {
-      if ((x.codePointAt(0) ?? 0) >= 128) {
-        return CrochetNothing.instance;
+export function text_views(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.text:view")
+    .defun("lines", [CrochetText], (x) => {
+      return new CrochetTuple(
+        x.value.split(/\r\n|\r|\n/).map((x) => new CrochetText(x))
+      );
+    })
+    .defun("code-points", [CrochetText], (x) => {
+      const points = [];
+      for (const point of x.value) {
+        points.push(new CrochetInteger(BigInt(point.codePointAt(0))));
       }
-    }
-    return True.instance;
-  }
-
-  @foreign("is-empty")
-  @machine()
-  static is_empty(a0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    return from_bool(a.value.length === 0);
-  }
-
-  @foreign("repeat")
-  @machine()
-  static repeat(a0: CrochetValue, n0: CrochetValue) {
-    const a = cast(a0, CrochetText);
-    const n = cast(n0, CrochetInteger);
-    return new CrochetText(a.value.repeat(Number(n.value)));
-  }
+      return new CrochetTuple(points);
+    })
+    .defun("from-code-points", [CrochetTuple], (x) => {
+      const points = x.values.map((a) => Number(cast(a, CrochetInteger).value));
+      const text = String.fromCodePoint(...points);
+      return new CrochetText(text);
+    });
 }
 
-export default [TextFfi];
+export function text_core(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.text:core")
+    .defun("ends-with", [CrochetText, CrochetText], (a, b) =>
+      from_bool(a.value.endsWith(b.value))
+    )
+    .defun("starts-with", [CrochetText, CrochetText], (a, b) =>
+      from_bool(a.value.startsWith(b.value))
+    )
+    .defun("contains", [CrochetText, CrochetText], (a, b) =>
+      from_bool(a.value.includes(b.value))
+    )
+    .defun(
+      "trim-start",
+      [CrochetText],
+      (x) => new CrochetText(x.value.trimStart())
+    )
+    .defun("trim-end", [CrochetText], (x) => new CrochetText(x.value.trimEnd()))
+    .defun("trim", [CrochetText], (x) => new CrochetText(x.value.trim()))
+    .defun("is-empty", [CrochetText], (x) => from_bool(x.value.length === 0))
+    .defun("repeat", [CrochetText, CrochetInteger], (x, i) => {
+      return new CrochetText(x.value.repeat(Number(i.value)));
+    });
+}
+
+export function text_ascii(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.text:ascii")
+    .defun(
+      "to-upper",
+      [CrochetText],
+      (x) => new CrochetText(x.value.toUpperCase())
+    )
+    .defun(
+      "to-lower",
+      [CrochetText],
+      (x) => new CrochetText(x.value.toLowerCase())
+    )
+    .defun("is-ascii", [CrochetText], (a) => {
+      for (const x of a.value) {
+        if ((x.codePointAt(0) ?? 0) >= 128) {
+          return CrochetNothing.instance;
+        }
+      }
+      return True.instance;
+    });
+}
+
+export default [text_views, text_core, text_ascii];

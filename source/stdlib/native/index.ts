@@ -6,8 +6,6 @@ import Html from "./html";
 import Mathematics from "./mathematics";
 import Collections from "./collections";
 
-export default [...Text];
-
 export const funs = [
   ...Debug,
   ...Time,
@@ -15,4 +13,5 @@ export const funs = [
   ...Mathematics,
   ...Html,
   ...Collections,
+  ...Text,
 ];
