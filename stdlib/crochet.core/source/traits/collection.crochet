@@ -2,9 +2,16 @@
 
 // Collections of elements.
 //
-// - Required: `_ has: _`, `_ empty`, `_ ++ _`
+// - Required: `_ has: _`, `_ is-empty`, `#_ empty`, `_ ++ _`
 
 command #tuple empty = [];
+
+command (X is tuple) is-empty =
+  X count =:= 0
+test
+  assert [] is-empty;
+  assert not ([0] is-empty);
+end
 
 command (X is tuple) has: Value =
   foreign tuple.contains(X, Value)

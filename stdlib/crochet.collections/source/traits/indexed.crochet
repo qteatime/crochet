@@ -1,0 +1,19 @@
+% crochet
+
+command (X is tuple) at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= X count)
+  = foreign tuple.at(X, Index)
+test
+  assert (["a", "b", "c"] at: 1) =:= "a";
+  assert (["a", "b", "c"] at: 2) =:= "b";
+  assert (["a", "b", "c"] at: 3) =:= "c";
+end
+
+command (X is tuple) at: (Index is integer) put: Value
+requires within-bounds :: (Index >= 1) and (Index <= X count)
+  = foreign tuple.at-put(X, Index, Value)
+test
+  assert (["a", "b", "c"] at: 1 put: "d") =:= ["d", "b", "c"];
+  assert (["a", "b", "c"] at: 2 put: "d") =:= ["a", "d", "c"];
+  assert (["a", "b", "c"] at: 3 put: "d") =:= ["a", "b", "d"];
+end

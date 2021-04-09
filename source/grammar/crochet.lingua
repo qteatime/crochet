@@ -28,7 +28,7 @@ type Declaration =
 
 type TrailingTest(pos: Meta, body: Statement[])
 
-type Contract(pos: Meta, pre: ContractCondition[], post: ContractCondition[])
+type Contract(pos: Meta, ret: TypeApp?, pre: ContractCondition[], post: ContractCondition[])
 type ContractCondition(pos: Meta, name: Name, expr: Expression)
 
 type TypeDef(parent: TypeApp?, name: Name)
@@ -269,8 +269,13 @@ grammar Crochet : Program {
       -> Declaration.Command(meta, s, c, b, null)
 
   contractDefinition =
-    | pre:preContractDefinition post:postContractDefinition
-      -> Contract(meta, pre, post)
+    | ret:retContractDefinition pre:preContractDefinition post:postContractDefinition
+      -> Contract(meta, ret, pre, post)
+
+  retContractDefinition =
+    | s<"->"> t:typeAppPrimary
+      -> t
+    | -> null
 
   preContractDefinition =
     | requires_ cs:list1<contractCondition, s<";">>

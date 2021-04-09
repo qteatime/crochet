@@ -1,0 +1,14 @@
+{
+  "name": "crochet.collections",
+  "target": "*",
+  "dependencies": ["crochet.core"],
+  "sources": [
+    "source/0-types.crochet",
+    "source/traits/indexed.crochet",
+    "source/traits/sequence.crochet"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

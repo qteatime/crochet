@@ -294,23 +294,9 @@ export function core_tuple(ffi: ForeignInterface) {
       (xs) => new CrochetInteger(BigInt(xs.values.length))
     )
     .defun(
-      "at",
-      [CrochetTuple, CrochetInteger],
-      (xs, i) => xs.values[Number(i.value - 1n)]
-    )
-    .defun(
       "concat",
       [CrochetTuple, CrochetTuple],
       (xs, ys) => new CrochetTuple(xs.values.concat(ys.values))
-    )
-    .defun(
-      "slice",
-      [CrochetTuple, CrochetInteger, CrochetInteger],
-      (xs, from, to) => {
-        return new CrochetTuple(
-          xs.values.slice(Number(from.value - 1n), Number(to.value))
-        );
-      }
     )
     .defun("contains", [CrochetTuple, CrochetValue], (xs, x) =>
       from_bool(xs.values.some((y) => x.equals(y)))

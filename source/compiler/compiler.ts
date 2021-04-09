@@ -591,11 +591,40 @@ export function compileContractCondition(
   );
 }
 
+export function compileContractReturn(
+  c: TypeApp | null
+): rt.ContractCondition[] {
+  if (c == null) {
+    return [];
+  } else {
+    const pos = c.match({
+      Any(p) {
+        return p;
+      },
+      Named(p, _) {
+        return p;
+      },
+      Static(p, _) {
+        return p;
+      },
+    });
+    return [
+      new rt.ContractCondition(
+        pos,
+        "return-type",
+        new rt.IR.EHasType(new rt.IR.EReturn(), compileTypeApp(c))
+      ),
+    ];
+  }
+}
+
 export function compileContract(c: Contract): rt.Contract {
-  return new rt.Contract(
-    c.pre.map(compileContractCondition),
-    c.post.map(compileContractCondition)
-  );
+  const ret = compileContractReturn(c.ret);
+
+  return new rt.Contract(c.pre.map(compileContractCondition), [
+    ...ret,
+    ...c.post.map(compileContractCondition),
+  ]);
 }
 
 export function compileTypeInit(
@@ -900,7 +929,7 @@ export function compileDeclaration(
             new Parameter.TypedOnly(v.pos, new TypeApp.Named(v.pos, v)),
             new Name(v.pos, "to-enum-integer")
           ),
-          new Contract(meta, [], []),
+          new Contract(meta, null, [], []),
           [
             new Statement.Expr(
               new Expression.Lit(new Literal.Integer(v.pos, (i + 1).toString()))
