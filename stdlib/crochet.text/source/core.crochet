@@ -3,7 +3,7 @@
 command (X is text) ends-with: (Text is text)
 requires
   non-empty :: not (Text is-empty);
-  = foreign core.ends-with(X, Text);
+  = foreign core.ends-with(X, Text)
 test
   assert "abc" ends-with: "c";
   assert not ("" ends-with: "c");
@@ -61,4 +61,23 @@ test
   assert "  \t\n\r abc" trim =:= "abc";
   assert "abc  \t\n\r" trim =:= "abc";
   assert "  abc  " trim =:= "abc";
+end
+
+/// Repeats a piece of text N times
+command (X is text) repeat: (N is integer)
+requires positive-non-zero :: N >= 0
+  = foreign core.repeat(X, N)
+test
+  assert ("" repeat: 1) =:= "";
+  assert ("a" repeat: 1) =:= "a";
+  assert ("a" repeat: 5) =:= "aaaaa";
+end
+
+/// True if a piece of text is empty
+command (X is text) is-empty
+  = foreign core.is-empty(X)
+test
+  assert "" is-empty;
+  assert not ("abc" is-empty);
+  assert not ("​" is-empty); // zero-width space (FIXME: add unicode escapes)
 end

@@ -78,7 +78,7 @@ export function text_ascii(ffi: ForeignInterface) {
     .defun("is-ascii", [CrochetText], (a) => {
       for (const x of a.value) {
         if ((x.codePointAt(0) ?? 0) >= 128) {
-          return CrochetNothing.instance;
+          return False.instance;
         }
       }
       return True.instance;

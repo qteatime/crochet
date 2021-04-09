@@ -1,0 +1,16 @@
+{
+  "name": "crochet.prelude.cli",
+  "type": "group",
+  "target": "*",
+  "dependencies": [
+    "crochet.core",
+    "crochet.text",
+    "crochet.collections",
+    "crochet.debug"
+  ],
+  "sources": [],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

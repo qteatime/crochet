@@ -12,7 +12,7 @@
     },
     {
       "name": "comment.line.heading.crochet",
-      "match": "%[^\\n\\r]*"
+      "match": "^%[ \t]*crochet"
     },
     {
       "name": "constant.numeric.integer.crochet",

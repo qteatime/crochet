@@ -53,16 +53,16 @@ test
 end
 
 /// Remainder of an arithmetic division for integers
-command (X is integer) remainder-of-division-by: (Y is integer)
+command (X is integer) % (Y is integer)
 requires non-zero-divisor :: Y =/= 0
   = foreign integer.rem(X, Y)
 test
-  assert (4 remainder-of-division-by: 2) =:= 0;
-  assert (3 remainder-of-division-by: 2) =:= 1;
-  assert (1 remainder-of-division-by: 3) =:= 1;
-  assert (0 remainder-of-division-by: 1) =:= 0;
-  assert (3 remainder-of-division-by: -1) =:= 0;
-  assert (123456789 remainder-of-division-by: 12) =:= 9;  
+  assert (4 % 2) =:= 0;
+  assert (3 % 2) =:= 1;
+  assert (1 % 3) =:= 1;
+  assert (0 % 1) =:= 0;
+  assert (3 % -1) =:= 0;
+  assert (123456789 % 12) =:= 9;  
 end
 
 /// Convenience function for getting the quotient and remainder
@@ -70,7 +70,7 @@ end
 command (X is integer) divide-by-with-remainder: (Y is integer) do
   [
     quotient -> X divided-by: Y,
-    remainder -> X remainder-of-division-by: Y,
+    remainder -> X % Y,
   ];
 test
   assert (5 divide-by-with-remainder: 2) =:= [
@@ -156,16 +156,16 @@ test
 end
 
 /// Remainder of an arithmetic division for floats
-command (X is float) remainder-of-division-by: (Y is float)
+command (X is float) % (Y is float)
 requires non-zero-divisor :: Y =/= 0.0
   = foreign float.rem(X, Y)
 test
-  assert (4.0 remainder-of-division-by: 2.0) =:= 0.0;
-  assert (3.0 remainder-of-division-by: 2.0) =:= 1.0;
-  assert (1.0 remainder-of-division-by: 3.0) =:= 1.0;
-  assert (0.0 remainder-of-division-by: 1.0) =:= 0.0;
-  assert (3.0 remainder-of-division-by: -1.0) =:= 0.0;
-  assert (123456789.0 remainder-of-division-by: 12.0) =:= 9.0;
+  assert (4.0 % 2.0) =:= 0.0;
+  assert (3.0 % 2.0) =:= 1.0;
+  assert (1.0 % 3.0) =:= 1.0;
+  assert (0.0 % 1.0) =:= 0.0;
+  assert (3.0 % -1.0) =:= 0.0;
+  assert (123456789.0 % 12.0) =:= 9.0;
 end
 
 /// Convenience function for getting the quotient and remainder
@@ -173,7 +173,7 @@ end
 command (X is float) divide-by-with-remainder: (Y is float) do
   [
     quotient -> X divided-by: Y,
-    remainder -> X remainder-of-division-by: Y,
+    remainder -> X % Y,
   ];
 test
   assert (5.0 divide-by-with-remainder: 2.0) =:= [

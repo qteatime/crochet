@@ -842,14 +842,15 @@ grammar Crochet : Program {
 
   token t_any_infix =
     | "++" | "+"
-    | "-"
+    | "<-" | "-"
     | "**" | "*"
     | "/"
     | "<=" | "<"
     | ">=" | ">"
     | "===" | "=/="
+    | "%"
 
-  token infix_character = "+" | "-" | "*" | "/" | "<" | ">" | "="
+  token infix_character = "+" | "-" | "*" | "/" | "<" | ">" | "=" | "%"
 
   // -- Literals
   token dec_digit = "0".."9" | "_"

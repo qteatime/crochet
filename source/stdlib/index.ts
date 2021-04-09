@@ -1,12 +1,8 @@
 import { State } from "../runtime";
 
-import Ffis from "./native";
 import { funs } from "./native";
 
 export async function load(state: State) {
-  for (const ffi of Ffis) {
-    state.world.ffi.add(ffi as any);
-  }
   for (const ffi_fun of funs) {
     ffi_fun(state.world.ffi);
   }

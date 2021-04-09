@@ -42,8 +42,8 @@ command ascii-view to-text
 
 // # The native implementations
 command #ascii-view to-lower-case: View
-  = foreign text.ascii-to-lower(View);
+  = foreign ascii.to-lower(View);
 
 command #ascii-view to-upper-case: View
-  = foreign text.ascii-to-upper(View);
+  = foreign ascii.to-upper(View);
 
