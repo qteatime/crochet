@@ -1,0 +1,10 @@
+{
+  "name": "crochet.text.parsing.lingua",
+  "target": "*",
+  "dependencies": ["crochet.core", "crochet.text", "crochet.collections"],
+  "sources": ["source/core.crochet"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

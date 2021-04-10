@@ -1,0 +1,93 @@
+% crochet
+
+local abstract lingua-mod;
+
+command #lingua-mod make-grammar: (Source is text)
+  = foreign lingua.make-grammar(Source);
+
+command #lingua-mod grammar: Grammar parse: (Source is text) rule: (Rule is text)
+  = foreign lingua.parse(Grammar, Source, Rule);
+
+command #lingua-mod succeeded: Parse-tree -> boolean
+  = foreign lingua.succeeded(Parse-tree);
+
+command #lingua-mod error-message: Parse-tree -> text
+  = foreign lingua.error-message(Parse-tree);
+
+command #lingua-mod grammar: Grammar semantics: (Visitor is record)
+  = foreign lingua.make-semantics(Grammar, Visitor);
+
+command #lingua-mod transform: Parse-tree with: Semantics
+  = foreign lingua.apply-semantics(Semantics, Parse-tree);
+
+command #lingua-mod interval: Node
+  = foreign lingua.interval(Node);
+
+command #lingua-mod interval-position: Interval
+  = foreign lingua.interval-position(Interval);
+
+command #lingua-mod interval-range: Interval
+  = foreign lingua.interval-range(Interval);
+
+command #lingua-mod interval-source: Interval -> text
+  = foreign lingua.interval-source(Interval);
+
+command #lingua-mod interval-annotated-source: Interval -> text
+  = foreign lingua.interval-annotated-source(Interval);
+
+
+abstract lingua;
+type grammar(ohm-grammar);
+type semantics(ohm-semantics);
+type interval(ohm-interval);
+type parse-tree(ohm-parse-tree);
+
+
+command #lingua grammar: (Source is text)
+  = new grammar(#lingua-mod make-grammar: Source);
+
+command grammar parse: (Source is text) rule: (Rule is text) do
+  let Parse-tree =
+    #lingua-mod grammar: self.ohm-grammar parse: Source rule: Rule;
+  condition
+    when #lingua-mod succeeded: Parse-tree => new ok(new parse-tree(Parse-tree));
+    always do
+      new error(#lingua-mod error-message: Parse-tree);
+    end
+  end
+end
+
+command grammar semantics: (Visitor is record) =
+  new semantics(#lingua-mod grammar: self.ohm-grammar semantics: Visitor);
+
+command semantics transform: (Tree is parse-tree) =
+  #lingua-mod transform: Tree.ohm-parse-tree with: self.ohm-semantics;
+
+
+command #lingua visitor-identity
+  = foreign lingua.visitor-identity();
+
+command #lingua visitor-source
+  = foreign lingua.visitor-source();
+
+command #lingua visitor-singleton
+  = foreign lingua.visitor-singleton();
+
+command #lingua visitor-lambda: (Lambda is function)
+  = foreign lingua.visitor-lambda(Lambda);
+
+
+command #lingua interval: Node
+  = new interval(#lingua-mod interval: Node);
+
+command interval position
+  = #lingua-mod interval-position: self.ohm-interval;
+
+command interval range
+  = #lingua-mod interval-range: self.ohm-interval;
+
+command interval source
+  = #lingua-mod interval-source: self.ohm-interval;
+
+command interval annotated-source
+  = #lingua-mod interval-annotated-source: self.ohm-interval;

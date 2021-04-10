@@ -31,6 +31,7 @@ import {
   CrochetCell,
   TCrochetCell,
   CrochetRecord,
+  CrochetNothing,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -113,6 +114,21 @@ export function core_conversion(ffi: ForeignInterface) {
           })
           .join("")
       );
+    })
+    .defun("text-to-integer", [CrochetText], (x) => {
+      try {
+        return new CrochetInteger(BigInt(x.value));
+      } catch (_) {
+        return CrochetNothing.instance;
+      }
+    })
+    .defun("text-to-float", [CrochetText], (x) => {
+      const n = Number(x.value);
+      if (isNaN(n)) {
+        return CrochetNothing.instance;
+      } else {
+        return new CrochetFloat(n);
+      }
     });
 }
 

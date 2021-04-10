@@ -112,7 +112,7 @@ export class CrochetLambda extends CrochetValue {
     const env = this.env.clone();
     if (args.length !== this.parameters.length) {
       throw new Error(
-        `invalid arity ${args.length} for ${this.type.type_name}`
+        `invalid number of arguments ${args.length} for ${this.type.type_name}`
       );
     }
     for (const [k, v] of zip(this.parameters, args)) {

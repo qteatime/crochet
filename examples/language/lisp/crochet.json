@@ -1,0 +1,15 @@
+{
+  "name": "crochet.examples.language.lisp",
+  "sources": ["grammar.crochet", "evaluator.crochet", "main.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text",
+    "crochet.text.parsing.lingua",
+    "crochet.collections",
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

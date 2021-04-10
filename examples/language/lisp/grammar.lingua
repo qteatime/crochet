@@ -1,9 +1,10 @@
-type program(pos: info, forms: form[])
+type program(pos: interval, forms: form[])
 
 type form =
-  | apply(pos: info, callee: form, arguments: form[])
-  | integer(pos: info, value: text)
-  | unit(pos: info)
+  | apply(pos: interval, callee: form, arguments: form[])
+  | integer(pos: interval, value: text)
+  | atom(pos: interval, name: text)
+  | unit(pos: interval)
 
 grammar Lisp : program {
   Program =
@@ -12,6 +13,7 @@ grammar Lisp : program {
   Form =
     | Apply
     | Integer
+    | Atom
     | Unit
 
   Apply =
@@ -20,9 +22,13 @@ grammar Lisp : program {
   Integer =
     | i:integer               -> form.integer(meta, i)
 
+  Atom =
+    | n:atom                  -> form.atom(meta, n)
+
   Unit =
     | "(" ")"                 -> form.unit(meta)
 
   
-  integer = digit+
+  token atom = letter+
+  token integer = digit+
 }

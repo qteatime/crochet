@@ -709,6 +709,7 @@ grammar Crochet : Program {
 
   atomicExpression =
     | a:atom                                -> Expression.Global(meta, a)
+    | lazyExpression
     | newExpression<atomicExpression>
     | literalExpression
     | recordExpression<atomicExpression>

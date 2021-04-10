@@ -30,3 +30,44 @@ test
   assert (#text coerce: ("abc" as interpolation)) =:= "abc";
   assert (#text coerce: "a["b"]c") =:= "abc";
 end
+
+
+local abstract conversion-mod;
+
+command #conversion-mod parse-integer: (X is text)
+  = foreign conversion.text-to-integer(X);
+
+command #conversion-mod parse-float: (X is text)
+  = foreign conversion.text-to-float(X);
+
+
+abstract conversion-error;
+type error-parsing-integer is conversion-error(value);
+type error-parsing-float is conversion-error(value);
+
+command #integer try-parse: (X is text) -> result do
+  let Result = #conversion-mod parse-integer: X;
+  condition
+    when Result =:= nothing => new error(new error-parsing-integer(X));
+    always => new ok(Result);
+  end
+test
+  assert (#integer try-parse: "123").value =:= 123;
+  assert (#integer try-parse: "-123").value =:= -123;
+  assert (#integer try-parse: "123.0") is error;
+  assert (#integer try-parse: "nope") is error;
+end
+
+command #float try-parse: (X is text) -> result do
+  let Result = #conversion-mod parse-float: X;
+  condition
+    when Result =:= nothing => new error(new error-parsing-float(X));
+    always => new ok(Result);
+  end
+test
+  assert (#float try-parse: "123").value =:= 123.0;
+  assert (#float try-parse: "123.123").value =:= 123.123;
+  assert (#float try-parse: "-123.0").value =:= -123.0;
+  assert (#float try-parse: "nope") is error;
+end
+  
