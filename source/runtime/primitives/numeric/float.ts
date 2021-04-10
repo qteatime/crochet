@@ -18,6 +18,10 @@ export class CrochetFloat extends CrochetValue {
     return this.value;
   }
 
+  to_json() {
+    return this.value;
+  }
+
   to_text() {
     return this.value.toString();
   }

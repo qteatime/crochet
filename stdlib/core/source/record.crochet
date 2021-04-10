@@ -1,0 +1,22 @@
+% crochet
+
+command (X is record) count
+  = foreign record.count(X);
+
+command (X is record) is-empty
+  = X count =:= 0;
+
+command (X is record) keys
+  = foreign record.keys(X);
+
+command (X is record) values
+  = foreign record.values(X);
+
+command (X is record) pairs
+  = foreign record.pairs(X);
+
+command (X is record) ++ (Y is record)
+  = foreign record.concat(X, Y);
+
+command #record from-pairs: (Pairs is tuple)
+  = foreign record.from-pairs(Pairs);

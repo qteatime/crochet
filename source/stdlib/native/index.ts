@@ -6,6 +6,7 @@ import Html from "./html";
 import Mathematics from "./mathematics";
 import Collections from "./collections";
 import Random from "./random";
+import Json from "./json";
 
 export const funs = [
   ...Debug,
@@ -16,4 +17,5 @@ export const funs = [
   ...Collections,
   ...Text,
   ...Random,
+  ...Json,
 ];

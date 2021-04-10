@@ -45,6 +45,14 @@ export class CrochetRecord extends CrochetValue {
     return result;
   }
 
+  to_json() {
+    const result = Object.create(null);
+    for (const [k, v] of this.values) {
+      result[k] = v.to_json();
+    }
+    return result;
+  }
+
   as_bool() {
     return true;
   }

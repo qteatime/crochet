@@ -1,0 +1,10 @@
+{
+  "name": "crochet.formats.json",
+  "target": "*",
+  "dependencies": ["crochet.core"],
+  "sources": ["source/json.crochet"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

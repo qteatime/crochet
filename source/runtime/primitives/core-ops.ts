@@ -1,4 +1,4 @@
-import { CrochetType, CrochetValue } from "./0-core";
+import { CrochetNothing, CrochetType, CrochetValue } from "./0-core";
 import {
   cvalue,
   ErrInvalidArity,
@@ -16,6 +16,11 @@ import {
   PartialValue,
 } from "./partial";
 import { False, True } from "./boolean";
+import { CrochetFloat, CrochetInteger } from "./numeric";
+import { CrochetText } from "./text";
+import { CrochetTuple } from "./tuple";
+import { CrochetUnknown } from "./unknown";
+import { CrochetRecord } from "./record";
 
 export function from_bool(x: boolean): CrochetValue {
   return x ? True.instance : False.instance;
@@ -80,5 +85,53 @@ export function* apply(
     return yield _push(fn.apply(state, args));
   } else {
     throw new Error(`Expected a function, got ${fn.to_text()}`);
+  }
+}
+
+export function js_to_crochet(value: unknown): CrochetValue {
+  switch (typeof value) {
+    case "number":
+      return new CrochetFloat(value);
+    case "bigint":
+      return new CrochetInteger(value);
+    case "boolean":
+      return from_bool(value);
+    case "string":
+      return new CrochetText(value);
+    default: {
+      if (value == null) {
+        return CrochetNothing.instance;
+      } else if (Array.isArray(value)) {
+        return new CrochetTuple(value.map(js_to_crochet));
+      } else {
+        return new CrochetUnknown(value);
+      }
+    }
+  }
+}
+
+export function json_to_crochet(value: unknown): CrochetValue {
+  switch (typeof value) {
+    case "number":
+      return new CrochetFloat(value);
+    case "boolean":
+      return from_bool(value);
+    case "string":
+      return new CrochetText(value);
+    case "object": {
+      if (value == null) {
+        return CrochetNothing.instance;
+      } else if (Array.isArray(value)) {
+        return new CrochetTuple(value.map(json_to_crochet));
+      } else {
+        const result = new Map<string, CrochetValue>();
+        for (const [key, prop] of Object.entries(value)) {
+          result.set(key, json_to_crochet(prop));
+        }
+        return new CrochetRecord(result);
+      }
+    }
+    default:
+      throw new Error(`Invalid JSON type ${typeof value}`);
   }
 }

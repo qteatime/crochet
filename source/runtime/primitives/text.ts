@@ -17,6 +17,10 @@ export class CrochetText extends CrochetValue {
     return this.value;
   }
 
+  to_json() {
+    return this.value;
+  }
+
   to_text(transparent?: boolean) {
     if (transparent) {
       return this.value;

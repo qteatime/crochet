@@ -1,0 +1,62 @@
+% crochet
+
+abstract json;
+local type json-mod;
+
+command #json-mod parse: (Value is text)
+  = foreign json.parse(Value);
+
+command #json-mod serialise: Value
+  = foreign json.serialise(Value);
+
+command #json-mod pretty-print: Value indentation: (Indent is integer)
+  = foreign json.pretty-print(Value, Indent);
+
+
+// JSON language
+command #json from: (X is float) = X;
+command #json from: (X is text) = X;
+command #json from: (X is boolean) = X;
+command #json from: nothing = nothing;
+
+command #json from: (Xs is tuple) 
+  = for X in Xs do #json from: X end;
+
+command #json from: (X is record) do
+  let Pairs = for Pair in X pairs do
+    [key -> Pair.key, value -> #json from: Pair.value];
+  end;
+  #record from-pairs: Pairs;
+end
+
+
+
+// Interface
+command #json parse: (Value is text) do
+  #json-mod parse: Value
+test
+  assert (#json parse: "1234") =:= 1234.0;
+  assert (#json parse: "\"abc\"") =:= "abc";
+  assert (#json parse: "[123, null, [true, false]]") =:= [123.0, nothing, [true, false]];
+  assert (#json parse: "{\"a\": [1, 2], \"b\": {\"c\": 3}}") =:= [
+    a -> [1.0, 2.0],
+    b -> [c -> 3.0]
+  ];
+end
+
+command #json serialise: Value -> text do
+  #json-mod serialise: (#json from: Value);
+test
+  assert (#json serialise: 1234.0) =:= "1234";
+  assert (#json serialise: "abc") =:= "\"abc\"";
+  assert (#json serialise: [123.0, nothing, [true, false]]) =:= "[123,null,[true,false]]";
+  assert (#json serialise: [a -> [1.0, 2.0], b -> [c -> 3.0]]) =:= "{\"a\":[1,2],\"b\":{\"c\":3}}";
+end
+
+command #json pretty-print: Value indentation: (Indent is integer) -> text
+requires positive-indentation :: Indent >= 0;
+do
+  #json-mod pretty-print: (#json from: Value) indentation: Indent
+test
+  assert (#json pretty-print: [1.0, 2.0, 3.0] indentation: 2) =:= "[\n  1,\n  2,\n  3\n]";
+end

@@ -30,6 +30,7 @@ import {
   TCrochetNothing,
   CrochetCell,
   TCrochetCell,
+  CrochetRecord,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -315,6 +316,60 @@ export function core_cell(ffi: ForeignInterface) {
     );
 }
 
+export function core_record(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.core:record")
+    .defun(
+      "count",
+      [CrochetRecord],
+      (x) => new CrochetInteger(BigInt(x.values.size))
+    )
+    .defun(
+      "keys",
+      [CrochetRecord],
+      (x) =>
+        new CrochetTuple([...x.values.keys()].map((x) => new CrochetText(x)))
+    )
+    .defun(
+      "values",
+      [CrochetRecord],
+      (x) => new CrochetTuple([...x.values.values()])
+    )
+    .defun("pairs", [CrochetRecord], (x) => {
+      return new CrochetTuple(
+        [...x.values.entries()].map(
+          ([k, v]) =>
+            new CrochetRecord(
+              new Map([
+                ["key", new CrochetText(k)],
+                ["value", v],
+              ])
+            )
+        )
+      );
+    })
+    .defun("concat", [CrochetRecord, CrochetRecord], (a, b) => {
+      const result = new Map();
+      for (const [k, v] of a.values) {
+        result.set(k, v);
+      }
+      for (const [k, v] of b.values) {
+        result.set(k, v);
+      }
+      return new CrochetRecord(result);
+    })
+    .defun("from-pairs", [CrochetTuple], (xs) => {
+      const result = new Map();
+      for (const pair0 of xs.values) {
+        const pair = cast(pair0, CrochetRecord);
+        result.set(
+          cast(pair.projection.project("key"), CrochetText).value,
+          pair.projection.project("value")
+        );
+      }
+      return new CrochetRecord(result);
+    });
+}
+
 export default [
   core_types,
   core_boolean,
@@ -325,4 +380,5 @@ export default [
   core_float,
   core_tuple,
   core_cell,
+  core_record,
 ];

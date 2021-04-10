@@ -6,6 +6,6 @@
   "sources": ["source/random.crochet"],
   "capabilities": {
     "requires": [],
-    "provides": ["random"]
+    "provides": []
   }
 }

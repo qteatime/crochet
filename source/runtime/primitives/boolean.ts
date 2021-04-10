@@ -22,6 +22,10 @@ export class True extends CrochetValue {
     return "true";
   }
 
+  to_json() {
+    return true;
+  }
+
   static instance = new True();
 }
 
@@ -44,6 +48,10 @@ export class False extends CrochetValue {
 
   to_text() {
     return "false";
+  }
+
+  to_json() {
+    return false;
   }
 
   static instance = new False();

@@ -38,6 +38,10 @@ export class CrochetTuple extends CrochetValue {
     return `[${this.values.map((x) => x.to_text()).join(", ")}]`;
   }
 
+  to_json() {
+    return this.values.map((x) => x.to_json());
+  }
+
   _projection = new TupleProjection(this);
   _selection = new TupleSelection(this);
 }

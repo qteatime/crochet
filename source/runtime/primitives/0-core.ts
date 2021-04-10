@@ -26,6 +26,10 @@ export abstract class CrochetValue {
     return `<${type_name(this.type)}>`;
   }
 
+  to_json(): any {
+    throw new Error(`Unsupported by ${type_name(this.type)}`);
+  }
+
   get projection(): IProjection {
     const projection = this._projection;
     if (!projection) {
@@ -155,6 +159,10 @@ export class CrochetNothing extends CrochetValue {
 
   to_text() {
     return "nothing";
+  }
+
+  to_json() {
+    return null;
   }
 
   static instance = new CrochetNothing();

@@ -7,7 +7,8 @@
     "crochet.collections",
     "crochet.mathematics",
     "crochet.text",
-    "crochet.random"
+    "crochet.random",
+    "crochet.formats.json"
   ],
   "sources": [
     "types.crochet",
@@ -18,7 +19,7 @@
     "multimethod.crochet"
   ],
   "capabilities": {
-    "requires": ["random"],
+    "requires": [],
     "provides": []
   }
 }
