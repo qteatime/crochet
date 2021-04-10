@@ -1,22 +1,21 @@
 import * as Path from "path";
-import * as Compiler from "../../compiler";
-import { State } from "./state";
-import { CrochetTest, World } from "../world";
-import { CrochetError, Thread } from "./run";
+import * as Compiler from "../compiler";
+import { CrochetTest, World } from "../runtime";
+import { State } from "../runtime";
+import { CrochetError, Thread } from "../runtime";
 import {
   AnyTarget,
   Capabilities,
-  Capability,
-  CrochetCapability,
   CrochetPackage,
   Dependency,
   PackageGraph,
   RestrictedCrochetPackage,
   Target,
-} from "../pkg";
-import { logger } from "../../utils";
-import { MachineError } from "./errors";
-import { File } from "../pkg/file";
+} from "../runtime/pkg";
+import { logger } from "../utils";
+import { MachineError } from "../runtime/vm/errors/errors";
+import { File } from "../runtime/pkg/file";
+import { Plugin } from "../plugin";
 
 export abstract class CrochetVM {
   readonly world: World;
@@ -38,7 +37,7 @@ export abstract class CrochetVM {
   abstract read_file(filename: string): Promise<string>;
   abstract load_native(
     filename: string
-  ): Promise<(_: CrochetVM) => Promise<void> | void>;
+  ): Promise<(_: Plugin) => Promise<void> | void>;
   abstract initialise(): Promise<void>;
   abstract prelude: string[];
 
@@ -116,7 +115,10 @@ export abstract class CrochetVM {
         }`
       );
       const module = await this.load_native(x);
-      await module(this);
+
+      const ffi = this.world.ffi;
+      const plugin = new Plugin(pkg, ffi);
+      await module(plugin);
     }
     for (const x of pkg.sources) {
       await this.load_crochet(x, pkg);

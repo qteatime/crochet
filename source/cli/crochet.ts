@@ -1,15 +1,14 @@
+import { Capabilities, CliTarget, CrochetCapability } from "../runtime/pkg";
 import * as Compiler from "../compiler";
 import * as Server from "./crochet-server";
+import { CrochetVM } from "../vm-interface";
 import { Crochet } from "../targets/cli";
 import * as REPL from "./repl";
 
 import { array, logger, parse, show } from "../utils";
 import * as FS from "fs";
 import * as Path from "path";
-
 import * as Yargs from "yargs";
-import { CrochetVM, World } from "../runtime";
-import { Capabilities, CliTarget, CrochetCapability } from "../runtime/pkg";
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {
@@ -40,7 +39,7 @@ const argv = Yargs.usage("crochet <command> [options]")
         description: "The package context",
         type: "string",
       })
-        .option("capabilities", {
+        .option("capability", {
           description: "The capabilities to grant the program",
           type: "array",
           default: [],
@@ -67,7 +66,7 @@ const argv = Yargs.usage("crochet <command> [options]")
           description: "Test only a set of packages",
           type: "array",
         })
-        .option("capabilities", {
+        .option("capability", {
           description: "The capabilities to grant the program",
           type: "array",
           default: [],
@@ -92,7 +91,7 @@ const argv = Yargs.usage("crochet <command> [options]")
           default: 8080,
           type: "number",
         })
-        .option("capabilities", {
+        .option("capability", {
           description: "The capabilities to grant the program",
           type: "array",
           default: [],
@@ -226,7 +225,7 @@ switch (argv._[0]) {
       argv["filename"] as string,
       argv["entry"] as string,
       argv["seed"] as string | null,
-      parse_capabilities(argv["capabilities"] as string[])
+      parse_capabilities(argv["capability"] as string[])
     );
     break;
   }
@@ -235,7 +234,7 @@ switch (argv._[0]) {
     run_repl(
       argv["filename"] as string,
       argv["seed"] as string | null,
-      parse_capabilities(argv["capabilities"] as string[])
+      parse_capabilities(argv["capability"] as string[])
     );
     break;
   }
@@ -245,7 +244,7 @@ switch (argv._[0]) {
       argv["filename"] as string,
       argv["seed"] as string | null,
       argv["package"] as string[] | null,
-      parse_capabilities(argv["capabilities"] as string[])
+      parse_capabilities(argv["capability"] as string[])
     );
     break;
   }

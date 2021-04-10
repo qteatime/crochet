@@ -1,7 +1,7 @@
 import { logger } from "../../utils";
 import { unreachable } from "../../utils/utils";
 import { CrochetValue } from "../primitives";
-import { ErrNativeError, MachineError } from "./errors";
+import { ErrNativeError, MachineError } from "./errors/errors";
 
 // Error types
 export class CrochetError {

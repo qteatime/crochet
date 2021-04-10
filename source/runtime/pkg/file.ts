@@ -1,4 +1,4 @@
-import { AnyTarget } from ".";
+import { AnyTarget } from "./target";
 import { anyOf, map_spec, spec, string } from "../../utils";
 import { Target } from "./target";
 

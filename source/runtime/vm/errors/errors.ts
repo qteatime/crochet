@@ -6,7 +6,7 @@ import {
   Procedure,
   Selection,
   type_name,
-} from "../primitives";
+} from "../../primitives";
 
 export abstract class MachineError {
   abstract format(): string;

@@ -28,7 +28,7 @@ export class CrochetModule {
   open_namespace(ns: string) {
     if (!this.namespace_allowed(ns)) {
       throw new Error(
-        `Module ${this.filename} is not allowed to open namespace ${ns} because it is not declared as a dependency in package ${this.pkg.name}`
+        `Module ${this.relative_filename} is not allowed to open namespace ${ns} because it is not declared as a dependency in package ${this.pkg.name}`
       );
     }
     this.open_namespaces.add(ns);
@@ -58,7 +58,7 @@ export class CrochetModule {
     if (type == null) {
       const opened = [...this.open_namespaces].join(", ");
       throw new Error(
-        `No type ${name} is accessible from module ${this.filename} in package ${this.pkg.name}.\nOpened packages: ${opened}`
+        `No type ${name} is accessible from module ${this.relative_filename} in package ${this.pkg.name}.\nOpened packages: ${opened}`
       );
     } else {
       return type;
@@ -67,12 +67,14 @@ export class CrochetModule {
 
   add_type(name: string, type: CrochetType, local: boolean) {
     if (local) {
-      logger.debug(`Adding local type ${name} in module ${this.filename}`);
+      logger.debug(
+        `Adding local type ${name} in module ${this.relative_filename}`
+      );
       this.local_types.add(name, type);
     } else {
       const ns_name = this.namespaced(this.pkg.name, name);
       logger.debug(
-        `Adding namespaced type ${ns_name} from module ${this.filename}`
+        `Adding namespaced type ${ns_name} from module ${this.relative_filename}`
       );
       this.world.types.add(ns_name, type);
     }
@@ -98,7 +100,7 @@ export class CrochetModule {
     if (value == null) {
       const opened = [...this.open_namespaces].join(", ");
       throw new Error(
-        `No definition ${name} is accessible from module ${this.filename} in package ${this.pkg.name}.\nOpened packages: ${opened}`
+        `No definition ${name} is accessible from module ${this.relative_filename} in package ${this.pkg.name}.\nOpened packages: ${opened}`
       );
     } else {
       return value;
@@ -107,12 +109,14 @@ export class CrochetModule {
 
   add_value(name: string, value: CrochetValue, local: boolean) {
     if (local) {
-      logger.debug(`Adding local value ${name} in module ${this.filename}`);
+      logger.debug(
+        `Adding local value ${name} in module ${this.relative_filename}`
+      );
       this.local_values.add(name, value);
     } else {
       const ns_name = this.namespaced(this.pkg.name, name);
       logger.debug(
-        `Adding namespaced value ${ns_name} from module ${this.filename}`
+        `Adding namespaced value ${ns_name} from module ${this.relative_filename}`
       );
       this.world.globals.add(ns_name, value);
     }

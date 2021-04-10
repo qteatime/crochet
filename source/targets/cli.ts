@@ -1,7 +1,10 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as stdlib from "../stdlib";
-import { CrochetVM, State } from "../runtime";
+import { State, World } from "../runtime";
+import { cast } from "../utils";
+import { Plugin } from "../plugin";
+import { CrochetVM } from "../vm-interface";
 
 export class Crochet extends CrochetVM {
   stdlib_path = Path.join(__dirname, "../../stdlib");
@@ -16,8 +19,18 @@ export class Crochet extends CrochetVM {
 
   async load_native(
     filename: string
-  ): Promise<(_: CrochetVM) => void | Promise<void>> {
-    throw new Error("Native extensions are not supported yet");
+  ): Promise<(_: Plugin) => void | Promise<void>> {
+    // FIXME: this is really unsafe :')
+    const module = require(filename);
+    if (typeof module.default === "function") {
+      return module.default;
+    } else if (typeof module === "function") {
+      return module;
+    } else {
+      throw new Error(
+        `Cannot load native module ${filename} because it does not export a function`
+      );
+    }
   }
 
   async initialise() {

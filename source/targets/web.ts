@@ -1,6 +1,8 @@
 import * as stdlib from "../stdlib";
-import { CrochetVM, State } from "../runtime";
+import { State } from "../runtime";
 import { Capabilities, WebTarget } from "../runtime/pkg";
+import { Plugin } from "../plugin";
+import { CrochetVM } from "../vm-interface";
 
 export class Crochet extends CrochetVM {
   constructor(readonly root: HTMLElement) {
@@ -11,9 +13,7 @@ export class Crochet extends CrochetVM {
     return ["crochet.core", "crochet.debug", "crochet.time", "crochet.ui.html"];
   }
 
-  load_native(
-    filename: string
-  ): Promise<(_: CrochetVM) => void | Promise<void>> {
+  load_native(filename: string): Promise<(_: Plugin) => void | Promise<void>> {
     throw new Error("Native extensions are not supported in yet.");
   }
 

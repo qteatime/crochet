@@ -29,7 +29,7 @@ type Instances<Cs> = Cs extends [infer A, ...infer Rs]
   : never;
 
 export class ForeignNamespace {
-  constructor(readonly ffi: ForeignInterface, readonly namespace: string) {}
+  constructor(private ffi: ForeignInterface, private namespace: string) {}
 
   private namespaced(x: string) {
     return `${this.namespace}.${x}`;
