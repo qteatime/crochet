@@ -204,13 +204,13 @@ function parse_capabilities(capabilities: string[] | null) {
 
 function show_ast(filename: string) {
   const source = read(filename);
-  const ast = Compiler.parse(source);
+  const ast = Compiler.parse(source, filename);
   console.log(show(ast));
 }
 
 function show_ir(filename: string) {
   const source = read(filename);
-  const ast = Compiler.parse(source);
+  const ast = Compiler.parse(source, filename);
   const ir = Compiler.compileProgram(ast);
   console.log(show(ir));
 }

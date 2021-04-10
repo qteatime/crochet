@@ -70,7 +70,7 @@ export abstract class CrochetVM {
   async load_crochet(filename: string, pkg: RestrictedCrochetPackage) {
     logger.debug(`Loading ${filename} from package ${pkg.name}`);
     const source = await this.read_file(filename);
-    const ast = Compiler.parse(source);
+    const ast = Compiler.parse(source, filename);
     const ir = Compiler.compileProgram(ast);
     const state = State.root(this.world);
     await state.world.load_declarations(filename, ir, state.env, pkg);
@@ -89,7 +89,11 @@ export abstract class CrochetVM {
 
   async read_package_from_file(filename: string) {
     const source = await this.read_file(filename);
-    return CrochetPackage.parse(JSON.parse(source), filename);
+    try {
+      return CrochetPackage.parse(JSON.parse(source), filename);
+    } catch (error) {
+      throw new Error(`In ${filename}\n${error.message}`);
+    }
   }
 
   async get_package(name: string) {

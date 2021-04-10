@@ -1,20 +1,21 @@
 import * as Crochet from "../generated/crochet-grammar";
 
-export function parse(source: string) {
+export function parse(source: string, filename: string) {
   const result = Crochet.parse(source, "program");
   if (result.ok) {
     return result.value;
   } else {
-    throw new SyntaxError(result.error);
+    throw new SyntaxError(`In ${filename}\n${result.error}`);
   }
 }
 
 export function parse_repl(
-  source: string
+  source: string,
+  filename: string
 ): Crochet.Declaration | Crochet.Statement {
   const matched = Crochet.grammar.match(source, "repl");
   if (matched.failed()) {
-    throw new SyntaxError(matched.message!);
+    throw new SyntaxError(`In ${filename}\n${matched.message!}`);
   } else {
     return Crochet.toAst(matched);
   }

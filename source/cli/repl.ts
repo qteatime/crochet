@@ -57,7 +57,7 @@ async function get_line(rl: Read.Interface) {
     const line = await readline(rl, prompt);
     source += line;
     try {
-      const ast = Compiler.parse_repl(source);
+      const ast = Compiler.parse_repl(source, "(repl)");
       return ast;
     } catch (error) {
       if (!line.trim()) throw error;
