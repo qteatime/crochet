@@ -13,7 +13,8 @@
     "source/traits/collection.crochet",
     "source/float.crochet",
     "source/tuple.crochet",
-    "source/text.crochet"
+    "source/text.crochet",
+    "source/cell.crochet"
   ],
   "capabilities": {
     "requires": [],

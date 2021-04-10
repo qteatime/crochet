@@ -28,6 +28,8 @@ import {
   CrochetText,
   InterpolationStatic,
   TCrochetNothing,
+  CrochetCell,
+  TCrochetCell,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -58,7 +60,8 @@ export function core_types(ffi: ForeignInterface) {
     .deftype("record", TCrochetRecord.type)
     .deftype("tuple", TCrochetTuple.type)
     .deftype("enum", baseEnum)
-    .deftype("thunk", TCrochetThunk.type);
+    .deftype("thunk", TCrochetThunk.type)
+    .deftype("cell", TCrochetCell.type);
 }
 
 export function core_boolean(ffi: ForeignInterface) {
@@ -303,6 +306,15 @@ export function core_tuple(ffi: ForeignInterface) {
     );
 }
 
+export function core_cell(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.core:cell")
+    .defun("make", [CrochetValue], (v) => new CrochetCell(v))
+    .defun("deref", [CrochetCell], (x) => x.deref())
+    .defun("cas", [CrochetCell, CrochetValue, CrochetValue], (x, v1, v2) =>
+      from_bool(x.cas(v1, v2))
+    );
+}
+
 export default [
   core_types,
   core_boolean,
@@ -312,4 +324,5 @@ export default [
   core_integer,
   core_float,
   core_tuple,
+  core_cell,
 ];

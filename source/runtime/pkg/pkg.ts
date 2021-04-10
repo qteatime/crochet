@@ -55,6 +55,10 @@ export class CrochetPackage {
     return union(this.capabilities.provides, this.capabilities.requires);
   }
 
+  relative_filename(filename: string) {
+    return Path.relative(this.root, filename);
+  }
+
   allows(x: Capability) {
     return this.required_capabilities.has(x);
   }

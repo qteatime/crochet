@@ -110,12 +110,15 @@ export class World {
   }
 
   get grouped_tests() {
-    const groups = new Map<string, CrochetTest[]>();
+    const groups = new Map<string, Map<string, CrochetTest[]>>();
     for (const test of this.tests) {
       const key = test.module.pkg.name;
-      const tests = groups.get(key) ?? [];
+      const module_key = test.module.relative_filename;
+      const modules = groups.get(key) ?? new Map();
+      const tests = modules.get(module_key) ?? [];
       tests.push(test);
-      groups.set(key, tests);
+      modules.set(module_key, tests);
+      groups.set(key, modules);
     }
     return groups;
   }

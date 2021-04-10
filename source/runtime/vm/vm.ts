@@ -68,7 +68,9 @@ export abstract class CrochetVM {
   }
 
   async load_crochet(filename: string, pkg: RestrictedCrochetPackage) {
-    logger.debug(`Loading ${filename} from package ${pkg.name}`);
+    logger.debug(
+      `Loading ${pkg.relative_filename(filename)} from package ${pkg.name}`
+    );
     const source = await this.read_file(filename);
     const ast = Compiler.parse(source, filename);
     const ir = Compiler.compileProgram(ast);
@@ -108,7 +110,11 @@ export abstract class CrochetVM {
     logger.debug(`Loading package ${pkg.name}`);
 
     for (const x of pkg.native_sources) {
-      logger.debug(`Loading native module ${x} from package ${pkg.name}`);
+      logger.debug(
+        `Loading native module ${pkg.relative_filename(x)} from package ${
+          pkg.name
+        }`
+      );
       const module = await this.load_native(x);
       await module(this);
     }
@@ -151,33 +157,40 @@ export abstract class CrochetVM {
     let total = 0;
     let skipped = 0;
     const state = State.root(this.world);
-    for (const [group, tests] of this.world.grouped_tests) {
-      const valid_tests = tests.filter(filter);
-      if (valid_tests.length === 0) {
-        continue;
-      }
-
+    for (const [group, modules] of this.world.grouped_tests) {
       console.log("");
       console.log(group);
       console.log("=".repeat(72));
-      for (const test of tests) {
-        total += 1;
 
-        if (!filter(test)) {
-          skipped += 1;
+      for (const [module, tests] of modules) {
+        const valid_tests = tests.filter(filter);
+        if (valid_tests.length === 0) {
           continue;
         }
 
-        try {
-          const machine = test.evaluate(state);
-          await Thread.for_machine(machine).run_and_wait();
-          console.log(`[OK]    ${test.title}`);
-        } catch (error) {
-          console.log("-".repeat(3));
-          console.log(`[ERROR] ${test.title}`);
-          console.log(this.format_error(error));
-          console.log("-".repeat(3));
-          failures.push(error);
+        console.log("");
+        console.log(module);
+        console.log("-".repeat(72));
+
+        for (const test of tests) {
+          total += 1;
+
+          if (!filter(test)) {
+            skipped += 1;
+            continue;
+          }
+
+          try {
+            const machine = test.evaluate(state);
+            await Thread.for_machine(machine).run_and_wait();
+            console.log(`[OK]    ${test.title}`);
+          } catch (error) {
+            console.log("-".repeat(3));
+            console.log(`[ERROR] ${test.title}`);
+            console.log(this.format_error(error));
+            console.log("-".repeat(3));
+            failures.push(error);
+          }
         }
       }
     }

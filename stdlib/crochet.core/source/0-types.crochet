@@ -70,3 +70,7 @@ type 'enum = foreign core.enum;
 abstract result;
 type ok is result(value);
 type error is result(reason);
+
+
+/// The type of mutable cells
+type cell = foreign core.cell;

@@ -1,3 +1,4 @@
+import * as Path from "path";
 import { Bag, logger } from "../../utils";
 import { RestrictedCrochetPackage } from "../pkg";
 import { CrochetType, CrochetValue } from "../primitives";
@@ -14,6 +15,10 @@ export class CrochetModule {
     readonly pkg: RestrictedCrochetPackage
   ) {
     this.open_namespaces = new Set([pkg.name, "crochet.core"]);
+  }
+
+  get relative_filename() {
+    return this.pkg.relative_filename(this.filename);
   }
 
   namespace_allowed(ns: string) {
