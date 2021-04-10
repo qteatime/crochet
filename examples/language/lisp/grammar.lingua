@@ -1,0 +1,28 @@
+type program(pos: info, forms: form[])
+
+type form =
+  | apply(pos: info, callee: form, arguments: form[])
+  | integer(pos: info, value: text)
+  | unit(pos: info)
+
+grammar Lisp : program {
+  Program =
+    | xs:Form* end  -> program(meta, xs)
+
+  Form =
+    | Apply
+    | Integer
+    | Unit
+
+  Apply =
+    | "(" c:Form a:Form+ ")"  -> form.apply(meta, c, a)
+
+  Integer =
+    | i:integer               -> form.integer(meta, i)
+
+  Unit =
+    | "(" ")"                 -> form.unit(meta)
+
+  
+  integer = digit+
+}
