@@ -5,7 +5,8 @@
   "sources": [
     "source/0-types.crochet",
     "source/traits/indexed.crochet",
-    "source/traits/sequence.crochet"
+    "source/traits/sequence.crochet",
+    "source/traits/foldable.crochet"
   ],
   "capabilities": {
     "requires": [],

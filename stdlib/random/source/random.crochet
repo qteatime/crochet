@@ -123,6 +123,41 @@ test
   ];
 end
 
+command xor-shift choose-weighted: (Items0 is tuple)
+requires non-empty :: not (Items0 is-empty)
+do
+  let Total = Items0.score sum;
+  let Items = Items0 sort-by: { A, B in A.score compare-to: B.score };
+  let Result = self between: 0 and: Total;
+  let Choice = Result.value;
+
+  let Go = { Score, Items in do
+    let Item = Items first;
+    condition
+      when Score <= Item.score => Item.value;
+      always => Go(Score - Item.score, Items but-first);
+    end
+  end};
+
+  new random-next(Go(Choice, Items), Result.random);
+test
+  let Random = #random xor-shift: 20;
+  let Items = [
+    [score -> 10, value -> "a"],
+    [score -> 3, value -> "b"],
+    [score -> 4, value -> "c"]
+  ];
+
+  let R1 = Random choose-weighted: Items;
+  assert R1.value =:= "a";
+
+  let R2 = R1.random choose-weighted: Items;
+  assert R2.value =:= "b";
+
+  let R3 = R2.random choose-weighted: Items;
+  assert R3.value =:= "a";
+end
+
 // Mutable
 command mutable-random uniform do
   let Result = self.random value uniform;
@@ -196,4 +231,21 @@ test
     choice -> 4,
     items -> []
   ];
+end
+
+command mutable-random choose-weighted: (Items is tuple) do
+  let Result = self.random value choose-weighted: Items;
+  self.random <- Result.random;
+  Result.value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  let Items = [
+    [score -> 10, value -> "a"],
+    [score -> 3, value -> "b"],
+    [score -> 4, value -> "c"]
+  ];
+
+  assert (Random choose-weighted: Items) =:= "a";
+  assert (Random choose-weighted: Items) =:= "b";
+  assert (Random choose-weighted: Items) =:= "a";
 end

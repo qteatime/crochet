@@ -1,0 +1,22 @@
+% crochet
+
+command tuple fold-from: Initial with: (Fun is function-2) do
+  let Go = { Xs in 
+    condition
+      when Xs is-empty => Initial;
+      always => Fun(Xs first, Go(Xs but-first));
+    end
+  };
+  Go(self);
+test
+  assert ([1, 2, 3] fold-from: 0 with: (_ + _)) =:= (1 + 2 + 3 + 0);
+  assert ([] fold-from: 0 with: (_ + _)) =:= 0;
+  assert ([1] fold-from: 0 with: (_ + _)) =:= 1;
+end
+
+command tuple sum = self fold-from: 0 with: (_ + _)
+test
+  assert [] sum =:= 0;
+  assert [2] sum =:= 2;
+  assert [1, 2, 3] sum =:= 6;
+end
