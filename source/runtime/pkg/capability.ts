@@ -1,6 +1,6 @@
 import { anyOf, difference, equal, intersect } from "../../utils";
 
-export type Capability = "native" | "timing" | "reflection" | "html";
+export type Capability = "native" | "timing" | "reflection" | "html" | "random";
 
 export class Capabilities {
   constructor(readonly capabilities: Set<Capability>) {}
@@ -12,7 +12,7 @@ export class Capabilities {
   }
 
   static get safe() {
-    return new Capabilities(new Set(["html"]));
+    return new Capabilities(new Set(["random", "html"]));
   }
 
   allows(capability: Capability) {
@@ -35,6 +35,7 @@ export abstract class CrochetCapability {
       equal("timing" as "timing"),
       equal("reflection" as "reflection"),
       equal("html" as "html"),
+      equal("random" as "random"),
     ]);
   }
 }

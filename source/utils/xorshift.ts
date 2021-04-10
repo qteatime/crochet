@@ -5,12 +5,12 @@ type int32 = number;
 export class XorShift {
   static MIN_INTEGER: int32 = 0;
   static MAX_INTEGER: int32 = (2 ** 32 - 1) | 0;
-  private inc: int32;
+  private _inc: int32;
   private _seed: int32;
 
-  constructor(seed: number) {
+  constructor(seed: number, inc: number) {
     this._seed = seed | 0;
-    this.inc = seed;
+    this._inc = inc | 0;
   }
 
   static new_random() {
@@ -18,20 +18,24 @@ export class XorShift {
   }
 
   static from_seed(seed: number) {
-    return new XorShift(seed | 0);
+    return new XorShift(seed | 0, seed | 0);
   }
 
   get seed() {
     return this._seed;
   }
 
+  get inc() {
+    return this._inc;
+  }
+
   reseed(seed: number) {
     this._seed = seed | 0;
-    this.inc = seed;
+    this._inc = seed;
   }
 
   clone() {
-    return new XorShift(this._seed);
+    return new XorShift(this._seed, this._inc);
   }
 
   next(): int32 {
@@ -40,9 +44,9 @@ export class XorShift {
     t ^= (t | 0) << 13;
     t ^= (t | 0) << 25;
     t ^= (t | 0) << 9;
-    this.inc = (this.inc + 1368297235087925) | 0;
+    this._inc = (this._inc + 1368297235087925) | 0;
 
-    t = Math.abs((t + this.inc) | 0);
+    t = Math.abs((t + this._inc) | 0);
     this._seed = t;
     return t;
   }

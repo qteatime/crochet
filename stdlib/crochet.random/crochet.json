@@ -1,0 +1,11 @@
+{
+  "name": "crochet.random",
+  "type": "group",
+  "target": "*",
+  "dependencies": ["crochet.core"],
+  "sources": ["source/random.crochet"],
+  "capabilities": {
+    "requires": [],
+    "provides": ["random"]
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "crochet.text",
   "target": "*",
-  "dependencies": ["crochet.core"],
+  "dependencies": ["crochet.core", "crochet.collections"],
   "sources": [
     "source/core.crochet",
     "source/views.crochet",

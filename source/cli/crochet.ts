@@ -40,7 +40,7 @@ const argv = Yargs.usage("crochet <command> [options]")
         description: "The package context",
         type: "string",
       })
-        .option("capability", {
+        .option("capabilities", {
           description: "The capabilities to grant the program",
           type: "array",
           default: [],

@@ -1,0 +1,93 @@
+% crochet
+
+abstract random;
+local type xor-shift is random(seed, inc);
+
+local type random-next(value, random is random);
+local type mutable-random(random is cell);
+
+local type random-mod;
+
+command #random-mod random-seed
+  = foreign xorshift.random-seed();
+
+command #random-mod next-uniform: Seed inc: Inc
+  = foreign xorshift.next-uniform(Seed, Inc);
+
+command #random-mod next: Seed inc: Inc between: Min and: Max
+  = foreign xorshift.next-integer(Seed, Inc, Min, Max);
+
+
+// Constructors
+command #random with-seed: Seed -> xor-shift
+  = #random xor-shift: Seed;
+
+command #random with-random-seed -> xor-shift
+  = #random xor-shift;
+
+command #random xor-shift: Seed 
+requires unsigned-small-integer :: (Seed >= 0) and (Seed < (2 ** 32));
+  = new xor-shift(Seed, Seed);
+
+command #random xor-shift -> xor-shift do
+  let State = #random-mod random-seed;
+  new xor-shift(State.seed, State.inc);
+end
+
+command random mutable = new mutable-random(#cell with-value: self);
+
+
+// Xor-shift
+command xor-shift uniform do
+  let Result = #random-mod next-uniform: self.seed inc: self.inc;
+  new random-next(Result.value, new xor-shift(Result.seed, Result.inc))
+test
+  let Random = #random xor-shift: 20;
+  let Result = Random uniform;
+  assert Random.seed =:= 20;
+  assert Result.value =:= 0.5964457555674016;
+  assert Result.random.seed =:= 1280857507;
+end
+
+command xor-shift between: Min and: Max
+requires ordered :: Min <= Max
+do
+  let Result = #random-mod next: self.seed inc: self.inc between: Min and: Max;
+  new random-next(Result.value, new xor-shift(Result.seed, Result.inc));
+test
+  let Random = #random xor-shift: 20;
+  let Result = Random between: 1 and: 20;
+  assert Random.seed =:= 20;
+  assert Result.value =:= 12;
+  assert Result.random.seed =:= 1280857507;
+end
+
+
+// Mutable
+command mutable-random uniform do
+  let Result = self.random value uniform;
+  self.random <- Result.random;
+  Result.value
+test
+  let Random = (#random xor-shift: 20) mutable;
+  assert Random uniform =:= 0.5964457555674016;
+  assert (Random.random value).seed =:= 1280857507;
+
+  assert Random uniform =:= 0.20454500569030643;
+  assert (Random.random value).seed =:= 439257055;
+end
+
+command mutable-random between: Min and: Max
+requires ordered :: Min <= Max
+do
+  let Result = self.random value between: Min and: Max;
+  self.random <- Result.random;
+  Result.value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  assert (Random between: 1 and: 20) =:= 12;
+  assert (Random.random value).seed =:= 1280857507;
+
+  assert (Random between: 1 and: 20) =:= 4;
+  assert (Random.random value).seed =:= 439257055;
+end

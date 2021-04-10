@@ -1,7 +1,14 @@
 {
   "name": "crochet.internal.vm.tests",
   "target": "*",
-  "dependencies": ["crochet.core", "crochet.debug"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.debug",
+    "crochet.collections",
+    "crochet.mathematics",
+    "crochet.text",
+    "crochet.random"
+  ],
   "sources": [
     "types.crochet",
     "actions.crochet",
@@ -11,7 +18,7 @@
     "multimethod.crochet"
   ],
   "capabilities": {
-    "requires": [],
+    "requires": ["random"],
     "provides": []
   }
 }
