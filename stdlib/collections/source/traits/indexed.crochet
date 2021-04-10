@@ -17,3 +17,12 @@ test
   assert (["a", "b", "c"] at: 2 put: "d") =:= ["a", "d", "c"];
   assert (["a", "b", "c"] at: 3 put: "d") =:= ["a", "b", "d"];
 end
+
+command (X is tuple) delete-at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= X count)
+  = foreign tuple.at-delete(X, Index)
+test
+  assert (["a"] delete-at: 1) =:= [];
+  assert (["a", "b", "c"] delete-at: 2) =:= ["a", "c"];
+  assert (["a", "b", "c"] delete-at: 3) =:= ["a", "b"];
+end

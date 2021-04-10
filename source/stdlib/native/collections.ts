@@ -26,6 +26,17 @@ export function coll_tuple(ffi: ForeignInterface) {
         return new CrochetTuple(result);
       }
     )
+    .defun("at-delete", [CrochetTuple, CrochetInteger], (xs, i) => {
+      const result = [];
+      const values = xs.values;
+      const target = Number(i.value - 1n);
+      for (let i = 0; i < values.length; ++i) {
+        if (i !== target) {
+          result.push(values[i]);
+        }
+      }
+      return new CrochetTuple(result);
+    })
     .defun(
       "slice",
       [CrochetTuple, CrochetInteger, CrochetInteger],

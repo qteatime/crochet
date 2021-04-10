@@ -62,6 +62,66 @@ test
   assert Result.random.seed =:= 1280857507;
 end
 
+command xor-shift choose: (Items is tuple)
+requires non-empty :: not (Items is-empty)
+do
+  let Result = self between: 1 and: Items count;
+  let Choice = Items at: Result.value;
+  new random-next(Choice, Result.random);
+test
+  let Random = #random xor-shift: 20;
+  let Items = [1, 2, 3, 4];
+
+  let Res1 = Random choose: Items;
+  assert Res1.value =:= 2;
+
+  let Res2 = Res1.random choose: Items;
+  assert Res2.value =:= 1;
+
+  let Res3 = Res2.random choose: Items;
+  assert Res3.value =:= 3;
+end
+
+command xor-shift choose-and-tear: (Items0 is tuple)
+requires non-empty :: not (Items0 is-empty)
+do
+  let Result = self between: 1 and: Items0 count;
+  let Choice = Items0 at: Result.value;
+  let Items = Items0 delete-at: Result.value;
+  new random-next(
+    [
+      choice -> Choice,
+      items -> Items
+    ],
+    Result.random
+  );
+test
+  let Random = #random xor-shift: 20;
+  let Items = [1, 2, 3, 4];
+  let Res1 = Random choose-and-tear: Items;
+  assert Res1.value =:= [
+    choice -> 2,
+    items -> [1, 3, 4]
+  ];
+
+  let Res2 = Res1.random choose-and-tear: Res1.value.items;
+  assert Res2.value =:= [
+    choice -> 1,
+    items -> [3, 4]
+  ];
+
+  let Res3 = Res2.random choose-and-tear: Res2.value.items;
+  assert Res3.value =:= [
+    choice -> 3,
+    items -> [4]
+  ];
+
+  let Res4 = Res3.random choose-and-tear: Res3.value.items;
+  assert Res4.value =:= [
+    choice -> 4,
+    items -> []
+  ];
+end
 
 // Mutable
 command mutable-random uniform do
@@ -90,4 +150,50 @@ test
 
   assert (Random between: 1 and: 20) =:= 4;
   assert (Random.random value).seed =:= 439257055;
+end
+
+command mutable-random choose: (Items is tuple) do
+  let Result = self.random value choose: Items;
+  self.random <- Result.random;
+  Result.value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  let Items = [1, 2, 3, 4];
+
+  assert (Random choose: Items) =:= 2;
+  assert (Random choose: Items) =:= 1;
+  assert (Random choose: Items) =:= 3;
+end
+
+command mutable-random choose-and-tear: (Items is tuple) do
+  let Result = self.random value choose-and-tear: Items;
+  self.random <- Result.random;
+  Result.value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  let Items = [1, 2, 3, 4];
+
+  let Res1 = Random choose-and-tear: Items;
+  assert Res1 =:= [
+    choice -> 2,
+    items -> [1, 3, 4]
+  ];
+
+  let Res2 = Random choose-and-tear: Res1.items;
+  assert Res2 =:= [
+    choice -> 1,
+    items -> [3, 4]
+  ];
+
+  let Res3 = Random choose-and-tear: Res2.items;
+  assert Res3 =:= [
+    choice -> 3,
+    items -> [4]
+  ];
+
+  let Res4 = Random choose-and-tear: Res3.items;
+  assert Res4 =:= [
+    choice -> 4,
+    items -> []
+  ];
 end

@@ -21,7 +21,7 @@ import {
 } from "../vm";
 import { AnyContext, Context, Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
-import { Expression } from "./expression";
+import { EVariable, Expression } from "./expression";
 import { Type } from "./type";
 import { Meta } from "../../generated/crochet-grammar";
 
@@ -190,15 +190,36 @@ export class SRegister extends Statement {
   }
 }
 
+let asserts = 0;
 export class SAssert extends Statement {
+  private id = ++asserts;
+
   constructor(readonly meta: Meta, readonly expr: Expression) {
     super();
   }
 
-  *evaluate(state: State): Machine {
-    const value = cvalue(yield _push(this.expr.evaluate(state)));
+  *evaluate(state0: State): Machine {
+    const env = state0.env.clone();
+    const subexprs = [];
+    for (const e of this.expr.sub_expressions) {
+      subexprs.push(cvalue(yield _push(e.evaluate(state0))));
+    }
+    const vars: string[] = [];
+    for (let i = 0; i < subexprs.length; ++i) {
+      const name = `$assert_${this.id}_${i}`;
+      env.define(name, subexprs[i]);
+      vars.push(name);
+    }
+    let i = 0;
+    const expr = this.expr.map_subexpressions((_) => new EVariable(vars[i++]));
+    const state = state0.with_env(env);
+
+    const value = cvalue(yield _push(expr.evaluate(state)));
     if (!value.as_bool()) {
-      throw new Error(`assertion failed: ${this.meta.source_slice}`);
+      const report = subexprs.map((x, i) => `  - ${x.to_text()}`).join("\n");
+      throw new Error(
+        `assertion failed: ${this.meta.source_slice}\nWith values:\n${report}`
+      );
     }
     return value;
   }

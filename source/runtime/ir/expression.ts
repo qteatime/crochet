@@ -49,6 +49,14 @@ import { Type } from "./type";
 
 export abstract class Expression {
   abstract evaluate(state: State): Machine;
+
+  get sub_expressions(): Expression[] {
+    return [];
+  }
+
+  map_subexpressions(f: (_: Expression) => Expression): Expression {
+    return this;
+  }
 }
 
 export class EFalse extends Expression {
@@ -123,6 +131,14 @@ export class EInvoke extends Expression {
 
     return yield _push(invoke(state, this.name, args));
   }
+
+  get sub_expressions() {
+    return this.args;
+  }
+
+  map_subexpressions(f: (_: Expression) => Expression) {
+    return new EInvoke(this.name, this.args.map(f));
+  }
 }
 
 export class ENew extends Expression {
@@ -136,6 +152,10 @@ export class ENew extends Expression {
       yield _push(run_all(this.data.map((x) => x.evaluate(state))))
     );
     return type.instantiate(values);
+  }
+
+  get sub_expressions() {
+    return this.data;
   }
 }
 
@@ -166,6 +186,10 @@ export class EList extends Expression {
     );
     return new CrochetTuple(values);
   }
+
+  get sub_expressions() {
+    return this.values;
+  }
 }
 
 export class ERecord extends Expression {
@@ -180,6 +204,10 @@ export class ERecord extends Expression {
       map.set(pair.key, value);
     }
     return new CrochetRecord(map);
+  }
+
+  get sub_expressions() {
+    return this.pairs.map((x) => x.value);
   }
 }
 
@@ -198,6 +226,10 @@ export class ECast extends Expression {
       throw new ErrNoConversionAvailable(type, value0);
     }
   }
+
+  get sub_expressions() {
+    return [this.value];
+  }
 }
 
 export class EProject extends Expression {
@@ -209,6 +241,10 @@ export class EProject extends Expression {
     const object = cvalue(yield _push(this.object.evaluate(state)));
     return object.projection.project(this.field);
   }
+
+  get sub_expressions() {
+    return [this.object];
+  }
 }
 
 export class EProjectMany extends Expression {
@@ -219,6 +255,10 @@ export class EProjectMany extends Expression {
   *evaluate(state: State): Machine {
     const object = cvalue(yield _push(this.object.evaluate(state)));
     return object.selection.select(this.fields);
+  }
+
+  get sub_expressions() {
+    return [this.object];
   }
 }
 
@@ -529,6 +569,14 @@ export class EIntrinsicEqual extends Expression {
     const left = cvalue(yield _push(this.left.evaluate(state)));
     const right = cvalue(yield _push(this.right.evaluate(state)));
     return from_bool(left.equals(right));
+  }
+
+  get sub_expressions() {
+    return [this.left, this.right];
+  }
+
+  map_subexpressions(f: (_: Expression) => Expression) {
+    return new EIntrinsicEqual(f(this.left), f(this.right));
   }
 }
 
