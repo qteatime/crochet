@@ -137,7 +137,7 @@ end
 
 command maze-gen draw do
   for IY in 1 to: self.Height do
-    transcript write-line:
+    transcript write:
       for IX in 1 to: self.Width do
         (cell-at: new point(IX, IY)) draw;
       end interpolate;

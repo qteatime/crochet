@@ -7,7 +7,7 @@ scene main do
   fact north y-axis;
   fact south y-axis;
 
-  transcript inspect-line:
+  transcript inspect:
     (search Direction is direction,
             Direction y-axis,
             let N = (search _ is direction) count

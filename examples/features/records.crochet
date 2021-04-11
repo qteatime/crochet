@@ -1,7 +1,7 @@
 % crochet
 
 scene main do
-  transcript inspect-line:
+  transcript inspect:
     [
       'scene -> 0,
       atoms -> 1,

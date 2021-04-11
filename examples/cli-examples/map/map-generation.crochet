@@ -103,7 +103,7 @@ scene main do
   let Dungeon = dungeon generate-with-max-rooms: 20;
   let Map = Dungeon draw;
   for Line in Map do
-    transcript write-line: Line;
+    transcript write: Line;
   end
 end
 

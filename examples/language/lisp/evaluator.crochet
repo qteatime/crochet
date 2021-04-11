@@ -17,9 +17,9 @@ end
 command program evaluate =
   for Form in self.forms do
     let Result = Form evaluate;
-    transcript write-line: Form location;
-    transcript inspect-line: Form evaluate tag: "==> ";
-    transcript write-line: "---";
+    transcript write: Form location;
+    transcript inspect: Form evaluate tag: "==> ";
+    transcript write: "---";
   end;
 
 command form--apply evaluate do

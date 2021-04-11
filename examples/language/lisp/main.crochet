@@ -10,15 +10,15 @@ scene main do
     ";
   let Grammar = force grammar;
   let TreeResult = Grammar parse: Program rule: "Program";
-  transcript inspect-line: TreeResult;
+  transcript inspect: TreeResult;
   assert TreeResult is ok;
-  transcript write-line: "";
+  transcript write: "";
 
   let Tree0 = TreeResult.value;
   let To-Ast = force to-ast;
   let Tree1 = To-Ast transform: Tree0;
-  transcript inspect-line: Tree1;
-  transcript write-line: "";
+  transcript inspect: Tree1;
+  transcript write: "";
 
   Tree1 evaluate;
 end
