@@ -5,7 +5,7 @@ import * as IR from "../runtime/ir";
 import * as Rt from "../runtime";
 import * as Ast from "../generated/crochet-grammar";
 import { cvalue, Environment } from "../runtime";
-import { AnyTarget, CliTarget, CrochetPackage } from "../runtime/pkg";
+import { AnyTarget, NodeTarget, CrochetPackage } from "../runtime/pkg";
 import { Crochet } from "../targets/cli";
 import { unreachable } from "../utils";
 
@@ -87,7 +87,7 @@ export async function repl(vm: Crochet, pkg_name: string) {
     output: process.stdout,
   });
   const pkg = (await vm.registered_packages.get(pkg_name)!).restricted_to(
-    new CliTarget()
+    new NodeTarget()
   );
   const module = new Rt.CrochetModule(vm.world, "(repl)", pkg);
   const state0 = Rt.State.root(vm.world);

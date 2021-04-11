@@ -1,4 +1,4 @@
-import { Capabilities, CliTarget, CrochetCapability } from "../runtime/pkg";
+import { Capabilities, NodeTarget, CrochetCapability } from "../runtime/pkg";
 import * as Compiler from "../compiler";
 import * as Server from "./crochet-server";
 import { CrochetVM } from "../vm-interface";
@@ -136,7 +136,7 @@ async function setup_vm(
     [...capabilities.capabilities].join(", ")
   );
   logger.debug("Using seed:", vm.world.global_random.seed);
-  await vm.load_with_capabilities(filename, new CliTarget(), capabilities);
+  await vm.load_with_capabilities(filename, new NodeTarget(), capabilities);
 }
 
 async function run(

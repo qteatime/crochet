@@ -5,35 +5,35 @@ export abstract class Target {
   abstract describe(): string;
 
   static get spec() {
-    return anyOf([CliTarget, WebTarget, AnyTarget]);
+    return anyOf([NodeTarget, BrowserTarget, AnyTarget]);
   }
 }
 
-export class CliTarget extends Target {
+export class NodeTarget extends Target {
   accepts(x: Target) {
-    return x instanceof CliTarget;
+    return x instanceof NodeTarget;
   }
 
   describe() {
-    return `cli`;
+    return `node`;
   }
 
   static get spec() {
-    return map_spec(equal("cli"), (_) => new CliTarget());
+    return map_spec(equal("node"), (_) => new NodeTarget());
   }
 }
 
-export class WebTarget extends Target {
+export class BrowserTarget extends Target {
   accepts(x: Target) {
-    return x instanceof WebTarget;
+    return x instanceof BrowserTarget;
   }
 
   describe() {
-    return `web`;
+    return `browser`;
   }
 
   static get spec() {
-    return map_spec(equal("web"), (_) => new WebTarget());
+    return map_spec(equal("browser"), (_) => new BrowserTarget());
   }
 }
 

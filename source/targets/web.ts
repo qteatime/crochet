@@ -1,6 +1,6 @@
 import * as stdlib from "../stdlib";
 import { State } from "../runtime";
-import { Capabilities, WebTarget } from "../runtime/pkg";
+import { Capabilities, BrowserTarget } from "../runtime/pkg";
 import { Plugin } from "../plugin";
 import { CrochetVM } from "../vm-interface";
 
@@ -20,7 +20,7 @@ export class Crochet extends CrochetVM {
   async load(filename: string) {
     return this.load_with_capabilities(
       filename,
-      new WebTarget(),
+      new BrowserTarget(),
       new Capabilities(new Set(["html"]))
     );
   }
