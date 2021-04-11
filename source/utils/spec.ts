@@ -46,18 +46,30 @@ type Result<A, B> = Ok<A, B> | Err<A, B>;
 
 export class EType {
   constructor(readonly expected: string) {}
+  format(): string {
+    return `type ${this.expected}`;
+  }
 }
 
 export class ENoKey {
   constructor(readonly key: string) {}
+  format(): string {
+    return `key ${JSON.stringify(this.key)}`;
+  }
 }
 
 export class ENotEqual {
   constructor(readonly expected: any) {}
+  format(): string {
+    return `equal to ${this.expected}`;
+  }
 }
 
 export class EAnyOf {
   constructor(readonly errors: Errors[]) {}
+  format(): string {
+    return `expected any of: ${this.errors.map((x) => x.format()).join(", ")}`;
+  }
 }
 
 type Errors = EType | ENoKey | ENotEqual | EAnyOf;
@@ -212,7 +224,6 @@ export function parse<A>(x: any, spec: AnySpec<A>): A {
   if (result instanceof Ok) {
     return result.value;
   } else {
-    console.error(result.reason);
-    throw new Error(`Failed to parse: ${result.reason}`);
+    throw new Error(`Failed to parse: ${result.reason.format()}`);
   }
 }

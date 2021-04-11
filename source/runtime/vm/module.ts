@@ -3,6 +3,7 @@ import { Bag, logger } from "../../utils";
 import { RestrictedCrochetPackage } from "../pkg";
 import { CrochetType, CrochetValue } from "../primitives";
 import { CrochetTest, World } from "../world";
+import { ErrArbitrary } from "./errors";
 
 export class CrochetModule {
   readonly local_types = new Bag<string, CrochetType>("type");
@@ -31,7 +32,8 @@ export class CrochetModule {
 
   open_namespace(ns: string) {
     if (!this.namespace_allowed(ns)) {
-      throw new Error(
+      throw new ErrArbitrary(
+        "access-violation",
         `Module ${this.relative_filename} is not allowed to open namespace ${ns} because it is not declared as a dependency in package ${this.pkg.name}`
       );
     }
@@ -61,7 +63,8 @@ export class CrochetModule {
     const type = this.try_lookup_type(name);
     if (type == null) {
       const opened = [...this.open_namespaces].join(", ");
-      throw new Error(
+      throw new ErrArbitrary(
+        "undefined-type",
         `No type ${name} is accessible from module ${this.relative_filename} in package ${this.pkg.name}.\nOpened packages: ${opened}`
       );
     } else {
@@ -103,7 +106,8 @@ export class CrochetModule {
     const value = this.try_lookup_value(name);
     if (value == null) {
       const opened = [...this.open_namespaces].join(", ");
-      throw new Error(
+      throw new ErrArbitrary(
+        "undefined-global",
         `No definition ${name} is accessible from module ${this.relative_filename} in package ${this.pkg.name}.\nOpened packages: ${opened}`
       );
     } else {

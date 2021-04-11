@@ -3,6 +3,7 @@ import { Expression, Meta } from "../ir";
 import {
   cvalue,
   die,
+  ErrArbitrary,
   ErrInvalidArity,
   Machine,
   State,
@@ -111,7 +112,8 @@ export class CrochetLambda extends CrochetValue {
   *apply(state0: State, args: CrochetValue[]): Machine {
     const env = this.env.clone();
     if (args.length !== this.parameters.length) {
-      throw new Error(
+      throw new ErrArbitrary(
+        "arity-mismatch",
         `invalid number of arguments ${args.length} for ${this.type.type_name}`
       );
     }

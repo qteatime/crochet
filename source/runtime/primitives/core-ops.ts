@@ -1,6 +1,7 @@
 import { CrochetNothing, CrochetType, CrochetValue, type_name } from "./0-core";
 import {
   cvalue,
+  ErrArbitrary,
   ErrInvalidArity,
   ErrNoBranchMatched,
   ErrUnexpectedType,
@@ -85,7 +86,10 @@ export function* apply(
   } else if (fn instanceof CrochetLambda) {
     return yield _push(fn.apply(state, args));
   } else {
-    throw new Error(`Expected a function, got ${fn.to_text()}`);
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected a function, got ${fn.to_text()}`
+    );
   }
 }
 
@@ -137,7 +141,10 @@ export function json_to_crochet(value: unknown): CrochetValue {
       }
     }
     default:
-      throw new Error(`Invalid JSON type ${typeof value}`);
+      throw new ErrArbitrary(
+        "invalid-json",
+        `Invalid JSON type ${typeof value}`
+      );
   }
 }
 
@@ -159,6 +166,9 @@ export function number_to_float(value: CrochetValue) {
   } else if (value instanceof CrochetFloat) {
     return value.value;
   } else {
-    throw new Error(`Expected an integer or float, got ${type_name(value)}`);
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected an integer or float, got ${type_name(value)}`
+    );
   }
 }

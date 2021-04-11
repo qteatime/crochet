@@ -1,4 +1,4 @@
-import { ErrNoProjection, ErrNoSelection } from "../vm";
+import { ErrArbitrary, ErrNoProjection, ErrNoSelection } from "../vm";
 
 export abstract class CrochetValue {
   abstract type: CrochetType;
@@ -27,7 +27,10 @@ export abstract class CrochetValue {
   }
 
   to_json(): any {
-    throw new Error(`Unsupported by ${type_name(this.type)}`);
+    throw new ErrArbitrary(
+      "unsupported",
+      `Unsupported by ${type_name(this.type)}`
+    );
   }
 
   get projection(): IProjection {

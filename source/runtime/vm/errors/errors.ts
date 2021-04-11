@@ -143,3 +143,13 @@ export class ErrNativeError extends MachineError {
     }
   }
 }
+
+export class ErrArbitrary extends MachineError {
+  constructor(readonly name: string, readonly message: string) {
+    super();
+  }
+
+  format() {
+    return `${this.name}: ${this.message}`;
+  }
+}

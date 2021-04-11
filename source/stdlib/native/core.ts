@@ -109,7 +109,7 @@ export function core_conversion(ffi: ForeignInterface) {
             } else if (x instanceof InterpolationDynamic) {
               return cast(x.value, CrochetText).value;
             } else {
-              throw new Error(`unreachable`);
+              throw new Error(`internal: impossible`);
             }
           })
           .join("")

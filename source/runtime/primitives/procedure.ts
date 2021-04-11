@@ -1,6 +1,6 @@
 import { every, zip } from "../../utils/utils";
 import { Expression, generated_node, SBlock, Statement } from "../ir";
-import { cvalue, Machine, State, _mark, _push } from "../vm";
+import { cvalue, ErrArbitrary, Machine, State, _mark, _push } from "../vm";
 import { Environment, World } from "../world";
 import { CrochetValue, CrochetType, CrochetNothing } from "./0-core";
 import { Meta } from "../ir";
@@ -38,7 +38,8 @@ export class Contract {
     for (const condition of this.pre) {
       const valid = cvalue(yield _push(condition.is_valid(state)));
       if (!valid.as_bool()) {
-        throw new Error(
+        throw new ErrArbitrary(
+          "pre-condition-failed",
           `Pre-condition violated when calling ${name}\nArguments: (${[
             ...zip(params, args),
           ]
@@ -63,7 +64,8 @@ export class Contract {
     for (const condition of this.post) {
       const valid = cvalue(yield _push(condition.is_valid(state)));
       if (!valid.as_bool()) {
-        throw new Error(
+        throw new ErrArbitrary(
+          "pos-condition-failed",
           `Post-condition violated from ${name}\nArguments: (${[
             ...zip(params, args),
           ]

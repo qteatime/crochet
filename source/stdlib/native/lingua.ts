@@ -10,6 +10,7 @@ import {
   CrochetUnknown,
   CrochetValue,
   cvalue,
+  ErrArbitrary,
   ForeignInterface,
   from_bool,
   State,
@@ -87,7 +88,7 @@ export function lingua_ffi(ffi: ForeignInterface) {
     .defun("error-message", [CrochetUnknown], (match0) => {
       const match = match0.value as Ohm.MatchResult;
       if (match.message == null) {
-        throw new Error(`non-failed parse tree`);
+        throw new ErrArbitrary("invalid-type", `Not a failed parse tree`);
       }
       return new CrochetText(match.message);
     })

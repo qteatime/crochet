@@ -1,8 +1,5 @@
 import { start } from "repl";
 import {
-  foreign_namespace,
-  foreign,
-  machine,
   CrochetInterpolation,
   CrochetTuple,
   InterpolationDynamic,

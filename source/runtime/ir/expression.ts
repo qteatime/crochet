@@ -35,6 +35,7 @@ import {
 import {
   avalue,
   cvalue,
+  ErrArbitrary,
   ErrNoConversionAvailable,
   ErrUndefinedVariable,
   ErrUnexpectedType,
@@ -436,7 +437,7 @@ export class EApply extends Expression {
       const args = values.map((x) => cast(x, PartialConcrete).value);
       return yield _push(fn0.apply(state, args));
     } else {
-      throw new Error(`Expected a function`);
+      throw new ErrArbitrary("invalid-type", `Expected a function`);
     }
   }
 }

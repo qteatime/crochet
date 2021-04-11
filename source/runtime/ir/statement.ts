@@ -11,6 +11,7 @@ import {
 import {
   avalue,
   cvalue,
+  ErrArbitrary,
   ErrVariableAlreadyBound,
   Machine,
   run_all,
@@ -244,8 +245,9 @@ export class SAssert extends Statement {
     const value = cvalue(yield _push(expr.evaluate(state)));
     if (!value.as_bool()) {
       const report = subexprs.map((x, i) => `  - ${x.to_text()}`).join("\n");
-      throw new Error(
-        `assertion failed: ${this.position.source_slice}\nWith values:\n${report}`
+      throw new ErrArbitrary(
+        "assertion-failed",
+        `${this.position.source_slice}\nWith values:\n${report}`
       );
     }
     return value;
