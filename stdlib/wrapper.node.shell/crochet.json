@@ -1,0 +1,12 @@
+{
+  "name": "crochet.wrapper.node.shell",
+  "target": "node",
+  "stability": "experimental",
+  "dependencies": ["crochet.core"],
+  "sources": ["source/shell.crochet"],
+  "native_sources": ["native/shell.js"],
+  "capabilities": {
+    "requires": ["native"],
+    "provides": ["shell"]
+  }
+}

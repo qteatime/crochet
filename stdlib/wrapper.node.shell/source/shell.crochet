@@ -1,0 +1,12 @@
+% crochet
+
+singleton shell;
+
+command shell run: (File is text) arguments: (Args is tuple) options: (Options is record)
+  = foreign shell.exec-file(File, Args, Options);
+
+command shell run: (File is text)
+  = shell run: File arguments: [] options: [->];
+
+command shell run: (File is text) arguments: (Args is tuple)
+  = shell run: File arguments: Args options: [->];

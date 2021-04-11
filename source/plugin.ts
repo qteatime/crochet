@@ -60,12 +60,24 @@ export class Plugin {
     return cast(value, CrochetText).value;
   }
 
+  get_string(value: CrochetValue) {
+    return cast(value, CrochetText).value;
+  }
+
   get_float(value: CrochetValue) {
     return cast(value, CrochetFloat).value;
   }
 
-  get_bool(value: CrochetValue) {
+  get_boolean(value: CrochetValue) {
     return value.as_bool();
+  }
+
+  get_array(value: CrochetValue) {
+    return cast(value, CrochetTuple).values;
+  }
+
+  get_map(value: CrochetValue) {
+    return cast(value, CrochetRecord).values;
   }
 
   from_bool(value: boolean) {
