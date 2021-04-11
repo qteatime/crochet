@@ -18,6 +18,7 @@ import {
   _jump,
   _mark,
   _push,
+  _trace,
 } from "../vm";
 import { AnyContext, Context, Goal, Signal, Simulation } from "../simulation";
 import { Environment, World } from "../world";
@@ -41,6 +42,7 @@ export class SFact extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const relation = cast(
       state.world.database.lookup(this.name),
       ConcreteRelation
@@ -63,6 +65,7 @@ export class SForget extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const relation = cast(
       state.world.database.lookup(this.name),
       ConcreteRelation
@@ -96,6 +99,7 @@ export class SLet extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     let value = cvalue(yield _push(this.expr.evaluate(state)));
     if (state.env.has(this.name)) {
       throw new ErrVariableAlreadyBound(this.name);
@@ -111,6 +115,7 @@ export class SBlock extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     let result: CrochetValue = CrochetNothing.instance;
     for (const stmt of this.statements) {
       result = cvalue(yield _push(stmt.evaluate(state)));
@@ -125,6 +130,7 @@ export class SGoto extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const scene = state.world.scenes.lookup(this.name);
     const machine = scene.evaluate(state);
     return yield _jump(machine);
@@ -137,6 +143,7 @@ export class SCall extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const scene = state.world.scenes.lookup(this.name);
     const machine = scene.evaluate(state);
     return yield _push(machine);
@@ -175,6 +182,7 @@ export class SSimulate extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const actors = cast(yield _push(this.actors.evaluate(state)), CrochetTuple);
     const context = this.context.realise(state);
     const signals = new Bag<string, Signal>("signal");
@@ -198,6 +206,7 @@ export class SRegister extends Statement {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const value0 = cvalue(yield _push(this.expr.evaluate(state)));
     const value = cast(value0, CrochetInstance);
     value.type.register_instance(value);
@@ -214,6 +223,7 @@ export class SAssert extends Statement {
   }
 
   *evaluate(state0: State): Machine {
+    yield _trace(this, state0);
     const env = state0.env.clone();
     const subexprs = [];
     for (const e of this.expr.sub_expressions) {

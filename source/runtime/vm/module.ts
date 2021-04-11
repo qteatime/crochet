@@ -21,6 +21,10 @@ export class CrochetModule {
     return this.pkg.relative_filename(this.filename);
   }
 
+  get qualified_name() {
+    return `${this.pkg.name}~${this.relative_filename}`;
+  }
+
   namespace_allowed(ns: string) {
     return this.pkg.dependencies.some((x) => x.name === ns);
   }

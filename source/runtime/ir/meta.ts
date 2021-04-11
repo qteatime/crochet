@@ -3,6 +3,7 @@ export { Meta };
 
 export abstract class Metadata {
   abstract source_slice: string;
+  abstract annotated_source: string;
 }
 
 export class Interval extends Metadata {
@@ -13,11 +14,19 @@ export class Interval extends Metadata {
   get source_slice() {
     return this.info.source_slice;
   }
+
+  get annotated_source() {
+    return this.info.formatted_position_message;
+  }
 }
 
 export class GeneratedNode extends Metadata {
   get source_slice() {
     return `(source unavailable)`;
+  }
+
+  get annotated_source() {
+    return "(source unavailable)";
   }
 }
 

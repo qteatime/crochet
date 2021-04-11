@@ -42,6 +42,7 @@ import {
   run_all,
   State,
   _push,
+  _trace,
 } from "../vm";
 import { Environment } from "../world";
 import { Metadata } from "./meta";
@@ -87,6 +88,7 @@ export class EVariable extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const value = state.env.try_lookup(this.name);
     if (value == null) {
       throw new ErrUndefinedVariable(this.name);
@@ -140,6 +142,7 @@ export class EInvoke extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const args = avalue(
       yield _push(run_all(this.args.map((x) => x.evaluate(state))))
     );
@@ -166,6 +169,7 @@ export class ENew extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const type = cast(state.env.module.lookup_type(this.name), TCrochetType);
     const values = avalue(
       yield _push(run_all(this.data.map((x) => x.evaluate(state))))
@@ -183,7 +187,8 @@ export class EGlobal extends Expression {
     super();
   }
 
-  *evaluate(state: State) {
+  *evaluate(state: State): Machine {
+    yield _trace(this, state);
     return state.env.module.lookup_value(this.name);
   }
 }
@@ -193,7 +198,8 @@ export class ESelf extends Expression {
     super();
   }
 
-  *evaluate(state: State) {
+  *evaluate(state: State): Machine {
+    yield _trace(this, state);
     return state.env.receiver;
   }
 }
@@ -204,6 +210,7 @@ export class EList extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const values = avalue(
       yield _push(run_all(this.values.map((x) => x.evaluate(state))))
     );
@@ -224,6 +231,7 @@ export class ERecord extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const map = new Map<string, CrochetValue>();
     for (const pair of this.pairs) {
       const value = cvalue(yield _push(pair.value.evaluate(state)));
@@ -247,6 +255,7 @@ export class ECast extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const type = this.type.realise(state);
     const value0 = cvalue(yield _push(this.value.evaluate(state)));
     const value = type.coerce(value0);
@@ -272,6 +281,7 @@ export class EProject extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const object = cvalue(yield _push(this.object.evaluate(state)));
     return object.projection.project(this.field);
   }
@@ -291,6 +301,7 @@ export class EProjectMany extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const object = cvalue(yield _push(this.object.evaluate(state)));
     return object.selection.select(this.fields);
   }
@@ -361,6 +372,7 @@ export class EForall extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const results: CrochetValue[] = [];
     yield* this.expr.evaluate(state, results);
     return new CrochetTuple(results);
@@ -389,6 +401,7 @@ export class EPartial extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const values = (yield _push(
       run_all(this.values.map((x) => x.evaluate(state)))
     )) as unknown[];
@@ -410,6 +423,7 @@ export class EApply extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const fn0 = cvalue(yield _push(this.partial.evaluate(state)));
     const values0 = (yield _push(
       run_all(this.values.map((x) => x.evaluate(state)))
@@ -457,6 +471,7 @@ export class EInterpolate extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const values = (yield _push(
       run_all(this.parts.map((x) => x.evaluate(state)))
     )) as InteprolationPart[];
@@ -490,6 +505,7 @@ export class EMatchSearch extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     for (const kase of this.cases) {
       const results = kase.search(state);
       if (results.length !== 0) {
@@ -545,6 +561,7 @@ export class EHasType extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const value = cvalue(yield _push(this.value.evaluate(state)));
     const type = this.type.realise(state);
     return from_bool(type.accepts(value));
@@ -567,6 +584,7 @@ export class EForce extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const value = cvalue(yield _push(this.value.evaluate(state)));
     if (value instanceof CrochetThunk) {
       return cvalue(yield _push(value.force(state)));
@@ -582,6 +600,7 @@ export class EReturn extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     return state.env.lookup("contract:return");
   }
 }
@@ -592,6 +611,7 @@ export class EStaticType extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const type = this.type.realise(state);
     return type.static_type;
   }
@@ -631,6 +651,7 @@ export class EIntrinsicEqual extends Expression {
   }
 
   *evaluate(state: State): Machine {
+    yield _trace(this, state);
     const left = cvalue(yield _push(this.left.evaluate(state)));
     const right = cvalue(yield _push(this.right.evaluate(state)));
     return from_bool(left.equals(right));

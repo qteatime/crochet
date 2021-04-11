@@ -1,12 +1,13 @@
 import { logger } from "../../utils";
 import { unreachable } from "../../utils/utils";
-import { Expression, Statement } from "../ir";
+import { Expression, generated_node, Metadata, Statement } from "../ir";
 import { CrochetValue } from "../primitives";
 import { ErrNativeError, MachineError } from "./errors/errors";
+import type { State } from "./state";
 
 // Error types
 export class CrochetError {
-  constructor(readonly error: MachineError, readonly frames: string[]) {}
+  constructor(readonly error: MachineError, readonly trace: StackTrace) {}
 
   get message() {
     return this.error.format();
@@ -17,13 +18,12 @@ export class CrochetError {
       ? this.error.format_verbose()
       : this.error.format();
 
-    const trace = this.frames.map((x) => `  - ${x}`).join("\n");
-    return `${message}\n\nExecution trace:\n${trace}`;
+    return `${message}\n\n${this.trace.format()}`;
   }
 }
 
 // Yield types
-export type Yield = Await | Push | Jump | Mark;
+export type Yield = Await | Push | Jump | Mark | Trace;
 
 export class Push {
   readonly tag = "push";
@@ -63,6 +63,18 @@ export class Mark {
   }
 }
 
+export class Trace {
+  readonly tag = "trace";
+  constructor(readonly expr: Expression | Statement, readonly state: State) {}
+
+  evaluate(thread: Thread) {
+    thread.current = {
+      position: this.expr.position,
+      filename: this.state.env.module.qualified_name,
+    };
+  }
+}
+
 export class Await {
   readonly tag = "await";
   constructor(readonly value: Promise<unknown>) {}
@@ -82,6 +94,10 @@ export function _push(machine: Machine) {
 
 export function _jump(machine: Machine) {
   return new Jump(machine);
+}
+
+export function _trace(expr: Expression | Statement, state: State) {
+  return new Trace(expr, state);
 }
 
 export function _mark(
@@ -132,11 +148,12 @@ export class Thread {
   private constructor(
     public stack: Frame[],
     public machine: Machine,
-    public input: unknown
+    public input: unknown,
+    public current: { position: Metadata; filename: string } | null
   ) {}
 
   static for_machine(machine: Machine) {
-    return new Thread([], machine, null);
+    return new Thread([], machine, null, null);
   }
 
   save_machine() {
@@ -213,6 +230,7 @@ export class Thread {
 
   stack_trace() {
     const trace = [];
+
     let n = 10;
     for (let i = this.stack.length - 1; i >= 0 && n > 0; --i) {
       const frame = this.stack[i];
@@ -221,11 +239,42 @@ export class Thread {
         n--;
       }
     }
-    return trace;
+    return new StackTrace(this.current, trace);
   }
 
   die(message: string) {
-    throw new Error(`${message}\n\n  - ${this.stack_trace().join("\n  -")}`);
+    throw new Error(`${message}\n\n  - ${this.stack_trace().format()}`);
+  }
+}
+
+export class StackTrace {
+  constructor(
+    readonly location: { position: Metadata; filename: string } | null,
+    readonly trace: string[]
+  ) {}
+
+  format_location() {
+    if (this.location == null) {
+      return [];
+    } else {
+      return [
+        `In ${this.location.filename} at ${this.location.position.annotated_source}`,
+      ];
+    }
+  }
+
+  format_trace() {
+    if (this.trace.length === 0) {
+      return [];
+    } else {
+      return [
+        [`Arising from:`, ...this.trace.map((x) => `  - ${x}`)].join("\n"),
+      ];
+    }
+  }
+
+  format() {
+    return [...this.format_location(), ...this.format_trace()].join("\n\n");
   }
 }
 
