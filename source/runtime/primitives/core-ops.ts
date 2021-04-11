@@ -89,6 +89,10 @@ export function* apply(
 }
 
 export function js_to_crochet(value: unknown): CrochetValue {
+  if (value instanceof CrochetValue) {
+    return value;
+  }
+
   switch (typeof value) {
     case "number":
       return new CrochetFloat(value);

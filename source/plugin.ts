@@ -18,6 +18,7 @@ import {
   _push,
   _await,
   CrochetNothing,
+  CrochetUnknown,
 } from "./runtime";
 import { CrochetPackage } from "./runtime/pkg";
 import { ForeignNamespace } from "./stdlib";
@@ -110,6 +111,22 @@ export class Plugin {
 
   from_json(value: string) {
     return json_to_crochet(JSON.parse(value));
+  }
+
+  from_json_object(value: unknown) {
+    return json_to_crochet(value);
+  }
+
+  box(value: unknown) {
+    if (value instanceof CrochetUnknown) {
+      return value;
+    } else {
+      return new CrochetUnknown(value);
+    }
+  }
+
+  unbox<T>(value: CrochetValue): T {
+    return cast(value, CrochetUnknown).value as T;
   }
 
   invoke(state: State, name: string, args: CrochetValue[]) {

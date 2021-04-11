@@ -1,0 +1,51 @@
+% crochet
+
+local abstract mod;
+command #mod do-request: Url data: Data options: (Options is record)
+  = foreign http.request(Url, Data, Options);
+
+type response(status is integer, headers is record, body is text);
+type request-error(reason is text);
+
+command #mod request: (Url is url) data: (Data is text) options: (Options is record) do
+  let Result = #mod do-request: Url to-text data: Data options: Options;
+  condition
+    when Result.success do
+      let Res = Result.response;
+      new response(Res.status-code, Res.headers, Res.body);
+    end
+
+    always =>
+      new request-error(Result.message);
+  end
+end
+
+
+singleton http;
+
+command http request: Url data: Data options: Options =
+  #mod request: Url data: Data options: Options;
+
+command http get: Url options: Options =
+  #mod request: Url data: "" options: (Options ++ [method -> "GET"]);
+
+command http get: Url =
+  http get: Url options: [->];
+
+command http post: Url data: Data options: Options =
+  #mod request: Url data: Data options: (Options ++ [method -> "POST"]);
+
+command http post: Url data: Data =
+  http post: Url data: Data options: [->];
+
+command http delete: Url options: Options =
+  #mod request: Url options: (Options ++ [method -> "DELETE"]);
+
+command http delete: Url =
+  http delete: Url options: [->];
+
+command http patch: Url data: Data options: Options =
+  #mod request: Url data: Data options: (Options ++ [method -> "PATCH"]);
+
+command http patch: Url data: Data =
+  http patch: Url data: Data options: [->];

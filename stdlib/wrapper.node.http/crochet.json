@@ -1,0 +1,12 @@
+{
+  "name": "crochet.wrapper.node.http",
+  "target": "node",
+  "stability": "experimental",
+  "dependencies": ["crochet.core"],
+  "sources": ["source/url.crochet", "source/client.crochet"],
+  "native_sources": ["native/http.js"],
+  "capabilities": {
+    "requires": ["native"],
+    "provides": ["network"]
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "crochet.wrapper.node.fs",
+  "name": "crochet.wrapper.node.file-system",
   "target": "node",
   "stability": "experimental",
   "dependencies": ["crochet.core", "crochet.text"],
@@ -7,6 +7,6 @@
   "native_sources": ["native/fs.js"],
   "capabilities": {
     "requires": ["native"],
-    "provides": ["fs"]
+    "provides": ["file-system"]
   }
 }
