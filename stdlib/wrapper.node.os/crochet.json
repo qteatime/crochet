@@ -1,0 +1,12 @@
+{
+  "name": "crochet.wrapper.node.os",
+  "target": "node",
+  "stability": "experimental",
+  "dependencies": ["crochet.core"],
+  "sources": ["source/os.crochet"],
+  "native_sources": ["native/os.js"],
+  "capabilities": {
+    "requires": ["native"],
+    "provides": ["os"]
+  }
+}

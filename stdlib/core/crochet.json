@@ -1,6 +1,7 @@
 {
   "name": "crochet.core",
   "target": "*",
+  "stability": "experimental",
   "sources": [
     "source/0-types.crochet",
     "source/traits/arithmetic.crochet",

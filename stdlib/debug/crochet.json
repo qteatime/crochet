@@ -1,6 +1,7 @@
 {
   "name": "crochet.debug",
   "target": "*",
+  "stability": "experimental",
   "sources": ["transcript.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {

@@ -1,6 +1,7 @@
 {
   "name": "crochet.text",
   "target": "*",
+  "stability": "experimental",
   "dependencies": ["crochet.core", "crochet.collections"],
   "sources": [
     "source/core.crochet",

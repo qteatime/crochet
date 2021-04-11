@@ -1,6 +1,7 @@
 {
   "name": "crochet.time",
   "target": "*",
+  "stability": "experimental",
   "sources": ["time.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {

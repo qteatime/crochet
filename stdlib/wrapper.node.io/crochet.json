@@ -1,6 +1,7 @@
 {
   "name": "crochet.wrapper.node.io",
   "target": "node",
+  "stability": "experimental",
   "dependencies": ["crochet.core"],
   "sources": ["source/terminal.crochet"],
   "native_sources": ["native/terminal.js"],

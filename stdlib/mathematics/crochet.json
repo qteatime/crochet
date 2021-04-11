@@ -1,6 +1,7 @@
 {
   "name": "crochet.mathematics",
   "target": "*",
+  "stability": "experimental",
   "sources": ["source/trigonometry.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {

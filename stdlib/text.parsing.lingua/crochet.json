@@ -1,6 +1,7 @@
 {
   "name": "crochet.text.parsing.lingua",
   "target": "*",
+  "stability": "experimental",
   "dependencies": ["crochet.core", "crochet.text", "crochet.collections"],
   "sources": ["source/core.crochet"],
   "capabilities": {

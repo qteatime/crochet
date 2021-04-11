@@ -1,6 +1,7 @@
 {
   "name": "crochet.formats.json",
   "target": "*",
+  "stability": "experimental",
   "dependencies": ["crochet.core"],
   "sources": ["source/json.crochet"],
   "capabilities": {

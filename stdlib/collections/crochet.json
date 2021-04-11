@@ -1,6 +1,7 @@
 {
   "name": "crochet.collections",
   "target": "*",
+  "stability": "experimental",
   "dependencies": ["crochet.core"],
   "sources": [
     "source/0-types.crochet",
