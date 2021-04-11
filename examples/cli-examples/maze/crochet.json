@@ -2,7 +2,13 @@
   "name": "crochet.examples.cli-examples.maze",
   "target": "node",
   "sources": ["maze-generation.crochet"],
-  "dependencies": ["crochet.core", "crochet.transcript"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.collections",
+    "crochet.text",
+    "crochet.mathematics",
+    "crochet.debug"
+  ],
   "capabilities": {
     "requires": [],
     "provides": []

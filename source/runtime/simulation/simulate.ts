@@ -15,11 +15,13 @@ import {
   _push,
 } from "../vm";
 import {
+  CrochetFloat,
   CrochetInteger,
   CrochetNothing,
   CrochetTuple,
   CrochetValue,
   False,
+  number_to_float,
 } from "../primitives";
 import { Pattern, UnificationEnvironment } from "../logic";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
@@ -135,7 +137,7 @@ export class Simulation {
           function* (_state, _actions, _for) {
             const scores = avalue(
               yield _push(run_all(actions.map((x) => x.score.force(state))))
-            ).map((x) => Number(cast(x, CrochetInteger).value));
+            ).map((x) => number_to_float(x));
             const scored_actions = [...zip(scores, actions)];
             return (
               state.random.random_weighted_choice(scored_actions) ??

@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.debug;
+
 singleton dungeon;
 type dungeon-gen(Max-Rooms is integer);
 
@@ -67,7 +69,9 @@ command dungeon-gen draw do
         when IX y: IY char: Char => Char;
         always => " ";
       end first;
-    end interpolate;
+    end
+    |> #interpolation coerce: _
+    |> #text coerce: _;
   end
 end
 
@@ -100,8 +104,8 @@ command east connecting-symbol = "—";
 command west connecting-symbol = "—";
 
 scene main do
-  let Dungeon = dungeon generate-with-max-rooms: 20;
-  let Map = Dungeon draw;
+  let Dungeon = benchmark block: { dungeon generate-with-max-rooms: 20 } tag: "Generate";
+  let Map = benchmark block: { Dungeon draw } tag: "Draw";
   for Line in Map do
     transcript write: Line;
   end

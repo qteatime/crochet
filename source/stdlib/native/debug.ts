@@ -1,9 +1,11 @@
 import {
+  apply,
   box,
   CrochetNothing,
   CrochetText,
   CrochetUnknown,
   CrochetValue,
+  cvalue,
   ECAnd,
   ECInPackage,
   ECNamed,
@@ -16,7 +18,7 @@ import {
   TraceRef,
   _push,
 } from "../../runtime";
-import { cast } from "../../utils";
+import { cast, format_time_diff } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
 
 export function debug_transcript(ffi: ForeignInterface) {
@@ -82,4 +84,19 @@ export function debug_trace(ffi: ForeignInterface) {
     });
 }
 
-export default [debug_transcript, debug_trace];
+export function debug_time(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.debug:time").defmachine(
+    "time",
+    [CrochetText, CrochetValue],
+    function* (state, label, computation) {
+      const ns_start = process.hrtime.bigint();
+      const result = cvalue(yield _push(apply(state, computation, [])));
+      const ns_end = process.hrtime.bigint();
+      const diff = ns_end - ns_start;
+      console.log(`[${label.value}] ${format_time_diff(diff)}`);
+      return result;
+    }
+  );
+}
+
+export default [debug_transcript, debug_trace, debug_time];

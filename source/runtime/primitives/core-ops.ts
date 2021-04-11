@@ -1,4 +1,4 @@
-import { CrochetNothing, CrochetType, CrochetValue } from "./0-core";
+import { CrochetNothing, CrochetType, CrochetValue, type_name } from "./0-core";
 import {
   cvalue,
   ErrInvalidArity,
@@ -151,4 +151,14 @@ export function box(value: unknown) {
 
 export function unbox<T>(value: CrochetValue): T {
   return cast(value, CrochetUnknown).value as T;
+}
+
+export function number_to_float(value: CrochetValue) {
+  if (value instanceof CrochetInteger) {
+    return Number(value.value);
+  } else if (value instanceof CrochetFloat) {
+    return value.value;
+  } else {
+    throw new Error(`Expected an integer or float, got ${type_name(value)}`);
+  }
 }

@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.debug;
+
 singleton maze;
 type maze-gen(Width is integer, Height is integer);
 type point(X is integer, Y is integer);
@@ -23,8 +25,11 @@ command point move: east  = new point(self.X + 1, self.Y);
 command point move: south = new point(self.X, self.Y + 1);
 command point move: west  = new point(self.X - 1, self.Y);
 
-command point distance-to: (P is point) =
-  (((P.X - self.X) ** 2) + ((P.Y - self.Y) ** 2)) sqrt;
+command point distance-to: (P is point) do
+  let X = #float coerce: (P.X - self.X);
+  let Y = #float coerce: (P.Y - self.Y);
+  ((X ** 2.0) + (Y ** 2.0)) sqrt;
+end
 
 command cell adjacent-cells do
   let Adjacency = [
@@ -126,7 +131,7 @@ when
   not state: cs-exposed cell: _,
   sample 5 of state: cs-cut cell: Start,
   sample 5 of state: cs-cut cell: Goal,
-  if Start =/= Goal,
+  if not (Start =:= Goal),
   not Start adjacent: Goal
 rank
   Start.Position distance-to: Goal.Position
@@ -139,10 +144,12 @@ end
 
 command maze-gen draw do
   for IY in 1 to: self.Height do
-    transcript write:
-      for IX in 1 to: self.Width do
-        (cell-at: new point(IX, IY)) draw;
-      end interpolate;
+    for IX in 1 to: self.Width do
+      (cell-at: new point(IX, IY)) draw;
+    end
+    |> #interpolation coerce: _
+    |> #text coerce: _
+    |> transcript write: _
   end
 end
 
@@ -159,6 +166,6 @@ command cell draw do
 end
 
 scene main do
-  let Maze = maze generate-width: 20 height: 20;
-  Maze draw;
+  let Maze = benchmark block: { maze generate-width: 20 height: 20 } tag: "Generate";
+  benchmark block: { Maze draw } tag: "Draw";
 end

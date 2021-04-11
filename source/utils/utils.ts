@@ -23,7 +23,7 @@ export function cast<T extends Function & { prototype: any }>(
     return x as any;
   } else {
     throw new TypeError(
-      `internal: expected ${type_name(type)}, got ${Util.inspect(x)}`
+      `internal: expected ${type_name(type)}, got ${type_name(x)}`
     );
   }
 }
@@ -81,4 +81,26 @@ export function copy_map<A, B>(source: Map<A, B>, target: Map<A, B>) {
 
 export function* gen<A>(x: Iterable<A>) {
   yield* x;
+}
+
+// assumes nanoseconds
+export function format_time_diff(n: bigint) {
+  const units: [bigint, string][] = [
+    [1000n, "μs"],
+    [1000n, "ms"],
+    [1000n, "s"],
+  ];
+
+  let value = n;
+  let suffix = "ns";
+  for (const [divisor, unit] of units) {
+    if (value > divisor) {
+      value = value / divisor;
+      suffix = unit;
+    } else {
+      break;
+    }
+  }
+
+  return `${value}${suffix}`;
 }
