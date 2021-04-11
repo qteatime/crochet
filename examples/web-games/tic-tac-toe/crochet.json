@@ -1,6 +1,6 @@
 {
   "name": "crochet.examples.tic-tac-toe",
-  "target": "web",
+  "target": "browser",
   "sources": ["tic-tac-toe.crochet"],
   "dependencies": ["crochet.core", "crochet.ui.html"],
   "capabilities": {

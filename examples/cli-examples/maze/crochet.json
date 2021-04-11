@@ -1,6 +1,6 @@
 {
   "name": "crochet.examples.cli-examples.maze",
-  "target": "cli",
+  "target": "node",
   "sources": ["maze-generation.crochet"],
   "dependencies": ["crochet.core", "crochet.transcript"],
   "capabilities": {

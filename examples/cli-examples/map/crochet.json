@@ -1,6 +1,6 @@
 {
   "name": "crochet.examples.cli-examples.map",
-  "target": "cli",
+  "target": "node",
   "sources": ["map-generation.crochet"],
   "dependencies": ["crochet.core", "crochet.transcript"],
   "capabilities": {
