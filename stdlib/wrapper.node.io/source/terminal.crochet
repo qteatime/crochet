@@ -1,0 +1,75 @@
+% crochet
+
+local type terminal-mod;
+command #terminal-mod clear =
+  foreign terminal.clear();
+
+command #terminal-mod log-text: (Text is text) =
+  foreign terminal.log-text(Text);
+
+command #terminal-mod log-error: (Text is text) =
+  foreign terminal.log-error(Text);
+
+command #terminal-mod stdout-write: (Text is text) =
+  foreign terminal.stdout-write(Text);
+
+command #terminal-mod stderr-write: (Text is text) =
+  foreign terminal.stderr-write(Text);
+
+command #terminal-mod stdin-read =
+  foreign terminal.stdin-read();
+
+command #terminal-mod read-line: (Prompt is text) =
+  foreign terminal.read-line(Prompt);
+
+
+singleton terminal;
+
+command terminal clear do
+  #terminal-mod clear;
+  self;
+end
+
+command terminal write-line: (Text is text) do
+  #terminal-mod log-text: Text;
+  self;
+end
+
+command terminal write-error-line: (Text is text) do
+  #terminal-mod log-error: Text;
+  self;
+end
+
+command terminal write: (Text is text) do
+  #terminal-mod stdout-write: Text;
+  self;
+end
+
+command terminal write-error: (Text is text) do
+  #terminal-mod stderr-write: Text;
+  self;
+end
+
+command terminal read-input do
+  #terminal-mod stdin-read;
+end
+
+command terminal prompt: (Prompt is text) do
+  #terminal-mod read-line: Prompt;
+end
+
+
+command terminal write-line: (X is interpolation) =
+  terminal write-line: (#text coerce: X);
+
+command terminal write-error-line: (X is interpolation) =
+  terminal write-error-line: (#text coerce: X);
+
+command terminal write: (X is interpolation) =
+  terminal write: (#text coerce: X);
+
+command terminal write-error: (X is interpolation) =
+  terminal write: (#text coerce: X);
+
+command terminal prompt: (X is interpolation) =
+  terminal prompt: (#text coerce: X);

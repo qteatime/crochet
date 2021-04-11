@@ -7,7 +7,7 @@ import {
   State,
   type_name,
 } from "../runtime";
-import { zip } from "../utils";
+import { logger, zip } from "../utils";
 
 type Class<T> = {
   new (...args: any[]): T;
@@ -36,6 +36,7 @@ export class ForeignNamespace {
   }
 
   deftype(name: string, type: CrochetType) {
+    logger.debug(`Defining native type ${name}`);
     this.ffi.types.add(this.namespaced(name), type);
     return this;
   }
@@ -45,6 +46,7 @@ export class ForeignNamespace {
     types: [...T],
     fn: (...args: Instances<T>) => CrochetValue
   ) {
+    logger.debug(`Defining native function ${name}`);
     this.ffi.methods.add(
       this.namespaced(name),
       function* (state: State, ...args: CrochetValue[]) {
@@ -59,6 +61,7 @@ export class ForeignNamespace {
     types: [...T],
     fn: (state: State, ...args: Instances<T>) => Machine
   ) {
+    logger.debug(`Defining native function ${name}`);
     this.ffi.methods.add(this.namespaced(name), fn as any);
     return this;
   }

@@ -1,21 +1,9 @@
 import {
   CrochetValue,
-  CrochetType,
   ForeignInterface,
   CrochetInteger,
   CrochetText,
   CrochetFloat,
-  TCrochetType,
-  TCrochetAny,
-  TCrochetInteger,
-  TCrochetFloat,
-  TCrochetBoolean,
-  TCrochetNothing,
-  TCrochetUnknown,
-  TAnyFunction,
-  TCrochetTuple,
-  TCrochetText,
-  TCrochetRecord,
   from_bool,
   CrochetTuple,
   CrochetRecord,
@@ -35,17 +23,33 @@ import { CrochetPackage } from "./runtime/pkg";
 import { ForeignNamespace } from "./stdlib";
 import { cast } from "./utils";
 
-export class Plugin {
-  #ffi: ForeignInterface;
-  #pkg: CrochetPackage;
+export class PluginFFI {
+  constructor(private ffi: ForeignNamespace) {}
 
-  constructor(pkg: CrochetPackage, ffi: ForeignInterface) {
-    this.#pkg = pkg;
-    this.#ffi = ffi;
+  defun(name: string, fn: (...args: CrochetValue[]) => CrochetValue) {
+    this.ffi.defun(name, [], fn);
+    return this;
+  }
+
+  defmachine(
+    name: string,
+    fn: (state: State, ...args: CrochetValue[]) => Machine
+  ) {
+    this.ffi.defmachine(name, [], fn);
+    return this;
+  }
+}
+
+export class Plugin {
+  constructor(private pkg: CrochetPackage, private ffi: ForeignInterface) {
+    this.pkg = pkg;
+    this.ffi = ffi;
   }
 
   define_ffi(namespace: string) {
-    return new ForeignNamespace(this.#ffi, `${this.#pkg.name}:${namespace}`);
+    return new PluginFFI(
+      new ForeignNamespace(this.ffi, `${this.pkg.name}:${namespace}`)
+    );
   }
 
   get_integer(value: CrochetValue) {
@@ -123,16 +127,4 @@ export class Plugin {
   await(promise: Promise<any>) {
     return _await(promise);
   }
-
-  primitive_types = {
-    integer: TCrochetInteger.type,
-    float: TCrochetFloat.type,
-    boolean: TCrochetBoolean.type,
-    nothing: TCrochetNothing.type,
-    unknown: TCrochetUnknown.type,
-    function: TAnyFunction.type,
-    tuple: TCrochetTuple.type,
-    text: TCrochetText.type,
-    record: TCrochetRecord.type,
-  };
 }

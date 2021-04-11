@@ -1,9 +1,0 @@
-% crochet
-
-singleton terminal;
-
-command terminal hello = foreign terminal.hello();
-
-scene main do
-  terminal hello;
-end
