@@ -1,6 +1,6 @@
 import type { Plugin } from "../../../build/plugin";
+import type { CrochetValue } from "../../../build/runtime";
 import { execFileSync } from "child_process";
-import { CrochetValue } from "../../../build/runtime";
 
 export default async (plugin: Plugin) => {
   function to_env(map: Map<string, CrochetValue>) {

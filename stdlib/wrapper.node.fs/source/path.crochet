@@ -1,0 +1,89 @@
+% crochet
+
+local abstract path-mod;
+command #path-mod base: (Path is text)
+  = foreign path.basename(Path);
+
+command #path-mod base: (Path is text) without-extension: (Ext is text)
+  = foreign path.basename-ext(Path, Ext);
+
+command #path-mod delimiter
+  = foreign path.delimiter();
+
+command #path-mod directory: (Path is text)
+  = foreign path.dirname(Path);
+
+command #path-mod extension: (Path is text)
+  = foreign path.extension(Path);
+
+command #path-mod is-absolute: (Path is text)
+  = foreign path.is-absolute(Path);
+
+command #path-mod join: (Paths is tuple)
+  = foreign path.join(Paths);
+
+command #path-mod normalise: (Path is text)
+  = foreign path.normalise(Path);
+
+command #path-mod relative: (From is text) to: (To is text)
+  = foreign path.relative(From, To);
+
+command #path-mod resolve: (Paths is text)
+  = foreign path.resolve(Paths);
+
+command #path-mod separator
+  = foreign path.separator();
+
+
+abstract path;
+type path-obj is path(path is text);
+
+command #path from-text: (Text is text)
+  = new path-obj(Text);
+
+command #path separator = #path-mod separator;
+command #path delimiter = #path-mod delimiter;
+
+command #path is-segment: (Text is text)
+  = not ((Text contains: #path separator) or (Text contains: #path delimiter));
+
+command path-obj base-name =
+  #path-mod base: self.path;
+
+command path-obj base-name-without-extension: (Extension is text) =
+  #path-mod base: self.path without-extension: Extension;
+
+command path-obj base-name-without-extension =
+  self base-name-without-extension: self extension;
+
+command path-obj directory =
+  new path-obj(#path-mod directory: self.path);
+
+command path-obj extension =
+  #path-mod extension: self.path;
+
+command path-obj is-absolute =
+  #path-mod is-absolute: self.path;
+
+command path-obj join: (That is path-obj) =
+  new path-obj(#path-mod join: [self.path, That.path]);
+
+command path-obj / (That is text)
+requires
+  segment :: #path is-segment: That
+do
+  new path-obj(#path-mod join: [self.path, That])
+end
+
+command path-obj normalise =
+  new path-obj(#path-mod normalise: self.path);
+
+command path-obj relative-to: (That is path-obj) =
+  new path-obj(#path-mod relative: That.path to: self.path);
+
+command path-obj resolve =
+  new path-obj(#path-mod resolve: [self.path]);
+
+command path-obj to-text =
+  self.path;
+

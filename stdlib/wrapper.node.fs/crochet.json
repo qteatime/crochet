@@ -1,0 +1,12 @@
+{
+  "name": "crochet.wrapper.node.fs",
+  "target": "node",
+  "stability": "experimental",
+  "dependencies": ["crochet.core", "crochet.text"],
+  "sources": ["source/path.crochet", "source/fs.crochet"],
+  "native_sources": ["native/fs.js"],
+  "capabilities": {
+    "requires": ["native"],
+    "provides": ["fs"]
+  }
+}

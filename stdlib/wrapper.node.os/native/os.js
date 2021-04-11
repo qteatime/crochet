@@ -18,7 +18,7 @@ exports.default = async (plugin) => {
         return plugin.from_array(process.argv.slice(2).map((x) => plugin.from_string(x)));
     })
         .defun("chdir", (dir) => {
-        process.chdir(plugin.get_text(dir));
+        process.chdir(plugin.get_string(dir));
         return plugin.nothing();
     })
         .defun("cwd", () => {

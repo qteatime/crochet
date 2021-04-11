@@ -28,25 +28,25 @@ exports.default = async (plugin) => {
         return plugin.nothing();
     })
         .defun("log-text", (text) => {
-        console.log(plugin.get_text(text));
+        console.log(plugin.get_string(text));
         return plugin.nothing();
     })
         .defun("log-error", (text) => {
-        console.error(plugin.get_text(text));
+        console.error(plugin.get_string(text));
         return plugin.nothing();
     })
         .defun("stdout-write", (text) => {
-        process.stdout.write(plugin.get_text(text));
+        process.stdout.write(plugin.get_string(text));
         return plugin.nothing();
     })
         .defun("stderr-write", (text) => {
-        process.stderr.write(plugin.get_text(text));
+        process.stderr.write(plugin.get_string(text));
         return plugin.nothing();
     })
         .defmachine("stdin-read", function* (_) {
         return plugin.from_js(yield plugin.await(read(process.stdin)));
     })
         .defmachine("read-line", function* (_, prompt) {
-        return plugin.from_js(yield plugin.await(readline(plugin.get_text(prompt))));
+        return plugin.from_js(yield plugin.await(readline(plugin.get_string(prompt))));
     });
 };
