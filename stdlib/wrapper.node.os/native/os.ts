@@ -20,7 +20,7 @@ export default async (plugin: Plugin) => {
       );
     })
     .defun("chdir", (dir) => {
-      process.chdir(plugin.get_text(dir));
+      process.chdir(plugin.get_string(dir));
       return plugin.nothing();
     })
     .defun("cwd", () => {

@@ -56,10 +56,6 @@ export class Plugin {
     return cast(value, CrochetInteger).value;
   }
 
-  get_text(value: CrochetValue) {
-    return cast(value, CrochetText).value;
-  }
-
   get_string(value: CrochetValue) {
     return cast(value, CrochetText).value;
   }
@@ -68,7 +64,7 @@ export class Plugin {
     return cast(value, CrochetFloat).value;
   }
 
-  get_boolean(value: CrochetValue) {
+  get_bool(value: CrochetValue) {
     return value.as_bool();
   }
 
@@ -88,7 +84,7 @@ export class Plugin {
     return new CrochetInteger(value);
   }
 
-  from_number(value: number) {
+  from_float(value: number) {
     return new CrochetFloat(value);
   }
 
