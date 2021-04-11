@@ -19,6 +19,7 @@ import { Type } from "./type";
 import { SimpleInterpolation } from "./atomic";
 import { cast } from "../../utils";
 import { CrochetPackage } from "../pkg";
+import { Meta, Metadata } from "./meta";
 
 export type ContextualDeclaration = DAction | DWhen;
 
@@ -33,6 +34,8 @@ export abstract class Declaration {
     context: DeclarationContext,
     state: State
   ): Promise<void> | void;
+
+  abstract position: Metadata;
 }
 
 export interface IContextualDeclaration {
@@ -44,7 +47,11 @@ export interface IContextualDeclaration {
 }
 
 export class DRelation extends Declaration {
-  constructor(readonly name: string, readonly type: TreeType) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly type: TreeType
+  ) {
     super();
   }
 
@@ -59,7 +66,11 @@ export class DRelation extends Declaration {
 }
 
 export class DPredicate extends Declaration {
-  constructor(readonly name: string, readonly procedure: PredicateProcedure) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly procedure: PredicateProcedure
+  ) {
     super();
   }
 
@@ -70,18 +81,19 @@ export class DPredicate extends Declaration {
 }
 
 export class DDo extends Declaration {
-  constructor(readonly body: Statement[]) {
+  constructor(readonly position: Metadata, readonly body: Statement[]) {
     super();
   }
 
   async apply(context: DeclarationContext, state: State) {
-    const block = new SBlock(this.body);
+    const block = new SBlock(this.position, this.body);
     state.world.schedule(block.evaluate(state.with_new_env()));
   }
 }
 
 export class DForeignCommand extends Declaration {
   constructor(
+    readonly position: Metadata,
     readonly name: string,
     readonly types: Type[],
     readonly foreign_name: string,
@@ -112,6 +124,7 @@ export class DForeignCommand extends Declaration {
 
 export class DCrochetCommand extends Declaration {
   constructor(
+    readonly position: Metadata,
     readonly name: string,
     readonly parameters: string[],
     readonly types: Type[],
@@ -142,6 +155,7 @@ export class DCrochetCommand extends Declaration {
 
 export class DType extends Declaration {
   constructor(
+    readonly position: Metadata,
     readonly local: boolean,
     readonly parent: Type | null,
     readonly name: string,
@@ -173,6 +187,7 @@ export class DType extends Declaration {
 
 export class DDefine extends Declaration {
   constructor(
+    readonly position: Metadata,
     readonly local: boolean,
     readonly name: string,
     readonly value: Expression
@@ -187,7 +202,11 @@ export class DDefine extends Declaration {
 }
 
 export class DScene extends Declaration {
-  constructor(readonly name: string, readonly body: Statement[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly body: Statement[]
+  ) {
     super();
   }
   async apply(context: DeclarationContext, state: State) {
@@ -199,6 +218,7 @@ export class DScene extends Declaration {
 
 export class DAction extends Declaration implements IContextualDeclaration {
   constructor(
+    readonly position: Metadata,
     readonly type_resctiction: Type,
     readonly title: Expression,
     readonly tags: string[],
@@ -235,7 +255,11 @@ export class DAction extends Declaration implements IContextualDeclaration {
 }
 
 export class DWhen extends Declaration implements IContextualDeclaration {
-  constructor(readonly predicate: Predicate, readonly body: Statement[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly predicate: Predicate,
+    readonly body: Statement[]
+  ) {
     super();
   }
 
@@ -261,6 +285,7 @@ export class DWhen extends Declaration implements IContextualDeclaration {
 
 export class DForeignType extends Declaration {
   constructor(
+    readonly position: Metadata,
     readonly local: boolean,
     readonly name: string,
     readonly foreign_name: string
@@ -277,7 +302,7 @@ export class DForeignType extends Declaration {
 }
 
 export class DSealType extends Declaration {
-  constructor(readonly name: string) {
+  constructor(readonly position: Metadata, readonly name: string) {
     super();
   }
 
@@ -289,6 +314,7 @@ export class DSealType extends Declaration {
 
 export class DContext extends Declaration {
   constructor(
+    readonly position: Metadata,
     readonly name: string,
     readonly declarations: IContextualDeclaration[]
   ) {
@@ -308,7 +334,7 @@ export class DContext extends Declaration {
 }
 
 export class DOpen extends Declaration {
-  constructor(readonly ns: string) {
+  constructor(readonly position: Metadata, readonly ns: string) {
     super();
   }
 
@@ -319,7 +345,11 @@ export class DOpen extends Declaration {
 }
 
 export class DTest extends Declaration {
-  constructor(readonly title: string, readonly body: SBlock) {
+  constructor(
+    readonly position: Metadata,
+    readonly title: string,
+    readonly body: SBlock
+  ) {
     super();
   }
 

@@ -24,13 +24,19 @@ import { Environment, World } from "../world";
 import { EVariable, Expression } from "./expression";
 import { Type } from "./type";
 import { Meta } from "../../generated/crochet-grammar";
+import { generated_node, Metadata } from "./meta";
 
 export abstract class Statement {
   abstract evaluate(state: State): Machine;
+  abstract get position(): Metadata;
 }
 
 export class SFact extends Statement {
-  constructor(readonly name: string, readonly exprs: Expression[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly exprs: Expression[]
+  ) {
     super();
   }
 
@@ -48,7 +54,11 @@ export class SFact extends Statement {
 }
 
 export class SForget extends Statement {
-  constructor(readonly name: string, readonly exprs: Expression[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly exprs: Expression[]
+  ) {
     super();
   }
 
@@ -66,7 +76,7 @@ export class SForget extends Statement {
 }
 
 export class SExpression extends Statement {
-  constructor(readonly expr: Expression) {
+  constructor(readonly position: Metadata, readonly expr: Expression) {
     super();
   }
 
@@ -77,7 +87,11 @@ export class SExpression extends Statement {
 }
 
 export class SLet extends Statement {
-  constructor(readonly name: string, readonly expr: Expression) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly expr: Expression
+  ) {
     super();
   }
 
@@ -92,7 +106,7 @@ export class SLet extends Statement {
 }
 
 export class SBlock extends Statement {
-  constructor(readonly statements: Statement[]) {
+  constructor(readonly position: Metadata, readonly statements: Statement[]) {
     super();
   }
 
@@ -106,7 +120,7 @@ export class SBlock extends Statement {
 }
 
 export class SGoto extends Statement {
-  constructor(readonly name: string) {
+  constructor(readonly position: Metadata, readonly name: string) {
     super();
   }
 
@@ -118,7 +132,7 @@ export class SGoto extends Statement {
 }
 
 export class SCall extends Statement {
-  constructor(readonly name: string) {
+  constructor(readonly position: Metadata, readonly name: string) {
     super();
   }
 
@@ -151,6 +165,7 @@ export class SCNamed extends SimulateContext {
 
 export class SSimulate extends Statement {
   constructor(
+    readonly position: Metadata,
     readonly context: SimulateContext,
     readonly actors: Expression,
     readonly goal: Goal,
@@ -178,7 +193,7 @@ export class SSimulate extends Statement {
 }
 
 export class SRegister extends Statement {
-  constructor(readonly expr: Expression) {
+  constructor(readonly position: Metadata, readonly expr: Expression) {
     super();
   }
 
@@ -194,7 +209,7 @@ let asserts = 0;
 export class SAssert extends Statement {
   private id = ++asserts;
 
-  constructor(readonly meta: Meta, readonly expr: Expression) {
+  constructor(readonly position: Metadata, readonly expr: Expression) {
     super();
   }
 
@@ -211,14 +226,16 @@ export class SAssert extends Statement {
       vars.push(name);
     }
     let i = 0;
-    const expr = this.expr.map_subexpressions((_) => new EVariable(vars[i++]));
+    const expr = this.expr.map_subexpressions(
+      (_) => new EVariable(generated_node, vars[i++])
+    );
     const state = state0.with_env(env);
 
     const value = cvalue(yield _push(expr.evaluate(state)));
     if (!value.as_bool()) {
       const report = subexprs.map((x, i) => `  - ${x.to_text()}`).join("\n");
       throw new Error(
-        `assertion failed: ${this.meta.source_slice}\nWith values:\n${report}`
+        `assertion failed: ${this.position.source_slice}\nWith values:\n${report}`
       );
     }
     return value;

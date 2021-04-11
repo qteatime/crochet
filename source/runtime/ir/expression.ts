@@ -44,6 +44,7 @@ import {
   _push,
 } from "../vm";
 import { Environment } from "../world";
+import { Metadata } from "./meta";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
 
@@ -57,21 +58,31 @@ export abstract class Expression {
   map_subexpressions(f: (_: Expression) => Expression): Expression {
     return this;
   }
+
+  abstract get position(): Metadata;
 }
 
 export class EFalse extends Expression {
+  constructor(readonly position: Metadata) {
+    super();
+  }
+
   *evaluate(state: State): Machine {
     return False.instance;
   }
 }
 export class ETrue extends Expression {
+  constructor(readonly position: Metadata) {
+    super();
+  }
+
   *evaluate(state: State): Machine {
     return True.instance;
   }
 }
 
 export class EVariable extends Expression {
-  constructor(readonly name: string) {
+  constructor(readonly position: Metadata, readonly name: string) {
     super();
   }
 
@@ -86,7 +97,7 @@ export class EVariable extends Expression {
 }
 
 export class EText extends Expression {
-  constructor(readonly value: string) {
+  constructor(readonly position: Metadata, readonly value: string) {
     super();
   }
 
@@ -96,7 +107,7 @@ export class EText extends Expression {
 }
 
 export class EInteger extends Expression {
-  constructor(readonly value: bigint) {
+  constructor(readonly position: Metadata, readonly value: bigint) {
     super();
   }
 
@@ -106,7 +117,7 @@ export class EInteger extends Expression {
 }
 
 export class ESearch extends Expression {
-  constructor(readonly predicate: Predicate) {
+  constructor(readonly position: Metadata, readonly predicate: Predicate) {
     super();
   }
 
@@ -120,7 +131,11 @@ export class ESearch extends Expression {
 }
 
 export class EInvoke extends Expression {
-  constructor(readonly name: string, readonly args: Expression[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly args: Expression[]
+  ) {
     super();
   }
 
@@ -137,12 +152,16 @@ export class EInvoke extends Expression {
   }
 
   map_subexpressions(f: (_: Expression) => Expression) {
-    return new EInvoke(this.name, this.args.map(f));
+    return new EInvoke(this.position, this.name, this.args.map(f));
   }
 }
 
 export class ENew extends Expression {
-  constructor(readonly name: string, readonly data: Expression[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly data: Expression[]
+  ) {
     super();
   }
 
@@ -160,7 +179,7 @@ export class ENew extends Expression {
 }
 
 export class EGlobal extends Expression {
-  constructor(readonly name: string) {
+  constructor(readonly position: Metadata, readonly name: string) {
     super();
   }
 
@@ -170,13 +189,17 @@ export class EGlobal extends Expression {
 }
 
 export class ESelf extends Expression {
+  constructor(readonly position: Metadata) {
+    super();
+  }
+
   *evaluate(state: State) {
     return state.env.receiver;
   }
 }
 
 export class EList extends Expression {
-  constructor(readonly values: Expression[]) {
+  constructor(readonly position: Metadata, readonly values: Expression[]) {
     super();
   }
 
@@ -193,7 +216,10 @@ export class EList extends Expression {
 }
 
 export class ERecord extends Expression {
-  constructor(readonly pairs: { key: string; value: Expression }[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly pairs: { key: string; value: Expression }[]
+  ) {
     super();
   }
 
@@ -212,7 +238,11 @@ export class ERecord extends Expression {
 }
 
 export class ECast extends Expression {
-  constructor(readonly type: Type, readonly value: Expression) {
+  constructor(
+    readonly position: Metadata,
+    readonly type: Type,
+    readonly value: Expression
+  ) {
     super();
   }
 
@@ -233,7 +263,11 @@ export class ECast extends Expression {
 }
 
 export class EProject extends Expression {
-  constructor(readonly object: Expression, readonly field: string) {
+  constructor(
+    readonly position: Metadata,
+    readonly object: Expression,
+    readonly field: string
+  ) {
     super();
   }
 
@@ -248,7 +282,11 @@ export class EProject extends Expression {
 }
 
 export class EProjectMany extends Expression {
-  constructor(readonly object: Expression, readonly fields: Selection[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly object: Expression,
+    readonly fields: Selection[]
+  ) {
     super();
   }
 
@@ -318,7 +356,7 @@ export class ForallIf extends ForallExpr {
 }
 
 export class EForall extends Expression {
-  constructor(readonly expr: ForallExpr) {
+  constructor(readonly position: Metadata, readonly expr: ForallExpr) {
     super();
   }
 
@@ -332,17 +370,21 @@ export class EForall extends Expression {
 }
 
 export class EBlock extends Expression {
-  constructor(readonly body: Statement[]) {
+  constructor(readonly position: Metadata, readonly body: Statement[]) {
     super();
   }
 
   evaluate(state: State): Machine {
-    return new SBlock(this.body).evaluate(state);
+    return new SBlock(this.position, this.body).evaluate(state);
   }
 }
 
 export class EPartial extends Expression {
-  constructor(readonly name: string, readonly values: PartialExpr[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly name: string,
+    readonly values: PartialExpr[]
+  ) {
     super();
   }
 
@@ -359,7 +401,11 @@ export class EPartial extends Expression {
 }
 
 export class EApply extends Expression {
-  constructor(readonly partial: Expression, readonly values: PartialExpr[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly partial: Expression,
+    readonly values: PartialExpr[]
+  ) {
     super();
   }
 
@@ -403,7 +449,10 @@ export class EPartialConcrete extends PartialExpr {
 }
 
 export class EInterpolate extends Expression {
-  constructor(readonly parts: EInterpolationPart[]) {
+  constructor(
+    readonly position: Metadata,
+    readonly parts: EInterpolationPart[]
+  ) {
     super();
   }
 
@@ -436,7 +485,7 @@ export class EInterpolateDynamic {
 }
 
 export class EMatchSearch extends Expression {
-  constructor(readonly cases: MatchSearchCase[]) {
+  constructor(readonly position: Metadata, readonly cases: MatchSearchCase[]) {
     super();
   }
 
@@ -467,7 +516,7 @@ export class MatchSearchCase {
 }
 
 export class ECondition extends Expression {
-  constructor(readonly cases: ConditionCase[]) {
+  constructor(readonly position: Metadata, readonly cases: ConditionCase[]) {
     super();
   }
 
@@ -487,7 +536,11 @@ export class ConditionCase {
 }
 
 export class EHasType extends Expression {
-  constructor(readonly value: Expression, readonly type: Type) {
+  constructor(
+    readonly position: Metadata,
+    readonly value: Expression,
+    readonly type: Type
+  ) {
     super();
   }
 
@@ -499,7 +552,7 @@ export class EHasType extends Expression {
 }
 
 export class ELazy extends Expression {
-  constructor(readonly value: Expression) {
+  constructor(readonly position: Metadata, readonly value: Expression) {
     super();
   }
 
@@ -509,7 +562,7 @@ export class ELazy extends Expression {
 }
 
 export class EForce extends Expression {
-  constructor(readonly value: Expression) {
+  constructor(readonly position: Metadata, readonly value: Expression) {
     super();
   }
 
@@ -524,13 +577,17 @@ export class EForce extends Expression {
 }
 
 export class EReturn extends Expression {
+  constructor(readonly position: Metadata) {
+    super();
+  }
+
   *evaluate(state: State): Machine {
     return state.env.lookup("contract:return");
   }
 }
 
 export class EStaticType extends Expression {
-  constructor(readonly type: Type) {
+  constructor(readonly position: Metadata, readonly type: Type) {
     super();
   }
 
@@ -541,7 +598,7 @@ export class EStaticType extends Expression {
 }
 
 export class EFloat extends Expression {
-  constructor(readonly value: number) {
+  constructor(readonly position: Metadata, readonly value: number) {
     super();
   }
 
@@ -551,7 +608,11 @@ export class EFloat extends Expression {
 }
 
 export class ELambda extends Expression {
-  constructor(readonly parameters: string[], readonly body: Expression) {
+  constructor(
+    readonly position: Metadata,
+    readonly parameters: string[],
+    readonly body: Expression
+  ) {
     super();
   }
 
@@ -561,7 +622,11 @@ export class ELambda extends Expression {
 }
 
 export class EIntrinsicEqual extends Expression {
-  constructor(readonly left: Expression, readonly right: Expression) {
+  constructor(
+    readonly position: Metadata,
+    readonly left: Expression,
+    readonly right: Expression
+  ) {
     super();
   }
 
@@ -576,11 +641,15 @@ export class EIntrinsicEqual extends Expression {
   }
 
   map_subexpressions(f: (_: Expression) => Expression) {
-    return new EIntrinsicEqual(f(this.left), f(this.right));
+    return new EIntrinsicEqual(this.position, f(this.left), f(this.right));
   }
 }
 
 export class ENothing extends Expression {
+  constructor(readonly position: Metadata) {
+    super();
+  }
+
   *evaluate(state: State): Machine {
     return CrochetNothing.instance;
   }

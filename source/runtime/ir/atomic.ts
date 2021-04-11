@@ -14,6 +14,7 @@ import {
   EText,
   Expression,
 } from "./expression";
+import { generated_node } from "./meta";
 
 export class SimpleInterpolation<T> {
   constructor(readonly parts: SimpleInterpolationPart<T>[]) {}
@@ -24,9 +25,12 @@ export class SimpleInterpolation<T> {
 
   to_expression() {
     if (this.has_dynamic_parts()) {
-      return new EInterpolate(this.parts.map((x) => x.to_expression()));
+      return new EInterpolate(
+        generated_node,
+        this.parts.map((x) => x.to_expression())
+      );
     } else {
-      return new EText(this.static_text());
+      return new EText(generated_node, this.static_text());
     }
   }
 

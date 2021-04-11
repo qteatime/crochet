@@ -1,4 +1,4 @@
-import { SBlock, Statement } from "../ir";
+import { generated_node, SBlock, Statement } from "../ir";
 import { Bag } from "../../utils/bag";
 import { Context } from "./event";
 import { Goal } from "./goal";
@@ -47,7 +47,7 @@ export class Signal {
     for (const [key, value] of zip(this.parameters, args)) {
       env.define(key, value);
     }
-    const block = new SBlock(this.body);
+    const block = new SBlock(generated_node, this.body);
     const new_state = state.with_env(env);
     const result = cvalue(
       yield _mark(this.full_name, block.evaluate(new_state))

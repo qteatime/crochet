@@ -1,5 +1,12 @@
 import { Environment } from "../world";
-import { EInterpolate, Expression, SBlock, Statement, Type } from "../ir";
+import {
+  EInterpolate,
+  Expression,
+  generated_node,
+  SBlock,
+  Statement,
+  Type,
+} from "../ir";
 import { Predicate, UnificationEnvironment } from "../logic";
 import { die, Machine, Mark, State, _mark } from "../vm";
 import {
@@ -34,7 +41,7 @@ export class When {
     return results.map((uenv) => {
       const env = this.env.clone_with_receiver(null);
       env.define_all(uenv.boundValues);
-      const block = new SBlock(this.body);
+      const block = new SBlock(generated_node, this.body);
       return block.evaluate(state.with_env(env));
     });
   }
@@ -78,7 +85,7 @@ export class Action {
     return results.map((uenv) => {
       const env = this.env.clone_with_receiver(null);
       env.define_all(uenv.boundValues);
-      const block = new SBlock(this.body);
+      const block = new SBlock(generated_node, this.body);
       return {
         action: this,
         title: new CrochetThunk(this.title, env),

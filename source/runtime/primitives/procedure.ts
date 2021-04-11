@@ -1,5 +1,5 @@
 import { every, zip } from "../../utils/utils";
-import { Expression, SBlock, Statement } from "../ir";
+import { Expression, generated_node, SBlock, Statement } from "../ir";
 import { cvalue, Machine, State, _mark, _push } from "../vm";
 import { Environment, World } from "../world";
 import { CrochetValue, CrochetType, CrochetNothing } from "./0-core";
@@ -207,7 +207,7 @@ export class CrochetProcedure implements IProcedure {
       env.define(k, v);
     }
     const state = state0.with_env(env);
-    const block = new SBlock(this.body);
+    const block = new SBlock(generated_node, this.body);
     yield _push(
       this.contract.check_pre(state, this.full_name, this.parameters, values)
     );
