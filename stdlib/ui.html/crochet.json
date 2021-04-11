@@ -5,6 +5,6 @@
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
-    "provides": ["html"]
+    "provides": []
   }
 }

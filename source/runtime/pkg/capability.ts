@@ -1,18 +1,16 @@
-import { anyOf, difference, equal, intersect } from "../../utils";
+import { anyOf, difference, equal, intersect, string } from "../../utils";
 
-export type Capability = "native" | "timing" | "reflection" | "html" | "random";
+export type Capability = string;
 
 export class Capabilities {
   constructor(readonly capabilities: Set<Capability>) {}
 
   static get all() {
-    return new Capabilities(
-      new Set(["native", "timing", "reflection", "html"])
-    );
+    return new Capabilities(new Set([]));
   }
 
   static get safe() {
-    return new Capabilities(new Set(["random", "html"]));
+    return new Capabilities(new Set([]));
   }
 
   allows(capability: Capability) {
@@ -30,12 +28,6 @@ export class Capabilities {
 
 export abstract class CrochetCapability {
   static get spec() {
-    return anyOf([
-      equal("native" as "native"),
-      equal("timing" as "timing"),
-      equal("reflection" as "reflection"),
-      equal("html" as "html"),
-      equal("random" as "random"),
-    ]);
+    return string;
   }
 }
