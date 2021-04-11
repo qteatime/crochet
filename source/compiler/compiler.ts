@@ -791,7 +791,7 @@ export function compileStatement(stmt: Statement) {
     },
 
     Assert(pos, expr) {
-      return new IR.SAssert(pos, compileExpression(expr));
+      return new IR.SAssert(compileMeta(pos), compileExpression(expr));
     },
 
     Expr(value) {
