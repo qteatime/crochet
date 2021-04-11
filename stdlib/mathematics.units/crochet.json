@@ -1,0 +1,11 @@
+{
+  "name": "crochet.mathematics.units",
+  "target": "*",
+  "stability": "experimental",
+  "sources": ["source/time.crochet"],
+  "dependencies": ["crochet.core", "crochet.mathematics"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

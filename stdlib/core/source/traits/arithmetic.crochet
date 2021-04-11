@@ -183,14 +183,29 @@ test
 end
 
 /// Arithmetic exponentiation for floats
-command (X is float) ** (P is float)
-requires positive-exponent :: P >= 0.0
+command (X is float) ** (P is integer)
+requires positive-exponent :: P >= 0
   = foreign float.power(X, P)
 test
-  assert (1.0 ** 0.0) =:= 1.0;
-  assert (0.0 ** 0.0) =:= 1.0;
-  assert (3.0 ** 0.0) =:= 1.0;
-  assert (1.0 ** 1.0) =:= 1.0;
-  assert (-1.0 ** 1.0) =:= -1.0;
-  assert (2.0 ** 6.0) =:= 64.0;
+  assert (1.0 ** 0) =:= 1.0;
+  assert (0.0 ** 0) =:= 1.0;
+  assert (3.0 ** 0) =:= 1.0;
+  assert (1.0 ** 1) =:= 1.0;
+  assert (-1.0 ** 1) =:= -1.0;
+  assert (2.0 ** 6) =:= 64.0;
 end
+
+// Arithmetic tower
+command (X is integer) + (Y is float) = (#float coerce: X) + Y;
+command (X is integer) - (Y is float) = (#float coerce: X) - Y;
+command (X is integer) * (Y is float) = (#float coerce: X) * Y;
+command (X is integer) / (Y is float) = (#float coerce: X) / Y;
+command (X is integer) % (Y is float) = (#float coerce: X) % Y;
+
+command (X is float) + (Y is integer) = X + (#float coerce: Y);
+command (X is float) - (Y is integer) = X - (#float coerce: Y);
+command (X is float) * (Y is integer) = X * (#float coerce: Y);
+command (X is float) / (Y is integer) = X / (#float coerce: Y);
+command (X is float) % (Y is integer) = X % (#float coerce: Y);
+
+command (X is integer) / (Y is integer) = (#float coerce: X) / (#float coerce: Y);

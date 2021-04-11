@@ -278,8 +278,8 @@ export function core_float(ffi: ForeignInterface) {
     )
     .defun(
       "power",
-      [CrochetFloat, CrochetFloat],
-      (x, y) => new CrochetFloat(x.value ** y.value)
+      [CrochetFloat, CrochetInteger],
+      (x, y) => new CrochetFloat(x.value ** Number(y.value))
     )
     .defun(
       "floor",
