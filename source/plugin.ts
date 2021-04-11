@@ -9,6 +9,8 @@ import {
   CrochetRecord,
   invoke,
   apply,
+  box,
+  unbox,
   js_to_crochet,
   json_to_crochet,
   State,
@@ -118,15 +120,11 @@ export class Plugin {
   }
 
   box(value: unknown) {
-    if (value instanceof CrochetUnknown) {
-      return value;
-    } else {
-      return new CrochetUnknown(value);
-    }
+    return box(value);
   }
 
   unbox<T>(value: CrochetValue): T {
-    return cast(value, CrochetUnknown).value as T;
+    return unbox<T>(value);
   }
 
   invoke(state: State, name: string, args: CrochetValue[]) {

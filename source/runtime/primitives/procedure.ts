@@ -146,6 +146,8 @@ export class NativeProcedure implements IProcedure {
   }
 
   *invoke(state0: State, values: CrochetValue[]): Machine {
+    state0.world.tracer.procedure_call(state0, this, values);
+
     const env = this.env.clone_with_receiver(values[0]);
     for (const [k, v] of zip(this.parameter_names, values)) {
       env.define(k, v);
@@ -176,6 +178,8 @@ export class NativeProcedure implements IProcedure {
         result
       )
     );
+
+    state.world.tracer.procedure_return(state, this, result);
     return result;
   }
 }
@@ -196,6 +200,8 @@ export class CrochetProcedure implements IProcedure {
   }
 
   *invoke(state0: State, values: CrochetValue[]) {
+    state0.world.tracer.procedure_call(state0, this, values);
+
     const env = this.env.clone_with_receiver(values[0]);
     for (const [k, v] of zip(this.parameters, values)) {
       env.define(k, v);
@@ -215,6 +221,8 @@ export class CrochetProcedure implements IProcedure {
         result
       )
     );
+
+    state.world.tracer.procedure_return(state, this, result);
     return result;
   }
 }

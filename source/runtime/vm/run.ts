@@ -1,5 +1,6 @@
 import { logger } from "../../utils";
 import { unreachable } from "../../utils/utils";
+import { Expression, Statement } from "../ir";
 import { CrochetValue } from "../primitives";
 import { ErrNativeError, MachineError } from "./errors/errors";
 

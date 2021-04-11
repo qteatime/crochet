@@ -21,6 +21,7 @@ import { CrochetText } from "./text";
 import { CrochetTuple } from "./tuple";
 import { CrochetUnknown } from "./unknown";
 import { CrochetRecord } from "./record";
+import { cast } from "../../utils";
 
 export function from_bool(x: boolean): CrochetValue {
   return x ? True.instance : False.instance;
@@ -138,4 +139,16 @@ export function json_to_crochet(value: unknown): CrochetValue {
     default:
       throw new Error(`Invalid JSON type ${typeof value}`);
   }
+}
+
+export function box(value: unknown) {
+  if (value instanceof CrochetUnknown) {
+    return value;
+  } else {
+    return new CrochetUnknown(value);
+  }
+}
+
+export function unbox<T>(value: CrochetValue): T {
+  return cast(value, CrochetUnknown).value as T;
 }

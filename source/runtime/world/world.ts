@@ -7,7 +7,7 @@ import {
   NativeProcedure,
   Procedure,
 } from "../primitives";
-import { CrochetModule, die, Machine, State, Thread } from "../vm";
+import { CrochetModule, die, Machine, State, Thread, Tracer } from "../vm";
 import { ConcreteContext, Context, ContextBag } from "../simulation";
 import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
@@ -62,6 +62,7 @@ export class World {
   readonly ffi = new ForeignInterface();
   readonly global_random = XorShift.new_random();
   readonly tests: CrochetTest[] = [];
+  readonly tracer = new Tracer();
 
   schedule(machine: Machine) {
     this.queue.push(machine);
