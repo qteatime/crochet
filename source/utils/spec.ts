@@ -1,4 +1,5 @@
 import { Union } from "./types";
+import { inspect } from "util";
 
 export class Ok<A, B> {
   constructor(readonly value: A) {}
@@ -47,34 +48,56 @@ type Result<A, B> = Ok<A, B> | Err<A, B>;
 export class EType {
   constructor(readonly expected: string) {}
   format(): string {
-    return `type ${this.expected}`;
+    return `a value of type ${this.expected}`;
   }
 }
 
 export class ENoKey {
   constructor(readonly key: string) {}
   format(): string {
-    return `key ${JSON.stringify(this.key)}`;
+    return `the key ${JSON.stringify(this.key)} to be present`;
   }
 }
 
 export class ENotEqual {
   constructor(readonly expected: any) {}
   format(): string {
-    return `equal to ${this.expected}`;
+    return `${inspect(this.expected)}`;
   }
 }
 
 export class EAnyOf {
   constructor(readonly errors: Errors[]) {}
   format(): string {
-    return `expected any of: ${this.errors.map((x) => x.format()).join(", ")}`;
+    return `any of: ${this.errors.map((x) => x.format()).join(", ")}`;
   }
 }
 
-type Errors = EType | ENoKey | ENotEqual | EAnyOf;
+export class EPath {
+  constructor(readonly key: string, readonly error: Errors) {}
+
+  get_path_and_error() {
+    const go = (path: string[], err: Errors): [string[], Errors] => {
+      if (err instanceof EPath) {
+        return go([...path, err.key], err.error);
+      } else {
+        return [path, err];
+      }
+    };
+    return go([], this);
+  }
+
+  format(): string {
+    const [path, error] = this.get_path_and_error();
+    return `${error.format()} at path ${path.join(".")}`;
+  }
+}
+
+type Errors = EType | ENoKey | ENotEqual | EAnyOf | EPath;
 
 type Valid<A> = Result<A, Errors>;
+
+const failed = new (class Failed {})();
 
 export class LazySpec<A> {
   constructor(readonly thunk: () => AnySpec<A>) {}
@@ -191,7 +214,9 @@ export function spec<A extends Record<string, AnySpec<any>>, B>(
     if (value !== null && typeof value === "object") {
       const entries = collect(
         Object.entries(type).map(([k, f]: [string, any]) => {
-          return toSpec(f)(value[k] ?? null).chain((v: any) => new Ok([k, v]));
+          return toSpec(f)(value[k] ?? failed)
+            .recover((e) => new Err(new EPath(k, e)))
+            .chain((v: any) => new Ok([k, v]));
         })
       );
       return entries.chain((xs: any[]) => {
@@ -209,7 +234,11 @@ export function spec<A extends Record<string, AnySpec<any>>, B>(
 
 export function optional<A>(spec: AnySpec<A>, default_value: A): SpecFun<A> {
   return (value: any) => {
-    return toSpec(spec)(value).recover((_) => new Ok(default_value));
+    if (value === failed) {
+      return new Ok(default_value);
+    } else {
+      return toSpec(spec)(value);
+    }
   };
 }
 
@@ -224,6 +253,6 @@ export function parse<A>(x: any, spec: AnySpec<A>): A {
   if (result instanceof Ok) {
     return result.value;
   } else {
-    throw new Error(`Failed to parse: ${result.reason.format()}`);
+    throw new Error(`Failed to parse: Expected ${result.reason.format()}`);
   }
 }
