@@ -33,6 +33,5 @@ test "Condition + Match" do
       always do "ok" end
     end;
 
-  "go" deep;
   assert Res =:= "ok";
 end
