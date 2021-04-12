@@ -2,13 +2,15 @@
   "name": "crochet.internal.vm.tests",
   "target": "*",
   "dependencies": [
+    "crochet.collections",
     "crochet.core",
     "crochet.debug",
-    "crochet.collections",
+    "crochet.formats.json",
     "crochet.mathematics",
-    "crochet.text",
+    "crochet.mathematics.units",
     "crochet.random",
-    "crochet.formats.json"
+    "crochet.text",
+    "crochet.text.parsing.lingua"
   ],
   "sources": [
     "types.crochet",
