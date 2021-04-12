@@ -8,7 +8,7 @@ import {
 import { ForeignNamespace } from "../ffi-def";
 
 export function json_ffi(ffi: ForeignInterface) {
-  new ForeignNamespace(ffi, "crochet.formats.json:json")
+  new ForeignNamespace(ffi, "crochet.language.json:json")
     .defun("parse", [CrochetText, CrochetValue], (text) => {
       return json_to_crochet(JSON.parse(text.value));
     })
