@@ -135,6 +135,7 @@ export abstract class CrochetVM {
     capabilities: Capabilities
   ) {
     const pkg = await this.entry_to_package(filename, capabilities);
+    this.register_package(pkg.name, pkg);
     const graph = await PackageGraph.resolve(target, this, pkg);
     graph.check(pkg.name, capabilities);
     for (const x of graph.serialise(pkg.name)) {
