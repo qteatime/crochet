@@ -1,0 +1,16 @@
+{
+  "name": "crochet.language.csv",
+  "target": "*",
+  "stability": "experimental",
+  "sources": ["source/generated-grammar.crochet", "source/csv.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.collections",
+    "crochet.text.parsing.lingua",
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

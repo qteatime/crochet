@@ -1,0 +1,25 @@
+% crochet
+
+command tuple zip: (That is tuple) with: (Combine is function-2) -> tuple
+requires same-size :: self count =:= That count
+do
+  let Go = { Xs, Ys, Acc in
+    condition
+      when Xs is-empty => Acc;
+      always => Go(Xs but-first, Ys but-first, Acc ++ [Combine(Xs first, Ys first)]);
+    end
+  };
+
+  Go(self, That, []);
+test
+  assert ([] zip: [] with: (_ + _)) =:= [];
+  assert ([1, 2, 3] zip: [4, 5, 6] with: (_ + _)) =:= [1 + 4, 2 + 5, 3 + 6];
+end
+
+command tuple zip: (That is tuple) =
+  self zip: That with: { X, Y in [X, Y]}
+test
+  assert ([] zip: []) =:= [];
+  assert ([1] zip: [2]) =:= [[1, 2]];
+  assert ([1, 2, 3] zip: [4, 5, 6]) =:= [[1, 4], [2, 5], [3, 6]];
+end

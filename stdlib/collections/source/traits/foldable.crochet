@@ -20,3 +20,9 @@ test
   assert [2] sum =:= 2;
   assert [1, 2, 3] sum =:= 6;
 end
+
+command tuple all-true -> boolean =
+  self fold-from: true with: (_ and _);
+
+command tuple some-true -> boolean =
+  self fold-from: true with: (_ or _);

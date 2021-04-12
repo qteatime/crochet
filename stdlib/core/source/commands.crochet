@@ -1,0 +1,7 @@
+% crochet
+
+command panic: (Message is text) tag: (Tag is text) =
+  foreign commands.panic(Tag, Message);
+
+command panic: (Message is text) =
+  panic: Message tag: "panic";

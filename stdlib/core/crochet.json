@@ -16,7 +16,9 @@
     "source/tuple.crochet",
     "source/text.crochet",
     "source/cell.crochet",
-    "source/record.crochet"
+    "source/record.crochet",
+    "source/commands.crochet",
+    "source/result.crochet"
   ],
   "capabilities": {
     "requires": [],

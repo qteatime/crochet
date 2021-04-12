@@ -15,10 +15,24 @@ import {
   from_bool,
   State,
   Thread,
+  type_name,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
 const OhmUtil = require("ohm-js/src/util");
+
+function to_array(x: CrochetTuple | unknown[]) {
+  if (x instanceof CrochetTuple) {
+    return x.values;
+  } else if (Array.isArray(x)) {
+    return x;
+  } else {
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected native array or tuple, got ${type_name(x)}`
+    );
+  }
+}
 
 const builtin_visitor = {
   _terminal(this: Ohm.Node): any {
@@ -37,7 +51,7 @@ const builtin_visitor = {
   },
 
   nonemptyListOf(first: Ohm.Node, _: Ohm.Node, rest: Ohm.Node): any {
-    return new CrochetTuple([first.toAST(), ...rest.toAST()]);
+    return new CrochetTuple([first.visit(), ...to_array(rest.visit())]);
   },
 
   emptyListOf(): any {
@@ -45,7 +59,7 @@ const builtin_visitor = {
   },
 
   NonemptyListOf(first: Ohm.Node, _: Ohm.Node, rest: Ohm.Node): any {
-    return new CrochetTuple([first.toAST(), ...rest.toAST()]);
+    return new CrochetTuple([first.visit(), ...to_array(rest.visit())]);
   },
 
   EmptyListOf(): any {

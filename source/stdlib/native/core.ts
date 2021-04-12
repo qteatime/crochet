@@ -32,6 +32,7 @@ import {
   TCrochetCell,
   CrochetRecord,
   CrochetNothing,
+  ErrArbitrary,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -386,6 +387,16 @@ export function core_record(ffi: ForeignInterface) {
     });
 }
 
+export function core_commands(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.core:commands").defun(
+    "panic",
+    [CrochetText, CrochetText],
+    (tag, text) => {
+      throw new ErrArbitrary(tag.value, text.value);
+    }
+  );
+}
+
 export default [
   core_types,
   core_boolean,
@@ -397,4 +408,5 @@ export default [
   core_tuple,
   core_cell,
   core_record,
+  core_commands,
 ];

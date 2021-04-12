@@ -1,0 +1,4 @@
+% crochet
+
+command ok value = self.value;
+command error reason = self.reason;

@@ -7,6 +7,9 @@ task("build-grammar", () => {
   execSync(
     `./node_modules/.bin/lingua source/grammar/crochet.lingua > source/generated/crochet-grammar.ts`
   );
+  execSync(
+    `./node_modules/.bin/lingua stdlib/language.csv/grammar/csv.lingua crochet > stdlib/language.csv/source/generated-grammar.crochet`
+  );
 });
 
 task("build-ts", tscTask());

@@ -6,6 +6,12 @@ test
   assert [1, 2, 3] first =:= 1;
 end
 
+command tuple second = self at: 2
+test
+  assert [1, 2] second =:= 2;
+  assert [1, 2, 3] second =:= 2;
+end
+
 command tuple last = self at: self count
 test
   assert [1] last =:= 1;

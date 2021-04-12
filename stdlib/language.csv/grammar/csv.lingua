@@ -1,0 +1,35 @@
+type csv(rows: tuple)
+type row(cells: tuple)
+type cell(value: text)
+
+// only loosely based on https://tools.ietf.org/html/rfc4180
+grammar Csv : csv {
+  file =
+    | Rs:listOf<row, newline> newline?        -> csv(Rs)
+
+  row =
+    | Cs:nonemptyListOf<cell, ",">            -> row(Cs)
+
+  cell =
+    | escaped_cell
+    | non_escaped_cell
+
+  escaped_cell =
+    | "\"" X:escaped_text "\""                   -> cell(X)
+
+  non_escaped_cell =
+    | X:text_data                             -> cell(X)
+
+  token escaped_text =
+    | (text_data | "," | "\r" | "\n" | "\"\"")*
+
+  // from the RFC: %x20-21 / %x23-2B / %x2D-7E (¯\_(ツ)_/¯)
+  token text_data =
+    | " ".."!"
+    | "#".."+"
+    | "-".."~"
+
+  // this diverges a bit
+  newline =
+    | "\r\n" | "\r" | "\n"
+}

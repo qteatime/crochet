@@ -1,0 +1,65 @@
+% crochet
+
+open crochet.debug;
+
+local type csv-with-header(header is row, rows is tuple);
+
+command #csv parse: (Source is text) -> csv do
+  let Tree = (force grammar) parse: Source rule: "file";
+  condition
+    when Tree is error => panic: Tree reason tag: "syntax-error";
+    when Tree is ok do
+      let Ast = (force to-ast) transform: Tree value;
+      Ast;
+    end
+  end
+test
+  assert (#csv parse: "") === new csv([]);
+
+  assert (#csv parse: "a,b,c") === new csv([
+    new row([new cell("a"), new cell("b"), new cell("c")])
+  ]);
+
+  assert (#csv parse: "a,\"b \"\" ,\",c\nd,e,f") === new csv([
+    new row([new cell("a"), new cell("b \"\" ,"), new cell("c")]),
+    new row([new cell("d"), new cell("e"), new cell("f")])
+  ]);
+end
+
+command csv rows = self.rows;
+
+command csv with-header
+requires non-empty :: self.rows count > 0
+do
+  new csv-with-header(self rows first, self rows but-first);
+end
+
+command csv-with-header rows = self.rows;
+command csv-with-header header = self.header;
+command csv-with-header rows-as-records do
+  let Keys = self header contents;
+  for Row in self rows do
+    let Pairs = Keys zip: Row contents with: { K, V in [key -> K, value -> V]};
+    #record from-pairs: Pairs;
+  end
+test
+  let Source = "a,b,c\n1,2,3\nd,e,f";
+  let Rows = #csv parse: Source | with-header | rows-as-records;
+  assert Rows =:= [
+    [a -> "1", b -> "2", c -> "3"],
+    [a -> "d", b -> "e", c -> "f"],
+  ];
+end
+
+command row cells = self.cells;
+command row contents = for Cell in self cells do Cell value end;
+command cell value = self.value;
+
+command csv === (That is csv) =
+  (self rows zip: That rows with: (_ === _)) all-true;
+
+command row === (That is row) =
+  (self cells zip: That cells with: (_ === _)) all-true;
+
+command cell === (That is cell) =
+  (self value =:= That value);
