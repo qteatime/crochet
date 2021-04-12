@@ -12,11 +12,11 @@ type row is node(cells is tuple);
 type cell is node(value is text);
 
 // Grammar definition
-define grammar = lazy (#lingua grammar: "\r\n  Csv {\r\n    file  = listOf<row, newline> newline?  -- alt1\n\n\nrow  = nonemptyListOf<cell, \",\">  -- alt1\n\n\ncell  = escaped_cell  -- alt1\n | non_escaped_cell  -- alt2\n\n\nescaped_cell  = \"\\\"\" escaped_text \"\\\"\"  -- alt1\n\n\nnon_escaped_cell  = text_data  -- alt1\n\n\nescaped_text  = (text_data | \",\" | \"\\r\" | \"\\n\" | \"\\\"\\\"\")*  -- alt1\n\n\ntext_data  = \" \"..\"!\"  -- alt1\n | \"#\"..\"+\"  -- alt2\n | \"-\"..\"~\"  -- alt3\n\n\nnewline  = \"\\r\\n\"  -- alt1\n | \"\\r\"  -- alt2\n | \"\\n\"  -- alt3\n\r\n  }\r\n  ");
+define grammar = lazy (#lingua grammar: "\r\n  Csv {\r\n    file  = listOf<row, newline> newline? end  -- alt1\n\n\nrow  = nonemptyListOf<cell, \",\">  -- alt1\n\n\ncell  = escaped_cell  -- alt1\n | non_escaped_cell  -- alt2\n\n\nescaped_cell  = \"\\\"\" escaped_text \"\\\"\"  -- alt1\n\n\nnon_escaped_cell  = text_data  -- alt1\n\n\nescaped_text  = escaped_text_char*  -- alt1\n\n\nescaped_text_char  = \"\\\"\\\"\"  -- alt1\n | ~\"\\\"\" any  -- alt2\n\n\ntext_data  = text_char*  -- alt1\n\n\ntext_char  = ~separator_char any  -- alt1\n\n\nseparator_char  = \",\"  -- alt1\n | \"\\\"\"  -- alt2\n | newline  -- alt3\n\n\nnewline  = \"\\r\\n\"  -- alt1\n | \"\\r\"  -- alt2\n | \"\\n\"  -- alt3\n\r\n  }\r\n  ");
 
 define to-ast = lazy ((force grammar) semantics: [
   "file" -> #lingua visitor-identity,
-  "file_alt1" -> #lingua visitor-lambda: { Node, Rs, _ in (new csv(Rs))  },
+  "file_alt1" -> #lingua visitor-lambda: { Node, Rs, _, _ in (new csv(Rs))  },
   "row" -> #lingua visitor-identity,
   "row_alt1" -> #lingua visitor-lambda: { Node, Cs in (new row(Cs))  },
   "cell" -> #lingua visitor-identity,
@@ -28,10 +28,17 @@ define to-ast = lazy ((force grammar) semantics: [
   "non_escaped_cell_alt1" -> #lingua visitor-lambda: { Node, X in (new cell(X))  },
   "escaped_text" -> #lingua visitor-identity,
   "escaped_text_alt1" -> #lingua visitor-source,
+  "escaped_text_char" -> #lingua visitor-identity,
+  "escaped_text_char_alt1" -> #lingua visitor-source,
+  "escaped_text_char_alt2" -> #lingua visitor-source,
   "text_data" -> #lingua visitor-identity,
   "text_data_alt1" -> #lingua visitor-source,
-  "text_data_alt2" -> #lingua visitor-source,
-  "text_data_alt3" -> #lingua visitor-source,
+  "text_char" -> #lingua visitor-identity,
+  "text_char_alt1" -> #lingua visitor-source,
+  "separator_char" -> #lingua visitor-identity,
+  "separator_char_alt1" -> #lingua visitor-source,
+  "separator_char_alt2" -> #lingua visitor-source,
+  "separator_char_alt3" -> #lingua visitor-source,
   "newline" -> #lingua visitor-identity,
   "newline_alt1" -> #lingua visitor-singleton,
   "newline_alt2" -> #lingua visitor-singleton,
