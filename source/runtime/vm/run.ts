@@ -23,11 +23,14 @@ export class CrochetError {
 }
 
 // Yield types
-export type Yield = Await | Push | Jump | Mark | Trace;
+export abstract class Yield {
+  abstract evaluate(thread: Thread): SyncReturn | void;
+}
 
-export class Push {
-  readonly tag = "push";
-  constructor(readonly machine: Machine) {}
+export class Push extends Yield {
+  constructor(readonly machine: Machine) {
+    super();
+  }
 
   evaluate(thread: Thread) {
     thread.save_machine();
@@ -36,9 +39,10 @@ export class Push {
   }
 }
 
-export class Jump {
-  readonly tag = "jump";
-  constructor(readonly machine: Machine) {}
+export class Jump extends Yield {
+  constructor(readonly machine: Machine) {
+    super();
+  }
 
   evaluate(thread: Thread) {
     thread.unwind_to_procedure();
@@ -48,13 +52,14 @@ export class Jump {
   }
 }
 
-export class Mark {
-  readonly tag = "mark";
+export class Mark extends Yield {
   constructor(
     readonly name: string,
     readonly machine: Machine,
     readonly k: Machine | null
-  ) {}
+  ) {
+    super();
+  }
 
   evaluate(thread: Thread) {
     thread.stack.push(new FProcedure(this.name, this.k ?? thread.machine));
@@ -63,9 +68,10 @@ export class Mark {
   }
 }
 
-export class Trace {
-  readonly tag = "trace";
-  constructor(readonly expr: Expression | Statement, readonly state: State) {}
+export class Trace extends Yield {
+  constructor(readonly expr: Expression | Statement, readonly state: State) {
+    super();
+  }
 
   evaluate(thread: Thread) {
     thread.current = {
@@ -75,9 +81,10 @@ export class Trace {
   }
 }
 
-export class Await {
-  readonly tag = "await";
-  constructor(readonly value: Promise<unknown>) {}
+export class Await extends Yield {
+  constructor(readonly value: Promise<unknown>) {
+    super();
+  }
 
   evaluate(thread: Thread) {
     return new SRAwait(this.value, thread);
@@ -109,11 +116,14 @@ export function _mark(
 }
 
 // Frame types
-type Frame = FMachine | FProcedure;
+export abstract class Frame {
+  abstract evaluate(value: unknown, thread: Thread): void;
+}
 
-class FMachine {
-  readonly tag = "machine";
-  constructor(readonly machine: Machine) {}
+class FMachine extends Frame {
+  constructor(readonly machine: Machine) {
+    super();
+  }
 
   evaluate(value: unknown, thread: Thread) {
     thread.machine = this.machine;
@@ -121,9 +131,10 @@ class FMachine {
   }
 }
 
-class FProcedure {
-  readonly tag = "continuation";
-  constructor(readonly location: string, readonly k: Machine) {}
+class FProcedure extends Frame {
+  constructor(readonly location: string, readonly k: Machine) {
+    super();
+  }
 
   evaluate(value: unknown, thread: Thread) {
     thread.machine = this.k;
