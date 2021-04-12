@@ -6,6 +6,16 @@ export class Crochet extends CliCrochet {
     super();
   }
 
+  get prelude() {
+    return [
+      "crochet.core",
+      "crochet.debug",
+      "crochet.text",
+      "crochet.mathematics",
+      "crochet.collections",
+    ];
+  }
+
   async load_from_file(filename: string) {
     await this.load(filename, new NodeTarget());
   }
