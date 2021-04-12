@@ -1,6 +1,14 @@
 import { every, zip } from "../../utils/utils";
 import { Expression, generated_node, SBlock, Statement } from "../ir";
-import { cvalue, ErrArbitrary, Machine, State, _mark, _push } from "../vm";
+import {
+  cvalue,
+  ErrArbitrary,
+  Machine,
+  State,
+  _mark,
+  _push,
+  _push_expr,
+} from "../vm";
 import { Environment, World } from "../world";
 import { CrochetValue, CrochetType, CrochetNothing } from "./0-core";
 import { Meta } from "../ir";
@@ -14,7 +22,7 @@ export class ContractCondition {
   ) {}
 
   *is_valid(state: State): Machine {
-    const value = cvalue(yield _push(this.expr.evaluate(state)));
+    const value = cvalue(yield _push_expr(this.expr, state));
     return value;
   }
 

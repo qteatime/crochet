@@ -24,8 +24,9 @@ export class ConstrainedPredicate extends Predicate {
     return this.predicate.search(state, env).filter((env) => {
       const evalEnv = state.env.extend_with_unification(env);
       const evalState = state.with_env(evalEnv);
-      const machine = this.constraint.evaluate(evalState);
-      const value = cvalue(Thread.for_machine(machine).run_sync());
+      const value = cvalue(
+        Thread.for_expr(this.constraint, evalState).run_sync()
+      );
 
       return value.as_bool();
     });
@@ -99,8 +100,7 @@ export class LetPredicate extends Predicate {
   search(state: State, env: UnificationEnvironment) {
     const evalEnv = state.env.extend_with_unification(env);
     const evalState = state.with_env(evalEnv);
-    const machine = this.expr.evaluate(evalState);
-    const value = cvalue(Thread.for_machine(machine).run_sync());
+    const value = cvalue(Thread.for_expr(this.expr, evalState).run_sync());
 
     const newEnv = env.clone();
     newEnv.bind(this.name, value);

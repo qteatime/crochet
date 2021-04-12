@@ -11,7 +11,14 @@ import {
   CrochetProcedure,
   NativeProcedure,
 } from "../primitives/procedure";
-import { CrochetModule, cvalue, State, Thread } from "../vm";
+import {
+  CrochetModule,
+  cvalue,
+  Machine,
+  State,
+  Thread,
+  _push_expr,
+} from "../vm";
 import { CrochetTest, Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
@@ -195,8 +202,8 @@ export class DDefine extends Declaration {
     super();
   }
   async apply(context: DeclarationContext, state: State) {
-    const machine = this.value.evaluate(state.with_new_env());
-    const value = cvalue(Thread.for_machine(machine).run_sync());
+    const new_state = state.with_new_env();
+    const value = cvalue(Thread.for_expr(this.value, new_state).run_sync());
     context.module.add_value(this.name, value, this.local);
   }
 }

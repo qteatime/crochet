@@ -9,6 +9,7 @@ import {
   State,
   _mark,
   _push,
+  _push_expr,
 } from "../vm";
 import { Environment } from "../world";
 import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
@@ -121,8 +122,12 @@ export class CrochetLambda extends CrochetValue {
       env.define(k, v);
     }
     const state = state0.with_env(env);
-    const machine = this.body.evaluate(state);
-    const value = cvalue(yield _mark(this.full_name, machine));
+    const value = cvalue(yield _mark(this.full_name, this.run_body(state)));
+    return value;
+  }
+
+  *run_body(state: State): Machine {
+    const value = cvalue(yield _push_expr(this.body, state));
     return value;
   }
 }

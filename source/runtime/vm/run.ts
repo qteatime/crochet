@@ -39,6 +39,19 @@ export class Push extends Yield {
   }
 }
 
+export class PushExpr extends Yield {
+  constructor(readonly expr: Expression | Statement, readonly state: State) {
+    super();
+  }
+
+  evaluate(thread: Thread) {
+    const machine = this.expr.evaluate(this.state);
+    thread.stack.push(new FExpression(this.expr, this.state, thread.machine));
+    thread.machine = machine;
+    thread.input = null;
+  }
+}
+
 export class Jump extends Yield {
   constructor(readonly machine: Machine) {
     super();
@@ -68,19 +81,6 @@ export class Mark extends Yield {
   }
 }
 
-export class Trace extends Yield {
-  constructor(readonly expr: Expression | Statement, readonly state: State) {
-    super();
-  }
-
-  evaluate(thread: Thread) {
-    thread.current = {
-      position: this.expr.position,
-      filename: this.state.env.module.qualified_name,
-    };
-  }
-}
-
 export class Await extends Yield {
   constructor(readonly value: Promise<unknown>) {
     super();
@@ -99,12 +99,12 @@ export function _push(machine: Machine) {
   return new Push(machine);
 }
 
-export function _jump(machine: Machine) {
-  return new Jump(machine);
+export function _push_expr(expr: Expression | Statement, state: State) {
+  return new PushExpr(expr, state);
 }
 
-export function _trace(expr: Expression | Statement, state: State) {
-  return new Trace(expr, state);
+export function _jump(machine: Machine) {
+  return new Jump(machine);
 }
 
 export function _mark(
@@ -123,6 +123,28 @@ export abstract class Frame {
 class FMachine extends Frame {
   constructor(readonly machine: Machine) {
     super();
+  }
+
+  evaluate(value: unknown, thread: Thread) {
+    thread.machine = this.machine;
+    thread.input = value;
+  }
+}
+
+class FExpression extends Frame {
+  constructor(
+    readonly expr: Expression | Statement,
+    readonly state: State,
+    readonly machine: Machine
+  ) {
+    super();
+  }
+
+  get location() {
+    return {
+      position: this.expr.position,
+      filename: this.state.env.module.qualified_name,
+    };
   }
 
   evaluate(value: unknown, thread: Thread) {
@@ -167,6 +189,19 @@ export class Thread {
     return new Thread([], machine, null, null);
   }
 
+  static for_expr(expr: Expression | Statement, state: State): Thread {
+    function* machine(): Machine {
+      const value = yield _push_expr(expr, state);
+      return cvalue(value);
+    }
+
+    return Thread.for_machine(machine());
+  }
+
+  get stack_frames() {
+    return new StackFrames(this.stack);
+  }
+
   save_machine() {
     this.stack.push(new FMachine(this.machine));
   }
@@ -200,7 +235,7 @@ export class Thread {
       }
     } catch (error) {
       if (error instanceof MachineError) {
-        const trace = this.stack_trace();
+        const trace = this.stack_frames.stack_trace;
         throw new CrochetError(error, trace);
       } else {
         throw error;
@@ -239,22 +274,47 @@ export class Thread {
     }
   }
 
-  stack_trace() {
-    const trace = [];
+  die(message: string) {
+    const trace = this.stack_frames.stack_trace;
+    throw new Error(`${message}\n\n  - ${trace.format()}`);
+  }
+}
 
-    let n = 10;
-    for (let i = this.stack.length - 1; i >= 0 && n > 0; --i) {
-      const frame = this.stack[i];
-      if (frame instanceof FProcedure) {
-        trace.push(frame.location);
-        n--;
-      }
+export class StackFrames {
+  constructor(private _frames: Frame[]) {}
+
+  *frames() {
+    for (let i = this._frames.length - 1; i >= 0; --i) {
+      yield this._frames[i];
     }
-    return new StackTrace(this.current, trace);
   }
 
-  die(message: string) {
-    throw new Error(`${message}\n\n  - ${this.stack_trace().format()}`);
+  get current_expression_frame(): FExpression | null {
+    for (const frame of this.frames()) {
+      if (frame instanceof FExpression) {
+        return frame;
+      } else if (frame instanceof FProcedure) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  get stack_trace() {
+    let fuel = 10;
+    const trace = [];
+
+    for (const frame of this.frames()) {
+      if (frame instanceof FProcedure) {
+        trace.push(frame.location);
+        if (--fuel <= 0) {
+          break;
+        }
+      }
+    }
+
+    const current = this.current_expression_frame;
+    return new StackTrace(current?.location ?? null, trace);
   }
 }
 
@@ -296,6 +356,18 @@ export function* run_all(machines: Machine[]): Machine {
   const result = [];
   for (const machine of machines) {
     const value = yield _push(machine);
+    result.push(value);
+  }
+  return result;
+}
+
+export function* run_all_exprs(
+  exprs: (Statement | Expression)[],
+  state: State
+): Machine {
+  const result = [];
+  for (const expr of exprs) {
+    const value = yield _push_expr(expr, state);
     result.push(value);
   }
   return result;

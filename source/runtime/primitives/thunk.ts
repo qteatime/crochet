@@ -1,6 +1,6 @@
 import { cast } from "../../utils";
 import { Expression } from "../ir";
-import { cvalue, Machine, State, _push } from "../vm";
+import { cvalue, Machine, State, _push, _push_expr } from "../vm";
 import { Environment } from "../world";
 import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 
@@ -19,7 +19,7 @@ export class CrochetThunk extends CrochetValue {
       return this.value;
     } else {
       const state = state0.with_env(this.env);
-      const value = cvalue(yield _push(this.expr.evaluate(state)));
+      const value = cvalue(yield _push_expr(this.expr, state));
       this.value = value;
       return value;
     }
