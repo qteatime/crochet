@@ -16,6 +16,8 @@ const Crochet_v0_4_0 = require("../../../versions/crochet-v0.4.0")
   .Crochet as Crochet0;
 const Crochet_v0_5_0 = require("../../../versions/crochet-v0.5.0")
   .Crochet as Crochet0;
+const Crochet_v0_6_0 = require("../../../versions/crochet-v0.6.0")
+  .Crochet as typeof Crochet;
 const pkg = require("../../../package.json");
 
 const root = Path.join(__dirname, "../../../");
@@ -100,6 +102,7 @@ const all_vms = [
   { version: "0.3.1", random: false, vm: () => new Crochet_v0_3_1() },
   { version: "0.4.0", random: false, vm: () => new Crochet_v0_4_0() },
   { version: "0.5.0", random: false, vm: () => new Crochet_v0_5_0() },
+  { version: "0.6.0", random: false, vm: () => new Crochet_v0_6_0(StdlibPath) },
   {
     version: pkg.version,
     tag: "(current)",
