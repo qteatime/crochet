@@ -1,5 +1,5 @@
 {
-  "name": "crochet.formats.json",
+  "name": "crochet.language.json",
   "target": "*",
   "stability": "experimental",
   "dependencies": ["crochet.core"],
