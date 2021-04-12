@@ -49,7 +49,7 @@ will accept the partial declaration and present the parser error on the screen.
 
 ## Building
 
-Crochet is written in TypeScript, so you'll need both Node installed. To build
+Crochet is written in TypeScript, so you'll need Node installed. To build
 Crochet, run the following at the root of the repository:
 
 ```shell
