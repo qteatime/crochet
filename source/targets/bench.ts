@@ -17,6 +17,7 @@ export class Crochet extends CliCrochet {
   }
 
   async load_from_file(filename: string) {
-    await this.load(filename, new NodeTarget());
+    // FIXME: support benchmarks
+    throw new Error(`Benchmark unsupported for now`);
   }
 }

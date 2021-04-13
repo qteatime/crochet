@@ -18,11 +18,9 @@ export class Crochet extends CrochetVM {
   }
 
   async load(filename: string) {
-    return this.load_with_capabilities(
-      filename,
-      new BrowserTarget(),
-      new Capabilities(new Set(["html"]))
-    );
+    const { pkg, graph } = await this.resolve(filename, new BrowserTarget());
+    // FIXME: not checking capabilities on browser for now, need to figure out how to provide them
+    await this.load_graph(graph, pkg);
   }
 
   async read_file(filename: string) {
