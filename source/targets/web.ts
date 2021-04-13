@@ -10,7 +10,7 @@ export class Crochet extends CrochetVM {
   }
 
   get prelude() {
-    return ["crochet.core", "crochet.debug", "crochet.time", "crochet.ui.html"];
+    return ["core", "debug", "time", "ui.html"];
   }
 
   load_native(filename: string): Promise<(_: Plugin) => void | Promise<void>> {

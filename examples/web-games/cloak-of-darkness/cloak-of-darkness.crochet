@@ -13,6 +13,8 @@ relation Room* times-disturbed: N;
 relation Player visited: Room*;
 relation Player* at: Location;
 
+relation Thing* place;
+
 relation State state;
 
 type state;
@@ -71,13 +73,14 @@ singleton cloakroom is room with
   to: east lays: foyer;
 end
 
-singleton hook is thing :: place with
+singleton hook is thing with
   name: "Small Brass Hook";
   short-name: "hook";
   description:
     "It's just a small brass hook, screwed to the wall.";
   
   on: cloakroom;
+  place;
 end
 
 singleton bar is room with
@@ -236,7 +239,7 @@ when
   cloak on: player,
   Thing on: cloakroom,
   Thing short-name: Name,
-  if Thing :: place
+  Thing place
 do
   "You place your cloak on [Name]." show;
 
@@ -249,7 +252,7 @@ when
   Thing on: cloakroom,
   cloak on: Thing,
   Thing short-name: Name,
-  if Thing :: place
+  Thing place
 do
   "You take your cloak from [Name]." show;
 
