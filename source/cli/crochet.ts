@@ -42,8 +42,8 @@ const argv = Yargs.usage("crochet <command> [options]")
       });
   })
   .command(
-    "repl <filename>",
-    "Starts a REPL for the given package",
+    "repl <filename | :node | :basic>",
+    "Starts a REPL for the given package (or a default Node/basic REPL)",
     (Yargs) => {
       Yargs.positional("filename", {
         description: "The package context",
@@ -156,7 +156,9 @@ async function setup_vm(
   } else {
     const previouscap = config.grants(pkg.name)?.capabilities ?? null;
     const totalcap = graph.capability_requirements;
-    if (previouscap == null) {
+    if (totalcap.size === 0) {
+      // nothing to do
+    } else if (previouscap == null) {
       console.log(
         `Running ${
           pkg.name
@@ -164,7 +166,7 @@ async function setup_vm(
           ...totalcap.values(),
         ].join(
           "\n  - "
-        )}.\nType 'yes' to grant these capabilities and run the application. Your choice will be recorded. [yes/no]`
+        )}\n\nType 'yes' to grant these capabilities and run the application. Your choice will be recorded. [yes/no]`
       );
       if (!(await question("> "))) {
         console.log(
@@ -182,7 +184,7 @@ async function setup_vm(
             pkg.name
           } (from ${filename}) the following capabilities:\n  - ${previouscap.join(
             "\n  - "
-          )}.\nIt now also requires the following capabilities:\n  - ${[
+          )}\n\nIt now also requires the following capabilities:\n  - ${[
             ...missing.values(),
           ].join("\n  - ")}.\nType 'yes' to update the capabilities. [yes/no].`
         );
@@ -219,13 +221,19 @@ async function run(
   }
 }
 
+const repls = new Map([
+  [":node", Path.resolve(__dirname, "../../repl/node-repl.json")],
+  [":basic", Path.resolve(__dirname, "../../repl/basic-repl.json")],
+]);
+
 async function run_repl(
-  filename: string,
+  filename0: string,
   seed: string | null,
   capabilities: string[],
   batch: boolean
 ) {
   const vm = new Crochet();
+  const filename = repls.get(filename0) ?? filename0;
   try {
     await setup_vm(vm, filename, seed, capabilities, batch);
     const pkg = await vm.read_package_from_file(filename);

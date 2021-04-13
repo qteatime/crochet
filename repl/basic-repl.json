@@ -1,5 +1,5 @@
 {
-  "name": "crochet.repl.base",
+  "name": "crochet.repl.basic",
   "target": "node",
   "dependencies": [
     "crochet.core",
