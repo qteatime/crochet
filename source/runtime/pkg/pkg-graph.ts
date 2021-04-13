@@ -1,4 +1,4 @@
-import { difference, logger } from "../../utils";
+import { difference, logger, union } from "../../utils";
 import { Capabilities } from "./capability";
 import { CrochetPackage, RestrictedCrochetPackage } from "./pkg";
 import { Target } from "./target";
@@ -41,6 +41,16 @@ export class PackageGraph {
     packages.set(pkg.name, restricted_pkg);
     await resolve(restricted_pkg);
     return new PackageGraph(target, packages);
+  }
+
+  get capability_requirements() {
+    const capabilities = new Set<string>();
+    for (const pkg of this.packages.values()) {
+      for (const cap of pkg.required_capabilities) {
+        capabilities.add(cap);
+      }
+    }
+    return capabilities;
   }
 
   get_package(name: string) {

@@ -5,10 +5,20 @@ import { CrochetVM } from "../vm-interface";
 import { Crochet } from "../targets/cli";
 import * as REPL from "./repl";
 
-import { array, logger, parse, show } from "../utils";
+import {
+  array,
+  difference,
+  intersect,
+  logger,
+  parse,
+  show,
+  union,
+} from "../utils";
 import * as FS from "fs";
 import * as Path from "path";
 import * as Yargs from "yargs";
+import { StorageConfig } from "../storage";
+import { question } from "./prompt";
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {
@@ -25,7 +35,7 @@ const argv = Yargs.usage("crochet <command> [options]")
         description: "The initial seed for the PRNG",
         type: "string",
       })
-      .option("capability", {
+      .option("capabilities", {
         description: "The capabilities to grant the program",
         type: "array",
         default: [],
@@ -39,7 +49,7 @@ const argv = Yargs.usage("crochet <command> [options]")
         description: "The package context",
         type: "string",
       })
-        .option("capability", {
+        .option("capabilities", {
           description: "The capabilities to grant the program",
           type: "array",
           default: [],
@@ -66,7 +76,7 @@ const argv = Yargs.usage("crochet <command> [options]")
           description: "Test only a set of packages",
           type: "array",
         })
-        .option("capability", {
+        .option("capabilities", {
           description: "The capabilities to grant the program",
           type: "array",
           default: [],
@@ -91,7 +101,7 @@ const argv = Yargs.usage("crochet <command> [options]")
           default: 8080,
           type: "number",
         })
-        .option("capability", {
+        .option("capabilities", {
           description: "The capabilities to grant the program",
           type: "array",
           default: [],
@@ -115,6 +125,11 @@ const argv = Yargs.usage("crochet <command> [options]")
     default: false,
     type: "boolean",
   })
+  .option("non-interactive", {
+    description: "Run in non-interactive mode",
+    default: false,
+    type: "boolean",
+  })
   .demandCommand(1).argv;
 
 function read(filename: string) {
@@ -125,29 +140,78 @@ async function setup_vm(
   vm: CrochetVM,
   filename: string,
   seed: string | null,
-  capabilities: Capabilities
+  capabilities: string[],
+  batch: boolean
 ) {
   if (seed != null) {
     vm.reseed(Number(seed));
   }
+  const config = StorageConfig.load();
   await vm.initialise();
-  logger.debug(
-    "Granting capabilities:",
-    [...capabilities.capabilities].join(", ")
-  );
+  const { graph, pkg } = await vm.resolve(filename, new NodeTarget());
+  if (batch) {
+    const capset = new Capabilities(new Set(capabilities));
+    logger.debug("Granting capabilities:", capabilities.join(", "));
+    graph.check(pkg.name, capset);
+  } else {
+    const previouscap = config.grants(pkg.name)?.capabilities ?? null;
+    const totalcap = graph.capability_requirements;
+    if (previouscap == null) {
+      console.log(
+        `Running ${
+          pkg.name
+        } (from ${filename}) requires the following capabilities:\n  - ${[
+          ...totalcap.values(),
+        ].join(
+          "\n  - "
+        )}.\nType 'yes' to grant these capabilities and run the application. Your choice will be recorded. [yes/no]`
+      );
+      if (!(await question("> "))) {
+        console.log(
+          `Not running the application because it lacks capabilities.`
+        );
+        process.exit(1);
+      }
+      config.update_grants(pkg.name, [...totalcap.values()]);
+    } else {
+      const caps = new Set(previouscap);
+      const missing = difference(totalcap, caps);
+      if (missing.size !== 0) {
+        console.log(
+          `You have previously granted ${
+            pkg.name
+          } (from ${filename}) the following capabilities:\n  - ${previouscap.join(
+            "\n  - "
+          )}.\nIt now also requires the following capabilities:\n  - ${[
+            ...missing.values(),
+          ].join("\n  - ")}.\nType 'yes' to update the capabilities. [yes/no].`
+        );
+        if (!(await question("> "))) {
+          console.log(
+            `Not running the application because it lacks capabilities.`
+          );
+          process.exit(1);
+        }
+        config.update_grants(pkg.name, [...totalcap.values()]);
+      }
+    }
+    graph.check(pkg.name, new Capabilities(totalcap));
+  }
+
   logger.debug("Using seed:", vm.world.global_random.seed);
-  await vm.load_with_capabilities(filename, new NodeTarget(), capabilities);
+  await vm.load_graph(graph, pkg);
 }
 
 async function run(
   filename: string,
   entry: string = "main",
   seed: string | null,
-  capabilities: Capabilities
+  capabilities: string[],
+  batch: boolean
 ) {
   const vm = new Crochet();
   try {
-    await setup_vm(vm, filename, seed, capabilities);
+    await setup_vm(vm, filename, seed, capabilities, batch);
     await vm.run(entry);
   } catch (error) {
     await vm.show_error(error);
@@ -158,11 +222,12 @@ async function run(
 async function run_repl(
   filename: string,
   seed: string | null,
-  capabilities: Capabilities
+  capabilities: string[],
+  batch: boolean
 ) {
   const vm = new Crochet();
   try {
-    await setup_vm(vm, filename, seed, capabilities);
+    await setup_vm(vm, filename, seed, capabilities, batch);
     const pkg = await vm.read_package_from_file(filename);
     await vm.run_initialisation();
     await REPL.repl(vm, pkg.name);
@@ -176,11 +241,12 @@ async function run_tests(
   filename: string,
   seed: string | null,
   packages: string[] | null,
-  capabilities: Capabilities
+  capabilities: string[],
+  batch: boolean
 ) {
   const vm = new Crochet();
   try {
-    await setup_vm(vm, filename, seed, capabilities);
+    await setup_vm(vm, filename, seed, capabilities, batch);
     const results = await vm.run_tests((x) =>
       packages == null ? true : packages.includes(x.module.pkg.name)
     );
@@ -188,16 +254,6 @@ async function run_tests(
   } catch (error) {
     await vm.show_error(error);
     process.exit(1);
-  }
-}
-
-function parse_capabilities(capabilities: string[] | null) {
-  if (capabilities == null) {
-    return new Capabilities(new Set());
-  } else {
-    return new Capabilities(
-      new Set(parse(capabilities, array(CrochetCapability)))
-    );
   }
 }
 
@@ -225,7 +281,8 @@ switch (argv._[0]) {
       argv["filename"] as string,
       argv["entry"] as string,
       argv["seed"] as string | null,
-      parse_capabilities(argv["capability"] as string[])
+      argv["capabilities"] as string[],
+      argv["non-interactive"] as boolean
     );
     break;
   }
@@ -234,7 +291,8 @@ switch (argv._[0]) {
     run_repl(
       argv["filename"] as string,
       argv["seed"] as string | null,
-      parse_capabilities(argv["capability"] as string[])
+      argv["capabilities"] as string[],
+      argv["non-interactive"] as boolean
     );
     break;
   }
@@ -244,7 +302,8 @@ switch (argv._[0]) {
       argv["filename"] as string,
       argv["seed"] as string | null,
       argv["package"] as string[] | null,
-      parse_capabilities(argv["capability"] as string[])
+      argv["capabilities"] as string[],
+      argv["non-interactive"] as boolean
     );
     break;
   }

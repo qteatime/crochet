@@ -41,31 +41,6 @@ export abstract class CrochetVM {
   abstract initialise(): Promise<void>;
   abstract prelude: string[];
 
-  private async entry_to_package(filename: string, capabilities: Capabilities) {
-    switch (Path.extname(filename)) {
-      case ".json": {
-        return await this.read_package_from_file(filename);
-      }
-      case ".crochet": {
-        return new CrochetPackage(filename, {
-          name: Path.basename(filename),
-          target: new AnyTarget(),
-          sources: [new File(Path.basename(filename), new AnyTarget())],
-          native_sources: [],
-          capabilities: {
-            requires: capabilities.capabilities,
-            provides: new Set(),
-          },
-          dependencies: this.prelude.map(
-            (x) => new Dependency(x, null, new AnyTarget())
-          ),
-        });
-      }
-      default:
-        throw new Error(`Unsupported file ${filename}`);
-    }
-  }
-
   async load_crochet(filename: string, pkg: RestrictedCrochetPackage) {
     logger.debug(
       `Loading ${pkg.relative_filename(filename)} from package ${pkg.name}`
@@ -125,22 +100,20 @@ export abstract class CrochetVM {
     }
   }
 
-  async load(filename: string, target: Target) {
-    return this.load_with_capabilities(filename, target, Capabilities.safe);
-  }
-
-  async load_with_capabilities(
-    filename: string,
-    target: Target,
-    capabilities: Capabilities
-  ) {
-    const pkg = await this.entry_to_package(filename, capabilities);
-    this.register_package(pkg.name, pkg);
-    const graph = await PackageGraph.resolve(target, this, pkg);
-    graph.check(pkg.name, capabilities);
+  async load_graph(graph: PackageGraph, pkg: RestrictedCrochetPackage) {
     for (const x of graph.serialise(pkg.name)) {
       await this.load_package(x);
     }
+  }
+
+  async resolve(filename: string, target: Target) {
+    const pkg0 = await this.read_package_from_file(filename);
+    if (!this.registered_packages.has(pkg0.name)) {
+      this.register_package(pkg0.name, pkg0);
+    }
+    const pkg = pkg0.restricted_to(target);
+    const graph = await PackageGraph.resolve(target, this, pkg);
+    return { graph, pkg };
   }
 
   async run(scene: string) {
