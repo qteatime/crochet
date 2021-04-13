@@ -6,8 +6,7 @@
   "dependencies": [
     "crochet.core",
     "crochet.collections",
-    "crochet.text.parsing.lingua",
-    "crochet.debug"
+    "crochet.text.parsing.lingua"
   ],
   "capabilities": {
     "requires": [],
