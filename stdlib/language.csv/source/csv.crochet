@@ -1,7 +1,5 @@
 % crochet
 
-open crochet.debug;
-
 local type csv-with-header(header is row, rows is tuple);
 
 command #csv parse: (Source is text) -> csv do
