@@ -357,7 +357,7 @@ grammar Crochet : Program {
       -> TypeInit.Fact(meta, s)
     | command_ s:partialSignature<parameter> c:contractDefinition s<"="> b:foreignBody t:trailingTest
       -> TypeInit.ForeignCommand(meta, s, c, b, t)
-    | command_ s:partialSignature<parameter> c:contractDefinition s<"="> e:expression t:trailingTest
+    | command_ s:partialSignature<parameter> c:contractDefinition s<"="> e:s<expression> t:trailingTest
       -> TypeInit.Command(meta, s, c, [Statement.Expr(e)], t)
     | command_ s:partialSignature<parameter> c:contractDefinition do_ b:statements t:oneTrailingTest
       -> TypeInit.Command(meta, s, c, b, t)
@@ -365,7 +365,7 @@ grammar Crochet : Program {
       -> TypeInit.Command(meta, s, c, b, null)
 
   defineDeclaration =
-    | define_ n:atom s<"="> e:atomicExpression s<";">
+    | define_ n:atom s<"="> e:s<atomicExpression> s<";">
       -> Declaration.Define(meta, n, e)
 
   sceneDeclaration =
@@ -399,8 +399,8 @@ grammar Crochet : Program {
     |                   -> Predicate.Always(meta)
 
   actionRank =
-    | rank_ e:expression -> Rank.Expr(e)
-    |                    -> Rank.Unranked(meta)
+    | rank_ e:s<expression> -> Rank.Expr(e)
+    |                       -> Rank.Unranked(meta)
 
   whenDeclaration =
     | when_ p:predicate do_ b:statements end_
@@ -442,8 +442,8 @@ grammar Crochet : Program {
     | predicateConstrain
 
   predicateConstrain =
-    | p:predicateLet if_ c:expression      -> Predicate.Constrain(meta, p, c)
-    | if_ c:expression                     -> Predicate.Constrain(meta, Predicate.Always(meta), c)
+    | p:predicateLet if_ c:s<expression>      -> Predicate.Constrain(meta, p, c)
+    | if_ c:s<expression>                     -> Predicate.Constrain(meta, Predicate.Always(meta), c)
     | predicateLet
     | predicateSample
     | predicateType
@@ -453,7 +453,7 @@ grammar Crochet : Program {
     | n:name is_ t:typeApp                 -> Predicate.Typed(meta, n, t)
 
   predicateLet =
-    | let_ n:name s<"="> e:expression      -> Predicate.Let(meta, n, e)
+    | let_ n:name s<"="> e:s<expression>      -> Predicate.Let(meta, n, e)
 
   predicateSample =
     | sample_ n:integer of_ p:samplingPool
@@ -487,17 +487,17 @@ grammar Crochet : Program {
 
   // -- Statement
   statement =
-    | letStatement
-    | factStatement
-    | forgetStatement
-    | gotoStatement
-    | callStatement
-    | simulateStatement
-    | assertStatement
-    | e:expression    -> Statement.Expr(e)
+    | s<letStatement>
+    | s<factStatement>
+    | s<forgetStatement>
+    | s<gotoStatement>
+    | s<callStatement>
+    | s<simulateStatement>
+    | s<assertStatement>
+    | e:s<expression>    -> Statement.Expr(e)
 
   letStatement =
-    | let_ n:name s<"="> e:expression
+    | let_ n:name s<"="> e:s<expression>
       -> Statement.Let(meta, n, e)
   
   factStatement =
@@ -538,10 +538,10 @@ grammar Crochet : Program {
 
   // -- Expressions
   expression =
-    | searchExpression
-    | lazyExpression
-    | forceExpression
-    | pipeExpression
+    | s<searchExpression>
+    | s<lazyExpression>
+    | s<forceExpression>
+    | s<pipeExpression>
 
   searchExpression =
     | search_ p:predicate
