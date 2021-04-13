@@ -14,7 +14,9 @@ command #csv parse: (Source is text) -> csv do
     end
   end
 test
-  assert (#csv parse: "") === new csv([]);
+  assert (#csv parse: "") === new csv([
+    new row([new cell("")])
+  ]);
 
   assert (#csv parse: "a,b,c") === new csv([
     new row([new cell("a"), new cell("b"), new cell("c")])
