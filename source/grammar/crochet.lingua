@@ -86,7 +86,6 @@ type Expression =
   | Self(pos: Meta)
   | List(pos: Meta, values: Expression[])
   | Record(pos: Meta, pairs: Pair<RecordField, Expression>[])
-  | Cast(pos: Meta, typ: TypeApp, value: Expression)
   | Search(pos: Meta, predicate: Predicate)
   | MatchSearch(pos: Meta, cases: MatchSearchCase[])
   | Project(pos: Meta, object: Expression, field: RecordField)
@@ -579,11 +578,14 @@ grammar Crochet : Program {
     | castExpression
 
   castExpression =
-    | s:invokePrePost as_ t:typeAppPrimary
-      -> Expression.Cast(meta, t, s)
+    | s:invokePrePost op:as t:castType
+      -> Expression.Invoke(meta, Signature.Binary(meta, op, s, t))
     | s:invokePrePost is_ t:typeAppPrimary
       -> Expression.HasType(meta, s, t)
     | invokePrePost
+
+  castType =
+    | t:typeAppPrimary -> Expression.Type(meta, t)
 
   invokePrePost =
     | invokePrefix
@@ -765,6 +767,7 @@ grammar Crochet : Program {
   not = x:not_                                -> Name(meta, x)
   and = x:and_                                -> Name(meta, x)
   or = x:or_                                  -> Name(meta, x)
+  as = x:as_                                  -> Name(meta, x)
 
   namespace = x:s<nonemptyListOf<t_atom, s<".">>>  -> Namespace(meta, x)
 
@@ -788,11 +791,15 @@ grammar Crochet : Program {
     | n:not                       -> PartialSignature.Unary(meta, n)
 
   signature<t> =
+    | l:t op:as r:asParameter         -> Signature.Binary(meta, op, l, r)
     | l:t op:infix_symbol r:t         -> Signature.Binary(meta, op, l, r)
     | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
     | s:t n:atom                      -> Signature.Unary(meta, s, n)
     | n:not s:t                       -> Signature.Unary(meta, s, n)
     | kws:signaturePair<t>+           -> Signature.KeywordSelfless(meta, kws)
+
+  asParameter =
+    | t:typeAppPrimary -> Parameter.TypedOnly(meta, TypeApp.Static(meta, t))
 
   statementBlock<t> =
     | do_ xs:list0<t, s<";">> end_ -> xs
@@ -840,6 +847,7 @@ grammar Crochet : Program {
     | x:t_any_infix ~infix_character  -> x
     | and_
     | or_
+    | as_
 
   token t_any_infix =
     | "++" | "+"

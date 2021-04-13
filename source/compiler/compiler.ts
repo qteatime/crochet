@@ -472,14 +472,6 @@ export function compileExpression(expr: Expression): IR.Expression {
       );
     },
 
-    Cast(pos, type, value) {
-      return new IR.ECast(
-        compileMeta(pos),
-        compileTypeApp(type),
-        compileExpression(value)
-      );
-    },
-
     Project(pos, object, field) {
       return new IR.EProject(
         compileMeta(pos),

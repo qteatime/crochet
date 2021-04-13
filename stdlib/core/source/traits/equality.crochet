@@ -44,10 +44,10 @@ test
   assert #float positive-infinity =/= #float negative-infinity;
 end
 
-command (X is integer) === (Y is float) = (#float coerce: X) === Y;
-command (X is integer) =/= (Y is float) = (#float coerce: X) =/= Y;
-command (X is float) === (Y is integer) = X === (#float coerce: Y);
-command (X is float) =/= (Y is integer) = X =/= (#float coerce: Y);
+command (X is integer) === (Y is float) = (X as float) === Y;
+command (X is integer) =/= (Y is float) = (X as float) =/= Y;
+command (X is float) === (Y is integer) = X === (Y as float);
+command (X is float) =/= (Y is integer) = X =/= (Y as float);
 
 test "Numeric equality tower" do
   assert (1.0 === 1);

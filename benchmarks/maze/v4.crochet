@@ -26,7 +26,7 @@ command point move: south = new point(self.X, self.Y + 1);
 command point move: west  = new point(self.X - 1, self.Y);
 
 command point distance-to: (P is point) =
-  (#float coerce: (((P.X - self.X) ** 2) + ((P.Y - self.Y) ** 2))) sqrt;
+  ((((P.X - self.X) ** 2) + ((P.Y - self.Y) ** 2)) as float) sqrt;
 
 command cell adjacent-cells do
   let Adjacency = [
@@ -142,7 +142,7 @@ command maze-gen draw do
     for IX in 1 to: self.Width do
       (cell-at: new point(IX, IY)) draw;
     end
-    |> #interpolation coerce: _
+    |> _ as interpolation
     |> transcript write: _;
   end
 end

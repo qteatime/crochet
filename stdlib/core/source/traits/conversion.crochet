@@ -1,34 +1,41 @@
 % crochet
 
-command #float coerce: (X is integer)
+command (X is integer) as float
   = foreign conversion.integer-to-float(X)
 test
-  assert (#float coerce: 1) =:= 1.0;
-  assert (#float coerce: 0) =:= 0.0;
-  assert (#float coerce: -1) =:= -1.0;
+  assert (1 as float) =:= 1.0;
+  assert (0 as float) =:= 0.0;
+  assert (-1 as float) =:= -1.0;
 end
 
-command #integer coerce: (X is float)
+command (X is float) as integer
 requires integral :: X =:= X truncate
   = foreign conversion.float-to-integer(X)
 test
-  assert (#integer coerce: 1.0) =:= 1;
-  assert (#integer coerce: 0.0) =:= 0;
-  assert (#integer coerce: -1.0) =:= -1;
+  assert (1.0 as integer) =:= 1;
+  assert (0.0 as integer) =:= 0;
+  assert (-1.0 as integer) =:= -1;
 end
 
-command #interpolation coerce: (X is tuple)
+command (X is tuple) as interpolation
   = foreign conversion.tuple-to-interpolation(X)
 test
-  assert (#interpolation coerce: []) =:= ("" as interpolation);
-  assert (#interpolation coerce: ["a", 1, "c"]) =:= "a[1]c";
+  assert ([] as interpolation) =:= ("" as interpolation);
+  assert (["a", 1, "c"] as interpolation) =:= "a[1]c";
 end
 
-command #text coerce: (X is interpolation)
+command (X is interpolation) as text
   = foreign conversion.interpolation-to-text(X)
 test
-  assert (#text coerce: ("abc" as interpolation)) =:= "abc";
-  assert (#text coerce: "a["b"]c") =:= "abc";
+  assert (("abc" as interpolation) as text) =:= "abc";
+  assert ("a["b"]c" as text) =:= "abc";
+end
+
+command (X is text) as interpolation
+  = foreign conversion.text-to-interpolation(X)
+test
+  assert (("abc" as interpolation) as text) =:= "abc";
+  assert (("abc" as interpolation) normalise) =:= ("["a"]["b"]["c"]" normalise);
 end
 
 

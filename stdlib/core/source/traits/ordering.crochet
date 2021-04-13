@@ -172,15 +172,15 @@ end
 
 
 // # Relational operators across numeric types
-command (X is integer) <  (Y is float) = (#float coerce: X) < Y;
-command (X is integer) <= (Y is float) = (#float coerce: X) <= Y;
-command (X is integer) >  (Y is float) = (#float coerce: X) > Y;
-command (X is integer) >= (Y is float) = (#float coerce: X) >= Y;
+command (X is integer) <  (Y is float) = (X as float) < Y;
+command (X is integer) <= (Y is float) = (X as float) <= Y;
+command (X is integer) >  (Y is float) = (X as float) > Y;
+command (X is integer) >= (Y is float) = (X as float) >= Y;
 
-command (X is float) <  (Y is integer) = X <  (#float coerce: Y);
-command (X is float) <= (Y is integer) = X <= (#float coerce: Y);
-command (X is float) >  (Y is integer) = X >  (#float coerce: Y);
-command (X is float) >= (Y is integer) = X >= (#float coerce: Y);
+command (X is float) <  (Y is integer) = X <  (Y as float);
+command (X is float) <= (Y is integer) = X <= (Y as float);
+command (X is float) >  (Y is integer) = X >  (Y as float);
+command (X is float) >= (Y is integer) = X >= (Y as float);
 
 
 test "Relational conversions" do

@@ -233,31 +233,6 @@ export class ERecord extends Expression {
   }
 }
 
-export class ECast extends Expression {
-  constructor(
-    readonly position: Metadata,
-    readonly type: Type,
-    readonly value: Expression
-  ) {
-    super();
-  }
-
-  *evaluate(state: State): Machine {
-    const type = this.type.realise(state);
-    const value0 = cvalue(yield _push_expr(this.value, state));
-    const value = type.coerce(value0);
-    if (value != null) {
-      return value;
-    } else {
-      throw new ErrNoConversionAvailable(type, value0);
-    }
-  }
-
-  get sub_expressions() {
-    return [this.value];
-  }
-}
-
 export class EProject extends Expression {
   constructor(
     readonly position: Metadata,

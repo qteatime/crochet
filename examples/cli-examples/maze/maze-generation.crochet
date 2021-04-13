@@ -26,8 +26,8 @@ command point move: south = new point(self.X, self.Y + 1);
 command point move: west  = new point(self.X - 1, self.Y);
 
 command point distance-to: (P is point) do
-  let X = #float coerce: (P.X - self.X);
-  let Y = #float coerce: (P.Y - self.Y);
+  let X = (P.X - self.X) as float;
+  let Y = (P.Y - self.Y) as float;
   ((X ** 2.0) + (Y ** 2.0)) sqrt;
 end
 
@@ -147,8 +147,8 @@ command maze-gen draw do
     for IX in 1 to: self.Width do
       (cell-at: new point(IX, IY)) draw;
     end
-    |> #interpolation coerce: _
-    |> #text coerce: _
+    |> _ as interpolation
+    |> _ as text
     |> transcript write: _
   end
 end

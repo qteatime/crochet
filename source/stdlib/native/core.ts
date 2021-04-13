@@ -130,6 +130,9 @@ export function core_conversion(ffi: ForeignInterface) {
       } else {
         return new CrochetFloat(n);
       }
+    })
+    .defun("text-to-interpolation", [CrochetText], (x) => {
+      return new CrochetInterpolation([new InterpolationStatic(x.value)]);
     });
 }
 

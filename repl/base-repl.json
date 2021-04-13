@@ -1,0 +1,20 @@
+{
+  "name": "crochet.repl.base",
+  "target": "node",
+  "dependencies": [
+    "crochet.core",
+    "crochet.debug",
+    "crochet.collections",
+    "crochet.mathematics",
+    "crochet.mathematics.units",
+    "crochet.language.csv",
+    "crochet.language.json",
+    "crochet.random",
+    "crochet.text"
+  ],
+  "sources": [],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

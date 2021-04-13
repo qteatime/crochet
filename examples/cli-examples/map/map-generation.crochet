@@ -70,8 +70,8 @@ command dungeon-gen draw do
         always => " ";
       end first;
     end
-    |> #interpolation coerce: _
-    |> #text coerce: _;
+    |> _ as interpolation
+    |> _ as text
   end
 end
 

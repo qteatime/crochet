@@ -10,7 +10,7 @@ command (Self is transcript) inspect: Value
 
 
 command transcript write: (X is interpolation) do
-  transcript write: (#text coerce: X);
+  transcript write: (X as text);
 end
 
 command transcript inspect: Value tag: (Tag is text) do
