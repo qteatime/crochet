@@ -1,0 +1,17 @@
+{
+  "name": "crochet.parsing.combinators",
+  "target": "*",
+  "stability": "experimental",
+  "dependencies": ["crochet.core", "crochet.text", "crochet.collections"],
+  "sources": [
+    "source/0-types.crochet",
+    "source/result.crochet",
+    "source/stream.crochet",
+    "source/parser.crochet",
+    "source/combinators.crochet"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

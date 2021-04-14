@@ -1,0 +1,52 @@
+% crochet
+
+command parser-result-pair first = self.left;
+command parser-result-pair second = self.right;
+
+command parser-result-pair as tuple =
+  [self first, self second];
+
+command parser-result-pair at: (Index is integer) =
+  (self as tuple) at: Index;
+
+command parser-result-pair ++ (That is parser-result-pair) =
+  (self as tuple) ++ (That as tuple);
+
+command parser-result-pair ++ (That is tuple) =
+  (self as tuple) ++ That;
+
+command tuple ++ (That is parser-result-pair) =
+  self ++ (That as tuple);
+
+command parser-result-pair flatten do
+  (flattener flatten: self.left) ++ (flattener flatten: self.right);
+end
+
+local singleton flattener;
+command flattener flatten: (X is parser-result-pair) = X flatten;
+command flattener flatten: X = [X];
+
+
+command parser-result-ok value = self.value;
+command parser-result-ok position = self.position;
+
+command parser-result-error reason = self.reason;
+command parser-result-error position = self.position;
+
+
+command parser-result-ok then: (F is function-1) else: (G is function-1) =
+  F(self);
+
+command parser-result-error then: (F is function-1) else: (G is function-1) =
+  G(self);
+
+
+command parser-result then: F = self then: F else: { S in S };
+command parser-result else: F = self then: { S in S } else: F;
+
+command parser-result map: F =
+  self then: { S in new parser-result-ok(F(S value), S position) };
+
+command parser-result map-error: F =
+  self else: { S in new parser-result-error(F(S reason), S position) };
+

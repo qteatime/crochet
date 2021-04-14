@@ -2,13 +2,15 @@
   "name": "crochet.repl.basic",
   "target": "node",
   "dependencies": [
+    "crochet.collections",
     "crochet.core",
     "crochet.debug",
-    "crochet.collections",
-    "crochet.mathematics",
-    "crochet.mathematics.units",
+    "crochet.language.cli-arguments",
     "crochet.language.csv",
     "crochet.language.json",
+    "crochet.mathematics",
+    "crochet.mathematics.units",
+    "crochet.parsing.combinators",
     "crochet.random",
     "crochet.text"
   ],

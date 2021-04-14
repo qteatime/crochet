@@ -1,0 +1,35 @@
+% crochet
+
+command #parser any-of: (Parsers is tuple)
+requires non-empty :: not (Parsers is-empty)
+do
+  Parsers but-first fold-from: Parsers first with: (_ or _);
+end
+
+command #parser sequence: (Parsers is tuple)
+requires non-empty :: not (Parsers is-empty)
+do
+  Parsers but-first fold-from: Parsers first with: (_ and _)
+    | collect;
+end
+
+command parser collect =
+  self map: _ flatten;
+
+command parser many =
+  #parser many: self | collect;
+
+command parser at-least-one =
+  self and self many
+    | collect;
+
+command parser and-then: (That is parser) =
+  self and That
+    | map: { Pair in Pair second };
+
+command parser followed-by: (That is parser) =
+  self and That
+    | map: { Pair in Pair first };
+
+command parser recover: (Fun is function-1) =
+  self or (#parser 'always map: Fun);

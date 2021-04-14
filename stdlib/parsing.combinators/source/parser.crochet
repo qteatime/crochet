@@ -1,0 +1,105 @@
+% crochet
+
+// Constructing
+command thunk as parser =
+  new parser-lazy(self);
+
+command parser and (That is parser) =
+  new parser-seq(self, That);
+
+command parser or (That is parser) =
+  new parser-alt(self, That);
+
+command not parser =
+  new parser-not(self);
+
+command #parser many: (This is parser) =
+  new parser-many(This);
+
+command parser optional =
+  new parser-opt(self);
+
+command parser lookahead =
+  new parser-lookahead(self);
+
+command parser backtrack =
+  new parser-backtrack(self);
+
+command #parser equal: Value =
+  new parser-eq(Value);
+
+command parser map: (Fun is function-1) =
+  new parser-action(self, Fun);
+
+command #parser 'always = parser-always;
+
+command #parser any = parser-any;
+
+// Parsing
+command parser-lazy parse: (Stream is parser-stream) =
+  (force self) parse: Stream;
+
+command parser-alt parse: (Stream is parser-stream) do
+  self.left parse: Stream | else: { S1 in
+    self.right parse: S1 position
+      | map-error: { E2 in new parser-error-alt(S1 reason, E2) }
+  }
+end
+
+command parser-backtrack parse: (Stream is parser-stream) do
+  self.parser parse: Stream | else: { S in
+    new parser-result-error(S reason, Stream)
+  }
+end
+
+command parser-seq parse: (Stream is parser-stream) do
+  self.left parse: Stream | then: { S in
+    self.right parse: S position
+      | map: { V2 in new parser-result-pair(S value, V2) }
+  }
+end
+
+command parser-many parse: (Stream is parser-stream) do
+  self.parser parse: Stream | then: { S1 in
+    self parse: S1 position
+      | recover: { S2 in S1 ok: S1 value }
+      | map: { V in new parser-result-pair(S1 value, V) }
+  }
+end
+
+command parser-opt parse: (Stream is parser-stream) do
+  self.parser parse: Stream
+    | then: { S in S ok: new ok(S value) }
+      else: { S in Stream ok: new error(nothing) }
+end
+
+command parser-eq parse: (Stream is parser-stream) do
+  Stream consume | then: { S in 
+    condition
+      when S value === self.value => S;
+      always => Stream error: new parser-error-expected(self.value);
+    end
+  }
+end
+
+command parser-not parse: (Stream is parser-stream) do
+  self.parser parse: Stream
+    | then: { S in Stream error: new parser-error-unexpected(self) }
+      recover: { S in Stream ok: nothing }
+end
+
+command parser-lookahead parse: (Stream is parser-stream) do
+  self.parser parse: Stream
+    | then: { S in Stream ok: S value };
+end
+
+command parser-action parse: (Stream is parser-stream) do
+  self.parser parse: Stream
+    | map: self.semantic;
+end
+
+command parser-always parse: (Stream is parser-stream) =
+  Stream ok: nothing;
+
+command parser-any parse: (Stream is parser-stream) =
+  Stream consume;

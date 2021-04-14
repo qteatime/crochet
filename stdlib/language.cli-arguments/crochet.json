@@ -1,0 +1,20 @@
+{
+  "name": "crochet.language.cli-arguments",
+  "target": "*",
+  "stability": "experimental",
+  "sources": [
+    "source/0-types.crochet",
+    "source/parser.crochet",
+    "source/cli.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.collections",
+    "crochet.debug",
+    "crochet.parsing.combinators"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

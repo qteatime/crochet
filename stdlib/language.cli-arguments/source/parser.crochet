@@ -1,0 +1,45 @@
+% crochet
+
+open crochet.parsing.combinators;
+
+command cli-app as parser do
+  #parser any-of: (for X in self.commands do X as parser end);
+end
+
+command cli-command as parser do
+  let Args = [self.command-arg as parser | lookahead] ++ (
+    (for X in self.arguments do X as parser end)
+  );
+  #parser sequence: Args
+    | map: { Xs in Xs fold-from: [->] with: (_ ++ _) };
+end
+
+command cli-options as parser =
+  #parser any-of: (for X in self.options do X as parser end)
+    | many
+    | map: { Xs in [ [self.name] -> Xs fold-from: [->] with: (_ ++ _) ] }
+    | recover: { _ in [ [self.name] -> [->] ] };
+
+command cli-positional as parser =
+  self.arg-type as parser
+    | map: { X in [ [self.name] -> X ] };
+
+command cli-option as parser =
+  (#parser equal: self.key) lookahead
+    | and-then: (#parser equal: self.key)
+    | and-then: (self.arg-type as parser)
+    | map: { X in [[self.key] -> X] };
+
+
+command cli-arg-exact as parser =
+  #parser equal: self.value;
+
+command cli-arg-text as parser =
+  #parser any;
+
+
+command cli-arg parse: (Stream is parser-stream) =
+  (self as parser) parse: Stream;
+
+command cli-arg parse: (Args is tuple) =
+  self parse: (Args as parser-stream);

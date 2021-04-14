@@ -1,0 +1,48 @@
+% crochet
+
+command cli command: (Name is text) with: (Args is tuple) do
+  let Command = cli exact: Name;
+  new cli-command(Name, "", Command, [Command] ++ Args);
+end
+
+command cli app: (Name is text) with: (Commands is tuple) =
+  new cli-app(Name, "", Commands);
+
+command cli options: (Options is tuple) =
+  new cli-options("options", Options);
+
+command cli positional: (Name is text) =
+  new cli-positional(Name, "", cli-arg-text);
+
+command cli option: (Key is text) =
+  new cli-option(Key, "", cli-arg-text);
+
+command cli exact: (Value is text) =
+  new cli-positional("_", "", new cli-arg-exact(Value));
+
+
+open crochet.parsing.combinators;
+
+test "Arguments parsing" do
+  let Options = cli options: [
+    cli option: "--verbose",
+    cli option: "--capabilities"
+  ];
+  let Run = cli command: "run" with: [cli positional: "package", Options];
+  let Repl = cli command: "repl" with: [cli positional: "package", Options];
+  let App = cli app: "crochet" with: [Run, Repl];
+
+  assert (Run parse: ["run", "file.json"] | value) =:= [
+    "_" -> "run",
+    package -> "file.json",
+    options -> [->],
+  ];
+
+  assert (Run parse: ["repl"]) is parser-result-error;
+  assert (Repl parse: ["repl"]) is parser-result-error;
+  assert (App parse: ["repl", "file.json"] | value) =:= [
+    "_" -> "repl",
+    package -> "file.json",
+    options -> [->],
+  ];
+end

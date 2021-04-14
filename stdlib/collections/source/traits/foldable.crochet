@@ -1,13 +1,13 @@
 % crochet
 
 command tuple fold-from: Initial with: (Fun is function-2) do
-  let Go = { Xs in 
+  let Go = { Z, Xs in 
     condition
-      when Xs is-empty => Initial;
-      always => Fun(Xs first, Go(Xs but-first));
+      when Xs is-empty => Z;
+      always => Go(Fun(Z, Xs first), Xs but-first);
     end
   };
-  Go(self);
+  Go(Initial, self);
 test
   assert ([1, 2, 3] fold-from: 0 with: (_ + _)) =:= (1 + 2 + 3 + 0);
   assert ([] fold-from: 0 with: (_ + _)) =:= 0;

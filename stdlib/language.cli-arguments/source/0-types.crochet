@@ -1,0 +1,50 @@
+% crochet
+
+open crochet.parsing.combinators;
+
+singleton cli;
+
+// Parser types
+abstract cli-arg-type;
+type cli-arg-exact is cli-arg-type(value is text);
+singleton cli-arg-text is cli-arg-type;
+
+
+// Rules that can be defined
+abstract cli-arg;
+
+type cli-app is cli-arg(
+  name is text,
+  description is text,
+  commands is tuple
+);
+
+type cli-command is cli-arg(
+  name is text,
+  description is text,
+  command-arg is cli-arg,
+  arguments is tuple
+);
+
+type cli-options is cli-arg(
+  name is text,
+  options is tuple
+);
+
+type cli-positional is cli-arg(
+  name is text,
+  description is text,
+  arg-type is cli-arg-type
+);
+
+type cli-option is cli-arg(
+  key is text,
+  description is text,
+  arg-type is cli-arg-type
+);
+
+
+// Errors that may happen specific to this parser
+abstract cli-parser-error is parser-error;
+type cli-parser-error-type is cli-parser-error(expected is cli-arg-type);
+type cli-parser-error-arg is cli-parser-error(expected is cli-arg);

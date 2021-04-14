@@ -1,0 +1,35 @@
+% crochet
+
+// The stream we're parsing (this should support random indexing)
+type parser-stream(position is integer, stream is tuple);
+
+// An intermediate parser result
+abstract parser-result;
+type parser-result-ok is parser-result(value, position is parser-stream);
+type parser-result-error is parser-result(reason, position is parser-stream);
+
+type parser-result-pair(left, right);
+
+// Parsers
+abstract parser;
+singleton parser-always is parser;
+singleton parser-any is parser;
+type parser-lazy is parser(parser is thunk);
+type parser-alt is parser(left is parser, right is parser);
+type parser-backtrack is parser(parser is parser);
+type parser-seq is parser(left is parser, right is parser);
+type parser-many is parser(parser is parser);
+type parser-opt is parser(parser is parser);
+type parser-eq is parser(value);
+type parser-not is parser(parser is parser);
+type parser-lookahead is parser(parser is parser);
+type parser-action is parser(parser is parser, semantic is function-1);
+
+// Reasons for parsing error
+abstract parser-error;
+singleton parser-error-end-of-stream is parser-error;
+type parser-error-alt is parser-error(left is parser-error, right is parser-error);
+type parser-error-expected is parser-error(expected);
+type parser-error-unexpected is parser-error(parser is parser);
+type parser-error-not-satisfied is parser-error(parser is parser);
+

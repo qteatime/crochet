@@ -1,0 +1,41 @@
+% crochet
+
+command text as parser-stream =
+  new parser-stream(1, self characters);
+
+command tuple as parser-stream =
+  new parser-stream(1, self);
+
+
+command parser-stream is-end-of-stream =
+  self.position > self.stream count;
+
+command parser-stream ok: Value =
+  new parser-result-ok(Value, self);
+
+command parser-stream error: (Reason is parser-error) =
+  new parser-result-error(Reason, self);
+
+
+command parser-stream consume: (N is integer)
+requires positive-non-zero :: N > 0
+do
+  let End = self.position + N;
+  condition
+    when End <= (self.stream count + 1) do
+      let Slice = self.stream slice-from: self.position to: End;
+      new parser-result-ok(Slice, new parser-stream(End, self.stream));
+    end
+
+    always => self error: parser-error-end-of-stream;
+  end;
+end
+
+command parser-stream consume =
+  self consume: 1 | map: { Xs in Xs first };
+
+command parser-stream peek: (N is integer) =
+  self consume: N
+    then: { S in new ok(S value) }
+    else: { S in new error(S reason) };
+
