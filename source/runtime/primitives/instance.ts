@@ -85,7 +85,9 @@ export class TCrochetType extends CrochetType {
 
   validate(data: CrochetValue[]) {
     if (data.length !== this.types.length) {
-      throw die(`Invalid data`);
+      throw die(
+        `${this.type_name} expects ${this.types.length} arguments, but got ${data.length}`
+      );
     }
 
     for (const [v, type] of zip(data, this.types)) {
