@@ -43,6 +43,11 @@ type cli-option is cli-arg(
   arg-type is cli-arg-type
 );
 
+type cli-functor is cli-arg(
+  arg is cli-arg,
+  functor is function-1
+);
+
 
 // Errors that may happen specific to this parser
 abstract cli-parser-error is parser-error;

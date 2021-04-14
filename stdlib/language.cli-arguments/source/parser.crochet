@@ -30,6 +30,9 @@ command cli-option as parser =
     | and-then: (self.arg-type as parser)
     | map: { X in [[self.key] -> X] };
 
+command cli-functor as parser =
+  (self.arg as parser) map: self.functor;
+
 
 command cli-arg-exact as parser =
   #parser equal: self.value;
@@ -43,3 +46,6 @@ command cli-arg parse: (Stream is parser-stream) =
 
 command cli-arg parse: (Args is tuple) =
   self parse: (Args as parser-stream);
+
+command cli-arg map: (Fun is function-1) =
+  new cli-functor(self, Fun);

@@ -23,26 +23,34 @@ command cli exact: (Value is text) =
 
 open crochet.parsing.combinators;
 
+local type test-cli;
+type test-cli-run is test-cli(package, options);
+type test-cli-repl is test-cli(package, options);
+
+command test-cli === (That is test-cli) =
+  (self.package =:= That.package) and (self.options =:= That.options);
+
+command test-cli-run run = "Running [self.package]";
+command test-cli-repl run = "REPL-ing [self.package]";
+
 test "Arguments parsing" do
   let Options = cli options: [
     cli option: "--verbose",
     cli option: "--capabilities"
   ];
-  let Run = cli command: "run" with: [cli positional: "package", Options];
-  let Repl = cli command: "repl" with: [cli positional: "package", Options];
+  let Run = cli command: "run" with: [cli positional: "package", Options]
+              | map: { X in new test-cli-run(X.package, X.options) };
+
+  let Repl = cli command: "repl" with: [cli positional: "package", Options]
+              | map: { X in new test-cli-repl(X.package, X.options) };
+
   let App = cli app: "crochet" with: [Run, Repl];
 
-  assert (Run parse: ["run", "file.json"] | value) =:= [
-    "_" -> "run",
-    package -> "file.json",
-    options -> [->],
-  ];
 
+  assert (Run parse: ["run", "file.json"] | value) === new test-cli-run("file.json", [->]);
   assert (Run parse: ["repl"]) is parser-result-error;
   assert (Repl parse: ["repl"]) is parser-result-error;
-  assert (App parse: ["repl", "file.json"] | value) =:= [
-    "_" -> "repl",
-    package -> "file.json",
-    options -> [->],
-  ];
+  assert (App parse: ["repl", "file.json"] | value) === new test-cli-repl("file.json", [->]);
+
+  assert (App parse: ["run", "file.json"] | value | run) as text =:= "Running file.json";
 end
