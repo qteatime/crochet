@@ -119,6 +119,7 @@ type ConditionCase(pos: Meta, guard: Expression, body: Statement[])
 type RecordField =
   | FName(value: Name)
   | FText(value: String)
+  | FComputed(value: Expression)
 
 type Projection(pos: Meta, name: RecordField, alias: RecordField)
 
@@ -697,8 +698,9 @@ grammar Crochet : Program {
     | n:recordField s<"->"> v:e -> Pair(meta, n, v)
 
   recordField =
-    | n:(name | atom)    -> RecordField.FName(n)
-    | t:string           -> RecordField.FText(t)
+    | n:(name | atom)               -> RecordField.FName(n)
+    | t:string                      -> RecordField.FText(t)
+    | s<"["> e:expression s<"]">    -> RecordField.FComputed(e)
 
   literalExpression =
     | l:literal             -> Expression.Lit(l)

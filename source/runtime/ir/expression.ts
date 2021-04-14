@@ -31,6 +31,7 @@ import {
   TCrochetType,
   True,
   CrochetNothing,
+  get_string,
 } from "../primitives";
 import {
   avalue,
@@ -211,10 +212,42 @@ export class EList extends Expression {
   }
 }
 
+export abstract class RecordField {
+  get expression(): Expression {
+    throw new Error(`Unsupported`);
+  }
+  get name(): string {
+    throw new Error(`Unsupported`);
+  }
+  abstract is_static: boolean;
+}
+export class RFStatic extends RecordField {
+  constructor(readonly _name: string) {
+    super();
+  }
+  get is_static() {
+    return true;
+  }
+  get name() {
+    return this._name;
+  }
+}
+export class RFDynamic extends RecordField {
+  constructor(readonly value: Expression) {
+    super();
+  }
+  get is_static() {
+    return false;
+  }
+  get expression() {
+    return this.value;
+  }
+}
+
 export class ERecord extends Expression {
   constructor(
     readonly position: Metadata,
-    readonly pairs: { key: string; value: Expression }[]
+    readonly pairs: { key: RecordField; value: Expression }[]
   ) {
     super();
   }
@@ -222,8 +255,11 @@ export class ERecord extends Expression {
   *evaluate(state: State): Machine {
     const map = new Map<string, CrochetValue>();
     for (const pair of this.pairs) {
+      const key = pair.key.is_static
+        ? pair.key.name
+        : get_string(cvalue(yield _push_expr(pair.key.expression, state)));
       const value = cvalue(yield _push_expr(pair.value, state));
-      map.set(pair.key, value);
+      map.set(key, value);
     }
     return new CrochetRecord(map);
   }
@@ -237,14 +273,17 @@ export class EProject extends Expression {
   constructor(
     readonly position: Metadata,
     readonly object: Expression,
-    readonly field: string
+    readonly field: RecordField
   ) {
     super();
   }
 
   *evaluate(state: State): Machine {
     const object = cvalue(yield _push_expr(this.object, state));
-    return object.projection.project(this.field);
+    const key = this.field.is_static
+      ? this.field.name
+      : get_string(cvalue(yield _push_expr(this.field.expression, state)));
+    return object.projection.project(key);
   }
 
   get sub_expressions() {
@@ -256,14 +295,24 @@ export class EProjectMany extends Expression {
   constructor(
     readonly position: Metadata,
     readonly object: Expression,
-    readonly fields: Selection[]
+    readonly fields: { key: RecordField; alias: RecordField }[]
   ) {
     super();
   }
 
   *evaluate(state: State): Machine {
     const object = cvalue(yield _push_expr(this.object, state));
-    return object.selection.select(this.fields);
+    const fields = [];
+    for (const field of this.fields) {
+      const key = field.key.is_static
+        ? field.key.name
+        : get_string(cvalue(yield _push_expr(field.key.expression, state)));
+      const alias = field.alias.is_static
+        ? field.alias.name
+        : get_string(cvalue(yield _push_expr(field.alias.expression, state)));
+      fields.push({ key, alias });
+    }
+    return object.selection.select(fields);
   }
 
   get sub_expressions() {

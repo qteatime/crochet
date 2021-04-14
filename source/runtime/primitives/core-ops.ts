@@ -172,3 +172,14 @@ export function number_to_float(value: CrochetValue) {
     );
   }
 }
+
+export function get_string(value: CrochetValue) {
+  if (value instanceof CrochetText) {
+    return value.value;
+  } else {
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected a text, got ${type_name(value)}`
+    );
+  }
+}

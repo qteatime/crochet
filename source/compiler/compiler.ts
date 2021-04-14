@@ -375,14 +375,18 @@ export function compileMatchSearchCase(
   );
 }
 
-export function compileRecordField(field: RecordField): string {
-  return field.match<string>({
+export function compileRecordField(field: RecordField): IR.RecordField {
+  return field.match<IR.RecordField>({
     FName(x) {
-      return x.name;
+      return new IR.RFStatic(x.name);
     },
 
     FText(x) {
-      return parseString(x);
+      return new IR.RFStatic(parseString(x));
+    },
+
+    FComputed(x) {
+      return new IR.RFDynamic(compileExpression(x));
     },
   });
 }
