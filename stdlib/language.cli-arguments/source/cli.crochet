@@ -66,7 +66,7 @@ test "Arguments parsing" do
   assert (cli parse: Run with: ["run", "file.json"])
     === new test-cli-run("file.json", [->]);
 
-  assert (cli parse: App with: ["repl"]) is parser-result-error;
+  assert (cli try-parse: App with: ["repl"]) is parser-result-error;
   assert (cli try-parse: Run with: ["repl"]) is parser-result-error;
 
   assert (cli parse: App with: ["run", "file.json", "--verbose", "--capabilities", "io"])
