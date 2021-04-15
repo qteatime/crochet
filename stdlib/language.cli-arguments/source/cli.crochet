@@ -11,8 +11,7 @@ command cli parse: (Arg is cli-arg) with: Arguments do
   let Result = cli try-parse: Arg with: Arguments;
   condition
     when Result is parser-result-ok => Result value;
-    always =>
-      cli explain-error: Result;
+    always => panic: (representation text: Arg usage);
   end
 end
 
@@ -43,23 +42,31 @@ command test-cli-run run = "Running [self.package]";
 command test-cli-repl run = "REPL-ing [self.package]";
 
 test "Arguments parsing" do
+  let Package =
+    cli positional: "package"
+      | description: "The root package";
+
   let Options = cli options: [
-    cli option: "--verbose" | boolean,
+    cli option: "--verbose" | boolean
+      | description: "Output a lot of information",
     cli option: "--capabilities"
+      | description: "Provide capabilities to the package"
   ];
-  let Run = cli command: "run" with: [cli positional: "package", Options]
+  let Run = cli command: "run" with: [Package, Options]
+              | description: "Run a crochet package"
               | map: { X in new test-cli-run(X.package, X.options) };
 
-  let Repl = cli command: "repl" with: [cli positional: "package", Options]
+  let Repl = cli command: "repl" with: [Package, Options]
+              | description: "Start a REPL"
               | map: { X in new test-cli-repl(X.package, X.options) };
 
-  let App = cli app: "crochet" with: [Run, Repl];
-
+  let App = cli app: "crochet" with: [Run, Repl]
+              | description: "The Crochet command line interface";
 
   assert (cli parse: Run with: ["run", "file.json"])
     === new test-cli-run("file.json", [->]);
 
-  assert (cli try-parse: App with: ["repl"]) is parser-result-error;
+  assert (cli parse: App with: ["repl"]) is parser-result-error;
   assert (cli try-parse: Run with: ["repl"]) is parser-result-error;
 
   assert (cli parse: App with: ["run", "file.json", "--verbose", "--capabilities", "io"])

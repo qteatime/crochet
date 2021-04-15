@@ -15,7 +15,7 @@ command cli positional: (Name is text) =
   new cli-positional(Name, "", cli-arg-text);
 
 command cli option: (Key is text) =
-  new cli-option(Key, "", cli-arg-text);
+  new cli-option(Key, "", nothing, cli-arg-text);
 
 command cli exact: (Value is text) =
   new cli-positional("_", "", new cli-arg-exact(Value));
@@ -75,15 +75,19 @@ command cli-positional argument: (Arg is cli-arg-type) =
 
 command cli-option name = self.key;
 command cli-option name: (Name is text) =
-  new cli-option(Name, self description, self argument);
+  new cli-option(Name, self description, self default, self argument);
 
 command cli-option description = self.description;
 command cli-option description: (Description is text) =
-  new cli-option(self name, Description, self argument);
+  new cli-option(self name, Description, self default, self argument);
+
+command cli-option default = self.default;
+command cli-option default: Default =
+  new cli-option(self name, self description, Default, self argument);
 
 command cli-option argument = self.arg-type;
 command cli-option argument: (Arg is cli-arg-type) =
-  new cli-option(self name, self description, Arg);
+  new cli-option(self name, self description, self default, Arg);
 
 
 command cli-functor name = self argument name;
@@ -91,7 +95,7 @@ command cli-functor name: Name = self argument name: Name;
 
 command cli-functor functor = self.functor;
 
-command cli-functor argument = self argument argument;
+command cli-functor argument = self.arg;
 command cli-functor argument: Arg = self argument argument: Arg;
 
 

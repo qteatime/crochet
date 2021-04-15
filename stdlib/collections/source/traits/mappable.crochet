@@ -1,0 +1,4 @@
+% crochet
+
+command tuple map: (Fun is function-1) =
+  for X in self do Fun(X) end;

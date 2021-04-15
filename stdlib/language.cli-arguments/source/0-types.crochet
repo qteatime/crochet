@@ -42,6 +42,7 @@ type cli-positional is cli-arg-single(
 type cli-option is cli-arg-single(
   key is text,
   description is text,
+  default,
   arg-type is cli-arg-type
 );
 

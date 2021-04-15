@@ -10,6 +10,7 @@
     "source/traits/indexed.crochet",
     "source/traits/sequence.crochet",
     "source/traits/foldable.crochet",
+    "source/traits/mappable.crochet",
     "source/traits/zip.crochet"
   ],
   "capabilities": {
