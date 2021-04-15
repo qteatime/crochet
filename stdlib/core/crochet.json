@@ -18,7 +18,8 @@
     "source/cell.crochet",
     "source/record.crochet",
     "source/commands.crochet",
-    "source/result.crochet"
+    "source/result.crochet",
+    "source/representation.crochet"
   ],
   "capabilities": {
     "requires": [],

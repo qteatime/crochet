@@ -8,6 +8,7 @@ singleton cli;
 abstract cli-arg-type;
 type cli-arg-exact is cli-arg-type(value is text);
 singleton cli-arg-text is cli-arg-type;
+singleton cli-arg-boolean is cli-arg-type;
 
 
 // Rules that can be defined
@@ -31,19 +32,20 @@ type cli-options is cli-arg(
   options is tuple
 );
 
-type cli-positional is cli-arg(
+abstract cli-arg-single is cli-arg;
+type cli-positional is cli-arg-single(
   name is text,
   description is text,
   arg-type is cli-arg-type
 );
 
-type cli-option is cli-arg(
+type cli-option is cli-arg-single(
   key is text,
   description is text,
   arg-type is cli-arg-type
 );
 
-type cli-functor is cli-arg(
+type cli-functor is cli-arg-single(
   arg is cli-arg,
   functor is function-1
 );
@@ -53,3 +55,17 @@ type cli-functor is cli-arg(
 abstract cli-parser-error is parser-error;
 type cli-parser-error-type is cli-parser-error(expected is cli-arg-type);
 type cli-parser-error-arg is cli-parser-error(expected is cli-arg);
+
+
+// Specific CLI parser results that we need to know how to merge
+abstract cli-parser-result;
+
+abstract cli-trilean is cli-parser-result;
+singleton cli-trilean-true is cli-trilean;
+singleton cli-trilean-false is cli-trilean;
+singleton cli-trilean-unknown  is cli-trilean;
+
+type cli-text is cli-parser-result(value is text);
+type cli-tuple is cli-parser-result(values is tuple);
+type cli-record is cli-parser-result(value is record);
+type cli-box is cli-parser-result(value);

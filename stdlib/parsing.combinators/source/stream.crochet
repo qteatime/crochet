@@ -6,6 +6,11 @@ command text as parser-stream =
 command tuple as parser-stream =
   new parser-stream(1, self);
 
+command parser-stream contents =
+  self.stream;
+
+command parser-stream position =
+  self.position;
 
 command parser-stream is-end-of-stream =
   self.position > self.stream count;

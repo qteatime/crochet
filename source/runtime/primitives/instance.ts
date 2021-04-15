@@ -37,7 +37,7 @@ export class CrochetInstance extends CrochetValue {
   get_field(name: string) {
     const value = this.data[this.type.layout.get(name) ?? -1];
     if (!value) {
-      throw die(`Invalid field ${name}`);
+      throw die(`The field ${name} does not exist in ${type_name(this.type)}`);
     }
     return value;
   }

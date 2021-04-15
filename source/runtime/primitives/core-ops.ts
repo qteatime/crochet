@@ -7,6 +7,7 @@ import {
   ErrUnexpectedType,
   Machine,
   State,
+  Thread,
   _push,
 } from "../vm";
 import { ProcedureBranch } from "./procedure";
@@ -182,4 +183,23 @@ export function get_string(value: CrochetValue) {
       `Expected a text, got ${type_name(value)}`
     );
   }
+}
+
+export function* equals(
+  state: State,
+  left: CrochetValue,
+  right: CrochetValue
+): Machine {
+  const result = yield _push(invoke(state, "_ === _", [left, right]));
+  return cvalue(result);
+}
+
+export function equals_sync(
+  state: State,
+  left: CrochetValue,
+  right: CrochetValue
+): boolean {
+  return cvalue(
+    Thread.for_machine(equals(state, left, right)).run_sync()
+  ).as_bool();
 }

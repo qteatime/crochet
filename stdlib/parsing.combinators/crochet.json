@@ -8,7 +8,8 @@
     "source/result.crochet",
     "source/stream.crochet",
     "source/parser.crochet",
-    "source/combinators.crochet"
+    "source/combinators.crochet",
+    "source/errors.crochet"
   ],
   "capabilities": {
     "requires": [],

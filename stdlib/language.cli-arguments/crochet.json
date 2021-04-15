@@ -5,6 +5,8 @@
   "sources": [
     "source/0-types.crochet",
     "source/parser.crochet",
+    "source/constructors.crochet",
+    "source/parser-result.crochet",
     "source/cli.crochet"
   ],
   "dependencies": [

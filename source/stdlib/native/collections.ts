@@ -1,9 +1,11 @@
 import {
   apply,
+  box,
   CrochetInteger,
   CrochetTuple,
   CrochetValue,
   cvalue,
+  equals_sync,
   ForeignInterface,
   Thread,
 } from "../../runtime";
@@ -61,6 +63,15 @@ export function coll_tuple(ffi: ForeignInterface) {
         const order = cast(Thread.for_machine(call).run_sync(), CrochetInteger);
         return Number(order.value);
       });
+      return new CrochetTuple(result);
+    })
+    .defmachine("unique", [CrochetTuple], function* (state, xs) {
+      const result: CrochetValue[] = [];
+      for (const x of xs.values) {
+        if (!result.some((y) => equals_sync(state, x, y))) {
+          result.push(x);
+        }
+      }
       return new CrochetTuple(result);
     });
 }

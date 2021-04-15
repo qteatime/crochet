@@ -20,3 +20,9 @@ command (X is record) ++ (Y is record)
 
 command #record from-pairs: (Pairs is tuple)
   = foreign record.from-pairs(Pairs);
+
+command (X is record) at: (K is text) =
+  X.[K];
+
+command (X is record) at: (K is text) default: V =
+  foreign record.at-default(X, K, V);

@@ -1,27 +1,36 @@
 % crochet
 
-command cli command: (Name is text) with: (Args is tuple) do
-  let Command = cli exact: Name;
-  new cli-command(Name, "", Command, [Command] ++ Args);
+open crochet.parsing.combinators;
+open crochet.debug;
+
+command cli try-parse: (Arg is cli-arg) with: Arguments do
+  Arg parse: Arguments | map: (_ realise);
 end
 
-command cli app: (Name is text) with: (Commands is tuple) =
-  new cli-app(Name, "", Commands);
+command cli parse: (Arg is cli-arg) with: Arguments do
+  let Result = cli try-parse: Arg with: Arguments;
+  condition
+    when Result is parser-result-ok => Result value;
+    always =>
+      cli explain-error: Result;
+  end
+end
 
-command cli options: (Options is tuple) =
-  new cli-options("options", Options);
+command cli explain-error: (Error is parser-result-error) do
+  let Stream = Error position;
 
-command cli positional: (Name is text) =
-  new cli-positional(Name, "", cli-arg-text);
+  let Formatted = representation text:
+     "Error at argument [Stream position] in:
 
-command cli option: (Key is text) =
-  new cli-option(Key, "", cli-arg-text);
+      [Stream contents]
 
-command cli exact: (Value is text) =
-  new cli-positional("_", "", new cli-arg-exact(Value));
+      Reason: [Error error-message]
+     ";
+  
+  panic: Formatted;
+end
 
 
-open crochet.parsing.combinators;
 
 local type test-cli;
 type test-cli-run is test-cli(package, options);
@@ -35,7 +44,7 @@ command test-cli-repl run = "REPL-ing [self.package]";
 
 test "Arguments parsing" do
   let Options = cli options: [
-    cli option: "--verbose",
+    cli option: "--verbose" | boolean,
     cli option: "--capabilities"
   ];
   let Run = cli command: "run" with: [cli positional: "package", Options]
@@ -47,10 +56,12 @@ test "Arguments parsing" do
   let App = cli app: "crochet" with: [Run, Repl];
 
 
-  assert (Run parse: ["run", "file.json"] | value) === new test-cli-run("file.json", [->]);
-  assert (Run parse: ["repl"]) is parser-result-error;
-  assert (Repl parse: ["repl"]) is parser-result-error;
-  assert (App parse: ["repl", "file.json"] | value) === new test-cli-repl("file.json", [->]);
+  assert (cli parse: Run with: ["run", "file.json"])
+    === new test-cli-run("file.json", [->]);
 
-  assert (App parse: ["run", "file.json"] | value | run) as text =:= "Running file.json";
+  assert (cli parse: App with: ["repl"]) is parser-result-error;
+  assert (cli try-parse: Run with: ["repl"]) is parser-result-error;
+
+  assert (cli parse: App with: ["run", "file.json", "--verbose", "--capabilities", "io"])
+    === new test-cli-run("file.json", ["--verbose" -> true, "--capabilities" -> "io"]);
 end

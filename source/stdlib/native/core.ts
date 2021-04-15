@@ -133,6 +133,9 @@ export function core_conversion(ffi: ForeignInterface) {
     })
     .defun("text-to-interpolation", [CrochetText], (x) => {
       return new CrochetInterpolation([new InterpolationStatic(x.value)]);
+    })
+    .defun("any-to-text", [CrochetValue], (x) => {
+      return new CrochetText(x.to_text());
     });
 }
 
@@ -387,7 +390,18 @@ export function core_record(ffi: ForeignInterface) {
         );
       }
       return new CrochetRecord(result);
-    });
+    })
+    .defun(
+      "at-default",
+      [CrochetRecord, CrochetText, CrochetValue],
+      (r, k, x) => {
+        if (r.values.has(k.value)) {
+          return r.projection.project(k.value);
+        } else {
+          return x;
+        }
+      }
+    );
 }
 
 export function core_commands(ffi: ForeignInterface) {

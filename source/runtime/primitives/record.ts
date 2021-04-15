@@ -58,6 +58,10 @@ export class CrochetRecord extends CrochetValue {
   }
 
   to_text() {
+    if (this.values.size === 0) {
+      return "[->]";
+    }
+
     return `[${[...this.values.entries()]
       .map(([k, v]) => `${k} -> ${v.to_text()}`)
       .join(", ")}]`;

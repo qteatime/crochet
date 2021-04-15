@@ -5,6 +5,8 @@
   "dependencies": ["crochet.core"],
   "sources": [
     "source/0-types.crochet",
+    "source/tuple.crochet",
+    "source/set.crochet",
     "source/traits/indexed.crochet",
     "source/traits/sequence.crochet",
     "source/traits/foldable.crochet",

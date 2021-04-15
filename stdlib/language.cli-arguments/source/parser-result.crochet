@@ -1,0 +1,53 @@
+% crochet
+
+command nothing merge: (X is cli-parser-result) = X;
+command (X is cli-parser-result) merge: nothing = X;
+
+command cli-trilean-true merge: cli-trilean-true = cli-trilean-true;
+command cli-trilean merge: cli-trilean = cli-trilean-false;
+
+command cli-trilean-true realise = true;
+command cli-trilean realise = false;
+
+
+command cli-text merge: (X is cli-text) = X;
+command cli-text realise = self.value;
+
+open crochet.debug;
+command (X is cli-record) merge: (Y is cli-record) do
+  let Keys = (X.value keys ++ Y.value keys) without-duplicates;
+  let Pairs = for K in Keys do
+    let VX = X.value at: K default: nothing;
+    let VY = Y.value at: K default: nothing;
+    let V = VX merge: VY;
+    [key -> K, value -> V];
+  end;
+  new cli-record(#record from-pairs: Pairs);
+end
+
+command (X is cli-record) realise do
+  let Pairs = for Pair in X.value pairs do
+    [key -> Pair.key, value -> Pair.value realise];
+  end;
+  #record from-pairs: Pairs;
+end
+
+
+command (X is cli-tuple) merge: (Y is cli-tuple) do
+  new cli-tuple(X.values ++ Y.values);
+end
+
+command cli-tuple realise do
+  for X in self.values do X realise end;
+end
+
+
+command cli-box realise = self.value;
+
+
+command #cli-parser-result merge: (Xs is tuple) do
+  condition
+    when Xs count < 2 => Xs;
+    always => Xs but-first fold-from: Xs first with: (_ merge: _);
+  end
+end

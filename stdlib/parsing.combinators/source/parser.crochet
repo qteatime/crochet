@@ -35,6 +35,9 @@ command #parser 'always = parser-always;
 
 command #parser any = parser-any;
 
+command parser if: (Fun is function-1) =
+  new parser-predicate(self, Fun);
+
 // Parsing
 command parser-lazy parse: (Stream is parser-stream) =
   (force self) parse: Stream;
@@ -62,7 +65,7 @@ end
 command parser-many parse: (Stream is parser-stream) do
   self.parser parse: Stream | then: { S1 in
     self parse: S1 position
-      | recover: { S2 in S1 ok: S1 value }
+      | else: { S2 in S1 }
       | map: { V in new parser-result-pair(S1 value, V) }
   }
 end
@@ -84,8 +87,8 @@ end
 
 command parser-not parse: (Stream is parser-stream) do
   self.parser parse: Stream
-    | then: { S in Stream error: new parser-error-unexpected(self) }
-      recover: { S in Stream ok: nothing }
+    |> _ then: { S in Stream error: new parser-error-unexpected(self) }
+         else: { S in Stream ok: nothing }
 end
 
 command parser-lookahead parse: (Stream is parser-stream) do
@@ -103,3 +106,55 @@ command parser-always parse: (Stream is parser-stream) =
 
 command parser-any parse: (Stream is parser-stream) =
   Stream consume;
+
+command parser-predicate parse: (Stream is parser-stream) do
+  Stream consume | then: { S in
+    condition
+      when self.pred(S value) => S;
+      always => Stream error: new parser-error-not-satisfied(self);
+    end
+  }
+end
+
+
+command parser-lazy describe = (force self.parser) describe;
+
+command parser-alt describe do
+  "[self.left describe] or [self.right describe]";
+end
+
+command parser-backtrack describe do
+  self.parser describe;
+end
+
+command parser-seq describe do
+  "[self.left describe] followed by [self.right describe]";
+end
+
+command parser-many describe do
+  "zero or more of [self.parser describe]";
+end
+
+command parser-opt describe do
+  "";
+end
+
+command parser-eq describe do 
+  "a value like [self.value]";
+end
+
+command parser-not describe do
+  "not [self.parser describe]";
+end
+
+command parser-lookahead describe do
+  "";
+end
+
+command parser-action describe do
+  self.parser describe;
+end
+
+command parser-predicate describe do
+  "[self.parser describe] if [self.pred]";
+end

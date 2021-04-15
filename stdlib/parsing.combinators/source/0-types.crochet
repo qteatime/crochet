@@ -3,12 +3,6 @@
 // The stream we're parsing (this should support random indexing)
 type parser-stream(position is integer, stream is tuple);
 
-// An intermediate parser result
-abstract parser-result;
-type parser-result-ok is parser-result(value, position is parser-stream);
-type parser-result-error is parser-result(reason, position is parser-stream);
-
-type parser-result-pair(left, right);
 
 // Parsers
 abstract parser;
@@ -24,6 +18,7 @@ type parser-eq is parser(value);
 type parser-not is parser(parser is parser);
 type parser-lookahead is parser(parser is parser);
 type parser-action is parser(parser is parser, semantic is function-1);
+type parser-predicate is parser(parser is parser, pred is function-1);
 
 // Reasons for parsing error
 abstract parser-error;
@@ -32,4 +27,12 @@ type parser-error-alt is parser-error(left is parser-error, right is parser-erro
 type parser-error-expected is parser-error(expected);
 type parser-error-unexpected is parser-error(parser is parser);
 type parser-error-not-satisfied is parser-error(parser is parser);
+type parser-error-arbitrary is parser-error(failure is text);
+
+// An intermediate parser result
+abstract parser-result;
+type parser-result-ok is parser-result(value, position is parser-stream);
+type parser-result-error is parser-result(reason is parser-error, position is parser-stream);
+
+type parser-result-pair(left, right);
 
