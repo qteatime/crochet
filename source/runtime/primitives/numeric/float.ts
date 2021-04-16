@@ -23,7 +23,8 @@ export class CrochetFloat extends CrochetValue {
   }
 
   to_text() {
-    return this.value.toString();
+    const suffix = Number.isInteger(this.value) ? ".0" : "";
+    return this.value.toString() + suffix;
   }
 }
 
