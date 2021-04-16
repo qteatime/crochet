@@ -13,6 +13,11 @@
     "crochet.text",
     "crochet.time",
     {
+      "name": "crochet.time.wall-clock",
+      "target": "node",
+      "capabilities": ["wall-clock"]
+    },
+    {
       "name": "crochet.wrapper.node.file-system",
       "target": "node",
       "capabilities": ["file-system", "native"]
@@ -40,7 +45,15 @@
   ],
   "sources": [],
   "capabilities": {
-    "requires": ["io", "file-system", "os", "network", "shell", "native"],
+    "requires": [
+      "io",
+      "file-system",
+      "os",
+      "network",
+      "shell",
+      "native",
+      "wall-clock"
+    ],
     "provides": []
   }
 }

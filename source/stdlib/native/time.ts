@@ -101,4 +101,12 @@ export function pure_instant_ffi(ffi: ForeignInterface) {
     });
 }
 
-export default [time_ffi, pure_instant_ffi];
+export function wall_clock_ffi(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.time.wall-clock:clock").defun(
+    "now",
+    [],
+    () => new CrochetInteger(BigInt(new Date().getTime()))
+  );
+}
+
+export default [time_ffi, pure_instant_ffi, wall_clock_ffi];

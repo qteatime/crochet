@@ -1,0 +1,11 @@
+{
+  "name": "crochet.time.wall-clock",
+  "target": "*",
+  "stability": "experimental",
+  "sources": ["clock.crochet"],
+  "dependencies": ["crochet.core", "crochet.time"],
+  "capabilities": {
+    "requires": [],
+    "provides": ["wall-clock"]
+  }
+}

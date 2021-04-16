@@ -1,0 +1,13 @@
+% crochet
+
+open crochet.time;
+
+local singleton clock-mod;
+
+command clock-mod now = foreign clock.now();
+
+
+singleton wall-clock;
+
+command wall-clock now =
+  #instant from-milliseconds: clock-mod now;
