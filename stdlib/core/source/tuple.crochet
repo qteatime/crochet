@@ -61,7 +61,7 @@ test
   assert ([1, 2, 3] fold-from: 0 with: (_ + _)) =:= (1 + 2 + 3 + 0);
   assert ([] fold-from: 0 with: (_ + _)) =:= 0;
   assert ([1] fold-from: 0 with: (_ + _)) =:= 1;
-  assert ([1, 2, 3] fold-from: 6 with: (_ - _)) =:= (6 - 1 - 2 - 3);
+  assert ([1, 2, 3] fold-from: 6 with: (_ - _)) =:= (((6 - 1) - 2) - 3);
 end
 
 command (X is tuple) fold-right-from: Initial with: (Fun is function-2) =
@@ -69,7 +69,7 @@ command (X is tuple) fold-right-from: Initial with: (Fun is function-2) =
 test
   assert ([] fold-right-from: 0 with: (_ + _)) =:= 0;
   assert ([1] fold-right-from: 0 with: (_ + _)) =:= 1;
-  assert ([1, 2, 3] fold-right-from: 6 with: (_ - _)) =:= (1 - 2 - 3 - 6);
+  assert ([1, 2, 3] fold-right-from: 6 with: (_ - _)) =:= (1 - (2 - (3 - 6)));
 end
 
 

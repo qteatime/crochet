@@ -351,7 +351,7 @@ export function core_tuple(ffi: ForeignInterface) {
         const vs = xs.values;
         for (let i = vs.length - 1; i >= 0; --i) {
           const x = vs[i];
-          acc = cvalue(yield _push(apply(state, f, [acc, x])));
+          acc = cvalue(yield _push(apply(state, f, [x, acc])));
         }
         return acc;
       }
