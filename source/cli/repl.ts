@@ -21,7 +21,14 @@ export class ReplStatement extends ReplExpr {
   async evaluate(state: Rt.State) {
     const machine = this.ir.evaluate(state);
     const result = cvalue(await Rt.Thread.for_machine(machine).run_and_wait());
-    console.log(result.to_text());
+    const repr_machine = Rt.invoke(state, "_ text:", [
+      state.world.globals.lookup("crochet.core::representation"),
+      result,
+    ]);
+    const repr = cvalue(
+      await Rt.Thread.for_machine(repr_machine).run_and_wait()
+    );
+    console.log(`(${Rt.type_name(result)}) ${repr.to_text(true)}`);
   }
 }
 

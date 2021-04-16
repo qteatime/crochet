@@ -70,3 +70,7 @@ command plain-date-time > (That is plain-date-time) =
 
 command plain-date-time >= (That is plain-date-time) =
   (self as instant) >= (That as instant);
+
+
+command representation text: (X is plain-date-time) =
+  representation text: (X as instant);

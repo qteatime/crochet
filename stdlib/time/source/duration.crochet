@@ -171,5 +171,5 @@ command representation text: (X is duration) do
                                 with: { A, B in "[A], [B]" };
     end;
 
-  "duration<[Representation]>";
+  "<[Representation]>";
 end

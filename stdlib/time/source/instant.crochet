@@ -28,6 +28,9 @@ command instant epoch-milliseconds =
 command instant to-iso8601-text =
   instant-mod to-iso: self.x;
 
+command instant to-plain-date-time =
+  new plain-date-time(self);
+
 // Relations
 command instant === (That is instant) =
   self epoch-milliseconds === That epoch-milliseconds;
@@ -46,3 +49,7 @@ command instant > (That is instant) =
 
 command instant >= (That is instant) =
   self epoch-milliseconds >= That epoch-milliseconds;
+
+
+command representation text: (X is instant) =
+  "<[X to-iso8601-text]>";

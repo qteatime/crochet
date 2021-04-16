@@ -25,8 +25,7 @@ export class CrochetInstance extends CrochetValue {
   }
 
   to_text() {
-    const fields = this.data.map((x) => x.to_text()).join(", ");
-    return `<${this.type.type_name}#${this.id}(${fields})>`;
+    return `<${this.type.type_name}>`;
   }
 
   as_record() {
