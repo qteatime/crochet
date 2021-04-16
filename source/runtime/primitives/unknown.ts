@@ -28,6 +28,10 @@ export class CrochetUnknown extends CrochetValue {
   to_text() {
     return `<unknown>`;
   }
+
+  to_debug_text() {
+    return `<unknown(${this.value})>`;
+  }
 }
 
 export class TCrochetUnknown extends CrochetType {

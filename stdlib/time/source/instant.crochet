@@ -50,6 +50,13 @@ command instant > (That is instant) =
 command instant >= (That is instant) =
   self epoch-milliseconds >= That epoch-milliseconds;
 
+// Arithmetic
+command instant + (That is duration) =
+  #instant from-milliseconds: (self epoch-milliseconds + That to-milliseconds);
 
+command instant - (That is duration) =
+  #instant from-milliseconds: (self epoch-milliseconds - That to-milliseconds);
+
+// Debug
 command representation text: (X is instant) =
   "<[X to-iso8601-text]>";

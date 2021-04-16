@@ -28,6 +28,13 @@ export class CrochetInstance extends CrochetValue {
     return `<${this.type.type_name}>`;
   }
 
+  to_debug_text(transparent?: boolean) {
+    const fields = this.data
+      .map((x) => x.to_debug_text(transparent))
+      .join(", ");
+    return `<${this.type.type_name}(${fields})>`;
+  }
+
   as_record() {
     const data = new Map(zip(this.type.fields, this.data));
     return new CrochetRecord(data);

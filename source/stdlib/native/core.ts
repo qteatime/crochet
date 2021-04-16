@@ -33,6 +33,10 @@ import {
   CrochetRecord,
   CrochetNothing,
   ErrArbitrary,
+  _push,
+  invoke,
+  apply,
+  cvalue,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -327,7 +331,65 @@ export function core_tuple(ffi: ForeignInterface) {
     )
     .defun("contains", [CrochetTuple, CrochetValue], (xs, x) =>
       from_bool(xs.values.some((y) => x.equals(y)))
-    );
+    )
+    .defmachine(
+      "fold",
+      [CrochetTuple, CrochetValue, CrochetValue],
+      function* (state, xs, z, f) {
+        let acc = z;
+        for (const x of xs.values) {
+          acc = cvalue(yield _push(apply(state, f, [acc, x])));
+        }
+        return acc;
+      }
+    )
+    .defmachine(
+      "foldr",
+      [CrochetTuple, CrochetValue, CrochetValue],
+      function* (state, xs, z, f) {
+        let acc = z;
+        const vs = xs.values;
+        for (let i = vs.length - 1; i >= 0; --i) {
+          const x = vs[i];
+          acc = cvalue(yield _push(apply(state, f, [acc, x])));
+        }
+        return acc;
+      }
+    )
+    .defun(
+      "slice",
+      [CrochetTuple, CrochetInteger, CrochetInteger],
+      (xs, from, to) => {
+        return new CrochetTuple(
+          xs.values.slice(Number(from.value - 1n), Number(to.value))
+        );
+      }
+    )
+    .defun(
+      "at",
+      [CrochetTuple, CrochetInteger],
+      (xs, i) => xs.values[Number(i.value - 1n)]
+    )
+    .defun(
+      "at-put",
+      [CrochetTuple, CrochetInteger, CrochetValue],
+      (xs, i, v) => {
+        const result = xs.values.slice();
+        result[Number(i.value - 1n)] = v;
+        return new CrochetTuple(result);
+      }
+    )
+    .defun("at-delete", [CrochetTuple, CrochetInteger], (xs, i) => {
+      const result = [];
+      const values = xs.values;
+      const target = Number(i.value - 1n);
+      for (let i = 0; i < values.length; ++i) {
+        if (i !== target) {
+          result.push(values[i]);
+        }
+      }
+      return new CrochetTuple(result);
+    });
 }
 
 export function core_cell(ffi: ForeignInterface) {

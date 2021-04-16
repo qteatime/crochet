@@ -1,25 +1,39 @@
 % crochet
 
-command integer days =
-  new duration(self,  0, 0, 0, 0);
+command #duration zero =
+  new duration(0, 0, 0, 0, 0);
 
-command integer hours =
-  new duration(0,  self, 0, 0, 0);
+command #duration days: Days = #duration zero days: Days;
+command #duration hours: Hours = #duration zero hours: Hours;
+command #duration minutes: Minutes = #duration zero minutes: Minutes;
+command #duration seconds: Seconds = #duration zero seconds: Seconds;
+command #duration milliseconds: Milliseconds = #duration zero milliseconds: Milliseconds;
 
-command integer minutes =
-  new duration(0,  0, self, 0, 0);
+command duration days: (Days is integer) =
+  new duration(Days, self hours, self minutes, self seconds, self milliseconds);
 
-command integer seconds =
-  new duration(0,  0, 0, self, 0);
+command duration hours: (Hours is integer) =
+  new duration(self days, Hours, self minutes, self seconds, self milliseconds);
 
-command integer milliseconds =
-  new duration(0,  0, 0, 0, self);
+command duration minutes: (Minutes is integer) =
+  new duration(self days, self hours, Minutes, self seconds, self milliseconds);
 
-command integer day = self days;
-command integer hour = self hours;
-command integer minute = self minutes;
-command integer second = self seconds;
-command integer millisecond = self milliseconds;
+command duration seconds: (Seconds is integer) =
+  new duration(self days, self hours, self minutes, Seconds, self milliseconds);
+
+command duration milliseconds: (Milliseconds is integer) =
+  new duration(self days, self hours, self minutes, self seconds, Milliseconds);
+
+command integer days = #duration days: self;
+command integer hours = #duration hours: self;
+command integer minutes = #duration minutes: self;
+command integer seconds = #duration seconds: self;
+command integer milliseconds = #duration milliseconds: self;
+command integer day = #duration days: self;
+command integer hour = #duration hours: self;
+command integer minute = #duration minutes: self;
+command integer second = #duration seconds: self;
+command integer millisecond = #duration milliseconds: self;
 
 command duration days = self.days;
 command duration hours = self.hours;

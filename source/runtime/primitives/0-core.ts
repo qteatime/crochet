@@ -26,6 +26,10 @@ export abstract class CrochetValue {
     return `<${type_name(this.type)}>`;
   }
 
+  to_debug_text(transparent?: boolean): string {
+    return this.to_text(transparent);
+  }
+
   to_json(): any {
     throw new ErrArbitrary(
       "unsupported",

@@ -55,7 +55,7 @@ export function pure_instant_ffi(ffi: ForeignInterface) {
     .defun(
       "epoch-ms",
       [CrochetUnknown],
-      (x) => new CrochetInteger(BigInt(unbox<Date>(x).getDate()))
+      (x) => new CrochetInteger(BigInt(unbox<Date>(x).getTime()))
     )
     .defun("to-iso", [CrochetUnknown], (x) => {
       const d = unbox<Date>(x);
