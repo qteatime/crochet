@@ -26,3 +26,5 @@ command tuple all-true -> boolean =
 
 command tuple some-true -> boolean =
   self fold-from: true with: (_ or _);
+
+command tuple flatten = self fold-from: [] with: (_ ++ _);

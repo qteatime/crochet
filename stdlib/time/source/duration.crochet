@@ -1,0 +1,175 @@
+% crochet
+
+command integer days =
+  new duration(self,  0, 0, 0, 0);
+
+command integer hours =
+  new duration(0,  self, 0, 0, 0);
+
+command integer minutes =
+  new duration(0,  0, self, 0, 0);
+
+command integer seconds =
+  new duration(0,  0, 0, self, 0);
+
+command integer milliseconds =
+  new duration(0,  0, 0, 0, self);
+
+command integer day = self days;
+command integer hour = self hours;
+command integer minute = self minutes;
+command integer second = self seconds;
+command integer millisecond = self milliseconds;
+
+command duration days = self.days;
+command duration hours = self.hours;
+command duration minutes = self.minutes;
+command duration seconds = self.seconds;
+command duration milliseconds = self.milliseconds;
+
+command duration balanced do
+  let Millis = self milliseconds % 1000;
+  let MillisC = self milliseconds divided-by: 1000;
+
+  let Seconds0 = self seconds + MillisC;
+  let Seconds = Seconds0 % 60;
+  let SecondsC = Seconds0 divided-by: 60;
+
+  let Minutes0 = self minutes + SecondsC;
+  let Minutes = Minutes0 % 60;
+  let MinutesC = Minutes0 divided-by: 60;
+
+  let Hours0 = self hours + MinutesC;
+  let Hours = Hours0 % 24;
+  let HoursC = Hours0 divided-by: 24;
+
+  let Days = self days + HoursC;
+
+  new duration(Days, Hours, Minutes, Seconds, Millis);
+end
+
+command duration + (That is duration) =
+  new duration(
+    self days + That days,
+    self hours + That hours,
+    self minutes + That minutes,
+    self seconds + That seconds,
+    self milliseconds + That milliseconds
+  );
+
+command duration - (That is duration)
+requires
+  smaller-subtractend :: self balanced >= That balanced
+=
+  new duration(
+    self days - That days,
+    self hours - That hours,
+    self minutes - That minutes,
+    self seconds - That seconds,
+    self milliseconds - That milliseconds
+  );
+
+
+command duration === (That is duration) =
+  self to-milliseconds === That to-milliseconds;
+
+command duration =/= (That is duration) =
+  self to-milliseconds =/= That to-milliseconds;
+
+command duration < (That is duration) =
+  self to-milliseconds < That to-milliseconds;
+
+command duration <= (That is duration) =
+  self to-milliseconds <= That to-milliseconds;
+
+command duration > (That is duration) =
+  self to-milliseconds > That to-milliseconds;
+
+command duration >= (That is duration) =
+  self to-milliseconds >= That to-milliseconds;
+
+
+command duration to-milliseconds do
+    (self.days * 24 * 60 * 60 * 1000)
+  + (self.hours * 60 * 60 * 1000)
+  + (self.minutes * 60 * 1000)
+  + (self.seconds * 1000)
+  + self.milliseconds;
+end
+
+command duration to-seconds do
+    (self.days * 24 * 60 * 60)
+  + (self.hours * 60 * 60)
+  + (self.minutes * 60)
+  + (self.seconds)
+  + (self.milliseconds / 1000.0);
+end
+
+command duration to-minutes do
+    (self.days * 24 * 60)
+  + (self.hours * 60)
+  + (self.minutes)
+  + (self.seconds / 60.0)
+  + (self.milliseconds / (60.0 * 1000.0));
+end
+
+command duration to-hours do
+    (self.days * 24)
+  + (self.hours)
+  + (self.minutes / 60.0)
+  + (self.seconds / (60.0 * 60.0))
+  + (self.milliseconds / (60.0 * 60.0 * 1000.0));
+end
+
+command duration to-days do
+    (self.days)
+  + (self.hours / 24.0)
+  + (self.minutes / (24.0 * 60.0))
+  + (self.seconds / (24.0 * 60.0 * 60.0))
+  + (self.milliseconds / (24.0 * 60.0 * 60.0 * 1000.0));
+end
+
+
+command representation text: (X is duration) do
+  let Days =
+    condition
+      when X days === 0 => [];
+      always => ["[X days] days"];
+    end;
+
+  let Hours =
+    condition
+      when X hours === 0 => [];
+      always => ["[X hours] hours"];
+    end;
+
+  let Minutes =
+    condition
+      when X minutes === 0 => [];
+      always => ["[X minutes] minutes"];
+    end;
+
+  let Seconds =
+    condition
+      when X seconds === 0 => [];
+      always => ["[X seconds] seconds"];
+    end;
+
+  let Millis =
+    condition
+      when X milliseconds === 0 => [];
+      always => ["[X milliseconds] milliseconds"];
+    end;
+
+  let Texts = [Days, Hours, Minutes, Seconds, Millis] flatten;
+    
+  let Representation =
+    condition
+      when Texts is-empty => "" as interpolation;
+      when Texts count === 0 => Texts first;
+      always => Texts but-first fold-from: Texts first
+                                with: { A, B in "[A], [B]" };
+    end;
+
+  "duration<[Representation]>";
+end

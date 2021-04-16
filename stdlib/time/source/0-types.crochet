@@ -1,0 +1,11 @@
+% crochet
+
+type duration(
+  days is integer, 
+  hours is integer, 
+  minutes is integer, 
+  seconds is integer, 
+  milliseconds is integer,
+);
+type instant(x); // x :: box<Date>
+type plain-date-time(instant is instant);

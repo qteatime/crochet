@@ -21,9 +21,11 @@ import {
   _await,
   CrochetNothing,
   CrochetUnknown,
+  ErrArbitrary,
+  ErrNativeError,
 } from "./runtime";
 import { CrochetPackage } from "./runtime/pkg";
-import { ForeignNamespace } from "./stdlib";
+import { Class, ForeignNamespace } from "./stdlib";
 import { cast } from "./utils";
 
 export class PluginFFI {
@@ -125,6 +127,17 @@ export class Plugin {
 
   unbox<T>(value: CrochetValue): T {
     return unbox<T>(value);
+  }
+
+  unbox_typed<T>(type: Class<T>, value: CrochetValue): T {
+    const result = unbox<unknown>(value);
+    if (result instanceof type) {
+      return result;
+    } else {
+      throw new ErrNativeError(
+        new Error(`invalid-type: Expected ${type.name}`)
+      );
+    }
   }
 
   invoke(state: State, name: string, args: CrochetValue[]) {

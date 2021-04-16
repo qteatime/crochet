@@ -2,10 +2,19 @@
   "name": "crochet.time",
   "target": "*",
   "stability": "experimental",
-  "sources": ["time.crochet"],
-  "dependencies": ["crochet.core"],
+  "sources": [
+    "source/0-types.crochet",
+    "source/duration.crochet",
+    "source/instant.crochet",
+    "source/date-time.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.mathematics",
+    "crochet.collections"
+  ],
   "capabilities": {
     "requires": [],
-    "provides": ["timing"]
+    "provides": []
   }
 }

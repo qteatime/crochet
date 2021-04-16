@@ -11,6 +11,7 @@
     "crochet.language.json",
     "crochet.random",
     "crochet.text",
+    "crochet.time",
     {
       "name": "crochet.wrapper.node.file-system",
       "target": "node",

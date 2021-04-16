@@ -9,18 +9,18 @@ import {
 } from "../runtime";
 import { logger, zip } from "../utils";
 
-type Class<T> = {
+export type Class<T> = {
   new (...args: any[]): T;
 };
 
 type AnyClass<T> = typeof CrochetValue | Class<T>;
-type UnwrapClass<T> = T extends Class<infer U>
+export type UnwrapClass<T> = T extends Class<infer U>
   ? U
   : T extends typeof CrochetValue
   ? CrochetValue
   : never;
 
-type Instances<Cs> = Cs extends [infer A, ...infer Rs]
+export type Instances<Cs> = Cs extends [infer A, ...infer Rs]
   ? [UnwrapClass<A>, ...Instances<Rs>]
   : Cs extends [infer A]
   ? [UnwrapClass<A>]
