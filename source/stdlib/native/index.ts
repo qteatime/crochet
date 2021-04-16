@@ -8,6 +8,7 @@ import Collections from "./collections";
 import Random from "./random";
 import Json from "./json";
 import Lingua from "./lingua";
+import Intl from "./intl";
 
 export const funs = [
   ...Debug,
@@ -20,4 +21,5 @@ export const funs = [
   ...Random,
   ...Json,
   ...Lingua,
+  ...Intl,
 ];

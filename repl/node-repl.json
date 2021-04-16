@@ -11,6 +11,7 @@
     "crochet.language.json",
     "crochet.random",
     "crochet.text",
+    "crochet.text.internationalisation",
     "crochet.time",
     {
       "name": "crochet.time.wall-clock",

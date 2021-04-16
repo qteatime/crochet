@@ -23,6 +23,7 @@ import {
   CrochetUnknown,
   ErrArbitrary,
   ErrNativeError,
+  unbox_typed,
 } from "./runtime";
 import { CrochetPackage } from "./runtime/pkg";
 import { Class, ForeignNamespace } from "./stdlib";
@@ -130,14 +131,7 @@ export class Plugin {
   }
 
   unbox_typed<T>(type: Class<T>, value: CrochetValue): T {
-    const result = unbox<unknown>(value);
-    if (result instanceof type) {
-      return result;
-    } else {
-      throw new ErrNativeError(
-        new Error(`invalid-type: Expected ${type.name}`)
-      );
-    }
+    return unbox_typed(type, value);
   }
 
   invoke(state: State, name: string, args: CrochetValue[]) {

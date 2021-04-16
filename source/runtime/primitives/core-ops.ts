@@ -3,6 +3,7 @@ import {
   cvalue,
   ErrArbitrary,
   ErrInvalidArity,
+  ErrNativeError,
   ErrNoBranchMatched,
   ErrUnexpectedType,
   Machine,
@@ -24,6 +25,10 @@ import { CrochetTuple } from "./tuple";
 import { CrochetUnknown } from "./unknown";
 import { CrochetRecord } from "./record";
 import { cast } from "../../utils";
+
+export type Class<T> = {
+  new (...args: any[]): T;
+};
 
 export function from_bool(x: boolean): CrochetValue {
   return x ? True.instance : False.instance;
@@ -161,6 +166,15 @@ export function unbox<T>(value: CrochetValue): T {
   return cast(value, CrochetUnknown).value as T;
 }
 
+export function unbox_typed<T>(type: Class<T>, value: CrochetValue): T {
+  const result = unbox<unknown>(value);
+  if (result instanceof type) {
+    return result;
+  } else {
+    throw new ErrNativeError(new Error(`invalid-type: Expected ${type.name}`));
+  }
+}
+
 export function number_to_float(value: CrochetValue) {
   if (value instanceof CrochetInteger) {
     return Number(value.value);
@@ -183,6 +197,36 @@ export function get_string(value: CrochetValue) {
       `Expected a text, got ${type_name(value)}`
     );
   }
+}
+
+export function get_array(value: CrochetValue) {
+  if (value instanceof CrochetTuple) {
+    return value.values;
+  } else {
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected a tuple, got ${type_name(value)}`
+    );
+  }
+}
+
+export function get_map(value: CrochetValue) {
+  if (value instanceof CrochetRecord) {
+    return value.values;
+  } else {
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected a record, got ${type_name(value)}`
+    );
+  }
+}
+
+export function project(value: CrochetValue, key: string) {
+  return value.projection.project(key);
+}
+
+export function from_string(x: string) {
+  return new CrochetText(x);
 }
 
 export function* equals(

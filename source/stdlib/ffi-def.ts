@@ -65,4 +65,17 @@ export class ForeignNamespace {
     this.ffi.methods.add(this.namespaced(name), fn as any);
     return this;
   }
+
+  defun1(name: string, fn: (...args: CrochetValue[]) => CrochetValue) {
+    this.defun(name, [], fn);
+    return this;
+  }
+
+  defmachine1(
+    name: string,
+    fn: (state: State, ...args: CrochetValue[]) => Machine
+  ) {
+    this.defmachine(name, [], fn);
+    return this;
+  }
 }

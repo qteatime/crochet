@@ -12,7 +12,9 @@
     "crochet.mathematics.units",
     "crochet.parsing.combinators",
     "crochet.random",
-    "crochet.text"
+    "crochet.text",
+    "crochet.text.internationalisation",
+    "crochet.time"
   ],
   "sources": [
     "types.crochet",

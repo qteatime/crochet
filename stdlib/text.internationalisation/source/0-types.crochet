@@ -1,0 +1,48 @@
+% crochet
+
+// Types
+local enum locale-negotiation = ln-lookup, ln-best-fit;
+
+type locale(tag is text, negotiation is locale-negotiation);
+
+abstract list-formatter;
+type list-formatter-conjunction is list-formatter(locale);
+type list-formatter-disjunction is list-formatter(locale);
+type list-formatter-unit is list-formatter(locale);
+type list-formatter-short is list-formatter(locale);
+type list-formatter-narrow is list-formatter(locale);
+
+
+// FIXME: introduce package-local declarations
+command ln-lookup to-text = "lookup";
+command ln-best-fit to-text = "best fit";
+
+// Constructors
+command #locale for: (Tag is text)
+requires non-empty :: not (Tag is-empty) =
+  new locale(Tag, ln-best-fit);
+
+command locale use-lookup =
+  new locale(self.tag, ln-lookup);
+
+command locale use-best-fit =
+  new locale(self.tag, ln-best-fit);
+
+
+command locale list-formatter =
+  new list-formatter-unit(self);
+
+command list-formatter conjunction =
+  new list-formatter-conjunction(self locale);
+
+command list-formatter disjunction =
+  new list-formatter-disjunction(self locale);
+
+command list-formatter unit =
+  new list-formatter-unit(self locale);
+
+command list-formatter short =
+  new list-formatter-short(self locale);
+
+command list-formatter narrow =
+  new list-formatter-narrow(self locale);

@@ -1,0 +1,45 @@
+% crochet
+
+local singleton intl-mod;
+command intl-mod make-list-formatter: Locale matcher: (Matcher is text) type: (Type is text) style: (Style is text) =
+  foreign intl.make-list-formatter(Locale, Matcher, Type, Style);
+
+command intl-mod format: Formatter list: (List is tuple) =
+  foreign intl.format-list(Formatter, List);
+
+command intl-mod formatter: (X is list-formatter) type: Type style: Style do
+  let Locale = X locale tag;
+  let Matcher = X locale negotiation to-text;
+  intl-mod make-list-formatter: Locale
+           matcher: Matcher type: Type style: Style;
+end
+
+command list-formatter locale = self.locale;
+
+command list-formatter-conjunction format: (List is tuple) do
+  let Formatter = intl-mod formatter: self type: "conjunction" style: "long";
+  intl-mod format: Formatter list: List;
+end
+
+command list-formatter-disjunction format: (List is tuple) do
+  let Formatter = intl-mod formatter: self type: "disjunction" style: "long";
+  intl-mod format: Formatter list: List;
+end
+
+command list-formatter-unit format: (List is tuple) do
+  let Formatter = intl-mod formatter: self type: "unit" style: "long";
+  intl-mod format: Formatter list: List;
+end
+
+command list-formatter-short format: (List is tuple) do
+  let Formatter = intl-mod formatter: self type: "unit" style: "short";
+  intl-mod format: Formatter list: List;
+end
+
+command list-formatter-narrow format: (List is tuple) do
+  let Formatter = intl-mod formatter: self type: "unit" style: "narrow";
+  intl-mod format: Formatter list: List;
+end
+
+
+  

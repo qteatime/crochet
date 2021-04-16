@@ -1,0 +1,15 @@
+{
+  "name": "crochet.text.internationalisation",
+  "target": "*",
+  "stability": "experimental",
+  "dependencies": ["crochet.core", "crochet.text"],
+  "sources": [
+    "source/0-types.crochet",
+    "source/locale.crochet",
+    "source/list-format.crochet"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}
