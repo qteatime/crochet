@@ -65,13 +65,13 @@ function parseNumber(x: string): number {
 
 function parseString(x: String): string {
   const column = x.pos.position.column + 1;
-  const indent = new RegExp(`^\\s{0,${column}}`);
+  const indent = new RegExp(`(\r\n|\r|\n)[ \t]{0,${column}}`, "g");
   const text = x.text
-    .split(/\\r\\n|\\n|\r\n|\r|\n/)
-    .map((x) => {
-      return x.replace(indent, "");
+    .replace(indent, (_, newline) => {
+      return newline;
     })
-    .join("\\n");
+    .replace(/^[ \t]*(\r\n|\r|\n)/g, (_, nl) => "")
+    .replace(/(\r\n|\r|\n)[ \t]*$/g, (_, nl) => "");
 
   return JSON.parse(text);
 }
@@ -333,9 +333,44 @@ export function compileInterpolation<T, U>(
   value: Interpolation<T>,
   f: (_: T) => U
 ): IR.SimpleInterpolation<U> {
-  return new SimpleInterpolation(
+  const column = value.pos.position.column;
+  const indent = new RegExp(`(\r\n|\r|\n)[ \t]{0,${column}}`, "g");
+  const sip = new SimpleInterpolation(
     value.parts.map((x) => compileInterpolationPart(x, f))
   ).optimise();
+  const parts = sip.parts.map((x) => {
+    if (x instanceof IR.SIPStatic) {
+      return new IR.SIPStatic<U>(
+        x.text.replace(indent, (_, newline) => newline)
+      );
+    } else {
+      return x;
+    }
+  });
+  if (parts.length > 0) {
+    const part0 = parts[0];
+    if (part0 instanceof IR.SIPStatic) {
+      parts.shift();
+      parts.unshift(
+        new IR.SIPStatic<U>(
+          part0.text.replace(/^[ \t]*(\r\n|\r|\n)/g, (_, nl) => "")
+        )
+      );
+    }
+
+    const part = parts[parts.length - 1];
+    if (part !== part0 && part instanceof IR.SIPStatic) {
+      parts.pop();
+      parts.push(
+        new IR.SIPStatic<U>(
+          part.text.replace(/(\r\n|\r|\n)[ \t]*$/g, (_, nl) => {
+            return "";
+          })
+        )
+      );
+    }
+  }
+  return new SimpleInterpolation(parts);
 }
 
 export function compileInterpolationPart<T, U>(
