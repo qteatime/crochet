@@ -391,6 +391,113 @@ command (X is point2d) + (Y is point2d) do
 end
 ```
 
+### Signatures
+
+Command names in Crochet are inspired by Lisp, Bash, and Smalltalk. There
+are four types of command names (or "signatures"). In general, you should
+expect the way you define a command and the way you use a command to have
+roughly the same syntax.
+
+When defining a command, you may specify a name and a type: `(Name is type)`,
+in which case the value is bound to `Name` and the command is selected if
+the argument is of of type `type`; you can specify only the name, without
+parenthesis, `Name`, in which case the type is assumed to be `any`; and you
+can specify only the type, as in `type`, in which case the value is not
+bound to any variable.
+
+#### Postfix command (`_ name`)
+
+These are commands like: `1 second`, `x value`, and `[3, 1, 2} sort`. The
+name can be any atomic identifier (words can be separated by hyphens (`-`)).
+
+```
+// Defining
+command text echo = self;
+
+prelude
+  // Using
+  "hello" echo;
+end
+```
+
+#### Infix command (`_ + _`)
+
+These are commands like: `1 + 2`, `32 as text`, `true and false`. The name
+has to be one the infix operators, and it's not possible to define your own
+infix operators.
+
+The infix operators are:
+
+- _ ++ _`
+- _ + _`
+- _ <- _`
+- _ - _`
+- _ \*\* _`
+- _ \* _`
+- _ / _`
+- _ <= _`
+- _ < _`
+- _ >= _`
+- _ > _`
+- _ === _`
+- _ =/= _`
+- _ % _`
+- _ and _`
+- _ or _`
+- _ as _`
+
+And its usage looks like:
+
+```
+// Defining
+command integer + integer = "numbers were added!";
+
+prelude
+  // Using
+  3 + 2;
+end
+```
+
+#### Mixfix command (`_ this: _ is: _ a: _ name: _`)
+
+Mixfix commands look like: `2 between: 0 and: 10`, `#point2d x: 1 y: 2`,
+and `3 divided-by: 2`. They may also not include a leading value, such
+as `panic: "Oh noes" tag: "ded"` (`panic: _ tag: _` --- note the lack of
+a leading `_` in the name).
+
+Each part of the name (with the exception of the leading value, if present)
+must be a `keyword: Value` pair. The keyword can be any atomic identifier
+with words separated by hyphens (`-`).
+
+```
+// Defining
+command say: Message to: Who = "[Message], [Who]";
+
+command Who says: Message = "[Who]: [Message]";
+
+prelude
+  // Using
+  say: "Hello" to: "Awra";
+
+  "Hye" says: "Hi!";
+end
+```
+
+#### Prefix commands (`not _`)
+
+Currently `not _` is the only prefix command supported.
+
+```
+// Defining
+command not true = false;
+
+prelude
+  // Using
+  let X = true;
+  not X;
+end
+```
+
 ### Dispatch rules
 
 When one invokes a command, such as `1 + 2`, first the system will lookup
