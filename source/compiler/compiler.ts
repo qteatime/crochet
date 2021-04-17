@@ -18,7 +18,6 @@ import {
   TypeApp,
   TypeDef,
   TypeInit,
-  String,
   SimulationGoal,
   InterpolationPart,
   Pair,
@@ -34,6 +33,7 @@ import {
   TrailingTest,
   Contract,
   ContractCondition,
+  String as CString,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetInteger } from "../runtime";
@@ -63,7 +63,7 @@ function parseNumber(x: string): number {
   return Number(x.replace(/_/g, ""));
 }
 
-function parseString(x: String): string {
+function parseString(x: CString): string {
   const column = x.pos.position.column + 1;
   const indent = new RegExp(`(\r\n|\r|\n)[ \t]{0,${column}}`, "g");
   const text = x.text
@@ -71,9 +71,38 @@ function parseString(x: String): string {
       return newline;
     })
     .replace(/^[ \t]*(\r\n|\r|\n)/g, (_, nl) => "")
-    .replace(/(\r\n|\r|\n)[ \t]*$/g, (_, nl) => "");
+    .replace(/(\r\n|\r|\n)[ \t]*$/g, (_, nl) => "")
+    .replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/g, (_, e) => {
+      console.log("==>", x, ":::", e);
+      return resolve_escape(e);
+    });
 
-  return JSON.parse(text);
+  return text.replace(/^"|"$/g, "");
+}
+
+function resolve_escape(escape: string) {
+  if (escape.length === 1) {
+    switch (escape) {
+      case "b":
+        return "\b";
+      case "f":
+        return "\f";
+      case "n":
+        return "\n";
+      case "r":
+        return "\r";
+      case "t":
+        return "\t";
+      default:
+        return escape;
+    }
+  } else if (escape.startsWith("u") && escape.length === 5) {
+    return String.fromCodePoint(Number("0x" + escape.slice(1)));
+  } else if (escape.startsWith("x") && escape.length === 3) {
+    return String.fromCharCode(Number("0x" + escape.slice(1)));
+  } else {
+    throw new Error(`Invalid escape sequence \\${escape}`);
+  }
 }
 
 export function compileMeta(x: Meta) {
@@ -379,16 +408,7 @@ export function compileInterpolationPart<T, U>(
 ): IR.SimpleInterpolationPart<U> {
   return part.match<IR.SimpleInterpolationPart<U>>({
     Escape(_, c) {
-      switch (c) {
-        case "n":
-          return new IR.SIPStatic("\n");
-        case "r":
-          return new IR.SIPStatic("\r");
-        case "t":
-          return new IR.SIPStatic("\t");
-        default:
-          return new IR.SIPStatic(c);
-      }
+      return new IR.SIPStatic(resolve_escape(c));
     },
 
     Static(_, c) {

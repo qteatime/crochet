@@ -724,7 +724,7 @@ grammar Crochet : Program {
       -> Interpolation(meta, xs)
 
   interpolatePart<p> =
-    | "\\" c:any                 -> InterpolationPart.Escape(meta, c)
+    | "\\" c:escape_sequence     -> InterpolationPart.Escape(meta, c)
     | "[" x:s<p> s<"]">          -> InterpolationPart.Dynamic(meta, x)
     | ~"\"" c:any                -> InterpolationPart.Static(meta, c)
 
@@ -865,6 +865,7 @@ grammar Crochet : Program {
 
   // -- Literals
   token dec_digit = "0".."9" | "_"
+  token hex_digit = "0".."9" | "a".."f" | "A".."F"
 
   token t_integer (an integer) =
     | ~"_" "-"? dec_digit+
@@ -873,8 +874,13 @@ grammar Crochet : Program {
     | ~"_" "-"? dec_digit+ "." dec_digit+
 
   token text_character =
-    | "\\" "\""
+    | "\\" escape_sequence
     | ~"\"" any
+
+  token escape_sequence =
+    | "u" hex_digit hex_digit hex_digit hex_digit
+    | "x" hex_digit hex_digit
+    | any
 
   token t_text (a text) =
     | "\"" text_character* "\""
