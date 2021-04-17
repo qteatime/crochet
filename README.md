@@ -19,7 +19,7 @@ There's not much documentation on Crochet currently (there will be more efforts
 towards this before the public release), but you can read:
 
 - [An overview of Crochet](./docs/README.md)
-- [A technical overview of Crochet (for professional programmers)](./docs/technical-overview)
+- [A technical overview of Crochet (for professional programmers)](./docs/technical-overview.md)
 - [The (tentative) project roadmap](./docs/ROADMAP.md)
 
 ## Running

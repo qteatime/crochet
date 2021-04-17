@@ -95,4 +95,4 @@ you can learn more about Crochet and where the project is headed from
 the documents below.
 
 - [Project roadmap](./ROADMAP.md)
-- [Technical overview](./technical-overview)
+- [Technical overview](./technical-overview.md)

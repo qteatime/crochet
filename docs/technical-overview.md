@@ -597,7 +597,7 @@ default.
 
 Crochet's types are not readily accessible in some sort of global namespace,
 and one cannot do anything without having access to types. So how does one
-get their hands on types anyway? The answer in crochet is packages.
+get their hands on types anyway? The answer in Crochet is packages.
 
 Packages in Crochet allow one to configure an application and decide how
 capabilities should flow through the program, in a static sense. Being
