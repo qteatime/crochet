@@ -108,6 +108,16 @@ const argv = Yargs.usage("crochet <command> [options]")
         });
     }
   )
+  .command("new <pkg>", "Creates a new package <pkg>", (Yargs) => {
+    Yargs.positional("pkg", {
+      description: "The name of the package",
+      type: "string",
+    }).option("target", {
+      description: "The target of the program",
+      type: "string",
+      default: "*",
+    });
+  })
   .command("show-ast <filename>", "Shows the AST for <filename>", (Yargs) => {
     Yargs.positional("filename", {
       description: "Path to the file to inspect",
@@ -278,6 +288,42 @@ function show_ir(filename: string) {
   console.log(show(ir));
 }
 
+function do_new(pkg: string, target: string) {
+  if (FS.existsSync(pkg)) {
+    throw new Error(`${pkg} already exists`);
+  }
+
+  FS.mkdirSync(pkg);
+  FS.writeFileSync(
+    Path.join(pkg, "crochet.json"),
+    JSON.stringify(
+      {
+        name: pkg,
+        target: target,
+        sources: ["source/main.crochet"],
+        dependencies: ["crochet.core", "crochet.debug"],
+        capabilities: {
+          requires: [],
+          provides: [],
+        },
+      },
+      null,
+      2
+    )
+  );
+  FS.mkdirSync(Path.join(pkg, "source"));
+  FS.writeFileSync(
+    Path.join(pkg, "source/main.crochet"),
+    `% crochet
+
+open crochet.debug;
+
+scene main do
+  transcript write: "Hello, world!";
+end`
+  );
+}
+
 if (!argv.verbose) {
   console.debug = () => {};
 }
@@ -329,6 +375,10 @@ switch (argv._[0]) {
   case "show-ir": {
     show_ir(argv["filename"] as string);
     break;
+  }
+
+  case "new": {
+    do_new(argv["pkg"] as string, argv["target"] as string);
   }
 
   default:
