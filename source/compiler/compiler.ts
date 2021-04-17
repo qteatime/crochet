@@ -73,7 +73,6 @@ function parseString(x: CString): string {
     .replace(/^[ \t]*(\r\n|\r|\n)/g, (_, nl) => "")
     .replace(/(\r\n|\r|\n)[ \t]*$/g, (_, nl) => "")
     .replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/g, (_, e) => {
-      console.log("==>", x, ":::", e);
       return resolve_escape(e);
     });
 
@@ -399,7 +398,18 @@ export function compileInterpolation<T, U>(
       );
     }
   }
-  return new SimpleInterpolation(parts);
+  const parts1 = parts.map((x) => {
+    if (x instanceof IR.SIPStatic) {
+      return new IR.SIPStatic<U>(
+        x.text.replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/g, (_, e) => {
+          return resolve_escape(e);
+        })
+      );
+    } else {
+      return x;
+    }
+  });
+  return new SimpleInterpolation(parts1);
 }
 
 export function compileInterpolationPart<T, U>(
@@ -408,7 +418,7 @@ export function compileInterpolationPart<T, U>(
 ): IR.SimpleInterpolationPart<U> {
   return part.match<IR.SimpleInterpolationPart<U>>({
     Escape(_, c) {
-      return new IR.SIPStatic(resolve_escape(c));
+      return new IR.SIPStatic(`\\${c}`);
     },
 
     Static(_, c) {
