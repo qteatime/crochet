@@ -2,6 +2,7 @@
   "name": "crochet.repl.basic",
   "target": "node",
   "dependencies": [
+    "crochet.codec.basic",
     "crochet.collections",
     "crochet.core",
     "crochet.debug",

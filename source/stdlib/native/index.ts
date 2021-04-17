@@ -9,6 +9,7 @@ import Random from "./random";
 import Json from "./json";
 import Lingua from "./lingua";
 import Intl from "./intl";
+import Codec from "./codec";
 
 export const funs = [
   ...Debug,
@@ -22,4 +23,5 @@ export const funs = [
   ...Json,
   ...Lingua,
   ...Intl,
+  ...Codec,
 ];

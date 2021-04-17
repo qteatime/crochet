@@ -1,0 +1,73 @@
+% crochet
+
+local singleton mod;
+command mod encode: (X is text) = foreign hex.encode(X);
+command mod encode-int: (X is integer) = foreign hex.encode-int(X);
+command mod decode: (X is text) = foreign hex.decode(X);
+command mod decode-int: (X is text) = foreign hex.decode-int(X);
+
+
+type hex(x is text);
+
+command #hex encode: (Text is text)
+requires bytes-only :: Text is-ascii
+do
+  new hex(mod encode: Text);
+test
+  assert (#hex encode: "It was a dark, stormy night").x
+    === "4974207761732061206461726b2c2073746f726d79206e69676874";
+
+  assert (#hex encode: "").x
+    === "";
+
+  assert (#hex encode: "a").x
+    === "61";
+end
+
+command #hex encode: (Int is integer)
+requires positive :: Int >= 0
+do
+  new hex(mod encode-int: Int);
+test
+  assert (#hex encode: 51966).x === "cafe";
+  assert (#hex encode: 0).x === "0";
+  assert (#hex encode: 9).x === "9";
+  assert (#hex encode: 15).x === "f";
+end
+
+command hex to-text =
+  mod decode: self.x
+test
+  assert (new hex("4974207761732061206461726b2c2073746f726d79206e69676874")) to-text
+    === "It was a dark, stormy night";
+
+  assert (new hex("")) to-text
+    === "";
+
+  assert (new hex("61")) to-text
+    === "a";
+end
+
+command hex to-integer =
+  mod decode-int: self.x
+test
+  assert (new hex("cafe")) to-integer === 51966;
+  assert (new hex("0")) to-integer === 0;
+  assert (new hex("9")) to-integer === 9;
+  assert (new hex("f")) to-integer === 15;
+  assert (new hex("ff")) to-integer === 255;
+end
+
+command hex === (That is hex) = self.x === That.x;
+
+command representation text: (X is hex) =
+  "hex<[self.x]>";
+
+test "decode(encode(X)) === X" do
+  assert (#hex encode: "It was a dark, stormy night" | to-text)
+    === "It was a dark, stormy night";
+end
+
+test "encode(text) === encode(int)" do
+  assert (#hex encode: 58) === (#hex encode: ":");
+end

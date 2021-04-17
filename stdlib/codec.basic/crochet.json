@@ -1,0 +1,11 @@
+{
+  "name": "crochet.codec.basic",
+  "target": "*",
+  "stability": "experimental",
+  "dependencies": ["crochet.core", "crochet.text"],
+  "sources": ["base64.crochet", "hex.crochet"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

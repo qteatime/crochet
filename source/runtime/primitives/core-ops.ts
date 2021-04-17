@@ -188,6 +188,17 @@ export function number_to_float(value: CrochetValue) {
   }
 }
 
+export function get_integer(value: CrochetValue) {
+  if (value instanceof CrochetInteger) {
+    return value.value;
+  } else {
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected an integer, got ${type_name(value)}`
+    );
+  }
+}
+
 export function get_string(value: CrochetValue) {
   if (value instanceof CrochetText) {
     return value.value;
@@ -227,6 +238,10 @@ export function project(value: CrochetValue, key: string) {
 
 export function from_string(x: string) {
   return new CrochetText(x);
+}
+
+export function from_integer(x: bigint) {
+  return new CrochetInteger(x);
 }
 
 export function* equals(

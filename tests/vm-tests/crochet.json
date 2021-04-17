@@ -2,6 +2,7 @@
   "name": "crochet.internal.vm.tests",
   "target": "*",
   "dependencies": [
+    "crochet.codec.basic",
     "crochet.collections",
     "crochet.core",
     "crochet.debug",

@@ -51,7 +51,7 @@ export class Contract {
           `Pre-condition violated when calling ${name}\nArguments: (${[
             ...zip(params, args),
           ]
-            .map(([k, x]) => `${k} = ${x.to_text()}`)
+            .map(([k, x]) => `${k} = ${x.to_debug_text()}`)
             .join(", ")})\n\n${condition.format_error()}`
         );
       }
@@ -77,10 +77,10 @@ export class Contract {
           `Post-condition violated from ${name}\nArguments: (${[
             ...zip(params, args),
           ]
-            .map(([k, x]) => `${k} = ${x.to_text()}`)
+            .map(([k, x]) => `${k} = ${x.to_debug_text()}`)
             .join(
               ", "
-            )})\nReturn: ${result.to_text()}\n\n${condition.format_error()}`
+            )})\nReturn: ${result.to_debug_text()}\n\n${condition.format_error()}`
         );
       }
     }
