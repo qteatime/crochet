@@ -571,6 +571,15 @@ test
 end
 ```
 
+It's also possible to use the stand-alone `test` declaration if one needs
+to specify tests that encompass multiple commands:
+
+```
+test "encoding a value then decoding it yields the same value" do
+  assert (#base64 encode: "hello" | to-text) === "hello";
+end
+```
+
 ### Why are commands global?
 
 Commands are flat and global by default. That is, any declared command is
@@ -604,3 +613,164 @@ capabilities should flow through the program, in a static sense. Being
 a static configuration means that tools can better provide overviews of
 what capabilities are being used, where they're being used, and possibly
 provide insights on why they're being used, which can be helpful in audits.
+
+The way you define packages is still pretty under-developed, but currently
+a package is a folder with a `crochet.json` file at the root. This file
+has the following structure:
+
+```ts
+type capability = string; // a Crochet capability
+type filepath = string; // relative path to a file
+
+type dependency =
+  | string
+  | {
+      name: string;
+      target: "*" | "browser" | "node";
+      capabilities: capability[];
+    };
+
+type package = {
+  name: string;
+  target: "*" | "browser" | "node";
+  sources: filepath[]; // crochet files
+  native_sources: filepath[]; // JS/native files
+  dependencies: dependency[];
+  capabilities: {
+    requires: capability[];
+    provides: capability[];
+  };
+};
+```
+
+### Targets
+
+A `target` in Crochet is an execution goal. Currently this is limited to
+platforms (`browser`, `node`, or all (`*`)), but the plan is to have this
+as an arbitrary constraint such that a package may declare that, e.g.:
+it can only be used in
+"node 15.x+, running on linux, if it's running in either development or
+test mode".
+
+### Sources
+
+Crochet does not allow mutual recursion in the package resolution phase.
+It still allows mutually recursive definitions to reference each other
+however. But what this means is that users need to manually linearise
+their source definitions, by listing the files in the order their
+definitions should be loaded.
+
+### Native sources
+
+Crochet allows a package to load native JavaScript files **if** it has
+the "native" capability. Other forms of less-powerful native extensions
+will be provided in the future, but the way this will happen right now
+is not entirely clear (especially since SES seems to be in some
+transition state right now).
+
+### Dependencies
+
+Dependencies are sandboxed by default. That is, none of the capabilities
+the current package has been granted are automatically propagated to the
+dependencies. Instead, the package must explicitly grant these capabilities
+when specifying the dependencies.
+
+### Capabilities
+
+A package has a set of capabilities it requires in order to work. These are
+the capabilities that it either needs to pass down to a dependency, or
+a "built-in" capability that unlocks some Crochet feature (currently only
+the "native" capability is built-in).
+
+Packages may also _provide_ new capabilities. If the package is used to
+construct powerful objects, then it can declare such in the provided
+capabilities list.
+
+Any package that wishes to depend on another must provide the sum of
+required and provided capabilities to successfully load the package.
+In the future, however, packages will be allwoed to specify optional
+capabilities, which can be used to make it more or less powerful.
+Optional capabilities still need to be consistent within an
+application, however, as packages are globally instantiated
+and definitions are also globally instantiated.
+
+But, for example, one use for optional capabilities could be to
+load a native module if a user wishes for more performance, while
+falling back to a Crochet implementation that doesn't require any
+powerful capability.
+
+### Using a package
+
+In order to use a package in Crochet one needs to first "open" it. And in
+order to "open" a package one needs to have a capability for it. The
+capability, in this case, is specified in terms of package dependencies.
+Thus, if a package depends on `crochet.time.wall-clock`, then:
+
+```
+open crochet.time.wall-clock;
+```
+
+Will allow the module to use any of the types provided by
+`crochet.time.wall-clock`:
+
+```
+wall-clock now + 30 minutes;
+```
+
+Qualified acccess (not implemented yet) can also be used. The following
+is equivalent:
+
+```
+crochet.time.wall-clock/wall-clock now + 30 minutes;
+```
+
+Finally, qualified open (not implemented yet) allows one to shorten this
+a bit:
+
+```
+open crochet.time.wall-clock as w;
+
+prelude
+  w/wall-clock now + 30 minutes;
+end
+```
+
+Qualified access is mostly relevant when there's a risk of ambiguity in
+the names of the types, as packages that are opened later will shadow
+packages that are opened earlier.
+
+More control over what types are brought into scope will be implemented
+eventually.
+
+## Definitions
+
+Crochet allows global value definitions, but a definition must be atomic.
+That is, the expression must be able to be evaluated without the possibility
+of failure---this means that invoking commands is not possible in a `define`
+block.
+
+`define` can be used for specifying global data structures that you only
+want to be evaluated once:
+
+```
+define colours = [
+  "blue",
+  "pink",
+  "green",
+  "purple",
+  "yellow"
+];
+```
+
+When combined with `lazy` evaluation, it's possible to use `define` to build
+complex computations that are guaranteed to be evaluated at most once:
+
+```
+define grammar = lazy grammar from: "...";
+
+command parse: (Source is text) =
+  (force grammar) parse: Source;
+```
+
+Note that when dealing with lazy evaluation one must explicitly `force` the
+evaluation of the expression.
