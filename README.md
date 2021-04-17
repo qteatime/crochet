@@ -13,6 +13,15 @@ The goal is to have Crochet eventually support building games that are less
 turn-based as well, such as The Sims-style games, but that's not currently
 feasible.
 
+## Documentation
+
+There's not much documentation on Crochet currently (there will be more efforts
+towards this before the public release), but you can read:
+
+- [An overview of Crochet](./docs/README.md)
+- [A technical overview of Crochet (for professional programmers)](./docs/technical-overview)
+- [The (tentative) project roadmap](./docs/ROADMAP.md)
+
 ## Running
 
 For now, you can install Crochet from npm:
