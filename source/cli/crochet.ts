@@ -322,6 +322,8 @@ scene main do
   transcript write: "Hello, world!";
 end`
   );
+
+  console.log(`Created structure for package ${pkg}`);
 }
 
 if (!argv.verbose) {
@@ -379,6 +381,7 @@ switch (argv._[0]) {
 
   case "new": {
     do_new(argv["pkg"] as string, argv["target"] as string);
+    break;
   }
 
   default:
