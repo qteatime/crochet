@@ -1542,3 +1542,688 @@ end
 The `call` control flow works in a similar way to invoking procedures,
 transferring control back to the calling scene once the called scene
 finishes being evaluated.
+
+## Expressions
+
+The functional part of Crochet is an expression-based language. Expressions
+can be evaluated at any point if they're atomic (i.e.: a literal or guaranteed
+value), but otherwise can only be evaluated after all the definitions have
+been resolved.
+
+### Manipulating the tree of facts
+
+Syntax:
+
+```
+fact relation-signature<primary-expr>
+forget relation-signature<primary-expr>
+```
+
+For example:
+
+```
+fact X at: Y;
+fact Turn rounds;
+
+forget X at: Y;
+forget Turn rounds;
+```
+
+`fact` will add facts to the global tree, and `forget` will remove facts
+from the tree.
+
+### Scene control flow
+
+Syntax:
+
+```
+call <scene-name>
+goto <scene-name>
+```
+
+For example:
+
+```
+call some-scene;
+goto some-scene;
+```
+
+The difference between `call` and `goto` is that the latter will perform
+a tail call, and thus prevent the VM from returning to the calling scene.
+
+### Introducing variables
+
+Syntax:
+
+```
+let <name> = <expression>
+let _ = <expression>
+```
+
+For example:
+
+```
+let Hello = "hello";
+let _ = "this is evaluated and discarded and not bound to anything";
+```
+
+Let expressions introduce a variable in the current environment. Variables
+always have the first letter in upper-case.
+
+Note that unlike ML-dialect languages, `let` does not introduce a new
+scoping environment for the following expressions. Rather it introduces
+a new binding on the function/block-level environment, like JavaScript's
+`const` does.
+
+### Simulations
+
+Syntax:
+
+```
+simulate:
+  simulate for <expression> until <goal> <signal ...>
+  simulate for <expression> in <context> until <goal> <signal ...>
+
+goal:
+  quiescence
+  action quiescence
+  event quiescence
+  <search-query>
+
+context:
+  <atom>
+
+signal:
+  on pick-action: <parameter> for: <parameter> do <expression ...> end
+```
+
+For example:
+
+```
+simulate for [lielle, karis] until action quiescence
+  on pick-action: Actions for: Turn do
+    condition
+      when Turn =:= karis => random choice: Actions;
+      when Turn =:= lielle => show-menu: Actions;
+    end
+  end;
+```
+
+Signals in the simulation allow control over certain aspects of the simulation.
+Currently the only signal supported is `_ pick-action: _ for: _`, which allows
+one to control the algorithm for selecting an action for a particular turn,
+by replacing the default weighted random choice with an arbitrary procedure.
+
+### Assertions
+
+Syntax:
+
+```
+assert <expression>
+```
+
+For example:
+
+```
+assert 1 === 1
+```
+
+Assertions are checked at runtime and will stop the program if they fail.
+
+### Instantiation
+
+Syntax:
+
+```
+new <type-expression>
+new <type-expression>(<expression , ...>)
+```
+
+For example:
+
+```
+new some-type;
+new other-type(1, 2, 3, 4);
+```
+
+Instantiations yield a new object of the given type that has a _distinct_
+identity. This means that `new some-type =:= new some-type` will always
+be false. This is important for upholding the idea of types (and objects)
+as capabilities, since they **must** be unforgeable---that is, it should
+be impossible for any code not _explicitly_ granted such capabilities to
+produce something that can act as one.
+
+### Invocations
+
+Syntax:
+
+```
+<expr> <atom : expr ...>
+<atom : expr ...>
+<expr> <infix> <expr>
+<expr> <atom>
+not <expr>
+```
+
+For example:
+
+```
+1 between: 0 and: 10;
+panic: "Oh no!";
+2 + 3;
+not true;
+```
+
+This will lookup a procedure with the given name in the global namespace.
+It'll then perform selection and dispatch (see the Command section).
+
+The first argument of the invocation will be bound the the special receiver
+field in the environment, allowing it to be retrieved with `self`.
+
+### Definitions
+
+Syntax:
+
+```
+<atom>
+<namespace>/<atom>
+```
+
+For example:
+
+```
+some-global-definition;
+some.package.name/some-definition;
+```
+
+Global definitions are looked up in the module, package, or lastly in the
+global namespace. Qualified definitions are always looked up on the given
+package directly.
+
+Note that definitions are subject to capabilities, so one is only able to
+access definitions that the calling package has access to.
+
+### Variables
+
+Syntax:
+
+```
+<name>
+```
+
+For example:
+
+```
+Some-long-variable;
+```
+
+Variables will be looked upwards through the static environment chain,
+as they are lexically scoped. Closures are supported.
+
+### Self
+
+Syntax:
+
+```
+self
+```
+
+This will retrieve the value of the receiver argument (the first argument
+to a procedure) if it exists. Not all environments get a receiver. For
+example, receivers make no sense in definitions, so `self` is not available
+there.
+
+### Tuples
+
+Syntax:
+
+```
+[]
+[ <expression , ...> ]
+```
+
+For example:
+
+```
+[];
+[1, 2, 3, 4];
+```
+
+Produces a fixed-size sequence. This can be atomic if all values of the tuple
+are also atomic.
+
+### Records
+
+Syntax:
+
+```
+record:
+  [->]
+  [ <<key> -> <expression> ...> ]
+
+key:
+  <atom>
+  <name>
+  <text>
+  [ <expression> ]
+```
+
+For example:
+
+```
+[->];
+[ a -> 1, "b" -> 2, C -> 3, ["D"] -> 4];
+```
+
+### Search
+
+Syntax:
+
+```
+search <query>
+```
+
+For example:
+
+```
+search X at: Y, X has: _;
+```
+
+See the Logic section.
+
+### Match search
+
+Syntax:
+
+```
+match:
+  match <match-clause ...> end
+
+match-clause:
+  when <query> do <expression ...> end
+  always do <expression ...> end
+  when <query> => <expression> ;
+  always <query> => <expression> ;
+```
+
+For example:
+
+```
+match
+  when X at: garden => "Ah, the garden";
+  always => "Oh well, elsewhere";
+end
+```
+
+Queries are evaluated in the same way as in search, but clauses are
+tried in the order they're listed. The first query that returns results
+has its body evaluated _for each result it yields_.
+
+### Projection
+
+Syntax:
+
+```
+<expression> . <atom>
+<expression> . <name>
+<expression> . <text>
+<expression> . [ <expression> ]
+```
+
+For example:
+
+```
+Some-value.x;
+Some-value.Red;
+Some-value."Some Key";
+Some-value.[3 to-text];
+```
+
+Projection works on any type that supports the projection protocol. Currently
+this is regular types, records, and tuples.
+
+For tuples, this means that projection will be propagated to all of its
+items. For example:
+
+```
+let Xs = [
+  [x -> 1, y -> 2],
+  [x -> 3, y -> 4],
+  [x -> 5, y -> 6]
+];
+
+assert Xs.x === [1, 3, 5];
+```
+
+Which is the equivalent of:
+
+```
+for X in Xs do X.x end
+```
+
+### Selection
+
+Syntax:
+
+```
+selection:
+  <expression> . ( <selection-field> , ... )
+
+selection-field:
+  <field> as <field>
+  <field>
+
+field:
+  <atom> | <name> | <text> | [ <expression> ]
+```
+
+For example:
+
+```
+let Xs = [
+  [x -> 1, y -> 2],
+  [x -> 3, y -> 4],
+  [x -> 5, y -> 6],
+];
+
+assert Xs.(x as left, y as top) === [
+  [left -> 1, top -> 2],
+  [left -> 3, top -> 4],
+  [left -> 5, top -> 6],
+]
+```
+
+Selection is a form of projection where you can both retrieve a subset
+of the pairs in the original value, and also rename keys. It otherwise
+has the same behaviour as projection.
+
+### List comprehensions
+
+Syntax:
+
+```
+for:
+  for <clause> do <expression> end
+
+clause:
+  <name> in <expression> , <clause>
+  <name> in <expression> if <expression>
+  <name> in <expression>
+```
+
+For example:
+
+```
+for Y in Rows, X in Columns if X =/= Y do
+  [X, Y];
+end
+```
+
+Not really significantly different than other languages'. Basically
+ends up as a set of flatmaps.
+
+### Block expressions
+
+Syntax:
+
+```
+do <expression ...> end
+```
+
+For example:
+
+```
+assert
+  (do
+    transcript write: "One expression";
+    transcript write: "Two expressions";
+    transcript write: "Three expressions, wow";
+    3;
+   end)
+  === 3;
+```
+
+This pretty much just evaluates the expressions in sequence and returns
+the result of the last one.
+
+### Function application
+
+Syntax:
+
+```
+<expression> ( <expression , ...> )
+```
+
+For example:
+
+```
+F(1, 2, 3);
+```
+
+Treats the expression as a function and applies it to the given arguments.
+Arities must strictly match.
+
+### Pipe
+
+Syntax:
+
+```
+<expression> |> <expression>
+```
+
+For example:
+
+```
+input
+  |> _ lines
+  |> _ map: (_ ascii uppercase);
+```
+
+Treats the second expression as an unary function, then applies it to
+the evaluated argument on the left. The left side of the pipe is evaluated
+first.
+
+### Pipe invocation
+
+Syntax:
+
+```
+<expression> | <keyword : expression ...>
+<expression> | <atom>
+```
+
+For example:
+
+```
+input
+  | lines
+  | map: (integer parse: _)
+  | filter: (_ > 3);
+```
+
+The equivalent of OOP's `input().lines().map(_.ascii().uppercase())`,
+allows you to get rid of parenthesis in an invocation.
+
+### Interpolation
+
+For example:
+
+```
+"It's known that [Thing] has [Property]";
+```
+
+The `[<expression>]` parts allow one to evaluate and put an expression
+at a certain point in the interpolation. It is important to note that
+this is **not** equivalent to the common string interpolation features
+in languages. It does not mean
+`"It's known that " ++ Thing ++ " has " ++ Property`, but is rather
+close to JavaScript's tagged template literals.
+
+Crochet has a first-class interpolation type. This means that at runtime,
+which portions of the interpolation are statically known (i.e.: exist
+in the source program) and which are dynamically computed (i.e.: have
+been evaluated at runrime) is contained in the type. It's not just
+mashed together into a string getting rid of all that context.
+
+The reason for having a first-class interpolation type is that it's
+very common to have something like this:
+
+```
+file-system file: "[home]/.crochet/[config]" | read;
+```
+
+If Crochet just mashed all that interpolation together as a string,
+then there would be no hope of ever being able to avoid people from
+falling for different kinds of injection attacks (XSS, shell injections,
+etc).
+
+Instead, with a first-class interpolation type, it's possible for the
+usage site to implement a safe parser that contextually handles dynamic
+parts with absolute knowledge that static parts are safe. This means
+that the expression above would rather be interpreted as:
+
+```
+file-system file: (#path from: [
+  dynamic: home,
+  static: "/.crochet/",
+  dynamic: config
+])
+| read;
+```
+
+And then the #path parser can enforce that both `home` and `config`
+stand for either proper path objects, or strings that are a single
+path _segment_ (rather than an entire path).
+
+You can think of first-class interpolation types as something similar
+to how free monads allow return-type polymorphism in dynamic languages.
+First-class interpolation types allow contextual templates to
+be resolved at the use site (not the declaration site) properly and safely.
+
+### Conditions
+
+Syntax:
+
+```
+condition:
+  condition <clause ...> end
+
+clause:
+  when <expression> do <expression ...> end
+  when <expression> => <expression> ;
+  always do <expression ...> end
+  always => <expression> ;
+```
+
+For example:
+
+```
+condition
+  when X < 0    => -1;
+  when X === 0  =>  0;
+  when X > 0    =>  1;
+end
+```
+
+Evaluated sequentially, like a series of if/else expressions.
+
+### Contract validity
+
+Syntax:
+
+```
+is:
+  <expression> is <contract>
+```
+
+For example:
+
+```
+12 is integer;
+```
+
+True if the contract would hold for the given expression's value.
+
+### Explicit lazyness
+
+Syntax:
+
+```
+lazy <expression>
+force <expression>
+```
+
+For example:
+
+```
+let A = lazy transcript write: "Later";
+transcript write: "first";
+force A;
+```
+
+`lazy` will suspend an expression into a thunk, `force` will evaluate
+it if it hasn't been evaluated before.
+
+### Cute partial application
+
+Syntax: put `_` in any sub-expression. The parent expression is now a
+function with arity equal to the number of `_` sub-expressions.
+
+For example:
+
+```
+(_ + 2)(1);  // same as `(do let A = 2; { X in X + A } end)(1)`
+```
+
+Partial application without the necessity of having a lambda, which means
+that things can still be properly handled in hot-patching and live
+programming scenarios.
+
+Note that the non-holes are actually evaluated _before_ constructing the
+function, so they're evaluated only once (not "once every time this function
+is called"). And they're evaluated even if you never call the function (again,
+this is important for hot-patching). Hence "cute".
+
+Why "cute"? See [SRFI-26](https://srfi.schemers.org/srfi-26/srfi-26.html)
+
+### Type expressions
+
+Syntax: `#type`
+
+Gives you a static type. See the type section.
+
+### Lambdas
+
+Syntax:
+
+```
+{ <expression> }
+{ <name , ...> in <expression> }
+```
+
+For example:
+
+```
+assert { 1 + 2 }() === 3;
+assert { A, B in A + B }(1, 2) === 3;
+```
+
+Regular closures. Lambdas support no dispatching, cannot have type annotations,
+and have strict arities.
+
+### Intrinsic equality
+
+Syntax:
+
+```
+<expression> =:= <expression>
+```
+
+For example:
+
+```
+23 =:= 23;
+```
+
+The intrinsic equality algorithm of Crochet exposed. This has to be exposed
+anyway since the unification algorithm has to leak it.
