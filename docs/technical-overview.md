@@ -1360,6 +1360,13 @@ be `quiescence` (i.e.: until no more actions or events are available);
 that check only events or only actions. Finally, a `Goal` can be an arbitrary
 query expression, such as `until player at: castle, player has: sword`;
 
+Once a simulation has run through all of the turns, it starts a new _round_,
+where it'll run through all of the turns again, in the same order. Rounds
+can be queried in actions and events through the `_ simulate-rounds-elapsed`
+relation. The current turn can also be queried through the `_ simulate-turn`
+relation. These relations are only available from inside of a simulation,
+and they properly nest if you have nested simulations.
+
 ### Actions
 
 An action in Crochet describes an affordance that can be taken by a simulation.
