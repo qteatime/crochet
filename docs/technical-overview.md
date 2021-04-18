@@ -1326,3 +1326,212 @@ modelled as simple disjunctions. There's no distinction between using a
 predicate and using a relation in a search. From the user's point of view
 they're strictly equivalent. Of course `fact` and `forget` expressions only
 work with relations.
+
+## Simulations
+
+The other "distinctive" feature of Crochet is its first-class support for
+stochastic model simulations.
+
+In Crochet simulations are desribed by Actions and Events, which may be
+grouped into Contexts, and can be directed throug Simulations.
+
+A simulation is turn-based, and is described like so:
+
+```
+simulate
+  for [A, B, C]
+  in Context
+  until Goal;
+```
+
+The `for` clause describes the turns of the simulation, as an expression that
+yields a tuple. Each value in the tuple will be used to identify the turn, so
+something like `for ["alice", "dorothy"]` will run a two-turn simulation where
+the value `"alice"` will describe the first turn, and the value `"dorothy"`
+will describe the second turn.
+
+Simulations will take into consideration all actions and events within a
+given `Context`. If the `in Context` clause is omitted, then only global
+actions and events will be considered (i.e.: actions not in a context).
+
+Finally, simulations will run `until` a `Goal` is reached. The goal may
+be `quiescence` (i.e.: until no more actions or events are available);
+`event quiescence` or `action quiescence` are partial forms of quiescence
+that check only events or only actions. Finally, a `Goal` can be an arbitrary
+query expression, such as `until player at: castle, player has: sword`;
+
+### Actions
+
+An action in Crochet describes an affordance that can be taken by a simulation.
+For example, consider a simulation of two people meeting each other. They
+come together in a particular place, they greet each other, and then they
+leave.
+
+In this case each person has three affordances: entering the location,
+greeting the other person, and leaving.
+
+```
+enum person = lielle, karis;
+enum location = garden;
+
+relation Person* at: Location;
+relation Person* greeted: Other*;
+
+action (Person is person) enter-location
+when not Person at: garden
+do
+  transcript write: "[Person] arrives at the garden";
+  fact Person at: garden;
+end
+
+action (Person is person) greet: (Other is person)
+when
+  Person at: garden,
+  Other at: garden,
+  if Person =/= Other
+do
+  transcript write: "[Person] greets [Other]";
+end
+
+action (Person is person) leave
+when
+  Person at: garden,
+  Person greeted: Other
+do
+  transcript write: "[Person] leaves the garden";
+  forget Person at: garden;
+end
+```
+
+#### Pre-conditions
+
+Actions may have restrictions on who can perform them. In this
+case, `(Person is person) enter-location` means that `enter-location`
+can only be performed when the current turn is performed by a `person`
+value---Crochet's simulation is turn-based.
+
+They can also have restrictions of _when_ they're available. The `when`
+clause allows one to use queries to describe affordances. Note that a
+`when` clause doesn't just describe a "this action is available", but
+rather it describes "these actions are available", as it yields copies
+of the actions with different bindings for all of the search results.
+
+In this sense, an action like:
+
+```
+enum direction = north, east, south, west;
+singleton player;
+
+action player move: Direction
+when
+  Direction is direction
+do
+  transcript write: "Player moves [Direction]";
+end
+```
+
+Will actually yield 4 distinct actions: `player move: north`,
+`player move: east`, `player move: south`, and `player move: west`.
+
+#### Ranking
+
+Actions can be have a ranking function. When present, Crochet's simulation
+will use the ranking to perform a weighted stochastic choice between the
+avaialble actions.
+
+Consider:
+
+```
+enum location = foyer, cloakroom, bar;
+singleton player;
+
+relation Who* at: Place;
+relation Who* visited: Place;
+
+action player visit: Place
+when
+  Place is location,
+  not player at: Place
+rank
+  match
+    when player visited: Place => 1;
+    always => 5;
+  end
+do
+  transcript write: "Player visits [Place]";
+  fact player at: Place;
+  fact Player visited: Place;
+end
+```
+
+In this case the simulation will be 5x more likely to pick a place that
+has not been visited before over a place that has been visited.
+
+### Events
+
+When Crochet runs a turn it first picks an action suitable for the current
+turn, then it runs all events whose preconditions hold before moving on
+to the next turn.
+
+An event is described as such:
+
+```
+enum location = foyer, bar, cloakroom;
+singleton player;
+singleton cloak;
+
+relation Who* at: Location;
+relation Who* wears: What*;
+
+when
+  player at: bar,
+  player wears: cloak
+do
+  transcript write:
+    "The bar is too dark. Maybe it's not a good idea to be here...";
+  fact player at: foyer;
+end
+```
+
+With this event, whenever a turn would end up with the player at the bar
+while wearing a cloak they would be moved right back to to the foyer.
+In this sense, events model reactions.
+
+### Contexts
+
+By default actions and events are globally accessible, that means that all
+simulations would see those actions. Actions and events can also be grouped
+into contexts. Contexts help with more complex simulations by reducing the
+amount of necessary pre-conditions.
+
+Contexts are not very well-developed right now, and there's no way of
+combining contexts. Automatically provided contexts may also be a
+thing explored in the future.
+
+## Scenes
+
+Scenes provide imperative entry-points to a program, modelled after similar
+concepts in visual novels. In that sense, a `scene` is just a procedure that
+takes no arguments, with the addition of supporting `goto` expressions for
+control flow.
+
+```
+scene main do
+  transcript write: "This is the start";
+  call the-middle;
+  transcript write: "You will never see this...";
+end
+
+scene the-middle do
+  transcript write: "This is the middle";
+  goto the-end;
+end
+
+scene the-end do
+  transcript write: "And this is the end";
+end
+```
+
+The `call` control flow works in a similar way to invoking procedures,
+transferring control back to the calling scene once the called scene
+finishes being evaluated.
