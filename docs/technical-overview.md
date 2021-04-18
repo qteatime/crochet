@@ -881,3 +881,448 @@ command parse: (Source is text) =
 
 Note that when dealing with lazy evaluation one must explicitly `force` the
 evaluation of the expression.
+
+## Relational logic support
+
+Crochet's "distinctive" feature is integrating a Tree-based database of
+facts, along with allowing this tree to be searched, updated, and influence
+the program's execution through relational logic operators.
+
+Crochet does _not_ implement relational logic. It's definitely influenced
+by it and modal logics, but there's no single formal logic system that
+underlies its deisgn (will there ever be? who knows `¯\_(ツ)_/¯`).
+
+### The Tree of Facts
+
+The tree of facts forms a global database of things that are known to be
+true in the program. The database consists of a collection of **relations**,
+which are declared like this:
+
+```
+relation Person* at: Location;
+```
+
+This introduces a new `_ at: _` relation (the syntax is similar to commands,
+but restricted to postfix and mixfix signatures), and this relation also
+specifies that each step of this relation can hold any type of values
+(denoted by it not being constrained to a type), and that the first step
+of this relation can hold multiple values, whereas the second step of this
+relation can only hold one.
+
+The "how many values can this step hold?" denotation (which Crochet calls
+"multiplicities") is important for games and any other system that varies
+through time. Consider the following example:
+
+```
+fact "alice" at: "garden";
+fact "dorothy" at: "castle";
+fact "alice" at: "castle";
+```
+
+The `fact` expression adds a new Fact to the tree. So, here, we're adding
+three facts: `alice is at the garden`, `dorothy is at the castle`, and
+`alice is at the castle`. Of course, it's generally not possible for
+someone to be at two places at the same time. Propositional logic would
+require one to express this program as:
+
+```
+alice is at the garden.
+dorothy is at the castle.
+alice is not at the garden, alice is at the castle.
+```
+
+Which is all fine, but when most of your program consists of rules that override
+previous facts, this framing pattern everywhere gets out of hand. Some modal
+logics will tackle this in different ways. Temporal logic allows one to also
+describe when a fact is true, allowing time to be used in the modelling. Linear
+logic will model things as resources that can be consumed and introduced.
+
+In the case of Crochet, it's assumed that most of these facts and
+transformations will be discrete, observable timesteps. So, instead, Crochet
+chooses the idea of multiplicity.
+
+Again, here `Person` (the first step) has mutiplicity `*` (many), and the
+second step has multiplicity ` ` (one). You can read the relation
+`Person* at: Location` as "There can be **many** Persons. Any Person can be in
+**one** Location at any given discrete timestep."
+
+Thus, we evaluate the sequence of fact expressions as follows:
+
+```
+fact "alice" at: "garden";
+// database: (alice is at the garden)
+
+fact "dorothy" at: "castle";
+// database: (alice is at the garden, dorothy is at the castle)
+
+fact "alice" at: "castle";
+// database: (alice is at the castle, dorothy is at the castle)
+```
+
+When we evaluate the last expression, `alice is at the castle` replaces
+`alice is at the garden`, because it knows that `alice` can only ever be
+at one location at any point in time. So, in this sense, relation declarations
+are a form of describing, in typed constraints, what relationships are valid
+as facts and automatically correcting facts to agree with those constraints.
+
+### Timesteps and facts
+
+Again, Crochet models the program as a set of discrete timesteps. This is
+the same as with imperative programming languages---and it's why Crochet
+needs to be a strict language (with explicit laziness) with well-defined
+evaluation rules in order for one to be able to reason about the program.
+
+The two main operations to manipulate the fact tree are `fact` and `forget`.
+A `fact` expression will add a new fact to the tree, as we've seen before,
+while a `forget` expression will negate facts in the tree.
+
+Consider:
+
+```
+fact "alice" at: "garden";
+// database: (alice is at the garden)
+
+fact "dorothy" at: "castle";
+// database: (alice is at the garden, dorothy is at the castle)
+
+fact "alice" at: "castle";
+// database: (alice is at the castle, dorothy is at the castle)
+
+forget "dorothy" at: "castle";
+// database: (alice is at the castle)
+```
+
+Though not implemented yet, `forget` does not need to work on concrete values.
+For example, the following would remove all facts about people at the castle:
+
+```
+// database: (
+//   alice is at the castle,
+//   dorothy is at the castle,
+//   emilia is at the garden,
+// )
+
+forget _ at: "castle";
+
+// database: (emilia is at the garden)
+```
+
+### Search
+
+The tree of facts is a database, that means it must support searching facts as
+well. For the query language, Crochet uses a language inspired by relational
+logic.
+
+For example, consider the following arrangement:
+
+```
+relation Person* at: Location;
+relation Person* likes: Person*;
+
+prelude
+  fact "lielle" at: "garden";
+  fact "karis" at: "garden";
+  fact "ange" at: "garden";
+
+  fact "lielle" likes: "karis";
+  fact "karis" likes: "lielle";
+  fact "karis" likes: "ange";
+
+  let May-become-a-couple =
+    search PersonA at: Location,
+           PersonB at: Location,
+           if PersonA =/= PersonB,
+           PersonA likes: PersonB,
+           PersonB likes: PersonA;
+
+  assert May-become-a-couple === [
+    [ PersonA -> "lielle", PersonB -> "karis", Location -> "garden" ],
+    [ PersonA -> "karis", PersonB -> "lielle", location -> "garden" ]
+  ];
+end
+```
+
+Here the query is "Two distinct people who are at the same location, and
+like each other". The `,` operator (logical conjunction or "and") allows
+one to express a query that depends on the results of a previous query.
+In this case, Crochet will use a depth-first search approach to explore
+the tree and find facts that match the query. A variable, such as `PersonA`
+will match the exact same fact it has matched before (or anything, if
+it's still "fresh"). And `if` allows one to provide an arbitrary constraint
+as a boolean Crochet expression. Here, `PersonA =/= PersonB` is actually
+evaluating the `_ =/= _` command, thus constraints cannot be evaluated
+through backwards chaining.
+
+The query DSL consists of the following:
+
+#### The trivial query
+
+The query `always` will always succeed, but bind nothing. That is:
+
+```
+assert (search always) === [
+  [->]
+];
+```
+
+Note that the single empty record there means "This query has succeeded,
+but it did not bind any variables".
+
+#### Relation queries
+
+A relation query is something like `PersonA at: Location` (again, the syntax
+is similar to how you would declare the relation).
+
+Each variable portion of the relation query allows an unification pattern.
+Unification patterns can be:
+
+- `Variable` -- unifies against the variable. Matches what has been previously
+  matched, or matches anything if this is the first time we're unifying it.
+
+- Atomic values (`global`, `self`, `2`) -- matches the same value.
+
+- Wildcards (`_`) -- matches anything.
+
+- Type tests (`X is type`) -- first matches the unification pattern (in this
+  case the variable `X`), then restrict the matches to values that are of the
+  given type.
+
+#### Conjunctions
+
+A query such as `A, B` means that we first perform the query `A`, then for
+every result of `A` we also perform the query `B`.
+
+Consider:
+
+```
+// database: (
+//   alice at garden, dorothy at garden,
+//   alice wears a red dress, dorothy wears a blue dress
+// )
+
+assert (search Who at: "garden", Who wears: "blue dress") === [
+  [Who -> "dorothy"]
+];
+```
+
+The way we evaluate this query is equivalent to:
+
+```
+--> Who at: "garden"
+    :: "alice" at: "garden" (Who = "alice")
+       --> Who wears: "blue dress" (Who = "alice")
+           :: "alice" wears: "red dress"
+              --> fail
+           :: "dorothy" wears: "blue dress"
+              --> fail (Who is not "dorothy")
+    :: "dorothy" at: "garden" (Who = "dorothy")
+       --> Who wears: "blue dress" (Who = "dorothy")
+           :: "alice" wears: "red dress"
+              --> fail (Who is not "alice", wears is not "blue dres")
+           :: "dorothy" wears: "blue dress"
+              --> succeed (Who = "dorothy")
+```
+
+#### Disjunctions
+
+A query such as `A | B` means that we first perform the query `A`, and continue
+with its results if it succeeds. If it fails, then we try to perform query `B`.
+
+Consider:
+
+```
+// database: (
+//   alice at garden, dorothy at garden,
+//   alice wears a red dress, dorothy wears a blue dress
+// )
+
+assert (
+  search Who at: "garden",
+         (Who wears: "blue dress" | Who wears: "red dress")
+) === [
+  [Who -> "alice", Who -> "dorothy"]
+];
+```
+
+The way we evaluate this query is equivalent to:
+
+```
+--> Who at: "garden"
+    :: "alice" at: "garden" (Who = "alice")
+       --> Who wears: "blue dress" (Who = "alice")
+           :: "alice" wears: "red dress"
+              --> fail (wears not a blue dress)
+                  --> Who wears: "red dress"
+                      --> succeed (Who = "alice")
+           :: "dorothy" wears: "blue dress"
+              --> fail (Who is not "dorothy")
+                  --> Who wears: "red dress"
+                      --> fail (Who is not "dorothy", wears not a red dress)
+    :: "dorothy" at: "garden" (Who = "dorothy")
+       --> Who wears: "blue dress" (Who = "dorothy")
+           :: "alice" wears: "red dress"
+              --> fail (Who is not "alice", wears is not a blue dress)
+                  --> Who wears: "red dress"
+                      --> fail (Who is not "alice")
+           :: "dorothy" wears: "blue dress"
+              --> succeed (Who = "dorothy")
+```
+
+#### Type queries
+
+A query in the form of `X is some-type` (where `X` is a variable) will yield all
+registered values of type `some-type`. For example, given:
+
+```
+enum direction = north, east, south, west;
+```
+
+Then the following query would yield all directions:
+
+```
+assert (search X is direction) === [
+  north,
+  east,
+  south,
+  west
+];
+```
+
+Note that this only yields _registered_ values for the type. By default,
+singleton and enum types are registered, but values constructed with `new`
+are not. Thus in:
+
+```
+type person;
+
+prelude
+  let Alice = new person;
+  let Dorothy = new person;
+
+  assert (search X is person) === [];
+end
+```
+
+The query returns the empty list. One may register values that they want to
+retrieve in queries, but note that registered values are never garbage
+collected (this may change in the future and they may end up not in GC root).
+
+```
+type person;
+
+prelude
+  let Alice = new person;
+  let Dorothy = new person;
+  register Alice;
+  register Dorothy;
+
+  assert (search X is person) === [Alice, Dorothy];
+end
+```
+
+#### Sampling queries
+
+Relation and type queries will generally yield all possible values, and thus
+cause Crochet's search algorithm to explore all possibilities. While some of
+this can be optimised through tree-prunning and better solvers, for games you
+generally cannot afford having performance be non-deterministic and very
+difficult to reason about.
+
+Therefore, as a compromise, Crochet provides "sampling" queries. These are
+the same Relation and Type queries as above, but they're bounded (that is,
+Crochet will explore at most N possibilities), and they're stochastic
+(that is, Crochet will sample random values, rather than take the first
+entries).
+
+The stochastic nature of sampling makes things less deterministic in the
+game. This is generally alright in game AIs. For sampling, Crochet uses
+a PRNG algorithm that is deterministic if given a particular seed. There
+will be ways of providing contextual seeds in the future, but currently
+Crochet uses one seed per application execution.
+
+A sampling query looks like:
+
+```
+enum direction = north, east, south, west;
+relation Direction* opposite: Direction;
+
+prelude
+  fact north opposite: south;
+  fact east opposite: west;
+  fact south opposite: north;
+  fact west opposite: east;
+
+  (sample 2 of X is direction) === [
+    north,
+    south,
+  ];
+
+  (sample 2 of Direction opposite: Opposite) === [
+    [Direction -> west, Opposite -> east],
+    [Direction -> north, Opposite -> south],
+  ];
+end
+```
+
+### Constraints and Let-expressions
+
+The query language described above is pure and allows searches to be
+performed in any direction (i.e.: starting from any sub-query, and allowing
+backwards chaining in addition to forward chaining).
+
+Crochet makes the choice of making queries flexible and simpler to write
+rather than provable and optimisable, therefore the constraints it provides
+are not pure, and require a strict ordering in the search.
+
+A constraint is a query in the form `<Query>, if <Expression>`. A Let-expression
+is a query in the form `let <Name> = <Expression>`. Constraints take the results
+of a previous query and filters it down to the results for which the arbitrary
+expression is true. The Let query evaluates an arbitrary expression and extends
+the results by binding the value to some variable.
+
+Because both of these queries allow arbitrary Crochet expressions to be used,
+they create an evaluation boundary in the entire query. After a constraint or
+let query, it's not possible to do backwards chaining. And it's not possible to
+re-order queries across expression boundaries, as expressions may have
+side-effects.
+
+### Predicates
+
+Queries mostly work on relations. Predicates allow one to abstract over
+relations in a procedural manner (i.e.: trading space (explicit facts) for
+CPU time (computed facts)).
+
+For example, consider how one could model the idea of opposite directions:
+
+```
+enum direction = north, east, south, west;
+
+relation Direction* opposite: OppositeDirection;
+
+prelude
+  fact north opposite: south;
+  fact east opposite: west;
+  fact south opposite: north;
+  fact west opposite: east;
+end
+```
+
+While this is reasonable for smaller relations, some relations may end up
+taking too much space if eagerly computed. In that case, predicates allow
+one to compute them on-demand:
+
+```
+predicate Direction opposite: Opposite do
+  when Direction =:= north, Opposite =:= south;
+  when Direction =:= east, Opposite =:= west;
+  when Direction =:= south, Opposite =:= north;
+  when Direction =:= west, Opposite =:= east;
+end
+```
+
+The names of predicates follow the same signatures as the names of relations,
+and the bodies of predicates are a series of `when` clauses, which are
+modelled as simple disjunctions. There's no distinction between using a
+predicate and using a relation in a search. From the user's point of view
+they're strictly equivalent. Of course `fact` and `forget` expressions only
+work with relations.
