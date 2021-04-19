@@ -41,6 +41,17 @@ export abstract class CrochetVM {
   abstract initialise(): Promise<void>;
   abstract prelude: string[];
 
+  async load_source(filename: string, pkg: RestrictedCrochetPackage) {
+    switch (Path.extname(filename)) {
+      case ".crochet": {
+        return this.load_crochet(filename, pkg);
+      }
+
+      default:
+        return this.load_crochet(filename + ".crochet", pkg);
+    }
+  }
+
   async load_crochet(filename: string, pkg: RestrictedCrochetPackage) {
     logger.debug(
       `Loading ${pkg.relative_filename(filename)} from package ${pkg.name}`
@@ -96,7 +107,7 @@ export abstract class CrochetVM {
       await module(plugin);
     }
     for (const x of pkg.sources) {
-      await this.load_crochet(x, pkg);
+      await this.load_source(x, pkg);
     }
   }
 

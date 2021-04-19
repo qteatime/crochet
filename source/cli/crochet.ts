@@ -1,9 +1,15 @@
-import { Capabilities, NodeTarget, CrochetCapability } from "../runtime/pkg";
+import {
+  Capabilities,
+  NodeTarget,
+  CrochetCapability,
+  AnyTarget,
+} from "../runtime/pkg";
 import * as Compiler from "../compiler";
 import * as Server from "./crochet-server";
 import { CrochetVM } from "../vm-interface";
 import { Crochet } from "../targets/cli";
 import * as REPL from "./repl";
+import * as Build from "./crochet-build";
 
 import {
   array,
@@ -116,6 +122,12 @@ const argv = Yargs.usage("crochet <command> [options]")
       description: "The target of the program",
       type: "string",
       default: "*",
+    });
+  })
+  .command("build <pkg>", "Compiles all resources in <pkg>", (Yargs) => {
+    Yargs.positional("pkg", {
+      description: "The name of the package",
+      type: "string",
     });
   })
   .command("show-ast <filename>", "Shows the AST for <filename>", (Yargs) => {
@@ -275,6 +287,18 @@ async function run_tests(
   }
 }
 
+async function build(pkg_file: string) {
+  const vm = new Crochet();
+  try {
+    const pkg = await vm.read_package_from_file(pkg_file);
+    const rpkg = pkg.restricted_to(new AnyTarget());
+    Build.build(rpkg);
+  } catch (e) {
+    console.error(e.stack);
+    process.exit(1);
+  }
+}
+
 function show_ast(filename: string) {
   const source = read(filename);
   const ast = Compiler.parse(source, filename);
@@ -381,6 +405,11 @@ switch (argv._[0]) {
 
   case "new": {
     do_new(argv["pkg"] as string, argv["target"] as string);
+    break;
+  }
+
+  case "build": {
+    build(argv["pkg"] as string);
     break;
   }
 
