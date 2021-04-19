@@ -24,18 +24,10 @@ test
   assert (["a", 1, "c"] as interpolation) =:= "a[1]c";
 end
 
-command (X is interpolation) as text
-  = foreign conversion.interpolation-to-text(X)
-test
-  assert (("abc" as interpolation) as text) =:= "abc";
-  assert ("a["b"]c" as text) =:= "abc";
-end
-
 command (X is text) as interpolation
   = foreign conversion.text-to-interpolation(X)
 test
-  assert (("abc" as interpolation) as text) =:= "abc";
-  assert (("abc" as interpolation) normalise) =:= ("["a"]["b"]["c"]" normalise);
+  assert ("abc" as interpolation) =:= "["abc"]";
 end
 
 

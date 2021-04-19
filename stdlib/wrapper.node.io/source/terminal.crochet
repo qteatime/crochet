@@ -60,16 +60,16 @@ end
 
 
 command terminal write-line: (X is interpolation) =
-  terminal write-line: (X as text);
+  terminal write-line: (X flatten-into-plain-text);
 
 command terminal write-error-line: (X is interpolation) =
-  terminal write-error-line: (X as text);
+  terminal write-error-line: (X flatten-into-plain-text);
 
 command terminal write: (X is interpolation) =
-  terminal write: (X as text);
+  terminal write: (X flatten-into-plain-text);
 
 command terminal write-error: (X is interpolation) =
-  terminal write: (X as text);
+  terminal write: (X flatten-into-plain-text);
 
 command terminal prompt: (X is interpolation) =
-  terminal prompt: (X as text);
+  terminal prompt: (X flatten-into-plain-text);

@@ -66,3 +66,5 @@ test
   assert "abc[1]def" static-text =:= "abc_def";
   assert "[1][2]" static-text =:= "__";
 end
+
+command (X is interpolation) flatten-into-plain-text = foreign interpolation.to-plain-text(X);

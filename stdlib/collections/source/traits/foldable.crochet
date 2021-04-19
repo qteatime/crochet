@@ -10,7 +10,15 @@ end
 command tuple all-true -> boolean =
   self fold-from: true with: (_ and _);
 
+command tuple all: (Fun is function-1) -> boolean =
+  self fold-from: true with: { A, B in A and Fun(B) };
+
 command tuple some-true -> boolean =
-  self fold-from: true with: (_ or _);
+  self fold-from: false with: (_ or _);
+
+command tuple some: (Fun is function-1) -> boolean =
+  self fold-from: false with: { A, B in A or Fun(B) };
 
 command tuple flatten = self fold-from: [] with: (_ ++ _);
+
+command tuple contains: X = self fold-from: false with: { A, B in A or (B === X) };

@@ -37,6 +37,10 @@ import {
   invoke,
   apply,
   cvalue,
+  get_string,
+  ErrNativeError,
+  from_string,
+  InteprolationPart,
 } from "../../runtime";
 import { cast } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -170,6 +174,32 @@ export function core_interpolation(ffi: ForeignInterface) {
       [CrochetInterpolation],
       (x) => new CrochetText(x.parts.map((a) => a.to_static()).join(""))
     )
+    .defun("to-plain-text", [CrochetInterpolation], (x) => {
+      function flatten_part(x: InteprolationPart): string {
+        if (x instanceof InterpolationStatic) {
+          return x.text;
+        } else if (x instanceof InterpolationDynamic) {
+          return flatten(x.value);
+        } else {
+          throw new Error(`unreachable`);
+        }
+      }
+
+      function flatten(x: CrochetValue): string {
+        if (x instanceof CrochetText) {
+          return x.value;
+        } else if (x instanceof CrochetInterpolation) {
+          return x.parts.map(flatten_part).reduce((a, b) => a + b, "");
+        } else {
+          throw new ErrArbitrary(
+            "invalid-type",
+            "Can only flatten interpolations containing text"
+          );
+        }
+      }
+
+      return from_string(flatten(x));
+    })
     .defun("normalise", [CrochetInterpolation], (x) => x.normalize());
 }
 

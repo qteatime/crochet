@@ -10,7 +10,7 @@ command (Self is transcript) inspect: Value
 
 
 command transcript write: (X is interpolation) do
-  transcript write: (X as text);
+  transcript write: (X flatten-into-plain-text);
 end
 
 command transcript inspect: Value tag: (Tag is text) do
