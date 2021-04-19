@@ -188,6 +188,9 @@ type Name(pos: Meta, name: string)
 type Namespace(pos: Meta, names: string[])
 type String(pos: Meta, text: string)
 
+type REPL =
+  | Declarations(x: Declaration[])
+  | Statements(x: Statement[])
 
 grammar Crochet : Program {
   program =
@@ -195,8 +198,8 @@ grammar Crochet : Program {
       -> Program(meta, ds)
 
   repl =
-    | declaration
-    | statement
+    | space* ds:declaration+ space* end -> REPL.Declarations(ds)
+    | space* xs:statements1 space* end -> REPL.Statements(xs)
 
   declaration =
     | relationDeclaration
@@ -817,6 +820,9 @@ grammar Crochet : Program {
 
   statements =
     | list0<statement, s<";">>
+
+  statements1 =
+    | list1<statement, s<";">>
 
   eblock =
     | do_ b:statements end_             -> b

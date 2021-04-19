@@ -9,10 +9,7 @@ export function parse(source: string, filename: string) {
   }
 }
 
-export function parse_repl(
-  source: string,
-  filename: string
-): Crochet.Declaration | Crochet.Statement {
+export function parse_repl(source: string, filename: string): Crochet.REPL {
   const matched = Crochet.grammar.match(source, "repl");
   if (matched.failed()) {
     throw new SyntaxError(`In ${filename}\n${matched.message!}`);

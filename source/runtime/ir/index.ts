@@ -4,3 +4,4 @@ export * from "./expression";
 export * from "./type";
 export * from "./atomic";
 export * from "./meta";
+export * from "./repl";

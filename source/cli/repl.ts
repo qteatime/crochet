@@ -1,55 +1,9 @@
 const pkg_meta = require("../../package.json");
 import * as Read from "readline";
 import * as Compiler from "../compiler";
-import * as IR from "../runtime/ir";
 import * as Rt from "../runtime";
-import * as Ast from "../generated/crochet-grammar";
-import { cvalue, Environment } from "../runtime";
-import { AnyTarget, NodeTarget, CrochetPackage } from "../runtime/pkg";
+import { NodeTarget } from "../runtime/pkg";
 import { Crochet } from "../targets/cli";
-import { unreachable } from "../utils";
-
-abstract class ReplExpr {
-  abstract evaluate(state: Rt.State): Promise<void>;
-}
-
-export class ReplStatement extends ReplExpr {
-  constructor(readonly ir: IR.Statement) {
-    super();
-  }
-
-  async evaluate(state: Rt.State) {
-    const machine = this.ir.evaluate(state);
-    const result = cvalue(await Rt.Thread.for_machine(machine).run_and_wait());
-    const repr_machine = Rt.invoke(state, "_ text:", [
-      state.world.globals.lookup("crochet.core::representation"),
-      result,
-    ]);
-    const repr = cvalue(
-      await Rt.Thread.for_machine(repr_machine).run_and_wait()
-    );
-    console.log(`(${Rt.type_name(result)}) ${repr.to_text(true)}`);
-  }
-}
-
-export class ReplDeclaration extends ReplExpr {
-  constructor(readonly ir: IR.Declaration[]) {
-    super();
-  }
-
-  async evaluate(state: Rt.State) {
-    for (const ir of this.ir) {
-      await ir.apply(
-        {
-          filename: state.env.module.filename,
-          module: state.env.module,
-          package: state.env.module.pkg,
-        },
-        state
-      );
-    }
-  }
-}
 
 async function readline(rl: Read.Interface, prompt: string) {
   return new Promise<string>((resolve, reject) => {
@@ -70,21 +24,6 @@ async function get_line(rl: Read.Interface) {
       if (!line.trim()) throw error;
       prompt = "... ";
     }
-  }
-}
-
-function compile(ast: Ast.Statement | Ast.Declaration) {
-  if (ast instanceof Ast.Statement) {
-    const ir = Compiler.compileStatement(ast);
-    return new ReplStatement(ir);
-  } else if (ast instanceof Ast.Declaration) {
-    const ir = Compiler.compileDeclaration(
-      ast,
-      Compiler.DeclarationLocality.PUBLIC
-    );
-    return new ReplDeclaration(ir);
-  } else {
-    throw unreachable(ast, "AST");
   }
 }
 
@@ -110,7 +49,7 @@ export async function repl(vm: Crochet, pkg_name: string) {
   while (true) {
     try {
       const ast = await get_line(rl);
-      const expr = compile(ast);
+      const expr = Compiler.compileRepl(ast);
       await expr.evaluate(state);
     } catch (error) {
       if (error instanceof SyntaxError) {
