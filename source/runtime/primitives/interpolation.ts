@@ -106,7 +106,7 @@ export class InterpolationDynamic extends InteprolationPart {
   }
 
   to_text(transparent?: boolean) {
-    return this.value.to_text(transparent);
+    return `[${this.value.to_text(transparent)}]`;
   }
 
   to_part() {
@@ -118,10 +118,6 @@ export class InterpolationDynamic extends InteprolationPart {
   }
 
   to_simple_part() {
-    if (this.value instanceof CrochetText) {
-      return new SIPStatic<CrochetValue>(this.value.value);
-    } else {
-      return new SIPDynamic(this.value);
-    }
+    return new SIPDynamic(this.value);
   }
 }

@@ -25,7 +25,7 @@ test
 end
 
 command (X is text) as interpolation
-  = foreign conversion.text-to-interpolation(X)
+  = "[X]"
 test
   assert ("abc" as interpolation) =:= "["abc"]";
 end

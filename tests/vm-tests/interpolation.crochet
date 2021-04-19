@@ -10,8 +10,7 @@ test "Interpolation" do
     "a ", player, " greets a ", player
   ];
 
-  // FIXME: fix multiline support
-  // assert "Multiline
-  //         [player]
-  //         Goes" =:= ["Multiline", player, "Goes"];
+  assert "Multiline
+          [player]
+          Goes" parts =:= ["Multiline\n", player, "\nGoes"];
 end

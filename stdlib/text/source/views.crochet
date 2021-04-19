@@ -30,6 +30,8 @@ command #text from-lines: (Lines is tuple) do
   };
   Go(Lines);
 test
-  assert #text from-lines: ("a\nb\nc" lines) =:= "a\nb\nc";
-  assert #text from-lines: ("a\r\nb\r\nc" lines) =:= "a\nb\nc";
+  assert (#text from-lines: ("a\nb\nc" lines)) flatten-into-plain-text
+    =:= "a\nb\nc";
+  assert (#text from-lines: ("a\r\nb\r\nc" lines)) flatten-into-plain-text
+    =:= "a\nb\nc";
 end
