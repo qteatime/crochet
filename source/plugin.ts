@@ -150,6 +150,10 @@ export class Plugin {
     return cvalue(await Thread.for_machine(machine).run_and_wait());
   }
 
+  panic(tag: string, message: string) {
+    throw new ErrNativeError(new Error(`${tag}: ${message}`));
+  }
+
   push(machine: Machine) {
     return _push(machine);
   }
