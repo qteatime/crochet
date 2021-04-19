@@ -33,7 +33,19 @@
     {
       "name": "string.quoted.double",
       "begin": "\"",
-      "end": "\""
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "meta.string.interpolation",
+          "begin": "\\[",
+          "end": "\\]",
+          "contentName": "meta.embedded.line.crochet"
+        },
+        {
+          "name": "constant.character.escape.js",
+          "match": "\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\\{[0-9A-Fa-f]+\\}|.|$)"
+        }
+      ]
     },
     {
       "name": "comment.line",
