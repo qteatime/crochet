@@ -82,7 +82,7 @@ export class TCInvoke extends TraceConstraint {
         [
           `<invoke> ${p.full_name}\n`,
           `Arguments:\n`,
-          args.map((x) => `  - ${x.to_text()}`).join("\n"),
+          args.map((x) => `  - ${x.to_debug_text()}`).join("\n"),
         ].join("")
       );
     }
@@ -98,7 +98,9 @@ export class TCInvoke extends TraceConstraint {
     if (this.entity.for_procedure(p)) {
       tracer.show(
         tag,
-        [`<return> ${p.full_name}\n`, `Return: ${result.to_text()}`].join("")
+        [`<return> ${p.full_name}\n`, `Return: ${result.to_debug_text()}`].join(
+          ""
+        )
       );
     }
   }
