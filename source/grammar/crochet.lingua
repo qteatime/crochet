@@ -567,7 +567,7 @@ grammar Crochet : Program {
   pipeExpression =
     | l:pipeExpression s<"|>"> r:invokeInfixExpression
       -> Expression.Pipe(meta, l, r)
-    | l:pipeExpression s<"|"> r:partialSignature<invokeMixfix>
+    | l:pipeExpression s<"|"> r:partialSignature<invokePostfix>
       -> Expression.PipeInvoke(meta, l, r)
     | invokeInfixExpression
 
