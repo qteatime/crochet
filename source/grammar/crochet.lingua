@@ -500,6 +500,9 @@ grammar Crochet : Program {
     | s<assertStatement>
     | e:s<expression>    -> Statement.Expr(e)
 
+  blockStatement =
+    | x:blockExpression -> Statement.Expr(x)
+
   letStatement =
     | let_ n:name s<"="> e:s<expression>
       -> Statement.Let(meta, n, e)
@@ -542,6 +545,7 @@ grammar Crochet : Program {
 
   // -- Expressions
   expression =
+    | blockExpression
     | s<searchExpression>
     | s<lazyExpression>
     | s<forceExpression>
@@ -627,16 +631,12 @@ grammar Crochet : Program {
       -> Projection(meta, n, n)
 
   primaryExpression =
-    | matchSearchExpression
-    | conditionExpression
-    | forExpression
     | newExpression<expression>
     | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
     | literalExpression
     | recordExpression<expression>
     | listExpression<expression>
     | lambdaExpression
-    | expressionBlock
     | hole
     | s<"#"> t:typeAppPrimary       -> Expression.Type(meta, t)
     | return_                       -> Expression.Return(meta)
@@ -722,6 +722,12 @@ grammar Crochet : Program {
     | recordExpression<atomicExpression>
     | listExpression<atomicExpression>
 
+  blockExpression =
+    | expressionBlock
+    | conditionExpression
+    | matchSearchExpression
+    | forExpression
+
   interpolateText<t> =
     | s<"\""> xs:interpolatePart<t>* "\""
       -> Interpolation(meta, xs)
@@ -806,9 +812,6 @@ grammar Crochet : Program {
   asParameter =
     | t:typeAppPrimary -> Parameter.TypedOnly(meta, TypeApp.Static(meta, t))
 
-  statementBlock<t> =
-    | do_ xs:list0<t, s<";">> end_ -> xs
-
   list0<t, s> =
     | xs:listOf<t, s> s? -> xs
 
@@ -819,16 +822,22 @@ grammar Crochet : Program {
     | do_ xs:t* end_ -> xs
 
   statements =
-    | list0<statement, s<";">>
+    | h:blockStatement s<";">? ws t:statements1 -> [h, ...t]
+    | h:statement ws ";" ws t:statements1       -> [h, ...t]
+    | x:statement s<";">?                       -> [x]
+    |                                           -> []
 
   statements1 =
-    | list1<statement, s<";">>
+    | h:blockStatement s<";">? ws t:statements1   -> [h, ...t]
+    | h:statement ws ";" ws t:statements1         -> [h, ...t]
+    | x:statement s<";">?                         -> [x]
 
   eblock =
     | do_ b:statements end_             -> b
     | s<"=>"> e:expression s<";">       -> [Statement.Expr(e)]
 
   s<p> = space* x:p -> x
+  ws = space*
 
 
   // -- Lexical
