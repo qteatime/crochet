@@ -17,7 +17,7 @@
     "source/text.crochet",
     "source/cell.crochet",
     "source/record.crochet",
-    "source/commands.crochet",
+    "source/error.crochet",
     "source/result.crochet",
     "source/representation.crochet"
   ],
