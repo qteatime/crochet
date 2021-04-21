@@ -232,7 +232,6 @@ export class SAssert extends Statement {
 
     const value = cvalue(yield _push_expr(expr, state));
     if (!value.as_bool()) {
-      console.log(subexprs);
       const report = subexprs
         .map((x, i) => `  - ${x.to_debug_text()}`)
         .join("\n");
