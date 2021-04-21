@@ -3,5 +3,8 @@
 command panic: (Message is text) tag: (Tag is text) =
   foreign commands.panic(Tag, Message);
 
-command panic: (Message is text) =
+command panic: (Message is interpolation) tag: Tag =
+  panic: Message flatten-into-plain-text tag: Tag;
+
+command panic: Message =
   panic: Message tag: "panic";

@@ -136,3 +136,7 @@ test
   assert [1] but-last =:= [];
   assert [1, 2, 3] but-last =:= [1, 2];
 end
+
+command tuple filter: (Fun is function-1) do
+  for X in self if Fun(X) do X end;
+end
