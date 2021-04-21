@@ -1,5 +1,5 @@
 import { zip } from "../../utils";
-import { CrochetModule, die } from "../vm";
+import { CrochetModule, die, ErrArbitrary } from "../vm";
 import {
   CrochetType,
   TCrochetAny,
@@ -55,7 +55,20 @@ export class CrochetInstance extends CrochetValue {
 export class InstanceProjection implements IProjection {
   constructor(readonly instance: CrochetInstance) {}
 
-  project(name: string) {
+  project(name: string, requestee_module: CrochetModule | null) {
+    if (
+      requestee_module === null ||
+      requestee_module.pkg.name !== this.instance.type.module?.pkg.name
+    ) {
+      throw new ErrArbitrary(
+        "no-projection-capability",
+        `Cannot directly project ${name} from ${
+          this.instance.type.type_name
+        } outside of its declaring package ${
+          this.instance.type.module?.pkg.name ?? "no package"
+        }`
+      );
+    }
     return this.instance.get_field(name);
   }
 }
@@ -63,8 +76,23 @@ export class InstanceProjection implements IProjection {
 export class InstanceSelection implements ISelection {
   constructor(readonly instance: CrochetInstance) {}
 
-  select(selections: Selection[]) {
-    return this.instance.as_record().selection.select(selections);
+  select(selections: Selection[], requestee_module: CrochetModule | null) {
+    if (
+      requestee_module === null ||
+      requestee_module.pkg.name !== this.instance.type.module?.pkg.name
+    ) {
+      throw new ErrArbitrary(
+        "no-projection-capability",
+        `Cannot directly project ${name} from ${
+          this.instance.type.type_name
+        } outside of its declaring package ${
+          this.instance.type.module?.pkg.name ?? "no package"
+        }`
+      );
+    }
+    return this.instance
+      .as_record()
+      .selection.select(selections, requestee_module);
   }
 }
 

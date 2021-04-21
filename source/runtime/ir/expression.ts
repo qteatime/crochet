@@ -305,7 +305,7 @@ export class EProject extends Expression {
     const key = this.field.is_static
       ? this.field.name
       : get_string(cvalue(yield _push_expr(this.field.expression, state)));
-    return object.projection.project(key);
+    return object.projection.project(key, state.env.raw_module);
   }
 
   get sub_expressions() {
@@ -334,7 +334,7 @@ export class EProjectMany extends Expression {
         : get_string(cvalue(yield _push_expr(field.alias.expression, state)));
       fields.push({ key, alias });
     }
-    return object.selection.select(fields);
+    return object.selection.select(fields, state.env.raw_module);
   }
 
   get sub_expressions() {

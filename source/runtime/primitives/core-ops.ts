@@ -1,5 +1,6 @@
 import { CrochetNothing, CrochetType, CrochetValue, type_name } from "./0-core";
 import {
+  CrochetModule,
   cvalue,
   ErrArbitrary,
   ErrInvalidArity,
@@ -232,8 +233,12 @@ export function get_map(value: CrochetValue) {
   }
 }
 
-export function project(value: CrochetValue, key: string) {
-  return value.projection.project(key);
+export function project(
+  value: CrochetValue,
+  key: string,
+  requestee_module: CrochetModule | null
+) {
+  return value.projection.project(key, requestee_module);
 }
 
 export function from_string(x: string) {

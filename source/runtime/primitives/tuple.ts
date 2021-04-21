@@ -1,4 +1,5 @@
 import { every, zip } from "../../utils/utils";
+import { CrochetModule } from "../vm";
 import {
   CrochetType,
   TCrochetAny,
@@ -49,10 +50,10 @@ export class CrochetTuple extends CrochetValue {
 export class TupleProjection implements IProjection {
   constructor(readonly stream: CrochetTuple) {}
 
-  project(name: string): CrochetValue {
+  project(name: string, requestee: CrochetModule | null): CrochetValue {
     const result = [];
     for (const value of this.stream.values) {
-      result.push(value.projection.project(name));
+      result.push(value.projection.project(name, requestee));
     }
     return new CrochetTuple(result);
   }
@@ -61,10 +62,10 @@ export class TupleProjection implements IProjection {
 export class TupleSelection implements ISelection {
   constructor(readonly stream: CrochetTuple) {}
 
-  select(selections: Selection[]) {
+  select(selections: Selection[], requestee: CrochetModule | null) {
     const result = [];
     for (const value of this.stream.values) {
-      result.push(value.selection.select(selections));
+      result.push(value.selection.select(selections, requestee));
     }
     return new CrochetTuple(result);
   }

@@ -469,23 +469,26 @@ export function core_record(ffi: ForeignInterface) {
       }
       return new CrochetRecord(result);
     })
-    .defun("from-pairs", [CrochetTuple], (xs) => {
+    .defmachine("from-pairs", [CrochetTuple], function* (state, xs) {
       const result = new Map();
       for (const pair0 of xs.values) {
         const pair = cast(pair0, CrochetRecord);
         result.set(
-          cast(pair.projection.project("key"), CrochetText).value,
-          pair.projection.project("value")
+          cast(
+            pair.projection.project("key", state.env.raw_module),
+            CrochetText
+          ).value,
+          pair.projection.project("value", state.env.raw_module)
         );
       }
       return new CrochetRecord(result);
     })
-    .defun(
+    .defmachine(
       "at-default",
       [CrochetRecord, CrochetText, CrochetValue],
-      (r, k, x) => {
+      function* (state, r, k, x) {
         if (r.values.has(k.value)) {
-          return r.projection.project(k.value);
+          return r.projection.project(k.value, state.env.raw_module);
         } else {
           return x;
         }

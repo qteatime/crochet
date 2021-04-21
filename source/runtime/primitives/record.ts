@@ -1,4 +1,4 @@
-import { ErrNoRecordKey } from "../vm";
+import { CrochetModule, ErrNoRecordKey } from "../vm";
 import {
   CrochetType,
   TCrochetAny,
@@ -78,7 +78,7 @@ export class CrochetRecord extends CrochetValue {
 export class RecordProjection implements IProjection {
   constructor(readonly record: CrochetRecord) {}
 
-  project(name: string): CrochetValue {
+  project(name: string, requestee: CrochetModule | null): CrochetValue {
     const value = this.record.get(name);
     if (value == null) {
       throw new ErrNoRecordKey(this.record, name);
@@ -91,11 +91,14 @@ export class RecordProjection implements IProjection {
 export class RecordSelection implements ISelection {
   constructor(readonly record: CrochetRecord) {}
 
-  select(selection: Selection[]): CrochetValue {
+  select(
+    selection: Selection[],
+    requestee: CrochetModule | null
+  ): CrochetValue {
     const projection = this.record.projection;
     const result = new Map<string, CrochetValue>();
     for (const sel of selection) {
-      result.set(sel.alias, projection.project(sel.key));
+      result.set(sel.alias, projection.project(sel.key, requestee));
     }
     return new CrochetRecord(result);
   }

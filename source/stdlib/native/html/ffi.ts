@@ -71,8 +71,11 @@ export function html_ffi(ffi: ForeignInterface) {
       menu.className = "crochet-box " + klass.value;
       for (const child of items.values) {
         const record = cast(child, CrochetRecord);
-        const title = cast(record.projection.project("Title"), CrochetHtml);
-        const value = record.projection.project("Value");
+        const title = cast(
+          record.projection.project("Title", null),
+          CrochetHtml
+        );
+        const value = record.projection.project("Value", null);
         menu.appendChild(title.value);
         title.value.addEventListener(
           "click",

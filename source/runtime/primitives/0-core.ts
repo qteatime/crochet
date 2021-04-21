@@ -1,4 +1,9 @@
-import { ErrArbitrary, ErrNoProjection, ErrNoSelection } from "../vm";
+import {
+  CrochetModule,
+  ErrArbitrary,
+  ErrNoProjection,
+  ErrNoSelection,
+} from "../vm";
 
 export abstract class CrochetValue {
   abstract type: CrochetType;
@@ -57,11 +62,14 @@ export abstract class CrochetValue {
 }
 
 export interface IProjection {
-  project(name: string): CrochetValue;
+  project(name: string, requestee_module: CrochetModule | null): CrochetValue;
 }
 
 export interface ISelection {
-  select(selections: Selection[]): CrochetValue;
+  select(
+    selections: Selection[],
+    requestee_module: CrochetModule | null
+  ): CrochetValue;
 }
 
 export type Selection = {
