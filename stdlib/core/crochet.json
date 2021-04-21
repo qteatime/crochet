@@ -5,7 +5,7 @@
   "sources": [
     "source/0-types.crochet",
     "source/traits/arithmetic.crochet",
-    "source/traits/boolean.crochet",
+    "source/boolean.crochet",
     "source/traits/conversion.crochet",
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
