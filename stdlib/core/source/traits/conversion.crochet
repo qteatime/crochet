@@ -47,8 +47,8 @@ type error-parsing-float is conversion-error(value);
 command #integer try-parse: (X is text) -> result do
   let Result = #conversion-mod parse-integer: X;
   condition
-    when Result =:= nothing => new error(new error-parsing-integer(X));
-    always => new ok(Result);
+    when Result =:= nothing => (#result error: new error-parsing-integer(X));
+    always => #result ok: Result;
   end
 test
   assert (#integer try-parse: "123").value =:= 123;
@@ -60,8 +60,8 @@ end
 command #float try-parse: (X is text) -> result do
   let Result = #conversion-mod parse-float: X;
   condition
-    when Result =:= nothing => new error(new error-parsing-float(X));
-    always => new ok(Result);
+    when Result =:= nothing => (#result error: new error-parsing-float(X));
+    always => #result ok: Result;
   end
 test
   assert (#float try-parse: "123").value =:= 123.0;

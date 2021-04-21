@@ -168,6 +168,28 @@ export class ENew extends Expression {
 
   *evaluate(state: State): Machine {
     const type = cast(state.env.module.lookup_type(this.name), TCrochetType);
+    if (!type.module) {
+      throw new ErrArbitrary(
+        "no-new-capability",
+        `The type ${type.name} does not provide a support constructing it with 'new'.`
+      );
+    }
+    if (!state.env.raw_module) {
+      throw new ErrArbitrary(
+        "no-new-capability",
+        `Types can only be constructed in the context of a module.`
+      );
+    }
+    if (type.module.pkg.name !== state.env.raw_module.pkg.name) {
+      throw new ErrArbitrary(
+        "no-new-capability",
+        `The type ${
+          type.type_name
+        } can only be directly constructed from its declaring package (${
+          type.module?.pkg.name ?? "no package"
+        })`
+      );
+    }
     const values = avalue(yield _push(run_all_exprs(this.data, state)));
     return type.instantiate(values);
   }

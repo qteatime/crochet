@@ -41,6 +41,6 @@ command parser-stream consume =
 
 command parser-stream peek: (N is integer) =
   self consume: N
-    then: { S in new ok(S value) }
-    else: { S in new error(S reason) };
+    then: { S in (#result ok: S value) }
+    else: { S in (#result error: S reason) };
 

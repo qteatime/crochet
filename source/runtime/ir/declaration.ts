@@ -177,7 +177,7 @@ export class DType extends Declaration {
     const layout = new Map(this.fields.map((x, i) => [x.parameter, i]));
     const parent = this.parent ? this.parent.realise(state) : null;
     const type = new TCrochetType(
-      context.filename,
+      context.module,
       parent ?? TCrochetAny.type,
       this.name,
       types,

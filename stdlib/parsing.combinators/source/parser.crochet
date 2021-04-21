@@ -72,8 +72,8 @@ end
 
 command parser-opt parse: (Stream is parser-stream) do
   self.parser parse: Stream
-    | then: { S in S ok: new ok(S value) }
-      else: { S in Stream ok: new error(nothing) }
+    | then: { S in S ok: (#result ok: S value) }
+      else: { S in Stream ok: (#result error: nothing) }
 end
 
 command parser-eq parse: (Stream is parser-stream) do

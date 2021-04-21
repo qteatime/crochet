@@ -50,9 +50,9 @@ command grammar parse: (Source is text) rule: (Rule is text) do
   let Parse-tree =
     #lingua-mod grammar: self.ohm-grammar parse: Source rule: Rule;
   condition
-    when #lingua-mod succeeded: Parse-tree => new ok(new parse-tree(Parse-tree));
+    when #lingua-mod succeeded: Parse-tree => (#result ok: new parse-tree(Parse-tree));
     always do
-      new error(#lingua-mod error-message: Parse-tree);
+      #result error: (#lingua-mod error-message: Parse-tree);
     end
   end
 end

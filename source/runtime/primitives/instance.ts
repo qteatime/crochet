@@ -1,5 +1,5 @@
 import { zip } from "../../utils";
-import { die } from "../vm";
+import { CrochetModule, die } from "../vm";
 import {
   CrochetType,
   TCrochetAny,
@@ -75,7 +75,7 @@ export class TCrochetType extends CrochetType {
   private sealed = false;
 
   constructor(
-    readonly filename: string,
+    readonly module: CrochetModule | null,
     readonly parent: CrochetType,
     readonly name: string,
     readonly types: CrochetType[],
@@ -140,10 +140,12 @@ export class TCrochetType extends CrochetType {
 }
 
 export const baseEnum = new TCrochetType(
-  "(builtin)",
+  null,
   TCrochetAny.type,
   "enum",
   [],
   [],
   new Map()
 );
+
+baseEnum.seal();
