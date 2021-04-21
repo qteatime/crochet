@@ -140,3 +140,10 @@ end
 command tuple filter: (Fun is function-1) do
   for X in self if Fun(X) do X end;
 end
+
+command (X is tuple) zip: (That is tuple) with: (Fun is function-2)
+requires same-size :: self count === That count
+  = foreign tuple.zip-with(X, That, Fun);
+
+command tuple all-true =
+  self fold-from: true with: (_ and _);

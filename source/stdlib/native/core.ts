@@ -41,8 +41,10 @@ import {
   ErrNativeError,
   from_string,
   InteprolationPart,
+  get_array,
+  get_map,
 } from "../../runtime";
-import { cast } from "../../utils";
+import { cast, copy_map } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
 
 export function core_types(ffi: ForeignInterface) {
@@ -416,6 +418,24 @@ export function core_tuple(ffi: ForeignInterface) {
         }
       }
       return new CrochetTuple(result);
+    })
+    .defmachine1("zip-with", function* (state, self0, that0, fn) {
+      const self = get_array(self0);
+      const that = get_array(that0);
+      if (self.length !== that.length) {
+        throw new ErrArbitrary(
+          "invalid-length",
+          "Cannot zip tuples of different lengths"
+        );
+      }
+      let result = [];
+      for (let i = 0; i < self.length; ++i) {
+        const x = self[i];
+        const y = that[i];
+        const value = cvalue(yield _push(apply(state, fn, [x, y])));
+        result.push(value);
+      }
+      return new CrochetTuple(result);
     });
 }
 
@@ -493,7 +513,31 @@ export function core_record(ffi: ForeignInterface) {
           return x;
         }
       }
-    );
+    )
+    .defun1("has-key", (rec0, key0) => {
+      const rec = get_map(rec0);
+      const key = get_string(key0);
+      return from_bool(rec.has(key));
+    })
+    .defun1("delete-at", (rec0, key0) => {
+      const rec = get_map(rec0);
+      const key = get_string(key0);
+      const result = new Map();
+      for (const [k, v] of rec.entries()) {
+        if (k !== key) {
+          result.set(k, v);
+        }
+      }
+      return new CrochetRecord(result);
+    })
+    .defun1("at-put", (rec0, key0, value) => {
+      const rec = get_map(rec0);
+      const key = get_string(key0);
+      const result = new Map();
+      copy_map(rec, result);
+      result.set(key, value);
+      return new CrochetRecord(result);
+    });
 }
 
 export function core_commands(ffi: ForeignInterface) {

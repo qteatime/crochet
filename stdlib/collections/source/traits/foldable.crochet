@@ -7,9 +7,6 @@ test
   assert [1, 2, 3] sum =:= 6;
 end
 
-command tuple all-true -> boolean =
-  self fold-from: true with: (_ and _);
-
 command tuple all: (Fun is function-1) -> boolean =
   self fold-from: true with: { A, B in A and Fun(B) };
 

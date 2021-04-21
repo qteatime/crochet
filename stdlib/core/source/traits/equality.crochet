@@ -77,6 +77,19 @@ end
 
 // # Text
 command text === (That is text) = self =:= That;
-command text =/= (That is text) = not (self =:= That);
+
+// # Tuple
+command tuple === (That is tuple) do
+  condition
+    when self count =/= That count => false;
+    always =>
+      self zip: That with: (_ === _) | all-true;
+  end
+end
+
+// # Record
+command record === (That is record) do
+  self =:= That; // FIXME: implement this properly
+end
 
 // TODO: Add equality to tuples and records without exposing reflection
