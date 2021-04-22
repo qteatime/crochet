@@ -1,3 +1,0 @@
-% crochet
-
-command (X is tuple) without-duplicates = foreign tuple.unique(X);

@@ -1,8 +1,0 @@
-% crochet
-
-type set(values is tuple);
-type map(pairs is tuple);
-
-abstract list;
-type list-node is list(value, rest is list);
-singleton list-end is list;

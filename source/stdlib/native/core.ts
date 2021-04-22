@@ -43,6 +43,9 @@ import {
   InteprolationPart,
   get_array,
   get_map,
+  get_integer,
+  Thread,
+  equals_sync,
 } from "../../runtime";
 import { cast, copy_map } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -419,6 +422,13 @@ export function core_tuple(ffi: ForeignInterface) {
       }
       return new CrochetTuple(result);
     })
+    .defun1("at-insert", (xs0, i0, x) => {
+      const xs = get_array(xs0);
+      const i = get_integer(i0);
+      const xs1 = xs.slice();
+      xs1.splice(Number(i - 1n), 0, x);
+      return new CrochetTuple(xs1);
+    })
     .defmachine1("zip-with", function* (state, self0, that0, fn) {
       const self = get_array(self0);
       const that = get_array(that0);
@@ -434,6 +444,32 @@ export function core_tuple(ffi: ForeignInterface) {
         const y = that[i];
         const value = cvalue(yield _push(apply(state, fn, [x, y])));
         result.push(value);
+      }
+      return new CrochetTuple(result);
+    })
+    .defun("reverse", [CrochetTuple], (xs) => {
+      const source = xs.values;
+      const result = [];
+      for (let i = source.length - 1; i >= 0; i--) {
+        result.push(source[i]);
+      }
+      return new CrochetTuple(result);
+    })
+    .defmachine("sort", [CrochetTuple, CrochetValue], function* (state, xs, f) {
+      const result = xs.values.slice();
+      result.sort((a, b) => {
+        const call = apply(state, f, [a, b]);
+        const order = cast(Thread.for_machine(call).run_sync(), CrochetInteger);
+        return Number(order.value);
+      });
+      return new CrochetTuple(result);
+    })
+    .defmachine("unique", [CrochetTuple], function* (state, xs) {
+      const result: CrochetValue[] = [];
+      for (const x of xs.values) {
+        if (!result.some((y) => equals_sync(state, x, y))) {
+          result.push(x);
+        }
       }
       return new CrochetTuple(result);
     });

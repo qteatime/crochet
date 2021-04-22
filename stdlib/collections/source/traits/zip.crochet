@@ -1,9 +1,0 @@
-% crochet
-
-command tuple zip: (That is tuple) =
-  self zip: That with: { X, Y in [X, Y]}
-test
-  assert ([] zip: []) =:= [];
-  assert ([1] zip: [2]) =:= [[1, 2]];
-  assert ([1, 2, 3] zip: [4, 5, 6]) =:= [[1, 4], [2, 5], [3, 6]];
-end

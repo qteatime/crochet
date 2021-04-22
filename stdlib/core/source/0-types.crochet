@@ -73,3 +73,7 @@ type cell = foreign core.cell;
 
 /// The module for representations
 singleton representation;
+
+
+// Other types
+type indexed(index is integer, value);

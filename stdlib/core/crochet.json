@@ -11,7 +11,6 @@
     "source/traits/equality.crochet",
     "source/traits/fractional.crochet",
     "source/traits/ordering.crochet",
-    "source/traits/collection.crochet",
     "source/float.crochet",
     "source/tuple.crochet",
     "source/text.crochet",
@@ -19,7 +18,8 @@
     "source/record.crochet",
     "source/error.crochet",
     "source/result.crochet",
-    "source/representation.crochet"
+    "source/representation.crochet",
+    "source/indexed.crochet"
   ],
   "capabilities": {
     "requires": [],
