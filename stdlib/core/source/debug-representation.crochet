@@ -1,5 +1,9 @@
 % crochet
 
+// Documents are roughly based on Leijen's pretty printer (https://hackage.haskell.org/package/wl-pprint)
+// Copyright 2000, Daan Leijen. All rights reserved.
+
+
 local enum colour = black, red, green, yellow, blue, magenta, cyan, white;
 
 local abstract formatting;
