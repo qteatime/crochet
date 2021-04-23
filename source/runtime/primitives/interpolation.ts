@@ -7,7 +7,7 @@ import {
   SIPStatic,
 } from "../ir";
 import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
-import { CrochetText } from "./text";
+import { CrochetStaticText, CrochetText } from "./text";
 
 export class CrochetInterpolation extends CrochetValue {
   constructor(readonly parts: InteprolationPart[]) {
@@ -82,7 +82,7 @@ export class InterpolationStatic extends InteprolationPart {
   }
 
   to_part() {
-    return new CrochetText(this.text);
+    return new CrochetStaticText(this.text);
   }
 
   to_static() {

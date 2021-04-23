@@ -32,6 +32,7 @@ import {
   True,
   CrochetNothing,
   get_string,
+  CrochetStaticText,
 } from "../primitives";
 import {
   avalue,
@@ -106,7 +107,7 @@ export class EText extends Expression {
   }
 
   *evaluate(state: State): Machine {
-    return new CrochetText(this.value);
+    return new CrochetStaticText(this.value);
   }
 }
 

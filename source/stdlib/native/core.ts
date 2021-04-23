@@ -8,7 +8,7 @@ import {
   TCrochetBoolean,
   TCrochetFloat,
   TCrochetInteger,
-  TCrochetText,
+  TCrochetStaticText,
   TCrochetInterpolation,
   TAnyFunction,
   TCrochetRecord,
@@ -46,6 +46,7 @@ import {
   get_integer,
   Thread,
   equals_sync,
+  TCrochetBaseText,
 } from "../../runtime";
 import { cast, copy_map } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -63,7 +64,8 @@ export function core_types(ffi: ForeignInterface) {
     .deftype("fractional", TCrochetFractional.type)
     .deftype("float", TCrochetFloat.type)
     .deftype("integer", TCrochetInteger.type)
-    .deftype("text", TCrochetText.type)
+    .deftype("text", TCrochetBaseText.type)
+    .deftype("static-text", TCrochetStaticText.type)
     .deftype("interpolation", TCrochetInterpolation.type)
     .deftype("function", TAnyFunction.type)
     .deftype("function-0", TFunctionWithArity.for_arity(0))

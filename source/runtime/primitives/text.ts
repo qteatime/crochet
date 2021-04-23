@@ -1,8 +1,8 @@
 import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 
 export class CrochetText extends CrochetValue {
-  get type() {
-    return TCrochetText.type;
+  get type(): CrochetType {
+    return TCrochetBaseText.type;
   }
 
   constructor(readonly value: string) {
@@ -30,9 +30,22 @@ export class CrochetText extends CrochetValue {
   }
 }
 
-export class TCrochetText extends CrochetType {
+export class CrochetStaticText extends CrochetText {
+  get type(): CrochetType {
+    return TCrochetStaticText.type;
+  }
+}
+
+export class TCrochetBaseText extends CrochetType {
   readonly parent = TCrochetAny.type;
   readonly type_name = "text";
 
-  static type = new TCrochetText();
+  static type = new TCrochetBaseText();
+}
+
+export class TCrochetStaticText extends CrochetType {
+  readonly parent = TCrochetBaseText.type;
+  readonly type_name = "text";
+
+  static type = new TCrochetStaticText();
 }
