@@ -1,4 +1,11 @@
-import { invoke, type_name } from "../primitives";
+import { cast } from "../../utils";
+import {
+  CrochetInstance,
+  get_string,
+  invoke,
+  TCrochetType,
+  type_name,
+} from "../primitives";
 import { cvalue, State, Thread } from "../vm";
 import { Declaration } from "./declaration";
 import { SBlock } from "./statement";
@@ -34,11 +41,13 @@ export class REPLStatements extends REPLExpr {
   async evaluate(state: State) {
     const machine = this.statements.evaluate(state);
     const result = cvalue(await Thread.for_machine(machine).run_and_wait());
-    const repr_machine = invoke(state, "_ text:", [
-      state.world.globals.lookup("crochet.core::representation"),
-      result,
-    ]);
+    const printer_type = cast(
+      state.world.types.lookup("crochet.core::debug-printer"),
+      TCrochetType
+    );
+    const printer = printer_type.instantiate([]);
+    const repr_machine = invoke(state, "_ show:", [printer, result]);
     const repr = cvalue(await Thread.for_machine(repr_machine).run_and_wait());
-    console.log(`(${type_name(result)}) ${repr.to_text(true)}`);
+    console.log(get_string(repr));
   }
 }

@@ -79,3 +79,5 @@ singleton representation;
 
 // Other types
 type indexed(index is integer, value);
+
+singleton debug-representation;

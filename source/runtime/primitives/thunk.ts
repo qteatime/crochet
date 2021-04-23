@@ -1,6 +1,6 @@
 import { cast } from "../../utils";
 import { Expression } from "../ir";
-import { cvalue, Machine, State, _push, _push_expr } from "../vm";
+import { cvalue, ErrArbitrary, Machine, State, _push, _push_expr } from "../vm";
 import { Environment } from "../world";
 import { CrochetType, TCrochetAny, CrochetValue } from "./0-core";
 
@@ -35,6 +35,20 @@ export class CrochetThunk extends CrochetValue {
 
   to_text() {
     return "<thunk>";
+  }
+
+  get is_forced() {
+    return this.value != null;
+  }
+
+  get forced_value() {
+    if (this.value == null) {
+      throw new ErrArbitrary(
+        "unevaluated-thunk",
+        `Trying to get a value from an unevaluated thunk`
+      );
+    }
+    return this.value;
   }
 }
 

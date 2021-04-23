@@ -26,6 +26,7 @@ import { CrochetTuple } from "./tuple";
 import { CrochetUnknown } from "./unknown";
 import { CrochetRecord } from "./record";
 import { cast } from "../../utils";
+import { CrochetThunk } from "./thunk";
 
 export type Class<T> = {
   new (...args: any[]): T;
@@ -229,6 +230,17 @@ export function get_map(value: CrochetValue) {
     throw new ErrArbitrary(
       "invalid-type",
       `Expected a record, got ${type_name(value)}`
+    );
+  }
+}
+
+export function get_thunk(value: CrochetValue) {
+  if (value instanceof CrochetThunk) {
+    return value;
+  } else {
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected a thunk, got ${type_name(value)}`
     );
   }
 }

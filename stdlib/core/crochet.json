@@ -19,6 +19,7 @@
     "source/error.crochet",
     "source/result.crochet",
     "source/representation.crochet",
+    "source/debug-representation.crochet",
     "source/indexed.crochet"
   ],
   "capabilities": {

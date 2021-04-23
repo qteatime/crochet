@@ -100,3 +100,14 @@ command error and (That is result) = self;
 
 command ok or (That is result) = self;
 command error or (That is result) = That;
+
+
+command debug-representation of: (X is ok) =
+  debug-representation type: "ok"
+    | field: "value" value: X value
+    | finish;
+
+command debug-representation of: (X is error) =
+  debug-representation type: "error"
+    | field: "reason" value: X reason
+    | finish;

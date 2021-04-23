@@ -47,6 +47,10 @@ import {
   Thread,
   equals_sync,
   TCrochetBaseText,
+  CrochetPartial,
+  get_thunk,
+  type_name,
+  from_integer,
 } from "../../runtime";
 import { cast, copy_map } from "../../utils";
 import { ForeignNamespace } from "../ffi-def";
@@ -588,6 +592,27 @@ export function core_commands(ffi: ForeignInterface) {
   );
 }
 
+export function core_debug(ffi: ForeignInterface) {
+  new ForeignNamespace(ffi, "crochet.core:debug")
+    .defun1("fun-name", (x) => {
+      if (x instanceof CrochetPartial) {
+        return from_string(x.name);
+      } else {
+        return from_string(x.to_text());
+      }
+    })
+    .defun1("thunk-forced", (x) => {
+      const t = get_thunk(x);
+      return from_bool(t.is_forced);
+    })
+    .defun1("type-name", (x) => {
+      return from_string(type_name(x));
+    })
+    .defun1("text-length", (x) => {
+      return from_integer(BigInt(get_string(x).length));
+    });
+}
+
 export default [
   core_types,
   core_boolean,
@@ -600,4 +625,5 @@ export default [
   core_cell,
   core_record,
   core_commands,
+  core_debug,
 ];
