@@ -282,12 +282,16 @@ command debug-representation of: (X is doc-like) =
 
 local type type-representation is doc-like(name is text, fields is tuple);
 local type type-field is doc-like(name is text, value);
+local type type-pos is doc-like(value);
 
 command debug-representation type: (X is static-text) =
   new type-representation(X, []);
 
 command type-representation field: (K is text) value: V =
   new type-representation(self.name, self.fields ++ [new type-field(K, V)]);
+
+command type-representation value: V =
+  new type-representation(self.name, self.fields ++ [new type-pos(V)]);
 
 command type-representation finish =
   self as doc;
@@ -296,6 +300,9 @@ command type-field as doc =
   #doc text: self.name
     | append: " -> "
     | append: (debug-representation of: self.value);
+
+command type-pos as doc =
+  debug-representation of: self.value;
 
 command type-representation as doc do
   let Fields = self.fields map: (_ as doc);
