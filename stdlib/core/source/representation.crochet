@@ -31,3 +31,11 @@ command representation text: (Xs is record) do
     end
   end
 end
+
+command representation text: (X is ok) do
+  "ok<[representation text: X value]>";
+end
+
+command representation text: (X is error) do
+  "error<[representation text: X reason]>";
+end
