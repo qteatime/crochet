@@ -1129,7 +1129,7 @@ export function compileDeclaration(
         ),
         new IR.DCrochetCommand(
           pos,
-          "_ from-enum-integer:",
+          "_ from-enum-integer: _",
           ["Self", "N"],
           [new IR.TNamed(name.name), new IR.TNamed("integer")],
           [
