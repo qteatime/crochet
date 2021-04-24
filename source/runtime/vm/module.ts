@@ -75,13 +75,13 @@ export class CrochetModule {
   add_type(name: string, type: CrochetType, local: boolean) {
     if (local) {
       logger.debug(
-        `Adding local type ${name} in module ${this.relative_filename}`
+        `Adding local type ${name} in module ${this.qualified_name}`
       );
       this.local_types.add(name, type);
     } else {
       const ns_name = this.namespaced(this.pkg.name, name);
       logger.debug(
-        `Adding namespaced type ${ns_name} from module ${this.relative_filename}`
+        `Adding namespaced type ${ns_name} from module ${this.qualified_name}`
       );
       this.world.types.add(ns_name, type);
     }
@@ -118,13 +118,13 @@ export class CrochetModule {
   add_value(name: string, value: CrochetValue, local: boolean) {
     if (local) {
       logger.debug(
-        `Adding local value ${name} in module ${this.relative_filename}`
+        `Adding local value ${name} in module ${this.qualified_name}`
       );
       this.local_values.add(name, value);
     } else {
       const ns_name = this.namespaced(this.pkg.name, name);
       logger.debug(
-        `Adding namespaced value ${ns_name} from module ${this.relative_filename}`
+        `Adding namespaced value ${ns_name} from module ${this.qualified_name}`
       );
       this.world.globals.add(ns_name, value);
     }
