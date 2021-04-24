@@ -116,6 +116,23 @@ export class Procedure {
     this.branches.sort((b1, b2) => b1.compare(b2));
   }
 
+  override(types: CrochetType[], procedure: IProcedure) {
+    const branch = new ProcedureBranch(types, procedure);
+    const old = [...this.select_exact(types)];
+    if (old.length > 0) {
+      console.log(
+        `Overriding ${this.name} (${types
+          .map((x) => x.type_name)
+          .join(", ")}), from ${old
+          .map((x) => x.location_message)
+          .join(", ")}, with ${this.name} ${branch.full_repr}`
+      );
+    }
+    this.branches = this.branches.filter((x) => !old.includes(x));
+    this.branches.push(branch);
+    this.branches.sort((b1, b2) => b1.compare(b2));
+  }
+
   *select_exact(types: CrochetType[], branches = this.branches) {
     for (const branch of branches) {
       if (branch.types.every((t, i) => t === types[i])) {
@@ -168,6 +185,10 @@ export class ProcedureBranch {
 
   get location_message() {
     return this.procedure.location_message;
+  }
+
+  get full_repr() {
+    return `${this.simple_repr} from ${this.location_message}`;
   }
 }
 

@@ -732,7 +732,9 @@ export function compileContract(c: Contract): rt.Contract {
 export function compileTypeInit(
   meta: Meta,
   self: string,
-  partialStmts: TypeInit[]
+  partialStmts: TypeInit[],
+  locality: DeclarationLocality,
+  override: boolean
 ): IR.Declaration[] {
   const results = partialStmts.map((x) =>
     x.match<Statement | Declaration>({
@@ -770,7 +772,7 @@ export function compileTypeInit(
     (x) => x instanceof Declaration
   ) as Declaration[];
   const decls = [...decls0, new Declaration.Do(meta, stmts)];
-  return decls.flatMap(compileDeclaration);
+  return decls.flatMap((x) => compileDeclaration(x, locality, override));
 }
 
 export function compileSimulationGoal(goal: SimulationGoal): Sim.Goal {
@@ -957,7 +959,8 @@ export function compileRank(r: Rank): IR.Expression {
 
 export function compileDeclaration(
   d: Declaration,
-  locality: DeclarationLocality
+  locality: DeclarationLocality,
+  override: boolean
 ): IR.Declaration[] {
   return d.match<IR.Declaration[]>({
     Do(pos, body) {
@@ -998,7 +1001,8 @@ export function compileDeclaration(
           compileNamespace(body.name),
           parameters,
           body.args.map((x) => x.name),
-          compileContract(contract)
+          compileContract(contract),
+          override
         ),
         ...compileTrailingTest(name, types, test),
       ];
@@ -1015,7 +1019,8 @@ export function compileDeclaration(
           parameters,
           types,
           body.map(compileStatement),
-          compileContract(contract)
+          compileContract(contract),
+          override
         ),
         ...compileTrailingTest(name, types, test),
       ];
@@ -1032,7 +1037,7 @@ export function compileDeclaration(
         new IR.DDo(pos, [
           new IR.SRegister(pos, new IR.EGlobal(pos, type.name)),
         ]),
-        ...compileTypeInit(meta, type.name, init),
+        ...compileTypeInit(meta, type.name, init, locality, override),
       ];
     },
 
@@ -1060,7 +1065,9 @@ export function compileDeclaration(
       ]);
       return [
         new IR.DType(pos, local, new IR.TNamed("enum"), name.name, []),
-        ...variantDecls.flatMap((v) => compileDeclaration(v, locality)),
+        ...variantDecls.flatMap((v) =>
+          compileDeclaration(v, locality, override)
+        ),
         new IR.DDefine(pos, local, name.name, new IR.ENew(pos, name.name, [])),
         new IR.DSealType(pos, name.name),
         new IR.DCrochetCommand(
@@ -1069,7 +1076,8 @@ export function compileDeclaration(
           ["Self"],
           [new IR.TNamed(name.name)],
           [new IR.SExpression(pos, new IR.EGlobal(pos, variants[0].name))],
-          new rt.Contract([], [])
+          new rt.Contract([], []),
+          override
         ),
         new IR.DCrochetCommand(
           pos,
@@ -1082,7 +1090,8 @@ export function compileDeclaration(
               new IR.EGlobal(pos, variants[variants.length - 1].name)
             ),
           ],
-          new rt.Contract([], [])
+          new rt.Contract([], []),
+          override
         ),
         new IR.DCrochetCommand(
           pos,
@@ -1106,7 +1115,8 @@ export function compileDeclaration(
               )
             ),
           ],
-          new rt.Contract([], [])
+          new rt.Contract([], []),
+          override
         ),
       ];
     },
@@ -1173,8 +1183,8 @@ export function compileDeclaration(
         new IR.DContext(
           compileMeta(pos),
           name.name,
-          (items.flatMap(
-            compileDeclaration
+          (items.flatMap((x) =>
+            compileDeclaration(x, locality, override)
           ) as any) as IR.IContextualDeclaration[]
         ),
       ];
@@ -1197,7 +1207,7 @@ export function compileDeclaration(
     },
 
     Local(_, decl) {
-      return compileDeclaration(decl, DeclarationLocality.LOCAL);
+      return compileDeclaration(decl, DeclarationLocality.LOCAL, override);
     },
 
     Test(pos, title0, body) {
@@ -1217,7 +1227,9 @@ export function compileRepl(p: REPL): IR.REPLExpr {
   return p.match<IR.REPLExpr>({
     Declarations(xs) {
       return new IR.REPLDeclarations(
-        xs.flatMap((x) => compileDeclaration(x, DeclarationLocality.PUBLIC))
+        xs.flatMap((x) =>
+          compileDeclaration(x, DeclarationLocality.PUBLIC, true)
+        )
       );
     },
 
@@ -1234,6 +1246,6 @@ export function compileRepl(p: REPL): IR.REPLExpr {
 
 export function compileProgram(p: Program) {
   return p.declarations.flatMap((x) =>
-    compileDeclaration(x, DeclarationLocality.PUBLIC)
+    compileDeclaration(x, DeclarationLocality.PUBLIC, false)
   );
 }

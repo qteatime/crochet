@@ -20,15 +20,33 @@ import { CrochetTest } from "./test";
 export class ProcedureBag {
   private map = new Map<string, Procedure>();
 
-  add_foreign(name: string, types: CrochetType[], code: NativeProcedure) {
+  add_foreign(
+    name: string,
+    types: CrochetType[],
+    code: NativeProcedure,
+    override: boolean
+  ) {
     const procedure = this.map.get(name) ?? new Procedure(name, types.length);
-    procedure.add(types, code);
+    if (override) {
+      procedure.override(types, code);
+    } else {
+      procedure.add(types, code);
+    }
     this.map.set(name, procedure);
   }
 
-  add_crochet(name: string, types: CrochetType[], code: CrochetProcedure) {
+  add_crochet(
+    name: string,
+    types: CrochetType[],
+    code: CrochetProcedure,
+    override: boolean
+  ) {
     const procedure = this.map.get(name) ?? new Procedure(name, types.length);
-    procedure.add(types, code);
+    if (override) {
+      procedure.override(types, code);
+    } else {
+      procedure.add(types, code);
+    }
     this.map.set(name, procedure);
   }
 

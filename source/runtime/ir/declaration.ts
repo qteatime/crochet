@@ -106,7 +106,8 @@ export class DForeignCommand extends Declaration {
     readonly foreign_name: string,
     readonly parameters: string[],
     readonly args: string[],
-    readonly contract: Contract
+    readonly contract: Contract,
+    readonly override: boolean
   ) {
     super();
   }
@@ -124,7 +125,8 @@ export class DForeignCommand extends Declaration {
         this.args,
         `${context.package.name}:${this.foreign_name}`,
         this.contract
-      )
+      ),
+      this.override
     );
   }
 }
@@ -136,7 +138,8 @@ export class DCrochetCommand extends Declaration {
     readonly parameters: string[],
     readonly types: Type[],
     readonly body: Statement[],
-    readonly contract: Contract
+    readonly contract: Contract,
+    readonly override: boolean
   ) {
     super();
   }
@@ -155,7 +158,8 @@ export class DCrochetCommand extends Declaration {
     state.world.procedures.add_crochet(
       this.name,
       this.types.map((x) => x.realise(state)),
-      code
+      code,
+      this.override
     );
   }
 }
