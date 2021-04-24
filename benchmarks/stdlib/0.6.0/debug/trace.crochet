@@ -1,0 +1,116 @@
+% crochet
+
+local type trace-mod;
+command #trace-mod ec-named: (Name is text)
+  = foreign trace-constraint.ec-named(Name);
+
+command #trace-mod ec-package: (Name is text)
+  = foreign trace-constraint.ec-package(Name);
+
+command #trace-mod ec: A and: B
+  = foreign trace-constraint.ec-and(A, B);
+
+command #trace-mod ec: A or: B
+  = foreign trace-constraint.ec-or(A, B);
+
+command #trace-mod not-ec: A
+  = foreign trace-constraint.ec-not(A);
+
+command #trace-mod tc-invoke: E 
+  = foreign trace-constraint.tc-invoke(E);
+
+command #trace-mod trace: C tag: (Name is text)
+  = foreign trace.start-tracing(Name, C);
+
+command #trace-mod stop-tracing: R
+  = foreign trace.stop-tracing(R);
+
+command #trace-mod clear-traces
+  = foreign trace.clear-traces();
+
+
+// Trace constraints
+abstract entity-constraint;
+type ec-named is entity-constraint(name is text);
+type ec-package is entity-constraint(name is text);
+type ec-and is entity-constraint(left is entity-constraint, right is entity-constraint);
+type ec-or is entity-constraint(left is entity-constraint, right is entity-constraint);
+type ec-not is entity-constraint(value is entity-constraint);
+
+abstract trace-command;
+type tc-invoke is trace-command(entity is entity-constraint);
+
+type trace-reference(ref);
+
+
+command entity-constraint and (That is entity-constraint) =
+  new ec-and(self, That);
+
+command entity-constraint or (That is entity-constraint) =
+  new ec-or(self, That);
+
+command not entity-constraint =
+  new ec-not(self);
+
+command ec-named in-package: (Name is text) =
+  self and (trace-constraint package: Name);
+
+command ec-package procedures: (Names is tuple) do
+  let Procedures = (for X in Names do trace-constraint procedure: X end);
+  Procedures fold-from: self with: (_ and _);
+end
+
+
+command #trace-mod compile: (X is ec-named) =
+  #trace-mod ec-named: X.name;
+
+command #trace-mod compile: (X is ec-package) =
+  #trace-mod ec-package: X.name;
+
+command #trace-mod compile: (X is ec-and) =
+  #trace-mod ec: (#trace-mod compile: X.left) and: (#trace-mod compile: X.right);
+
+command #trace-mod compile: (X is ec-or) =
+  #trace-mod ec: (#trace-mod compile: X.left) or: (#trace-mod compile: X.right);
+
+command #trace-mod compile: (X is ec-not) =
+  #trace-mod not-ec: (#trace-mod compile: X.value);
+
+command #trace-mod compile: (X is tc-invoke) =
+  #trace-mod tc-invoke: (#trace-mod compile: X.entity);
+
+
+singleton trace-constraint;
+
+command trace-constraint name: (Name is text) =
+  new ec-named(Name);
+
+command trace-constraint package: (Name is text) =
+  new ec-package(Name);
+
+
+singleton trace;
+
+command trace procedure: (Entity is entity-constraint) tag: Tag =
+  trace start: new tc-invoke(Entity) tag: Tag;
+
+command trace procedure: Entity =
+  trace procedure: Entity tag: "(invoke)";
+
+command trace start: (Constraint is trace-command) tag: (Tag is text) do
+  let Ref = #trace-mod trace: (#trace-mod compile: Constraint) tag: Tag;
+  new trace-reference(Ref);
+end
+
+command trace start: Constraint =
+  trace start: Constraint tag: "(trace)";
+
+command trace stop: (Ref is trace-reference) do
+  #trace-mod stop-tracing: Ref.ref;
+  self;
+end
+
+command trace stop-all-traces do
+  #trace-mod clear-traces;
+  self;
+end

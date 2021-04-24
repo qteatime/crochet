@@ -1,0 +1,119 @@
+% crochet
+
+command tuple first = self at: 1
+test
+  assert [1] first =:= 1;
+  assert [1, 2, 3] first =:= 1;
+end
+
+command tuple last = self at: self count
+test
+  assert [1] last =:= 1;
+  assert [1, 2, 3] last =:= 3;
+end
+
+/// Inclusive on both bounds
+command (X is tuple) slice-from: (Start is integer) to: (End is integer)
+requires
+  positive :: Start >= 1;
+  progressive :: Start <= End;
+  = foreign tuple.slice(X, Start, End)
+test
+  assert ([] slice-from: 1 to: 4) =:= [];
+  assert ([0, 1, 2, 3] slice-from: 1 to: 4) =:= [0, 1, 2, 3];
+  assert ([0, 1, 2, 3] slice-from: 1 to: 1) =:= [0];
+  assert ([0, 1, 2, 3] slice-from: 4 to: 4) =:= [3];
+  assert ([0, 1, 2, 3] slice-from: 2 to: 3) =:= [1, 2];
+  assert ([0, 1, 2, 3] slice-from: 3 to: 5) =:= [2, 3];
+end
+
+command tuple take: (N is integer)
+requires positive-size :: N >= 0
+do
+  condition
+    when N === 0 => [];
+    when self is-empty => [];
+    always => self slice-from: 1 to: N;
+  end
+test
+  assert ([] take: 0) =:= [];
+  assert ([1, 2, 3] take: 0) =:= [];
+  assert ([1, 2, 3] take: 2) =:= [1, 2];
+end
+
+command tuple drop: (N is integer)
+requires positive-size :: N >= 0
+do
+  condition
+    when N === 0 => self;
+    when self is-empty => [];
+    always => self slice-from: (N + 1) to: self count;
+  end
+test
+  assert ([] drop: 0) =:= [];
+  assert ([1, 2, 3] drop: 0) =:= [1, 2, 3];
+  assert ([1, 2, 3] drop: 2) =:= [3];
+end
+
+command tuple but-first =
+  condition
+    when self count < 2 => [];
+    always => self slice-from: 2 to: self count;
+  end
+test
+  assert [] but-first =:= [];
+  assert [1] but-first =:= [];
+  assert [1, 2, 3] but-first =:= [2, 3];
+end
+
+command tuple but-last =
+  condition
+    when self count < 2 => [];
+    always => self slice-from: 1 to: (self count - 1);
+  end
+test
+  assert [] but-last =:= [];
+  assert [1] but-last =:= [];
+  assert [1, 2, 3] but-last =:= [1, 2];
+end
+
+command (X is tuple) reverse
+ensures same-size :: self count === return count
+  = foreign tuple.reverse(X)
+test
+  assert [] reverse =:= [];
+  assert [1] reverse =:= [1];
+  assert [1, 2, 3] reverse =:= [3, 2, 1];
+end
+
+local type sorter;
+command #sorter sort: (X is tuple) by: (Comparator is function-2)
+  = foreign tuple.sort(X, Comparator);
+
+command #sorter compare: A and: B with: F do
+  let Result = F(A, B);
+  condition
+    when Result === less-than => -1;
+    when Result === equal => 0;
+    when Result === greater-than => 1;
+  end
+end
+
+// FIXME: currently limited to pure synchronous functions
+command (X is tuple) sort-by: (Comparator is function-2)
+ensures same-size :: self count === return count do
+  #sorter sort: X by: (#sorter compare: _ and: _ with: Comparator);
+test
+  assert ([] sort-by: (_ compare-to: _)) =:= [];
+  assert ([1] sort-by: (_ compare-to: _)) =:= [1];
+  assert ([-2, 1, 0, 3] sort-by: (_ compare-to: _)) =:= [-2, 0, 1, 3];
+end
+
+command (X is tuple) sort
+ensures same-size :: self count === return count
+  = self sort-by: (_ compare-to: _)
+test
+  assert ([] sort) =:= [];
+  assert ([1] sort) =:= [1];
+  assert ([-2, 1, 0, 3] sort) =:= [-2, 0, 1, 3];
+end

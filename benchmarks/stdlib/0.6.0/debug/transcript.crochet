@@ -1,0 +1,19 @@
+% crochet
+
+singleton transcript;
+
+command (Self is transcript) write: (Text is text)
+  = foreign transcript.write(Self, Text);
+
+command (Self is transcript) inspect: Value
+  = foreign transcript.write-inspect(Self, Value);
+
+
+command transcript write: (X is interpolation) do
+  transcript write: (#text coerce: X);
+end
+
+command transcript inspect: Value tag: (Tag is text) do
+  transcript inspect: "[Tag] [Value]";
+  Value;
+end

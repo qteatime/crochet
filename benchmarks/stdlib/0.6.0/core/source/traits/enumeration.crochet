@@ -1,0 +1,119 @@
+% crochet
+
+// Discrete enumerations
+//
+// Required - `_ successor`, `_ predecessor`
+// TODO: get: `_ to: _`, `_ until: _`
+
+
+/// Range of enums (inclusive on both ends)
+command (From0 is 'enum) to: (To0 is 'enum)
+requires ordered :: From0 <= To0
+do
+  // FIXME: ideally we wouldn't depend on integers here
+  let From = From0 to-enum-integer;
+  let To = To0 to-enum-integer;
+  for I in From to: To do From0 from-enum-integer: I end
+test
+  assert (ta to: tc) =:= [ta, tb, tc];
+  assert (tb to: tc) =:= [tb, tc];
+  assert (tc to: tc) =:= [tc];
+end
+
+/// Range of enums, only inclusive on the starting end
+command (From0 is 'enum) until: (To0 is 'enum)
+requires ordered :: From0 <= To0
+do
+  // FIXME: ideally we wouldn't depend on integers here
+  let From = From0 to-enum-integer;
+  let To = To0 to-enum-integer;
+  for I in From until: To do From0 from-enum-integer: I end
+test
+  assert (ta to: tc) =:= [ta, tb, tc];
+  assert (tb to: tc) =:= [tb, tc];
+  assert (tc to: tc) =:= [tc];
+end
+
+// # Enums
+local enum test-enum = ta, tb, tc;
+
+/// Successor of the current enum
+command 'enum successor
+requires not-last :: self to-enum-integer < self upper-bound to-enum-integer
+do
+  self from-enum-integer: (self to-enum-integer + 1);
+test
+  assert ta successor =:= tb;
+  assert tb successor =:= tc;
+end
+
+/// Predecessor of the current enum
+command 'enum predecessor
+requires not-first :: self to-enum-integer > 1
+do
+  self from-enum-integer: (self to-enum-integer - 1);
+test
+  assert tb predecessor =:= ta;
+  assert tc predecessor =:= tb;
+end
+
+
+// # Integers
+command integer successor = self + 1
+test
+  assert -1 successor =:= 0;
+  assert 0 successor =:= 1;
+  assert 1 successor =:= 2;
+end
+
+command integer predecessor = self - 1
+test
+  assert -1 predecessor =:= -2;
+  assert 0 predecessor =:= -1;
+  assert 1 predecessor =:= 0;
+end
+
+/// The range of integers from Min to: Max, inclusive on both bounds.
+command (Min is integer) to: (Max is integer) by: (Step is integer)
+requires
+  progress :: Step > 0;
+  ordered :: Min <= Max;
+  = foreign integer.range(Min, Max, Step)
+test
+  assert (1 to: 3 by: 1) =:= [1, 2, 3];
+  assert (2 to: 3 by: 1) =:= [2, 3];
+  assert (3 to: 3 by: 1) =:= [3];
+
+  assert (0 to: 6 by: 2) =:= [0, 2, 4, 6];
+  assert (2 to: 6 by: 2) =:= [2, 4, 6];
+  assert (3 to: 6 by: 2) =:= [3, 5];
+end
+
+command (Min is integer) to: (Max is integer)
+  = Min to: Max by: 1
+test
+  assert (1 to: 3) =:= [1, 2, 3];
+  assert (2 to: 3) =:= [2, 3];
+  assert (3 to: 3) =:= [3];  
+end
+
+/// The range of integers from Min until: Max, not inclusive on Max.
+command (Min is integer) until: (Max is integer) by: (Step is integer)
+do
+  condition
+    when Min =:= Max => [];
+    always => Min to: (Max - 1) by: Step;
+  end
+test
+  assert (1 until: 3 by: 1) =:= [1, 2];
+  assert (2 until: 3 by: 1) =:= [2];
+  assert (3 until: 3 by: 1) =:= [];
+end
+
+command (Min is integer) until: (Max is integer)
+  = Min until: Max by: 1
+test
+  assert (1 until: 3) =:= [1, 2];
+  assert (2 until: 3) =:= [2];
+  assert (3 until: 3) =:= [];
+end

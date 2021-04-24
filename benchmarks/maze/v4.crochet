@@ -25,8 +25,11 @@ command point move: east  = new point(self.X + 1, self.Y);
 command point move: south = new point(self.X, self.Y + 1);
 command point move: west  = new point(self.X - 1, self.Y);
 
-command point distance-to: (P is point) =
-  ((((P.X - self.X) ** 2) + ((P.Y - self.Y) ** 2)) as float) sqrt;
+command point distance-to: (P is point) do
+  let X = (P.X - self.X) ** 2;
+  let Y = (P.Y - self.Y) ** 2;
+  (#float coerce: (X + Y)) sqrt;
+end
 
 command cell adjacent-cells do
   let Adjacency = [
@@ -139,24 +142,26 @@ end
 
 command maze-gen draw do
   for IY in 1 to: self.Height do
-    for IX in 1 to: self.Width do
-      (cell-at: new point(IX, IY)) draw;
-    end
-    |> _ as interpolation
-    |> transcript write: _;
+    let Line =
+      for IX in 1 to: self.Width do
+        (cell-at: new point(IX, IY)) draw;
+      end;
+    transcript write: (#interpolation coerce: Line);
   end
 end
 
 command cell draw do
-  match
-    when self state: cs-cut => " ";
-    when self state: cs-path => ".";
-    when self state: cs-begin => "B";
-    when self state: cs-end => "E";
-    when self state: cs-wall => "#";
-    when self state: cs-exposed => "!";
-    when self state: cs-unvisited => "?";
-  end first;
+  let Chars =
+    match
+      when self state: cs-cut => " ";
+      when self state: cs-path => ".";
+      when self state: cs-begin => "B";
+      when self state: cs-end => "E";
+      when self state: cs-wall => "#";
+      when self state: cs-exposed => "!";
+      when self state: cs-unvisited => "?";
+    end;
+  Chars first;
 end
 
 scene main do

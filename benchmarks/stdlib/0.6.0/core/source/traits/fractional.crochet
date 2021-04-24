@@ -1,0 +1,37 @@
+% crochet
+
+/// Truncate a floating point number
+command (X is float) truncate = foreign float.trunc(X)
+test
+  assert 1.3 truncate =:= 1.0;
+  assert 1.9 truncate =:= 1.0;
+  assert 1.0 truncate =:= 1.0;
+  assert -1.7 truncate =:= -1.0;
+end
+
+/// Returns the next integer smaller than self
+command (X is float) floor = foreign float.floor(X)
+test
+  assert 1.3 floor =:= 1.0;
+  assert 1.9 floor =:= 1.0;
+  assert 1.0 floor =:= 1.0;
+  assert -1.7 floor =:= -2.0;
+end
+
+/// Returns the next integer larger than self
+command (X is float) ceiling = foreign float.ceil(X)
+test
+  assert 1.3 ceiling =:= 2.0;
+  assert 1.9 ceiling =:= 2.0;
+  assert 1.0 ceiling =:= 1.0;
+  assert -1.7 ceiling =:= -1.0;
+end
+
+/// Returns the integer nearest to self
+command (X is float) round = foreign float.round(X)
+test
+  assert 1.3 round =:= 1.0;
+  assert 1.9 round =:= 2.0;
+  assert 1.0 round =:= 1.0;
+  assert -1.7 round =:= -2.0;
+end

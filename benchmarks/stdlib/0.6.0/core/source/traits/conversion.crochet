@@ -1,0 +1,73 @@
+% crochet
+
+command #float coerce: (X is integer)
+  = foreign conversion.integer-to-float(X)
+test
+  assert (#float coerce: 1) =:= 1.0;
+  assert (#float coerce: 0) =:= 0.0;
+  assert (#float coerce: -1) =:= -1.0;
+end
+
+command #integer coerce: (X is float)
+requires integral :: X =:= X truncate
+  = foreign conversion.float-to-integer(X)
+test
+  assert (#integer coerce: 1.0) =:= 1;
+  assert (#integer coerce: 0.0) =:= 0;
+  assert (#integer coerce: -1.0) =:= -1;
+end
+
+command #interpolation coerce: (X is tuple)
+  = foreign conversion.tuple-to-interpolation(X)
+test
+  assert (#interpolation coerce: []) =:= ("" as interpolation);
+  assert (#interpolation coerce: ["a", 1, "c"]) =:= "a[1]c";
+end
+
+command #text coerce: (X is interpolation)
+  = foreign conversion.interpolation-to-text(X)
+test
+  assert (#text coerce: ("abc" as interpolation)) =:= "abc";
+  assert (#text coerce: "a["b"]c") =:= "abc";
+end
+
+
+local abstract conversion-mod;
+
+command #conversion-mod parse-integer: (X is text)
+  = foreign conversion.text-to-integer(X);
+
+command #conversion-mod parse-float: (X is text)
+  = foreign conversion.text-to-float(X);
+
+
+abstract conversion-error;
+type error-parsing-integer is conversion-error(value);
+type error-parsing-float is conversion-error(value);
+
+command #integer try-parse: (X is text) -> result do
+  let Result = #conversion-mod parse-integer: X;
+  condition
+    when Result =:= nothing => new error(new error-parsing-integer(X));
+    always => new ok(Result);
+  end
+test
+  assert (#integer try-parse: "123").value =:= 123;
+  assert (#integer try-parse: "-123").value =:= -123;
+  assert (#integer try-parse: "123.0") is error;
+  assert (#integer try-parse: "nope") is error;
+end
+
+command #float try-parse: (X is text) -> result do
+  let Result = #conversion-mod parse-float: X;
+  condition
+    when Result =:= nothing => new error(new error-parsing-float(X));
+    always => new ok(Result);
+  end
+test
+  assert (#float try-parse: "123").value =:= 123.0;
+  assert (#float try-parse: "123.123").value =:= 123.123;
+  assert (#float try-parse: "-123.0").value =:= -123.0;
+  assert (#float try-parse: "nope") is error;
+end
+  

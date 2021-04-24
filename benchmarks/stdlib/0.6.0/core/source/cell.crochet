@@ -1,0 +1,63 @@
+% crochet
+
+local type read-only-cell(cell);   // FIXME: currently this leaks because `.` is universal
+
+command #cell with-value: V -> cell
+  = foreign cell.make(V)
+test
+  assert (#cell with-value: 1);
+end
+
+command #cell empty -> cell
+  = #cell with-value: nothing
+test
+  assert (#cell empty);
+end
+
+command (X is cell) value = foreign cell.deref(X)
+test
+  let C = #cell with-value: 1;
+  assert C value =:= 1;  
+end
+
+command (X is cell) compare: Old and-set: New -> boolean
+  = foreign cell.cas(X, Old, New)
+test
+  let C = #cell with-value: 1;
+  assert not (C compare: 2 and-set: 3);
+  assert C value =:= 1;
+  assert (C compare: 1 and-set: 4);
+  assert C value =:= 4;
+end
+
+command (X is cell) <- Value -> cell do
+  let Old = X value;
+  let Set = X compare: Old and-set: Value;
+  condition
+    when Set => X;
+    always => X <- Value;
+  end
+test
+  let C = #cell with-value: 1;
+  assert (C <- 2) value =:= 2;
+end
+
+// Read-only capabilities
+command (X is cell) read-only =
+  new read-only-cell(X)
+test
+  assert (#cell with-value: 1) read-only is read-only-cell;
+end
+
+command (X is read-only-cell) value =
+  X.cell value
+test
+  let C = #cell with-value: 1;
+  let R = C read-only;
+  assert R value =:= 1;
+  assert C value =:= 1;
+
+  C <- 2;
+  assert R value =:= 2;
+  assert C value =:= 2;
+end

@@ -1,0 +1,83 @@
+% crochet
+
+command (X is text) ends-with: (Text is text)
+requires
+  non-empty :: not (Text is-empty);
+  = foreign core.ends-with(X, Text)
+test
+  assert "abc" ends-with: "c";
+  assert not ("" ends-with: "c");
+  assert "hello" ends-with: "llo";
+  assert not ("hello" ends-with: "he");
+end
+
+command (X is text) starts-with: (Text is text)
+requires
+  non-empty :: not (Text is-empty);
+  = foreign core.starts-with(X, Text)
+test
+  assert "abc" starts-with: "a";
+  assert not ("" starts-with: "c");
+  assert "hello" starts-with: "he";
+  assert not ("hello" starts-with: "llo");
+end
+
+command (X is text) contains: (Text is text)
+requires
+  non-empty :: not (Text is-empty);
+  = foreign core.contains(X, Text)
+test
+  assert not ("" contains: "a");
+  assert "hello" contains: "he";
+  assert "hello" contains: "ell";
+  assert "hello" contains: "lo";
+  assert not ("hello" contains: "oll");
+end
+
+
+command (X is text) trim-start
+  = foreign core.trim-start(X)
+test
+  assert "" trim-start =:= "";
+  assert "abc" trim-start =:= "abc";
+  assert "  \t\n\r abc" trim-start =:= "abc";
+  assert "  abc  " trim-start =:= "abc  ";
+end
+
+command (X is text) trim-end
+  = foreign core.trim-end(X)
+test
+  assert "" trim-end =:= "";
+  assert "abc" trim-end =:= "abc";
+  assert "abc  \t\n\r" trim-end =:= "abc";
+  assert "  abc  " trim-end =:= "  abc";
+end
+
+command (X is text) trim
+  = foreign core.trim(X)
+test
+  assert "" trim =:= "";
+  assert "abc" trim =:= "abc";
+  assert "  \t\n\r abc" trim =:= "abc";
+  assert "abc  \t\n\r" trim =:= "abc";
+  assert "  abc  " trim =:= "abc";
+end
+
+/// Repeats a piece of text N times
+command (X is text) repeat: (N is integer)
+requires positive-non-zero :: N >= 0
+  = foreign core.repeat(X, N)
+test
+  assert ("" repeat: 1) =:= "";
+  assert ("a" repeat: 1) =:= "a";
+  assert ("a" repeat: 5) =:= "aaaaa";
+end
+
+/// True if a piece of text is empty
+command (X is text) is-empty
+  = foreign core.is-empty(X)
+test
+  assert "" is-empty;
+  assert not ("abc" is-empty);
+  assert not ("​" is-empty); // zero-width space (FIXME: add unicode escapes)
+end

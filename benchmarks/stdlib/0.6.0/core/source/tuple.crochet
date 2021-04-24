@@ -1,0 +1,9 @@
+% crochet
+
+command (X is tuple) count =
+  foreign tuple.count(X)
+test
+  assert [] count =:= 0;
+  assert [1] count =:= 1;
+  assert [1, 2, 3] count =:= 3;
+end

@@ -30,6 +30,7 @@ interface IBenchmark {
 }
 
 const benchmarkDir = Path.join(root, "benchmarks");
+const benchStdlib = (v: string) => Path.join(benchmarkDir, "stdlib", v);
 
 class Version {
   constructor(readonly a: number, readonly b: number, readonly c: number) {}
@@ -102,7 +103,11 @@ const all_vms = [
   { version: "0.3.1", random: false, vm: () => new Crochet_v0_3_1() },
   { version: "0.4.0", random: false, vm: () => new Crochet_v0_4_0() },
   { version: "0.5.0", random: false, vm: () => new Crochet_v0_5_0() },
-  { version: "0.6.0", random: false, vm: () => new Crochet_v0_6_0(StdlibPath) },
+  {
+    version: "0.6.0",
+    random: false,
+    vm: () => new Crochet_v0_6_0(benchStdlib("0.6.0")),
+  },
   {
     version: pkg.version,
     tag: "(current)",
@@ -117,15 +122,21 @@ async function time(
 ): Promise<number> {
   const log = console.log;
   const debug = console.debug;
-  console.log = () => {};
-  const start = new Date().getTime();
-  const result = await code();
-  const end = new Date().getTime();
-  const diff = end - start;
-  console.log = log;
-  console.debug = debug;
-  console.log(`--> ${label} (${diff}ms)`);
-  return diff;
+  try {
+    console.log = () => {};
+    const start = new Date().getTime();
+    const result = await code();
+    const end = new Date().getTime();
+    const diff = end - start;
+    console.log = log;
+    console.debug = debug;
+    console.log(`--> ${label} (${diff}ms)`);
+    return diff;
+  } catch (e) {
+    console.log = log;
+    console.debug = debug;
+    throw e;
+  }
 }
 
 function mb(x: number) {
