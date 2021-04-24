@@ -1,5 +1,5 @@
 import { cast, zip } from "../../utils/utils";
-import { Expression, Type } from "../ir";
+import { Expression, generated_node, Metadata, Type } from "../ir";
 import { TCrochetType } from "../primitives";
 import { cvalue, State, Thread } from "../vm";
 import { World } from "../world";
@@ -191,7 +191,7 @@ export abstract class MappedRelation {
 
 export class ConcreteRelation extends MappedRelation {
   constructor(
-    readonly filename: string,
+    readonly meta: Metadata,
     readonly name: string,
     readonly tree: Tree
   ) {
@@ -237,7 +237,7 @@ export class FunctionRelation extends MappedRelation {
 }
 
 export class PredicateProcedure extends MappedRelation {
-  readonly filename: string | null = null;
+  readonly metadata: Metadata = generated_node;
 
   constructor(
     readonly name: string,
@@ -247,8 +247,8 @@ export class PredicateProcedure extends MappedRelation {
     super();
   }
 
-  set_filename(filename: string) {
-    (this as any).filename = filename;
+  set_metadata(metadata: Metadata) {
+    (this as any).metadata = metadata;
   }
 
   search(

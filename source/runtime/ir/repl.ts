@@ -23,7 +23,6 @@ export class REPLDeclarations extends REPLExpr {
     for (const x of this.declarations) {
       await x.apply(
         {
-          filename: state.env.module.filename,
           module: state.env.module,
           package: state.env.module.pkg,
         },

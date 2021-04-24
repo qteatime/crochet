@@ -4,6 +4,8 @@ export { Meta };
 export abstract class Metadata {
   abstract source_slice: string;
   abstract annotated_source: string;
+  abstract at_suffix: string;
+  abstract at_line_suffix: string;
 }
 
 export class Interval extends Metadata {
@@ -18,6 +20,14 @@ export class Interval extends Metadata {
   get annotated_source() {
     return this.info.formatted_position_message;
   }
+
+  get at_suffix() {
+    return ` at line ${this.info.position.line}, column ${this.info.position.column}`;
+  }
+
+  get at_line_suffix() {
+    return ` at line ${this.info.position.line}`;
+  }
 }
 
 export class GeneratedNode extends Metadata {
@@ -27,6 +37,14 @@ export class GeneratedNode extends Metadata {
 
   get annotated_source() {
     return "(source unavailable)";
+  }
+
+  get at_suffix() {
+    return "";
+  }
+
+  get at_line_suffix() {
+    return "";
   }
 }
 

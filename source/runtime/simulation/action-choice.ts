@@ -27,7 +27,9 @@ export class ActionChoice extends CrochetValue {
   }
 
   get full_name() {
-    return `action ${this.title.to_text()} (from ${this.action.filename})`;
+    return `action ${this.title.to_text()} (from ${
+      this.action.env.module.qualified_name
+    }${this.action.meta.at_line_suffix})`;
   }
 
   as_record() {

@@ -1,4 +1,4 @@
-import { Declaration } from "../ir";
+import { Declaration, generated_node } from "../ir";
 import { Database, Predicate, UnificationEnvironment } from "../logic";
 import {
   CrochetType,
@@ -76,7 +76,7 @@ export class World {
   readonly globals = new Bag<string, CrochetValue>("global");
   readonly scenes = new Bag<string, Scene>("scene");
   readonly contexts = new ContextBag();
-  readonly global_context = new ConcreteContext("<intrinsic>", "global");
+  readonly global_context = new ConcreteContext(generated_node, "global");
   readonly ffi = new ForeignInterface();
   readonly global_random = XorShift.new_random();
   readonly tests: CrochetTest[] = [];

@@ -3,6 +3,7 @@ import {
   EInterpolate,
   Expression,
   generated_node,
+  Metadata,
   SBlock,
   Statement,
   Type,
@@ -22,14 +23,14 @@ import { SimpleInterpolation } from "../ir/atomic";
 
 export class When {
   constructor(
-    readonly filename: string,
+    readonly meta: Metadata,
     readonly predicate: Predicate,
     readonly env: Environment,
     readonly body: Statement[]
   ) {}
 
   get full_name() {
-    return `an event (from ${this.filename})`;
+    return `an event (from ${this.env.module.qualified_name}${this.meta.at_line_suffix})`;
   }
 
   executions(state: State) {
@@ -59,7 +60,7 @@ export class Action {
   private fired_for = new BagMap<CrochetValue, bigint>();
 
   constructor(
-    readonly filename: string,
+    readonly meta: Metadata,
     readonly title: Expression,
     readonly predicate: Predicate,
     readonly tags: CrochetValue[],
@@ -151,7 +152,7 @@ export class ConcreteContext {
   readonly events: When[] = [];
   readonly actions: Action[] = [];
 
-  constructor(readonly filename: string, readonly name: string) {}
+  constructor(readonly meta: Metadata, readonly name: string) {}
 
   add_action(action: Action) {
     this.actions.push(action);

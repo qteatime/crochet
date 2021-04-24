@@ -1,5 +1,5 @@
 import { every, zip } from "../../utils/utils";
-import { Expression, generated_node, SBlock, Statement } from "../ir";
+import { Expression, generated_node, Metadata, SBlock, Statement } from "../ir";
 import {
   cvalue,
   ErrArbitrary,
@@ -217,7 +217,7 @@ export type NativeProcedureFn = (
 
 export class NativeProcedure implements IProcedure {
   constructor(
-    readonly filename: string,
+    readonly meta: Metadata,
     readonly env: Environment,
     readonly name: string,
     readonly parameter_names: string[],
@@ -231,7 +231,7 @@ export class NativeProcedure implements IProcedure {
   }
 
   get location_message() {
-    return `${this.env.module.qualified_name}`;
+    return `${this.env.module.qualified_name}${this.meta.at_line_suffix}`;
   }
 
   *invoke(state0: State, values: CrochetValue[]): Machine {
@@ -275,7 +275,7 @@ export class NativeProcedure implements IProcedure {
 
 export class CrochetProcedure implements IProcedure {
   constructor(
-    readonly filename: string,
+    readonly meta: Metadata,
     readonly env: Environment,
     readonly world: World,
     readonly name: string,
@@ -289,7 +289,7 @@ export class CrochetProcedure implements IProcedure {
   }
 
   get location_message() {
-    return `${this.env.module.qualified_name}`;
+    return `${this.env.module.qualified_name}${this.meta.at_line_suffix}`;
   }
 
   *invoke(state0: State, values: CrochetValue[]) {

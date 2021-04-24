@@ -31,7 +31,6 @@ import { Meta, Metadata } from "./meta";
 export type ContextualDeclaration = DAction | DWhen;
 
 interface DeclarationContext {
-  filename: string;
   module: CrochetModule;
   package: CrochetPackage;
 }
@@ -64,7 +63,7 @@ export class DRelation extends Declaration {
 
   async apply(context: DeclarationContext, state: State) {
     const relation = new ConcreteRelation(
-      context.filename,
+      this.position,
       this.name,
       this.type.realise()
     );
@@ -82,7 +81,7 @@ export class DPredicate extends Declaration {
   }
 
   async apply(context: DeclarationContext, state: State) {
-    this.procedure.set_filename(context.filename);
+    this.procedure.set_metadata(this.position);
     state.world.database.add(this.name, this.procedure);
   }
 }
@@ -118,7 +117,7 @@ export class DForeignCommand extends Declaration {
       this.name,
       this.types.map((x) => x.realise(state)),
       new NativeProcedure(
-        context.filename,
+        this.position,
         env,
         this.name,
         this.parameters,
@@ -147,7 +146,7 @@ export class DCrochetCommand extends Declaration {
   async apply(context: DeclarationContext, state: State) {
     const env = new Environment(state.env, context.module, null);
     const code = new CrochetProcedure(
-      context.filename,
+      this.position,
       env,
       state.world,
       this.name,
@@ -222,7 +221,7 @@ export class DScene extends Declaration {
   }
   async apply(context: DeclarationContext, state: State) {
     const env = new Environment(state.env, context.module, null);
-    const scene = new Scene(context.filename, this.name, env, this.body);
+    const scene = new Scene(this.position, this.name, env, this.body);
     state.world.scenes.add(this.name, scene);
   }
 }
@@ -248,7 +247,7 @@ export class DAction extends Declaration implements IContextualDeclaration {
     const env = new Environment(state.env, declaration_context.module, null);
     const tags = this.tags.map((x) => state.env.module.lookup_value(x));
     const action = new Action(
-      declaration_context.filename,
+      this.position,
       this.title,
       this.predicate,
       tags,
@@ -280,12 +279,7 @@ export class DWhen extends Declaration implements IContextualDeclaration {
     context: Context
   ) {
     const env = new Environment(state.env, declaration_context.module, null);
-    const event = new When(
-      declaration_context.filename,
-      this.predicate,
-      env,
-      this.body
-    );
+    const event = new When(this.position, this.predicate, env, this.body);
     context.add_event(event);
   }
 
@@ -333,10 +327,7 @@ export class DContext extends Declaration {
   }
 
   async apply(declaration_context: DeclarationContext, state: State) {
-    const context = new ConcreteContext(
-      declaration_context.filename,
-      this.name
-    );
+    const context = new ConcreteContext(this.position, this.name);
     state.world.contexts.add(this.name, context);
     for (const x of this.declarations) {
       await x.apply_to_context(declaration_context, state, context);
