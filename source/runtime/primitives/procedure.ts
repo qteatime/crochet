@@ -90,6 +90,7 @@ export class Contract {
 
 // -- Procedures
 export interface IProcedure {
+  location_message: string;
   invoke(state: State, values: CrochetValue[]): Machine;
 }
 
@@ -109,8 +110,35 @@ export class Procedure {
   }
 
   add(types: CrochetType[], procedure: IProcedure) {
-    this.branches.push(new ProcedureBranch(types, procedure));
+    const branch = new ProcedureBranch(types, procedure);
+    this.assert_no_duplicates(types, [branch, ...this.branches]);
+    this.branches.push(branch);
     this.branches.sort((b1, b2) => b1.compare(b2));
+  }
+
+  *select_exact(types: CrochetType[], branches = this.branches) {
+    for (const branch of branches) {
+      if (branch.types.every((t, i) => t === types[i])) {
+        yield branch;
+      }
+    }
+  }
+
+  assert_no_duplicates(types: CrochetType[], branches = this.branches) {
+    const dups = [...this.select_exact(types, branches)];
+    if (dups.length > 1) {
+      const branches = dups.map(
+        (x) => `  - ${this.name}${x.simple_repr}, from ${x.location_message}`
+      );
+      throw new ErrArbitrary(
+        "ambiguous-dispatch",
+        `Multiple ${
+          this.name
+        } commands are activated by the same types, making them ambiguous:\n${branches.join(
+          "\n"
+        )}`
+      );
+    }
   }
 }
 
@@ -133,6 +161,14 @@ export class ProcedureBranch {
       every(zip(this.types, values), ([t, v]) => t.accepts(v))
     );
   }
+
+  get simple_repr() {
+    return `(${this.types.map((x) => x.type_name).join(", ")})`;
+  }
+
+  get location_message() {
+    return this.procedure.location_message;
+  }
 }
 
 export type NativeProcedureFn = (
@@ -152,7 +188,11 @@ export class NativeProcedure implements IProcedure {
   ) {}
 
   get full_name() {
-    return `${this.name} (from ${this.filename})`;
+    return `${this.name} (from ${this.location_message})`;
+  }
+
+  get location_message() {
+    return `${this.env.module.qualified_name}`;
   }
 
   *invoke(state0: State, values: CrochetValue[]): Machine {
@@ -206,7 +246,11 @@ export class CrochetProcedure implements IProcedure {
   ) {}
 
   get full_name() {
-    return `${this.name} (from ${this.filename})`;
+    return `${this.name} (from ${this.location_message})`;
+  }
+
+  get location_message() {
+    return `${this.env.module.qualified_name}`;
   }
 
   *invoke(state0: State, values: CrochetValue[]) {
