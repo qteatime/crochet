@@ -9,7 +9,8 @@
     "build-ts": "just build-ts",
     "build-stdlib": "tsc -p stdlib",
     "build-grammar": "just build-grammar",
-    "test": "node crochet.js run-tests tests/vm-tests/crochet.json"
+    "test": "node crochet.js run-tests tests/vm-tests/crochet.json",
+    "benchmark": "node --expose-gc build/test/benchmarks/run.js"
   },
   "dependencies": {
     "express": "^4.17.1",
