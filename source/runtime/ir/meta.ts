@@ -6,10 +6,11 @@ export abstract class Metadata {
   abstract annotated_source: string;
   abstract at_suffix: string;
   abstract at_line_suffix: string;
+  abstract doc: string;
 }
 
 export class Interval extends Metadata {
-  constructor(readonly info: Meta) {
+  constructor(readonly info: Meta, readonly doc: string) {
     super();
   }
 
@@ -44,6 +45,10 @@ export class GeneratedNode extends Metadata {
   }
 
   get at_line_suffix() {
+    return "";
+  }
+
+  get doc() {
     return "";
   }
 }

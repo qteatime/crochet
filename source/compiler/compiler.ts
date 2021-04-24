@@ -36,6 +36,7 @@ import {
   String as CString,
   REPL,
   ReplCommand,
+  Metadata,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetInteger } from "../runtime";
@@ -55,6 +56,8 @@ export enum DeclarationLocality {
   LOCAL,
   PUBLIC,
 }
+
+const noMeta = new Metadata([]);
 
 // -- Utilities
 function parseInteger(x: string): bigint {
@@ -106,8 +109,8 @@ function resolve_escape(escape: string) {
   }
 }
 
-export function compileMeta(x: Meta) {
-  return new Interval(x);
+export function compileMeta(x: Meta, cmeta: Metadata) {
+  return new Interval(x, cmeta.doc.join("\n"));
 }
 
 export function literalToValue(lit: Literal) {
@@ -326,27 +329,27 @@ export function compilePredicateClause(p: PredicateClause) {
 export function literalToExpression(lit: Literal) {
   return lit.match<IR.Expression>({
     False(pos) {
-      return new IR.EFalse(compileMeta(pos));
+      return new IR.EFalse(compileMeta(pos, noMeta));
     },
 
     True(pos) {
-      return new IR.ETrue(compileMeta(pos));
+      return new IR.ETrue(compileMeta(pos, noMeta));
     },
 
     Nothing(pos) {
-      return new IR.ENothing(compileMeta(pos));
+      return new IR.ENothing(compileMeta(pos, noMeta));
     },
 
     Text(pos, value) {
-      return new IR.EText(compileMeta(pos), parseString(value));
+      return new IR.EText(compileMeta(pos, noMeta), parseString(value));
     },
 
     Integer(pos, digits) {
-      return new IR.EInteger(compileMeta(pos), parseInteger(digits));
+      return new IR.EInteger(compileMeta(pos, noMeta), parseInteger(digits));
     },
 
     Float(pos, digits) {
-      return new EFloat(compileMeta(pos), parseNumber(digits));
+      return new EFloat(compileMeta(pos, noMeta), parseNumber(digits));
     },
   });
 }
@@ -484,12 +487,12 @@ export function compileForExpression(expr: ForExpression): IR.ForallExpr {
 export function compileExpression(expr: Expression): IR.Expression {
   return expr.match<IR.Expression>({
     Search(pos, pred) {
-      return new IR.ESearch(compileMeta(pos), compilePredicate(pred));
+      return new IR.ESearch(compileMeta(pos, noMeta), compilePredicate(pred));
     },
 
     MatchSearch(pos, cases) {
       return new IR.EMatchSearch(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         cases.map(compileMatchSearchCase)
       );
     },
@@ -500,42 +503,45 @@ export function compileExpression(expr: Expression): IR.Expression {
       const is_saturated = args.every((x) => x instanceof IR.EPartialConcrete);
       if (is_saturated) {
         return new IR.EInvoke(
-          compileMeta(pos),
+          compileMeta(pos, noMeta),
           name,
           args.map((x) => cast(x, IR.EPartialConcrete).expr)
         );
       } else {
-        return new IR.EPartial(compileMeta(pos), name, args);
+        return new IR.EPartial(compileMeta(pos, noMeta), name, args);
       }
     },
 
     Variable(pos, name) {
-      return new IR.EVariable(compileMeta(pos), name.name);
+      return new IR.EVariable(compileMeta(pos, noMeta), name.name);
     },
 
     Global(pos, name) {
-      return new IR.EGlobal(compileMeta(pos), name.name);
+      return new IR.EGlobal(compileMeta(pos, noMeta), name.name);
     },
 
     Self(pos) {
-      return new IR.ESelf(compileMeta(pos));
+      return new IR.ESelf(compileMeta(pos, noMeta));
     },
 
     New(pos, type, values) {
       return new IR.ENew(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         type.name,
         values.map(compileExpression)
       );
     },
 
     List(pos, values) {
-      return new IR.EList(compileMeta(pos), values.map(compileExpression));
+      return new IR.EList(
+        compileMeta(pos, noMeta),
+        values.map(compileExpression)
+      );
     },
 
     Record(pos, pairs) {
       return new IR.ERecord(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         pairs.map((x) => ({
           key: compileRecordField(x.key),
           value: compileExpression(x.value),
@@ -545,7 +551,7 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     Project(pos, object, field) {
       return new IR.EProject(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         compileExpression(object),
         compileRecordField(field)
       );
@@ -553,7 +559,7 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     Select(pos, object, fields) {
       return new IR.EProjectMany(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         compileExpression(object),
         fields.map((x) => ({
           key: compileRecordField(x.name),
@@ -563,16 +569,22 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
 
     Block(pos, body) {
-      return new IR.EBlock(compileMeta(pos), body.map(compileStatement));
+      return new IR.EBlock(
+        compileMeta(pos, noMeta),
+        body.map(compileStatement)
+      );
     },
 
     For(pos, body) {
-      return new IR.EForall(compileMeta(pos), compileForExpression(body));
+      return new IR.EForall(
+        compileMeta(pos, noMeta),
+        compileForExpression(body)
+      );
     },
 
     Apply(pos, partial, args) {
       return new IR.EApply(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         compileExpression(partial),
         args.map(compileArgument)
       );
@@ -583,7 +595,7 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
 
     Pipe(pos, left, right) {
-      return new IR.EApply(compileMeta(pos), compileExpression(right), [
+      return new IR.EApply(compileMeta(pos, noMeta), compileExpression(right), [
         new IR.EPartialConcrete(compileExpression(left)),
       ]);
     },
@@ -595,12 +607,15 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     Condition(pos, cases) {
       return new IR.ECondition(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         cases.map(
           (x) =>
             new IR.ConditionCase(
               compileExpression(x.guard),
-              new IR.SBlock(compileMeta(x.pos), x.body.map(compileStatement))
+              new IR.SBlock(
+                compileMeta(x.pos, noMeta),
+                x.body.map(compileStatement)
+              )
             )
         )
       );
@@ -608,18 +623,18 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     HasType(pos, value, type) {
       return new IR.EHasType(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         compileExpression(value),
         compileTypeApp(type)
       );
     },
 
     Force(pos, value) {
-      return new IR.EForce(compileMeta(pos), compileExpression(value));
+      return new IR.EForce(compileMeta(pos, noMeta), compileExpression(value));
     },
 
     Lazy(pos, value) {
-      return new IR.ELazy(compileMeta(pos), compileExpression(value));
+      return new IR.ELazy(compileMeta(pos, noMeta), compileExpression(value));
     },
 
     Hole(_) {
@@ -627,16 +642,16 @@ export function compileExpression(expr: Expression): IR.Expression {
     },
 
     Return(pos) {
-      return new IR.EReturn(compileMeta(pos));
+      return new IR.EReturn(compileMeta(pos, noMeta));
     },
 
     Type(pos, type) {
-      return new IR.EStaticType(compileMeta(pos), compileTypeApp(type));
+      return new IR.EStaticType(compileMeta(pos, noMeta), compileTypeApp(type));
     },
 
     Lambda(pos, params, body) {
       return new IR.ELambda(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         params.map((x) => x.name),
         compileExpression(body)
       );
@@ -644,7 +659,7 @@ export function compileExpression(expr: Expression): IR.Expression {
 
     IntrinsicEqual(pos, l, r) {
       return new IR.EIntrinsicEqual(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         compileExpression(l),
         compileExpression(r)
       );
@@ -712,8 +727,8 @@ export function compileContractReturn(
         pos,
         "return-type",
         new rt.IR.EHasType(
-          compileMeta(pos),
-          new rt.IR.EReturn(compileMeta(pos)),
+          compileMeta(pos, noMeta),
+          new rt.IR.EReturn(compileMeta(pos, noMeta)),
           compileTypeApp(c)
         )
       ),
@@ -748,22 +763,29 @@ export function compileTypeInit(
         return new Statement.Fact(meta, sig);
       },
 
-      Command(meta, sig0, contract, body, test) {
+      Command(meta, cmeta, sig0, contract, body, test) {
         const self_param: Parameter = new Parameter.TypedOnly(
           meta,
           new TypeApp.Named(meta, new Name(meta, self))
         );
         const sig = materialiseSignature(self_param, sig0);
-        return new Declaration.Command(meta, sig, contract, body, test);
+        return new Declaration.Command(meta, cmeta, sig, contract, body, test);
       },
 
-      ForeignCommand(meta, sig0, contract, body, test) {
+      ForeignCommand(meta, cmeta, sig0, contract, body, test) {
         const self_param: Parameter = new Parameter.TypedOnly(
           meta,
           new TypeApp.Named(meta, new Name(meta, self))
         );
         const sig = materialiseSignature(self_param, sig0);
-        return new Declaration.ForeignCommand(meta, sig, contract, body, test);
+        return new Declaration.ForeignCommand(
+          meta,
+          cmeta,
+          sig,
+          contract,
+          body,
+          test
+        );
       },
     })
   );
@@ -818,12 +840,16 @@ export function compileContext(context: SimulationContext): IR.SimulateContext {
 export function compileStatement(stmt: Statement) {
   return stmt.match<IR.Statement>({
     Let(pos, name, value) {
-      return new IR.SLet(compileMeta(pos), name.name, compileExpression(value));
+      return new IR.SLet(
+        compileMeta(pos, noMeta),
+        name.name,
+        compileExpression(value)
+      );
     },
 
     Fact(pos, sig) {
       return new IR.SFact(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         signatureName(sig),
         signatureValues(sig).map(compileExpression)
       );
@@ -831,23 +857,23 @@ export function compileStatement(stmt: Statement) {
 
     Forget(pos, sig) {
       return new IR.SForget(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         signatureName(sig),
         signatureValues(sig).map(compileExpression)
       );
     },
 
     Call(pos, name) {
-      return new IR.SCall(compileMeta(pos), name.name);
+      return new IR.SCall(compileMeta(pos, noMeta), name.name);
     },
 
     Goto(pos, name) {
-      return new IR.SGoto(compileMeta(pos), name.name);
+      return new IR.SGoto(compileMeta(pos, noMeta), name.name);
     },
 
     Simulate(pos, actors, context, goal, signals) {
       return new IR.SSimulate(
-        compileMeta(pos),
+        compileMeta(pos, noMeta),
         compileContext(context),
         compileExpression(actors),
         compileSimulationGoal(goal),
@@ -856,7 +882,7 @@ export function compileStatement(stmt: Statement) {
     },
 
     Assert(pos, expr) {
-      return new IR.SAssert(compileMeta(pos), compileExpression(expr));
+      return new IR.SAssert(compileMeta(pos, noMeta), compileExpression(expr));
     },
 
     Expr(value) {
@@ -916,7 +942,7 @@ export function compileTrailingTest(
   if (test == null) {
     return [];
   } else {
-    const pos = compileMeta(test.pos);
+    const pos = compileMeta(test.pos, noMeta);
     return [
       new IR.DTest(
         pos,
@@ -937,13 +963,14 @@ export function compileParameters(xs0: Parameter[]) {
 
 export function compileTypeDef(
   local: boolean,
+  meta: IR.Metadata,
   t: TypeDef,
   fields: Parameter[]
 ) {
   const params = fields.map(compileParameter);
   const parent = t.parent ? compileTypeApp(t.parent) : null;
 
-  return new IR.DType(generated_node, local, parent, t.name.name, params);
+  return new IR.DType(meta, local, parent, t.name.name, params);
 }
 
 export function compileRank(r: Rank): IR.Expression {
@@ -965,10 +992,10 @@ export function compileDeclaration(
 ): IR.Declaration[] {
   return d.match<IR.Declaration[]>({
     Do(pos, body) {
-      return [new IR.DDo(compileMeta(pos), body.map(compileStatement))];
+      return [new IR.DDo(compileMeta(pos, noMeta), body.map(compileStatement))];
     },
 
-    DefinePredicate(pos, sig, clauses) {
+    DefinePredicate(pos, cmeta, sig, clauses) {
       const name = signatureName(sig);
       const params = signatureValues(sig).map((x) => x.name);
       const procedure = new Logic.PredicateProcedure(
@@ -976,24 +1003,24 @@ export function compileDeclaration(
         params,
         clauses.map(compilePredicateClause)
       );
-      return [new IR.DPredicate(compileMeta(pos), name, procedure)];
+      return [new IR.DPredicate(compileMeta(pos, cmeta), name, procedure)];
     },
 
-    Relation(pos, sig) {
+    Relation(pos, cmeta, sig) {
       const types = signatureValues(sig);
       return [
         new IR.DRelation(
-          compileMeta(pos),
+          compileMeta(pos, cmeta),
           signatureName(sig),
           compileRelationTypes(types)
         ),
       ];
     },
 
-    ForeignCommand(meta, sig, contract, body, test) {
+    ForeignCommand(meta, cmeta, sig, contract, body, test) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
-      const pos = compileMeta(meta);
+      const pos = compileMeta(meta, cmeta);
       return [
         new IR.DForeignCommand(
           pos,
@@ -1009,10 +1036,10 @@ export function compileDeclaration(
       ];
     },
 
-    Command(meta, sig, contract, body, test) {
+    Command(meta, cmeta, sig, contract, body, test) {
       const name = signatureName(sig);
       const { types, parameters } = compileParameters(signatureValues(sig));
-      const pos = compileMeta(meta);
+      const pos = compileMeta(meta, cmeta);
       return [
         new IR.DCrochetCommand(
           pos,
@@ -1027,10 +1054,10 @@ export function compileDeclaration(
       ];
     },
 
-    SingletonType(meta, type0, init) {
+    SingletonType(meta, cmeta, type0, init) {
       const local = compileLocality(locality);
-      const type = compileTypeDef(local, type0, []);
-      const pos = compileMeta(meta);
+      const pos = compileMeta(meta, cmeta);
+      const type = compileTypeDef(local, pos, type0, []);
       return [
         new IR.DType(pos, local, type.parent, type.name, []),
         new IR.DDefine(pos, local, type.name, new IR.ENew(pos, type.name, [])),
@@ -1042,14 +1069,20 @@ export function compileDeclaration(
       ];
     },
 
-    EnumType(meta, name, variants) {
+    EnumType(meta, cmeta, name, variants) {
       const local = compileLocality(locality);
       const parent = new TypeApp.Named(name.pos, name);
-      const pos = compileMeta(meta);
+      const pos = compileMeta(meta, cmeta);
       const variantDecls = variants.flatMap((v, i) => [
-        new Declaration.SingletonType(v.pos, new TypeDef(parent, v), []),
+        new Declaration.SingletonType(
+          v.pos,
+          noMeta,
+          new TypeDef(parent, v),
+          []
+        ),
         new Declaration.Command(
           v.pos,
+          noMeta,
           new Signature.Unary(
             v.pos,
             new Parameter.TypedOnly(v.pos, new TypeApp.Named(v.pos, v)),
@@ -1122,26 +1155,27 @@ export function compileDeclaration(
       ];
     },
 
-    AbstractType(meta, t) {
+    AbstractType(meta, cmeta, t) {
       const local = compileLocality(locality);
-      const type = compileTypeDef(local, t, []);
-      const pos = compileMeta(meta);
+      const pos = compileMeta(meta, cmeta);
+      const type = compileTypeDef(local, pos, t, []);
       return [
         new IR.DType(pos, local, type.parent, type.name, []),
         new IR.DSealType(pos, type.name),
       ];
     },
 
-    Type(_, t, fields) {
+    Type(meta, cmeta, t, fields) {
       const local = compileLocality(locality);
-      return [compileTypeDef(local, t, fields)];
+      const pos = compileMeta(meta, cmeta);
+      return [compileTypeDef(local, pos, t, fields)];
     },
 
-    Define(pos, name, value) {
+    Define(pos, cmeta, name, value) {
       const local = compileLocality(locality);
       return [
         new IR.DDefine(
-          compileMeta(pos),
+          compileMeta(pos, cmeta),
           local,
           name.name,
           compileExpression(value)
@@ -1149,16 +1183,20 @@ export function compileDeclaration(
       ];
     },
 
-    Scene(pos, name, body) {
+    Scene(pos, cmeta, name, body) {
       return [
-        new IR.DScene(compileMeta(pos), name.name, body.map(compileStatement)),
+        new IR.DScene(
+          compileMeta(pos, cmeta),
+          name.name,
+          body.map(compileStatement)
+        ),
       ];
     },
 
-    Action(pos, typ, title, tags, predicate, rank, body) {
+    Action(pos, cmeta, typ, title, tags, predicate, rank, body) {
       return [
         new IR.DAction(
-          compileMeta(pos),
+          compileMeta(pos, cmeta),
           compileTypeApp(typ),
           compileExpression(title),
           tags.map((x) => x.name),
@@ -1169,20 +1207,20 @@ export function compileDeclaration(
       ];
     },
 
-    When(pos, predicate, body) {
+    When(pos, cmeta, predicate, body) {
       return [
         new IR.DWhen(
-          compileMeta(pos),
+          compileMeta(pos, cmeta),
           compilePredicate(predicate),
           body.map(compileStatement)
         ),
       ];
     },
 
-    Context(pos, name, items) {
+    Context(pos, cmeta, name, items) {
       return [
         new IR.DContext(
-          compileMeta(pos),
+          compileMeta(pos, cmeta),
           name.name,
           (items.flatMap((x) =>
             compileDeclaration(x, locality, override)
@@ -1191,11 +1229,11 @@ export function compileDeclaration(
       ];
     },
 
-    ForeignType(pos, name, foreign_name) {
+    ForeignType(pos, cmeta, name, foreign_name) {
       const local = compileLocality(locality);
       return [
         new IR.DForeignType(
-          compileMeta(pos),
+          compileMeta(pos, cmeta),
           local,
           name.name,
           compileNamespace(foreign_name)
@@ -1204,7 +1242,7 @@ export function compileDeclaration(
     },
 
     Open(pos, ns) {
-      return [new IR.DOpen(compileMeta(pos), compileNamespace(ns))];
+      return [new IR.DOpen(compileMeta(pos, noMeta), compileNamespace(ns))];
     },
 
     Local(_, decl) {
@@ -1215,9 +1253,9 @@ export function compileDeclaration(
       const title = parseString(title0);
       return [
         new IR.DTest(
-          compileMeta(pos),
+          compileMeta(pos, noMeta),
           title,
-          new IR.SBlock(compileMeta(pos), body.map(compileStatement))
+          new IR.SBlock(compileMeta(pos, noMeta), body.map(compileStatement))
         ),
       ];
     },
