@@ -1,5 +1,5 @@
 import { CrochetType, CrochetTypeInstance, TCrochetAny } from "../primitives";
-import { State } from "../vm";
+import { CrochetModule, State } from "../vm";
 import { World } from "../world";
 
 export abstract class Type {

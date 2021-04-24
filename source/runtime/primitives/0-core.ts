@@ -121,6 +121,21 @@ export abstract class CrochetType {
       return null;
     }
   }
+
+  readonly module: CrochetModule | null = null;
+
+  get location() {
+    const module = this.module;
+    if (module == null) {
+      return "built-in";
+    } else {
+      return `from ${module.qualified_name}`;
+    }
+  }
+
+  get documentation() {
+    return "(no documentation)";
+  }
 }
 
 export class TCrochetTypeInstance extends CrochetType {

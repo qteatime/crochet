@@ -181,6 +181,7 @@ export class DType extends Declaration {
     const parent = this.parent ? this.parent.realise(state) : null;
     const type = new TCrochetType(
       context.module,
+      this.position,
       parent ?? TCrochetAny.type,
       this.name,
       types,

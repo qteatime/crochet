@@ -91,6 +91,8 @@ export class Contract {
 // -- Procedures
 export interface IProcedure {
   location_message: string;
+  documentation: string;
+  contract: Contract;
   invoke(state: State, values: CrochetValue[]): Machine;
 }
 
@@ -157,6 +159,33 @@ export class Procedure {
         yield branch;
       }
     }
+  }
+
+  *select_subtype(types: CrochetType[], branches = this.branches) {
+    for (const branch of branches) {
+      if (branch.types.every((t, i) => t.is_subtype(types[i]))) {
+        yield branch;
+      }
+    }
+  }
+
+  select_matching(type: CrochetType, branches = this.branches) {
+    const result: (ProcedureBranch | null)[] = new Array(this.arity);
+    for (const branch of branches) {
+      for (let i = 0; i < this.arity; ++i) {
+        if (!branch.types[i].is_subtype(type)) {
+          continue;
+        }
+
+        const old = result[i];
+        if (old == null) {
+          result[i] = branch;
+        } else if (branch.types[i].is_subtype(old.types[i])) {
+          result[i] = branch;
+        }
+      }
+    }
+    return [...new Set(result.filter((x) => x != null) as ProcedureBranch[])];
   }
 
   assert_no_duplicates(types: CrochetType[], branches = this.branches) {
@@ -234,6 +263,10 @@ export class NativeProcedure implements IProcedure {
     return `${this.env.module.qualified_name}${this.meta.at_line_suffix}`;
   }
 
+  get documentation() {
+    return this.meta.doc || "(no documentation)";
+  }
+
   *invoke(state0: State, values: CrochetValue[]): Machine {
     state0.world.tracer.procedure_call(state0, this, values);
 
@@ -290,6 +323,10 @@ export class CrochetProcedure implements IProcedure {
 
   get location_message() {
     return `${this.env.module.qualified_name}${this.meta.at_line_suffix}`;
+  }
+
+  get documentation() {
+    return this.meta.doc || "(no documentation)";
   }
 
   *invoke(state0: State, values: CrochetValue[]) {

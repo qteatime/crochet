@@ -198,6 +198,8 @@ type REPL =
 
 type ReplCommand =
   | Rollback(sig: Signature<Expression>)
+  | HelpCommand(sig: Signature<Parameter>)
+  | HelpType(typ: TypeApp)
 
 grammar Crochet : Program {
   program =
@@ -210,7 +212,9 @@ grammar Crochet : Program {
     | ws x:replCommand ws end -> REPL.Command(x)
 
   replCommand =
-    | ":rollback" ws s:signature<hole> -> ReplCommand.Rollback(s)
+    | ":rollback" hs+ s:signature<hole> -> ReplCommand.Rollback(s)
+    | ":help" hs+ command_ s:signature<parameter> -> ReplCommand.HelpCommand(s)
+    | ":help" hs+ type_ t:typeApp -> ReplCommand.HelpType(t)
 
   declarationMeta =
     | ws d:meta_doc -> Metadata(d)

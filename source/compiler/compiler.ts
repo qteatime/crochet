@@ -1292,6 +1292,19 @@ export function compileReplCommand(x: ReplCommand): IR.REPLExpr {
     Rollback(sig) {
       return new IR.CmdRollback(signatureName(sig));
     },
+
+    HelpCommand(sig) {
+      return new IR.CmdHelpCommand(
+        signatureName(sig),
+        signatureValues(sig)
+          .map((x) => compileParameter(x))
+          .map((x) => x.type)
+      );
+    },
+
+    HelpType(typ) {
+      return new IR.CmdHelpType(compileTypeApp(typ));
+    },
   });
 }
 

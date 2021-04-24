@@ -6,6 +6,7 @@ import {
   CrochetProcedure,
   NativeProcedure,
   Procedure,
+  ProcedureBranch,
 } from "../primitives";
 import { CrochetModule, die, Machine, State, Thread, Tracer } from "../vm";
 import { ConcreteContext, Context, ContextBag } from "../simulation";
@@ -64,6 +65,17 @@ export class ProcedureBag {
       return value;
     } else {
       throw die(`undefined procedure: ${name}`);
+    }
+  }
+
+  *select_matching(
+    type: CrochetType
+  ): Generator<[Procedure, ProcedureBranch[]]> {
+    for (const procedure of this.map.values()) {
+      const branches = procedure.select_matching(type);
+      if (branches.length !== 0) {
+        yield [procedure, branches];
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 import { zip } from "../../utils";
+import { generated_node, Metadata } from "../ir";
 import { CrochetModule, die, ErrArbitrary } from "../vm";
 import {
   CrochetType,
@@ -104,6 +105,7 @@ export class TCrochetType extends CrochetType {
 
   constructor(
     readonly module: CrochetModule | null,
+    readonly meta: Metadata,
     readonly parent: CrochetType,
     readonly name: string,
     readonly types: CrochetType[],
@@ -165,10 +167,15 @@ export class TCrochetType extends CrochetType {
   seal() {
     this.sealed = true;
   }
+
+  get documentation() {
+    return this.meta.doc;
+  }
 }
 
 export const baseEnum = new TCrochetType(
   null,
+  generated_node,
   TCrochetAny.type,
   "enum",
   [],
