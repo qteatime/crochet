@@ -609,7 +609,7 @@ grammar Crochet : Program {
     | applyExpression
 
   applyExpression =
-    | f:applyExpression s<"("> xs:list1<expression, s<",">> s<")">
+    | f:applyExpression s<"("> xs:list0<expression, s<",">> s<")">
       -> Expression.Apply(meta, f, xs)
     | memberExpression
 
