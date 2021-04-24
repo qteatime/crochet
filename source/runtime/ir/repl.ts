@@ -46,7 +46,7 @@ export class REPLStatements extends REPLExpr {
       TCrochetType
     );
     const printer = printer_type.instantiate([]);
-    const repr_machine = invoke(state, "_ show:", [printer, result]);
+    const repr_machine = invoke(state, "_ show: _", [printer, result]);
     const repr = cvalue(await Thread.for_machine(repr_machine).run_and_wait());
     console.log(get_string(repr));
   }

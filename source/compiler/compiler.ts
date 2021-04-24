@@ -144,13 +144,13 @@ export function literalToValue(lit: Literal) {
 export function signatureName(sig: Signature<any>): string {
   return sig.match({
     Keyword(_meta, _self, pairs) {
-      const names = pairs.map((x) => x.key.name);
-      return `_ ${names.join("")}`;
+      const names = pairs.map((x) => x.key.name + " _");
+      return `_ ${names.join(" ")}`;
     },
 
     KeywordSelfless(_meta, pairs) {
-      const names = pairs.map((x) => x.key.name);
-      return names.join("");
+      const names = pairs.map((x) => x.key.name + " _");
+      return names.join(" ");
     },
 
     Unary(_meta, _self, name) {
