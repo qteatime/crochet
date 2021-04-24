@@ -96,6 +96,7 @@ export interface IProcedure {
 
 export class Procedure {
   private branches: ProcedureBranch[] = [];
+  private versions: ProcedureBranch[][] = [];
 
   constructor(readonly name: string, readonly arity: number) {}
 
@@ -112,6 +113,7 @@ export class Procedure {
   add(types: CrochetType[], procedure: IProcedure) {
     const branch = new ProcedureBranch(types, procedure);
     this.assert_no_duplicates(types, [branch, ...this.branches]);
+    this.versions.push(this.branches);
     this.branches.push(branch);
     this.branches.sort((b1, b2) => b1.compare(b2));
   }
@@ -127,10 +129,26 @@ export class Procedure {
           .map((x) => x.location_message)
           .join(", ")}, with ${this.name} ${branch.full_repr}`
       );
+      this.versions.push(this.branches);
     }
     this.branches = this.branches.filter((x) => !old.includes(x));
     this.branches.push(branch);
     this.branches.sort((b1, b2) => b1.compare(b2));
+  }
+
+  rollback(version: number = this.versions.length - 1) {
+    if (version < 0 || version >= this.versions.length) {
+      throw new ErrArbitrary(
+        "no-procedure-version",
+        `No procedure version ${version} exists for ${this.name}`
+      );
+    }
+    console.log(`Rolling back procedure ${this.name} to version ${version}`);
+    this.branches = this.versions[version];
+    this.versions.length = version - 1;
+
+    const branches = this.branches.map((x) => `  - ${x.full_repr}`).join("\n");
+    console.log(`${this.name} now has the following branches:\n${branches}`);
   }
 
   *select_exact(types: CrochetType[], branches = this.branches) {

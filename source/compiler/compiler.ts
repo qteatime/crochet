@@ -35,6 +35,7 @@ import {
   ContractCondition,
   String as CString,
   REPL,
+  ReplCommand,
 } from "../generated/crochet-grammar";
 import * as rt from "../runtime";
 import { CrochetInteger } from "../runtime";
@@ -1240,6 +1241,18 @@ export function compileRepl(p: REPL): IR.REPLExpr {
           xs.map((x) => compileStatement(x))
         )
       );
+    },
+
+    Command(x) {
+      return compileReplCommand(x);
+    },
+  });
+}
+
+export function compileReplCommand(x: ReplCommand): IR.REPLExpr {
+  return x.match<IR.REPLExpr>({
+    Rollback(sig) {
+      return new IR.CmdRollback(signatureName(sig));
     },
   });
 }

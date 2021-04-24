@@ -191,6 +191,10 @@ type String(pos: Meta, text: string)
 type REPL =
   | Declarations(x: Declaration[])
   | Statements(x: Statement[])
+  | Command(x: ReplCommand)
+
+type ReplCommand =
+  | Rollback(sig: Signature<Expression>)
 
 grammar Crochet : Program {
   program =
@@ -198,8 +202,12 @@ grammar Crochet : Program {
       -> Program(meta, ds)
 
   repl =
-    | space* ds:declaration+ space* end -> REPL.Declarations(ds)
-    | space* xs:statements1 space* end -> REPL.Statements(xs)
+    | ws ds:declaration+ ws end -> REPL.Declarations(ds)
+    | ws xs:statements1 ws end -> REPL.Statements(xs)
+    | ws x:replCommand ws end -> REPL.Command(x)
+
+  replCommand =
+    | ":rollback" ws s:signature<hole> -> ReplCommand.Rollback(s)
 
   declaration =
     | relationDeclaration

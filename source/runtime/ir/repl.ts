@@ -51,3 +51,16 @@ export class REPLStatements extends REPLExpr {
     console.log(get_string(repr));
   }
 }
+
+export abstract class REPLCommand extends REPLExpr {}
+
+export class CmdRollback extends REPLCommand {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  async evaluate(state: State) {
+    const procedure = state.world.procedures.lookup(this.name);
+    procedure.rollback();
+  }
+}
