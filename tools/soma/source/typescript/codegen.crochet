@@ -1,0 +1,78 @@
+% crochet
+
+command typescript id: (X is text) = X;
+command typescript string: (X is text) = "\"[X]\"";
+
+command program generate: typescript =
+  "
+  [typescript classes: self.declarations]
+  ";
+
+command declaration--single generate: typescript do
+  "
+  export class [typescript id: self.name] {
+    readonly tag = [typescript string: self.name];
+    [typescript properties: self.fields]
+
+    constructor([typescript parameters: self.fields]) {
+      [typescript set-these: self.fields]
+    }
+  }
+  "
+end
+
+command declaration--union generate: typescript do
+  "
+  "
+end
+
+
+command typescript classes: (Xs is tuple) do
+  Xs
+  | map: (_ generate: typescript)
+  | fold-from: "" with: { A, B in "[A]\n[B]" };
+end
+
+command typescript properties: (Xs is tuple) do
+  Xs
+  | map: (typescript property: _)
+  | fold-from: "" with: (_ ++ _);
+end
+
+command typescript property: (X is field) do
+  "readonly [typescript id: X.name]: [typescript type: X.typ];"
+end
+
+command typescript set-these: (Xs is tuple) do
+  Xs
+  | map: (typescript set-this: _)
+  | fold-from: "" with: (_ ++ _);
+end
+
+command typescript set-this: (X is field) do
+  "this.[typescript id: X.name] = [typescript id: X.name];";
+end
+
+command typescript parameters: (Xs is tuple) do
+  Xs
+  | map: (typescript parameter: _)
+  | map: { A in "[A], " }
+  | fold-from: "" with: (_ ++ _);
+end
+
+command typescript parameter: (X is field) do
+  "[typescript id: X.name]: [typescript type: X.typ]";
+end
+
+command typescript type: (X is type-app--name) do
+  "[typescript id: X.name]";
+end
+
+command typescript type: (X is type-app--list) do
+  "[typescript type: X.typ]\[\]";
+end
+
+command typescript type: (X is type-app--maybe) do
+  "([typescript type: X.typ] | null)"
+end
+

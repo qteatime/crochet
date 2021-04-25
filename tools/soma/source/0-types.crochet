@@ -1,0 +1,6 @@
+% crochet
+
+singleton soma;
+
+abstract soma-target;
+singleton typescript is soma-target;

@@ -1,0 +1,59 @@
+
+type Type_App =
+  | Name(name: text)
+  | List(typ: Type_App)
+  | Maybe(typ: Type_App)
+
+type Field(name: text, typ: Type_App)
+type Variant(name: text, fields: Field[])
+
+type Declaration =
+  | Union(name: text, entries: Variant[])
+  | Single(name: text, fields: Field[])
+
+type Program(declarations: Declaration[])
+
+
+grammar soma : program {
+  Program =
+    | header ds:Declaration* end -> Program(ds)
+
+  Declaration =
+    | UnionDeclaration
+    | TypeDeclaration
+
+  TypeDeclaration =
+    | kw<"type"> n:id fs:FieldList ";"  -> Declaration.Single(n, fs)
+
+  UnionDeclaration =
+    | kw<"union"> n:id "{" vs:Variant* "}" -> Declaration.Union(n, vs)
+
+  Variant =
+    | n:id fs:FieldList ";" -> Variant(n, fs)
+
+  FieldList =
+    | "(" xs:ListOf<Field, ","> ","? ")"  -> xs
+
+  Field =
+    | n:id ":" t:Type -> Field(n, t)
+
+  Type =
+    | t:Type "[]" -> Type_App.List(t)
+    | t:Type "?"  -> Type_App.Maybe(t)
+    | t:id        -> Type_App.Name(t)
+
+  // -- Lexical
+  token header = "%" hs* "soma" hs* nl
+  token hs = " " | "\t"
+  token nl = "\r\n" | "\r" | "\n"
+  token line = (~nl any)* nl 
+  token comment = "//" line
+
+  space += comment
+
+  token id = id_start id_rest*
+  token id_start = letter
+  token id_rest = letter | digit | "-"
+
+  token kw<w> = w ~id_rest
+}

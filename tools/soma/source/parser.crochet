@@ -1,0 +1,15 @@
+% crochet
+
+command soma parse: (Source is text) filename: (Filename is text) do
+  let Result = (force grammar) parse: Source rule: "Program";
+  condition
+    when Result is ok do
+      (force to-ast) transform: Result value;
+    end
+
+    when Result is error do
+      panic: "Error parsing [Filename]\n[Result reason]"
+        tag: "soma-parsing-error";
+    end
+  end
+end

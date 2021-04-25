@@ -43,6 +43,8 @@ command cli-functor-apply apply: Fun to: Res =
 
 command cli-functor-apply wrap: (X is cli-parser-result) =
   X;
+command cli-functor-apply wrap: (X is record) =
+  new cli-record(X);
 command cli-functor-apply wrap: X =
   new cli-box(X);
 
