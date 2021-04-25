@@ -189,14 +189,25 @@ void (async function () {
         let total = 0;
         total += await time("Initialisation", () => vm.initialise());
         total += await time("Load file", () => vm.load_from_file(fullPath));
+        {
+          const end_memory = process.memoryUsage();
+          console.log(
+            `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
+              end_memory.heapTotal
+            )} | RSS ${mb(end_memory.rss)}`
+          );
+          global.gc();
+        }
         total += await time("Run benchmark", () => vm.run("main"));
-        console.log(`--> Total: ${total}ms`);
-        const end_memory = process.memoryUsage();
-        console.log(
-          `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
-            end_memory.heapTotal
-          )} | RSS ${mb(end_memory.rss)}`
-        );
+        {
+          console.log(`--> Total: ${total}ms`);
+          const end_memory = process.memoryUsage();
+          console.log(
+            `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
+              end_memory.heapTotal
+            )} | RSS ${mb(end_memory.rss)}`
+          );
+        }
       } catch (error) {
         console.error(
           `Failed to execute ${version}:\n`,

@@ -11,14 +11,14 @@ command cli parse: (Arg is cli-arg) with: Arguments do
   let Result = cli try-parse: Arg with: Arguments;
   condition
     when Result is parser-result-ok => Result value;
-    always => panic: (representation text: Arg usage);
+    always => panic: ("\n[Arg usage]" flatten-into-plain-text);
   end
 end
 
 command cli explain-error: (Error is parser-result-error) do
   let Stream = Error position;
 
-  let Formatted = representation text:
+  let Formatted =
      "Error at argument [Stream position] in:
 
       [Stream contents]
@@ -26,7 +26,7 @@ command cli explain-error: (Error is parser-result-error) do
       Reason: [Error error-message]
      ";
   
-  panic: Formatted;
+  panic: Formatted flatten-into-plain-text;
 end
 
 

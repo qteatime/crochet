@@ -27,6 +27,25 @@ import { SimpleInterpolation } from "./atomic";
 import { cast } from "../../utils";
 import { CrochetPackage } from "../pkg";
 import { Meta, Metadata } from "./meta";
+import type { BinaryWriter } from "../../binary-ir/binary";
+
+export enum DeclarationTag {
+  RELATION = 1,
+  PREDICATE,
+  DO,
+  FOREIGN_COMMAND,
+  CROCHET_COMMAND,
+  TYPE,
+  DEFINE,
+  SCENE,
+  ACTION,
+  WHEN,
+  FOREIGN_TYPE,
+  SEAL_TYPE,
+  CONTEXT,
+  OPEN,
+  TEST,
+}
 
 export type ContextualDeclaration = DAction | DWhen;
 
@@ -36,6 +55,7 @@ interface DeclarationContext {
 }
 
 export abstract class Declaration {
+  abstract tag: DeclarationTag;
   abstract apply(
     context: DeclarationContext,
     state: State
@@ -53,6 +73,8 @@ export interface IContextualDeclaration {
 }
 
 export class DRelation extends Declaration {
+  readonly tag = DeclarationTag.RELATION;
+
   constructor(
     readonly position: Metadata,
     readonly name: string,
@@ -72,6 +94,8 @@ export class DRelation extends Declaration {
 }
 
 export class DPredicate extends Declaration {
+  readonly tag = DeclarationTag.PREDICATE;
+
   constructor(
     readonly position: Metadata,
     readonly name: string,
@@ -87,6 +111,8 @@ export class DPredicate extends Declaration {
 }
 
 export class DDo extends Declaration {
+  readonly tag = DeclarationTag.DO;
+
   constructor(readonly position: Metadata, readonly body: Statement[]) {
     super();
   }
@@ -98,6 +124,8 @@ export class DDo extends Declaration {
 }
 
 export class DForeignCommand extends Declaration {
+  readonly tag = DeclarationTag.FOREIGN_COMMAND;
+
   constructor(
     readonly position: Metadata,
     readonly name: string,
@@ -131,6 +159,8 @@ export class DForeignCommand extends Declaration {
 }
 
 export class DCrochetCommand extends Declaration {
+  readonly tag = DeclarationTag.CROCHET_COMMAND;
+
   constructor(
     readonly position: Metadata,
     readonly name: string,
@@ -164,6 +194,8 @@ export class DCrochetCommand extends Declaration {
 }
 
 export class DType extends Declaration {
+  readonly tag = DeclarationTag.TYPE;
+
   constructor(
     readonly position: Metadata,
     readonly local: boolean,
@@ -197,6 +229,8 @@ export class DType extends Declaration {
 }
 
 export class DDefine extends Declaration {
+  readonly tag = DeclarationTag.DEFINE;
+
   constructor(
     readonly position: Metadata,
     readonly local: boolean,
@@ -213,6 +247,8 @@ export class DDefine extends Declaration {
 }
 
 export class DScene extends Declaration {
+  readonly tag = DeclarationTag.SCENE;
+
   constructor(
     readonly position: Metadata,
     readonly name: string,
@@ -228,6 +264,8 @@ export class DScene extends Declaration {
 }
 
 export class DAction extends Declaration implements IContextualDeclaration {
+  readonly tag = DeclarationTag.ACTION;
+
   constructor(
     readonly position: Metadata,
     readonly type_resctiction: Type,
@@ -266,6 +304,8 @@ export class DAction extends Declaration implements IContextualDeclaration {
 }
 
 export class DWhen extends Declaration implements IContextualDeclaration {
+  readonly tag = DeclarationTag.WHEN;
+
   constructor(
     readonly position: Metadata,
     readonly predicate: Predicate,
@@ -290,6 +330,8 @@ export class DWhen extends Declaration implements IContextualDeclaration {
 }
 
 export class DForeignType extends Declaration {
+  readonly tag = DeclarationTag.FOREIGN_TYPE;
+
   constructor(
     readonly position: Metadata,
     readonly local: boolean,
@@ -308,6 +350,8 @@ export class DForeignType extends Declaration {
 }
 
 export class DSealType extends Declaration {
+  readonly tag = DeclarationTag.SEAL_TYPE;
+
   constructor(readonly position: Metadata, readonly name: string) {
     super();
   }
@@ -319,6 +363,8 @@ export class DSealType extends Declaration {
 }
 
 export class DContext extends Declaration {
+  readonly tag = DeclarationTag.CONTEXT;
+
   constructor(
     readonly position: Metadata,
     readonly name: string,
@@ -337,6 +383,8 @@ export class DContext extends Declaration {
 }
 
 export class DOpen extends Declaration {
+  readonly tag = DeclarationTag.OPEN;
+
   constructor(readonly position: Metadata, readonly ns: string) {
     super();
   }
@@ -348,6 +396,8 @@ export class DOpen extends Declaration {
 }
 
 export class DTest extends Declaration {
+  readonly tag = DeclarationTag.TEST;
+
   constructor(
     readonly position: Metadata,
     readonly title: string,

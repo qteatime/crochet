@@ -15,9 +15,15 @@ export default async (plugin: Plugin) => {
       return plugin.from_string(process.arch);
     })
     .defun("argv", () => {
-      return plugin.from_array(
-        process.argv.slice(2).map((x) => plugin.from_string(x))
-      );
+      let args = process.argv.slice(2);
+      const start = args.findIndex((x) => x === "--");
+      if (start === -1) {
+        args = [];
+      } else {
+        args = args.slice(start + 1);
+      }
+
+      return plugin.from_array(args.map((x) => plugin.from_string(x)));
     })
     .defun("chdir", (dir) => {
       process.chdir(plugin.get_string(dir));

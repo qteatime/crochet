@@ -1,0 +1,63 @@
+% crochet
+
+open crochet.debug;
+open crochet.wrapper.node.file-system;
+open crochet.wrapper.node.os;
+open crochet.language.cli-arguments;
+
+local abstract soma-cli;
+local type soma-cli-run is soma-cli(filename is text, target is soma-target);
+local singleton soma-cli-help is soma-cli;
+
+command #soma-cli parse-target: (Target is text) do
+  condition
+    when Target === "typescript" => typescript;
+    always => panic: "Unknown target [Target]" tag: "soma:invalid-target";
+  end
+end
+
+command nothing merge: (X is soma-target) = X;
+command (X is soma-target) merge: nothing = X;
+command (X is soma-target) realise = X;
+command typescript name = "TypeScript";
+
+local define soma-cli = lazy do
+  let Filename = cli positional: "filename"
+    | description: "The filename to compile";
+
+  let Target = cli positional: "target"
+    | description: "The backend to use to generate code (typescript)"
+    | map: { X in [target -> #soma-cli parse-target: X.target] };
+
+  let Run = cli command: "compile" with: [Filename, cli exact: "to", Target]
+    | description: "Compiles the given Soma file"
+    | map: { X in new soma-cli-run(X.filename, X.target) };
+
+  let Help = cli command: "help" with: []
+    | description: "Show usage information"
+    | map: { _ in soma-cli-help };
+
+  cli app: "soma" with: [Run, Help]
+    | description: "A language for describing data constraints";
+end;
+
+command soma-cli-run execute do
+  transcript write: "Compiling [self.filename] to [self.target name]";
+
+  let File = file-system file: (#path from-text: self.filename);
+  let Source = File read-text;
+  let Program = soma parse: Source filename: self.filename;
+  let Output = Program generate: self.target;
+
+  transcript write: Output flatten-into-plain-text;
+end
+
+command soma-cli-help execute do
+  transcript write: (force soma-cli) usage;
+end
+
+
+scene main do
+  let Command = cli parse: (force soma-cli) with: process arguments;
+  Command execute;
+end

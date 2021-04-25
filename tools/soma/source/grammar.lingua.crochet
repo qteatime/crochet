@@ -1,0 +1,72 @@
+% crochet
+// This file is generated from Lingua
+
+open crochet.text.parsing.lingua;
+
+// Type definitions
+abstract node;
+abstract type-app is node;
+type type-app--name is type-app(name is text);
+type type-app--list is type-app(typ is type-app);
+type type-app--maybe is type-app(typ is type-app);
+
+type field is node(name is text, typ is type-app);
+
+type variant is node(name is text, fields is tuple);
+
+abstract declaration is node;
+type declaration--union is declaration(name is text, entries is tuple);
+type declaration--single is declaration(name is text, fields is tuple);
+
+type program is node(declarations is tuple);
+
+// Grammar definition
+define grammar = lazy (#lingua grammar: "\r\n  soma {\r\n    Program  = header Declaration* end  -- alt1\n\n\nDeclaration  = UnionDeclaration  -- alt1\n | TypeDeclaration  -- alt2\n\n\nTypeDeclaration  = kw<\"type\"> id FieldList \";\"  -- alt1\n\n\nUnionDeclaration  = kw<\"union\"> id \"{\" Variant* \"}\"  -- alt1\n\n\nVariant  = id FieldList \";\"  -- alt1\n\n\nFieldList  = \"(\" ListOf<Field, \",\"> \",\"? \")\"  -- alt1\n\n\nField  = id \":\" Type  -- alt1\n\n\nType  = Type \"[]\"  -- alt1\n | Type \"?\"  -- alt2\n | id  -- alt3\n\n\nheader  = \"%\" hs* \"soma\" hs* nl  -- alt1\n\n\nhs  = \" \"  -- alt1\n | \"\\t\"  -- alt2\n\n\nnl  = \"\\r\\n\"  -- alt1\n | \"\\r\"  -- alt2\n | \"\\n\"  -- alt3\n\n\nline  = (~nl any)* nl  -- alt1\n\n\ncomment  = \"//\" line  -- alt1\n\n\nspace += comment  -- alt1\n\n\nid  = id_start id_rest*  -- alt1\n\n\nid_start  = letter  -- alt1\n\n\nid_rest  = letter  -- alt1\n | digit  -- alt2\n | \"-\"  -- alt3\n\n\nkw<w>  = w ~id_rest  -- alt1\n\r\n  }\r\n  ");
+
+define to-ast = lazy ((force grammar) semantics: [
+  "Program" -> #lingua visitor-identity,
+  "Program_alt1" -> #lingua visitor-lambda: { Node, _, Ds, _ in (new program(Ds))  },
+  "Declaration" -> #lingua visitor-identity,
+  "Declaration_alt1" -> #lingua visitor-singleton,
+  "Declaration_alt2" -> #lingua visitor-singleton,
+  "TypeDeclaration" -> #lingua visitor-identity,
+  "TypeDeclaration_alt1" -> #lingua visitor-lambda: { Node, _, N, Fs, _ in (new declaration--single(N, Fs))  },
+  "UnionDeclaration" -> #lingua visitor-identity,
+  "UnionDeclaration_alt1" -> #lingua visitor-lambda: { Node, _, N, _, Vs, _ in (new declaration--union(N, Vs))  },
+  "Variant" -> #lingua visitor-identity,
+  "Variant_alt1" -> #lingua visitor-lambda: { Node, N, Fs, _ in (new variant(N, Fs))  },
+  "FieldList" -> #lingua visitor-identity,
+  "FieldList_alt1" -> #lingua visitor-lambda: { Node, _, Xs, _, _ in Xs },
+  "Field" -> #lingua visitor-identity,
+  "Field_alt1" -> #lingua visitor-lambda: { Node, N, _, T in (new field(N, T))  },
+  "Type" -> #lingua visitor-identity,
+  "Type_alt1" -> #lingua visitor-lambda: { Node, T, _ in (new type-app--list(T))  },
+  "Type_alt2" -> #lingua visitor-lambda: { Node, T, _ in (new type-app--maybe(T))  },
+  "Type_alt3" -> #lingua visitor-lambda: { Node, T in (new type-app--name(T))  },
+  "header" -> #lingua visitor-identity,
+  "header_alt1" -> #lingua visitor-source,
+  "hs" -> #lingua visitor-identity,
+  "hs_alt1" -> #lingua visitor-source,
+  "hs_alt2" -> #lingua visitor-source,
+  "nl" -> #lingua visitor-identity,
+  "nl_alt1" -> #lingua visitor-source,
+  "nl_alt2" -> #lingua visitor-source,
+  "nl_alt3" -> #lingua visitor-source,
+  "line" -> #lingua visitor-identity,
+  "line_alt1" -> #lingua visitor-source,
+  "comment" -> #lingua visitor-identity,
+  "comment_alt1" -> #lingua visitor-source,
+  "space" -> #lingua visitor-identity,
+  "space_alt1" -> #lingua visitor-singleton,
+  "id" -> #lingua visitor-identity,
+  "id_alt1" -> #lingua visitor-source,
+  "id_start" -> #lingua visitor-identity,
+  "id_start_alt1" -> #lingua visitor-source,
+  "id_rest" -> #lingua visitor-identity,
+  "id_rest_alt1" -> #lingua visitor-source,
+  "id_rest_alt2" -> #lingua visitor-source,
+  "id_rest_alt3" -> #lingua visitor-source,
+  "kw" -> #lingua visitor-identity,
+  "kw_alt1" -> #lingua visitor-source,
+]);
+  

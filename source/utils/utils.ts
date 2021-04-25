@@ -2,6 +2,8 @@ import * as Util from "util";
 import { type_name } from "../runtime";
 import { AnyClass } from "./types";
 
+export function force_cast<T>(x: any): asserts x is T {}
+
 export function unreachable(x: never, message: string) {
   console.error(message, x);
   throw new Error(message);

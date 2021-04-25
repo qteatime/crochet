@@ -7,11 +7,20 @@ class Pair {
   constructor(readonly value: CrochetValue, public tree: Tree) {}
 }
 
+export enum TreeTypeTag {
+  ONE,
+  MANY,
+  END,
+}
+
 export abstract class TreeType {
+  abstract tag: TreeTypeTag;
   abstract realise(): Tree;
 }
 
 export class TTOne extends TreeType {
+  readonly tag = TreeTypeTag.ONE;
+
   constructor(readonly next: TreeType) {
     super();
   }
@@ -21,6 +30,8 @@ export class TTOne extends TreeType {
   }
 }
 export class TTMany extends TreeType {
+  readonly tag = TreeTypeTag.MANY;
+
   constructor(readonly next: TreeType) {
     super();
   }
@@ -30,6 +41,8 @@ export class TTMany extends TreeType {
   }
 }
 export class TTEnd extends TreeType {
+  readonly tag = TreeTypeTag.END;
+
   realise() {
     return new EndNode();
   }
