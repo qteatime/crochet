@@ -4,7 +4,7 @@ import { BasicBlock } from "./expression";
 type Metadata = number;
 
 export enum DeclarationTag {
-  COMMAND = 1, // meta, name types body
+  COMMAND = 1, // meta, name params types body
   TYPE, // meta, name, parent, fields
   SEAL, // meta, type
   TEST, // meta, name, body
@@ -23,6 +23,7 @@ export class DCommand extends BaseDeclaration {
     readonly meta: Metadata,
     readonly documentation: string,
     readonly name: string,
+    readonly parameters: string[],
     readonly types: Type[],
     readonly body: BasicBlock
   ) {

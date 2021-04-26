@@ -60,15 +60,15 @@ export enum DeclarationLocality {
 const noMeta = new Metadata([]);
 
 // -- Utilities
-function parseInteger(x: string): bigint {
+export function parseInteger(x: string): bigint {
   return BigInt(x.replace(/_/g, ""));
 }
 
-function parseNumber(x: string): number {
+export function parseNumber(x: string): number {
   return Number(x.replace(/_/g, ""));
 }
 
-function parseString(x: CString): string {
+export function parseString(x: CString): string {
   const column = x.pos.position.column + 1;
   const indent = new RegExp(`(\r\n|\r|\n)[ \t]{0,${column}}`, "g");
   const text = x.text
