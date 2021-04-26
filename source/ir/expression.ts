@@ -18,7 +18,8 @@ export enum OpTag {
 
   PUSH_RECORD, // meta key... (value...)
   RECORD_AT_PUT, // meta (key value)
-  PROJECT, // meta key
+  PROJECT, // meta (object key)
+  PROJECT_STATIC, // meta key (object)
 
   INTERPOLATE, // meta arity static holes
 
@@ -35,6 +36,7 @@ export enum OpTag {
   ASSERT, // meta tag message
   BRANCH, // meta consequent alternate
   TYPE_TEST, // meta type
+  INTRINSIC_EQUAL, // meta (left right)
 }
 
 export class BasicBlock {
@@ -54,6 +56,7 @@ export type Op =
   | PushRecord
   | RecordAtPut
   | Project
+  | ProjectStatic
   | PushLazy
   | Force
   | Interpolate
@@ -98,7 +101,7 @@ export class PushSelf extends BaseOp {
 export class PushGlobal extends BaseOp {
   readonly tag = OpTag.PUSH_GLOBAL;
 
-  constructor(readonly meta: Metadata) {
+  constructor(readonly meta: Metadata, readonly name: string) {
     super();
   }
 }
@@ -106,7 +109,7 @@ export class PushGlobal extends BaseOp {
 export class PushLiteral extends BaseOp {
   readonly tag = OpTag.PUSH_LITERAL;
 
-  constructor(readonly meta: Metadata, readonly value: Literal) {
+  constructor(readonly value: Literal) {
     super();
   }
 }
@@ -142,7 +145,7 @@ export class PushNew extends BaseOp {
 export class PushStaticType extends BaseOp {
   readonly tag = OpTag.PUSH_STATIC_TYPE;
 
-  constructor(readonly meta: Metadata, readonly name: AnyStaticType) {
+  constructor(readonly meta: Metadata, readonly type: AnyStaticType) {
     super();
   }
 }
@@ -150,7 +153,7 @@ export class PushStaticType extends BaseOp {
 export class PushRecord extends BaseOp {
   readonly tag = OpTag.PUSH_RECORD;
 
-  constructor(readonly meta: Metadata, readonly keys: string) {
+  constructor(readonly meta: Metadata, readonly keys: string[]) {
     super();
   }
 }
@@ -167,6 +170,14 @@ export class Project extends BaseOp {
   readonly tag = OpTag.PROJECT;
 
   constructor(readonly meta: Metadata) {
+    super();
+  }
+}
+
+export class ProjectStatic extends BaseOp {
+  readonly tag = OpTag.PROJECT_STATIC;
+
+  constructor(readonly meta: Metadata, readonly key: string) {
     super();
   }
 }
