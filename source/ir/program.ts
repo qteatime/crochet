@@ -3,10 +3,7 @@ import { Declaration } from "./declaration";
 type uint32 = number;
 
 export class Interval {
-  constructor(
-    readonly range: { start: uint32; end: uint32 },
-    readonly position: { line: uint32; column: uint32 }
-  ) {}
+  constructor(readonly range: { start: uint32; end: uint32 }) {}
 }
 
 export class Program {

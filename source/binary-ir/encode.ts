@@ -64,28 +64,6 @@ export class CrochetIREncoder {
 
   private encode_declaration(w: BinaryWriter, x: IR.Declaration) {
     w.uint8(x.tag);
-
-    switch (x.tag) {
-      case DeclarationTag.RELATION: {
-        force_cast<IR.DRelation>(x);
-        this.encode_position(w, x.position);
-        w.string(x.name);
-        this.encode_tree_type(w, x.type);
-        break;
-      }
-
-      case DeclarationTag.PREDICATE: {
-        throw new Error(`FIXME`);
-      }
-
-      case DeclarationTag.DO: {
-        force_cast<IR.DDo>(x);
-        this.encode_position(w, x.position);
-      }
-
-      default:
-        throw unreachable(x.tag, "Declaration");
-    }
   }
 
   private encode_position(w: BinaryWriter, p: Metadata) {

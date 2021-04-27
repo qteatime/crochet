@@ -10,9 +10,22 @@ export enum DeclarationTag {
   TEST, // meta, name, body
   OPEN, // meta, namespace
   DEFINE, // meta name body
+  PRELUDE, // meta body
 }
 
-export type Declaration = true;
+export enum Visibility {
+  LOCAL,
+  GLOBAL,
+}
+
+export type Declaration =
+  | DCommand
+  | DType
+  | DSeal
+  | DTest
+  | DDefine
+  | DOpen
+  | DPrelude;
 
 abstract class BaseDeclaration {}
 
@@ -37,9 +50,11 @@ export class DType extends BaseDeclaration {
   constructor(
     readonly meta: Metadata,
     readonly documentation: string,
+    readonly visibility: Visibility,
     readonly name: string,
     readonly parent: Type,
-    readonly fields: [string, Type][]
+    readonly fields: string[],
+    readonly types: Type[]
   ) {
     super();
   }
@@ -70,6 +85,7 @@ export class DDefine extends BaseDeclaration {
 
   constructor(
     readonly meta: Metadata,
+    readonly documentation: string,
     readonly name: string,
     readonly body: BasicBlock
   ) {
@@ -81,6 +97,14 @@ export class DOpen extends BaseDeclaration {
   readonly tag = DeclarationTag.OPEN;
 
   constructor(readonly meta: Metadata, readonly namespace: string) {
+    super();
+  }
+}
+
+export class DPrelude extends BaseDeclaration {
+  readonly tag = DeclarationTag.PRELUDE;
+
+  constructor(readonly meta: Metadata, readonly body: BasicBlock) {
     super();
   }
 }

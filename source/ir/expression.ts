@@ -21,22 +21,24 @@ export enum OpTag {
   PROJECT, // meta (object key)
   PROJECT_STATIC, // meta key (object)
 
-  INTERPOLATE, // meta arity static holes
+  INTERPOLATE, // meta parts (value...)
 
   PUSH_LAZY, // meta expr
   FORCE, // meta
 
   PUSH_LAMBDA, // meta param... body
-  INVOKE_FOREIGN, // meta name arity
-  INVOKE, // meta name arity
-  APPLY, // meta arity
-  RETURN, // meta expr
+  INVOKE_FOREIGN, // meta name arity (value...)
+  INVOKE, // meta name arity (value...)
+  APPLY, // meta arity (value...)
+  APPLY_PARTIAL, // meta (parts...)
+  RETURN, // meta (expr)
   PUSH_PARTIAL, // meta name
 
   ASSERT, // meta tag message
   BRANCH, // meta consequent alternate
   TYPE_TEST, // meta type
   INTRINSIC_EQUAL, // meta (left right)
+  REGISTER_INSTANCE, // meta (value)
 }
 
 export class BasicBlock {
@@ -64,11 +66,14 @@ export type Op =
   | InvokeForeign
   | Invoke
   | Apply
+  | ApplyPartial
   | Return
   | PushPartial
   | Assert
   | Branch
-  | TypeTest;
+  | TypeTest
+  | IntrinsicEqual
+  | RegisterInstance;
 
 export abstract class BaseOp {
   abstract tag: OpTag;
@@ -201,11 +206,7 @@ export class Force extends BaseOp {
 export class Interpolate extends BaseOp {
   readonly tag = OpTag.INTERPOLATE;
 
-  constructor(
-    readonly meta: Metadata,
-    readonly arity: uint32,
-    readonly parts: (string | null)[]
-  ) {
+  constructor(readonly meta: Metadata, readonly parts: (string | null)[]) {
     super();
   }
 }
@@ -254,6 +255,14 @@ export class Apply extends BaseOp {
   }
 }
 
+export class ApplyPartial extends BaseOp {
+  readonly tag = OpTag.APPLY_PARTIAL;
+
+  constructor(readonly meta: Metadata, readonly parts: boolean[]) {
+    super();
+  }
+}
+
 export class Return extends BaseOp {
   readonly tag = OpTag.RETURN;
 
@@ -298,6 +307,22 @@ export class TypeTest extends BaseOp {
   readonly tag = OpTag.TYPE_TEST;
 
   constructor(readonly meta: Metadata, readonly type: Type) {
+    super();
+  }
+}
+
+export class IntrinsicEqual extends BaseOp {
+  readonly tag = OpTag.INTRINSIC_EQUAL;
+
+  constructor(readonly meta: Metadata) {
+    super();
+  }
+}
+
+export class RegisterInstance extends BaseOp {
+  readonly tag = OpTag.REGISTER_INSTANCE;
+
+  constructor(readonly meta: Metadata) {
     super();
   }
 }

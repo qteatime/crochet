@@ -142,6 +142,7 @@ const argv = Yargs.usage("crochet <command> [options]")
       type: "string",
     });
   })
+  .command("show-ir-experimental <filename>", "Compiles to experimental IR")
   .option("verbose", {
     description: "Log debugging information",
     default: false,
@@ -410,6 +411,26 @@ switch (argv._[0]) {
 
   case "build": {
     build(argv["pkg"] as string);
+    break;
+  }
+
+  case "show-ir-experimental": {
+    const file = argv["filename"] as string;
+    const source = FS.readFileSync(file, "utf-8");
+    const ast = Compiler.parse(source, file);
+    const ir = Compiler.lowerToIR(file, source, ast);
+    console.log(show(ir));
+
+    function mb(x: number) {
+      return `${(x / 1024 / 1024).toFixed(3)}MB`;
+    }
+    const end_memory = process.memoryUsage();
+    console.log(
+      `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
+        end_memory.heapTotal
+      )} | RSS ${mb(end_memory.rss)}`
+    );
+
     break;
   }
 
