@@ -84,7 +84,7 @@ export function parseString(x: CString): string {
   return text.replace(/^"|"$/g, "");
 }
 
-function resolve_escape(escape: string) {
+export function resolve_escape(escape: string) {
   if (escape.length === 1) {
     switch (escape) {
       case "b":
