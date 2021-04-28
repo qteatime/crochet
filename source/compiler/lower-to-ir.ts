@@ -1,5 +1,6 @@
 import * as Ast from "../generated/crochet-grammar";
 import * as IR from "../ir";
+import { cast } from "../utils";
 import {
   resolve_escape,
   parseNumber,
@@ -281,6 +282,141 @@ export class LowerToIR {
       Text: (_, x) => new IR.LiteralText(parseString(x)),
       Nothing: (_) => new IR.LiteralNothing(),
     });
+  }
+
+  pattern(x: Ast.Pattern): IR.Pattern {
+    return x.match<IR.Pattern>({
+      Global: (pos, name) => {
+        const id = this.context.register(pos);
+        return new IR.GlobalPattern(id, name.name);
+      },
+
+      HasType: (pos, type, pattern) => {
+        const id = this.context.register(pos);
+        return new IR.TypePattern(id, this.type(type), this.pattern(pattern));
+      },
+
+      Lit: (lit) => {
+        return new IR.LiteralPattern(NO_INFO, this.literal(lit));
+      },
+
+      Self: (pos) => {
+        const id = this.context.register(pos);
+        return new IR.SelfPattern(id);
+      },
+
+      Variable: (pos, name) => {
+        const id = this.context.register(pos);
+        return new IR.VariablePattern(id, name.name);
+      },
+
+      Wildcard: (pos) => {
+        const id = this.context.register(pos);
+        return new IR.WildcardPattern(id);
+      },
+    });
+  }
+
+  predicate(x: Ast.Predicate): IR.Predicate {
+    return x.match<IR.Predicate>({
+      Always: (pos) => {
+        const id = this.context.register(pos);
+        return new IR.PAlways(id);
+      },
+
+      And: (pos, left, right) => {
+        const id = this.context.register(pos);
+        return new IR.PAnd(id, this.predicate(left), this.predicate(right));
+      },
+
+      Constrain: (pos, pred, constraint) => {
+        const id = this.context.register(pos);
+        return new IR.PConstrained(
+          id,
+          this.predicate(pred),
+          new IR.BasicBlock(this.expression(constraint))
+        );
+      },
+
+      Has: (pos, sig) => {
+        const id = this.context.register(pos);
+        const patterns = signatureValues(sig);
+
+        return new IR.PRelation(
+          id,
+          signatureName(sig),
+          patterns.map((x) => this.pattern(x))
+        );
+      },
+
+      Let: (pos, name, value) => {
+        const id = this.context.register(pos);
+        return new IR.PLet(
+          id,
+          name.name,
+          new IR.BasicBlock(this.expression(value))
+        );
+      },
+
+      Not: (pos, pred) => {
+        const id = this.context.register(pos);
+        return new IR.PNot(id, this.predicate(pred));
+      },
+
+      Or: (pos, left, right) => {
+        const id = this.context.register(pos);
+        return new IR.POr(id, this.predicate(left), this.predicate(right));
+      },
+
+      Parens: (_, pred) => {
+        return this.predicate(pred);
+      },
+
+      Sample: (pos, size0, pool) => {
+        const id = this.context.register(pos);
+        const size1 = cast(this.literal(size0), IR.LiteralInteger);
+        const size = Number(size1.value);
+
+        return pool.match<IR.Predicate>({
+          Relation: (_, sig) => {
+            const patterns = signatureValues(sig);
+            return new IR.PSampleRelation(
+              id,
+              size,
+              signatureName(sig),
+              patterns.map((x) => this.pattern(x))
+            );
+          },
+
+          Type: (_, name, type) => {
+            return new IR.PSampleType(id, size, name.name, this.type(type));
+          },
+        });
+      },
+
+      Typed: (pos, name, type) => {
+        const id = this.context.register(pos);
+        return new IR.PType(id, name.name, this.type(type));
+      },
+    });
+  }
+
+  relation_type(x: Ast.RelationPart): IR.RelationType {
+    return x.match<IR.RelationType>({
+      One: (pos, _) => {
+        const id = this.context.register(pos);
+        return new IR.RelationType(id, IR.RelationMultiplicity.ONE);
+      },
+
+      Many: (pos, _) => {
+        const id = this.context.register(pos);
+        return new IR.RelationType(id, IR.RelationMultiplicity.MANY);
+      },
+    });
+  }
+
+  relation_types(xs: Ast.RelationPart[]): IR.RelationType[] {
+    return xs.map((x) => this.relation_type(x));
   }
 
   record_field(x: Ast.RecordField) {
@@ -609,16 +745,30 @@ export class LowerToIR {
         return this.comprehension(comprehension);
       },
 
-      Search: () => {
-        throw new Error(`internal: search not supported`);
+      Search: (pos, predicate) => {
+        const id = this.context.register(pos);
+
+        return [new IR.Search(id, this.predicate(predicate))];
+      },
+
+      MatchSearch: (pos, cases) => {
+        const id = this.context.register(pos);
+        return [
+          new IR.MatchSearch(
+            id,
+            cases.map(
+              (x) =>
+                new IR.MatchSearchCase(
+                  this.predicate(x.predicate),
+                  this.statements(x.body)
+                )
+            )
+          ),
+        ];
       },
 
       Select: () => {
         throw new Error(`internal: select not supported`);
-      },
-
-      MatchSearch: () => {
-        throw new Error(`internal: match search not supported`);
       },
     });
   }
@@ -644,7 +794,9 @@ export class LowerToIR {
       },
 
       Expr: (expr) => {
-        return this.expression(expr);
+        const id = this.context.register(get_pos(expr));
+
+        return [...this.expression(expr), new IR.Drop(id)];
       },
 
       Let: (pos, name, value) => {
@@ -653,20 +805,24 @@ export class LowerToIR {
         return [...this.expression(value), new IR.Let(id, name.name)];
       },
 
-      Call: () => {
-        throw new Error(`internal: call not supported`);
+      Fact: (pos, sig) => {
+        const id = this.context.register(pos);
+        const exprs = signatureValues(sig);
+
+        return [
+          ...exprs.flatMap((x) => this.expression(x)),
+          new IR.Fact(id, signatureName(sig), exprs.length),
+        ];
       },
 
-      Fact: () => {
-        throw new Error(`internal: fact not supported`);
-      },
+      Forget: (pos, sig) => {
+        const id = this.context.register(pos);
+        const exprs = signatureValues(sig);
 
-      Forget: () => {
-        throw new Error(`internal: forget not supported`);
-      },
-
-      Goto: () => {
-        throw new Error(`internal: goto not supported`);
+        return [
+          ...exprs.flatMap((x) => this.expression(x)),
+          new IR.Forget(id, signatureName(sig), exprs.length),
+        ];
       },
 
       Simulate: () => {
@@ -965,6 +1121,19 @@ export class LowerToIR {
         ];
       },
 
+      Relation: (pos, cmeta, sig) => {
+        const id = this.context.register(pos);
+
+        return [
+          new IR.DRelation(
+            id,
+            this.documentation(cmeta),
+            signatureName(sig),
+            this.relation_types(signatureValues(sig))
+          ),
+        ];
+      },
+
       Action: () => {
         throw new Error(`internal: action not supported`);
       },
@@ -973,24 +1142,8 @@ export class LowerToIR {
         throw new Error(`internal: context not supported`);
       },
 
-      DefinePredicate: () => {
-        throw new Error(`internal: predicate not supported`);
-      },
-
-      ForeignType: () => {
-        throw new Error(`internal: foreign type not supported`);
-      },
-
-      Relation: () => {
-        throw new Error(`internal: relation not supported`);
-      },
-
       When: () => {
         throw new Error(`internal: when not supported`);
-      },
-
-      Scene: () => {
-        throw new Error(`internal: scene not supported`);
       },
     });
   }

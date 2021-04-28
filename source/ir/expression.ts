@@ -1,11 +1,14 @@
 import { Literal } from "./literal";
-import { AnyStaticType, StaticType, Type } from "./type";
+import { AnyStaticType, Type } from "./type";
+import { Predicate } from "./logic";
 
 type Metadata = number;
 type uint32 = number;
 
 export enum OpTag {
-  LET = 1, // meta name (value)
+  DROP = 1,
+
+  LET, // meta name (value)
 
   PUSH_VARIABLE, // meta name
   PUSH_SELF, // meta
@@ -39,6 +42,11 @@ export enum OpTag {
   TYPE_TEST, // meta type
   INTRINSIC_EQUAL, // meta (left right)
   REGISTER_INSTANCE, // meta (value)
+
+  SEARCH,
+  MATCH_SEARCH,
+  FACT,
+  FORGET,
 }
 
 export enum AssertType {
@@ -54,6 +62,7 @@ export class BasicBlock {
 }
 
 export type Op =
+  | Drop
   | Let
   | PushVariable
   | PushSelf
@@ -81,10 +90,22 @@ export type Op =
   | Branch
   | TypeTest
   | IntrinsicEqual
-  | RegisterInstance;
+  | RegisterInstance
+  | Search
+  | MatchSearch
+  | Fact
+  | Forget;
 
 export abstract class BaseOp {
   abstract tag: OpTag;
+}
+
+export class Drop extends BaseOp {
+  readonly tag = OpTag.DROP;
+
+  constructor(readonly meta: Metadata) {
+    super();
+  }
 }
 
 export class Let extends BaseOp {
@@ -332,6 +353,50 @@ export class RegisterInstance extends BaseOp {
   readonly tag = OpTag.REGISTER_INSTANCE;
 
   constructor(readonly meta: Metadata) {
+    super();
+  }
+}
+
+export class Search extends BaseOp {
+  readonly tag = OpTag.SEARCH;
+
+  constructor(readonly meta: Metadata, readonly predicate: Predicate) {
+    super();
+  }
+}
+
+export class MatchSearchCase {
+  constructor(readonly predicate: Predicate, readonly body: BasicBlock) {}
+}
+
+export class MatchSearch extends BaseOp {
+  readonly tag = OpTag.MATCH_SEARCH;
+
+  constructor(readonly meta: Metadata, readonly cases: MatchSearchCase[]) {
+    super();
+  }
+}
+
+export class Fact extends BaseOp {
+  readonly tag = OpTag.FACT;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly relation: string,
+    readonly arity: uint32
+  ) {
+    super();
+  }
+}
+
+export class Forget extends BaseOp {
+  readonly tag = OpTag.FORGET;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly relation: string,
+    readonly arity: uint32
+  ) {
     super();
   }
 }

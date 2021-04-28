@@ -18,7 +18,17 @@ export enum PredicateTag {
   ALWAYS,
 }
 
-export type Predicate = PAnd;
+export type Predicate =
+  | PAnd
+  | POr
+  | PNot
+  | PRelation
+  | PSampleRelation
+  | PSampleType
+  | PConstrained
+  | PLet
+  | PType
+  | PAlways;
 
 export abstract class PredicateBase {}
 
@@ -85,6 +95,7 @@ export class PSampleType extends PredicateBase {
   constructor(
     readonly meta: Metadata,
     readonly size: uint32,
+    readonly name: string,
     readonly type: Type
   ) {
     super();

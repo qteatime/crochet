@@ -851,14 +851,6 @@ export function compileStatement(stmt: Statement) {
       );
     },
 
-    Call(pos, name) {
-      return new IR.SCall(compileMeta(pos, noMeta), name.name);
-    },
-
-    Goto(pos, name) {
-      return new IR.SGoto(compileMeta(pos, noMeta), name.name);
-    },
-
     Simulate(pos, actors, context, goal, signals) {
       return new IR.SSimulate(
         compileMeta(pos, noMeta),
@@ -981,17 +973,6 @@ export function compileDeclaration(
   return d.match<IR.Declaration[]>({
     Do(pos, body) {
       return [new IR.DDo(compileMeta(pos, noMeta), body.map(compileStatement))];
-    },
-
-    DefinePredicate(pos, cmeta, sig, clauses) {
-      const name = signatureName(sig);
-      const params = signatureValues(sig).map((x) => x.name);
-      const procedure = new Logic.PredicateProcedure(
-        name,
-        params,
-        clauses.map(compilePredicateClause)
-      );
-      return [new IR.DPredicate(compileMeta(pos, cmeta), name, procedure)];
     },
 
     Relation(pos, cmeta, sig) {
@@ -1152,16 +1133,6 @@ export function compileDeclaration(
       ];
     },
 
-    Scene(pos, cmeta, name, body) {
-      return [
-        new IR.DScene(
-          compileMeta(pos, cmeta),
-          name.name,
-          body.map(compileStatement)
-        ),
-      ];
-    },
-
     Action(pos, cmeta, typ, title, tags, predicate, rank, body) {
       return [
         new IR.DAction(
@@ -1194,18 +1165,6 @@ export function compileDeclaration(
           (items.flatMap((x) =>
             compileDeclaration(x, locality, override)
           ) as any) as IR.IContextualDeclaration[]
-        ),
-      ];
-    },
-
-    ForeignType(pos, cmeta, name, foreign_name) {
-      const local = compileLocality(locality);
-      return [
-        new IR.DForeignType(
-          compileMeta(pos, cmeta),
-          local,
-          name.name,
-          compileNamespace(foreign_name)
         ),
       ];
     },

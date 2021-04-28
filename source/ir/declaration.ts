@@ -11,6 +11,7 @@ export enum DeclarationTag {
   OPEN, // meta, namespace
   DEFINE, // meta name body
   PRELUDE, // meta body
+  RELATION,
 }
 
 export enum Visibility {
@@ -25,7 +26,8 @@ export type Declaration =
   | DTest
   | DDefine
   | DOpen
-  | DPrelude;
+  | DPrelude
+  | DRelation;
 
 abstract class BaseDeclaration {}
 
@@ -105,6 +107,31 @@ export class DPrelude extends BaseDeclaration {
   readonly tag = DeclarationTag.PRELUDE;
 
   constructor(readonly meta: Metadata, readonly body: BasicBlock) {
+    super();
+  }
+}
+
+export enum RelationMultiplicity {
+  ONE = 1,
+  MANY,
+}
+
+export class RelationType {
+  constructor(
+    readonly meta: Metadata,
+    readonly multiplicity: RelationMultiplicity
+  ) {}
+}
+
+export class DRelation extends BaseDeclaration {
+  readonly tag = DeclarationTag.RELATION;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly type: RelationType[]
+  ) {
     super();
   }
 }
