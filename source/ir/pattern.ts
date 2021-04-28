@@ -13,7 +13,13 @@ export enum PatternTag {
   LITERAL,
 }
 
-export type Pattern = TypePattern;
+export type Pattern =
+  | TypePattern
+  | GlobalPattern
+  | VariablePattern
+  | SelfPattern
+  | WildcardPattern
+  | LiteralPattern;
 
 export abstract class PatternBase {}
 

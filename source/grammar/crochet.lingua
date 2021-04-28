@@ -4,16 +4,13 @@ type Metadata(doc: string[])
 
 type Declaration =
   | Relation(pos: Meta, cmeta: Metadata, signature: Signature<RelationPart>)
-  | DefinePredicate(pos: Meta, cmeta: Metadata, signature: Signature<Name>, clauses: PredicateClause[])
   | Do(pos: Meta, body: Statement[])
   | Command(pos: Meta, cmeta: Metadata, signature: Signature<Parameter>, contract: Contract, body: Statement[], ttest: TrailingTest?)
   | Define(pos: Meta, cmeta: Metadata, name: Name, value: Expression)  // requires atomicity
   | AbstractType(pos: Meta, cmeta: Metadata, typ: TypeDef)
   | EnumType(pos: Meta, cmeta: Metadata, name: Name, variants: Name[])
   | SingletonType(pos: Meta, cmeta: Metadata, typ: TypeDef, init: TypeInit[])
-  | ForeignType(pos: Meta, cmeta: Metadata, name: Name, foreign_name: Namespace)
   | Type(pos: Meta, cmeta: Metadata, typ: TypeDef, fields: Parameter[])
-  | Scene(pos: Meta, cmeta: Metadata, name: Name, body: Statement[])
   | Action( pos: Meta
           , cmeta: Metadata
           , typeRestriction: TypeApp
@@ -66,8 +63,6 @@ type PredicateEffect =
 type Statement =
   | Fact(pos: Meta, signature: Signature<Expression>)
   | Forget(pos: Meta, signature: Signature<Expression>)
-  | Goto(pos: Meta, name: Name)
-  | Call(pos: Meta, name: Name)
   | Let(pos: Meta, name: Name, value: Expression)
   | Simulate(pos: Meta, actors: Expression, context: SimulationContext, goal: SimulationGoal, signals: Signal[])
   | Assert(pos: Meta, expr: Expression)
@@ -224,12 +219,10 @@ grammar Crochet : Program {
 
   declaration =
     | relationDeclaration
-    | predicateDeclaration
     | doDeclaration
     | commandDeclaration
     | typeDeclaration
     | defineDeclaration
-    | sceneDeclaration
     | actionDeclaration
     | whenDeclaration
     | contextDeclaration
@@ -266,14 +259,6 @@ grammar Crochet : Program {
   relationPart =
     | n:name s<"*"> -> RelationPart.Many(meta, n)
     | n:name        -> RelationPart.One(meta, n)
-
-  predicateDeclaration =
-    | m:declarationMeta ws predicate_ l:logicSignature<name> c:block<predicateClause>
-      -> Declaration.DefinePredicate(meta, m, l, c)
-
-  predicateClause =
-    | when_ p:predicate s<";">    -> PredicateClause(meta, p, PredicateEffect.Trivial())
-    | always_ p:predicate s<";">  -> PredicateClause(meta, Predicate.Always(meta), PredicateEffect.Trivial())
 
   doDeclaration =
     | prelude_ xs:statements end_
@@ -312,10 +297,6 @@ grammar Crochet : Program {
     | n:atom s<"::"> e:expression
       -> ContractCondition(meta, n, e)
 
-  foreignBody =
-    | n:namespace s<"("> xs:list0<name, s<",">> s<")">
-      -> FFI(meta, n, xs)
-
   parameter =
     | n:name                              -> Parameter.Untyped(meta, n)
     | s<"("> n:name is_ t:typeApp s<")">  -> Parameter.Typed(meta, n, t)
@@ -350,9 +331,6 @@ grammar Crochet : Program {
     | m:declarationMeta ws type_ t:basicType fs:typeFields s<";">
       -> Declaration.Type(meta, m, t, fs)
 
-    | m:declarationMeta ws type_ n:typeName s<"="> foreign_ ns:namespace s<";">
-      -> Declaration.ForeignType(meta, m, n, ns)
-  
   basicType =
     | n:atom p:typeDefParent    -> TypeDef(p, n)
 
@@ -387,10 +365,6 @@ grammar Crochet : Program {
   defineDeclaration =
     | m:declarationMeta ws define_ n:atom s<"="> e:s<atomicExpression> s<";">
       -> Declaration.Define(meta, m, n, e)
-
-  sceneDeclaration =
-    | m:declarationMeta ws scene_ n:atom do_ b:statements end_
-      -> Declaration.Scene(meta, m, n, b)
 
   actionDeclaration =
     | m:declarationMeta ws action_
@@ -510,8 +484,6 @@ grammar Crochet : Program {
     | s<letStatement>
     | s<factStatement>
     | s<forgetStatement>
-    | s<gotoStatement>
-    | s<callStatement>
     | s<simulateStatement>
     | s<assertStatement>
     | e:s<expression>    -> Statement.Expr(e)
@@ -530,12 +502,6 @@ grammar Crochet : Program {
   forgetStatement =
     | forget_ s:logicSignature<primaryExpression>
       -> Statement.Forget(meta, s)
-
-  gotoStatement =
-    | goto_ n:atom  -> Statement.Goto(meta, n)
-
-  callStatement =
-    | call_ n:atom  -> Statement.Call(meta, n)
 
   simulateStatement =
     | simulate_ for_ e:expression c:simulateContext until_ g:simulateGoal s:signal*
