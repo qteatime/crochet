@@ -135,7 +135,7 @@ class IPDynamic extends InterpolationPartBase {
   }
 }
 
-function get_pos(x: Ast.Expression): Ast.Meta {
+function get_pos(x: Ast.Expression | Ast.TypeApp): Ast.Meta {
   return (x as any).pos;
 }
 
@@ -329,6 +329,43 @@ export class LowerToIR {
       }));
 
     return { pairs: xs_static, dynamic_pairs: xs_dynamic };
+  }
+
+  comprehension(x: Ast.ForExpression): IR.Op[] {
+    return x.match<IR.Op[]>({
+      Map: (pos, name, stream, body) => {
+        const id = this.context.register(pos);
+
+        return [
+          ...this.expression(stream),
+          new IR.PushLambda(
+            id,
+            [name.name],
+            new IR.BasicBlock([...this.comprehension(body)])
+          ),
+          new IR.Invoke(id, "_ flat-map: _", 2),
+        ];
+      },
+
+      If: (pos, condition, body) => {
+        const id = this.context.register(pos);
+
+        return [
+          ...this.expression(condition),
+          new IR.Branch(
+            id,
+            new IR.BasicBlock(this.comprehension(body)),
+            new IR.BasicBlock([new IR.PushTuple(id, 0)])
+          ),
+        ];
+      },
+
+      Do: (pos, body) => {
+        const id = this.context.register(pos);
+
+        return [...this.expression(body), new IR.PushTuple(id, 1)];
+      },
+    });
   }
 
   expression(x: Ast.Expression): IR.Op[] {
@@ -552,15 +589,24 @@ export class LowerToIR {
             new IR.PushLiteral(new IR.LiteralFalse()),
             new IR.Assert(
               id,
+              IR.AssertType.UNREACHABLE,
               "unreachable",
-              "None of the conditions was true."
+              "None of the conditions were true."
             ),
           ]
         );
       },
 
-      For: () => {
-        throw new Error(`internal: for not supported`);
+      ForeignInvoke: (pos, name, args) => {
+        const id = this.context.register(pos);
+        return [
+          ...args.flatMap((x) => this.expression(x)),
+          new IR.InvokeForeign(id, compileNamespace(name), args.length),
+        ];
+      },
+
+      For: (pos, comprehension) => {
+        return this.comprehension(comprehension);
       },
 
       Search: () => {
@@ -588,7 +634,12 @@ export class LowerToIR {
 
         return [
           ...this.expression(expr),
-          new IR.Assert(id, "assert", get_pos(expr).source_slice),
+          new IR.Assert(
+            id,
+            IR.AssertType.ASSERT,
+            "assert",
+            get_pos(expr).source_slice
+          ),
         ];
       },
 
@@ -659,6 +710,42 @@ export class LowerToIR {
     ];
   }
 
+  contract_condition(kind: IR.AssertType, contract: Ast.ContractCondition) {
+    const id = this.context.register(contract.pos);
+
+    return [
+      ...this.expression(contract.expr),
+      new IR.Assert(
+        id,
+        kind,
+        contract.name.name,
+        get_pos(contract.expr).source_slice
+      ),
+    ];
+  }
+
+  contract_conditions(kind: IR.AssertType, xs: Ast.ContractCondition[]) {
+    return xs.flatMap((x) => this.contract_condition(kind, x));
+  }
+
+  contract_return(ret: Ast.TypeApp | null) {
+    if (ret == null) {
+      return [];
+    } else {
+      const id = this.context.register(get_pos(ret));
+      return [
+        new IR.PushReturn(id),
+        new IR.TypeTest(id, this.type(ret)),
+        new IR.Assert(
+          id,
+          IR.AssertType.RETURN_TYPE,
+          "return-type",
+          `return is ${get_pos(ret).source_slice}`
+        ),
+      ];
+    }
+  }
+
   declaration(x: Ast.Declaration): IR.Declaration[] {
     return x.match<IR.Declaration[]>({
       Command: (pos, cmeta, sig, contract, body, test) => {
@@ -674,9 +761,17 @@ export class LowerToIR {
             parameters,
             types,
             new IR.BasicBlock([
-              // FIXME: add contracts
+              ...this.contract_conditions(
+                IR.AssertType.PRECONDITION,
+                contract.pre
+              ),
               ...body.flatMap((x) => this.statement(x)),
               new IR.Return(id),
+              ...this.contract_return(contract.ret),
+              ...this.contract_conditions(
+                IR.AssertType.POSTCONDITION,
+                contract.post
+              ),
             ])
           ),
         ];
@@ -880,10 +975,6 @@ export class LowerToIR {
 
       DefinePredicate: () => {
         throw new Error(`internal: predicate not supported`);
-      },
-
-      ForeignCommand: () => {
-        throw new Error(`internal: foreign command not supported`);
       },
 
       ForeignType: () => {

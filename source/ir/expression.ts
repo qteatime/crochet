@@ -41,6 +41,14 @@ export enum OpTag {
   REGISTER_INSTANCE, // meta (value)
 }
 
+export enum AssertType {
+  PRECONDITION = 1,
+  POSTCONDITION,
+  RETURN_TYPE,
+  ASSERT,
+  UNREACHABLE,
+}
+
 export class BasicBlock {
   constructor(readonly ops: Op[]) {}
 }
@@ -284,6 +292,7 @@ export class Assert extends BaseOp {
 
   constructor(
     readonly meta: Metadata,
+    readonly kind: AssertType,
     readonly assert_tag: string,
     readonly message: string
   ) {

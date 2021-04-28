@@ -672,6 +672,10 @@ export function compileExpression(expr: Expression): IR.Expression {
     Lit(lit) {
       return literalToExpression(lit);
     },
+
+    ForeignInvoke(_) {
+      throw new Error(`Not supported`);
+    },
   });
 }
 
@@ -770,22 +774,6 @@ export function compileTypeInit(
         );
         const sig = materialiseSignature(self_param, sig0);
         return new Declaration.Command(meta, cmeta, sig, contract, body, test);
-      },
-
-      ForeignCommand(meta, cmeta, sig0, contract, body, test) {
-        const self_param: Parameter = new Parameter.TypedOnly(
-          meta,
-          new TypeApp.Named(meta, new Name(meta, self))
-        );
-        const sig = materialiseSignature(self_param, sig0);
-        return new Declaration.ForeignCommand(
-          meta,
-          cmeta,
-          sig,
-          contract,
-          body,
-          test
-        );
       },
     })
   );
@@ -1014,25 +1002,6 @@ export function compileDeclaration(
           signatureName(sig),
           compileRelationTypes(types)
         ),
-      ];
-    },
-
-    ForeignCommand(meta, cmeta, sig, contract, body, test) {
-      const name = signatureName(sig);
-      const { types, parameters } = compileParameters(signatureValues(sig));
-      const pos = compileMeta(meta, cmeta);
-      return [
-        new IR.DForeignCommand(
-          pos,
-          name,
-          types,
-          compileNamespace(body.name),
-          parameters,
-          body.args.map((x) => x.name),
-          compileContract(contract),
-          override
-        ),
-        ...compileTrailingTest(name, types, test),
       ];
     },
 
