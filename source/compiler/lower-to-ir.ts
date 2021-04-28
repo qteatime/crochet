@@ -136,8 +136,12 @@ class IPDynamic extends InterpolationPartBase {
   }
 }
 
-function get_pos(x: Ast.Expression | Ast.TypeApp): Ast.Meta {
-  return (x as any).pos;
+function get_pos(x: Ast.Expression | Ast.TypeApp | Ast.Literal): Ast.Meta {
+  if (x instanceof Ast.$$Expression$_Lit) {
+    return get_pos(x.value);
+  } else {
+    return (x as any).pos;
+  }
 }
 
 function is_saturated(args: Ast.Expression[]) {
