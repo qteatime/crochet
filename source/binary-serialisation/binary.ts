@@ -113,7 +113,7 @@ export class BinaryWriter {
   }
 
   bytes(x: Buffer) {
-    this.uint64(x.length);
+    this.uint32(x.length);
     this.target.write(x);
   }
 }
@@ -171,7 +171,7 @@ export class BinaryReader {
   }
 
   bytes(): Buffer {
-    const length = this.uint64();
+    const length = this.uint32();
     return this.bytes_with_size(length);
   }
 
@@ -181,7 +181,7 @@ export class BinaryReader {
     if (result !== x) {
       throw new Error(`Expected ${x}, got ${result}`);
     }
-    this.offset += byteLength;
+    return result;
   }
 
   string(): string {
