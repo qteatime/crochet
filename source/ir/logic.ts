@@ -127,7 +127,7 @@ export class PLet extends PredicateBase {
 }
 
 export class PType extends PredicateBase {
-  readonly tag = PredicateTag.LET;
+  readonly tag = PredicateTag.TYPE;
 
   constructor(
     readonly meta: Metadata,

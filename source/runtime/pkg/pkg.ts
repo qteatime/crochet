@@ -31,6 +31,15 @@ export class CrochetPackage {
     return this.data.target;
   }
 
+  get binary_cache_directory() {
+    return Path.join(this.root, ".binary");
+  }
+
+  binary_image(file: string) {
+    const path = this.relative_filename(file) + ".croc";
+    return Path.join(this.binary_cache_directory, path);
+  }
+
   sources_for(target: Target) {
     return this.data.sources
       .filter((x) => x.is_valid(target))

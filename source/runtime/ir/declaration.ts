@@ -27,7 +27,6 @@ import { SimpleInterpolation } from "./atomic";
 import { cast } from "../../utils";
 import { CrochetPackage } from "../pkg";
 import { Meta, Metadata } from "./meta";
-import type { BinaryWriter } from "../../binary-ir/binary";
 
 export enum DeclarationTag {
   RELATION = 1,

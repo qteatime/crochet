@@ -16,6 +16,7 @@ export enum DeclarationTag {
   ACTION,
   WHEN,
   CONTEXT,
+  FOREIGN_TYPE,
 }
 
 export enum Visibility {
@@ -34,7 +35,8 @@ export type Declaration =
   | DRelation
   | DAction
   | DContext
-  | DWhen;
+  | DWhen
+  | DForeignType;
 
 abstract class BaseDeclaration {}
 
@@ -181,6 +183,19 @@ export class DContext extends BaseDeclaration {
     readonly meta: Metadata,
     readonly documentation: string,
     readonly name: string
+  ) {
+    super();
+  }
+}
+
+export class DForeignType extends BaseDeclaration {
+  readonly tag = DeclarationTag.FOREIGN_TYPE;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly target: string
   ) {
     super();
   }
