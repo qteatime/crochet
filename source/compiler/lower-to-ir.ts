@@ -423,6 +423,21 @@ export class LowerToIR {
     return xs.map((x) => this.relation_type(x));
   }
 
+  rank_function(x: Ast.Rank) {
+    return x.match({
+      Expr: (expr) => {
+        return new IR.BasicBlock(this.expression(expr));
+      },
+
+      Unranked: (_) => {
+        return new IR.BasicBlock([
+          new IR.PushLiteral(new IR.LiteralInteger(1n)),
+          new IR.Return(NO_INFO),
+        ]);
+      },
+    });
+  }
+
   record_field(x: Ast.RecordField) {
     return x.match<
       { static: true; name: string } | { static: false; expr: IR.Op[] }
@@ -835,13 +850,66 @@ export class LowerToIR {
     });
   }
 
+  expand_type_initialiser(
+    type: Ast.TypeApp,
+    name: Ast.Expression,
+    x: Ast.TypeInit
+  ) {
+    return x.match<Ast.Statement | Ast.Declaration>({
+      Fact: (pos, sig) => {
+        return new Ast.Statement.Fact(pos, materialiseSignature(name, sig));
+      },
+
+      Command: (pos, cmeta, sig, contract, body, ttest) => {
+        return new Ast.Declaration.Command(
+          pos,
+          cmeta,
+          materialiseSignature(
+            new Ast.Parameter.TypedOnly(get_pos(type), type),
+            sig
+          ),
+          contract,
+          body,
+          ttest
+        );
+      },
+    });
+  }
+
+  type_initialiser(
+    pos: Ast.Meta,
+    name: string,
+    init0: Ast.TypeInit[],
+    context: string | null
+  ) {
+    const id = this.context.register(pos);
+    const type = new Ast.TypeApp.Named(pos, new Ast.Name(pos, name));
+    const self = new Ast.Expression.Global(pos, new Ast.Name(pos, name));
+    const init = init0.map((x) => this.expand_type_initialiser(type, self, x));
+    const statements = init.filter(
+      (x) => x instanceof Ast.Statement
+    ) as Ast.Statement[];
+    const commands = init.filter(
+      (x) => x instanceof Ast.Declaration
+    ) as Ast.Declaration[];
+
+    return [
+      ...commands.flatMap((x) => this.declaration(x, context)),
+      new IR.DPrelude(id, this.statements(statements)),
+    ];
+  }
+
   singleton_type(
+    pos: Ast.Meta,
     id: uint32,
     cmeta: Ast.Metadata,
     name: string,
     parent: IR.Type,
-    init: Ast.TypeInit[]
+    init: Ast.TypeInit[],
+    context: string | null
   ) {
+    const type = new IR.LocalType(id, name);
+
     return [
       new IR.DType(
         id,
@@ -856,7 +924,7 @@ export class LowerToIR {
         id,
         `See type:${name}`,
         name,
-        new IR.BasicBlock([new IR.PushNew(id, new IR.LocalType(id, name), 0)])
+        new IR.BasicBlock([new IR.PushNew(id, type, 0)])
       ),
       new IR.DSeal(id, name),
       new IR.DPrelude(
@@ -866,7 +934,7 @@ export class LowerToIR {
           new IR.RegisterInstance(id),
         ])
       ),
-      // FIXME: support init
+      ...this.type_initialiser(pos, name, init, context),
     ];
   }
 
@@ -906,7 +974,7 @@ export class LowerToIR {
     }
   }
 
-  declaration(x: Ast.Declaration): IR.Declaration[] {
+  declaration(x: Ast.Declaration, context: string | null): IR.Declaration[] {
     return x.match<IR.Declaration[]>({
       Command: (pos, cmeta, sig, contract, body, test) => {
         const id = this.context.register(pos);
@@ -1010,11 +1078,13 @@ export class LowerToIR {
       SingletonType: (pos, cmeta, type, init) => {
         const id = this.context.register(pos);
         return this.singleton_type(
+          pos,
           id,
           cmeta,
           type.name.name,
           this.type_parent(type.parent),
-          init
+          init,
+          context
         );
       },
 
@@ -1024,7 +1094,7 @@ export class LowerToIR {
       },
 
       Local: (_, decl0) => {
-        const decls = this.declaration(decl0);
+        const decls = this.declaration(decl0, context);
         return decls.map((x) => {
           switch (x.tag) {
             case IR.DeclarationTag.TYPE: {
@@ -1054,7 +1124,15 @@ export class LowerToIR {
           const variant_id = this.context.register(v.pos);
 
           return [
-            ...this.singleton_type(variant_id, NO_METADATA, v.name, parent, []),
+            ...this.singleton_type(
+              v.pos,
+              variant_id,
+              NO_METADATA,
+              v.name,
+              parent,
+              [],
+              context
+            ),
             new IR.DCommand(
               variant_id,
               "",
@@ -1138,22 +1216,50 @@ export class LowerToIR {
         ];
       },
 
-      Action: () => {
-        throw new Error(`internal: action not supported`);
+      Action: (pos, cmeta, self, name, pred, rank, body, init) => {
+        const id = this.context.register(pos);
+        return [
+          new IR.DAction(
+            id,
+            this.documentation(cmeta),
+            context,
+            name.name,
+            this.type(self),
+            this.rank_function(rank),
+            this.predicate(pred),
+            this.statements(body)
+          ),
+          ...this.type_initialiser(pos, `action ${name}`, init, context),
+        ];
       },
 
-      Context: () => {
-        throw new Error(`internal: context not supported`);
+      When: (pos, cmeta, pred, body) => {
+        const id = this.context.register(pos);
+
+        return [
+          new IR.DWhen(
+            id,
+            this.documentation(cmeta),
+            context,
+            this.predicate(pred),
+            this.statements(body)
+          ),
+        ];
       },
 
-      When: () => {
-        throw new Error(`internal: when not supported`);
+      Context: (pos, cmeta, name, items) => {
+        const id = this.context.register(pos);
+
+        return [
+          new IR.DContext(id, this.documentation(cmeta), name.name),
+          ...this.declarations(items, name.name),
+        ];
       },
     });
   }
 
-  declarations(xs: Ast.Declaration[]) {
-    return xs.flatMap((x) => this.declaration(x));
+  declarations(xs: Ast.Declaration[], context: string | null) {
+    return xs.flatMap((x) => this.declaration(x, context));
   }
 }
 
@@ -1164,7 +1270,8 @@ export function lowerToIR(
 ) {
   const context = new Context(filename, source);
   const declarations = new LowerToIR(context).declarations(
-    program.declarations
+    program.declarations,
+    null
   );
   return new IR.Program(
     filename,

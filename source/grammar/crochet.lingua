@@ -13,12 +13,12 @@ type Declaration =
   | Type(pos: Meta, cmeta: Metadata, typ: TypeDef, fields: Parameter[])
   | Action( pos: Meta
           , cmeta: Metadata
-          , typeRestriction: TypeApp
-          , title: Expression
-          , tags: Name[]
+          , self: TypeApp
+          , name: Name
           , pred: Predicate
           , rank: Rank
-          , body: Statement[])
+          , body: Statement[]
+          , commands: TypeInit[])
   | When(pos: Meta, cmeta: Metadata, pred: Predicate, body: Statement[])
   | Context(pos: Meta, cmeta: Metadata, name: Name, items: Declaration[])
   | Open(pos: Meta, ns: Namespace)
@@ -50,15 +50,6 @@ type TypeApp =
   | Named(pos: Meta, name: Name)
   | Static(pos: Meta, typ: TypeApp)
   | Any(pos: Meta)
-
-type PredicateClause(
-  pos: Meta,
-  predicate: Predicate,
-  effect: PredicateEffect
-)
-
-type PredicateEffect =
-  | Trivial()
 
 type Statement =
   | Fact(pos: Meta, signature: Signature<Expression>)
@@ -355,6 +346,9 @@ grammar Crochet : Program {
   typeInit =
     | s:partialLogicSignature<invokePostfix> s<";">
       -> TypeInit.Fact(meta, s)
+    | typeInitCommand
+
+  typeInitCommand =
     | m:declarationMeta ws command_ s:partialSignature<parameter> c:contractDefinition s<"="> e:s<expression> t:trailingTest
       -> TypeInit.Command(meta, m, s, c, [Statement.Expr(e)], t)
     | m:declarationMeta ws command_ s:partialSignature<parameter> c:contractDefinition do_ b:statements t:oneTrailingTest
@@ -368,25 +362,14 @@ grammar Crochet : Program {
 
   actionDeclaration =
     | m:declarationMeta ws action_
-        t:actionTitle
-        typ:actionType
-        tags:actionTags
+        t:typeApp
+        n:Name
         p:actionPredicate
         r:actionRank
-        do_ b:statements end_
-      -> Declaration.Action(meta, m, typ, t, tags, p, r, b)
-  
-  actionType =
-    | for_ t:typeApp  -> t
-    |                 -> TypeApp.Any(meta)
-
-  actionTitle =
-    | t:interpolateText<expression> -> Expression.Interpolate(meta, t)
-
-  actionTags =
-    | tags_ es:list1<atom, s<",">> -> es
-    |                              -> []
-
+        do_ b:statements 
+        c:actionInit
+        end_ 
+      -> Declaration.Action(meta, m, t, n, p, r, b, c)
 
   actionPredicate =
     | when_ p:predicate -> p
@@ -395,6 +378,9 @@ grammar Crochet : Program {
   actionRank =
     | rank_ e:s<expression> -> Rank.Expr(e)
     |                       -> Rank.Unranked(meta)
+
+  actionInit =
+    | with_ cs:typeInitCommand* -> cs
 
   whenDeclaration =
     | m:declarationMeta ws when_ p:predicate do_ b:statements end_

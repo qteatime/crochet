@@ -9,8 +9,6 @@ import {
   PartialSignature,
   Pattern,
   Predicate,
-  PredicateClause,
-  PredicateEffect,
   Program,
   RelationPart,
   Signature,
@@ -241,14 +239,6 @@ export function compilePattern(p: Pattern): Logic.Pattern {
   });
 }
 
-export function compilePredicateEffect(eff: PredicateEffect) {
-  return eff.match({
-    Trivial() {
-      return new Logic.Effect.Trivial();
-    },
-  });
-}
-
 export function compileSamplingPool(pool: SamplingPool): Logic.SamplingPool {
   return pool.match<Logic.SamplingPool>({
     Relation(_, signature) {
@@ -316,13 +306,6 @@ export function compilePredicate(p: Predicate): Logic.Predicate {
       return new Logic.AlwaysPredicate();
     },
   });
-}
-
-export function compilePredicateClause(p: PredicateClause) {
-  return new Logic.PredicateClause(
-    compilePredicate(p.predicate),
-    compilePredicateEffect(p.effect)
-  );
 }
 
 // -- Expression
@@ -1133,18 +1116,8 @@ export function compileDeclaration(
       ];
     },
 
-    Action(pos, cmeta, typ, title, tags, predicate, rank, body) {
-      return [
-        new IR.DAction(
-          compileMeta(pos, cmeta),
-          compileTypeApp(typ),
-          compileExpression(title),
-          tags.map((x) => x.name),
-          compilePredicate(predicate),
-          compileRank(rank),
-          body.map(compileStatement)
-        ),
-      ];
+    Action() {
+      throw new Error(`action unsupported`);
     },
 
     When(pos, cmeta, predicate, body) {
