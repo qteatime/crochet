@@ -9,7 +9,7 @@ export function hash_file(source: string): Buffer {
 export function read_hash(binary: Buffer) {
   const reader = new BinaryReader(binary);
   reader.text(MAGIC);
-  const version = reader.uint8();
+  const version = reader.uint16();
   const hash = reader.bytes();
   return { version, hash };
 }
