@@ -1,5 +1,6 @@
 import { Type } from "./type";
 import { BasicBlock } from "./expression";
+import { Predicate } from "./logic";
 
 type Metadata = number;
 
@@ -12,6 +13,9 @@ export enum DeclarationTag {
   DEFINE, // meta name body
   PRELUDE, // meta body
   RELATION,
+  ACTION,
+  WHEN,
+  CONTEXT,
 }
 
 export enum Visibility {
@@ -27,7 +31,10 @@ export type Declaration =
   | DDefine
   | DOpen
   | DPrelude
-  | DRelation;
+  | DRelation
+  | DAction
+  | DContext
+  | DWhen;
 
 abstract class BaseDeclaration {}
 
@@ -131,6 +138,49 @@ export class DRelation extends BaseDeclaration {
     readonly documentation: string,
     readonly name: string,
     readonly type: RelationType[]
+  ) {
+    super();
+  }
+}
+
+export class DAction extends BaseDeclaration {
+  readonly tag = DeclarationTag.ACTION;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly context: string | null,
+    readonly name: string,
+    readonly actor: Type,
+    readonly rank_function: BasicBlock,
+    readonly predicate: Predicate,
+    readonly body: BasicBlock
+  ) {
+    super();
+  }
+}
+
+export class DWhen extends BaseDeclaration {
+  readonly tag = DeclarationTag.WHEN;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly context: string | null,
+    readonly predicate: Predicate,
+    readonly body: BasicBlock
+  ) {
+    super();
+  }
+}
+
+export class DContext extends BaseDeclaration {
+  readonly tag = DeclarationTag.CONTEXT;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string
   ) {
     super();
   }
