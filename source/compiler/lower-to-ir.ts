@@ -438,6 +438,72 @@ export class LowerToIR {
     });
   }
 
+  simulation_context(x: Ast.SimulationContext) {
+    return x.match({
+      Global: () => null,
+      Named: (_, name) => name.name,
+    });
+  }
+
+  simulation_goal(x: Ast.SimulationGoal): IR.SimulationGoal {
+    return x.match<IR.SimulationGoal>({
+      ActionQuiescence: (pos) => {
+        const id = this.context.register(pos);
+        return new IR.SGActionQuiescence(id);
+      },
+
+      EventQuiescence: (pos) => {
+        const id = this.context.register(pos);
+        return new IR.SGEventQuiescence(id);
+      },
+
+      TotalQuiescence: (pos) => {
+        const id = this.context.register(pos);
+        return new IR.SGTotalQuiescence(id);
+      },
+
+      CustomGoal: (pos, pred) => {
+        const id = this.context.register(pos);
+        return new IR.SGPredicate(id, this.predicate(pred));
+      },
+    });
+  }
+
+  simulation_signal(x: Ast.Signal) {
+    const id = this.context.register(x.pos);
+    const { parameters } = this.parameters(signatureValues(x.signature));
+
+    return new IR.SimulationSignal(
+      id,
+      parameters,
+      signatureName(x.signature),
+      this.statements(x.body)
+    );
+  }
+
+  simulation_title(
+    pos: Ast.Meta,
+    type: IR.Type,
+    name: string,
+    title0: Ast.Expression | null
+  ) {
+    const id = this.context.register(pos);
+    const title =
+      title0 == null
+        ? [new IR.PushLiteral(new IR.LiteralText(name))]
+        : this.expression(title0);
+    return [
+      new IR.DCommand(
+        id,
+        "",
+        "_ title",
+        ["_"],
+        [type],
+        new IR.BasicBlock([...title, new IR.Return(id)])
+      ),
+    ];
+  }
+
   record_field(x: Ast.RecordField) {
     return x.match<
       { static: true; name: string } | { static: false; expr: IR.Op[] }
@@ -844,8 +910,18 @@ export class LowerToIR {
         ];
       },
 
-      Simulate: () => {
-        throw new Error(`internal: simulate not supported`);
+      Simulate: (pos, actors, context, goal, signals) => {
+        const id = this.context.register(pos);
+
+        return [
+          ...this.expression(actors),
+          new IR.Simulate(
+            id,
+            this.simulation_context(context),
+            this.simulation_goal(goal),
+            signals.flatMap((x) => this.simulation_signal(x))
+          ),
+        ];
       },
     });
   }
@@ -1216,8 +1292,12 @@ export class LowerToIR {
         ];
       },
 
-      Action: (pos, cmeta, self, name, pred, rank, body, init) => {
+      Action: (pos, cmeta, self, name, title, pred, rank, body, init) => {
         const id = this.context.register(pos);
+        const title_pos = title != null ? get_pos(title) : name.pos;
+        const type_name = `action ${name.name}`;
+        const type = new IR.LocalType(id, type_name);
+
         return [
           new IR.DAction(
             id,
@@ -1229,7 +1309,8 @@ export class LowerToIR {
             this.predicate(pred),
             this.statements(body)
           ),
-          ...this.type_initialiser(pos, `action ${name}`, init, context),
+          ...this.simulation_title(title_pos, type, name.name, title),
+          ...this.type_initialiser(pos, type_name, init, context),
         ];
       },
 

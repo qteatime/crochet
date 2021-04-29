@@ -1,6 +1,7 @@
 import { Literal } from "./literal";
 import { AnyStaticType, Type } from "./type";
 import { Predicate } from "./logic";
+import { SimulationGoal } from "./goal";
 
 type Metadata = number;
 type uint32 = number;
@@ -47,6 +48,7 @@ export enum OpTag {
   MATCH_SEARCH,
   FACT,
   FORGET,
+  SIMULATE,
 }
 
 export enum AssertType {
@@ -94,7 +96,8 @@ export type Op =
   | Search
   | MatchSearch
   | Fact
-  | Forget;
+  | Forget
+  | Simulate;
 
 export abstract class BaseOp {
   abstract tag: OpTag;
@@ -396,6 +399,28 @@ export class Forget extends BaseOp {
     readonly meta: Metadata,
     readonly relation: string,
     readonly arity: uint32
+  ) {
+    super();
+  }
+}
+
+export class SimulationSignal {
+  constructor(
+    readonly meta: Metadata,
+    readonly parameters: string[],
+    readonly name: string,
+    readonly body: BasicBlock
+  ) {}
+}
+
+export class Simulate extends BaseOp {
+  readonly tag = OpTag.SIMULATE;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly context: string | null,
+    readonly goal: SimulationGoal,
+    readonly signals: SimulationSignal[]
   ) {
     super();
   }

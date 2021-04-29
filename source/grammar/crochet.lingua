@@ -15,6 +15,7 @@ type Declaration =
           , cmeta: Metadata
           , self: TypeApp
           , name: Name
+          , title: Expression?
           , pred: Predicate
           , rank: Rank
           , body: Statement[]
@@ -363,13 +364,14 @@ grammar Crochet : Program {
   actionDeclaration =
     | m:declarationMeta ws action_
         t:typeApp
-        n:Name
+        n:atom
+        title:interpolateExpression?
         p:actionPredicate
         r:actionRank
         do_ b:statements 
         c:actionInit
         end_ 
-      -> Declaration.Action(meta, m, t, n, p, r, b, c)
+      -> Declaration.Action(meta, m, t, n, title, p, r, b, c)
 
   actionPredicate =
     | when_ p:predicate -> p
@@ -381,6 +383,7 @@ grammar Crochet : Program {
 
   actionInit =
     | with_ cs:typeInitCommand* -> cs
+    |                           -> []
 
   whenDeclaration =
     | m:declarationMeta ws when_ p:predicate do_ b:statements end_
@@ -605,7 +608,7 @@ grammar Crochet : Program {
 
   primaryExpression =
     | newExpression<expression>
-    | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
+    | interpolateExpression
     | literalExpression
     | recordExpression<expression>
     | listExpression<expression>
@@ -700,6 +703,9 @@ grammar Crochet : Program {
     | conditionExpression
     | matchSearchExpression
     | forExpression
+
+  interpolateExpression =
+    | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
 
   interpolateText<t> =
     | s<"\""> xs:interpolatePart<t>* "\""
