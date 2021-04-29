@@ -3,6 +3,7 @@ type Program(pos: Meta, declarations: Declaration[])
 type Metadata(doc: string[])
 
 type Declaration =
+  | ForeignType(pos: Meta, cmeta: Metadata, name: Name, target: Namespace)
   | Relation(pos: Meta, cmeta: Metadata, signature: Signature<RelationPart>)
   | Do(pos: Meta, body: Statement[])
   | Command(pos: Meta, cmeta: Metadata, signature: Signature<Parameter>, contract: Contract, body: Statement[], ttest: TrailingTest?)
@@ -311,6 +312,9 @@ grammar Crochet : Program {
     | x:false_    -> Name(meta, x)
 
   typeDeclaration =
+    | m:declarationMeta ws type_ t:typeName s<"="> foreign_ n:namespace s<";">
+      -> Declaration.ForeignType(meta, m, t, n)
+
     | m:declarationMeta ws enum_ t:typeName s<"="> vs:nonemptyListOf<typeName, s<",">> s<";">
       -> Declaration.EnumType(meta, m, t, vs)
 

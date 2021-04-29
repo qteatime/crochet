@@ -1279,6 +1279,19 @@ export class LowerToIR {
         ];
       },
 
+      ForeignType: (pos, cmeta, name, target) => {
+        const id = this.context.register(pos);
+
+        return [
+          new IR.DForeignType(
+            id,
+            this.documentation(cmeta),
+            name.name,
+            compileNamespace(target)
+          ),
+        ];
+      },
+
       Relation: (pos, cmeta, sig) => {
         const id = this.context.register(pos);
 

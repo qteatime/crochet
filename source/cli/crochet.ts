@@ -425,7 +425,7 @@ switch (argv._[0]) {
       return `${(x / 1024 / 1024).toFixed(3)}MB`;
     }
     const end_memory = process.memoryUsage();
-    console.log(
+    console.error(
       `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
         end_memory.heapTotal
       )} | RSS ${mb(end_memory.rss)}`

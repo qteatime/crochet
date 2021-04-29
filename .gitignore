@@ -10,3 +10,5 @@ dist/
 www/crochet.js
 tsconfig.tsbuildinfo
 versions/current.js
+.binary/
+*.croc
