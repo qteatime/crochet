@@ -1,4 +1,4 @@
-import { zip } from "../../utils";
+import { zip } from "../../utils/utils";
 import { generated_node, Metadata } from "../ir";
 import { CrochetModule, die, ErrArbitrary } from "../vm";
 import {

@@ -1,9 +1,4 @@
-import {
-  Capabilities,
-  NodeTarget,
-  CrochetCapability,
-  AnyTarget,
-} from "../runtime/pkg";
+import { Capabilities, NodeTarget, AnyTarget } from "../runtime/pkg";
 import * as Compiler from "../compiler";
 import * as Server from "./crochet-server";
 import { CrochetVM } from "../vm-interface";
@@ -11,15 +6,9 @@ import { Crochet } from "../targets/cli";
 import * as REPL from "./repl";
 import * as Build from "./crochet-build";
 
-import {
-  array,
-  difference,
-  intersect,
-  logger,
-  parse,
-  show,
-  union,
-} from "../utils";
+import { logger } from "../utils/logger";
+import { show } from "../utils/utils";
+import { difference } from "../utils/collections";
 import * as FS from "fs";
 import * as Path from "path";
 import * as Yargs from "yargs";

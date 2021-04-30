@@ -26,7 +26,7 @@ import {
 import { Pattern, UnificationEnvironment } from "../logic";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
 import { ActionChoice } from "./action-choice";
-import { logger } from "../../utils";
+import { logger } from "../../utils/logger";
 
 export class Signal {
   constructor(

@@ -7,7 +7,7 @@ import {
   State,
   type_name,
 } from "../runtime";
-import { logger, zip } from "../utils";
+import { logger } from "../utils/logger";
 
 export type Class<T> = {
   new (...args: any[]): T;

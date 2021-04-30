@@ -1,6 +1,6 @@
 import * as Ast from "../generated/crochet-grammar";
 import * as IR from "../ir";
-import { cast } from "../utils";
+import { cast } from "../utils/utils";
 import {
   resolve_escape,
   parseNumber,

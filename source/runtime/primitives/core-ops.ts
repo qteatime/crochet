@@ -25,7 +25,7 @@ import { CrochetText } from "./text";
 import { CrochetTuple } from "./tuple";
 import { CrochetUnknown } from "./unknown";
 import { CrochetRecord } from "./record";
-import { cast } from "../../utils";
+import { cast } from "../../utils/utils";
 import { CrochetThunk } from "./thunk";
 
 export type Class<T> = {

@@ -1,5 +1,6 @@
 import * as Path from "path";
-import { array, optional, parse, spec, string, union } from "../../utils";
+import { array, optional, parse, spec, string } from "../../utils/spec";
+import { union } from "../../utils/collections";
 import { Capabilities, Capability, CrochetCapability } from "./capability";
 import { Dependency } from "./dependency";
 import { AnyTarget, Target } from "./target";

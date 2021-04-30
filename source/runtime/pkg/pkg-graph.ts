@@ -1,4 +1,4 @@
-import { difference, logger, union } from "../../utils";
+import { logger } from "../../utils/logger";
 import { Capabilities } from "./capability";
 import { CrochetPackage, RestrictedCrochetPackage } from "./pkg";
 import { Target } from "./target";

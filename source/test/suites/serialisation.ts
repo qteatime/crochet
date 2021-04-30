@@ -6,7 +6,7 @@ import { inspect } from "util";
 import * as Compiler from "../../compiler";
 import * as Binary from "../../binary-serialisation";
 import { AnyTarget, CrochetPackage } from "../../runtime";
-import { logger } from "../../utils";
+import { logger } from "../../utils/logger";
 
 const pkgRoot = Path.join(__dirname, "../../../stdlib");
 const packages = FS.readdirSync(pkgRoot)

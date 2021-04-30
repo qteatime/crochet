@@ -1,4 +1,4 @@
-import { Bag } from "../../utils";
+import { Bag } from "../../utils/bag";
 import { CrochetType, NativeProcedureFn } from "../primitives";
 
 export class ForeignInterface {

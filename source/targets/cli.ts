@@ -2,7 +2,6 @@ import * as Path from "path";
 import * as FS from "fs";
 import * as stdlib from "../stdlib";
 import { State, World } from "../runtime";
-import { cast } from "../utils";
 import { Plugin } from "../plugin";
 import { CrochetVM } from "../vm-interface";
 

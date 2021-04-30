@@ -9,7 +9,7 @@ import {
   unbox,
   _await,
 } from "../../runtime";
-import { delay, nothing } from "../../utils";
+import { delay } from "../../utils/utils";
 import { ForeignNamespace } from "../ffi-def";
 
 export function time_ffi(ffi: ForeignInterface) {

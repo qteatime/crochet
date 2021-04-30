@@ -23,8 +23,7 @@ import { CrochetTest, Environment, Scene, World } from "../world";
 import { Expression } from "./expression";
 import { SBlock, Statement } from "./statement";
 import { Type } from "./type";
-import { SimpleInterpolation } from "./atomic";
-import { cast } from "../../utils";
+import { cast } from "../../utils/utils";
 import { CrochetPackage } from "../pkg";
 import { Meta, Metadata } from "./meta";
 

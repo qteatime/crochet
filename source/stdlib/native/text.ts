@@ -12,7 +12,7 @@ import {
   CrochetNothing,
   ForeignInterface,
 } from "../../runtime";
-import { cast } from "../../utils";
+import { cast } from "../../utils/utils";
 import { ForeignNamespace } from "../ffi-def";
 
 export function text_views(ffi: ForeignInterface) {

@@ -12,7 +12,7 @@ import {
   RestrictedCrochetPackage,
   Target,
 } from "../runtime/pkg";
-import { logger } from "../utils";
+import { logger } from "../utils/logger";
 import { MachineError } from "../runtime/vm/errors/errors";
 import { File } from "../runtime/pkg/file";
 import { Plugin } from "../plugin";
