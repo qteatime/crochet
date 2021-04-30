@@ -99,13 +99,14 @@ export class BinaryWriter {
 
   bigint(x: bigint) {
     logger.debug(`Writing bigint ${x}`);
-    let bytes = x.toString(16);
+    let bytes = (x < 0 ? -x : x).toString(16);
     if (bytes.length % 2 != 0) bytes = "0" + bytes;
     const buffer = new Uint8Array(bytes.length / 2);
     for (let i = 0; i < buffer.length; ++i) {
-      buffer[i] = parseInt(bytes.substr(i, 2), 16);
+      buffer[i] = parseInt(bytes.substr(i * 2, 2), 16);
     }
     logger.debug(`Bytes are ${inspect(buffer)}`);
+    this.boolean(x < 0);
     this.bytes(Buffer.from(buffer));
   }
 
@@ -170,6 +171,7 @@ export class BinaryReader {
 
   bigint(): bigint {
     logger.debug(`Reading bigint at ${this.offset.toString(16)}`);
+    const negative = this.boolean();
     const bytes = this.bytes();
     const result = BigInt(`0x${bytes.toString("hex")}`);
     logger.debug(
@@ -177,7 +179,7 @@ export class BinaryReader {
         16
       )}. Bytes are ${inspect(bytes)}`
     );
-    return result;
+    return negative ? -result : result;
   }
 
   boolean(): boolean {
