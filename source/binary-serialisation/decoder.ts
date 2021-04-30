@@ -1,5 +1,5 @@
 import * as IR from "../ir";
-import { unreachable } from "../utils";
+import { logger, unreachable } from "../utils";
 import { BinaryReader } from "./binary";
 import { MAGIC, VERSION, Section } from "./encode";
 
@@ -37,7 +37,7 @@ class CrochetIRDecoder extends BinaryReader {
     this.assert_version(header);
 
     const filename = this.string();
-    const declarations = this.array((_) => this.decode_declaration());
+    const declarations = this.decode_declarations();
     const meta_table = this.decode_meta_table();
     return new IR.Program(
       filename,
@@ -45,6 +45,16 @@ class CrochetIRDecoder extends BinaryReader {
       meta_table.table,
       declarations
     );
+  }
+
+  decode_declarations() {
+    this.expect(
+      Section.DECLARATION,
+      this.decode_enum_tag(Section, "section"),
+      "Declaration section"
+    );
+
+    return this.array((_) => this.decode_declaration());
   }
 
   decode_declaration() {
@@ -549,8 +559,10 @@ class CrochetIRDecoder extends BinaryReader {
   ): not<enum_values<T>, string> {
     const tag = this.uint8();
     if (tags[tag] == null) {
-      throw new Error(`Invalid ${name} tag: ${tag}`);
+      throw new Error(`Invalid ${name} tag ${tag} at position ${this.offset}`);
     }
+
+    logger.debug(`Read ${name} tag ${tag} (${tags[tag]})`);
 
     return tag as any;
   }
