@@ -159,3 +159,15 @@ export function get_function_type(universe: Universe, arity: number) {
     );
   }
 }
+
+export function distance(type: CrochetType): number {
+  if (type.parent == null) {
+    return 0;
+  } else {
+    return 1 + distance(type.parent);
+  }
+}
+
+export function compare(t1: CrochetType, t2: CrochetType): number {
+  return distance(t2) - distance(t1);
+}

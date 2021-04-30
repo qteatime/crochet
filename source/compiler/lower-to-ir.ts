@@ -719,7 +719,7 @@ export class LowerToIR {
         } else {
           return [
             ...non_holes(args).flatMap((x) => this.expression(x)),
-            new IR.PushPartial(id, name),
+            new IR.PushPartial(id, name, args.length),
             new IR.ApplyPartial(id, saturated_bits(args)),
           ];
         }
@@ -822,11 +822,7 @@ export class LowerToIR {
         const id = this.context.register(pos);
         return [
           ...args.flatMap((x) => this.expression(x)),
-          new IR.InvokeForeignSynchronous(
-            id,
-            compileNamespace(name),
-            args.length
-          ),
+          new IR.InvokeForeign(id, compileNamespace(name), args.length),
         ];
       },
 

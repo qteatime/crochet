@@ -26,7 +26,7 @@ export function assert_native_tag<T extends NativeTag>(
   return value as any;
 }
 
-export function get_synchronous_native(module: CrochetModule, name: string) {
+export function get_native(module: CrochetModule, name: string) {
   const fn = module.pkg.native_functions.try_lookup(name);
   if (fn == null) {
     throw new ErrArbitrary(
@@ -36,7 +36,5 @@ export function get_synchronous_native(module: CrochetModule, name: string) {
       )}`
     );
   }
-
-  assert_native_tag(NativeTag.NATIVE_SYNCHRONOUS, fn);
   return fn;
 }

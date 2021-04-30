@@ -282,8 +282,8 @@ class CrochetIRDecoder extends BinaryReader {
           this.decode_basic_block()
         );
 
-      case t.INVOKE_FOREIGN_SYNCHRONOUS:
-        return new IR.InvokeForeignSynchronous(
+      case t.INVOKE_FOREIGN:
+        return new IR.InvokeForeign(
           this.decode_meta_id(),
           this.string(),
           this.uint32()
@@ -309,7 +309,11 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.Return(this.decode_meta_id());
 
       case t.PUSH_PARTIAL:
-        return new IR.PushPartial(this.decode_meta_id(), this.string());
+        return new IR.PushPartial(
+          this.decode_meta_id(),
+          this.string(),
+          this.uint32()
+        );
 
       case t.ASSERT:
         return new IR.Assert(

@@ -210,7 +210,7 @@ function load_module(
   for (const x of program.declarations) {
     switch (x.tag) {
       case t.COMMAND: {
-        const command = Commands.get_command(
+        const command = Commands.get_or_make_command(
           universe,
           x.name,
           x.parameters.length
@@ -221,6 +221,7 @@ function load_module(
           new Environment(null, null, module),
           x.name,
           x.documentation,
+          x.parameters,
           x.types.map((t) => Types.materialise_type(universe, module, t)),
           x.body,
           x.meta

@@ -49,7 +49,7 @@ export async function repl(vm: Crochet, pkg_name: string) {
   while (true) {
     try {
       const ast = await get_line(rl);
-      const expr = Compiler.compileRepl(ast);
+      const expr = (Compiler as any).compileRepl(ast);
       await expr.evaluate(state);
     } catch (error) {
       if (error instanceof SyntaxError) {
