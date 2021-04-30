@@ -7,7 +7,6 @@ import {
   CrochetType,
   CrochetValue,
   Environment,
-  PayloadType,
   Tag,
   Universe,
 } from "../intrinsics";
