@@ -2,7 +2,6 @@ import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
 import {
   Universe,
-  CrochetCommand,
   CrochetCommandBranch,
   CrochetModule,
   CrochetPackage,

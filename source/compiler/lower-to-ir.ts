@@ -10,7 +10,7 @@ import {
   signatureValues,
   materialiseSignature,
   compileNamespace,
-} from "./compiler";
+} from "./utils";
 
 type uint32 = number;
 type range_key = string & { __range_key__: 0 };
