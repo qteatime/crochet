@@ -596,7 +596,7 @@ class CrochetIREncoder extends BinaryWriter {
   }
 
   encode_meta_id(x: number) {
-    this.uint64(x);
+    this.uint32(x);
   }
 
   encode_enum_tag(x: number) {
