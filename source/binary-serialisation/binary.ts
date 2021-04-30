@@ -1,5 +1,5 @@
 import { inspect } from "util";
-import { logger } from "../utils";
+import { logger } from "../utils/logger";
 
 type uint32 = number;
 

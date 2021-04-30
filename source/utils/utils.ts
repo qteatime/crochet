@@ -1,6 +1,4 @@
 import * as Util from "util";
-import { type_name } from "../runtime";
-import { AnyClass } from "./types";
 
 export function force_cast<T>(x: any): asserts x is T {}
 
@@ -24,8 +22,24 @@ export function cast<T extends Function & { prototype: any }>(
   if (x instanceof type) {
     return x as any;
   } else {
+    const get_type = (x: any) => {
+      if (x === null) {
+        return `native null`;
+      } else if (Object(x) !== x) {
+        return `native ${typeof x}`;
+      } else if (x?.type?.type_name) {
+        return x.type.type_name;
+      } else if (x?.type_name) {
+        return x.type_name;
+      } else if (x.constructor) {
+        return x.constructor.name;
+      } else {
+        `<host value ${x?.name ?? typeof x}>`;
+      }
+    };
+
     throw new TypeError(
-      `internal: expected ${type_name(type)}, got ${type_name(x)}`
+      `internal: expected ${get_type(type)}, got ${get_type(x)}`
     );
   }
 }

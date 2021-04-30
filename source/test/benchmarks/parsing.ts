@@ -39,7 +39,7 @@ function load_all(
   parse: (absolute: string, relative: string, binary: string) => void
 ) {
   global.gc?.();
-  let mem: NodeJS.MemoryUsage = null;
+  let mem: NodeJS.MemoryUsage | null = null;
   const start = new Date().getTime();
   for (const pkg of packages) {
     for (const file of pkg.sources) {

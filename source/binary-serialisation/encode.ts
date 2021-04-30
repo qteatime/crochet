@@ -1,5 +1,5 @@
 import * as IR from "../ir";
-import { unreachable } from "../utils";
+import { unreachable } from "../utils/utils";
 import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
