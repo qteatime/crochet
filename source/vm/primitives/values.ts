@@ -1,9 +1,18 @@
 import * as IR from "../../ir";
 import { zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
-import { CrochetType, CrochetValue, Tag, Universe } from "../intrinsics";
+import {
+  CrochetLambda,
+  CrochetThunk,
+  CrochetType,
+  CrochetValue,
+  Environment,
+  PayloadType,
+  Tag,
+  Universe,
+} from "../intrinsics";
 import { type_name } from "./location";
-import { is_subtype } from "./types";
+import { get_function_type, is_subtype } from "./types";
 
 export function get_nothing(universe: Universe) {
   return universe.nothing;
@@ -35,6 +44,38 @@ export function make_static_text(universe: Universe, x: string) {
 
 export function make_tuple(universe: Universe, xs: CrochetValue[]) {
   return new CrochetValue(Tag.TUPLE, universe.types.Tuple, xs);
+}
+
+export function make_interpolation(
+  universe: Universe,
+  xs: (string | CrochetValue)[]
+) {
+  return new CrochetValue(Tag.INTERPOLATION, universe.types.Interpolation, xs);
+}
+
+export function make_thunk(
+  universe: Universe,
+  env: Environment,
+  block: IR.BasicBlock
+) {
+  return new CrochetValue(
+    Tag.THUNK,
+    universe.types.Thunk,
+    new CrochetThunk(env, block)
+  );
+}
+
+export function make_lambda(
+  universe: Universe,
+  env: Environment,
+  parameters: string[],
+  body: IR.BasicBlock
+) {
+  return new CrochetValue(
+    Tag.LAMBDA,
+    get_function_type(universe, parameters.length),
+    new CrochetLambda(env, parameters, body)
+  );
 }
 
 export function has_type(type: CrochetType, value: CrochetValue) {
@@ -82,4 +123,29 @@ export function make_static_type(type: CrochetType) {
     );
   }
   return new CrochetValue(Tag.TYPE, type, type);
+}
+
+export function tag_to_name(x: Tag): string {
+  return Tag[x].replace(/_/g, "-").toLowerCase();
+}
+
+export function assert_tag<T extends Tag>(
+  tag: T,
+  value: CrochetValue
+): asserts value is CrochetValue<T> {
+  if (value.tag !== tag) {
+    throw new ErrArbitrary(
+      "invalid-type",
+      `Expected a value of type ${tag_to_name(tag)}, but got ${type_name(
+        value.type
+      )}`
+    );
+  } else {
+    return value as any;
+  }
+}
+
+export function get_thunk(x: CrochetValue) {
+  assert_tag(Tag.THUNK, x);
+  return x.payload;
 }

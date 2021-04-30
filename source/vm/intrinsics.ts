@@ -1,4 +1,5 @@
 import * as IR from "../ir";
+import { BasicBlock } from "../ir";
 
 export enum Tag {
   NOTHING = 0,
@@ -7,11 +8,13 @@ export enum Tag {
   TEXT,
   TRUE,
   FALSE,
+  INTERPOLATION,
   TUPLE,
   RECORD,
   INSTANCE,
   LAMBDA,
   PARTIAL,
+  THUNK,
   CELL,
   TYPE,
   UNKNOWN,
@@ -24,11 +27,13 @@ export type PayloadType = {
   [Tag.TEXT]: string;
   [Tag.TRUE]: null;
   [Tag.FALSE]: null;
+  [Tag.INTERPOLATION]: (string | CrochetValue)[];
   [Tag.TUPLE]: CrochetValue[];
   [Tag.RECORD]: Map<string, CrochetValue>;
   [Tag.INSTANCE]: CrochetValue[];
   [Tag.PARTIAL]: CrochetPartial;
   [Tag.LAMBDA]: CrochetLambda;
+  [Tag.THUNK]: CrochetThunk;
   [Tag.CELL]: CrochetCell;
   [Tag.TYPE]: CrochetType;
   [Tag.UNKNOWN]: unknown;
@@ -44,8 +49,8 @@ export class CrochetValue<T extends Tag = any> {
 
 export class CrochetLambda {
   constructor(
-    readonly arity: number,
     readonly env: Environment,
+    readonly parameters: string[],
     readonly body: IR.BasicBlock
   ) {}
 }
@@ -56,6 +61,11 @@ export class CrochetPartial {
 
 export class CrochetCell {
   constructor(readonly value: unknown) {}
+}
+
+export class CrochetThunk {
+  public value: CrochetValue | null = null;
+  constructor(readonly env: Environment, readonly body: BasicBlock) {}
 }
 
 export class CrochetType {
@@ -95,16 +105,31 @@ export class CrochetCommandBranch {
   }
 }
 
+export enum NativeTag {
+  NATIVE_SYNCHRONOUS,
+}
+
+export type NativePayload = {
+  [NativeTag.NATIVE_SYNCHRONOUS]: (...args: CrochetValue[]) => CrochetValue;
+};
+
+export class NativeFunction<T extends NativeTag = NativeTag> {
+  readonly tag = NativeTag.NATIVE_SYNCHRONOUS;
+  constructor(readonly payload: NativePayload[T]) {}
+}
+
 export class CrochetWorld {
   readonly commands = new Namespace<CrochetCommand>(null, null);
   readonly types = new Namespace<CrochetType>(null, null);
   readonly definitions = new Namespace<CrochetValue>(null, null);
   readonly native_types = new Namespace<CrochetType>(null, null);
+  readonly native_functions = new Namespace<NativeFunction>(null, null);
 }
 
 export class CrochetPackage {
   readonly types: Namespace<CrochetType>;
   readonly definitions: Namespace<CrochetValue>;
+  readonly native_functions: Namespace<NativeFunction>;
 
   constructor(
     readonly world: CrochetWorld,
@@ -113,6 +138,7 @@ export class CrochetPackage {
   ) {
     this.types = new Namespace(world.types, name);
     this.definitions = new Namespace(world.definitions, name);
+    this.native_functions = new Namespace(world.native_functions, name);
   }
 }
 
@@ -231,6 +257,7 @@ export class CrochetActivation implements IActivation {
 
   constructor(
     readonly parent: Activation | null,
+    readonly env: Environment,
     readonly block: IR.BasicBlock
   ) {}
 
@@ -252,6 +279,10 @@ export class CrochetActivation implements IActivation {
 
   set_return_value(value: CrochetValue) {
     this._return = value;
+  }
+
+  push_block(b: IR.BasicBlock) {
+    this.block_stack.push([this.instruction, b]);
   }
 }
 

@@ -31,7 +31,7 @@ export enum OpTag {
   FORCE, // meta
 
   PUSH_LAMBDA, // meta param... body
-  INVOKE_FOREIGN, // meta name arity (value...)
+  INVOKE_FOREIGN_SYNCHRONOUS, // meta name arity (value...)
   INVOKE, // meta name arity (value...)
   APPLY, // meta arity (value...)
   APPLY_PARTIAL, // meta (parts...)
@@ -82,7 +82,7 @@ export type Op =
   | Force
   | Interpolate
   | PushLambda
-  | InvokeForeign
+  | InvokeForeignSynchronous
   | Invoke
   | Apply
   | ApplyPartial
@@ -255,8 +255,8 @@ export class PushLambda extends BaseOp {
   }
 }
 
-export class InvokeForeign extends BaseOp {
-  readonly tag = OpTag.INVOKE_FOREIGN;
+export class InvokeForeignSynchronous extends BaseOp {
+  readonly tag = OpTag.INVOKE_FOREIGN_SYNCHRONOUS;
 
   constructor(
     readonly meta: Metadata,
