@@ -147,6 +147,11 @@ export class BinaryReader {
     return Number(result);
   }
 
+  bigint(): bigint {
+    const bytes = this.bytes();
+    return BigInt(`0x${bytes.toString("hex")}`);
+  }
+
   boolean(): boolean {
     const result = this.uint8();
     if (result === 0) {
@@ -156,6 +161,33 @@ export class BinaryReader {
     } else {
       throw new Error(`Invalid boolean ${result}`);
     }
+  }
+
+  maybe<A>(f: () => A): A | null {
+    if (this.boolean()) {
+      return f();
+    } else {
+      return null;
+    }
+  }
+
+  array<A>(f: (index: number) => A): A[] {
+    const length = this.uint32();
+    const result = [];
+    for (let i = 0; i < length; ++i) {
+      result.push(f(i));
+    }
+    return result;
+  }
+
+  map<K, V>(f: (index: number) => [K, V]): Map<K, V> {
+    const length = this.uint32();
+    const result = new Map<K, V>();
+    for (let i = 0; i < length; ++i) {
+      const [k, v] = f(i);
+      result.set(k, v);
+    }
+    return result;
   }
 
   double(): number {

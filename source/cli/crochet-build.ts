@@ -59,7 +59,7 @@ function is_crochet_up_to_date(file: string, source: string, target: string) {
   }
   const current_hash = Binary.hash_file(source);
   const bin = FS.readFileSync(target);
-  const { version, hash } = Binary.read_hash(bin);
+  const { version, hash } = Binary.decode_header(bin);
 
   if (
     version !== Binary.VERSION ||
