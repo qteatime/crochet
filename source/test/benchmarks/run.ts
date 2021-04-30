@@ -176,7 +176,7 @@ void (async function () {
         continue;
       }
 
-      global.gc();
+      global.gc?.();
 
       console.log("---");
       console.log(":: Crochet", version, tag ?? "");
@@ -196,7 +196,7 @@ void (async function () {
               end_memory.heapTotal
             )} | RSS ${mb(end_memory.rss)}`
           );
-          global.gc();
+          global.gc?.();
         }
         total += await time("Run benchmark", () => vm.run("main"));
         {
