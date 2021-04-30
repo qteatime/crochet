@@ -6,7 +6,6 @@ import { inspect } from "util";
 import * as Compiler from "../../compiler";
 import * as Binary from "../../binary-serialisation";
 import { AnyTarget, CrochetPackage } from "../../runtime";
-import * as IR from "../../ir";
 import { logger } from "../../utils";
 
 const pkgRoot = Path.join(__dirname, "../../../stdlib");
