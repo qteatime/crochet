@@ -262,7 +262,7 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
-      case IR.OpTag.INVOKE_FOREIGN: {
+      case IR.OpTag.INVOKE_FOREIGN_SYNCHRONOUS: {
         this.encode_meta_id(x.meta);
         this.string(x.name);
         this.uint32(x.arity);

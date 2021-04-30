@@ -9,17 +9,20 @@ import {
   Environment,
   Universe,
 } from "./intrinsics";
-import { Literals, Location, Types, Values } from "./primitives";
+import {
+  Environments,
+  Literals,
+  Location,
+  Native,
+  Types,
+  Values,
+} from "./primitives";
 
 export class State {
-  constructor(
-    readonly universe: Universe,
-    readonly env: Environment,
-    readonly activation: Activation
-  ) {}
+  constructor(readonly universe: Universe, public activation: Activation) {}
 }
 
-class Thread {
+export class Thread {
   constructor(readonly state: State) {}
 
   step() {
@@ -44,13 +47,13 @@ class Thread {
     const t = IR.OpTag;
     switch (op.tag) {
       case t.DROP: {
-        this.pop(activation, op.meta);
+        this.pop(activation);
         activation.next();
         break;
       }
 
       case t.LET: {
-        const value = this.pop(activation, op.meta);
+        const value = this.pop(activation);
         this.define(op.name, value, op.meta);
         activation.next();
         break;
@@ -97,18 +100,20 @@ class Thread {
         } else {
           this.push(activation, value);
         }
+        activation.next();
         break;
       }
 
       case t.PUSH_TUPLE: {
-        const values = this.pop_many(activation, op.arity, op.meta);
+        const values = this.pop_many(activation, op.arity);
         const tuple = Values.make_tuple(this.state.universe, values);
         this.push(activation, tuple);
+        activation.next();
         break;
       }
 
       case t.PUSH_NEW: {
-        const values = this.pop_many(activation, op.arity, op.meta);
+        const values = this.pop_many(activation, op.arity);
         const type = Types.materialise_type(
           this.state.universe,
           this.module,
@@ -116,6 +121,7 @@ class Thread {
         );
         const value = Values.instantiate(type, values);
         this.push(activation, value);
+        activation.next();
         break;
       }
 
@@ -128,6 +134,68 @@ class Thread {
         const static_type = Types.get_static_type(this.universe, type);
         const value = Values.make_static_type(static_type);
         this.push(activation, value);
+        activation.next();
+        break;
+      }
+
+      case t.INTERPOLATE: {
+        const result: (string | CrochetValue)[] = [];
+        for (const part of op.parts) {
+          if (part == null) {
+            result.push(this.pop(activation));
+          } else {
+            result.push(part);
+          }
+        }
+        const value = Values.make_interpolation(this.universe, result);
+        this.push(activation, value);
+        activation.next();
+        break;
+      }
+
+      case t.PUSH_LAZY: {
+        const env = Environments.clone(this.env);
+        const thunk = Values.make_thunk(this.universe, env, op.body);
+        this.push(activation, thunk);
+        activation.next();
+        break;
+      }
+
+      case t.FORCE: {
+        const value = this.pop(activation);
+        const thunk = Values.get_thunk(value);
+        if (thunk.value != null) {
+          this.push(activation, thunk.value);
+          activation.next();
+          break;
+        } else {
+          this.state.activation = new CrochetActivation(
+            this.state.activation,
+            thunk.env,
+            thunk.body
+          );
+          break;
+        }
+      }
+
+      case t.PUSH_LAMBDA: {
+        const value = Values.make_lambda(
+          this.universe,
+          this.env,
+          op.parameters,
+          op.body
+        );
+        this.push(activation, value);
+        activation.next();
+        break;
+      }
+
+      case t.INVOKE_FOREIGN_SYNCHRONOUS: {
+        const fn = Native.get_synchronous_native(this.module, op.name);
+        const args = this.pop_many(activation, op.arity);
+        const value = fn.payload(...args);
+        this.push(activation, value);
+        activation.next();
         break;
       }
 
@@ -141,7 +209,7 @@ class Thread {
   }
 
   get module() {
-    const result = this.state.env.raw_module;
+    const result = this.env.raw_module;
     if (result == null) {
       throw new ErrArbitrary(
         "no-module",
@@ -151,8 +219,12 @@ class Thread {
     return result;
   }
 
+  get env() {
+    return this.state.activation.env;
+  }
+
   get_self(meta: IR.Metadata | null) {
-    const value = this.state.env.raw_receiver;
+    const value = this.env.raw_receiver;
     if (value == null) {
       throw new ErrArbitrary(
         "no-self",
@@ -163,7 +235,7 @@ class Thread {
   }
 
   lookup(name: string, meta: IR.Metadata | null) {
-    const value = this.state.env.try_lookup(name);
+    const value = this.env.try_lookup(name);
     if (value == null) {
       throw new ErrArbitrary(
         "undefined-variable",
@@ -189,7 +261,7 @@ class Thread {
   }
 
   define(name: string, value: CrochetValue, meta: IR.Metadata | null) {
-    if (!this.state.env.define(name, value)) {
+    if (!this.env.define(name, value)) {
       throw new ErrArbitrary(
         "duplicated-variable",
         `The variable ${name} is already defined`
@@ -197,7 +269,7 @@ class Thread {
     }
   }
 
-  pop(activation: CrochetActivation, meta: IR.Metadata | null) {
+  pop(activation: CrochetActivation) {
     if (activation.stack.length === 0) {
       throw new ErrArbitrary(
         "vm:empty-stack",
@@ -207,11 +279,7 @@ class Thread {
     return activation.stack.pop()!;
   }
 
-  pop_many(
-    activation: CrochetActivation,
-    size: number,
-    meta: IR.Metadata | null
-  ) {
+  pop_many(activation: CrochetActivation, size: number) {
     if (activation.stack.length < size) {
       throw new ErrArbitrary(
         "vm:stack-too-small",

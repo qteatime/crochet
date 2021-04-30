@@ -282,8 +282,8 @@ class CrochetIRDecoder extends BinaryReader {
           this.decode_basic_block()
         );
 
-      case t.INVOKE_FOREIGN:
-        return new IR.InvokeForeign(
+      case t.INVOKE_FOREIGN_SYNCHRONOUS:
+        return new IR.InvokeForeignSynchronous(
           this.decode_meta_id(),
           this.string(),
           this.uint32()

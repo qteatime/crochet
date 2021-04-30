@@ -1,19 +1,30 @@
 import { Capabilities, NodeTarget, AnyTarget } from "../runtime/pkg";
-import * as Compiler from "../compiler";
-import * as Server from "./crochet-server";
-import { CrochetVM } from "../vm-interface";
-import { Crochet } from "../targets/cli";
-import * as REPL from "./repl";
+// import * as Compiler from "../compiler";
+// import * as Server from "./crochet-server";
+// import { CrochetVM } from "../vm-interface";
+// import { Crochet } from "../targets/cli";
+// import * as REPL from "./repl";
+
 import * as Build from "./crochet-build";
 
 import { logger } from "../utils/logger";
 import { show } from "../utils/utils";
 import { difference } from "../utils/collections";
+
+type CrochetVM = any;
+const Compiler: any = null;
+const Server: any = null;
+const Crochet: any = null;
+const REPL: any = null;
+
+import * as NewVM from "../new-crochet";
 import * as FS from "fs";
 import * as Path from "path";
 import * as Yargs from "yargs";
 import { StorageConfig } from "../storage";
 import { question } from "./prompt";
+
+(globalThis as any).x = NewVM;
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {
@@ -267,7 +278,7 @@ async function run_tests(
   const vm = new Crochet();
   try {
     await setup_vm(vm, filename, seed, capabilities, batch);
-    const results = await vm.run_tests((x) =>
+    const results = await vm.run_tests((x: any) =>
       packages == null ? true : packages.includes(x.module.pkg.name)
     );
     process.exit(results.length);

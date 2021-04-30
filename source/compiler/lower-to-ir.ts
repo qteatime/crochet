@@ -822,7 +822,11 @@ export class LowerToIR {
         const id = this.context.register(pos);
         return [
           ...args.flatMap((x) => this.expression(x)),
-          new IR.InvokeForeign(id, compileNamespace(name), args.length),
+          new IR.InvokeForeignSynchronous(
+            id,
+            compileNamespace(name),
+            args.length
+          ),
         ];
       },
 

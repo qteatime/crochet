@@ -147,3 +147,15 @@ export function get_namespace(
       return module.pkg.types;
   }
 }
+
+export function get_function_type(universe: Universe, arity: number) {
+  const type = universe.types.Function[arity];
+  if (type != null) {
+    return type;
+  } else {
+    throw new ErrArbitrary(
+      "invalid-function",
+      `internal: Functions of arity ${arity} are not currently supported`
+    );
+  }
+}
