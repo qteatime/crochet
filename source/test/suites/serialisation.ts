@@ -38,15 +38,22 @@ for (const pkg of packages) {
       const writer = new Binary.BufferedWriter();
       Binary.encode_program(program, writer);
 
-      FS.writeFileSync("original-ir.txt", inspect(program, false, null, false));
+      if (logger.verbose) {
+        FS.writeFileSync(
+          "original-ir.txt",
+          inspect(program, false, null, false)
+        );
+      }
       logger.debug("---");
 
       const buffer = writer.collect();
       const decoded_program = Binary.decode_program(buffer);
-      FS.writeFileSync(
-        "decoded-ir.txt",
-        inspect(decoded_program, false, null, false)
-      );
+      if (logger.verbose) {
+        FS.writeFileSync(
+          "decoded-ir.txt",
+          inspect(decoded_program, false, null, false)
+        );
+      }
 
       try {
         Assert.deepStrictEqual(decoded_program, program);
