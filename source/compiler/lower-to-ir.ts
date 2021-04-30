@@ -1286,6 +1286,7 @@ export class LowerToIR {
           new IR.DForeignType(
             id,
             this.documentation(cmeta),
+            IR.Visibility.GLOBAL,
             name.name,
             compileNamespace(target)
           ),
