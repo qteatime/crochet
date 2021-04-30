@@ -31,7 +31,7 @@ class Thread {
       }
 
       default:
-        throw unreachable(activation, `Activation`);
+        throw unreachable(activation as never, `Activation`);
     }
   }
 
@@ -132,7 +132,7 @@ class Thread {
       }
 
       default:
-        throw unreachable(op, `Operation`);
+        throw unreachable(op as never, `Operation`);
     }
   }
 
