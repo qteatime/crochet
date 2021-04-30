@@ -1,4 +1,4 @@
-import { anyOf, array, map_spec, spec, string } from "../../utils";
+import { anyOf, array, map_spec, spec, string } from "../../utils/spec";
 import { Capabilities, Capability, CrochetCapability } from "./capability";
 import { AnyTarget, Target } from "./target";
 

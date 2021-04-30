@@ -13,7 +13,7 @@ import {
   ValuePattern,
   CrochetNothing,
 } from "../../../runtime";
-import { cast, defer, delay } from "../../../utils";
+import { cast, defer, delay } from "../../../utils/utils";
 import { ForeignNamespace } from "../../ffi-def";
 import { canvas } from "./canvas";
 import {

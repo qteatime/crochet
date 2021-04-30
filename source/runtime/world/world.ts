@@ -14,7 +14,7 @@ import { ForeignInterface } from "./foreign";
 import { Scene } from "./scene";
 import { Bag } from "../../utils/bag";
 import { Environment } from "../vm/environment";
-import { XorShift } from "../../utils";
+import { XorShift } from "../../utils/xorshift";
 import { CrochetPackage, RestrictedCrochetPackage } from "../pkg";
 import { CrochetTest } from "./test";
 

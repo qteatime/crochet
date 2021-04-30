@@ -1,5 +1,5 @@
 import { die } from "../../../runtime";
-import { defer } from "../../../utils";
+import { defer } from "../../../utils/utils";
 
 export class Rect {
   constructor(

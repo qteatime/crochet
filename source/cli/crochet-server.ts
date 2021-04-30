@@ -1,6 +1,6 @@
 import * as Path from "path";
 import * as Express from "express";
-import { logger } from "../utils";
+import { logger } from "../utils/logger";
 
 const root = Path.join(__dirname, "../../www");
 const stdlib = Path.join(__dirname, "../../stdlib");

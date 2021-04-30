@@ -4,7 +4,7 @@ import * as Binary from "../binary-serialisation";
 import * as Compiler from "../compiler";
 import { execFileSync } from "child_process";
 import { RestrictedCrochetPackage } from "../runtime/pkg";
-import { logger } from "../utils";
+import { logger } from "../utils/logger";
 
 const linguaPath = Path.join(__dirname, "../../node_modules/.bin/lingua");
 

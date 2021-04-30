@@ -1,5 +1,6 @@
 import * as Path from "path";
-import { Bag, logger } from "../../utils";
+import { logger } from "../../utils/logger";
+import { Bag } from "../../utils/bag";
 import { RestrictedCrochetPackage } from "../pkg";
 import { CrochetType, CrochetValue } from "../primitives";
 import { CrochetTest, World } from "../world";

@@ -1,4 +1,4 @@
-import { cast } from "../../utils";
+import { cast } from "../../utils/utils";
 import {
   ContractCondition,
   get_string,

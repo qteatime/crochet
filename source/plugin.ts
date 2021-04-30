@@ -27,7 +27,7 @@ import {
 } from "./runtime";
 import { CrochetPackage } from "./runtime/pkg";
 import { Class, ForeignNamespace } from "./stdlib";
-import { cast } from "./utils";
+import { cast } from "./utils/utils";
 
 export class PluginFFI {
   constructor(private ffi: ForeignNamespace) {}

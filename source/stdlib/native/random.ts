@@ -5,7 +5,7 @@ import {
   CrochetValue,
   ForeignInterface,
 } from "../../runtime";
-import { XorShift } from "../../utils";
+import { XorShift } from "../../utils/xorshift";
 import { ForeignNamespace } from "../ffi-def";
 
 export function random_xorshift(ffi: ForeignInterface) {

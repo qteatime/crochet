@@ -1,5 +1,5 @@
 import { AnyTarget } from "./target";
-import { anyOf, map_spec, spec, string } from "../../utils";
+import { anyOf, map_spec, spec, string } from "../../utils/spec";
 import { Target } from "./target";
 
 export class File {

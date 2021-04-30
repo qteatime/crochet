@@ -1,7 +1,7 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as OS from "os";
-import { logger } from "../utils";
+import { logger } from "../utils/logger";
 
 interface Config {
   grants?: Grant[];

@@ -17,7 +17,9 @@ import {
   CrochetThunk,
   CrochetValue,
 } from "../primitives";
-import { Bag, BagMap, iter } from "../../utils";
+import { Bag } from "../../utils/bag";
+import { BagMap } from "../../utils/collections";
+import { iter } from "../../utils/iterable";
 import { DatabaseLayer, FunctionLayer } from "../logic/layer";
 import { SimpleInterpolation } from "../ir/atomic";
 

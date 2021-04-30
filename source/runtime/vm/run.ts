@@ -1,4 +1,4 @@
-import { logger } from "../../utils";
+import { logger } from "../../utils/logger";
 import { unreachable } from "../../utils/utils";
 import { Expression, generated_node, Metadata, Statement } from "../ir";
 import { CrochetValue } from "../primitives";

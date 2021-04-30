@@ -17,7 +17,7 @@ import {
   Thread,
   type_name,
 } from "../../runtime";
-import { cast } from "../../utils";
+import { cast } from "../../utils/utils";
 import { ForeignNamespace } from "../ffi-def";
 const OhmUtil = require("ohm-js/src/util");
 

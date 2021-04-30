@@ -1,4 +1,4 @@
-import { anyOf, equal, map_spec } from "../../utils";
+import { anyOf, equal, map_spec } from "../../utils/spec";
 
 export abstract class Target {
   abstract accepts(x: Target): boolean;

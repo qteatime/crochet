@@ -18,7 +18,7 @@ import {
   TraceRef,
   _push,
 } from "../../runtime";
-import { cast, format_time_diff } from "../../utils";
+import { cast, format_time_diff } from "../../utils/utils";
 import { ForeignNamespace } from "../ffi-def";
 
 export function debug_transcript(ffi: ForeignInterface) {

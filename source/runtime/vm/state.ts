@@ -1,4 +1,4 @@
-import { XorShift } from "../../utils";
+import { XorShift } from "../../utils/xorshift";
 import { IDatabase } from "../logic";
 import { Environment, World } from "../world";
 import { CrochetModule } from "./module";

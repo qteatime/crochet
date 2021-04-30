@@ -1,4 +1,5 @@
-import { anyOf, difference, equal, intersect, string } from "../../utils";
+import { string } from "../../utils/spec";
+import { difference, intersect } from "../../utils/collections";
 
 export type Capability = string;
 

@@ -52,7 +52,7 @@ import {
   type_name,
   from_integer,
 } from "../../runtime";
-import { cast, copy_map } from "../../utils";
+import { cast, copy_map } from "../../utils/utils";
 import { ForeignNamespace } from "../ffi-def";
 
 export function core_types(ffi: ForeignInterface) {
