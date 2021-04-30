@@ -6,11 +6,7 @@ import { hash_file } from "./hash";
 export const MAGIC = "CROC";
 export const VERSION = 1;
 
-interface Context {
-  source: string;
-}
-
-enum Section {
+export enum Section {
   DECLARATION = 1,
   SOURCE_INFO = 2,
 }
@@ -154,7 +150,6 @@ class CrochetIREncoder extends BinaryWriter {
   }
 
   encode_basic_block(x: IR.BasicBlock) {
-    this.uint64(x.ops.length);
     this.array(x.ops, (op) => this.encode_op(op));
   }
 
