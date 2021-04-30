@@ -1,5 +1,3 @@
-import { die } from "../runtime";
-
 type int32 = number;
 
 export class XorShift {
@@ -112,7 +110,7 @@ export class XorShift {
       }
     }
 
-    throw die(`internal: weighted choice picked none`);
+    throw new Error(`internal: weighted choice picked none`);
   }
 }
 

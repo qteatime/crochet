@@ -1,5 +1,6 @@
 import * as IR from "../ir";
-import { logger, unreachable } from "../utils";
+import { logger } from "../utils/logger";
+import { unreachable } from "../utils/utils";
 import { BinaryReader } from "./binary";
 import { MAGIC, VERSION, Section } from "./encode";
 
