@@ -58,7 +58,7 @@ export abstract class CrochetVM {
     );
     const source = await this.read_file(filename);
     const ast = Compiler.parse(source, filename);
-    const ir = Compiler.compileProgram(ast);
+    const ir = (Compiler as any).compileProgram(ast);
     const state = State.root(this.world);
     await state.world.load_declarations(filename, ir, state.env, pkg);
   }

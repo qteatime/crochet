@@ -56,7 +56,11 @@ export class CrochetLambda {
 }
 
 export class CrochetPartial {
-  constructor(readonly module: CrochetModule, readonly name: string) {}
+  constructor(
+    readonly module: CrochetModule,
+    readonly name: string,
+    readonly arity: number
+  ) {}
 }
 
 export class CrochetCell {
@@ -85,6 +89,7 @@ export class CrochetType {
 
 export class CrochetCommand {
   readonly branches: CrochetCommandBranch[] = [];
+  readonly versions: CrochetCommandBranch[][] = [];
 
   constructor(readonly name: string, readonly arity: number) {}
 }
@@ -95,6 +100,7 @@ export class CrochetCommandBranch {
     readonly env: Environment,
     readonly name: string,
     readonly documentation: string,
+    readonly parameters: string[],
     readonly types: CrochetType[],
     readonly body: IR.BasicBlock,
     readonly meta: IR.Metadata | null
@@ -258,7 +264,7 @@ export class CrochetActivation implements IActivation {
   constructor(
     readonly parent: Activation | null,
     readonly env: Environment,
-    readonly block: IR.BasicBlock
+    private block: IR.BasicBlock
   ) {}
 
   get current(): IR.Op | null {
@@ -284,10 +290,20 @@ export class CrochetActivation implements IActivation {
   push_block(b: IR.BasicBlock) {
     this.block_stack.push([this.instruction, b]);
   }
+
+  pop_block() {
+    if (this.block_stack.length === 0) {
+      throw new Error(`internal: pop_block() on empty stack`);
+    }
+    const [pc, block] = this.block_stack.pop()!;
+    this.block = block;
+    this.instruction = pc;
+  }
 }
 
 export class Universe {
   readonly type_cache = new Map<CrochetType, CrochetType>();
+  readonly registered_instances = new Map<CrochetType, CrochetValue[]>();
   readonly nothing: CrochetValue;
   readonly true: CrochetValue;
   readonly false: CrochetValue;

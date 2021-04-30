@@ -1,4 +1,5 @@
 import * as IR from "../ir";
+import { AssertType } from "../ir";
 import { unreachable } from "../utils/utils";
 import { ErrArbitrary } from "./errors";
 import {
@@ -6,7 +7,7 @@ import {
   ActivationTag,
   CrochetActivation,
   CrochetValue,
-  Environment,
+  NativeTag,
   Universe,
 } from "./intrinsics";
 import {
@@ -16,14 +17,37 @@ import {
   Native,
   Types,
   Values,
+  Commands,
+  Lambdas,
 } from "./primitives";
 
 export class State {
   constructor(readonly universe: Universe, public activation: Activation) {}
 }
 
+export enum Signal {
+  CONTINUE,
+  HALT,
+}
+
 export class Thread {
   constructor(readonly state: State) {}
+
+  run() {
+    while (true) {
+      const signal = this.step();
+      switch (signal) {
+        case Signal.CONTINUE:
+          continue;
+
+        case Signal.HALT:
+          break;
+
+        default:
+          throw unreachable(signal, `Signal`);
+      }
+    }
+  }
 
   step() {
     const activation = this.state.activation;
@@ -38,10 +62,35 @@ export class Thread {
     }
   }
 
+  do_return(value: CrochetValue, activation: Activation | null) {
+    if (activation == null) {
+      return Signal.HALT;
+    }
+
+    switch (activation.tag) {
+      case ActivationTag.CROCHET_ACTIVATION: {
+        this.state.activation = activation;
+        this.push(activation, value);
+        activation.next();
+        return Signal.CONTINUE;
+      }
+
+      default:
+        throw unreachable(activation as never, `Activation`);
+    }
+  }
+
   step_crochet(activation: CrochetActivation) {
     const op = activation.current;
     if (op == null) {
-      return;
+      if (activation.block_stack.length > 0) {
+        activation.pop_block();
+        activation.next();
+        return Signal.CONTINUE;
+      } else {
+        const value = activation.return_value ?? this.universe.nothing;
+        return this.do_return(value, activation.parent);
+      }
     }
 
     const t = IR.OpTag;
@@ -49,35 +98,35 @@ export class Thread {
       case t.DROP: {
         this.pop(activation);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.LET: {
         const value = this.pop(activation);
         this.define(op.name, value, op.meta);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_VARIABLE: {
         const value = this.lookup(op.name, op.meta);
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_SELF: {
         const value = this.get_self(op.meta);
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_GLOBAL: {
         const value = this.lookup_global(op.name, op.meta);
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_LITERAL: {
@@ -87,7 +136,7 @@ export class Thread {
         );
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_RETURN: {
@@ -101,7 +150,7 @@ export class Thread {
           this.push(activation, value);
         }
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_TUPLE: {
@@ -109,7 +158,7 @@ export class Thread {
         const tuple = Values.make_tuple(this.state.universe, values);
         this.push(activation, tuple);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_NEW: {
@@ -122,7 +171,7 @@ export class Thread {
         const value = Values.instantiate(type, values);
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_STATIC_TYPE: {
@@ -135,7 +184,7 @@ export class Thread {
         const value = Values.make_static_type(static_type);
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.INTERPOLATE: {
@@ -150,7 +199,7 @@ export class Thread {
         const value = Values.make_interpolation(this.universe, result);
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.PUSH_LAZY: {
@@ -158,7 +207,7 @@ export class Thread {
         const thunk = Values.make_thunk(this.universe, env, op.body);
         this.push(activation, thunk);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
       case t.FORCE: {
@@ -167,14 +216,14 @@ export class Thread {
         if (thunk.value != null) {
           this.push(activation, thunk.value);
           activation.next();
-          break;
+          return Signal.CONTINUE;
         } else {
           this.state.activation = new CrochetActivation(
             this.state.activation,
             thunk.env,
             thunk.body
           );
-          break;
+          return Signal.CONTINUE;
         }
       }
 
@@ -187,16 +236,128 @@ export class Thread {
         );
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
       }
 
-      case t.INVOKE_FOREIGN_SYNCHRONOUS: {
-        const fn = Native.get_synchronous_native(this.module, op.name);
+      case t.INVOKE_FOREIGN: {
+        const fn = Native.get_native(this.module, op.name);
         const args = this.pop_many(activation, op.arity);
-        const value = fn.payload(...args);
+        switch (fn.tag) {
+          case NativeTag.NATIVE_SYNCHRONOUS: {
+            const value = fn.payload(...args);
+            this.push(activation, value);
+            activation.next();
+            return Signal.CONTINUE;
+          }
+
+          default:
+            throw unreachable(fn.tag, `Native function`);
+        }
+      }
+
+      case t.INVOKE: {
+        const command = Commands.get_command(this.universe, op.name);
+        const args = this.pop_many(activation, op.arity);
+        const branch = Commands.select_branch(command, args);
+        const new_activation = Commands.prepare_activation(
+          activation,
+          branch,
+          args
+        );
+        this.state.activation = new_activation;
+        return Signal.CONTINUE;
+      }
+
+      case t.APPLY: {
+        const lambda = this.pop(activation);
+        const args = this.pop_many(activation, op.arity);
+        const new_activation = Lambdas.prepare_activation(
+          this.universe,
+          activation,
+          lambda,
+          args
+        );
+        this.state.activation = new_activation;
+        return Signal.CONTINUE;
+      }
+
+      case t.APPLY_PARTIAL: {
+        throw new Error(`FIXME: apply-partial`);
+      }
+
+      case t.RETURN: {
+        const value = this.pop(activation);
+        activation.set_return_value(value);
+        return Signal.CONTINUE;
+      }
+
+      case t.PUSH_PARTIAL: {
+        const value = Values.make_partial(
+          this.universe,
+          this.module,
+          op.name,
+          op.arity
+        );
         this.push(activation, value);
         activation.next();
-        break;
+        return Signal.CONTINUE;
+      }
+
+      case t.ASSERT: {
+        const value = this.pop(activation);
+        if (!Values.get_boolean(value)) {
+          throw new ErrArbitrary(
+            "assertion-violated",
+            `${AssertType[op.kind]}: ${op.assert_tag}: ${op.message}`
+          );
+        }
+        activation.next();
+        return Signal.CONTINUE;
+      }
+
+      case t.BRANCH: {
+        const value = this.pop(activation);
+        if (Values.get_boolean(value)) {
+          activation.push_block(op.consequent);
+          return Signal.CONTINUE;
+        } else {
+          activation.push_block(op.alternate);
+          return Signal.CONTINUE;
+        }
+      }
+
+      case t.TYPE_TEST: {
+        const value = this.pop(activation);
+        const type = Types.materialise_type(
+          this.universe,
+          this.module,
+          op.type
+        );
+        this.push(
+          activation,
+          Values.make_boolean(this.universe, Values.has_type(type, value))
+        );
+        activation.next();
+        return Signal.CONTINUE;
+      }
+
+      case t.INTRINSIC_EQUAL: {
+        const right = this.pop(activation);
+        const left = this.pop(activation);
+        const value = Values.make_boolean(
+          this.universe,
+          Values.equals(left, right)
+        );
+        this.push(activation, value);
+        activation.next();
+        return Signal.CONTINUE;
+      }
+
+      case t.REGISTER_INSTANCE: {
+        const value = this.pop(activation);
+        Values.register_instance(this.universe, value);
+        activation.next();
+        return Signal.CONTINUE;
       }
 
       default:

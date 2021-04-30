@@ -4,7 +4,7 @@ import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
 export const MAGIC = "CROC";
-export const VERSION = 1;
+export const VERSION = 2;
 
 export enum Section {
   DECLARATION = 1,
@@ -262,7 +262,7 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
-      case IR.OpTag.INVOKE_FOREIGN_SYNCHRONOUS: {
+      case IR.OpTag.INVOKE_FOREIGN: {
         this.encode_meta_id(x.meta);
         this.string(x.name);
         this.uint32(x.arity);
@@ -296,6 +296,7 @@ class CrochetIREncoder extends BinaryWriter {
       case IR.OpTag.PUSH_PARTIAL: {
         this.encode_meta_id(x.meta);
         this.string(x.name);
+        this.uint32(x.arity);
         break;
       }
 

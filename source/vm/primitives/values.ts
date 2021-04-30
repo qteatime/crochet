@@ -1,8 +1,10 @@
 import * as IR from "../../ir";
-import { zip3 } from "../../utils/utils";
+import { every, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import {
   CrochetLambda,
+  CrochetModule,
+  CrochetPartial,
   CrochetThunk,
   CrochetType,
   CrochetValue,
@@ -10,7 +12,7 @@ import {
   Tag,
   Universe,
 } from "../intrinsics";
-import { type_name } from "./location";
+import { simple_value, type_name } from "./location";
 import { get_function_type, is_subtype } from "./types";
 
 export function get_nothing(universe: Universe) {
@@ -74,6 +76,19 @@ export function make_lambda(
     Tag.LAMBDA,
     get_function_type(universe, parameters.length),
     new CrochetLambda(env, parameters, body)
+  );
+}
+
+export function make_partial(
+  universe: Universe,
+  module: CrochetModule,
+  name: string,
+  arity: number
+) {
+  return new CrochetValue(
+    Tag.PARTIAL,
+    get_function_type(universe, arity),
+    new CrochetPartial(module, name, arity)
   );
 }
 
@@ -147,4 +162,137 @@ export function assert_tag<T extends Tag>(
 export function get_thunk(x: CrochetValue) {
   assert_tag(Tag.THUNK, x);
   return x.payload;
+}
+
+export function get_boolean(x: CrochetValue) {
+  switch (x.tag) {
+    case Tag.FALSE:
+      return false;
+    case Tag.TRUE:
+      return true;
+    default:
+      throw new ErrArbitrary(
+        "invalid-type",
+        `Expected true or false, but got a value of type ${type_name(
+          x.type
+        )} instead`
+      );
+  }
+}
+
+export function as_boolean(x: CrochetValue) {
+  switch (x.tag) {
+    case Tag.NOTHING:
+      return false;
+    case Tag.FALSE:
+      return false;
+    case Tag.TUPLE: {
+      assert_tag(Tag.TUPLE, x);
+      return x.payload.length !== 0;
+    }
+    default:
+      return true;
+  }
+}
+
+export function make_boolean(universe: Universe, x: boolean) {
+  return x ? get_true(universe) : get_false(universe);
+}
+
+export function equals(left: CrochetValue, right: CrochetValue): boolean {
+  if (left.tag !== right.tag) {
+    return false;
+  }
+
+  switch (left.tag) {
+    case Tag.NOTHING:
+    case Tag.TRUE:
+    case Tag.FALSE:
+      return left.tag === right.tag;
+
+    case Tag.INTEGER: {
+      assert_tag(Tag.INTEGER, left);
+      assert_tag(Tag.INTEGER, right);
+      return left.payload === right.payload;
+    }
+
+    case Tag.FLOAT_64: {
+      assert_tag(Tag.FLOAT_64, left);
+      assert_tag(Tag.FLOAT_64, right);
+      return left.payload === right.payload;
+    }
+
+    case Tag.PARTIAL: {
+      assert_tag(Tag.PARTIAL, left);
+      assert_tag(Tag.PARTIAL, right);
+      return (
+        left.payload.module === right.payload.module &&
+        left.payload.name === right.payload.name
+      );
+    }
+
+    case Tag.TEXT: {
+      assert_tag(Tag.TEXT, left);
+      assert_tag(Tag.TEXT, right);
+      return left.payload === right.payload;
+    }
+
+    case Tag.INTERPOLATION: {
+      assert_tag(Tag.INTERPOLATION, left);
+      assert_tag(Tag.INTERPOLATION, right);
+      return (
+        left.payload.length === right.payload.length &&
+        every(zip(left.payload, right.payload), ([l, r]) => {
+          if (typeof l === "string" && typeof r === "string") {
+            return l === r;
+          } else if (l instanceof CrochetValue && r instanceof CrochetValue) {
+            return equals(l, r);
+          } else {
+            return false;
+          }
+        })
+      );
+    }
+
+    case Tag.TUPLE: {
+      assert_tag(Tag.TUPLE, left);
+      assert_tag(Tag.TUPLE, right);
+      return (
+        left.payload.length === right.payload.length &&
+        every(zip(left.payload, right.payload), ([l, r]) => equals(l, r))
+      );
+    }
+
+    case Tag.RECORD: {
+      assert_tag(Tag.RECORD, left);
+      assert_tag(Tag.RECORD, right);
+      if (left.payload.size !== right.payload.size) {
+        return false;
+      }
+      for (const [k, v] of left.payload.entries()) {
+        const rv = right.payload.get(k);
+        if (rv == null) {
+          return false;
+        } else if (!equals(v, rv)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    default:
+      return left === right;
+  }
+}
+
+export function register_instance(universe: Universe, value: CrochetValue) {
+  const current = universe.registered_instances.get(value.type) ?? [];
+  if (current.some((x) => equals(x, value))) {
+    throw new ErrArbitrary(
+      "instance-already-registered",
+      `The instance ${simple_value(value)} is already registered`
+    );
+  }
+  current.push(value);
+  universe.registered_instances.set(value.type, current);
 }

@@ -25,6 +25,13 @@ task("build-web", () => {
 });
 
 task(
+  "test",
+  series("build-ts", () => {
+    require("./build/test/suites/serialisation");
+  })
+);
+
+task(
   "build",
   series("build-grammar", "build-ts", "build-targets", "build-web")
 );
