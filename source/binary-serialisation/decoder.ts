@@ -157,6 +157,7 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.DForeignType(
           this.decode_meta_id(),
           this.string(),
+          this.decode_enum_tag(IR.Visibility, "visibility"),
           this.string(),
           this.string()
         );

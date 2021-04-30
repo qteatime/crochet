@@ -139,6 +139,7 @@ class CrochetIREncoder extends BinaryWriter {
       case IR.DeclarationTag.FOREIGN_TYPE: {
         this.encode_meta_id(x.meta);
         this.string(x.documentation);
+        this.encode_enum_tag(x.visibility);
         this.string(x.name);
         this.string(x.target);
         break;

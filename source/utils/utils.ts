@@ -79,6 +79,19 @@ export function* zip<A, B>(xs: A[], ys: B[]): Generator<[A, B]> {
   }
 }
 
+export function* zip3<A, B, C>(
+  xs: A[],
+  ys: B[],
+  zs: C[]
+): Generator<[A, B, C]> {
+  if (xs.length !== ys.length || xs.length !== zs.length) {
+    throw new Error(`Can't zip lists of different lengths`);
+  }
+  for (let i = 0; i < xs.length; ++i) {
+    yield [xs[i], ys[i], zs[i]];
+  }
+}
+
 export function every<A>(xs: Iterable<A>, pred: (_: A) => boolean): boolean {
   for (const x of xs) {
     if (!pred(x)) {

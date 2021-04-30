@@ -194,6 +194,7 @@ export class DForeignType extends BaseDeclaration {
   constructor(
     readonly meta: Metadata,
     readonly documentation: string,
+    readonly visibility: Visibility,
     readonly name: string,
     readonly target: string
   ) {

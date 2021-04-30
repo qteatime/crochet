@@ -1,3 +1,4 @@
+export * from "./meta";
 export * from "./type";
 export * from "./literal";
 export * from "./pattern";
