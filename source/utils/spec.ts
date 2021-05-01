@@ -256,3 +256,7 @@ export function parse<A>(x: any, spec: AnySpec<A>): A {
     throw new Error(`Failed to parse: Expected ${result.reason.format()}`);
   }
 }
+
+export function try_parse<A>(x: any, spec: AnySpec<A>): Valid<A> {
+  return toSpec(spec)(x);
+}
