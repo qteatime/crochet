@@ -438,7 +438,7 @@ export class Thread {
       }
 
       case t.RECORD_AT_PUT: {
-        const [key0, value, record0] = this.pop_many(activation, 3);
+        const [record0, key0, value] = this.pop_many(activation, 3);
         const key = Values.text_to_string(key0);
         const record = Values.record_at_put(this.universe, record0, key, value);
         this.push(activation, record);
@@ -560,10 +560,12 @@ export class Thread {
         `Trying to get ${size} values from a stack with only ${activation.stack.length} items`
       );
     }
-    const result = [];
-    for (let i = 0; i < size; ++i) {
-      result.push(activation.stack.pop()!);
+    const result = new Array(size);
+    const len = activation.stack.length;
+    for (let i = size; i > 0; --i) {
+      result[size - i] = activation.stack[len - i];
     }
+    activation.stack.length = len - size;
     return result;
   }
 

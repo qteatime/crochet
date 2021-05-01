@@ -1,10 +1,10 @@
 import { Capabilities, NodeTarget, AnyTarget } from "../runtime/pkg";
-// import * as Compiler from "../compiler";
 // import * as Server from "./crochet-server";
 // import { CrochetVM } from "../vm-interface";
 // import { Crochet } from "../targets/cli";
 // import * as REPL from "./repl";
 
+import * as Compiler from "../compiler";
 import * as Build from "./crochet-build";
 
 import { logger } from "../utils/logger";
@@ -12,19 +12,15 @@ import { show } from "../utils/utils";
 import { difference } from "../utils/collections";
 
 type CrochetVM = any;
-const Compiler: any = null;
 const Server: any = null;
 const Crochet: any = null;
 const REPL: any = null;
 
-import * as NewVM from "../new-crochet";
 import * as FS from "fs";
 import * as Path from "path";
 import * as Yargs from "yargs";
 import { StorageConfig } from "../storage";
 import { question } from "./prompt";
-
-(globalThis as any).x = NewVM;
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {
@@ -309,7 +305,7 @@ function show_ast(filename: string) {
 function show_ir(filename: string) {
   const source = read(filename);
   const ast = Compiler.parse(source, filename);
-  const ir = Compiler.compileProgram(ast);
+  const ir = (Compiler as any).compileProgram(ast);
   console.log(show(ir));
 }
 
