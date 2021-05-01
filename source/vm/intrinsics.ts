@@ -39,7 +39,7 @@ export type PayloadType = {
   [Tag.UNKNOWN]: unknown;
 };
 
-export class CrochetValue<T extends Tag = any> {
+export class CrochetValue<T extends Tag = Tag> {
   constructor(
     readonly tag: T,
     readonly type: CrochetType,
@@ -64,7 +64,7 @@ export class CrochetPartial {
 }
 
 export class CrochetCell {
-  constructor(readonly value: unknown) {}
+  constructor(readonly value: CrochetValue) {}
 }
 
 export class CrochetThunk {
@@ -74,6 +74,7 @@ export class CrochetThunk {
 
 export class CrochetType {
   public sealed = false;
+  readonly layout: Map<string, number>;
 
   constructor(
     readonly module: CrochetModule | null,
@@ -84,7 +85,9 @@ export class CrochetType {
     readonly types: CrochetType[],
     readonly is_static: boolean,
     readonly meta: IR.Metadata | null
-  ) {}
+  ) {
+    this.layout = new Map(this.fields.map((k, i) => [k, i]));
+  }
 }
 
 export class CrochetCommand {
@@ -316,12 +319,12 @@ export class CrochetActivation implements IActivation {
   readonly stack: CrochetValue[] = [];
   readonly block_stack: [number, IR.BasicBlock][] = [];
   private _return: CrochetValue | null = null;
-  private instruction: number = 0;
+  public instruction: number = 0;
 
   constructor(
     readonly parent: Activation | null,
     readonly env: Environment,
-    private block: IR.BasicBlock
+    public block: IR.BasicBlock
   ) {}
 
   get current(): IR.Op | null {

@@ -676,13 +676,17 @@ export class LowerToIR {
       Interpolate: (_, value) => {
         const id = this.context.register(value.pos);
         const parts = this.interpolation_parts(value.pos, value.parts);
-        return [
-          ...parts.flatMap((x) => x.compile()),
-          new IR.Interpolate(
-            id,
-            parts.map((x) => x.static_compile())
-          ),
-        ];
+        if (parts.length === 1 && parts[0] instanceof IPStatic) {
+          return [new IR.PushLiteral(new IR.LiteralText(parts[0].value))];
+        } else {
+          return [
+            ...parts.flatMap((x) => x.compile()),
+            new IR.Interpolate(
+              id,
+              parts.map((x) => x.static_compile())
+            ),
+          ];
+        }
       },
 
       Lazy: (pos, value) => {
@@ -881,7 +885,7 @@ export class LowerToIR {
       Expr: (expr) => {
         const id = this.context.register(get_pos(expr));
 
-        return [...this.expression(expr), new IR.Drop(id)];
+        return [...this.expression(expr)];
       },
 
       Let: (pos, name, value) => {
@@ -999,8 +1003,9 @@ export class LowerToIR {
       new IR.DDefine(
         id,
         `See type:${name}`,
+        IR.Visibility.GLOBAL,
         name,
-        new IR.BasicBlock([new IR.PushNew(id, type, 0)])
+        new IR.BasicBlock([new IR.PushNew(id, type, 0), new IR.Return(id)])
       ),
       new IR.DSeal(id, name),
       new IR.DPrelude(
@@ -1099,8 +1104,9 @@ export class LowerToIR {
           new IR.DDefine(
             id,
             this.documentation(cmeta),
+            IR.Visibility.GLOBAL,
             name.name,
-            new IR.BasicBlock(this.expression(value))
+            new IR.BasicBlock([...this.expression(value), new IR.Return(id)])
           ),
         ];
       },
@@ -1237,9 +1243,11 @@ export class LowerToIR {
           new IR.DDefine(
             id,
             `See type:${name.name}`,
+            IR.Visibility.GLOBAL,
             name.name,
             new IR.BasicBlock([
               new IR.PushNew(id, new IR.LocalType(id, name.name), 0),
+              new IR.Return(id),
             ])
           ),
           new IR.DSeal(id, name.name),

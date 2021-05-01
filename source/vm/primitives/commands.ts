@@ -34,9 +34,9 @@ export function select_branch(command: CrochetCommand, values: CrochetValue[]) {
   throw new ErrArbitrary(
     "no-branch-matched",
     [
-      "No definitions of command",
+      "No definitions of command ",
       command.name,
-      "matched the signature",
+      " matched the signature ",
       Location.command_signature(command.name, types),
       "\n",
       "The following arguments were provided:\n",
@@ -127,6 +127,8 @@ export function branch_accepts(
       return false;
     }
   }
+
+  return true;
 }
 
 // == Lookup
@@ -137,7 +139,9 @@ export function get_or_make_command(
 ) {
   const command = universe.world.commands.try_lookup(name);
   if (command == null) {
-    return new CrochetCommand(name, arity);
+    const command = new CrochetCommand(name, arity);
+    universe.world.commands.define(name, command);
+    return command;
   } else {
     return command;
   }

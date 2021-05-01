@@ -1,5 +1,6 @@
 import * as IR from "../ir";
 import { AssertType } from "../ir";
+import { logger } from "../utils/logger";
 import { unreachable } from "../utils/utils";
 import { ErrArbitrary } from "./errors";
 import {
@@ -28,14 +29,20 @@ import {
 
 export enum SignalTag {
   RETURN,
+  JUMP,
   CONTINUE,
 }
 
-export type Signal = ReturnSignal | ContinueSignal;
+export type Signal = ReturnSignal | JumpSignal | ContinueSignal;
 
 export class ReturnSignal {
   readonly tag = SignalTag.RETURN;
   constructor(readonly value: CrochetValue) {}
+}
+
+export class JumpSignal {
+  readonly tag = SignalTag.JUMP;
+  constructor(readonly activation: CrochetActivation) {}
 }
 
 export class ContinueSignal {
@@ -62,7 +69,12 @@ export class Thread {
     return value;
   }
 
+  async run_to_completion() {
+    return this.run();
+  }
+
   run() {
+    logger.debug(`Running`, Location.simple_activation(this.state.activation));
     while (true) {
       const signal = this.step();
       switch (signal.tag) {
@@ -77,6 +89,15 @@ export class Thread {
           } else {
             return signal.value;
           }
+        }
+
+        case SignalTag.JUMP: {
+          this.state.activation = signal.activation;
+          logger.debug(
+            "Jump to",
+            Location.simple_activation(signal.activation)
+          );
+          continue;
         }
 
         default:
@@ -114,10 +135,9 @@ export class Thread {
 
     switch (activation.tag) {
       case ActivationTag.CROCHET_ACTIVATION: {
-        this.state.activation = activation;
         this.push(activation, value);
         activation.next();
-        return _continue;
+        return new JumpSignal(activation);
       }
 
       default:
@@ -129,14 +149,22 @@ export class Thread {
     const op = activation.current;
     if (op == null) {
       if (activation.block_stack.length > 0) {
+        logger.debug(`Finished with block, taking next block`, activation);
         activation.pop_block();
         activation.next();
         return _continue;
       } else {
         const value = activation.return_value ?? this.universe.nothing;
+        logger.debug(
+          `Finished with activation, return value:`,
+          Location.simple_value(value)
+        );
         return this.do_return(value, activation.parent);
       }
     }
+
+    logger.debug(`Stack:`, activation.stack.map(Location.simple_value));
+    logger.debug(`Executing operation:`, Location.simple_op(op));
 
     const t = IR.OpTag;
     switch (op.tag) {
@@ -263,12 +291,9 @@ export class Thread {
           activation.next();
           return _continue;
         } else {
-          this.state.activation = new CrochetActivation(
-            this.state.activation,
-            thunk.env,
-            thunk.body
+          return new JumpSignal(
+            new CrochetActivation(this.state.activation, thunk.env, thunk.body)
           );
-          return _continue;
         }
       }
 
@@ -309,8 +334,7 @@ export class Thread {
           branch,
           args
         );
-        this.state.activation = new_activation;
-        return _continue;
+        return new JumpSignal(new_activation);
       }
 
       case t.APPLY: {
@@ -322,8 +346,7 @@ export class Thread {
           lambda,
           args
         );
-        this.state.activation = new_activation;
-        return _continue;
+        return new JumpSignal(new_activation);
       }
 
       case t.APPLY_PARTIAL: {
@@ -333,6 +356,7 @@ export class Thread {
       case t.RETURN: {
         const value = this.pop(activation);
         activation.set_return_value(value);
+        activation.next();
         return _continue;
       }
 
@@ -405,8 +429,52 @@ export class Thread {
         return _continue;
       }
 
+      case t.PUSH_RECORD: {
+        const values = this.pop_many(activation, op.keys.length);
+        const record = Values.make_record(this.universe, op.keys, values);
+        this.push(activation, record);
+        activation.next();
+        return _continue;
+      }
+
+      case t.RECORD_AT_PUT: {
+        const [key0, value, record0] = this.pop_many(activation, 3);
+        const key = Values.text_to_string(key0);
+        const record = Values.record_at_put(this.universe, record0, key, value);
+        this.push(activation, record);
+        activation.next();
+        return _continue;
+      }
+
+      case t.PROJECT: {
+        const [key0, value0] = this.pop_many(activation, 2);
+        const key = Values.text_to_string(key0);
+        const result = Values.project(value0, key);
+        this.push(activation, result);
+        activation.next();
+        return _continue;
+      }
+
+      case t.PROJECT_STATIC: {
+        const value = this.pop(activation);
+        const result = Values.project(value, op.key);
+        this.push(activation, result);
+        activation.next();
+        return _continue;
+      }
+
+      case t.SEARCH:
+      case t.MATCH_SEARCH:
+      case t.FACT:
+      case t.FORGET:
+      case t.SIMULATE: {
+        throw new Error(
+          `internal: ${Location.simple_op(op)} not yet supported`
+        );
+      }
+
       default:
-        throw unreachable(op as never, `Operation`);
+        throw unreachable(op, `Operation`);
     }
   }
 
