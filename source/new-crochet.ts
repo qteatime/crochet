@@ -5,9 +5,10 @@ import * as IR from "./ir";
 import * as Compiler from "./compiler";
 import * as Binary from "./binary-serialisation";
 import * as VM from "./vm";
+import * as Package from "./pkg";
 import { logger } from "./utils/logger";
 
-export { IR, Compiler, Binary, VM };
+export { IR, Compiler, Binary, VM, Package };
 
 void (async function main() {
   try {
