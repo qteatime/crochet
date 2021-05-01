@@ -1,11 +1,6 @@
 import { Location } from ".";
-import { ErrArbitrary } from "../../runtime";
-import {
-  Universe,
-  CrochetModule,
-  NativeTag,
-  NativeFunction,
-} from "../intrinsics";
+import { ErrArbitrary } from "../errors";
+import { CrochetModule, NativeTag, NativeFunction } from "../intrinsics";
 
 export function native_tag_to_name(x: NativeTag) {
   return NativeTag[x].toLowerCase().replace(/_/g, "-");

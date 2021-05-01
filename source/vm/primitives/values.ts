@@ -1,5 +1,5 @@
 import * as IR from "../../ir";
-import { every, zip, zip3 } from "../../utils/utils";
+import { clone_map, copy_map, every, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import {
   CrochetLambda,
@@ -90,6 +90,31 @@ export function make_partial(
     get_function_type(universe, arity),
     new CrochetPartial(module, name, arity)
   );
+}
+
+export function make_record(
+  universe: Universe,
+  keys: string[],
+  values: CrochetValue[]
+) {
+  return new CrochetValue(
+    Tag.RECORD,
+    universe.types.Record,
+    new Map(zip(keys, values))
+  );
+}
+
+export function record_at_put(
+  universe: Universe,
+  record: CrochetValue,
+  key: string,
+  value: CrochetValue
+) {
+  assert_tag(Tag.RECORD, record);
+  const map0 = record.payload;
+  const map = clone_map(map0);
+  map.set(key, value);
+  return new CrochetValue(Tag.RECORD, universe.types.Record, map);
 }
 
 export function has_type(type: CrochetType, value: CrochetValue) {
@@ -295,4 +320,58 @@ export function register_instance(universe: Universe, value: CrochetValue) {
   }
   current.push(value);
   universe.registered_instances.set(value.type, current);
+}
+
+export function text_to_string(x: CrochetValue) {
+  assert_tag(Tag.TEXT, x);
+  return x.payload;
+}
+
+export function project(value: CrochetValue, key: string) {
+  switch (value.tag) {
+    case Tag.RECORD: {
+      assert_tag(Tag.RECORD, value);
+      const x = value.payload.get(key);
+      if (x == null) {
+        throw new ErrArbitrary(
+          "no-record-key",
+          `The key ${key} does not exist in the record (${[
+            ...value.payload.keys(),
+          ].join(", ")})`
+        );
+      } else {
+        return x;
+      }
+    }
+
+    case Tag.INSTANCE: {
+      assert_tag(Tag.INSTANCE, value);
+      const index = value.type.layout.get(key);
+      if (index == null) {
+        throw new ErrArbitrary(
+          "no-type-key",
+          `The type ${type_name(
+            value.type
+          )} does not have a field ${key} ([${value.type.fields.join(", ")}])`
+        );
+      } else {
+        const result = value.payload[index];
+        if (result == null) {
+          throw new ErrArbitrary(
+            "internal",
+            `The data in the value does not match its type (${type_name(
+              value.type
+            )}) layout`
+          );
+        }
+        return result;
+      }
+    }
+
+    default:
+      throw new ErrArbitrary(
+        "no-projection-capability",
+        `Values of type ${type_name(value.type)} do not support projection`
+      );
+  }
 }

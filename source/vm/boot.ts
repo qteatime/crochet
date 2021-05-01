@@ -202,7 +202,7 @@ export function make_universe() {
   });
 }
 
-function load_module(
+export function load_module(
   universe: Universe,
   pkg: CrochetPackage,
   program: IR.Program
@@ -296,4 +296,6 @@ function load_module(
         throw unreachable(x as never, `Declaration`);
     }
   }
+
+  return module;
 }

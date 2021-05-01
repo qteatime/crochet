@@ -108,6 +108,14 @@ export function copy_map<A, B>(source: Map<A, B>, target: Map<A, B>) {
   return target;
 }
 
+export function clone_map<A, B>(source: Map<A, B>) {
+  const map = new Map<A, B>();
+  for (const [k, v] of source.entries()) {
+    map.set(k, v);
+  }
+  return map;
+}
+
 export function* gen<A>(x: Iterable<A>) {
   yield* x;
 }
