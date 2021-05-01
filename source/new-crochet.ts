@@ -11,8 +11,8 @@ export { IR, Compiler, Binary, VM };
 
 void (async function main() {
   try {
-    const [file] = process.argv.slice(2);
-    logger.verbose = false;
+    const [file, verbose] = process.argv.slice(2);
+    logger.verbose = !!verbose;
 
     debugger;
     const source = FS.readFileSync(file, "utf-8");

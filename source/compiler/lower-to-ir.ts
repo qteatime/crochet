@@ -705,7 +705,7 @@ export class LowerToIR {
           new IR.PushLambda(
             id,
             params.map((x) => x.name),
-            new IR.BasicBlock(this.expression(body))
+            new IR.BasicBlock([...this.expression(body), new IR.Return(id)])
           ),
         ];
       },
