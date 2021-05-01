@@ -1,25 +1,19 @@
 import * as FS from "fs";
 import * as Path from "path";
 
-import * as IR from "./ir";
-import * as Compiler from "./compiler";
-import * as Binary from "./binary-serialisation";
-import * as VM from "./vm";
-import * as Package from "./pkg";
+import Crochet from "./new-index";
 import { logger } from "./utils/logger";
-
-export { IR, Compiler, Binary, VM, Package };
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
-  const ast = Compiler.parse(source, file);
-  const ir = Compiler.lowerToIR(file, source, ast);
+  const ast = Crochet.compiler.parse(source, file);
+  const ir = Crochet.compiler.lowerToIR(file, source, ast);
   return ir;
 }
 
 function read_binary(file: string) {
   const source = FS.readFileSync(file);
-  const ir = Binary.decode_program(source);
+  const ir = Crochet.binary.decode_program(source);
   return ir;
 }
 
@@ -44,11 +38,9 @@ void (async function main() {
 
     switch (command) {
       case "compile": {
-        const source = FS.readFileSync(file, "utf-8");
-        const ast = Compiler.parse(source, file);
-        const ir = Compiler.lowerToIR(file, source, ast);
+        const ir = read_crochet(file);
         const target = FS.createWriteStream(file + ".croc");
-        Binary.encode_program(ir, target);
+        Crochet.binary.encode_program(ir, target);
         console.log("Generated ", file + ".croc");
         return;
       }
@@ -56,15 +48,22 @@ void (async function main() {
       case "run": {
         const ir = read(file);
 
-        const universe = VM.make_universe();
-        const pkg = new VM.CrochetPackage(universe.world, "(anonymous)", file);
-        const module = VM.load_module(universe, pkg, ir);
+        const universe = Crochet.vm.make_universe();
+        const pkg = new Crochet.vm.CrochetPackage(
+          universe.world,
+          "(anonymous)",
+          file
+        );
+        const module = Crochet.vm.load_module(universe, pkg, ir);
 
-        const value = await VM.run_command(universe, module, "main: _", [
-          VM.Values.make_tuple(universe, []),
-        ]);
+        const value = await Crochet.vm.run_command(
+          universe,
+          module,
+          "main: _",
+          [Crochet.vm.Values.make_tuple(universe, [])]
+        );
 
-        console.log(VM.Location.simple_value(value));
+        console.log(Crochet.vm.Location.simple_value(value));
         return;
       }
     }
