@@ -3,6 +3,7 @@ import { unreachable } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import { Universe, CrochetModule, CrochetType } from "../intrinsics";
 import * as Location from "./location";
+import { get_type_namespace } from "./modules";
 
 export function is_subtype(type: CrochetType, parent: CrochetType): boolean {
   if (type === parent) {
@@ -125,7 +126,7 @@ export function define_type(
   type: CrochetType,
   visibility: IR.Visibility
 ) {
-  const ns = get_namespace(module, visibility);
+  const ns = get_type_namespace(module, visibility);
   if (!ns.define(name, type)) {
     throw new ErrArbitrary(
       "duplicated-type",
@@ -133,18 +134,6 @@ export function define_type(
         module
       )}`
     );
-  }
-}
-
-export function get_namespace(
-  module: CrochetModule,
-  visibility: IR.Visibility
-) {
-  switch (visibility) {
-    case IR.Visibility.LOCAL:
-      return module.types;
-    case IR.Visibility.GLOBAL:
-      return module.pkg.types;
   }
 }
 
@@ -170,4 +159,8 @@ export function distance(type: CrochetType): number {
 
 export function compare(t1: CrochetType, t2: CrochetType): number {
   return distance(t2) - distance(t1);
+}
+
+export function seal(type: CrochetType) {
+  type.sealed = true;
 }

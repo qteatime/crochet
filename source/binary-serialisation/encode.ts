@@ -80,6 +80,7 @@ class CrochetIREncoder extends BinaryWriter {
       case IR.DeclarationTag.DEFINE: {
         this.encode_meta_id(x.meta);
         this.string(x.documentation);
+        this.encode_enum_tag(x.visiblity);
         this.string(x.name);
         this.encode_basic_block(x.body);
         break;
