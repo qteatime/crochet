@@ -1,5 +1,6 @@
 import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
+import { Thread } from "./evaluation";
 import {
   Universe,
   CrochetCommandBranch,
@@ -8,8 +9,10 @@ import {
   CrochetType,
   CrochetWorld,
   Environment,
+  CrochetTest,
+  CrochetPrelude,
 } from "./intrinsics";
-import { Commands, Types } from "./primitives";
+import { Commands, Modules, Tests, Types, World } from "./primitives";
 
 export function make_universe() {
   const world = new CrochetWorld();
@@ -228,7 +231,7 @@ function load_module(
         );
 
         Commands.add_branch(command, branch);
-        break;
+        continue;
       }
 
       case t.TYPE: {
@@ -245,13 +248,48 @@ function load_module(
         );
 
         Types.define_type(module, x.name, type, x.visibility);
-        break;
+        continue;
       }
 
       case t.FOREIGN_TYPE: {
         const type = Types.get_foreign_type(universe, module, x.target);
         Types.define_type(module, x.name, type, IR.Visibility.GLOBAL);
-        break;
+        continue;
+      }
+
+      case t.SEAL: {
+        const type = Types.get_type(module, x.name);
+        Types.seal(type);
+        continue;
+      }
+
+      case t.TEST: {
+        const test = new CrochetTest(
+          module,
+          new Environment(null, null, module),
+          x.name,
+          x.body
+        );
+        Tests.add_test(universe, test);
+        continue;
+      }
+
+      case t.OPEN: {
+        Modules.open(module, x.namespace);
+        continue;
+      }
+
+      case t.DEFINE: {
+        const value = Thread.run_sync(universe, module, x.body);
+        Modules.define(module, x.visiblity, x.name, value);
+        continue;
+      }
+
+      case t.PRELUDE: {
+        const env = new Environment(null, null, module);
+        const prelude = new CrochetPrelude(env, x.body);
+        World.add_prelude(universe.world, prelude);
+        continue;
       }
 
       default:

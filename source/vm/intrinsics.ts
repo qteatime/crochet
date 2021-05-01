@@ -124,18 +124,35 @@ export class NativeFunction<T extends NativeTag = NativeTag> {
   constructor(readonly payload: NativePayload[T]) {}
 }
 
+export class CrochetTest {
+  constructor(
+    readonly module: CrochetModule,
+    readonly env: Environment,
+    readonly title: string,
+    readonly body: IR.BasicBlock
+  ) {}
+}
+
+export class CrochetPrelude {
+  constructor(readonly env: Environment, readonly body: BasicBlock) {}
+}
+
 export class CrochetWorld {
   readonly commands = new Namespace<CrochetCommand>(null, null);
   readonly types = new Namespace<CrochetType>(null, null);
   readonly definitions = new Namespace<CrochetValue>(null, null);
   readonly native_types = new Namespace<CrochetType>(null, null);
   readonly native_functions = new Namespace<NativeFunction>(null, null);
+  readonly prelude: CrochetPrelude[] = [];
+  readonly tests: CrochetTest[] = [];
+  readonly packages = new Map<string, CrochetPackage>();
 }
 
 export class CrochetPackage {
   readonly types: Namespace<CrochetType>;
   readonly definitions: Namespace<CrochetValue>;
   readonly native_functions: Namespace<NativeFunction>;
+  readonly dependencies = new Set<string>();
 
   constructor(
     readonly world: CrochetWorld,
@@ -193,6 +210,7 @@ export class Environment {
 
 export class Namespace<V> {
   private bindings = new Map<string, V>();
+  readonly allowed_prefixes = new Set<string>();
 
   constructor(
     readonly parent: Namespace<V> | null,
@@ -228,7 +246,18 @@ export class Namespace<V> {
   }
 
   try_lookup(name: string) {
-    return this.try_lookup_namespaced(this.prefix, name);
+    const value = this.try_lookup_namespaced(this.prefix, name);
+    if (value != null) {
+      return value;
+    } else {
+      for (const prefix of this.allowed_prefixes) {
+        const value = this.try_lookup_namespaced(prefix, name);
+        if (value != null) {
+          return value;
+        }
+      }
+      return null;
+    }
   }
 
   try_lookup_namespaced(namespace: string | null, name: string): V | null {
@@ -241,6 +270,34 @@ export class Namespace<V> {
       return null;
     }
   }
+}
+
+export class State {
+  constructor(
+    readonly universe: Universe,
+    public activation: Activation,
+    public continuation: Continuation
+  ) {}
+}
+
+export enum ContinuationTag {
+  RETURN,
+  TAP,
+}
+
+export type Continuation = ContinuationReturn | ContinuationTap;
+
+export class ContinuationReturn {
+  readonly tag = ContinuationTag.RETURN;
+}
+
+export class ContinuationTap {
+  readonly tag = ContinuationTag.TAP;
+
+  constructor(
+    readonly saved_state: State,
+    readonly continuation: (state: State, value: CrochetValue) => State
+  ) {}
 }
 
 export enum ActivationTag {

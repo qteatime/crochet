@@ -98,6 +98,7 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.DDefine(
           this.decode_meta_id(),
           this.string(),
+          this.decode_enum_tag(IR.Visibility, "Visibility"),
           this.string(),
           this.decode_basic_block()
         );
