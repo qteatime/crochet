@@ -1,9 +1,10 @@
 % crochet
 
 /// Universal logical conjunction
-command (X is boolean) and (Y is boolean) =
-  foreign boolean.and(X, Y)
-test
+command boolean and boolean = false;
+command true and true = true;
+
+test "boolean and boolean" do
   assert (true and true) =:= true;
   assert (true and false) =:= false;
   assert (false and true) =:= false;
@@ -11,9 +12,10 @@ test
 end
 
 /// Universal logical disjunction
-command (X is boolean) or (Y is boolean) =
-  foreign boolean.or(X, Y)
-test
+command boolean or boolean = true;
+command false or false = false;
+
+test "boolean or boolean" do
   assert (true or true) =:= true;
   assert (true or false) =:= true;
   assert (false or true) =:= true;
@@ -21,9 +23,10 @@ test
 end
 
 /// Universal logical negation
-command not (X is boolean) =
-  foreign boolean.not(X)
-test
+command not true = false;
+command not false = true;
+
+test "not boolean" do
   assert (not true) =:= false;
   assert (not false) =:= true;
 end
