@@ -15,6 +15,8 @@ import { union } from "../../utils/collections";
 import { build_file } from "./build";
 import { CrochetValue } from "../../vm";
 
+const rootRelative = process.env.WEBPACK ? "" : "../../../";
+
 export class CrochetForNode {
   readonly crochet: Crochet;
   private _booted_system: BootedCrochet | null = null;
@@ -30,7 +32,7 @@ export class CrochetForNode {
   }
 
   get stdlib_path() {
-    return Path.join(__dirname, "../../../stdlib");
+    return Path.join(__dirname, rootRelative, "stdlib");
   }
 
   get trusted_core() {

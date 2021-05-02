@@ -1,5 +1,8 @@
 import * as IR from "../ir";
-import { logger } from "../utils/logger";
+//import { logger } from "../utils/logger";
+const logger = {
+  debug(...x: string[]) {},
+};
 import { unreachable } from "../utils/utils";
 import { BinaryReader } from "./binary";
 import { MAGIC, VERSION, Section } from "./encode";

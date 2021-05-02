@@ -92,9 +92,9 @@ export function* select_exact(
   branches: CrochetCommandBranch[],
   types: CrochetType[]
 ) {
-  for (const branch of branches) {
+  outer: for (const branch of branches) {
     for (const [bt, t] of zip(branch.types, types)) {
-      if (bt !== t) continue;
+      if (bt !== t) continue outer;
     }
     yield branch;
   }
