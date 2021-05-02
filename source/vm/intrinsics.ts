@@ -430,7 +430,7 @@ export class Universe {
   }
 
   make_float(x: number) {
-    if (x >= 0 && x < this.float_cache.length) {
+    if (Number.isInteger(x) && x >= 0 && x < this.float_cache.length) {
       return this.float_cache[x];
     } else {
       return new CrochetValue(Tag.FLOAT_64, this.types.Float, x);
