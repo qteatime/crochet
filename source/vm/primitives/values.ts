@@ -104,6 +104,13 @@ export function make_record(
   );
 }
 
+export function make_record_from_map(
+  universe: Universe,
+  value: Map<string, CrochetValue>
+) {
+  return new CrochetValue(Tag.RECORD, universe.types.Record, value);
+}
+
 export function record_at_put(
   universe: Universe,
   record: CrochetValue,
@@ -202,21 +209,6 @@ export function get_boolean(x: CrochetValue) {
           x.type
         )} instead`
       );
-  }
-}
-
-export function as_boolean(x: CrochetValue) {
-  switch (x.tag) {
-    case Tag.NOTHING:
-      return false;
-    case Tag.FALSE:
-      return false;
-    case Tag.TUPLE: {
-      assert_tag(Tag.TUPLE, x);
-      return x.payload.length !== 0;
-    }
-    default:
-      return true;
   }
 }
 

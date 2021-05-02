@@ -8,10 +8,10 @@ export function target_compatible(self: Target, that: Target) {
       return true;
 
     case TargetTag.NODE:
-      return that.tag === TargetTag.NODE;
+      return that.tag === TargetTag.NODE || that.tag === TargetTag.ANY;
 
     case TargetTag.WEB:
-      return that.tag === TargetTag.WEB;
+      return that.tag === TargetTag.WEB || that.tag === TargetTag.ANY;
 
     default:
       throw unreachable(self, `Target`);

@@ -123,8 +123,7 @@ export type NativePayload = {
 };
 
 export class NativeFunction<T extends NativeTag = NativeTag> {
-  readonly tag = NativeTag.NATIVE_SYNCHRONOUS;
-  constructor(readonly payload: NativePayload[T]) {}
+  constructor(readonly tag: T, readonly payload: NativePayload[T]) {}
 }
 
 export class CrochetTest {

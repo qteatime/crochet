@@ -1,6 +1,7 @@
 import * as FS from "fs";
 import * as Path from "path";
 
+import { CrochetForNode } from "./targets/node";
 import Crochet from "./new-index";
 import { logger } from "./utils/logger";
 
@@ -46,22 +47,9 @@ void (async function main() {
       }
 
       case "run": {
-        const ir = read(file);
-
-        const universe = Crochet.vm.make_universe();
-        const pkg = new Crochet.vm.CrochetPackage(
-          universe.world,
-          "(anonymous)",
-          file
-        );
-        const module = Crochet.vm.load_module(universe, pkg, ir);
-
-        const value = await Crochet.vm.run_command(
-          universe,
-          module,
-          "main: _",
-          [Crochet.vm.Values.make_tuple(universe, [])]
-        );
+        const crochet = new CrochetForNode([], new Set([]), true);
+        await crochet.boot(file, Crochet.pkg.target_node());
+        const value = await crochet.run("main: _", [crochet.ffi.tuple([])]);
 
         console.log(Crochet.vm.Location.simple_value(value));
         return;

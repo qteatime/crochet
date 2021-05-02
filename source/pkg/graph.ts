@@ -1,6 +1,6 @@
 import * as Path from "path";
 
-import { Capability, File, Package, Target } from "./ir";
+import { Capability, file, File, Package, Target } from "./ir";
 import { logger } from "../utils/logger";
 import { union } from "../utils/collections";
 import {
@@ -17,6 +17,7 @@ export interface IPackageResolution {
 export class PackageGraph {
   constructor(
     readonly target: Target,
+    readonly trusted: Set<Package>,
     readonly packages: Map<string, ResolvedPackage>
   ) {}
 
@@ -90,6 +91,14 @@ export class PackageGraph {
 
   check_capabilities(root: ResolvedPackage, capabilities: Set<Capability>) {
     const self = this;
+
+    function native_allowed(
+      pkg: ResolvedPackage,
+      capabilities: Set<Capability>
+    ) {
+      return capabilities.has("native") || self.trusted.has(pkg.pkg);
+    }
+
     function check(
       visited: ResolvedPackage[],
       parent: string,
@@ -114,7 +123,10 @@ export class PackageGraph {
       }
 
       // check native capabilities
-      if (pkg.native_sources.length !== 0 && !capabilities.has("native")) {
+      if (
+        pkg.native_sources.length !== 0 &&
+        native_allowed(pkg, capabilities)
+      ) {
         throw new Error(
           [
             `${name} (${pkg.filename}) defines native extensions, `,
@@ -183,6 +195,18 @@ export class PackageGraph {
 export class ResolvedFile {
   constructor(readonly pkg: ResolvedPackage, readonly file: File) {}
 
+  with_basename(x: string) {
+    const dir = Path.dirname(this.file.filename);
+    return new ResolvedFile(
+      this.pkg,
+      file({ filename: Path.join(dir, x), target: this.file.target })
+    );
+  }
+
+  get basename() {
+    return Path.basename(this.relative_filename);
+  }
+
   get relative_filename() {
     return this.file.filename;
   }
@@ -194,12 +218,20 @@ export class ResolvedFile {
     return Path.join(dir, base);
   }
 
+  get absolute_directory() {
+    return Path.dirname(this.absolute_filename);
+  }
+
   get absolute_filename() {
     return Path.resolve(this.pkg.root, this.relative_filename);
   }
 
   get binary_image() {
     return Path.join(this.pkg.binary_root, this.relative_basename + ".croc");
+  }
+
+  get extension() {
+    return Path.extname(this.relative_filename);
   }
 }
 
@@ -256,6 +288,7 @@ export class ResolvedPackage {
 export async function build_package_graph(
   root: Package,
   target: Target,
+  trusted: Set<Package>,
   resolver: IPackageResolution
 ) {
   async function resolve(pkg: ResolvedPackage) {
@@ -279,5 +312,5 @@ export async function build_package_graph(
   const resolved_pkg = new ResolvedPackage(root, target);
   packages.set(resolved_pkg.name, resolved_pkg);
   await resolve(resolved_pkg);
-  return new PackageGraph(target, packages);
+  return new PackageGraph(target, trusted, packages);
 }
