@@ -34,10 +34,65 @@ void (async function main() {
     const [command, file, verbose] = process.argv.slice(2);
     logger.verbose = !!verbose;
     if (!file) {
-      throw new Error(`Usage: new-crochet <run|compile> <file> [verbose]`);
+      throw new Error(
+        `Usage: new-crochet <show-ir|run|compile> <file> [verbose]`
+      );
     }
 
     switch (command) {
+      case "show-ir": {
+        const ir = read_crochet(file);
+
+        const t = Crochet.ir.DeclarationTag;
+        for (const x of ir.declarations) {
+          switch (x.tag) {
+            case t.COMMAND: {
+              console.log(`Command ${x.name} ${x.types}`);
+              console.log(
+                x.body.ops
+                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .join("")
+              );
+              break;
+            }
+
+            case t.DEFINE: {
+              console.log(`Define ${x.name}`);
+              console.log(
+                x.body.ops
+                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .join("")
+              );
+              break;
+            }
+
+            case t.PRELUDE: {
+              console.log(`Prelude`);
+              console.log(
+                x.body.ops
+                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .join("")
+              );
+              break;
+            }
+
+            case t.TEST: {
+              console.log(`Test ${x.name}`);
+              console.log(
+                x.body.ops
+                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .join("")
+              );
+              break;
+            }
+
+            default:
+              console.log(t[x.tag], x);
+          }
+        }
+        console.log("");
+      }
+
       case "compile": {
         const ir = read_crochet(file);
         const target = FS.createWriteStream(file + ".croc");

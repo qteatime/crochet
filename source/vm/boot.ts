@@ -281,7 +281,7 @@ export function load_module(
 
       case t.DEFINE: {
         const value = Thread.run_sync(universe, module, x.body);
-        Modules.define(module, x.visiblity, x.name, value);
+        Modules.define(module, x.visibility, x.name, value);
         continue;
       }
 

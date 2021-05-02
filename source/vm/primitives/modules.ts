@@ -1,4 +1,5 @@
 import * as IR from "../../ir";
+import { logger } from "../../utils/logger";
 import { ErrArbitrary } from "../errors";
 import { CrochetModule, CrochetValue, Universe } from "../intrinsics";
 import { module_location } from "./location";
@@ -17,6 +18,11 @@ export function define(
   value: CrochetValue
 ) {
   const ns = get_define_namespace(module, visibility);
+  logger.debug(
+    `Defining ${IR.Visibility[visibility]} ${name} in ${module_location(
+      module
+    )}`
+  );
   if (!ns.define(name, value)) {
     throw new ErrArbitrary(
       "duplicated-definition",

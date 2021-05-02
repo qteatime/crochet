@@ -1179,6 +1179,20 @@ export class LowerToIR {
         const decls = this.declaration(decl0, context);
         return decls.map((x) => {
           switch (x.tag) {
+            case IR.DeclarationTag.DEFINE: {
+              if (x.visibility === IR.Visibility.GLOBAL) {
+                return new IR.DDefine(
+                  x.meta,
+                  x.documentation,
+                  IR.Visibility.LOCAL,
+                  x.name,
+                  x.body
+                );
+              } else {
+                return x;
+              }
+            }
+
             case IR.DeclarationTag.TYPE: {
               if (x.visibility === IR.Visibility.GLOBAL) {
                 return new IR.DType(
@@ -1190,6 +1204,8 @@ export class LowerToIR {
                   x.fields,
                   x.types
                 );
+              } else {
+                return x;
               }
             }
 

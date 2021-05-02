@@ -1,5 +1,8 @@
 import { inspect } from "util";
-import { logger } from "../utils/logger";
+//import { logger } from "../utils/logger";
+const logger = {
+  debug(...x: string[]) {},
+};
 
 type uint32 = number;
 

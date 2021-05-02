@@ -97,7 +97,7 @@ export class DDefine extends BaseDeclaration {
   constructor(
     readonly meta: Metadata,
     readonly documentation: string,
-    readonly visiblity: Visibility,
+    readonly visibility: Visibility,
     readonly name: string,
     readonly body: BasicBlock
   ) {

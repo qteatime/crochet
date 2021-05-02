@@ -6,7 +6,12 @@ import * as Package from "../../pkg";
 import { execFileSync } from "child_process";
 import { logger } from "../../utils/logger";
 
-const linguaPath = Path.join(__dirname, "../../node_modules/.bin/lingua");
+const rootRelative = process.env.WEBPACK ? "" : "../../";
+const linguaPath = Path.join(
+  __dirname,
+  rootRelative,
+  "node_modules/.bin/lingua"
+);
 
 export async function build(pkg: Package.ResolvedPackage) {
   for (const file of pkg.sources) {
@@ -63,19 +68,12 @@ export async function compile_crochet(
   source: string
 ) {
   FS.mkdirSync(Path.dirname(file.binary_image), { recursive: true });
-  const stream = FS.createWriteStream(file.binary_image);
   const ast = Compiler.parse(source, file.relative_filename);
   const program = Compiler.lowerToIR(file.relative_filename, source, ast);
+  // FIXME: actually use file streams...
+  const stream = new Binary.BufferedWriter();
   Binary.encode_program(program, stream);
-
-  return new Promise<void>((resolve, reject) => {
-    stream
-      .on("error", (e) => reject(e))
-      .on("drain", () => {
-        stream.close();
-        resolve();
-      });
-  });
+  FS.writeFileSync(file.binary_image, stream.collect());
 }
 
 function is_crochet_up_to_date(file: Package.ResolvedFile, source: string) {

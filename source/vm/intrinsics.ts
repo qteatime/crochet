@@ -212,7 +212,7 @@ export class Environment {
 
 export class Namespace<V> {
   private bindings = new Map<string, V>();
-  readonly allowed_prefixes = new Set<string>();
+  readonly allowed_prefixes = new Set<string>(["crochet.core"]);
 
   constructor(
     readonly parent: Namespace<V> | null,
@@ -224,15 +224,15 @@ export class Namespace<V> {
   }
 
   make_namespace(namespace: string | null, name: string) {
-    if (this.prefix == null) {
+    if (namespace == null) {
       return name;
     } else {
-      return `${this.prefix}/${name}`;
+      return `${namespace}/${name}`;
     }
   }
 
   define(name: string, value: V): boolean {
-    if (this.bindings.has(name)) {
+    if (this.has_own(name)) {
       return false;
     }
     this.bindings.set(this.prefixed(name), value);
@@ -240,7 +240,7 @@ export class Namespace<V> {
   }
 
   has_own(name: string) {
-    return this.bindings.has(name);
+    return this.bindings.has(this.prefixed(name));
   }
 
   has(name: string) {
