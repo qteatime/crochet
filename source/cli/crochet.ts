@@ -5,7 +5,7 @@ import { Capabilities, NodeTarget, AnyTarget } from "../runtime/pkg";
 // import * as REPL from "./repl";
 
 import * as Compiler from "../compiler";
-import * as Build from "./crochet-build";
+import * as Build from "../targets/node/build";
 
 import { logger } from "../utils/logger";
 import { show } from "../utils/utils";
@@ -20,7 +20,7 @@ import * as FS from "fs";
 import * as Path from "path";
 import * as Yargs from "yargs";
 import { StorageConfig } from "../storage";
-import { question } from "./prompt";
+import { question } from "../utils/prompt";
 
 const argv = Yargs.usage("crochet <command> [options]")
   .command("run <filename>", "Runs the simulation in the terminal", (Yargs) => {

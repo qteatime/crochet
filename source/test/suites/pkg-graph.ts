@@ -41,6 +41,7 @@ void (async function main() {
     const graph = await Package.build_package_graph(
       root,
       Package.target_any(),
+      new Set(packages.values()),
       resolver
     );
     const resolved_root = graph.get_package(root.meta.name);
