@@ -100,7 +100,14 @@ export class CrochetForNode {
 
     async read_native_module(x: string) {
       // FIXME: sandbox
-      return require(x);
+      const module = require(x);
+      if (typeof module.default === "function") {
+        return module.default;
+      } else if (typeof module === "function") {
+        return module;
+      } else {
+        throw new Error(`Native module ${x} does not expose a function`);
+      }
     },
   };
 
