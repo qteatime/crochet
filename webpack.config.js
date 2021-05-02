@@ -1,3 +1,4 @@
+const webpack = require("webpack");
 const path = require("path");
 
 const benchTarget = {
@@ -17,15 +18,23 @@ const benchTarget = {
 const cliTarget = {
   target: "node",
   mode: "none",
-  entry: "./build/cli/crochet.js",
+  entry: "./build/new-crochet.js",
+  node: {
+    __dirname: false,
+  },
   output: {
-    path: path.resolve(__dirname, "build/cli/"),
+    path: path.resolve(__dirname),
     filename: `crochet-bundle.js`,
     library: {
       name: "Crochet",
       type: "commonjs",
     },
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      "process.env.WEBPACK": true,
+    }),
+  ],
 };
 
 const clientTarget = {
