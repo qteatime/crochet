@@ -151,8 +151,8 @@ export class CrochetWorld {
 }
 
 export class CrochetPackage {
-  readonly types: Namespace<CrochetType>;
-  readonly definitions: Namespace<CrochetValue>;
+  readonly types: PassthroughNamespace<CrochetType>;
+  readonly definitions: PassthroughNamespace<CrochetValue>;
   readonly native_functions: Namespace<NativeFunction>;
   readonly dependencies = new Set<string>();
 
@@ -161,8 +161,8 @@ export class CrochetPackage {
     readonly name: string,
     readonly filename: string
   ) {
-    this.types = new Namespace(world.types, name);
-    this.definitions = new Namespace(world.definitions, name);
+    this.types = new PassthroughNamespace(world.types, name);
+    this.definitions = new PassthroughNamespace(world.definitions, name);
     this.native_functions = new Namespace(world.native_functions, name);
   }
 }
@@ -172,8 +172,10 @@ export class CrochetModule {
   readonly definitions: Namespace<CrochetValue>;
 
   constructor(readonly pkg: CrochetPackage, readonly filename: string) {
-    this.types = new Namespace(pkg.types, null);
-    this.definitions = new Namespace(pkg.definitions, null);
+    this.types = new Namespace(pkg.types, pkg.name);
+    this.types.allowed_prefixes.add("crochet.core");
+    this.definitions = new Namespace(pkg.definitions, pkg.name);
+    this.definitions.allowed_prefixes.add("crochet.core");
   }
 }
 
@@ -212,7 +214,7 @@ export class Environment {
 
 export class Namespace<V> {
   private bindings = new Map<string, V>();
-  readonly allowed_prefixes = new Set<string>(["crochet.core"]);
+  readonly allowed_prefixes = new Set<string>();
 
   constructor(
     readonly parent: Namespace<V> | null,
@@ -267,10 +269,23 @@ export class Namespace<V> {
     if (value != null) {
       return value;
     } else if (this.parent != null) {
-      return this.parent.try_lookup(name);
+      return this.parent.try_lookup_namespaced(namespace, name);
     } else {
       return null;
     }
+  }
+}
+
+export class PassthroughNamespace<V> extends Namespace<V> {
+  constructor(
+    readonly parent: Namespace<V> | null,
+    readonly prefix: string | null
+  ) {
+    super(parent, prefix);
+  }
+
+  define(name: string, value: V): boolean {
+    return this.parent?.define(this.prefixed(name), value) ?? false;
   }
 }
 
