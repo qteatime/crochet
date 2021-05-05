@@ -8,7 +8,7 @@ import {
   CrochetPrelude,
   CrochetTest,
   CrochetThunk,
-  Location,
+  ActivationLocation,
 } from "../intrinsics";
 import {
   branch_name_location,
@@ -21,7 +21,7 @@ import {
 
 export class TraceEntry {
   constructor(
-    readonly context: Location,
+    readonly context: ActivationLocation,
     readonly module: CrochetModule | null,
     readonly meta: number | null
   ) {}
@@ -65,7 +65,7 @@ export function format_entry(entry: TraceEntry) {
   )}`;
 }
 
-export function format_location(location: Location) {
+export function format_location(location: ActivationLocation) {
   if (location instanceof CrochetLambda) {
     return `anonymous function(${location.parameters.join(", ")})${from_suffix(
       location.env.raw_module
