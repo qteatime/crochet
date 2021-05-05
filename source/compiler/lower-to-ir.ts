@@ -593,7 +593,11 @@ export class LowerToIR {
       Do: (pos, body) => {
         const id = this.context.register(pos);
 
-        return [...this.expression(body), new IR.PushTuple(id, 1)];
+        return [
+          ...this.expression(body),
+          new IR.PushTuple(id, 1),
+          new IR.Return(id),
+        ];
       },
     });
   }
