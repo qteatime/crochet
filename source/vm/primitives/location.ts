@@ -133,11 +133,26 @@ export function simple_value(x: CrochetValue): string {
   }
 }
 
-export function simple_op(op: IR.Op) {
+export function simple_op(op: IR.Op): string {
   const entries = Object.entries(op)
-    .filter(([k, _]) => k !== "meta" && k !== "tag")
+    .filter(
+      ([k, v]) => k !== "meta" && k !== "tag" && !(v instanceof IR.BasicBlock)
+    )
     .map((x) => inspect(x[1]));
-  return `${IR.OpTag[op.tag]} ${entries.join(" ")}`;
+  const bbs = Object.entries(op)
+    .filter(([k, v]) => v instanceof IR.BasicBlock)
+    .map(
+      ([k, v]) =>
+        `\n${k}:\n${(v as IR.BasicBlock).ops
+          .map((op) => `  ${simple_op(op)}`)
+          .join("\n")}\n`
+    )
+    .join("\n")
+    .split(/\n/g)
+    .map((x) => `    ${x}`)
+    .join("\n");
+
+  return `${IR.OpTag[op.tag]} ${entries.join(" ")}${bbs}`;
 }
 
 export function simple_activation(x: Activation): string {
