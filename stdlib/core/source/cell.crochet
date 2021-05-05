@@ -5,13 +5,13 @@ local type read-only-cell(cell);   // FIXME: currently this leaks because `.` is
 command #cell with-value: V -> cell
   = foreign cell.make(V)
 test
-  assert (#cell with-value: 1);
+  assert (#cell with-value: 1) is cell;
 end
 
 command #cell empty -> cell
   = #cell with-value: nothing
 test
-  assert (#cell empty);
+  assert (#cell empty) is cell;
 end
 
 command (X is cell) value = foreign cell.deref(X)

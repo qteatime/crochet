@@ -1,7 +1,7 @@
 % crochet
 
-command (X is record) count
-  = foreign record.count(X)
+command record count
+  = foreign record.count(self)
 test
   assert [->] count === 0;
   assert [a -> 1] count === 1;
@@ -9,16 +9,16 @@ test
 end
 
 
-command (X is record) is-empty
-  = X count =:= 0
+command record is-empty
+  = self count =:= 0
 test
   assert [->] is-empty;
   assert not ([a -> 1] is-empty);
 end
 
 
-command (X is record) keys
-  = foreign record.keys(X)
+command record keys
+  = foreign record.keys(self)
 test
   // Records SHOULD maintain source ordering
   assert [->] keys === [];
@@ -27,8 +27,8 @@ test
 end
 
 
-command (X is record) values
-  = foreign record.values(X)
+command record values
+  = foreign record.values(self)
 test
   assert [->] values === [];
   assert [a -> 1] values === [1];
@@ -36,8 +36,8 @@ test
 end
 
 
-command (X is record) pairs
-  = foreign record.pairs(X)
+command record pairs
+  = foreign record.pairs(self)
 test
   assert [->] pairs === [];
   assert [a -> 1] pairs === [[key -> "a", value -> 1]];
