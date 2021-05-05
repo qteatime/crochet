@@ -609,17 +609,18 @@ export class LowerToIR {
   ) {
     const concrete = non_holes(args);
     const missing = holes(args);
-    const concrete_names = concrete.map(
+    const concrete_names0 = concrete.map(
       (x) => [get_pos(x), this.context.fresh_name("arg")] as [Ast.Meta, string]
     );
     const missing_names0 = missing.map((x) => this.context.fresh_name("hole"));
     const missing_names = missing_names0.slice();
+    const concrete_names = concrete_names0.slice();
     const params: string[] = [];
     for (const x of args) {
       if (x.tag === "Hole") {
         params.push(missing_names0.shift()!);
       } else {
-        params.push(concrete_names.shift()![1]);
+        params.push(concrete_names0.shift()![1]);
       }
     }
 
