@@ -61,7 +61,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.text(flatten(x));
   });
 
-  ffi.defun("normalise", (x) => {
+  ffi.defun("interpolation.normalise", (x) => {
     return ffi.normalise_interpolation(x);
   });
 };
