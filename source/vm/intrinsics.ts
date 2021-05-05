@@ -328,7 +328,7 @@ export interface IActivation {
   parent: IActivation | null;
 }
 
-export type Location =
+export type ActivationLocation =
   | CrochetLambda
   | CrochetCommandBranch
   | CrochetThunk
@@ -345,7 +345,7 @@ export class CrochetActivation implements IActivation {
 
   constructor(
     readonly parent: Activation | null,
-    readonly location: Location,
+    readonly location: ActivationLocation,
     readonly env: Environment,
     public block: IR.BasicBlock
   ) {}
