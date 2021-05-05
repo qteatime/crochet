@@ -328,6 +328,14 @@ export interface IActivation {
   parent: IActivation | null;
 }
 
+export type Location =
+  | CrochetLambda
+  | CrochetCommandBranch
+  | CrochetThunk
+  | CrochetPrelude
+  | CrochetTest
+  | null;
+
 export class CrochetActivation implements IActivation {
   readonly tag = ActivationTag.CROCHET_ACTIVATION;
   readonly stack: CrochetValue[] = [];
@@ -337,6 +345,7 @@ export class CrochetActivation implements IActivation {
 
   constructor(
     readonly parent: Activation | null,
+    readonly location: Location,
     readonly env: Environment,
     public block: IR.BasicBlock
   ) {}

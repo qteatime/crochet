@@ -31,7 +31,12 @@ export function prepare_activation(
         values,
         env0.raw_receiver
       );
-      const activation = new CrochetActivation(parent_activation, env, p.body);
+      const activation = new CrochetActivation(
+        parent_activation,
+        lambda.payload,
+        env,
+        p.body
+      );
       return activation;
     }
 
