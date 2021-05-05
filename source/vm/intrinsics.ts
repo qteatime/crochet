@@ -116,14 +116,23 @@ export class CrochetCommandBranch {
 
 export enum NativeTag {
   NATIVE_SYNCHRONOUS,
+  NATIVE_MACHINE,
 }
+
+export type Machine = Generator<NativeSignal, CrochetValue, CrochetValue>;
 
 export type NativePayload = {
   [NativeTag.NATIVE_SYNCHRONOUS]: (...args: CrochetValue[]) => CrochetValue;
+  [NativeTag.NATIVE_MACHINE]: (...args: CrochetValue[]) => Machine;
 };
 
 export class NativeFunction<T extends NativeTag = NativeTag> {
-  constructor(readonly tag: T, readonly payload: NativePayload[T]) {}
+  constructor(
+    readonly tag: T,
+    readonly name: string,
+    readonly pkg: CrochetPackage,
+    readonly payload: NativePayload[T]
+  ) {}
 }
 
 export class CrochetTest {
@@ -319,13 +328,14 @@ export class ContinuationTap {
 
 export enum ActivationTag {
   CROCHET_ACTIVATION,
+  NATIVE_ACTIVATION,
 }
 
-export type Activation = CrochetActivation;
+export type Activation = CrochetActivation | NativeActivation;
 
 export interface IActivation {
   tag: ActivationTag;
-  parent: IActivation | null;
+  parent: Activation | null;
 }
 
 export type ActivationLocation =
@@ -334,6 +344,7 @@ export type ActivationLocation =
   | CrochetThunk
   | CrochetPrelude
   | CrochetTest
+  | NativeFunction
   | null;
 
 export class CrochetActivation implements IActivation {
@@ -384,6 +395,41 @@ export class CrochetActivation implements IActivation {
     this.block = block;
     this.instruction = pc;
   }
+}
+
+export enum NativeSignalTag {
+  INVOKE,
+  APPLY,
+}
+
+export type NativeSignal = NSInvoke | NSApply;
+
+export abstract class NSBase {}
+
+export class NSInvoke extends NSBase {
+  readonly tag = NativeSignalTag.INVOKE;
+
+  constructor(readonly name: string, readonly args: CrochetValue[]) {
+    super();
+  }
+}
+
+export class NSApply extends NSBase {
+  readonly tag = NativeSignalTag.APPLY;
+
+  constructor(readonly fn: CrochetValue, readonly args: CrochetValue[]) {
+    super();
+  }
+}
+
+export class NativeActivation implements IActivation {
+  readonly tag = ActivationTag.NATIVE_ACTIVATION;
+  constructor(
+    readonly parent: Activation | null,
+    readonly fn: NativeFunction,
+    readonly env: Environment,
+    readonly routine: Machine
+  ) {}
 }
 
 export class Universe {

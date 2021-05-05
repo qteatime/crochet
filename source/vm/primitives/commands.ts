@@ -3,6 +3,7 @@ import * as Types from "./types";
 import * as Location from "./location";
 import * as Environments from "./environments";
 import {
+  Activation,
   CrochetActivation,
   CrochetCommand,
   CrochetCommandBranch,
@@ -51,7 +52,7 @@ export function select_branch(command: CrochetCommand, values: CrochetValue[]) {
 }
 
 export function prepare_activation(
-  parent_activation: CrochetActivation,
+  parent_activation: Activation,
   branch: CrochetCommandBranch,
   values: CrochetValue[]
 ) {

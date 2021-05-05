@@ -8,16 +8,30 @@ export class ErrArbitrary extends CrochetError {
   }
 }
 
+export class ErrNativePanic extends CrochetError {
+  constructor(readonly tag: string, readonly message: string) {
+    super(`${tag}: ${message}`);
+  }
+}
+
 export class CrochetEvaluationError extends CrochetError {
-  constructor(
-    readonly source: Error,
-    readonly trace: TraceEntry[],
-    formatted_trace: string
-  ) {
+  readonly source: Error;
+  readonly trace: TraceEntry[];
+
+  constructor(source: Error, trace: TraceEntry[], formatted_trace: string) {
+    let native_trace =
+      source instanceof ErrNativePanic ? source.stack ?? "" : "";
+    if (native_trace != "") {
+      const trace = native_trace.replace(/^.*?\n\s*at /, "");
+      native_trace = `\n\nArising from the native code:\n${trace}`;
+    }
+
     super(
       [source.message, "\n\n", "Arising from:\n", formatted_trace, "\n"].join(
         ""
       )
     );
+    this.source = source;
+    this.trace = trace;
   }
 }
