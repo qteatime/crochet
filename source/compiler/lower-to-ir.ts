@@ -1,6 +1,6 @@
 import * as Ast from "../generated/crochet-grammar";
 import * as IR from "../ir";
-import { cast } from "../utils/utils";
+import { cast, force_cast } from "../utils/utils";
 import {
   resolve_escape,
   parseNumber,
@@ -633,6 +633,40 @@ export class LowerToIR {
     ];
   }
 
+  reify_subexpressions(
+    x: Ast.Expression
+  ): [null | [string, string[]], IR.Op[]] {
+    switch (x.tag) {
+      case "IntrinsicEqual": {
+        force_cast<Ast.$$Expression$_IntrinsicEqual>(x);
+        const l = this.context.fresh_name("expr");
+        const lpos = get_pos(x.left);
+        const lmeta = this.context.register(lpos);
+        const r = this.context.fresh_name("expr");
+        const rpos = get_pos(x.right);
+        const rmeta = this.context.register(rpos);
+        const x1 = new Ast.Expression.IntrinsicEqual(
+          x.pos,
+          new Ast.Expression.Variable(lpos, new Ast.Name(lpos, l)),
+          new Ast.Expression.Variable(rpos, new Ast.Name(rpos, l))
+        );
+        return [
+          ["_ =:= _", [l, r]],
+          [
+            ...this.expression(x.left),
+            new IR.Let(lmeta, l),
+            ...this.expression(x.right),
+            new IR.Let(rmeta, r),
+            ...this.expression(x1),
+          ],
+        ];
+      }
+
+      default:
+        return [null, this.expression(x)];
+    }
+  }
+
   expression(x: Ast.Expression): IR.Op[] {
     return x.match<IR.Op[]>({
       Variable: (pos, name) => {
@@ -864,7 +898,8 @@ export class LowerToIR {
               id,
               IR.AssertType.UNREACHABLE,
               "unreachable",
-              "None of the conditions were true."
+              "None of the conditions were true.",
+              null
             ),
           ]
         );
@@ -918,14 +953,16 @@ export class LowerToIR {
     return x.match<IR.Op[]>({
       Assert: (pos, expr) => {
         const id = this.context.register(pos);
+        const [sub, ops] = this.reify_subexpressions(expr);
 
         return [
-          ...this.expression(expr),
+          ...ops,
           new IR.Assert(
             id,
             IR.AssertType.ASSERT,
             "assert",
-            get_pos(expr).source_slice
+            get_pos(expr).source_slice,
+            sub
           ),
         ];
       },
@@ -1069,14 +1106,16 @@ export class LowerToIR {
 
   contract_condition(kind: IR.AssertType, contract: Ast.ContractCondition) {
     const id = this.context.register(contract.pos);
+    const [sub, ops] = this.reify_subexpressions(contract.expr);
 
     return [
-      ...this.expression(contract.expr),
+      ...ops,
       new IR.Assert(
         id,
         kind,
         contract.name.name,
-        get_pos(contract.expr).source_slice
+        get_pos(contract.expr).source_slice,
+        sub
       ),
     ];
   }
@@ -1097,7 +1136,8 @@ export class LowerToIR {
           id,
           IR.AssertType.RETURN_TYPE,
           "return-type",
-          `return is ${get_pos(ret).source_slice}`
+          `return is ${get_pos(ret).source_slice}`,
+          null
         ),
       ];
     }
@@ -1350,7 +1390,8 @@ export class LowerToIR {
                 NO_INFO,
                 IR.AssertType.UNREACHABLE,
                 "not-implemented",
-                "not-implemented"
+                "not-implemented",
+                null
               ),
               // TODO: generate this
             ])

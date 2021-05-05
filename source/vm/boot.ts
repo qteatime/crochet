@@ -199,6 +199,7 @@ export function make_universe() {
     Tuple,
     Enum,
     Type,
+    Cell,
   });
 }
 
