@@ -362,7 +362,9 @@ export class CrochetActivation implements IActivation {
   }
 
   push_block(b: IR.BasicBlock) {
-    this.block_stack.push([this.instruction, b]);
+    this.block_stack.push([this.instruction, this.block]);
+    this.block = b;
+    this.instruction = 0;
   }
 
   pop_block() {
