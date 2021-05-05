@@ -429,24 +429,19 @@ test
 end
 
 
-local type sorter;
-command #sorter sort: (X is tuple) by: (Comparator is function-2)
-  = foreign tuple.sort(X, Comparator);
-
-command #sorter compare: A and: B with: F do
-  let Result = F(A, B);
-  condition
-    when Result === less-than => -1;
-    when Result === equal => 0;
-    when Result === greater-than => 1;
-  end
-end
-
-
-// FIXME: currently limited to pure synchronous functions
-command (X is tuple) sort-by: (Comparator is function-2)
+command tuple sort-by: (Comparator is function-2)
 ensures same-size :: self count === return count do
-  #sorter sort: X by: (#sorter compare: _ and: _ with: Comparator);
+  let Compare = { A, B in
+    do
+      let C = Comparator(A, B);
+      condition
+        when C === less-than => -1;
+        when C === equal => 0;
+        when C === greater-than => 1;
+      end
+    end
+  };
+  foreign tuple.sort(self, Compare)
 test
   assert ([] sort-by: (_ compare-to: _)) =:= [];
   assert ([1] sort-by: (_ compare-to: _)) =:= [1];

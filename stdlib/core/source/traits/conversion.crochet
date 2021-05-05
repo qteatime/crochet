@@ -63,7 +63,7 @@ test
   assert (#float try-parse: "123").value =:= 123.0;
   assert (#float try-parse: "123.123").value =:= 123.123;
   assert (#float try-parse: "-123.0").value =:= -123.0;
-  assert (#float try-parse: "NaN").value =:= #float nan;
+  assert (#float try-parse: "NaN").value is-nan;
   assert (#float try-parse: "nope") is error;
 end
   

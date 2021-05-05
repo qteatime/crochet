@@ -105,8 +105,49 @@ export default (ffi: ForeignInterface) => {
   ffi.defmachine("tuple.map", function* (xs0, f0) {
     const result = [];
     for (const x of ffi.tuple_to_array(xs0)) {
-      const y = ffi.apply(f0, [x]);
+      const y = yield ffi.apply(f0, [x]);
       result.push(y);
+    }
+    return ffi.tuple(result);
+  });
+
+  ffi.defmachine("tuple.unique", function* (xs0) {
+    const result = [];
+    outer: for (const x of ffi.tuple_to_array(xs0)) {
+      for (const y of result) {
+        if (ffi.intrinsic_equals(x, y)) {
+          continue outer;
+        }
+      }
+      result.push(x);
+    }
+
+    return ffi.tuple(result);
+  });
+
+  ffi.defmachine("tuple.contains", function* (xs, y) {
+    for (const x of ffi.tuple_to_array(xs)) {
+      if (ffi.intrinsic_equals(x, y)) {
+        return ffi.true;
+      }
+    }
+    return ffi.false;
+  });
+
+  ffi.defmachine("tuple.sort", function* (xs, f0) {
+    const result = ffi.tuple_to_array(xs).slice();
+    outer: for (let i = 1; i < result.length; ++i) {
+      for (let j = i; j > 0; --j) {
+        const x = result[j - 1];
+        const y = result[j];
+        const ord = ffi.integer_to_bigint(yield ffi.apply(f0, [x, y]));
+        if (ord > 0n) {
+          result[j - 1] = y;
+          result[j] = x;
+        } else {
+          continue outer;
+        }
+      }
     }
     return ffi.tuple(result);
   });

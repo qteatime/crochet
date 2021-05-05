@@ -6,7 +6,11 @@
     "native/floats.js",
     "native/integer.js",
     "native/conversion.js",
-    "native/tuple.js"
+    "native/tuple.js",
+    "native/record.js",
+    "native/cell.js",
+    "native/text.js",
+    "native/etc.js"
   ],
   "sources": [
     "source/0-types.crochet",

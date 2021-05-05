@@ -1,7 +1,7 @@
 % crochet
 
 command panic: (Message is text) tag: (Tag is text) =
-  foreign commands.panic(Tag, Message);
+  foreign etc.panic(Tag, Message);
 
 command panic: (Message is interpolation) tag: Tag =
   panic: Message flatten-into-plain-text tag: Tag;
