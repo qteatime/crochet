@@ -149,7 +149,7 @@ export class Thread {
     const op = activation.current;
     if (op == null) {
       if (activation.block_stack.length > 0) {
-        logger.debug(`Finished with block, taking next block`, activation);
+        logger.debug(`Finished with block, taking next block`);
         activation.pop_block();
         activation.next();
         return _continue;
@@ -354,7 +354,13 @@ export class Thread {
       }
 
       case t.RETURN: {
-        const value = this.pop(activation);
+        // FIXME: we should generate RETURNs properly instead...
+        let value;
+        if (activation.stack.length > 0) {
+          value = this.pop(activation);
+        } else {
+          value = this.universe.nothing;
+        }
         activation.set_return_value(value);
         activation.next();
         return _continue;
