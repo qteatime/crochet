@@ -64,7 +64,7 @@ export class CrochetPartial {
 }
 
 export class CrochetCell {
-  constructor(readonly value: CrochetValue) {}
+  constructor(public value: CrochetValue) {}
 }
 
 export class CrochetThunk {
@@ -460,6 +460,7 @@ export class Universe {
       Tuple: CrochetType;
       Enum: CrochetType;
       Type: CrochetType;
+      Cell: CrochetType;
     }
   ) {
     this.nothing = new CrochetValue(Tag.NOTHING, types.Nothing, null);

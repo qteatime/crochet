@@ -67,6 +67,19 @@ export class ForeignInterface {
     return Values.make_interpolation(this.#universe, xs);
   }
 
+  concat_interpolation(x: CrochetValue, y: CrochetValue) {
+    Values.assert_tag(Tag.INTERPOLATION, x);
+    Values.assert_tag(Tag.INTERPOLATION, y);
+    return Values.make_interpolation(
+      this.#universe,
+      x.payload.concat(y.payload)
+    );
+  }
+
+  cell(x: CrochetValue) {
+    return Values.make_cell(this.#universe, x);
+  }
+
   get nothing() {
     return Values.get_nothing(this.#universe);
   }
@@ -114,6 +127,22 @@ export class ForeignInterface {
     return Values.get_interpolation_parts(x);
   }
 
+  normalise_interpolation(x: CrochetValue): CrochetValue {
+    return Values.normalise_interpolation(this.#universe, x);
+  }
+
+  deref_cell(x: CrochetValue): CrochetValue {
+    return Values.deref_cell(x);
+  }
+
+  update_cell(x: CrochetValue, old_value: CrochetValue, value: CrochetValue) {
+    return Values.update_cell(x, old_value, value);
+  }
+
+  record_to_map(x: CrochetValue) {
+    return Values.get_map(x);
+  }
+
   // == Operations
   intrinsic_equals(x: CrochetValue, y: CrochetValue) {
     return Values.equals(x, y);
@@ -121,5 +150,10 @@ export class ForeignInterface {
 
   panic(tag: string, message: string) {
     throw new ErrNativePanic(tag, message);
+  }
+
+  // == Tests
+  is_interpolation(x: CrochetValue) {
+    return x.tag === Tag.INTERPOLATION;
   }
 }

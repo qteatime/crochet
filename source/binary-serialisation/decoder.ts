@@ -318,7 +318,8 @@ class CrochetIRDecoder extends BinaryReader {
           this.decode_meta_id(),
           this.decode_enum_tag(IR.AssertType, "assertion type"),
           this.string(),
-          this.string()
+          this.string(),
+          this.maybe(() => [this.string(), this.array(() => this.string())])
         );
 
       case t.BRANCH:

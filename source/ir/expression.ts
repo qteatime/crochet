@@ -314,7 +314,8 @@ export class Assert extends BaseOp {
     readonly meta: Metadata,
     readonly kind: AssertType,
     readonly assert_tag: string,
-    readonly message: string
+    readonly message: string,
+    readonly expression: null | [string, string[]]
   ) {
     super();
   }

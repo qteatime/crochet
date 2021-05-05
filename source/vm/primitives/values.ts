@@ -2,6 +2,7 @@ import * as IR from "../../ir";
 import { clone_map, copy_map, every, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import {
+  CrochetCell,
   CrochetLambda,
   CrochetModule,
   CrochetPartial,
@@ -378,4 +379,61 @@ export function project(value: CrochetValue, key: string) {
         `Values of type ${type_name(value.type)} do not support projection`
       );
   }
+}
+
+export function make_cell(universe: Universe, value: CrochetValue) {
+  return new CrochetValue(
+    Tag.CELL,
+    universe.types.Cell,
+    new CrochetCell(value)
+  );
+}
+
+export function deref_cell(cell: CrochetValue) {
+  assert_tag(Tag.CELL, cell);
+  return cell.payload.value;
+}
+
+export function update_cell(
+  cell: CrochetValue,
+  old_value: CrochetValue,
+  value: CrochetValue
+) {
+  assert_tag(Tag.CELL, cell);
+  if (equals(cell.payload.value, old_value)) {
+    cell.payload.value = value;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export function get_map(x: CrochetValue) {
+  assert_tag(Tag.RECORD, x);
+  return x.payload;
+}
+
+export function normalise_interpolation(universe: Universe, x: CrochetValue) {
+  assert_tag(Tag.INTERPOLATION, x);
+  let last: string | null = null;
+  const list: (string | CrochetValue)[] = [];
+  for (const p of x.payload) {
+    if (typeof p === "string") {
+      if (typeof last === "string") {
+        last = last + p;
+      } else {
+        last = p;
+      }
+    } else {
+      if (last != null) {
+        list.push(last);
+        last = null;
+      }
+      list.push(p);
+    }
+  }
+  if (last != null) {
+    list.push(last);
+  }
+  return make_interpolation(universe, list);
 }

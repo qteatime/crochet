@@ -54,7 +54,7 @@ export function thunk_location(thunk: CrochetThunk) {
 
 export function type_name(x: CrochetType) {
   if (x.module != null) {
-    return `${x.name} (from ${x.module.pkg})`;
+    return `${x.name} (from ${x.module.pkg.name})`;
   } else {
     return x.name;
   }
@@ -129,7 +129,7 @@ export function simple_value(x: CrochetValue): string {
       return `<cell ${simple_value(x.payload.value)}`;
     }
     default:
-      throw unreachable(x.tag, "Value");
+      throw unreachable(x.tag, `Value ${x}`);
   }
 }
 

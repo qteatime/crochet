@@ -390,6 +390,12 @@ export class Thread {
           case NativeTag.NATIVE_SYNCHRONOUS: {
             Native.assert_native_tag(NativeTag.NATIVE_SYNCHRONOUS, fn);
             const value = fn.payload(...args);
+            if (!(value instanceof CrochetValue)) {
+              throw new ErrArbitrary(
+                `invalid-value`,
+                `Native function ${fn.name} in ${fn.pkg.name} returned an invalid value ${value}`
+              );
+            }
             this.push(activation, value);
             activation.next();
             return _continue;
@@ -464,10 +470,23 @@ export class Thread {
 
       case t.ASSERT: {
         const value = this.pop(activation);
+        let diagnostics = "";
+        if (op.expression != null) {
+          const [name, params] = op.expression;
+          const args = params.map((x) => this.lookup(x, null));
+          let i = 1;
+          const name1 = name.replace(/_/g, () => `#${i++}`);
+          const args1 = args
+            .map((x, i) => `  #${i + 1}) ${Location.simple_value(x)}\n`)
+            .join("");
+          diagnostics = `\n\nIn the expression ${name1}:\n${args1}\n`;
+        }
         if (!Values.get_boolean(value)) {
           throw new ErrArbitrary(
             "assertion-violated",
-            `${AssertType[op.kind]}: ${op.assert_tag}: ${op.message}`
+            `${AssertType[op.kind]}: ${op.assert_tag}: ${
+              op.message
+            }${diagnostics}`
           );
         }
         activation.next();
