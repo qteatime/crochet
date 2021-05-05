@@ -21,3 +21,16 @@ export function extend_with_parameters(
   }
   return env;
 }
+
+export function extend_with_parameters_and_receiver(
+  parent_env: Environment,
+  parameters: string[],
+  values: CrochetValue[],
+  receiver: CrochetValue | null
+) {
+  const env = extend(parent_env, receiver);
+  for (const [k, v] of zip(parameters, values)) {
+    env.define(k, v);
+  }
+  return env;
+}

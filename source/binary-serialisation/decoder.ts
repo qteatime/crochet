@@ -303,12 +303,6 @@ class CrochetIRDecoder extends BinaryReader {
       case t.APPLY:
         return new IR.Apply(this.decode_meta_id(), this.uint32());
 
-      case t.APPLY_PARTIAL:
-        return new IR.ApplyPartial(
-          this.decode_meta_id(),
-          this.array((_) => this.boolean())
-        );
-
       case t.RETURN:
         return new IR.Return(this.decode_meta_id());
 

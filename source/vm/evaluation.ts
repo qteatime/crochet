@@ -343,14 +343,11 @@ export class Thread {
         const new_activation = Lambdas.prepare_activation(
           this.universe,
           activation,
+          this.env,
           lambda,
           args
         );
         return new JumpSignal(new_activation);
-      }
-
-      case t.APPLY_PARTIAL: {
-        throw new Error(`FIXME: apply-partial`);
       }
 
       case t.RETURN: {
