@@ -22,6 +22,7 @@ class Context {
   private id2meta = new Map<uint32, IR.Interval>();
   private range2id = new Map<range_key, uint32>();
   private next_id = 1;
+  private name_id = 1;
 
   constructor(readonly filename: string, readonly source: string) {}
 
@@ -50,6 +51,10 @@ class Context {
 
   generate_meta_table() {
     return this.id2meta;
+  }
+
+  fresh_name(prefix: string) {
+    return `${prefix}$${this.name_id++}`;
   }
 }
 
@@ -150,6 +155,10 @@ function is_saturated(args: Ast.Expression[]) {
 
 function non_holes(args: Ast.Expression[]) {
   return args.filter((x) => x.tag !== "Hole");
+}
+
+function holes(args: Ast.Expression[]) {
+  return args.filter((x) => x.tag === "Hole");
 }
 
 function saturated_bits(args: Ast.Expression[]) {
@@ -589,6 +598,35 @@ export class LowerToIR {
     });
   }
 
+  make_partial_lambda(
+    meta: number,
+    args: Ast.Expression[],
+    expr: (all: string[]) => IR.Op[]
+  ) {
+    const concrete = non_holes(args);
+    const missing = holes(args);
+    const concrete_names = concrete.map(
+      (x) => [get_pos(x), this.context.fresh_name("arg")] as [Ast.Meta, string]
+    );
+    const missing_names = missing.map((x) => this.context.fresh_name("hole"));
+    const params: string[] = [];
+    for (const x of args) {
+      if (x.tag === "Hole") {
+        params.push(missing_names.shift()!);
+      } else {
+        params.push(concrete_names.shift()![1]);
+      }
+    }
+
+    return [
+      ...concrete.flatMap((x) => this.expression(x)),
+      ...concrete_names
+        .reverse()
+        .map(([p, n]) => new IR.Let(this.context.register(p), n)),
+      new IR.PushLambda(meta, missing_names, new IR.BasicBlock(expr(params))),
+    ];
+  }
+
   expression(x: Ast.Expression): IR.Op[] {
     return x.match<IR.Op[]>({
       Variable: (pos, name) => {
@@ -721,11 +759,11 @@ export class LowerToIR {
             new IR.Invoke(id, name, args.length),
           ];
         } else {
-          return [
-            ...non_holes(args).flatMap((x) => this.expression(x)),
-            new IR.PushPartial(id, name, args.length),
-            new IR.ApplyPartial(id, saturated_bits(args)),
-          ];
+          return this.make_partial_lambda(id, args, (all) => [
+            ...all.map((x) => new IR.PushVariable(NO_INFO, x)),
+            new IR.Invoke(id, name, all.length),
+            new IR.Return(id),
+          ]);
         }
       },
 
@@ -739,10 +777,12 @@ export class LowerToIR {
             new IR.Apply(id, args.length),
           ];
         } else {
-          return [
-            ...non_holes(args).flatMap((x) => this.expression(x)),
-            new IR.ApplyPartial(id, saturated_bits(args)),
-          ];
+          return this.make_partial_lambda(id, args, (all) => [
+            ...all.map((x) => new IR.PushVariable(NO_INFO, x)),
+            ...this.expression(fn),
+            new IR.Apply(id, all.length),
+            new IR.Return(id),
+          ]);
         }
       },
 
@@ -1238,7 +1278,7 @@ export class LowerToIR {
               ["_"],
               [new IR.LocalType(variant_id, v.name)],
               new IR.BasicBlock([
-                new IR.PushLiteral(new IR.LiteralInteger(BigInt(i))),
+                new IR.PushLiteral(new IR.LiteralInteger(BigInt(i + 1))),
                 new IR.Return(variant_id),
               ])
             ),
@@ -1295,8 +1335,15 @@ export class LowerToIR {
             "",
             "_ from-enum-integer: _",
             ["_", "N"],
-            [parent],
+            [parent, new IR.LocalType(id, "integer")],
             new IR.BasicBlock([
+              new IR.PushLiteral(new IR.LiteralFalse()),
+              new IR.Assert(
+                NO_INFO,
+                IR.AssertType.UNREACHABLE,
+                "not-implemented",
+                "not-implemented"
+              ),
               // TODO: generate this
             ])
           ),

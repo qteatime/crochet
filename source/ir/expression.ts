@@ -34,7 +34,6 @@ export enum OpTag {
   INVOKE_FOREIGN, // meta name arity (value...)
   INVOKE, // meta name arity (value...)
   APPLY, // meta arity (value...)
-  APPLY_PARTIAL, // meta (parts...)
   RETURN, // meta (expr)
   PUSH_PARTIAL, // meta name
 
@@ -85,7 +84,6 @@ export type Op =
   | InvokeForeign
   | Invoke
   | Apply
-  | ApplyPartial
   | Return
   | PushPartial
   | Assert
@@ -283,14 +281,6 @@ export class Apply extends BaseOp {
   readonly tag = OpTag.APPLY;
 
   constructor(readonly meta: Metadata, readonly arity: uint32) {
-    super();
-  }
-}
-
-export class ApplyPartial extends BaseOp {
-  readonly tag = OpTag.APPLY_PARTIAL;
-
-  constructor(readonly meta: Metadata, readonly parts: boolean[]) {
     super();
   }
 }

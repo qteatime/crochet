@@ -1,13 +1,22 @@
+import * as IR from "../../ir";
 import * as Commands from "./commands";
 import * as Environments from "./environments";
 import * as Values from "./values";
 import * as Location from "./location";
-import { CrochetValue, Tag, CrochetActivation, Universe } from "../intrinsics";
+import {
+  CrochetValue,
+  Tag,
+  CrochetActivation,
+  Universe,
+  Environment,
+} from "../intrinsics";
 import { ErrArbitrary } from "../errors";
+import { type_name } from "./location";
 
 export function prepare_activation(
   universe: Universe,
   parent_activation: CrochetActivation,
+  env0: Environment,
   lambda: CrochetValue,
   values: CrochetValue[]
 ) {
@@ -16,10 +25,11 @@ export function prepare_activation(
       Values.assert_tag(Tag.LAMBDA, lambda);
       const p = lambda.payload;
       assert_arity(lambda, p.parameters.length, values.length);
-      const env = Environments.extend_with_parameters(
+      const env = Environments.extend_with_parameters_and_receiver(
         p.env,
         p.parameters,
-        values
+        values,
+        env0.raw_receiver
       );
       const activation = new CrochetActivation(parent_activation, env, p.body);
       return activation;
@@ -58,5 +68,25 @@ export function assert_arity(
         value
       )} expects ${expected} arguments, but was provided with ${got}`
     );
+  }
+}
+
+export function get_arity(value: CrochetValue) {
+  switch (value.tag) {
+    case Tag.LAMBDA: {
+      Values.assert_tag(Tag.LAMBDA, value);
+      return value.payload.parameters.length;
+    }
+
+    case Tag.PARTIAL: {
+      Values.assert_tag(Tag.PARTIAL, value);
+      return value.payload.arity;
+    }
+
+    default:
+      throw new ErrArbitrary(
+        `invalid-type`,
+        `Expected a function, but got a ${type_name(value.type)}`
+      );
   }
 }
