@@ -2,8 +2,12 @@ import {
   CrochetModule,
   CrochetPackage,
   CrochetValue,
+  ErrNativePanic,
+  Machine,
   NativeFunction,
   NativeTag,
+  NSApply,
+  NSInvoke,
   Tag,
   Universe,
   Values,
@@ -23,7 +27,14 @@ export class ForeignInterface {
   defun(name: string, fn: (...args: CrochetValue[]) => CrochetValue) {
     this.#package.native_functions.define(
       name,
-      new NativeFunction(NativeTag.NATIVE_SYNCHRONOUS, fn)
+      new NativeFunction(NativeTag.NATIVE_SYNCHRONOUS, name, this.#package, fn)
+    );
+  }
+
+  defmachine(name: string, fn: (...args: CrochetValue[]) => Machine) {
+    this.#package.native_functions.define(
+      name,
+      new NativeFunction(NativeTag.NATIVE_MACHINE, name, this.#package, fn)
     );
   }
 
@@ -68,6 +79,14 @@ export class ForeignInterface {
     return Values.get_false(this.#universe);
   }
 
+  invoke(name: string, args: CrochetValue[]) {
+    return new NSInvoke(name, args);
+  }
+
+  apply(fn: CrochetValue, args: CrochetValue[]) {
+    return new NSApply(fn, args);
+  }
+
   // == Destructors
   integer_to_bigint(x: CrochetValue): bigint {
     Values.assert_tag(Tag.INTEGER, x);
@@ -98,5 +117,9 @@ export class ForeignInterface {
   // == Operations
   intrinsic_equals(x: CrochetValue, y: CrochetValue) {
     return Values.equals(x, y);
+  }
+
+  panic(tag: string, message: string) {
+    throw new ErrNativePanic(tag, message);
   }
 }

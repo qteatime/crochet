@@ -150,5 +150,9 @@ export function simple_activation(x: Activation): string {
         x.stack.map((x) => "  " + simple_value(x) + "\n").join(""),
       ].join("");
     }
+
+    case ActivationTag.NATIVE_ACTIVATION: {
+      return `native activation ${x.fn.name} in ${x.fn.pkg.name}`;
+    }
   }
 }

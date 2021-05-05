@@ -12,7 +12,10 @@ import {
   CrochetModule,
   CrochetValue,
   Environment,
+  NativeActivation,
+  NativeSignalTag,
   NativeTag,
+  NSBase,
   State,
   Universe,
 } from "./intrinsics";
@@ -43,7 +46,7 @@ export class ReturnSignal {
 
 export class JumpSignal {
   readonly tag = SignalTag.JUMP;
-  constructor(readonly activation: CrochetActivation) {}
+  constructor(readonly activation: Activation) {}
 }
 
 export class ContinueSignal {
@@ -126,8 +129,12 @@ export class Thread {
         return this.step_crochet(activation);
       }
 
+      case ActivationTag.NATIVE_ACTIVATION: {
+        return this.step_native(activation, this.universe.nothing);
+      }
+
       default:
-        throw unreachable(activation as never, `Activation`);
+        throw unreachable(activation, `Activation`);
     }
   }
 
@@ -152,8 +159,58 @@ export class Thread {
         return new JumpSignal(activation);
       }
 
+      case ActivationTag.NATIVE_ACTIVATION: {
+        return this.step_native(activation, value);
+      }
+
       default:
-        throw unreachable(activation as never, `Activation`);
+        throw unreachable(activation, `Activation`);
+    }
+  }
+
+  step_native(activation: NativeActivation, input: CrochetValue): Signal {
+    const { value, done } = activation.routine.next(input);
+    if (done) {
+      if (!(value instanceof CrochetValue)) {
+        throw new ErrArbitrary(
+          "invalid-native-return",
+          `The native function did not return a valid Crochet value`
+        );
+      }
+      return this.do_return(value, activation.parent);
+    } else {
+      if (!(value instanceof NSBase)) {
+        throw new ErrArbitrary(
+          "invalid-native-yield",
+          "The native function did not yield a valid signal"
+        );
+      }
+      switch (value.tag) {
+        case NativeSignalTag.INVOKE: {
+          const command = Commands.get_command(this.universe, value.name);
+          const branch = Commands.select_branch(command, value.args);
+          const new_activation = Commands.prepare_activation(
+            activation,
+            branch,
+            value.args
+          );
+          return new JumpSignal(new_activation);
+        }
+
+        case NativeSignalTag.APPLY: {
+          const new_activation = Lambdas.prepare_activation(
+            this.universe,
+            activation,
+            this.env,
+            value.fn,
+            value.args
+          );
+          return new JumpSignal(new_activation);
+        }
+
+        default:
+          throw unreachable(value, `Native Signal`);
+      }
     }
   }
 
@@ -331,10 +388,23 @@ export class Thread {
         const args = this.pop_many(activation, op.arity);
         switch (fn.tag) {
           case NativeTag.NATIVE_SYNCHRONOUS: {
+            Native.assert_native_tag(NativeTag.NATIVE_SYNCHRONOUS, fn);
             const value = fn.payload(...args);
             this.push(activation, value);
             activation.next();
             return _continue;
+          }
+
+          case NativeTag.NATIVE_MACHINE: {
+            Native.assert_native_tag(NativeTag.NATIVE_MACHINE, fn);
+            const machine = fn.payload(...args);
+            const new_activation = new NativeActivation(
+              activation,
+              fn,
+              this.env,
+              machine
+            );
+            return new JumpSignal(new_activation);
           }
 
           default:

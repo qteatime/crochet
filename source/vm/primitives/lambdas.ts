@@ -9,13 +9,14 @@ import {
   CrochetActivation,
   Universe,
   Environment,
+  Activation,
 } from "../intrinsics";
 import { ErrArbitrary } from "../errors";
 import { type_name } from "./location";
 
 export function prepare_activation(
   universe: Universe,
-  parent_activation: CrochetActivation,
+  parent_activation: Activation,
   env0: Environment,
   lambda: CrochetValue,
   values: CrochetValue[]

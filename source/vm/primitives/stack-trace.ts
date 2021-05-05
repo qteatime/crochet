@@ -9,6 +9,7 @@ import {
   CrochetTest,
   CrochetThunk,
   ActivationLocation,
+  NativeFunction,
 } from "../intrinsics";
 import {
   branch_name_location,
@@ -49,8 +50,15 @@ export function collect_trace(
       ];
     }
 
+    case ActivationTag.NATIVE_ACTIVATION: {
+      return [
+        new TraceEntry(activation.fn, null, null),
+        ...collect_trace(activation.parent, depth + 1),
+      ];
+    }
+
     default:
-      throw unreachable(activation as never, "Activation");
+      throw unreachable(activation, "Activation");
   }
 }
 
@@ -78,6 +86,8 @@ export function format_location(location: ActivationLocation) {
     return `prelude${from_suffix(location.env.raw_module)}`;
   } else if (location instanceof CrochetTest) {
     return `test "${location.title}"${from_suffix(location.module)}`;
+  } else if (location instanceof NativeFunction) {
+    return `native ${location.name} in ${location.pkg.name}`;
   } else if (location == null) {
     return `(root)`;
   } else {
