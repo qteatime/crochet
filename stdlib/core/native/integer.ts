@@ -1,4 +1,4 @@
-import type { ForeignInterface } from "../../../source/crochet";
+import type { ForeignInterface } from "../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
   // Arithmetic
@@ -63,5 +63,18 @@ export default (ffi: ForeignInterface) => {
     } catch (_) {
       return ffi.nothing;
     }
+  });
+
+  // Enumeration
+  ffi.defun("integer.range", (from0, to0, by0) => {
+    const from = ffi.integer_to_bigint(from0);
+    const to = ffi.integer_to_bigint(to0);
+    const by = ffi.integer_to_bigint(by0);
+
+    const result = [];
+    for (let i = from; i <= to; i += by) {
+      result.push(ffi.integer(i));
+    }
+    return ffi.tuple(result);
   });
 };

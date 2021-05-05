@@ -5,7 +5,8 @@
   "native_sources": [
     "native/floats.js",
     "native/integer.js",
-    "native/conversion.js"
+    "native/conversion.js",
+    "native/tuple.js"
   ],
   "sources": [
     "source/0-types.crochet",

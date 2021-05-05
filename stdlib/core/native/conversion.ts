@@ -1,4 +1,4 @@
-import type { ForeignInterface } from "../../../source/crochet";
+import type { ForeignInterface } from "../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
   ffi.defun("conversion.tuple-to-interpolation", (xs) => {

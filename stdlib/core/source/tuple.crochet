@@ -252,7 +252,7 @@ end
 
 
 command tuple map: (Fun is function-1) do
-  self flat-map: { X in [Fun(X)] };
+  foreign tuple.map(self, Fun);
 test
   assert ([] map: (_ + 1)) === [];
   assert ([1] map: (_ + 1)) === [2];
@@ -261,13 +261,7 @@ end
 
 
 command tuple flat-map: (Fun is function-1) do
-  let Go = { Xs in
-    condition
-      when Xs count === 0 => [];
-      always => Fun(Xs first) ++ Go(Xs but-first);
-    end
-  };
-  Go(self);
+  foreign tuple.flatmap(self, Fun);
 test
   assert ([] flat-map: { A in [A, A] }) === [];
   assert ([1, 2, 3] flat-map: { A in [A, A] }) === [1, 1, 2, 2, 3, 3];
@@ -275,7 +269,7 @@ end
 
 
 command tuple flatten-once do
-  for Xs in self, X in Xs do X end;
+  self flat-map: { X in X };
 test
   assert ([] flatten-once) === [];
   assert ([[1], [2, 3], [4, [5], 6]] flatten-once) === [1, 2, 3, 4, [5], 6];
