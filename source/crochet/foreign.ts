@@ -52,6 +52,10 @@ export class ForeignInterface {
     return Values.make_record_from_map(this.#universe, x);
   }
 
+  interpolation(xs: CrochetValue[]) {
+    return Values.make_interpolation(this.#universe, xs);
+  }
+
   get nothing() {
     return Values.get_nothing(this.#universe);
   }
@@ -75,12 +79,20 @@ export class ForeignInterface {
     return x.payload;
   }
 
-  to_boolean(x: CrochetValue): boolean {
+  to_js_boolean(x: CrochetValue): boolean {
     return Values.get_boolean(x);
   }
 
   text_to_string(x: CrochetValue): string {
     return Values.text_to_string(x);
+  }
+
+  tuple_to_array(x: CrochetValue): CrochetValue[] {
+    return Values.get_array(x);
+  }
+
+  interpolation_to_parts(x: CrochetValue): (string | CrochetValue)[] {
+    return Values.get_interpolation_parts(x);
   }
 
   // == Operations

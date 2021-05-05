@@ -216,6 +216,18 @@ export function make_boolean(universe: Universe, x: boolean) {
   return x ? get_true(universe) : get_false(universe);
 }
 
+export function get_array(x: CrochetValue) {
+  assert_tag(Tag.TUPLE, x);
+  return x.payload;
+}
+
+export function get_interpolation_parts(
+  x: CrochetValue
+): (string | CrochetValue)[] {
+  assert_tag(Tag.INTERPOLATION, x);
+  return x.payload;
+}
+
 export function equals(left: CrochetValue, right: CrochetValue): boolean {
   if (left.tag !== right.tag) {
     return false;
