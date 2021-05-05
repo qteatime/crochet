@@ -99,6 +99,7 @@ export type Op =
 
 export abstract class BaseOp {
   abstract tag: OpTag;
+  abstract meta: Metadata | null;
 }
 
 export class Drop extends BaseOp {
@@ -143,6 +144,7 @@ export class PushGlobal extends BaseOp {
 
 export class PushLiteral extends BaseOp {
   readonly tag = OpTag.PUSH_LITERAL;
+  readonly meta = null;
 
   constructor(readonly value: Literal) {
     super();

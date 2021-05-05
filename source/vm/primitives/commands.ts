@@ -63,7 +63,12 @@ export function prepare_activation(
     env.define(k, v);
   }
 
-  const activation = new CrochetActivation(parent_activation, env, branch.body);
+  const activation = new CrochetActivation(
+    parent_activation,
+    branch,
+    env,
+    branch.body
+  );
   return activation;
 }
 

@@ -7,6 +7,7 @@ import {
   CrochetCommand,
   CrochetCommandBranch,
   CrochetModule,
+  CrochetThunk,
   CrochetType,
   CrochetValue,
   Tag,
@@ -29,9 +30,26 @@ export function branch_name_location(x: CrochetCommandBranch) {
   return `${branch_name(x)}, from ${branch_location(x)}`;
 }
 
+export function from_suffix(x: CrochetModule | null) {
+  if (x == null) {
+    return "";
+  } else {
+    return `, from ${module_location(x)}`;
+  }
+}
+
 export function command_signature(name: string, types: CrochetType[]) {
   let i = 0;
   return name.replace(/_/g, (_) => `(${type_name(types[i++])})`);
+}
+
+export function thunk_location(thunk: CrochetThunk) {
+  const module = thunk.env.raw_module;
+  if (module != null) {
+    return `thunk, from ${module_location(module)}`;
+  } else {
+    return `thunk`;
+  }
 }
 
 export function type_name(x: CrochetType) {

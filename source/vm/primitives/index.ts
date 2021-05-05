@@ -10,18 +10,20 @@ import * as Tests from "./tests";
 import * as Modules from "./modules";
 import * as Packages from "./packages";
 import * as World from "./world";
+import * as StackTrace from "./stack-trace";
 
 export {
   Commands,
-  Location,
-  Types,
-  Literals,
-  Values,
   Environments,
-  Native,
   Lambdas,
-  Tests,
+  Literals,
+  Location,
   Modules,
+  Native,
   Packages,
+  StackTrace,
+  Tests,
+  Types,
+  Values,
   World,
 };

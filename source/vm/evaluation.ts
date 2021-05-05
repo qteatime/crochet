@@ -2,7 +2,7 @@ import * as IR from "../ir";
 import { AssertType } from "../ir";
 import { logger } from "../utils/logger";
 import { unreachable } from "../utils/utils";
-import { ErrArbitrary } from "./errors";
+import { CrochetEvaluationError, ErrArbitrary } from "./errors";
 import {
   Activation,
   ActivationTag,
@@ -25,6 +25,7 @@ import {
   Values,
   Commands,
   Lambdas,
+  StackTrace,
 } from "./primitives";
 
 export enum SignalTag {
@@ -61,7 +62,12 @@ export class Thread {
   ): CrochetValue {
     const root = new State(
       universe,
-      new CrochetActivation(null, new Environment(null, null, module), block),
+      new CrochetActivation(
+        null,
+        null,
+        new Environment(null, null, module),
+        block
+      ),
       new ContinuationReturn()
     );
     const thread = new Thread(root);
@@ -75,34 +81,40 @@ export class Thread {
 
   run() {
     logger.debug(`Running`, Location.simple_activation(this.state.activation));
-    while (true) {
-      const signal = this.step();
-      switch (signal.tag) {
-        case SignalTag.CONTINUE:
-          continue;
-
-        case SignalTag.RETURN: {
-          const new_state = this.apply_continuation(signal.value);
-          if (new_state != null) {
-            this.state = new_state;
+    try {
+      while (true) {
+        const signal = this.step();
+        switch (signal.tag) {
+          case SignalTag.CONTINUE:
             continue;
-          } else {
-            return signal.value;
+
+          case SignalTag.RETURN: {
+            const new_state = this.apply_continuation(signal.value);
+            if (new_state != null) {
+              this.state = new_state;
+              continue;
+            } else {
+              return signal.value;
+            }
           }
-        }
 
-        case SignalTag.JUMP: {
-          this.state.activation = signal.activation;
-          logger.debug(
-            "Jump to",
-            Location.simple_activation(signal.activation)
-          );
-          continue;
-        }
+          case SignalTag.JUMP: {
+            this.state.activation = signal.activation;
+            logger.debug(
+              "Jump to",
+              Location.simple_activation(signal.activation)
+            );
+            continue;
+          }
 
-        default:
-          throw unreachable(signal, `Signal`);
+          default:
+            throw unreachable(signal, `Signal`);
+        }
       }
+    } catch (error) {
+      const trace = StackTrace.collect_trace(this.state.activation);
+      const formatted_trace = StackTrace.format_entries(trace);
+      throw new CrochetEvaluationError(error, trace, formatted_trace);
     }
   }
 
@@ -292,7 +304,12 @@ export class Thread {
           return _continue;
         } else {
           return new JumpSignal(
-            new CrochetActivation(this.state.activation, thunk.env, thunk.body)
+            new CrochetActivation(
+              this.state.activation,
+              thunk,
+              thunk.env,
+              thunk.body
+            )
           );
         }
       }
