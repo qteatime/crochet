@@ -758,6 +758,8 @@ export class LowerToIR {
             ...args.flatMap((x) => this.expression(x)),
             new IR.Invoke(id, name, args.length),
           ];
+        } else if (non_holes(args).length === 0) {
+          return [new IR.PushPartial(id, name, args.length)];
         } else {
           return this.make_partial_lambda(id, args, (all) => [
             ...all.map((x) => new IR.PushVariable(NO_INFO, x)),
