@@ -1,3 +1,4 @@
+import * as Path from "path";
 import * as Package from "../pkg";
 import * as VM from "../vm";
 import * as Binary from "../binary-serialisation";
@@ -62,12 +63,16 @@ export class Crochet {
     const pkg = await this.read_package_from_file(filename);
     const old = this.registered_packages.get(pkg.meta.name);
     if (old != null) {
-      throw new Error(
-        [
-          `Duplicated package ${pkg.meta.name}.\n`,
-          `Defined in ${filename} and ${old.filename}`,
-        ].join("")
-      );
+      if (Path.resolve(old.filename) !== Path.resolve(pkg.filename)) {
+        throw new Error(
+          [
+            `Duplicated package ${pkg.meta.name}.\n`,
+            `Defined in ${filename} and ${old.filename}`,
+          ].join("")
+        );
+      } else {
+        return old;
+      }
     }
     logger.debug(`Registered package ${pkg.meta.name} for ${filename}`);
     this.registered_packages.set(pkg.meta.name, pkg);
@@ -196,5 +201,48 @@ export class BootedCrochet {
     const ir = Binary.decode_program(buffer);
     const module = VM.load_module(this.universe, cpkg, ir);
     return module;
+  }
+
+  async run_tests(filter: (_: VM.CrochetTest) => boolean) {
+    const tests0 = VM.Tests.grouped_tests(this.universe);
+    const { total, skipped, tests: tests1 } = VM.Tests.filter_grouped_tests(
+      tests0,
+      filter
+    );
+    const failures = [];
+    const start = new Date().getTime();
+
+    for (const [group, modules] of tests1) {
+      console.log("");
+      console.log(group);
+      console.log("=".repeat(72));
+
+      for (const [module, tests] of modules) {
+        console.log("");
+        console.log(module);
+        console.log("-".repeat(72));
+
+        for (const test of tests) {
+          try {
+            await VM.run_test(this.universe, test);
+            console.log(`[OK]    ${test.title}`);
+          } catch (error) {
+            console.log("-".repeat(3));
+            console.log(`[ERROR] ${test.title}`);
+            console.log(error.stack ?? error);
+            console.log("-".repeat(3));
+            failures.push(error);
+          }
+        }
+      }
+    }
+
+    const end = new Date().getTime();
+    const diff = end - start;
+    console.log("");
+    console.log("-".repeat(72));
+    console.log(
+      `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failed`
+    );
   }
 }

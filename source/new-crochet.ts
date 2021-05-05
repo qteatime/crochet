@@ -35,7 +35,7 @@ void (async function main() {
     logger.verbose = !!verbose;
     if (!file) {
       throw new Error(
-        `Usage: new-crochet <show-ir|run|compile> <file> [verbose]`
+        `Usage: new-crochet <show-ir|run|test|compile> <file> [verbose]`
       );
     }
 
@@ -91,6 +91,7 @@ void (async function main() {
           }
         }
         console.log("");
+        break;
       }
 
       case "compile": {
@@ -107,6 +108,13 @@ void (async function main() {
         const value = await crochet.run("main: _", [crochet.ffi.tuple([])]);
 
         console.log(Crochet.vm.Location.simple_value(value));
+        return;
+      }
+
+      case "test": {
+        const crochet = new CrochetForNode([], new Set([]), true);
+        await crochet.boot(file, Crochet.pkg.target_node());
+        await crochet.run_tests((_) => true);
         return;
       }
     }
