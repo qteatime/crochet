@@ -2,25 +2,30 @@
   "name": "crochet.core",
   "target": "*",
   "stability": "experimental",
+  "native_sources": [
+    "native/floats.js",
+    "native/integer.js",
+    "native/conversion.js"
+  ],
   "sources": [
     "source/0-types.crochet",
     "source/traits/arithmetic.crochet",
-    "source/boolean.crochet",
-    "source/traits/conversion.crochet",
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
-    "source/traits/fractional.crochet",
     "source/traits/ordering.crochet",
+    "source/traits/fractional.crochet",
+    "source/traits/conversion.crochet",
+    "source/boolean.crochet",
     "source/float.crochet",
-    "source/tuple.crochet",
     "source/text.crochet",
     "source/cell.crochet",
     "source/record.crochet",
     "source/error.crochet",
-    "source/result.crochet",
     "source/representation.crochet",
     "source/debug-representation.crochet",
-    "source/indexed.crochet"
+    "source/indexed.crochet",
+    "source/tuple.crochet",
+    "source/result.crochet"
   ],
   "capabilities": {
     "requires": [],

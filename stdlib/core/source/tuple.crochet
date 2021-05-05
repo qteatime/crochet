@@ -252,7 +252,7 @@ end
 
 
 command tuple map: (Fun is function-1) do
-  for X in self do Fun(X) end;
+  self flat-map: { X in [Fun(X)] };
 test
   assert ([] map: (_ + 1)) === [];
   assert ([1] map: (_ + 1)) === [2];
@@ -261,7 +261,13 @@ end
 
 
 command tuple flat-map: (Fun is function-1) do
-  for X in self, Y in Fun(X) do Y end;
+  let Go = { Xs in
+    condition
+      when Xs count === 0 => [];
+      always => Fun(Xs first) ++ Go(Xs but-first);
+    end
+  };
+  Go(self);
 test
   assert ([] flat-map: { A in [A, A] }) === [];
   assert ([1, 2, 3] flat-map: { A in [A, A] }) === [1, 1, 2, 2, 3, 3];

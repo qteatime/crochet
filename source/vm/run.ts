@@ -4,6 +4,7 @@ import {
   ContinuationReturn,
   CrochetActivation,
   CrochetModule,
+  CrochetTest,
   CrochetValue,
   Environment,
   State,
@@ -38,4 +39,13 @@ export async function run_prelude(universe: Universe) {
     const thread = new Thread(state);
     await thread.run_to_completion();
   }
+}
+
+export async function run_test(universe: Universe, test: CrochetTest) {
+  const env = new Environment(test.env, null, test.module);
+  const activation = new CrochetActivation(null, env, test.body);
+  const state = new State(universe, activation, new ContinuationReturn());
+  const thread = new Thread(state);
+  const value = await thread.run_to_completion();
+  return value;
 }
