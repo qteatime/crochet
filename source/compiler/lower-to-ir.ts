@@ -754,7 +754,9 @@ export class LowerToIR {
       Interpolate: (_, value) => {
         const id = this.context.register(value.pos);
         const parts = this.interpolation_parts(value.pos, value.parts);
-        if (parts.length === 1 && parts[0] instanceof IPStatic) {
+        if (parts.length === 0) {
+          return [new IR.PushLiteral(new IR.LiteralText(""))];
+        } else if (parts.length === 1 && parts[0] instanceof IPStatic) {
           return [new IR.PushLiteral(new IR.LiteralText(parts[0].value))];
         } else {
           return [

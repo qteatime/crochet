@@ -80,7 +80,7 @@ export function simple_value(x: CrochetValue): string {
       return `<${type_name(x.type)}>`;
     case Tag.INTERPOLATION: {
       assert_tag(Tag.INTERPOLATION, x);
-      return `"${x.payload
+      return `i"${x.payload
         .map((x) => (typeof x === "string" ? x : `[${simple_value(x)}]`))
         .join("")}"`;
     }
