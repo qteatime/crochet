@@ -10,8 +10,8 @@ test
   "abc" ascii;
 end
 
-command (X is text) is-ascii
-  = foreign ascii.is-ascii(X)
+command text is-ascii
+  = foreign text.is-ascii(self)
 test
   assert "abc" is-ascii;
   assert not ("á" is-ascii);
@@ -19,7 +19,7 @@ test
 end
 
 command ascii-view to-lower-case
-  = new ascii-view(#ascii-view to-lower-case: self.text)
+  = new ascii-view(foreign text.to-lower(self.text))
 test
   assert "" ascii to-lower-case to-text =:= "";
   assert "abc" ascii to-lower-case to-text =:= "abc";
@@ -28,7 +28,7 @@ test
 end
 
 command ascii-view to-upper-case
-  = new ascii-view(#ascii-view to-upper-case: self.text)
+  = new ascii-view(foreign text.to-upper(self.text))
 test
   assert "" ascii to-upper-case to-text =:= "";
   assert "abc" ascii to-upper-case to-text =:= "ABC";
@@ -38,12 +38,3 @@ end
 
 command ascii-view to-text
   = self.text;
-
-
-// # The native implementations
-command #ascii-view to-lower-case: View
-  = foreign ascii.to-lower(View);
-
-command #ascii-view to-upper-case: View
-  = foreign ascii.to-upper(View);
-

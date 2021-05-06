@@ -1,0 +1,28 @@
+% crochet
+
+command text lines
+  = foreign text.lines(self)
+test
+  assert "" lines =:= [""];
+  assert "a\nb\nc" lines =:= ["a", "b", "c"];
+  assert "a\r\nb\rc\nd" lines =:= ["a", "b", "c", "d"];
+end
+
+command text unicode-code-points 
+  = foreign text.code-points(self)
+test
+  assert "abc❤🌹✨" unicode-code-points =:= [97, 98, 99, 10084, 127801, 10024];
+end
+
+command #text from-code-points: (Points is tuple)
+  = foreign text.from-code-points(Points)
+test
+  assert #text from-code-points: ("abc❤🌹✨" unicode-code-points) =:= "abc❤🌹✨";
+end
+
+command #text from-lines: (Lines is tuple) do
+  foreign text.from-lines(Lines)
+test
+  assert (#text from-lines: ("a\nb\nc" lines)) =:= "a\nb\nc";
+  assert (#text from-lines: ("a\r\nb\r\nc" lines)) =:= "a\nb\nc";
+end

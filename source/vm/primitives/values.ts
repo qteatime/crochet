@@ -332,7 +332,7 @@ export function text_to_string(x: CrochetValue) {
   return x.payload;
 }
 
-export function project(value: CrochetValue, key: string) {
+export function project(value: CrochetValue, key: string): CrochetValue {
   switch (value.tag) {
     case Tag.RECORD: {
       assert_tag(Tag.RECORD, value);
@@ -371,6 +371,12 @@ export function project(value: CrochetValue, key: string) {
         }
         return result;
       }
+    }
+
+    case Tag.TUPLE: {
+      assert_tag(Tag.TUPLE, value);
+      const results = value.payload.map((x) => project(x, key));
+      return new CrochetValue(Tag.TUPLE, value.type, results);
     }
 
     default:

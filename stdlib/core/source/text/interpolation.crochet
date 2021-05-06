@@ -68,6 +68,3 @@ end
 
 command (X is interpolation) flatten-into-plain-text =
   foreign interpolation.to-plain-text(X);
-
-command text repeat: (N is integer) =
-  foreign text.repeat(self, N);

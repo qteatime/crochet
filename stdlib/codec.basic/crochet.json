@@ -2,7 +2,8 @@
   "name": "crochet.codec.basic",
   "target": "*",
   "stability": "experimental",
-  "dependencies": ["crochet.core", "crochet.text"],
+  "dependencies": ["crochet.core"],
+  "native_sources": ["native/native.js"],
   "sources": ["base64.crochet", "hex.crochet"],
   "capabilities": {
     "requires": [],
