@@ -108,7 +108,7 @@ export function simple_value(x: CrochetValue): string {
     case Tag.THUNK: {
       assert_tag(Tag.THUNK, x);
       if (x.payload.value != null) {
-        return `<thunk ${simple_value(x)}>`;
+        return `<thunk ${simple_value(x.payload.value)}>`;
       } else {
         return `<thunk>`;
       }
@@ -133,7 +133,7 @@ export function simple_value(x: CrochetValue): string {
   }
 }
 
-export function simple_op(op: IR.Op): string {
+export function simple_op(op: IR.Op, index: number | null): string {
   const entries = Object.entries(op)
     .filter(
       ([k, v]) => k !== "meta" && k !== "tag" && !(v instanceof IR.BasicBlock)
@@ -143,8 +143,8 @@ export function simple_op(op: IR.Op): string {
     .filter(([k, v]) => v instanceof IR.BasicBlock)
     .map(
       ([k, v]) =>
-        `\n${k}:\n${(v as IR.BasicBlock).ops
-          .map((op) => `  ${simple_op(op)}`)
+        `\n  ${k}:\n${(v as IR.BasicBlock).ops
+          .map((op, i) => `  ${simple_op(op, i)}`)
           .join("\n")}\n`
     )
     .join("\n")
@@ -152,7 +152,9 @@ export function simple_op(op: IR.Op): string {
     .map((x) => `    ${x}`)
     .join("\n");
 
-  return `${IR.OpTag[op.tag]} ${entries.join(" ")}${bbs}`;
+  return `${(index ?? "").toString().padStart(3)} ${
+    IR.OpTag[op.tag]
+  } ${entries.join(" ")}${bbs}`;
 }
 
 export function simple_activation(x: Activation): string {
@@ -160,7 +162,7 @@ export function simple_activation(x: Activation): string {
     case ActivationTag.CROCHET_ACTIVATION: {
       return [
         `activation ${x.parent ? "+" : "0"} at ${x.instruction}\n`,
-        x.block.ops.map((x) => "  " + simple_op(x) + "\n").join(""),
+        x.block.ops.map((x, i) => "  " + simple_op(x, i) + "\n").join(""),
         "\nstack:\n",
         x.stack.map((x) => "  " + simple_value(x) + "\n").join(""),
       ].join("");

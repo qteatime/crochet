@@ -322,7 +322,11 @@ export class ContinuationTap {
 
   constructor(
     readonly saved_state: State,
-    readonly continuation: (state: State, value: CrochetValue) => State
+    readonly continuation: (
+      previous: State,
+      state: State,
+      value: CrochetValue
+    ) => State
   ) {}
 }
 

@@ -50,7 +50,7 @@ void (async function main() {
               console.log(`Command ${x.name} ${x.types}`);
               console.log(
                 x.body.ops
-                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .map((x, i) => `  ${Crochet.vm.Location.simple_op(x, i)}\n`)
                   .join("")
               );
               break;
@@ -60,7 +60,7 @@ void (async function main() {
               console.log(`Define ${x.name}`);
               console.log(
                 x.body.ops
-                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .map((x, i) => `  ${Crochet.vm.Location.simple_op(x, i)}\n`)
                   .join("")
               );
               break;
@@ -70,7 +70,7 @@ void (async function main() {
               console.log(`Prelude`);
               console.log(
                 x.body.ops
-                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .map((x, i) => `  ${Crochet.vm.Location.simple_op(x, i)}\n`)
                   .join("")
               );
               break;
@@ -80,7 +80,7 @@ void (async function main() {
               console.log(`Test ${x.name}`);
               console.log(
                 x.body.ops
-                  .map((x) => `  ${Crochet.vm.Location.simple_op(x)}\n`)
+                  .map((x, i) => `  ${Crochet.vm.Location.simple_op(x, i)}\n`)
                   .join("")
               );
               break;
@@ -114,7 +114,7 @@ void (async function main() {
       case "test": {
         const crochet = new CrochetForNode([], new Set([]), true);
         await crochet.boot(file, Crochet.pkg.target_node());
-        await crochet.run_tests((t) => true);
+        await crochet.run_tests((t) => t.module.filename.includes("thunk"));
         return;
       }
     }

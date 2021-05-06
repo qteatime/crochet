@@ -30,7 +30,8 @@
     "source/debug-representation.crochet",
     "source/indexed.crochet",
     "source/tuple.crochet",
-    "source/result.crochet"
+    "source/result.crochet",
+    "source/thunk.crochet"
   ],
   "capabilities": {
     "requires": [],
