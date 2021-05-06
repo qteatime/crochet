@@ -51,4 +51,4 @@ const clientTarget = {
   },
 };
 
-module.exports = [benchTarget, cliTarget];
+module.exports = [];
