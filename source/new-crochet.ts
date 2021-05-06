@@ -114,7 +114,7 @@ void (async function main() {
       case "test": {
         const crochet = new CrochetForNode([], new Set([]), true);
         await crochet.boot(file, Crochet.pkg.target_node());
-        await crochet.run_tests((t) => t.module.filename.includes("thunk"));
+        await crochet.run_tests((t) => true);
         return;
       }
     }
