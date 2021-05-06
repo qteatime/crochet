@@ -655,7 +655,7 @@ export class LowerToIR {
           new IR.Branch(
             id,
             new IR.BasicBlock(this.comprehension(body)),
-            new IR.BasicBlock([new IR.PushTuple(id, 0)])
+            new IR.BasicBlock([new IR.PushTuple(id, 0), new IR.Return(id)])
           ),
         ];
       },
