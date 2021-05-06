@@ -209,94 +209,111 @@ export function load_module(
   program: IR.Program
 ) {
   const module = new CrochetModule(pkg, program.filename);
-  const t = IR.DeclarationTag;
 
   for (const x of program.declarations) {
-    switch (x.tag) {
-      case t.COMMAND: {
-        const command = Commands.get_or_make_command(
-          universe,
-          x.name,
-          x.parameters.length
-        );
-
-        const branch = new CrochetCommandBranch(
-          module,
-          new Environment(null, null, module),
-          x.name,
-          x.documentation,
-          x.parameters,
-          x.types.map((t) => Types.materialise_type(universe, module, t)),
-          x.body,
-          x.meta
-        );
-
-        Commands.add_branch(command, branch);
-        continue;
-      }
-
-      case t.TYPE: {
-        const parent = Types.materialise_type(universe, module, x.parent);
-        const type = new CrochetType(
-          module,
-          x.name,
-          x.documentation,
-          parent,
-          x.fields,
-          x.types.map((t) => Types.materialise_type(universe, module, t)),
-          false,
-          x.meta
-        );
-
-        Types.define_type(module, x.name, type, x.visibility);
-        continue;
-      }
-
-      case t.FOREIGN_TYPE: {
-        const type = Types.get_foreign_type(universe, module, x.target);
-        Types.define_type(module, x.name, type, IR.Visibility.GLOBAL);
-        continue;
-      }
-
-      case t.SEAL: {
-        const type = Types.get_type(module, x.name);
-        Types.seal(type);
-        continue;
-      }
-
-      case t.TEST: {
-        const test = new CrochetTest(
-          module,
-          new Environment(null, null, module),
-          x.name,
-          x.body
-        );
-        Tests.add_test(universe, test);
-        continue;
-      }
-
-      case t.OPEN: {
-        Modules.open(module, x.namespace);
-        continue;
-      }
-
-      case t.DEFINE: {
-        const value = Thread.run_sync(universe, module, x.body);
-        Modules.define(module, x.visibility, x.name, value);
-        continue;
-      }
-
-      case t.PRELUDE: {
-        const env = new Environment(null, null, module);
-        const prelude = new CrochetPrelude(env, x.body);
-        World.add_prelude(universe.world, prelude);
-        continue;
-      }
-
-      default:
-        throw unreachable(x as never, `Declaration`);
-    }
+    load_declaration(universe, module, x);
   }
 
   return module;
+}
+
+export function load_declaration(
+  universe: Universe,
+  module: CrochetModule,
+  declaration: IR.Declaration
+) {
+  const t = IR.DeclarationTag;
+
+  switch (declaration.tag) {
+    case t.COMMAND: {
+      const command = Commands.get_or_make_command(
+        universe,
+        declaration.name,
+        declaration.parameters.length
+      );
+
+      const branch = new CrochetCommandBranch(
+        module,
+        new Environment(null, null, module),
+        declaration.name,
+        declaration.documentation,
+        declaration.parameters,
+        declaration.types.map((t) =>
+          Types.materialise_type(universe, module, t)
+        ),
+        declaration.body,
+        declaration.meta
+      );
+
+      Commands.add_branch(command, branch);
+      break;
+    }
+
+    case t.TYPE: {
+      const parent = Types.materialise_type(
+        universe,
+        module,
+        declaration.parent
+      );
+      const type = new CrochetType(
+        module,
+        declaration.name,
+        declaration.documentation,
+        parent,
+        declaration.fields,
+        declaration.types.map((t) =>
+          Types.materialise_type(universe, module, t)
+        ),
+        false,
+        declaration.meta
+      );
+
+      Types.define_type(module, declaration.name, type, declaration.visibility);
+      break;
+    }
+
+    case t.FOREIGN_TYPE: {
+      const type = Types.get_foreign_type(universe, module, declaration.target);
+      Types.define_type(module, declaration.name, type, IR.Visibility.GLOBAL);
+      break;
+    }
+
+    case t.SEAL: {
+      const type = Types.get_type(module, declaration.name);
+      Types.seal(type);
+      break;
+    }
+
+    case t.TEST: {
+      const test = new CrochetTest(
+        module,
+        new Environment(null, null, module),
+        declaration.name,
+        declaration.body
+      );
+      Tests.add_test(universe, test);
+      break;
+    }
+
+    case t.OPEN: {
+      Modules.open(module, declaration.namespace);
+      break;
+    }
+
+    case t.DEFINE: {
+      const value = Thread.run_sync(universe, module, declaration.body);
+      Modules.define(module, declaration.visibility, declaration.name, value);
+      break;
+    }
+
+    case t.PRELUDE: {
+      const env = new Environment(null, null, module);
+      const prelude = new CrochetPrelude(env, declaration.body);
+      World.add_prelude(universe.world, prelude);
+      break;
+    }
+
+    default:
+      throw unreachable(declaration as never, `Declaration`);
+  }
 }

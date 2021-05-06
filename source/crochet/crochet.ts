@@ -1,9 +1,11 @@
 import * as Path from "path";
 import * as Package from "../pkg";
+import * as IR from "../ir";
 import * as VM from "../vm";
 import * as Binary from "../binary-serialisation";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
+import { CrochetValue, Environment } from "../vm";
 
 export interface IFileSystem {
   exists(x: string): Promise<boolean>;
@@ -244,5 +246,18 @@ export class BootedCrochet {
     console.log(
       `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failed`
     );
+  }
+
+  async load_declaration(x: IR.Declaration, module: VM.CrochetModule) {
+    VM.load_declaration(this.universe, module, x);
+  }
+
+  async run_block(x: IR.BasicBlock, env: VM.Environment) {
+    const block = new IR.BasicBlock([...x.ops, new IR.Return(0)]);
+    return await VM.run_block(this.universe, env, block);
+  }
+
+  async invoke(name: string, args: CrochetValue[]) {
+    return await VM.run_command(this.universe, name, args);
   }
 }

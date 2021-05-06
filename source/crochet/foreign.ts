@@ -56,6 +56,11 @@ export class ForeignInterface {
     return Values.make_text(this.#universe, x);
   }
 
+  // FIXME: this shouldn't be available to non-trusted packages
+  static_text(x: string) {
+    return Values.make_static_text(this.#universe, x);
+  }
+
   tuple(x: CrochetValue[]) {
     return Values.make_tuple(this.#universe, x);
   }

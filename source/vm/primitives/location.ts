@@ -119,7 +119,7 @@ export function simple_value(x: CrochetValue): string {
     }
     case Tag.TYPE: {
       assert_tag(Tag.TYPE, x);
-      return `#${type_name(x.type)}`;
+      return `${type_name(x.type)}`;
     }
     case Tag.UNKNOWN: {
       return `<unknown>`;

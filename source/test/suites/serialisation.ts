@@ -32,7 +32,7 @@ for (const pkg of packages) {
       console.log(`  - ${source.relative_filename}`);
       const crochet_source = FS.readFileSync(source.absolute_filename, "utf-8");
       const ast = Compiler.parse(crochet_source, source.relative_filename);
-      const program = Compiler.lowerToIR(
+      const program = Compiler.lower_to_ir(
         source.relative_filename,
         crochet_source,
         ast
