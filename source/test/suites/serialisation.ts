@@ -5,7 +5,7 @@ import { inspect } from "util";
 
 import * as Compiler from "../../compiler";
 import * as Binary from "../../binary-serialisation";
-import { AnyTarget, CrochetPackage } from "../../runtime";
+import * as Package from "../../pkg";
 import { logger } from "../../utils/logger";
 
 const pkgRoot = Path.join(__dirname, "../../../stdlib");
@@ -15,8 +15,12 @@ const packages = FS.readdirSync(pkgRoot)
     const file = Path.join(pkgRoot, x, "crochet.json");
     return { file, data: JSON.parse(FS.readFileSync(file, "utf-8")) };
   })
-  .map(({ file, data }) =>
-    CrochetPackage.parse(data, file).restricted_to(new AnyTarget())
+  .map(
+    ({ file, data }) =>
+      new Package.ResolvedPackage(
+        Package.parse(data, file),
+        Package.target_any()
+      )
   );
 
 console.log("Serialisation tests");
@@ -24,12 +28,12 @@ console.log("Serialisation tests");
 for (const pkg of packages) {
   console.log(`In package ${pkg.name}`);
   for (const source of pkg.sources) {
-    if (Path.extname(source) === ".crochet") {
-      console.log(`  - ${pkg.relative_filename(source)}`);
-      const crochet_source = FS.readFileSync(source, "utf-8");
-      const ast = Compiler.parse(crochet_source, source);
+    if (source.extension === ".crochet") {
+      console.log(`  - ${source.relative_filename}`);
+      const crochet_source = FS.readFileSync(source.absolute_filename, "utf-8");
+      const ast = Compiler.parse(crochet_source, source.relative_filename);
       const program = Compiler.lowerToIR(
-        pkg.relative_filename(source),
+        source.relative_filename,
         crochet_source,
         ast
       );

@@ -1,7 +1,7 @@
 import * as FS from "fs";
 import * as Path from "path";
 import { CrochetForNode } from "../targets/node";
-import Crochet from "../new-index";
+import Crochet from "../index";
 import { logger } from "../utils/logger";
 import { CrochetTest } from "../vm";
 
