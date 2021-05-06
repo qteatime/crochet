@@ -3,24 +3,13 @@
   "target": "*",
   "dependencies": [
     "crochet.codec.basic",
-    "crochet.collections",
     "crochet.core",
-    "crochet.debug",
-    "crochet.language.cli-arguments",
-    "crochet.language.csv",
-    "crochet.language.json",
     "crochet.mathematics",
-    "crochet.mathematics.units",
     "crochet.parsing.combinators",
-    "crochet.random",
-    "crochet.text",
-    "crochet.text.internationalisation",
-    "crochet.time"
+    "crochet.random"
   ],
   "sources": [
     "types.crochet",
-    "actions.crochet",
-    "branch.crochet",
     "for-all.crochet",
     "interpolation.crochet",
     "multimethod.crochet"

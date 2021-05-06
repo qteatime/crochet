@@ -2,7 +2,7 @@
   "name": "crochet.parsing.combinators",
   "target": "*",
   "stability": "experimental",
-  "dependencies": ["crochet.core", "crochet.text", "crochet.collections"],
+  "dependencies": ["crochet.core"],
   "sources": [
     "source/0-types.crochet",
     "source/result.crochet",
