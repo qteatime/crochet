@@ -189,6 +189,52 @@ function replace_signature_args<T, U>(x: Ast.Signature<T>, args: U[]) {
   });
 }
 
+export function from_enum_integer(
+  meta: number,
+  type: IR.Type,
+  variants: Ast.Name[]
+) {
+  if (variants.length === 0) {
+    throw new Error(`empty variants`);
+  } else {
+    const cond = variants.reduceRight(
+      (prev: IR.Op[], x, i) => {
+        return [
+          new IR.PushVariable(meta, "N"),
+          new IR.PushLiteral(new IR.LiteralInteger(BigInt(i + 1))),
+          new IR.IntrinsicEqual(meta),
+          new IR.Branch(
+            meta,
+            new IR.BasicBlock([
+              new IR.PushGlobal(meta, x.name),
+              new IR.Return(meta),
+            ]),
+            new IR.BasicBlock(prev)
+          ),
+        ];
+      },
+      [
+        new IR.PushLiteral(new IR.LiteralFalse()),
+        new IR.Assert(
+          meta,
+          IR.AssertType.UNREACHABLE,
+          "invalid-variant-index",
+          "Invalid variant index",
+          null
+        ),
+      ]
+    );
+    return new IR.DCommand(
+      meta,
+      "",
+      "_ from-enum-integer: _",
+      ["_", "N"],
+      [type, new IR.LocalType(meta, "integer")],
+      new IR.BasicBlock([...cond, new IR.Return(meta)])
+    );
+  }
+}
+
 export class LowerToIR {
   constructor(readonly context: Context) {}
 
@@ -1437,28 +1483,11 @@ export class LowerToIR {
             ["_"],
             [parent],
             new IR.BasicBlock([
-              new IR.PushGlobal(id, variants0[1].name),
+              new IR.PushGlobal(id, variants0[variants0.length - 1].name),
               new IR.Return(id),
             ])
           ),
-          new IR.DCommand(
-            id,
-            "",
-            "_ from-enum-integer: _",
-            ["_", "N"],
-            [parent, new IR.LocalType(id, "integer")],
-            new IR.BasicBlock([
-              new IR.PushLiteral(new IR.LiteralFalse()),
-              new IR.Assert(
-                NO_INFO,
-                IR.AssertType.UNREACHABLE,
-                "not-implemented",
-                "not-implemented",
-                null
-              ),
-              // TODO: generate this
-            ])
-          ),
+          from_enum_integer(id, parent, variants0),
         ];
       },
 
