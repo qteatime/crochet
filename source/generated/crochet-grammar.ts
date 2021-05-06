@@ -3869,7 +3869,7 @@ export class $$ReplCommand$_HelpType extends ReplCommand {
 let grammar: Ohm.Grammar | null;
 let semantics: Ohm.Semantics | null;
 
-function get_grammar() {
+export function get_grammar() {
   if (grammar != null) {
     return grammar;
   }
@@ -3880,7 +3880,7 @@ function get_grammar() {
   return grammar;
 }
 
-function get_semantics() {
+export function get_semantics() {
   if (semantics != null) {
     return semantics;
   }

@@ -50,3 +50,15 @@ export async function run_test(universe: Universe, test: CrochetTest) {
   const value = await thread.run_to_completion();
   return value;
 }
+
+export async function run_block(
+  universe: Universe,
+  env: Environment,
+  block: IR.BasicBlock
+) {
+  const activation = new CrochetActivation(null, null, env, block);
+  const state = new State(universe, activation, new ContinuationReturn());
+  const thread = new Thread(state);
+  const value = await thread.run_to_completion();
+  return value;
+}

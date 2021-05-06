@@ -30,7 +30,7 @@ export function prepare_activation(
         p.env,
         p.parameters,
         values,
-        env0.raw_receiver
+        p.env.raw_receiver
       );
       const activation = new CrochetActivation(
         parent_activation,

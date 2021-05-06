@@ -13,7 +13,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.tuple(
       ffi.interpolation_to_parts(x).map((x) => {
         if (typeof x === "string") {
-          return ffi.text(x);
+          return ffi.static_text(x);
         } else {
           return x;
         }
@@ -52,7 +52,7 @@ export default (ffi: ForeignInterface) => {
           } else if (ffi.is_interpolation(x)) {
             return flatten(x);
           } else {
-            ffi.text_to_string(x);
+            return ffi.text_to_string(x);
           }
         })
         .join("");
@@ -63,5 +63,11 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("interpolation.normalise", (x) => {
     return ffi.normalise_interpolation(x);
+  });
+
+  ffi.defun("text.repeat", (x0, n0) => {
+    const x = ffi.text_to_string(x0);
+    const n = Number(ffi.integer_to_bigint(n0));
+    return ffi.text(x.repeat(n));
   });
 };

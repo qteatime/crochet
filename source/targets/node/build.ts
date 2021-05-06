@@ -69,7 +69,7 @@ export async function compile_crochet(
 ) {
   FS.mkdirSync(Path.dirname(file.binary_image), { recursive: true });
   const ast = Compiler.parse(source, file.relative_filename);
-  const program = Compiler.lowerToIR(file.relative_filename, source, ast);
+  const program = Compiler.lower_to_ir(file.relative_filename, source, ast);
   // FIXME: actually use file streams...
   const stream = new Binary.BufferedWriter();
   Binary.encode_program(program, stream);

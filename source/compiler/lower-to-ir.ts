@@ -862,7 +862,10 @@ export class LowerToIR {
           return [new IR.PushLiteral(new IR.LiteralText(parts[0].value))];
         } else {
           return [
-            ...parts.flatMap((x) => x.compile()),
+            ...parts
+              .slice()
+              .reverse()
+              .flatMap((x) => x.compile()),
             new IR.Interpolate(
               id,
               parts.map((x) => x.static_compile())
@@ -1570,7 +1573,7 @@ export class LowerToIR {
   }
 }
 
-export function lowerToIR(
+export function lower_to_ir(
   filename: string,
   source: string,
   program: Ast.Program
@@ -1586,4 +1589,22 @@ export function lowerToIR(
     context.generate_meta_table(),
     declarations
   );
+}
+
+export function lower_declarations(source: string, xs: Ast.Declaration[]) {
+  const context = new Context("", source);
+  const declarations = new LowerToIR(context).declarations(xs, null);
+  return {
+    declarations,
+    meta: context.generate_meta_table(),
+  };
+}
+
+export function lower_statements(source: string, xs: Ast.Statement[]) {
+  const context = new Context("", source);
+  const block = new LowerToIR(context).statements(xs);
+  return {
+    block,
+    meta: context.generate_meta_table(),
+  };
 }

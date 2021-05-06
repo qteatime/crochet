@@ -4,11 +4,12 @@ import { CrochetForNode } from "../targets/node";
 import Crochet from "../index";
 import { logger } from "../utils/logger";
 import { CrochetTest } from "../vm";
+import * as REPL from "../node-repl";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
   const ast = Crochet.compiler.parse(source, file);
-  const ir = Crochet.compiler.lowerToIR(file, source, ast);
+  const ir = Crochet.compiler.lower_to_ir(file, source, ast);
   return ir;
 }
 
@@ -155,6 +156,15 @@ async function build([file]: string[], options: Options) {
   await crochet.build(file);
 }
 
+async function repl([file0]: string[], options: Options) {
+  const crochet = new CrochetForNode([], new Set([]), true);
+  let file = REPL.resolve_file(file0);
+
+  await crochet.boot(file, Crochet.pkg.target_node());
+  const pkg = await crochet.crochet.read_package_from_file(file);
+  await REPL.repl(crochet, pkg.meta.name);
+}
+
 function help(command?: string) {
   switch (command) {
     case "run":
@@ -245,6 +255,7 @@ function help(command?: string) {
           "\n",
           "Usage:\n",
           "  crochet run <crochet.json> [options]\n",
+          "  crochet repl <crochet.json> [options]\n",
           "  crochet test <crochet.json> [options]\n",
           "  crochet build <crochet.json> [options]\n",
           "  crochet show-ir <file.crochet> [options]\n",
@@ -295,6 +306,8 @@ void (async function main() {
         return await test(args, options);
       case "build":
         return await build(args, options);
+      case "repl":
+        return await repl(args, options);
       case "version": {
         const version = require("../../package.json").version;
         console.log(`Crochet version ${version}`);
