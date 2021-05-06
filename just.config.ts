@@ -31,7 +31,4 @@ task(
   })
 );
 
-task(
-  "build",
-  series("build-grammar", "build-ts", "build-targets", "build-web")
-);
+task("build", series("build-grammar", "build-ts"));
