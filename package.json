@@ -9,7 +9,7 @@
     "build-ts": "just build-ts",
     "build-stdlib": "tsc -p stdlib",
     "build-grammar": "just build-grammar",
-    "test": "just test && npm run build-stdlib && node crochet test stdlib/core/crochet.json",
+    "test": "just test && npm run build-stdlib && node crochet test tests/vm-tests/crochet.json",
     "benchmark": "node --expose-gc build/test/benchmarks/run.js"
   },
   "dependencies": {
