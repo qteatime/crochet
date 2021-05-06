@@ -437,3 +437,12 @@ export function normalise_interpolation(universe: Universe, x: CrochetValue) {
   }
   return make_interpolation(universe, list);
 }
+
+export function is_thunk_forced(x: CrochetValue) {
+  assert_tag(Tag.THUNK, x);
+  return x.payload.value != null;
+}
+
+export function update_thunk(x: CrochetThunk, value: CrochetValue) {
+  x.value = value;
+}

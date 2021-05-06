@@ -166,9 +166,7 @@ command debug-printer print: nil column: C =
 
 
 local singleton dbg;
-command dbg text: X = foreign conversion.any-to-text(X);
-command dbg fun-name: (X is function) = foreign debug.fun-name(X);
-command dbg is-forced: (X is thunk) = foreign debug.thunk-forced(X);
+command dbg text: X = foreign debug.any-to-text(X);
 command dbg type-name: X = foreign debug.type-name(X);
 command dbg size: (X is text) = foreign debug.text-length(X);
 
@@ -244,7 +242,7 @@ command debug-representation of: (F is function) =
 
 command debug-representation of: (T is thunk) =
   condition
-    when dbg is-forced: T =>
+    when T is-forced =>
       debug-representation of: (force T)
         | prepend: (debug-representation keyword: "thunk ")
         | between: "<" and: ">";

@@ -8,6 +8,7 @@ import {
   ActivationTag,
   ContinuationReturn,
   ContinuationTag,
+  ContinuationTap,
   CrochetActivation,
   CrochetModule,
   CrochetValue,
@@ -35,9 +36,16 @@ export enum SignalTag {
   RETURN,
   JUMP,
   CONTINUE,
+  TAP,
+  SET_STATE,
 }
 
-export type Signal = ReturnSignal | JumpSignal | ContinueSignal;
+export type Signal =
+  | ReturnSignal
+  | JumpSignal
+  | ContinueSignal
+  | TapSignal
+  | SetStateSignal;
 
 export class ReturnSignal {
   readonly tag = SignalTag.RETURN;
@@ -51,6 +59,23 @@ export class JumpSignal {
 
 export class ContinueSignal {
   readonly tag = SignalTag.CONTINUE;
+}
+
+export class TapSignal {
+  readonly tag = SignalTag.TAP;
+  constructor(
+    readonly activation: Activation,
+    readonly continuation: (
+      previous: State,
+      state: State,
+      value: CrochetValue
+    ) => State
+  ) {}
+}
+
+export class SetStateSignal {
+  readonly tag = SignalTag.SET_STATE;
+  constructor(readonly state: State) {}
 }
 
 const _continue = new ContinueSignal();
@@ -92,13 +117,12 @@ export class Thread {
             continue;
 
           case SignalTag.RETURN: {
-            const new_state = this.apply_continuation(signal.value);
-            if (new_state != null) {
-              this.state = new_state;
-              continue;
-            } else {
-              return signal.value;
-            }
+            return signal.value;
+          }
+
+          case SignalTag.SET_STATE: {
+            this.state = signal.state;
+            continue;
           }
 
           case SignalTag.JUMP: {
@@ -106,6 +130,20 @@ export class Thread {
             logger.debug(
               "Jump to",
               Location.simple_activation(signal.activation)
+            );
+            continue;
+          }
+
+          case SignalTag.TAP: {
+            const previous = this.state;
+            logger.debug(
+              "Tapping jump to",
+              Location.simple_activation(signal.activation)
+            );
+            this.state = new State(
+              previous.universe,
+              signal.activation,
+              new ContinuationTap(previous, signal.continuation)
             );
             continue;
           }
@@ -138,33 +176,43 @@ export class Thread {
     }
   }
 
-  apply_continuation(value: CrochetValue) {
+  apply_continuation(value: CrochetValue, activation: Activation) {
     const k = this.state.continuation;
+
     switch (k.tag) {
       case ContinuationTag.RETURN: {
-        return null;
+        switch (activation.tag) {
+          case ActivationTag.CROCHET_ACTIVATION: {
+            this.push(activation, value);
+            activation.next();
+            return new JumpSignal(activation);
+          }
+
+          case ActivationTag.NATIVE_ACTIVATION: {
+            return this.step_native(activation, value);
+          }
+
+          default:
+            throw unreachable(activation, `Activation`);
+        }
       }
+
+      case ContinuationTag.TAP: {
+        logger.debug("Applying continuation", k.continuation);
+        const new_state = k.continuation(k.saved_state, this.state, value);
+        return new SetStateSignal(new_state);
+      }
+
+      default:
+        throw unreachable(k, `Continuation`);
     }
   }
 
   do_return(value: CrochetValue, activation: Activation | null): Signal {
     if (activation == null) {
       return new ReturnSignal(value);
-    }
-
-    switch (activation.tag) {
-      case ActivationTag.CROCHET_ACTIVATION: {
-        this.push(activation, value);
-        activation.next();
-        return new JumpSignal(activation);
-      }
-
-      case ActivationTag.NATIVE_ACTIVATION: {
-        return this.step_native(activation, value);
-      }
-
-      default:
-        throw unreachable(activation, `Activation`);
+    } else {
+      return this.apply_continuation(value, activation);
     }
   }
 
@@ -233,7 +281,10 @@ export class Thread {
     }
 
     logger.debug(`Stack:`, activation.stack.map(Location.simple_value));
-    logger.debug(`Executing operation:`, Location.simple_op(op));
+    logger.debug(
+      `Executing operation:`,
+      Location.simple_op(op, activation.instruction)
+    );
 
     const t = IR.OpTag;
     switch (op.tag) {
@@ -360,13 +411,19 @@ export class Thread {
           activation.next();
           return _continue;
         } else {
-          return new JumpSignal(
+          return new TapSignal(
             new CrochetActivation(
               this.state.activation,
               thunk,
               thunk.env,
               thunk.body
-            )
+            ),
+            (previous, _, value) => {
+              Values.update_thunk(thunk, value);
+              this.push(activation, value);
+              activation.next();
+              return previous;
+            }
           );
         }
       }
@@ -578,7 +635,10 @@ export class Thread {
       case t.FORGET:
       case t.SIMULATE: {
         throw new Error(
-          `internal: ${Location.simple_op(op)} not yet supported`
+          `internal: ${Location.simple_op(
+            op,
+            activation.instruction
+          )} not yet supported`
         );
       }
 

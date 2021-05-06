@@ -161,8 +161,32 @@ function holes(args: Ast.Expression[]) {
   return args.filter((x) => x.tag === "Hole");
 }
 
-function saturated_bits(args: Ast.Expression[]) {
-  return args.map((x) => x.tag !== "Hole");
+function replace_signature_args<T, U>(x: Ast.Signature<T>, args: U[]) {
+  return x.match<Ast.Signature<U>>({
+    Binary: (p, op, l, r) => {
+      return new Ast.Signature.Binary(p, op, args[0], args[1]);
+    },
+
+    Keyword: (p, s, ps) => {
+      const [self, ...rest] = args;
+      return new Ast.Signature.Keyword(
+        p,
+        self,
+        ps.map((p, i) => new Ast.Pair(p.pos, p.key, rest[i]))
+      );
+    },
+
+    KeywordSelfless: (p, ps) => {
+      return new Ast.Signature.KeywordSelfless(
+        p,
+        ps.map((p, i) => new Ast.Pair(p.pos, p.key, args[i]))
+      );
+    },
+
+    Unary: (p, self, name) => {
+      return new Ast.Signature.Unary(p, args[0], name);
+    },
+  });
 }
 
 export class LowerToIR {
@@ -662,6 +686,38 @@ export class LowerToIR {
         ];
       }
 
+      case "Invoke": {
+        force_cast<Ast.$$Expression$_Invoke>(x);
+        const args0 = signatureValues(x.signature);
+        const args = args0.map((x) => {
+          const p = get_pos(x);
+          const m = this.context.register(p);
+          const n = this.context.fresh_name("arg");
+          return {
+            meta: m,
+            expr: new Ast.Expression.Variable(p, new Ast.Name(p, n)),
+            ops: this.expression(x),
+            name: n,
+          };
+        });
+        const sig = replace_signature_args(
+          x.signature,
+          args.map((x) => x.expr)
+        );
+
+        return [
+          [signatureName(sig), args.map((x) => x.name)],
+          [
+            ...args0.flatMap((x) => this.expression(x)),
+            ...args
+              .slice()
+              .reverse()
+              .map((x) => new IR.Let(x.meta, x.name)),
+            ...this.expression(new Ast.Expression.Invoke(x.pos, sig)),
+          ],
+        ];
+      }
+
       default:
         return [null, this.expression(x)];
     }
@@ -771,7 +827,12 @@ export class LowerToIR {
 
       Lazy: (pos, value) => {
         const id = this.context.register(pos);
-        return [new IR.PushLazy(id, new IR.BasicBlock(this.expression(value)))];
+        return [
+          new IR.PushLazy(
+            id,
+            new IR.BasicBlock([...this.expression(value), new IR.Return(id)])
+          ),
+        ];
       },
 
       Force: (pos, value) => {

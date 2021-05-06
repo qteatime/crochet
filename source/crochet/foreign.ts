@@ -3,6 +3,7 @@ import {
   CrochetPackage,
   CrochetValue,
   ErrNativePanic,
+  Location,
   Machine,
   NativeFunction,
   NativeTag,
@@ -155,5 +156,18 @@ export class ForeignInterface {
   // == Tests
   is_interpolation(x: CrochetValue) {
     return x.tag === Tag.INTERPOLATION;
+  }
+
+  is_thunk_forced(x: CrochetValue) {
+    return Values.is_thunk_forced(x);
+  }
+
+  // == Reflection
+  type_name(x: CrochetValue) {
+    return Location.type_name(x.type);
+  }
+
+  to_debug_string(x: CrochetValue) {
+    return Location.simple_value(x);
   }
 }
