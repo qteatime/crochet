@@ -1,18 +1,11 @@
 % crochet
 
-local singleton mod;
-command mod encode: (X is text) = foreign hex.encode(X);
-command mod encode-int: (X is integer) = foreign hex.encode-int(X);
-command mod decode: (X is text) = foreign hex.decode(X);
-command mod decode-int: (X is text) = foreign hex.decode-int(X);
-
-
 type hex(x is text);
 
 command #hex encode: (Text is text)
 requires bytes-only :: Text is-ascii
 do
-  new hex(mod encode: Text);
+  new hex(foreign hex.encode(Text));
 test
   assert (#hex encode: "It was a dark, stormy night").x
     === "4974207761732061206461726b2c2073746f726d79206e69676874";
@@ -27,7 +20,7 @@ end
 command #hex encode: (Int is integer)
 requires positive :: Int >= 0
 do
-  new hex(mod encode-int: Int);
+  new hex(foreign hex.encode-int(Int));
 test
   assert (#hex encode: 51966).x === "cafe";
   assert (#hex encode: 0).x === "0";
@@ -36,7 +29,7 @@ test
 end
 
 command hex to-text =
-  mod decode: self.x
+  foreign hex.decode(self.x)
 test
   assert (new hex("4974207761732061206461726b2c2073746f726d79206e69676874")) to-text
     === "It was a dark, stormy night";
@@ -49,7 +42,7 @@ test
 end
 
 command hex to-integer =
-  mod decode-int: self.x
+  foreign hex.decode-int(self.x)
 test
   assert (new hex("cafe")) to-integer === 51966;
   assert (new hex("0")) to-integer === 0;
@@ -60,8 +53,10 @@ end
 
 command hex === (That is hex) = self.x === That.x;
 
-command representation text: (X is hex) =
-  "hex<[self.x]>";
+command debug-representation of: (X is hex) =
+  debug-representation type: "hex"
+    | value: self.x
+    | finish;
 
 test "decode(encode(X)) === X" do
   assert (#hex encode: "It was a dark, stormy night" | to-text)

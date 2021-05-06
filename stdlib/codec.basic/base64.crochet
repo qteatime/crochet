@@ -1,16 +1,11 @@
 % crochet
 
-local singleton mod;
-command mod encode-text: (X is text) = foreign base64.encode(X);
-command mod decode: (X is text) = foreign base64.decode(X);
-
-
 type base64(x is text);
 
 command #base64 encode: (Text is text)
 requires bytes-only :: Text is-ascii
 do
-  new base64(mod encode-text: Text);
+  new base64(foreign base64.encode(Text))
 test
   assert (#base64 encode: "It was a dark, stormy night").x
     === "SXQgd2FzIGEgZGFyaywgc3Rvcm15IG5pZ2h0";
@@ -23,7 +18,7 @@ test
 end
 
 command base64 to-text =
-  mod decode: self.x
+  foreign base64.decode(self.x)
 test
   assert (new base64("SXQgd2FzIGEgZGFyaywgc3Rvcm15IG5pZ2h0")) to-text
     === "It was a dark, stormy night";
@@ -37,9 +32,10 @@ end
 
 command base64 === (That is base64) = self.x === That.x;
 
-
-command representation text: (X is base64) =
-  "base64<[self.x]>";
+command debug-representation of: (X is base64) =
+  debug-representation type: "base64"
+    | value: self.x
+    | finish;
 
 test "decode(encode(X)) === X" do
   assert (#base64 encode: "It was a dark, stormy night" | to-text)

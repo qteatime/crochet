@@ -2,6 +2,7 @@
   "name": "crochet.mathematics",
   "target": "*",
   "stability": "experimental",
+  "native_sources": ["native/trigonometry.js"],
   "sources": ["source/trigonometry.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {

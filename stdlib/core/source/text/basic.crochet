@@ -1,9 +1,10 @@
 % crochet
 
-command (X is text) ends-with: (Text is text)
+command text ends-with: (Text is text)
 requires
   non-empty :: not (Text is-empty);
-  = foreign core.ends-with(X, Text)
+do
+  foreign text.ends-with(self, Text)
 test
   assert "abc" ends-with: "c";
   assert not ("" ends-with: "c");
@@ -11,10 +12,11 @@ test
   assert not ("hello" ends-with: "he");
 end
 
-command (X is text) starts-with: (Text is text)
+command text starts-with: (Text is text)
 requires
   non-empty :: not (Text is-empty);
-  = foreign core.starts-with(X, Text)
+do
+  foreign text.starts-with(self, Text)
 test
   assert "abc" starts-with: "a";
   assert not ("" starts-with: "c");
@@ -22,10 +24,11 @@ test
   assert not ("hello" starts-with: "llo");
 end
 
-command (X is text) contains: (Text is text)
+command text contains: (Text is text)
 requires
   non-empty :: not (Text is-empty);
-  = foreign core.contains(X, Text)
+do
+  foreign text.contains(self, Text)
 test
   assert not ("" contains: "a");
   assert "hello" contains: "he";
@@ -35,8 +38,8 @@ test
 end
 
 
-command (X is text) trim-start
-  = foreign core.trim-start(X)
+command text trim-start
+  = foreign text.trim-start(self)
 test
   assert "" trim-start =:= "";
   assert "abc" trim-start =:= "abc";
@@ -44,8 +47,8 @@ test
   assert "  abc  " trim-start =:= "abc  ";
 end
 
-command (X is text) trim-end
-  = foreign core.trim-end(X)
+command text trim-end
+  = foreign text.trim-end(self)
 test
   assert "" trim-end =:= "";
   assert "abc" trim-end =:= "abc";
@@ -53,8 +56,8 @@ test
   assert "  abc  " trim-end =:= "  abc";
 end
 
-command (X is text) trim
-  = foreign core.trim(X)
+command text trim
+  = foreign text.trim(self)
 test
   assert "" trim =:= "";
   assert "abc" trim =:= "abc";
@@ -64,9 +67,9 @@ test
 end
 
 /// Repeats a piece of text N times
-command (X is text) repeat: (N is integer)
+command text repeat: (N is integer)
 requires positive-non-zero :: N >= 0
-  = foreign core.repeat(X, N)
+  = foreign text.repeat(self, N)
 test
   assert ("" repeat: 1) =:= "";
   assert ("a" repeat: 1) =:= "a";
@@ -74,10 +77,10 @@ test
 end
 
 /// True if a piece of text is empty
-command (X is text) is-empty
-  = foreign core.is-empty(X)
+command text is-empty =
+  self =:= ""
 test
   assert "" is-empty;
   assert not ("abc" is-empty);
-  assert not ("​" is-empty); // zero-width space (FIXME: add unicode escapes)
+  assert not ("​" is-empty); // zero-width space (u200B)
 end

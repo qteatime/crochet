@@ -1,3 +1,4 @@
+import { XorShift } from "../utils/xorshift";
 import {
   CrochetModule,
   CrochetPackage,
@@ -174,5 +175,14 @@ export class ForeignInterface {
 
   to_debug_string(x: CrochetValue) {
     return Location.simple_value(x);
+  }
+
+  // == Etc
+  xorshift(seed: number, inc: number) {
+    return new XorShift(seed, inc);
+  }
+
+  xorshift_random() {
+    return XorShift.new_random();
   }
 }

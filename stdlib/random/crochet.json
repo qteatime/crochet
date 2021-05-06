@@ -3,7 +3,8 @@
   "type": "group",
   "target": "*",
   "stability": "experimental",
-  "dependencies": ["crochet.core", "crochet.collections"],
+  "dependencies": ["crochet.core"],
+  "native_sources": ["native/xorshift.js"],
   "sources": ["source/random.crochet"],
   "capabilities": {
     "requires": [],
