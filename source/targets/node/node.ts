@@ -12,7 +12,7 @@ import {
 import { logger } from "../../utils/logger";
 import { question } from "../../utils/prompt";
 import { union } from "../../utils/collections";
-import { build_file } from "./build";
+import { build, build_file } from "./build";
 import { CrochetTest, CrochetValue } from "../../vm";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
@@ -79,6 +79,11 @@ export class CrochetForNode {
 
   async run_tests(filter: (_: CrochetTest) => boolean) {
     return await this.system.run_tests(filter);
+  }
+
+  async build(file: string) {
+    const pkg = await this.crochet.read_package_from_file(file);
+    await build(new Package.ResolvedPackage(pkg, Package.target_any()));
   }
 
   get ffi() {

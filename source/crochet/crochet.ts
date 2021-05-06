@@ -93,7 +93,7 @@ export class Crochet {
     return pkg;
   }
 
-  private async read_package_from_file(filename: string) {
+  async read_package_from_file(filename: string) {
     const source = await this.fs.read_file(filename);
     return Package.parse(JSON.parse(source), filename);
   }
