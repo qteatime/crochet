@@ -3,7 +3,7 @@ import * as Path from "path";
 import { CrochetForNode } from "../targets/node";
 import Crochet from "../index";
 import { logger } from "../utils/logger";
-import { CrochetTest } from "../vm";
+import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
 
 function read_crochet(file: string) {
@@ -141,8 +141,26 @@ async function run([file]: string[], options: Options) {
   const crochet = new CrochetForNode([], new Set([]), true);
   await crochet.boot(file, Crochet.pkg.target_node());
   const value = await crochet.run("main: _", [crochet.ffi.tuple([])]);
+  if (value.tag === Crochet.vm.Tag.NOTHING) {
+    return;
+  }
 
-  console.log(Crochet.vm.Location.simple_value(value));
+  let repr;
+  try {
+    const pkg = crochet.system.universe.world.packages.get("crochet.core");
+    const type = pkg?.types.try_lookup_namespaced(
+      "crochet.core",
+      "debug-printer"
+    )!;
+    const printer = Crochet.vm.Values.instantiate(type, []);
+    const repr0 = await crochet.run("_ show: _", [printer, value]);
+    repr = Crochet.vm.Values.text_to_string(repr0);
+  } catch (e) {
+    console.error(e);
+    repr = Crochet.vm.Location.simple_value(value);
+  }
+
+  console.log(repr);
 }
 
 async function test([file]: string[], options: Options) {

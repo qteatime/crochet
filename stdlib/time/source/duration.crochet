@@ -144,46 +144,49 @@ command duration to-days do
 end
 
 
-command representation text: (X is duration) do
+command debug-representation of: (X is duration) do
   let Days =
     condition
-      when X days === 0 => [];
-      always => ["[X days] days"];
+      when X days === 0 => debug-representation empty;
+      always => debug-representation number: X days
+                  | append: " days";
     end;
 
   let Hours =
     condition
-      when X hours === 0 => [];
-      always => ["[X hours] hours"];
+      when X hours === 0 => debug-representation empty;
+      always => debug-representation number: X hours
+                  | append: " hours";
     end;
 
   let Minutes =
     condition
-      when X minutes === 0 => [];
-      always => ["[X minutes] minutes"];
+      when X minutes === 0 => debug-representation empty;
+      always => debug-representation number: X minutes
+                  | append: " minutes";
     end;
 
   let Seconds =
     condition
-      when X seconds === 0 => [];
-      always => ["[X seconds] seconds"];
+      when X seconds === 0 => debug-representation empty;
+      always => debug-representation number: X seconds
+                  | append: " seconds";
     end;
 
   let Millis =
     condition
-      when X milliseconds === 0 => [];
-      always => ["[X milliseconds] milliseconds"];
+      when X milliseconds === 0 => debug-representation empty;
+      always => debug-representation number: X milliseconds
+                  | append: " milliseconds";
     end;
 
-  let Texts = [Days, Hours, Minutes, Seconds, Millis] flatten;
-    
-  let Representation =
-    condition
-      when Texts is-empty => "" as interpolation;
-      when Texts count === 0 => Texts first;
-      always => Texts but-first fold-from: Texts first
-                                with: { A, B in "[A], [B]" };
-    end;
+  let Representation = 
+    debug-representation
+      list: [Days, Hours, Minutes, Seconds, Millis]
+      separator: ", ";
 
-  "<[Representation]>";
+  Representation;  
+  debug-representation type: "duration"
+    | value: Representation
+    | finish;
 end

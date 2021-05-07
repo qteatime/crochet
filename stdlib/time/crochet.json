@@ -2,17 +2,14 @@
   "name": "crochet.time",
   "target": "*",
   "stability": "experimental",
+  "native_sources": ["native/time.js"],
   "sources": [
     "source/0-types.crochet",
     "source/duration.crochet",
     "source/instant.crochet",
     "source/date-time.crochet"
   ],
-  "dependencies": [
-    "crochet.core",
-    "crochet.mathematics",
-    "crochet.collections"
-  ],
+  "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
     "provides": []

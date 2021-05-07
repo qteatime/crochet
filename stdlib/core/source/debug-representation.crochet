@@ -189,13 +189,18 @@ command debug-representation list: (X is tuple) separator: (S is doc) do
     when X is-empty => #doc empty;
     when X count === 1 => X first;
     always do
-      X but-first fold-from: X first with: { A, B in A ++ S ++ B };
+      X but-first fold-from: X first with: { A, B in
+        condition
+          when B is doc-empty => A;
+          always => A ++ S ++ B;
+        end
+      };
     end
   end
 end
 
 command debug-representation list: X separator: (S is static-text) =
-  debug-representation list: X separator: S;
+  debug-representation list: X separator: (#doc text: S);
 
 
 command debug-representation of: (X is text) =
@@ -250,6 +255,9 @@ command debug-representation of: (T is thunk) =
       debug-representation keyword: "thunk"
         | between: "<" and: ">";
   end;
+
+command debug-representation of: (X is doc) =
+  X;
 
 command debug-representation of: X =
   debug-representation text: (dbg type-name: X)
