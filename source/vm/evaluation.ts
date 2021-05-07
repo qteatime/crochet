@@ -35,18 +35,35 @@ import {
   StackTrace,
 } from "./primitives";
 
+export enum RunResultTag {
+  DONE,
+  AWAIT,
+}
+
+export class RunResultDone {
+  readonly tag = RunResultTag.DONE;
+  constructor(readonly value: CrochetValue) {}
+}
+
+export class RunResultAwait {
+  readonly tag = RunResultTag.AWAIT;
+  constructor(readonly promise: Promise<CrochetValue>) {}
+}
+
 export enum SignalTag {
   RETURN,
   JUMP,
   CONTINUE,
   SET_STATE,
+  AWAIT,
 }
 
 export type Signal =
   | ReturnSignal
   | JumpSignal
   | ContinueSignal
-  | SetStateSignal;
+  | SetStateSignal
+  | AwaitSignal;
 
 export class ReturnSignal {
   readonly tag = SignalTag.RETURN;
@@ -65,6 +82,11 @@ export class ContinueSignal {
 export class SetStateSignal {
   readonly tag = SignalTag.SET_STATE;
   constructor(readonly state: State) {}
+}
+
+export class AwaitSignal {
+  readonly tag = SignalTag.AWAIT;
+  constructor(readonly promise: Promise<CrochetValue>) {}
 }
 
 const _continue = new ContinueSignal();
@@ -88,34 +110,82 @@ export class Thread {
       )
     );
     const thread = new Thread(root);
-    const value = thread.run();
+    const value = thread.run_synchronous();
     return value;
   }
 
   async run_to_completion(): Promise<CrochetValue> {
-    return this.run();
+    let result = this.run();
+    while (true) {
+      switch (result.tag) {
+        case RunResultTag.DONE:
+          return result.value;
+
+        case RunResultTag.AWAIT: {
+          const value = await result.promise;
+          result = this.run_with_input(value);
+          continue;
+        }
+
+        default:
+          throw unreachable(result, "RunResult");
+      }
+    }
   }
 
-  // FIXME: check that the return is indeed a value
-  run_synchrnous(): CrochetValue {
-    return this.run();
+  run_synchronous(): CrochetValue {
+    const result = this.run();
+    switch (result.tag) {
+      case RunResultTag.DONE:
+        return result.value;
+
+      case RunResultTag.AWAIT:
+        throw new ErrArbitrary(
+          "non-synchronous-completion",
+          `Expected a synchronous completion, but got an asynchronous signal`
+        );
+
+      default:
+        throw unreachable(result, "RunResult");
+    }
   }
 
-  run() {
+  run_with_input(input: CrochetValue) {
+    const activation = this.state.activation;
+    switch (activation.tag) {
+      case ActivationTag.CROCHET_ACTIVATION: {
+        this.push(activation, input);
+        activation.next();
+        return this.run();
+      }
+
+      case ActivationTag.NATIVE_ACTIVATION: {
+        const signal = this.step_native(activation, input);
+        return this.run(signal);
+      }
+
+      default:
+        throw unreachable(activation, "Activation");
+    }
+  }
+
+  run(initial_signal?: Signal) {
     logger.debug(`Running`, Location.simple_activation(this.state.activation));
     try {
+      let signal = initial_signal ?? this.step();
       while (true) {
-        const signal = this.step();
         switch (signal.tag) {
           case SignalTag.CONTINUE:
+            signal = this.step();
             continue;
 
           case SignalTag.RETURN: {
-            return signal.value;
+            return new RunResultDone(signal.value);
           }
 
           case SignalTag.SET_STATE: {
             this.state = signal.state;
+            signal = this.step();
             continue;
           }
 
@@ -125,7 +195,12 @@ export class Thread {
               "Jump to",
               Location.simple_activation(signal.activation)
             );
+            signal = this.step();
             continue;
+          }
+
+          case SignalTag.AWAIT: {
+            return new RunResultAwait(signal.promise);
           }
 
           default:
@@ -244,6 +319,10 @@ export class Thread {
             value.args
           );
           return new JumpSignal(new_activation);
+        }
+
+        case NativeSignalTag.AWAIT: {
+          return new AwaitSignal(value.promise);
         }
 
         default:

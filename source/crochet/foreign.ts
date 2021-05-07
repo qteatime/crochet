@@ -10,6 +10,7 @@ import {
   NativeFunction,
   NativeTag,
   NSApply,
+  NSAwait,
   NSInvoke,
   run_native_sync,
   Tag,
@@ -113,6 +114,10 @@ export class ForeignInterface {
 
   apply(fn: CrochetValue, args: CrochetValue[]) {
     return new NSApply(fn, args);
+  }
+
+  await(value: Promise<CrochetValue>) {
+    return new NSAwait(value);
   }
 
   run_synchronous(fn: () => Machine) {

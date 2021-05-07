@@ -6,7 +6,7 @@
   "sources": ["source/terminal.crochet"],
   "native_sources": ["native/terminal.js"],
   "capabilities": {
-    "requires": ["native"],
+    "requires": [],
     "provides": ["io"]
   }
 }
