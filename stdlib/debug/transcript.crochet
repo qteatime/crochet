@@ -2,11 +2,15 @@
 
 singleton transcript;
 
-command (Self is transcript) write: (Text is text)
-  = foreign transcript.write(Self, Text);
+command (Self is transcript) write: (Text is text) do
+  foreign debug.write(Text);
+  self;
+end
 
-command (Self is transcript) inspect: Value
-  = foreign transcript.write-inspect(Self, Value);
+command (Self is transcript) inspect: Value do
+  foreign debug.write-inspect(Value);
+  self;
+end
 
 
 command transcript write: (X is interpolation) do
