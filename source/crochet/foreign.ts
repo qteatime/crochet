@@ -193,6 +193,15 @@ export class ForeignInterface {
     return Values.is_thunk_forced(x);
   }
 
+  // == Conversions
+  to_plain_native(x: CrochetValue): unknown {
+    return Values.to_plain_object(x);
+  }
+
+  from_plain_native(x: unknown): CrochetValue {
+    return Values.from_plain_object(this.#universe, x);
+  }
+
   // == Reflection
   type_name(x: CrochetValue) {
     return Location.type_name(x.type);

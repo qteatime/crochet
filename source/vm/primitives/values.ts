@@ -1,5 +1,12 @@
 import * as IR from "../../ir";
-import { clone_map, copy_map, every, zip, zip3 } from "../../utils/utils";
+import {
+  clone_map,
+  copy_map,
+  every,
+  unreachable,
+  zip,
+  zip3,
+} from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import {
   CrochetCell,
@@ -468,4 +475,84 @@ export function box(universe: Universe, x: unknown) {
 export function unbox(x: CrochetValue) {
   assert_tag(Tag.UNKNOWN, x);
   return x.payload;
+}
+
+export function to_plain_object(x: CrochetValue): unknown {
+  switch (x.tag) {
+    case Tag.NOTHING:
+      return null;
+
+    case Tag.INTEGER:
+      return x.payload;
+
+    case Tag.FLOAT_64:
+      return x.payload;
+
+    case Tag.TEXT:
+      return x.payload;
+
+    case Tag.TRUE:
+      return true;
+
+    case Tag.FALSE:
+      return false;
+
+    case Tag.TUPLE:
+      assert_tag(Tag.TUPLE, x);
+      return x.payload.map((x) => to_plain_object(x));
+
+    case Tag.RECORD: {
+      assert_tag(Tag.RECORD, x);
+      const result = new Map<string, unknown>();
+      for (const [k, v] of x.payload.entries()) {
+        result.set(k, to_plain_object(v));
+      }
+      return result;
+    }
+
+    default:
+      throw new ErrArbitrary(
+        `no-conversion-to-native`,
+        `No conversion supported for values of type ${type_name(x.type)}`
+      );
+  }
+}
+
+export function from_plain_object(
+  universe: Universe,
+  x: unknown
+): CrochetValue {
+  if (x == null) {
+    return universe.nothing;
+  } else if (typeof x === "string") {
+    return make_text(universe, x);
+  } else if (typeof x === "bigint") {
+    return make_integer(universe, x);
+  } else if (typeof x === "number") {
+    return make_float(universe, x);
+  } else if (typeof x === "boolean") {
+    return make_boolean(universe, x);
+  } else if (Array.isArray(x)) {
+    return make_tuple(
+      universe,
+      x.map((x) => from_plain_object(universe, x))
+    );
+  } else if (x instanceof Map) {
+    const result = new Map<string, CrochetValue>();
+    for (const [k, v] of x.entries()) {
+      if (typeof k !== "string") {
+        throw new ErrArbitrary(
+          "invalid-type",
+          `Cannot convert native map because it has non-text keys`
+        );
+      }
+      result.set(k, from_plain_object(universe, v));
+    }
+    return make_record_from_map(universe, result);
+  } else {
+    throw new ErrArbitrary(
+      "no-conversion-from-native",
+      `Conversions are only supported for plain native types`
+    );
+  }
 }
