@@ -2,6 +2,7 @@
   "name": "crochet.language.json",
   "target": "*",
   "stability": "experimental",
+  "native_sources": ["native/json.js"],
   "dependencies": ["crochet.core"],
   "sources": ["source/json.crochet"],
   "capabilities": {

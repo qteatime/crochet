@@ -33,7 +33,7 @@ end
 
 // Interface
 command #json parse: (Value is text) do
-  #json-mod parse: Value
+  foreign json.parse(Value)
 test
   assert (#json parse: "1234") =:= 1234.0;
   assert (#json parse: "\"abc\"") =:= "abc";
@@ -45,7 +45,7 @@ test
 end
 
 command #json serialise: Value -> text do
-  #json-mod serialise: (#json from: Value);
+  foreign json.serialise(#json from: Value)
 test
   assert (#json serialise: 1234.0) =:= "1234";
   assert (#json serialise: "abc") =:= "\"abc\"";
@@ -56,7 +56,7 @@ end
 command #json pretty-print: Value indentation: (Indent is integer) -> text
 requires positive-indentation :: Indent >= 0;
 do
-  #json-mod pretty-print: (#json from: Value) indentation: Indent
+  foreign json.pretty-print(#json from: Value, Indent)
 test
   assert (#json pretty-print: [1.0, 2.0, 3.0] indentation: 2) =:= "[\n  1,\n  2,\n  3\n]";
 end
