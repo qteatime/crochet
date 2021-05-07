@@ -413,9 +413,10 @@ export class CrochetActivation implements IActivation {
 export enum NativeSignalTag {
   INVOKE,
   APPLY,
+  AWAIT,
 }
 
-export type NativeSignal = NSInvoke | NSApply;
+export type NativeSignal = NSInvoke | NSApply | NSAwait;
 
 export abstract class NSBase {}
 
@@ -431,6 +432,14 @@ export class NSApply extends NSBase {
   readonly tag = NativeSignalTag.APPLY;
 
   constructor(readonly fn: CrochetValue, readonly args: CrochetValue[]) {
+    super();
+  }
+}
+
+export class NSAwait extends NSBase {
+  readonly tag = NativeSignalTag.AWAIT;
+
+  constructor(readonly promise: Promise<CrochetValue>) {
     super();
   }
 }
