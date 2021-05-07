@@ -2,7 +2,8 @@
   "name": "crochet.text.parsing.lingua",
   "target": "*",
   "stability": "experimental",
-  "dependencies": ["crochet.core", "crochet.text", "crochet.collections"],
+  "dependencies": ["crochet.core"],
+  "native_sources": ["native/lingua.js"],
   "sources": ["source/core.crochet"],
   "capabilities": {
     "requires": [],

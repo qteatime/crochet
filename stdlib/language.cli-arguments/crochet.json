@@ -12,7 +12,6 @@
   ],
   "dependencies": [
     "crochet.core",
-    "crochet.collections",
     "crochet.debug",
     "crochet.parsing.combinators"
   ],

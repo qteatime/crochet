@@ -6,7 +6,10 @@
     "crochet.core",
     "crochet.mathematics",
     "crochet.parsing.combinators",
-    "crochet.random"
+    "crochet.random",
+    "crochet.debug",
+    "crochet.language.cli-arguments",
+    "crochet.language.csv"
   ],
   "sources": [
     "types.crochet",
