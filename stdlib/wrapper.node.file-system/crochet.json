@@ -2,11 +2,11 @@
   "name": "crochet.wrapper.node.file-system",
   "target": "node",
   "stability": "experimental",
-  "dependencies": ["crochet.core", "crochet.text"],
+  "dependencies": ["crochet.core"],
   "sources": ["source/path.crochet", "source/fs.crochet"],
   "native_sources": ["native/fs.js"],
   "capabilities": {
-    "requires": ["native"],
+    "requires": [],
     "provides": ["file-system"]
   }
 }

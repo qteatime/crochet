@@ -1,49 +1,5 @@
 % crochet
 
-local abstract fs-mod;
-command #fs-mod append-file: (Path is text) text: (Data is text)
-  = foreign fs.append-file-text(Path, Data);
-
-command #fs-mod copy-file: (From is text) to: (To is text)
-  = foreign fs.copy-file(From, To);
-
-command #fs-mod exists: (Path is text)
-  = foreign fs.exists(Path);
-
-command #fs-mod mkdir: (Path is text)
-  = foreign fs.mkdir(Path);
-
-command #fs-mod mkdir-temp: (Prefix is text)
-  = foreign fs.mkdir-temp(Prefix);
-
-command #fs-mod readdir: (Path is text)
-  = foreign fs.readdir(Path);
-
-command #fs-mod read-file-text: (Path is text)
-  = foreign fs.read-file-text(Path);
-
-command #fs-mod real-path: (Path is text)
-  = foreign fs.real-path(Path);
-
-command #fs-mod rename: (From is text) to: (To is text)
-  = foreign fs.rename(From, To);
-
-command #fs-mod rmdir: (Path is text) recursive: (Rec is boolean)
-  = foreign fs.rmdir(Path, Rec);
-
-command #fs-mod rm: (Path is text) force: (Force is boolean) recursive: (Rec is boolean)
-  = foreign fs.rm(Path, Force, Rec);
-
-command #fs-mod write-file: (Path is text) text: (Text is text)
-  = foreign fs.write-file-text(Path, Text);
-
-command #fs-mod is-file: (Path is text)
-  = foreign fs.is-file(Path);
-
-command #fs-mod is-directory: (Path is text)
-  = foreign fs.is-directory(Path);
-
-
 singleton file-system;
 local abstract node;
 local type inode is node(path is path-obj);
@@ -53,31 +9,42 @@ local type directory is node(path is path-obj);
 command file-system at: (Path is path-obj)
   = new inode(Path);
 
-command file-system file: (Path is path-obj)
+command file-system at: (Path is static-text)
+  = file-system at: (#path from-text: Path);
+
+command file-system file: Path
   = (self at: Path) to-file;
 
-command file-system directory: (Path is path-obj)
+command file-system directory: Path
   = (self at: Path) to-directory;
 
-command file-system make-directory: (Path is path-obj) do
-  #fs-mod mkdir: (Path to-text);
+command file-system make-directory: Path do
+  file-system make-directory: Path recursive: false;
+end
+
+command file-system make-directory: (Path is static-text) recursive: (Rec is boolean) do
+  file-system make-directory: (#path from-text: Path) recursive: Rec;
+end
+
+command file-system make-directory: (Path is path-obj) recursive: (Rec is boolean) do
+  foreign fs.mkdir(Path to-text, Rec);
   file-system directory: Path;
 end
 
 command file-system make-temporary-directory: (Name is text) do
-  let Path = #fs-mod mkdir-temp: Name;
+  let Path = foreign fs.mkdir-tmp(Name);
   file-system directory: (#path from-text: Path);
 end
 
 
 command node exists
-  = #fs-mod exists: (self.path to-text);
+  = foreign fs.exists(self.path to-text);
 
 command node real-path
-  = #fs-mod real-path: (self.path to-text);
+  = foreign fs.real-path(self.path to-text);
 
 command node move-to: (Path is path-obj) do
-  #fs-mod rename: (self.path to-text) to: (Path to-text);
+  foreign fs.rename(self.path to-text, Path to-text);
   (file-system at: Path) resolve;
 end
 
@@ -85,8 +52,7 @@ command node rename: (NewName is text)
 requires basename :: (#path from-text: NewName) base-name =:= NewName
 do
   let NewPath = (self.path directory / NewName); 
-  #fs-mod rename: (self.path to-text)
-          to: (NewPath to-text);
+  foreign fs.rename(self.path to-text, NewPath to-text);
   (file-system at: NewPath) resolve;
 end
 
@@ -95,19 +61,19 @@ requires extensionless :: (#path from-text: NewName) extension =:= ""
   = self rename: (NewName ++ self.path extension);
 
 command node remove
-  = #fs-mod rm: (self.path to-text) force: false recursive: false;
+  = foreign fs.rm(self.path to-text, false, false);
 
 command node force-remove
-  = #fs-mod rm: (self.path to-text) force: true recursive: false;
+  = foreign fs.rm(self.path to-text, true, false);
 
 command node force-remove-recursive
-  = #fs-mod rm: (self.path to-text) force: true recursive: true;
+  = foreign fs.rm(self.path to-text, true, true);
 
 command node is-file =
-  #fs-mod is-file: (self.path to-text);
+  foreign fs.is-file(self.path to-text);
 
 command node is-directory =
-  #fs-mod is-directory: (self.path to-text);
+  foreign fs.is-directory(self.path to-text);
 
 
 command inode to-file
@@ -122,43 +88,55 @@ command inode resolve do
   condition
     when self is-file => self to-file;
     when self is-directory => self to-directory;
-    always do assert not "Unhandled" end
   end
 end
 
 
 
 command file append-text: (Text is text) do
-  #fs-mod append-file: (self.path to-text) text: Text;
+  foreign fs.append-file-text(self.path to-text, Text);
   self;
 end
 
 command file copy-to: (Target is path-obj) do
-  #fs-mod copy-file: (self.path to-text) to: (Target to-text);
+  foreign fs.copy-file(self.path to-text, Target to-text);
   self;
 end
 
-command file read-text
-  = #fs-mod read-file-text: (self.path to-text);
+command file read-text =
+  foreign fs.read-file-text(self.path to-text);
 
 command file write-text: (Text is text) do
-  #fs-mod write-file: (self.path to-text) text: Text;
+  foreign fs.write-file-text(self.path to-text, Text);
   self;
 end
 
 
 command directory list do
-  let Files = #fs-mod readdir: (self.path to-text);
+  let Files = foreign fs.readdir(self.path to-text);
   for File in Files do
-    (file-system at: (self.path join: File)) resolve;
+    (file-system at: (self.path / File)) resolve;
   end
 end
 
 command directory remove =
-  #fs-mod rmdir: (self.path to-text) recursive: false;
+  foreign fs.rmdir(self.path to-text, false);
 
 command directory remove-recursive =
-  #fs-mod rmdir: (self.path to-text) recursive: true;
+  foreign fs.rmdir(self.path to-text, true);
 
 
+command debug-representation of: (X is inode) =
+  debug-representation type: "i-node"
+    | value: X.path
+    | finish;
 
+command debug-representation of: (X is file) =
+  debug-representation type: "file"
+    | value: X.path
+    | finish;
+
+command debug-representation of: (X is directory) =
+  debug-representation type: "directory"
+    | value: X.path
+    | finish;
