@@ -2,6 +2,7 @@
   "name": "crochet.time.wall-clock",
   "target": "*",
   "stability": "experimental",
+  "native_sources": ["native/clock.js"],
   "sources": ["clock.crochet"],
   "dependencies": ["crochet.core", "crochet.time"],
   "capabilities": {
