@@ -10,6 +10,7 @@ import {
   CrochetType,
   CrochetValue,
   Universe,
+  _return,
 } from "../intrinsics";
 import { ErrArbitrary } from "../errors";
 
@@ -68,6 +69,7 @@ export function prepare_activation(
     parent_activation,
     branch,
     env,
+    _return,
     branch.body
   );
   return activation;

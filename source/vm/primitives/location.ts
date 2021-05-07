@@ -161,7 +161,7 @@ export function simple_activation(x: Activation): string {
   switch (x.tag) {
     case ActivationTag.CROCHET_ACTIVATION: {
       return [
-        `activation ${x.parent ? "+" : "0"} at ${x.instruction}\n`,
+        `activation at ${x.instruction}\n`,
         x.block.ops.map((x, i) => "  " + simple_op(x, i) + "\n").join(""),
         "\nstack:\n",
         x.stack.map((x) => "  " + simple_value(x) + "\n").join(""),

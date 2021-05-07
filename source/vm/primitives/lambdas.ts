@@ -10,6 +10,7 @@ import {
   Universe,
   Environment,
   Activation,
+  _return,
 } from "../intrinsics";
 import { ErrArbitrary } from "../errors";
 import { type_name } from "./location";
@@ -36,6 +37,7 @@ export function prepare_activation(
         parent_activation,
         lambda.payload,
         env,
+        _return,
         p.body
       );
       return activation;
