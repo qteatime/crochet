@@ -85,7 +85,7 @@ export function run_native_sync(
   const activation = new NativeActivation(null, fn, env, machine, _done);
   const state = new State(universe, activation);
   const thread = new Thread(state);
-  const value = thread.run_synchrnous();
+  const value = thread.run_synchronous();
   return value;
 }
 
