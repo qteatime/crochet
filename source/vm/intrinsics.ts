@@ -299,22 +299,26 @@ export class PassthroughNamespace<V> extends Namespace<V> {
 }
 
 export class State {
-  constructor(
-    readonly universe: Universe,
-    public activation: Activation,
-    public continuation: Continuation
-  ) {}
+  constructor(readonly universe: Universe, public activation: Activation) {}
 }
 
 export enum ContinuationTag {
   RETURN,
+  DONE,
   TAP,
 }
 
-export type Continuation = ContinuationReturn | ContinuationTap;
+export type Continuation =
+  | ContinuationDone
+  | ContinuationReturn
+  | ContinuationTap;
 
 export class ContinuationReturn {
   readonly tag = ContinuationTag.RETURN;
+}
+
+export class ContinuationDone {
+  readonly tag = ContinuationTag.DONE;
 }
 
 export class ContinuationTap {
@@ -330,6 +334,9 @@ export class ContinuationTap {
   ) {}
 }
 
+export const _done = new ContinuationDone();
+export const _return = new ContinuationReturn();
+
 export enum ActivationTag {
   CROCHET_ACTIVATION,
   NATIVE_ACTIVATION,
@@ -340,6 +347,7 @@ export type Activation = CrochetActivation | NativeActivation;
 export interface IActivation {
   tag: ActivationTag;
   parent: Activation | null;
+  continuation: Continuation;
 }
 
 export type ActivationLocation =
@@ -362,6 +370,7 @@ export class CrochetActivation implements IActivation {
     readonly parent: Activation | null,
     readonly location: ActivationLocation,
     readonly env: Environment,
+    readonly continuation: Continuation,
     public block: IR.BasicBlock
   ) {}
 
@@ -432,7 +441,8 @@ export class NativeActivation implements IActivation {
     readonly parent: Activation | null,
     readonly fn: NativeFunction,
     readonly env: Environment,
-    readonly routine: Machine
+    readonly routine: Machine,
+    readonly continuation: Continuation
   ) {}
 }
 

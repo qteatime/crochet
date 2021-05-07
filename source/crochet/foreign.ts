@@ -3,6 +3,7 @@ import {
   CrochetModule,
   CrochetPackage,
   CrochetValue,
+  Environment,
   ErrNativePanic,
   Location,
   Machine,
@@ -10,10 +11,13 @@ import {
   NativeTag,
   NSApply,
   NSInvoke,
+  run_native_sync,
   Tag,
   Universe,
   Values,
 } from "../vm";
+
+export type { Machine, CrochetValue };
 
 export class ForeignInterface {
   #universe: Universe;
@@ -55,6 +59,10 @@ export class ForeignInterface {
 
   text(x: string) {
     return Values.make_text(this.#universe, x);
+  }
+
+  box(x: unknown) {
+    return Values.box(this.#universe, x);
   }
 
   // FIXME: this shouldn't be available to non-trusted packages
@@ -107,6 +115,11 @@ export class ForeignInterface {
     return new NSApply(fn, args);
   }
 
+  run_synchronous(fn: () => Machine) {
+    const env = new Environment(null, null, this.#module);
+    return run_native_sync(this.#universe, env, this.#package, fn());
+  }
+
   // == Destructors
   integer_to_bigint(x: CrochetValue): bigint {
     Values.assert_tag(Tag.INTEGER, x);
@@ -150,6 +163,10 @@ export class ForeignInterface {
     return Values.get_map(x);
   }
 
+  unbox(x: CrochetValue) {
+    return Values.unbox(x);
+  }
+
   // == Operations
   intrinsic_equals(x: CrochetValue, y: CrochetValue) {
     return Values.equals(x, y);
@@ -160,8 +177,16 @@ export class ForeignInterface {
   }
 
   // == Tests
+  is_crochet_value(x: any): x is CrochetValue {
+    return x instanceof CrochetValue;
+  }
+
   is_interpolation(x: CrochetValue) {
     return x.tag === Tag.INTERPOLATION;
+  }
+
+  is_tuple(x: CrochetValue) {
+    return x.tag === Tag.TUPLE;
   }
 
   is_thunk_forced(x: CrochetValue) {

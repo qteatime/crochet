@@ -452,3 +452,20 @@ export function is_thunk_forced(x: CrochetValue) {
 export function update_thunk(x: CrochetThunk, value: CrochetValue) {
   x.value = value;
 }
+
+export function is_boxed(x: CrochetValue) {
+  return x.tag === Tag.UNKNOWN;
+}
+
+export function box(universe: Universe, x: unknown) {
+  if (x instanceof CrochetValue && is_boxed(x)) {
+    return x;
+  } else {
+    return new CrochetValue(Tag.UNKNOWN, universe.types.Unknown, x);
+  }
+}
+
+export function unbox(x: CrochetValue) {
+  assert_tag(Tag.UNKNOWN, x);
+  return x.payload;
+}

@@ -213,8 +213,7 @@ export class ResolvedFile {
 
   get relative_basename() {
     const dir = Path.dirname(this.relative_filename);
-    const ext = Path.extname(this.relative_filename);
-    const base = Path.basename(this.relative_filename, ext);
+    const base = Path.basename(this.relative_filename, ".crochet");
     return Path.join(dir, base);
   }
 
@@ -224,6 +223,24 @@ export class ResolvedFile {
 
   get absolute_filename() {
     return Path.resolve(this.pkg.root, this.relative_filename);
+  }
+
+  get crochet_file() {
+    if (this.is_crochet) {
+      return this;
+    } else {
+      return new ResolvedFile(
+        this.pkg,
+        file({
+          filename: Path.join(this.file.filename + ".crochet"),
+          target: this.file.target,
+        })
+      );
+    }
+  }
+
+  get is_crochet() {
+    return this.extension === ".crochet";
   }
 
   get binary_image() {

@@ -6,7 +6,7 @@ import * as Package from "../../pkg";
 import { execFileSync } from "child_process";
 import { logger } from "../../utils/logger";
 
-const rootRelative = process.env.WEBPACK ? "" : "../../";
+const rootRelative = process.env.WEBPACK ? "" : "../../../";
 const linguaPath = Path.join(
   __dirname,
   rootRelative,
@@ -47,8 +47,8 @@ export async function build_lingua(
     file.absolute_filename,
     "crochet",
   ]);
-  FS.writeFileSync(file.absolute_filename + ".crochet", output);
-  await build_crochet(file.with_basename(file.basename + ".crochet"), pkg);
+  FS.writeFileSync(file.crochet_file.absolute_filename, output);
+  await build_crochet(file.crochet_file, pkg);
 }
 
 export async function build_crochet(

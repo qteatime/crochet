@@ -6,6 +6,7 @@ import { CrochetEvaluationError, ErrArbitrary } from "./errors";
 import {
   Activation,
   ActivationTag,
+  Continuation,
   ContinuationReturn,
   ContinuationTag,
   ContinuationTap,
@@ -19,6 +20,8 @@ import {
   NSBase,
   State,
   Universe,
+  _done,
+  _return,
 } from "./intrinsics";
 import {
   Environments,
@@ -36,7 +39,6 @@ export enum SignalTag {
   RETURN,
   JUMP,
   CONTINUE,
-  TAP,
   SET_STATE,
 }
 
@@ -44,7 +46,6 @@ export type Signal =
   | ReturnSignal
   | JumpSignal
   | ContinueSignal
-  | TapSignal
   | SetStateSignal;
 
 export class ReturnSignal {
@@ -59,18 +60,6 @@ export class JumpSignal {
 
 export class ContinueSignal {
   readonly tag = SignalTag.CONTINUE;
-}
-
-export class TapSignal {
-  readonly tag = SignalTag.TAP;
-  constructor(
-    readonly activation: Activation,
-    readonly continuation: (
-      previous: State,
-      state: State,
-      value: CrochetValue
-    ) => State
-  ) {}
 }
 
 export class SetStateSignal {
@@ -94,21 +83,26 @@ export class Thread {
         null,
         null,
         new Environment(null, null, module),
+        _done,
         block
-      ),
-      new ContinuationReturn()
+      )
     );
     const thread = new Thread(root);
     const value = thread.run();
     return value;
   }
 
-  async run_to_completion() {
+  async run_to_completion(): Promise<CrochetValue> {
+    return this.run();
+  }
+
+  // FIXME: check that the return is indeed a value
+  run_synchrnous(): CrochetValue {
     return this.run();
   }
 
   run() {
-    // logger.debug(`Running`, Location.simple_activation(this.state.activation));
+    logger.debug(`Running`, Location.simple_activation(this.state.activation));
     try {
       while (true) {
         const signal = this.step();
@@ -127,23 +121,9 @@ export class Thread {
 
           case SignalTag.JUMP: {
             this.state.activation = signal.activation;
-            // logger.debug(
-            //   "Jump to",
-            //   Location.simple_activation(signal.activation)
-            // );
-            continue;
-          }
-
-          case SignalTag.TAP: {
-            const previous = this.state;
-            // logger.debug(
-            //   "Tapping jump to",
-            //   Location.simple_activation(signal.activation)
-            // );
-            this.state = new State(
-              previous.universe,
-              signal.activation,
-              new ContinuationTap(previous, signal.continuation)
+            logger.debug(
+              "Jump to",
+              Location.simple_activation(signal.activation)
             );
             continue;
           }
@@ -176,10 +156,16 @@ export class Thread {
     }
   }
 
-  apply_continuation(value: CrochetValue, activation: Activation) {
-    const k = this.state.continuation;
-
+  apply_continuation(
+    value: CrochetValue,
+    k: Continuation,
+    activation: Activation
+  ) {
     switch (k.tag) {
+      case ContinuationTag.DONE: {
+        return new ReturnSignal(value);
+      }
+
       case ContinuationTag.RETURN: {
         switch (activation.tag) {
           case ActivationTag.CROCHET_ACTIVATION: {
@@ -198,7 +184,7 @@ export class Thread {
       }
 
       case ContinuationTag.TAP: {
-        // logger.debug("Applying continuation", k.continuation);
+        logger.debug("Applying continuation", k.continuation);
         const new_state = k.continuation(k.saved_state, this.state, value);
         return new SetStateSignal(new_state);
       }
@@ -212,7 +198,11 @@ export class Thread {
     if (activation == null) {
       return new ReturnSignal(value);
     } else {
-      return this.apply_continuation(value, activation);
+      return this.apply_continuation(
+        value,
+        this.state.activation.continuation,
+        activation
+      );
     }
   }
 
@@ -266,25 +256,25 @@ export class Thread {
     const op = activation.current;
     if (op == null) {
       if (activation.block_stack.length > 0) {
-        // logger.debug(`Finished with block, taking next block`);
+        logger.debug(`Finished with block, taking next block`);
         activation.pop_block();
         activation.next();
         return _continue;
       } else {
         const value = activation.return_value ?? this.universe.nothing;
-        // logger.debug(
-        //   `Finished with activation, return value:`,
-        //   Location.simple_value(value)
-        // );
+        logger.debug(
+          `Finished with activation, return value:`,
+          Location.simple_value(value)
+        );
         return this.do_return(value, activation.parent);
       }
     }
 
-    // logger.debug(`Stack:`, activation.stack.map(Location.simple_value));
-    // logger.debug(
-    //   `Executing operation:`,
-    //   Location.simple_op(op, activation.instruction)
-    // );
+    logger.debug(`Stack:`, activation.stack.map(Location.simple_value));
+    logger.debug(
+      `Executing operation:`,
+      Location.simple_op(op, activation.instruction)
+    );
 
     const t = IR.OpTag;
     switch (op.tag) {
@@ -411,19 +401,19 @@ export class Thread {
           activation.next();
           return _continue;
         } else {
-          return new TapSignal(
+          return new JumpSignal(
             new CrochetActivation(
               this.state.activation,
               thunk,
               thunk.env,
+              new ContinuationTap(this.state, (_previous, _state, value) => {
+                Values.update_thunk(thunk, value);
+                this.push(activation, value);
+                activation.next();
+                return new State(this.universe, activation);
+              }),
               thunk.body
-            ),
-            (previous, _, value) => {
-              Values.update_thunk(thunk, value);
-              this.push(activation, value);
-              activation.next();
-              return previous;
-            }
+            )
           );
         }
       }
@@ -465,7 +455,8 @@ export class Thread {
               activation,
               fn,
               this.env,
-              machine
+              machine,
+              _return
             );
             return new JumpSignal(new_activation);
           }

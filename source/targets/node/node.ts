@@ -173,6 +173,17 @@ export class CrochetForNode {
       return true;
     },
 
+    compile_external_language: async (
+      file: Package.ResolvedFile,
+      pkg: Package.ResolvedPackage
+    ) => {
+      logger.debug(
+        `Compiling ${file.relative_filename} in ${pkg.name} to Crochet`
+      );
+      await build_file(file, pkg);
+      return true;
+    },
+
     outdated_binary: async (
       file: Package.ResolvedFile,
       pkg: Package.ResolvedPackage

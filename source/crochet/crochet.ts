@@ -27,6 +27,11 @@ export interface ISignal {
     pkg: Package.ResolvedPackage
   ): Promise<boolean>;
 
+  compile_external_language(
+    x: Package.ResolvedFile,
+    pkg: Package.ResolvedPackage
+  ): Promise<boolean>;
+
   outdated_binary(
     x: Package.ResolvedFile,
     pkg: Package.ResolvedPackage
@@ -182,7 +187,20 @@ export class BootedCrochet {
       }
     }
 
-    const source = await this.crochet.fs.read_file(x.absolute_filename);
+    if (!x.is_crochet) {
+      if (!(await this.crochet.signal.compile_external_language(x, pkg))) {
+        throw new Error(
+          [
+            `Failed to load ${x.relative_filename} in ${pkg.name} because `,
+            `it's not a supported extension.`,
+          ].join("")
+        );
+      }
+    }
+
+    const source = await this.crochet.fs.read_file(
+      x.crochet_file.absolute_filename
+    );
     const buffer = await this.crochet.fs.read_binary(x.binary_image);
     const header = Binary.decode_header(buffer);
     const hash = Binary.hash_file(source);
