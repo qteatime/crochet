@@ -1,56 +1,29 @@
 % crochet
 
-local singleton date-mod;
-
-command date-mod unwrap: (X is plain-date-time) =
-  X.instant.x;
-
-command date-mod year: X =
-  foreign date.year(X);
-
-command date-mod month: X =
-  foreign date.month(X);
-
-command date-mod day: X =
-  foreign date.day(X);
-
-command date-mod hours: X =
-  foreign date.hours(X);
-
-command date-mod minutes: X =
-  foreign date.minutes(X);
-
-command date-mod seconds: X =
-  foreign date.seconds(X);
-
-command date-mod milliseconds: X =
-  foreign date.milliseconds(X);
-
-
 command plain-date-time as instant =
   self.instant;
 
 
 command plain-date-time year =
-  date-mod year: (date-mod unwrap: self);
+  foreign date.year(self.instant.x);
 
 command plain-date-time month =
-  date-mod month: (date-mod unwrap: self);
+  foreign date.month(self.instant.x);
 
 command plain-date-time day =
-  date-mod day: (date-mod unwrap: self);
+  foreign date.day(self.instant.x);
 
 command plain-date-time hours =
-  date-mod hours: (date-mod unwrap: self);
+  foreign date.hours(self.instant.x);
 
 command plain-date-time minutes =
-  date-mod minutes: (date-mod unwrap: self);
+  foreign date.minutes(self.instant.x);
 
 command plain-date-time seconds =
-  date-mod seconds: (date-mod unwrap: self);
+  foreign date.seconds(self.instant.x);
 
 command plain-date-time milliseconds =
-  date-mod milliseconds: (date-mod unwrap: self);
+  foreign date.milliseconds(self.instant.x);
 
 
 command plain-date-time === (That is plain-date-time) =
@@ -72,5 +45,7 @@ command plain-date-time >= (That is plain-date-time) =
   (self as instant) >= (That as instant);
 
 
-command representation text: (X is plain-date-time) =
-  representation text: (X as instant);
+command debug-representation of: (X is plain-date-time) =
+  debug-representation type: "plain-date-time"
+    | value: (X as instant) to-iso8601-text
+    | finish;

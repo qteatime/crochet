@@ -1,32 +1,18 @@
 % crochet
 
-local singleton instant-mod;
-
-command instant-mod from-ms: (X is integer) =
-  foreign instant.from-ms(X);
-
-command instant-mod from-iso: (X is text) =
-  foreign instant.from-iso(X);
-
-command instant-mod epoch-ms: X =
-  foreign instant.epoch-ms(X);
-
-command instant-mod to-iso: X =
-  foreign instant.to-iso(X);
-
 // Constructors
 command #instant from-milliseconds: (X is integer) =
-  new instant(instant-mod from-ms: X);
+  new instant(foreign instant.from-ms(X));
 
 command #instant from-iso8601: (X is text) =
-  new instant(instant-mod from-iso: X);
+  new instant(foreign instant.from-iso(X));
 
 // Views
 command instant epoch-milliseconds =
-  instant-mod epoch-ms: self.x;
+  foreign instant.epoch-ms(self.x);
 
 command instant to-iso8601-text =
-  instant-mod to-iso: self.x;
+  foreign instant.to-iso(self.x);
 
 command instant to-plain-date-time =
   new plain-date-time(self);
@@ -58,5 +44,7 @@ command instant - (That is duration) =
   #instant from-milliseconds: (self epoch-milliseconds - That to-milliseconds);
 
 // Debug
-command representation text: (X is instant) =
-  "<[X to-iso8601-text]>";
+command debug-representation of: (X is instant) =
+  debug-representation type: "instant"
+    | value: X to-iso8601-text
+    | finish;

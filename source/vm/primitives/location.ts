@@ -54,7 +54,7 @@ export function thunk_location(thunk: CrochetThunk) {
 
 export function type_name(x: CrochetType) {
   if (x.module != null) {
-    return `${x.name} (from ${x.module.pkg.name})`;
+    return `${x.module.pkg.name}/${x.name}`;
   } else {
     return x.name;
   }
