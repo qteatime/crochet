@@ -336,6 +336,7 @@ export class Action {
     readonly name: string,
     readonly documentation: string,
     readonly actor_type: CrochetType,
+    readonly self_parameter: string,
     readonly predicate: IR.Predicate,
     readonly rank_function: IR.BasicBlock,
     readonly body: IR.BasicBlock

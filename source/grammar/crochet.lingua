@@ -14,7 +14,7 @@ type Declaration =
   | Type(pos: Meta, cmeta: Metadata, typ: TypeDef, fields: Parameter[])
   | Action( pos: Meta
           , cmeta: Metadata
-          , self: TypeApp
+          , self: Parameter
           , name: Name
           , title: Expression?
           , pred: Predicate
@@ -367,7 +367,7 @@ grammar Crochet : Program {
 
   actionDeclaration =
     | m:declarationMeta ws action_
-        t:typeApp
+        t:parameter
         n:atom
         title:interpolateExpression?
         p:actionPredicate
