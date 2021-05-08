@@ -2,9 +2,8 @@ import * as Path from "path";
 import * as FS from "fs";
 import * as Yargs from "yargs";
 
-import { Crochet } from "../../targets/bench";
-
-type Crochet0 = { new (): Crochet };
+type Crochet0 = { new (): any };
+type Crochet1 = { new (path: string): any };
 
 const Crochet_v0_2 = require("../../../versions/crochet-v0.2.0")
   .Crochet as Crochet0;
@@ -17,9 +16,9 @@ const Crochet_v0_4_0 = require("../../../versions/crochet-v0.4.0")
 const Crochet_v0_5_0 = require("../../../versions/crochet-v0.5.0")
   .Crochet as Crochet0;
 const Crochet_v0_6_0 = require("../../../versions/crochet-v0.6.0")
-  .Crochet as typeof Crochet;
+  .Crochet as Crochet1;
 const Crochet_v0_7_0 = require("../../../versions/crochet-v0.7.0")
-  .Crochet as typeof Crochet;
+  .Crochet as Crochet1;
 const pkg = require("../../../package.json");
 
 const root = Path.join(__dirname, "../../../");
@@ -113,14 +112,15 @@ const all_vms = [
   {
     version: "0.7.0",
     random: false,
+    tag: "(stable)",
     vm: () => new Crochet_v0_7_0(benchStdlib("0.7.0")),
   },
-  {
-    version: pkg.version,
-    tag: "(current)",
-    random: false,
-    vm: () => new Crochet(StdlibPath),
-  },
+  // {
+  // version: pkg.version,
+  // tag: "(current)",
+  // random: false,
+  // vm: () => new Crochet(StdlibPath),
+  // },
 ];
 
 async function time(

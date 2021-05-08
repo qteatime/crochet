@@ -25,11 +25,8 @@ command point move: east  = new point(self.X + 1, self.Y);
 command point move: south = new point(self.X, self.Y + 1);
 command point move: west  = new point(self.X - 1, self.Y);
 
-command point distance-to: (P is point) do
-  let X = (P.X - self.X) as float;
-  let Y = (P.Y - self.Y) as float;
-  ((X ** 2) + (Y ** 2)) sqrt;
-end
+command point distance-to: (P is point) =
+  ((((P.X - self.X) ** 2) + ((P.Y - self.Y) ** 2)) as float) sqrt;
 
 command cell adjacent-cells do
   let Adjacency = [
@@ -38,7 +35,7 @@ command cell adjacent-cells do
     self.Position move: south,
     self.Position move: west,
   ];
-  Adjacency flat-map: (cells-at: _);
+  for P in Adjacency, C in cells-at: P do C end
 end
 
 command cells-at: (P is point) do
@@ -58,9 +55,7 @@ command cell set-state: (State is cell-state) do
     when self state: S do
       forget state: S cell: self;
     end
-
-    always do end
-  end;
+  end
 
   fact state: State cell: self;
   fact self state: State;
@@ -73,28 +68,23 @@ command cell cut do
     when self adjacent: Cell, Cell state: cs-unvisited do
       Cell set-state: cs-exposed;
     end
-
-    always do end
   end
 end
 
 command maze generate-width: Width height: Height do
   let Maze = new maze-gen(Width, Height);
 
-  for IY in 1 to: Height do
-    for IX in 1 to: Width do
-      let Point = new point(IX, IY);
-      let Cell = new cell(Point);
-      fact Maze cell: Cell;
-      fact y: IY x: IX cell: Cell;
-      Cell set-state: cs-unvisited;
-    end
+  for IY in 1 to: Height, IX in 1 to: Width do
+    let Point = new point(IX, IY);
+    let Cell = new cell(Point);
+    fact Maze cell: Cell;
+    fact y: IY x: IX cell: Cell;
+    Cell set-state: cs-unvisited;
   end
 
   for Cell in (search Maze cell: C).C do
     for Adjacent in Cell adjacent-cells do
       fact Cell adjacent: Adjacent;
-      nothing;
     end
   end
 
@@ -103,8 +93,9 @@ command maze generate-width: Width height: Height do
   Maze;
 end
 
-action (Maze is maze-gen) initialise
+action "Initialise [Maze]"
 when
+  Maze simulate-turn,
   Maze phase: start,
   sample 1 of state: cs-unvisited cell: Cell
 do
@@ -112,15 +103,14 @@ do
   fact Maze phase: cut;
 end
 
-action (Maze is maze-gen) cut
+action "Cut [Cell]"
 when
+  Maze simulate-turn,
   Maze phase: cut,
   sample 1 of state: cs-exposed cell: Cell
 do
   match
-    when let Cells = (search Cell adjacent: C, C state: cs-cut),
-         if Cells count === 1
-    do
+    when let C = (search Cell adjacent: C, C state: cs-cut), if C count === 1 do
       Cell cut;
     end
 
@@ -130,7 +120,7 @@ do
   end
 end
 
-action (Maze is maze-gen) begin-tracing
+action "Begin tracing"
 when
   Maze phase: cut,
   not state: cs-exposed cell: _,
@@ -153,14 +143,12 @@ command maze-gen draw do
       for IX in 1 to: self.Width do
         (cell-at: new point(IX, IY)) draw;
       end;
-    Line as interpolation
-      |> _ flatten-into-plain-text
-      |> transcript write: _
+    transcript write: (Line as interpolation);
   end
 end
 
 command cell draw do
-  let Char =
+  let Chars =
     match
       when self state: cs-cut => " ";
       when self state: cs-path => ".";
@@ -170,11 +158,10 @@ command cell draw do
       when self state: cs-exposed => "!";
       when self state: cs-unvisited => "?";
     end;
-  Char first;
+  Chars first;
 end
 
-command main: _ do
-  let Maze = benchmark block: { maze generate-width: 20 height: 20 } tag: "Generate";
-  benchmark block: { Maze draw } tag: "Draw";
-  nothing;
+scene main do
+  let Maze = maze generate-width: 20 height: 20;
+  Maze draw;
 end
