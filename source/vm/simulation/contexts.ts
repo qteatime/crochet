@@ -73,7 +73,7 @@ export interface ActionChoice {
 export function* available_actions(
   context: Context,
   state: State,
-  env: Environment,
+  env0: Environment,
   module: CrochetModule,
   random: XorShift,
   relations: Namespace<CrochetRelation>,
@@ -85,6 +85,8 @@ export function* available_actions(
     if (!Values.has_type(action.actor_type, actor)) {
       continue;
     }
+    const env = Environments.clone(env0);
+    env.define(action.self_parameter, actor);
 
     const envs = yield* search(
       state,

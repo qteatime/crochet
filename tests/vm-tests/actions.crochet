@@ -20,8 +20,8 @@ when lielle state: greet do
   fact output: "[lielle] greets in kind.";
 end
 
-action person part
-when P simulate-turn, P state: part do
+action (P is person) part
+when P state: part do
   fact output: "[P] leaves.";
 end
 

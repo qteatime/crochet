@@ -155,6 +155,7 @@ export class DAction extends BaseDeclaration {
     readonly context: string | null,
     readonly name: string,
     readonly actor: Type,
+    readonly parameter: string,
     readonly rank_function: BasicBlock,
     readonly predicate: Predicate,
     readonly body: BasicBlock

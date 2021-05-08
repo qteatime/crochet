@@ -1538,11 +1538,12 @@ export class LowerToIR {
         ];
       },
 
-      Action: (pos, cmeta, self, name, title, pred, rank, body, init) => {
+      Action: (pos, cmeta, param, name, title, pred, rank, body, init) => {
         const id = this.context.register(pos);
         const title_pos = title != null ? get_pos(title) : name.pos;
         const type_name = `action ${name.name}`;
         const type = new IR.LocalType(id, type_name);
+        const self = this.parameter(param);
 
         return [
           new IR.DAction(
@@ -1550,7 +1551,8 @@ export class LowerToIR {
             this.documentation(cmeta),
             context,
             name.name,
-            this.type(self),
+            self.type,
+            self.parameter,
             this.rank_function(rank),
             this.predicate(pred),
             this.statements(body)

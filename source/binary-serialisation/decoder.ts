@@ -136,6 +136,7 @@ class CrochetIRDecoder extends BinaryReader {
           this.maybe(() => this.string()),
           this.string(),
           this.decode_type(),
+          this.string(),
           this.decode_basic_block(),
           this.decode_predicate(),
           this.decode_basic_block()

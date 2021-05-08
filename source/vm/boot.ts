@@ -374,6 +374,7 @@ export function load_declaration(
         declaration.name,
         declaration.documentation,
         actor,
+        declaration.parameter,
         declaration.predicate,
         declaration.rank_function,
         declaration.body

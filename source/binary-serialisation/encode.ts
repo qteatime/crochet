@@ -4,7 +4,7 @@ import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
 export const MAGIC = "CROC";
-export const VERSION = 16;
+export const VERSION = 17;
 
 export enum Section {
   DECLARATION = 1,
@@ -115,6 +115,7 @@ class CrochetIREncoder extends BinaryWriter {
         this.maybe(x.context, (c) => this.string(c));
         this.string(x.name);
         this.encode_type(x.actor);
+        this.string(x.parameter);
         this.encode_basic_block(x.rank_function);
         this.encode_predicate(x.predicate);
         this.encode_basic_block(x.body);
