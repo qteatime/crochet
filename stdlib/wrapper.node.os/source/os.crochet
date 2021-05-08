@@ -1,50 +1,35 @@
 % crochet
 
-local abstract os-mod;
-command #os-mod abort =
-  foreign os.abort();
-
-command #os-mod exit: (Code is integer) =
-  foreign os.exit(Code);
-
-command #os-mod arch = foreign os.arch();
-command #os-mod argv = foreign os.argv();
-command #os-mod chdir: (Dir is text) = foreign os.chdir(Dir);
-command #os-mod cwd = foreign os.cwd();
-command #os-mod env = foreign os.env();
-command #os-mod platform = foreign os.platform();
-command #os-mod pid = foreign os.pid();
-
-
 singleton os;
 
 command os processor-architecture =
-  #os-mod arch;
+  foreign os.arch();
 
 command os platform =
-  #os-mod platform;
+  foreign os.platform();
 
 
 singleton process;
 
 command process abort =
-  #os-mod abort;
+  foreign os.abort();
 
 command process exit: (Code is integer) =
-  #os-mod exit: Code;
+  foreign os.exit(Code);
 
-command process arguments = #os-mod argv;
+command process arguments =
+  foreign os.argv();
 
 command process change-directory: (Dir is text) do
-  #os-mod chdir: Dir;
+  foreign os.chdir(Dir);
   self;
 end
 
 command process current-directory =
-  #os-mod cwd;
+  foreign os.cwd();
 
 command process environment-variables =
-  #os-mod env;
+  foreign os.env();
 
 command process id =
-  #os-mod pid;
+  foreign os.pid();
