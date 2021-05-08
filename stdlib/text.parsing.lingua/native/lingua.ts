@@ -123,7 +123,7 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("lingua.visitor-lambda", (lambda) => {
     return ffi.box(function (this: Ohm.Node, ...args: Ohm.Node[]) {
       const self = this;
-      const fn = function* (): Machine {
+      const fn = function* (): Machine<CrochetValue> {
         return yield ffi.apply(lambda, [
           ffi.box(self),
           ...args.map((x) => x.visit()),
