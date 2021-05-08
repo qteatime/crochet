@@ -1,0 +1,70 @@
+% crochet
+
+/// Concatenates two pieces of text
+command (X is text) ++ (Y is text) = 
+  "[X][Y]"
+test
+  assert ("" ++ "") flatten-into-plain-text =:= "";
+  assert ("" ++ "abc") flatten-into-plain-text =:= "abc";
+  assert ("abc" ++ "") flatten-into-plain-text =:= "abc";
+  assert ("abc" ++ "def") flatten-into-plain-text =:= "abcdef";
+end
+
+/// Converts an interpolation to its normal form
+command (X is interpolation) normalise
+  = foreign interpolation.normalise(X)
+test
+  assert "abc[1]def" normalise =:= "abc[1]def";
+  assert ("a[1]b" ++ "d[1]f") normalise =:= "a[1]bd[1]f";
+end
+
+/// Concatenates interpolations and texts
+command (X is interpolation) ++ (Y is interpolation) =
+  foreign interpolation.concat(X, Y)
+test
+  assert ("[1]a[2]x" ++ "y[3]b[4]") normalise =:= "[1]a[2]xy[3]b[4]";
+end
+
+command (X is text) ++ (Y is interpolation) do
+  "[X]" ++ Y;
+test
+  assert ("abc" ++ "d[1]f") =:= "["abc"]d[1]f";
+end
+
+command (X is interpolation) ++ (Y is text) do
+  X ++ "[Y]";
+test
+  assert ("a[1]c" ++ "def") =:= "a[1]c["def"]";
+end
+
+/// Returns all parts of an interpolation
+command (X is interpolation) parts = 
+  foreign interpolation.parts(X)
+test
+  assert ("abc" as interpolation) parts =:= ["abc"];
+  assert "abc[1]def" parts =:= ["abc", 1, "def"];
+  assert "[1][2]" parts =:= [1, 2];
+end
+
+/// Returns all dynamic parts of an interpolation
+command (X is interpolation) holes =
+  foreign interpolation.holes(X)
+test
+  assert ("abc" as interpolation) holes =:= ["abc"];
+  assert ("a[1]c" ++ "abc") holes =:= [1, "abc"];
+  assert "abc[1]def" holes =:= [1];
+  assert "[1][2]" holes =:= [1, 2];
+end
+
+/// Returns a static textual representation of the interpolation
+command (X is interpolation) static-text =
+  foreign interpolation.static-text(X)
+test
+  assert ("abc" as interpolation) static-text =:= "_";
+  assert ("a[1]c" ++ "abc") static-text =:= "a_c_";
+  assert "abc[1]def" static-text =:= "abc_def";
+  assert "[1][2]" static-text =:= "__";
+end
+
+command (X is interpolation) flatten-into-plain-text =
+  foreign interpolation.to-plain-text(X);

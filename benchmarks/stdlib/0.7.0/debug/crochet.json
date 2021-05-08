@@ -1,0 +1,11 @@
+{
+  "name": "crochet.debug",
+  "target": "*",
+  "stability": "experimental",
+  "sources": ["transcript.crochet", "trace.crochet", "time.crochet"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

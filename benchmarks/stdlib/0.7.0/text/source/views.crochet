@@ -1,0 +1,37 @@
+% crochet
+
+command (X is text) lines
+  = foreign view.lines(X)
+test
+  assert "" lines =:= [""];
+  assert "a\nb\nc" lines =:= ["a", "b", "c"];
+  assert "a\r\nb\rc\nd" lines =:= ["a", "b", "c", "d"];
+end
+
+command (X is text) unicode-code-points 
+  = foreign view.code-points(X)
+test
+  assert "abc❤🌹✨" unicode-code-points =:= [97, 98, 99, 10084, 127801, 10024];
+end
+
+command #text from-code-points: (Points is tuple)
+  = foreign view.from-code-points(Points)
+test
+  assert #text from-code-points: ("abc❤🌹✨" unicode-code-points) =:= "abc❤🌹✨";
+end
+
+command #text from-lines: (Lines is tuple) do
+  let Go = { Xs in 
+    condition
+      when Xs is-empty => "";
+      when Xs count === 1 => Xs first;
+      always => Xs first ++ "\n" ++ Go(Xs but-first);
+    end
+  };
+  Go(Lines);
+test
+  assert (#text from-lines: ("a\nb\nc" lines)) flatten-into-plain-text
+    =:= "a\nb\nc";
+  assert (#text from-lines: ("a\r\nb\r\nc" lines)) flatten-into-plain-text
+    =:= "a\nb\nc";
+end

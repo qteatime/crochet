@@ -1,0 +1,105 @@
+% crochet
+
+// Equality
+//
+// Implement `_ === _`, get `_ =/= _` for free.
+
+command Left =/= Right = not (Left === Right);
+
+// # Numbers
+command integer === (That is integer)
+  = self =:= That
+test
+  assert 0 === 0;
+  assert 1 === 1;
+  assert not (1 === -1);
+end
+
+command float === (That is float)
+  = self =:= That
+test
+  assert 0.0 === 0.0;
+  assert 0.1 === 0.1;
+  assert not (0.1 === 0.0);
+  assert not (1.0 === -1.0);
+
+  assert #float positive-infinity === #float positive-infinity;
+  assert not (#float positive-infinity === #float negative-infinity);
+  assert not (#float nan === #float nan);
+  assert not (0.0 === #float nan);
+end
+
+command (Self is float) =/= (That is float)
+  = foreign float.neq(Self, That)
+test
+  assert 0.1 =/= 0.0;
+  assert 1.0 =/= -1.0;
+  assert 0.0 =/= #float nan;
+  assert not (0.0 =/= 0.0);
+  assert not (0.1 =/= 0.1);
+
+  assert #float nan =/= #float nan;
+  assert not (#float positive-infinity =/= #float positive-infinity);
+  assert not (#float negative-infinity =/= #float negative-infinity);
+  assert #float positive-infinity =/= #float negative-infinity;
+end
+
+command (X is integer) === (Y is float) = (X as float) === Y;
+command (X is integer) =/= (Y is float) = (X as float) =/= Y;
+command (X is float) === (Y is integer) = X === (Y as float);
+command (X is float) =/= (Y is integer) = X =/= (Y as float);
+
+test "Numeric equality tower" do
+  assert (1.0 === 1);
+  assert (1.1 =/= 1);
+  assert (1 === 1.0);
+  assert (1 =/= 1.1);
+end
+
+// # Boolean
+command boolean === (That is boolean)
+  = self =:= That
+test
+  assert true === true;
+  assert false === false;
+  assert not (true === false);
+end
+
+// # Enum
+local enum test-enum = ta, tb;
+
+command 'enum === (That is 'enum)
+  = self =:= That
+test
+  assert ta === ta;
+  assert not (ta === tb);
+end
+
+// # Text
+command text === (That is text) = self =:= That;
+
+// # Tuple
+command tuple === (That is tuple) do
+  condition
+    when self count =/= That count => false;
+    always =>
+      self zip: That with: (_ === _) | all-true;
+  end
+end
+
+// # Record
+command record === (That is record) do
+  self =:= That; // FIXME: implement this properly
+end
+
+// # Result
+command result === result = false;
+command ok === (That is ok) = self value === That value;
+command error === (That is error) = self reason === That reason;
+
+test "result === result" do
+  assert (#result ok: 1) === (#result ok: 1);
+  assert (#result error: 1) === (#result error: 1);
+  assert not ((#result ok: 1) === (#result error: 1));
+  assert not ((#result error: 1) === (#result ok: 1));
+end

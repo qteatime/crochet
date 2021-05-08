@@ -1,0 +1,59 @@
+% crochet
+
+command #float pi = foreign float.pi()
+test #float pi end
+
+command (X is float) sin = foreign float.sin(X)
+test 2.0 sin end
+
+command (X is float) sinh = foreign float.sinh(X)
+test 2.0 sinh end
+
+command (X is float) asin = foreign float.asin(X)
+test 2.0 asin end
+
+command (X is float) asinh = foreign float.asinh(X)
+test 2.0 asinh end
+
+command (X is float) cos = foreign float.cos(X)
+test 2.0 cos end
+
+command (X is float) cosh = foreign float.cosh(X)
+test 2.0 cosh end
+
+command (X is float) acos = foreign float.acos(X)
+test 2.0 acos end
+
+command (X is float) acosh = foreign float.acosh(X)
+test 2.0 acosh end
+
+command (X is float) tan = foreign float.tan(X)
+test 2.0 tan end
+
+command (X is float) atan = foreign float.atan(X)
+test 2.0 atan end
+
+command (X is float) atanh = foreign float.atanh(X)
+test 2.0 atanh end
+
+command (X is float) tanh = foreign float.tanh(X)
+test 2.0 tanh end
+
+command float degrees-to-radians =
+  self * (#float pi / 180.0)
+test
+  45.0 degrees-to-radians
+end
+
+command float radians-to-degrees =
+  self / (#float pi / 180.0)
+test
+  2.0 radians-to-degrees
+end
+
+
+command (X is float) cbrt = foreign float.cbrt(X)
+test 2.0 cbrt end
+
+command (X is float) sqrt = foreign float.sqrt(X)
+test 2.0 sqrt end

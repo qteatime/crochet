@@ -1,0 +1,11 @@
+{
+  "name": "crochet.collections",
+  "target": "*",
+  "stability": "experimental",
+  "dependencies": ["crochet.core"],
+  "sources": [],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

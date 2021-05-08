@@ -1,0 +1,15 @@
+{
+  "name": "crochet.text",
+  "target": "*",
+  "stability": "experimental",
+  "dependencies": ["crochet.core", "crochet.collections"],
+  "sources": [
+    "source/core.crochet",
+    "source/views.crochet",
+    "source/ascii.crochet"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

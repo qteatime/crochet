@@ -1,0 +1,72 @@
+% crochet
+
+command (X is integer) as float
+  = foreign conversion.integer-to-float(X)
+test
+  assert (1 as float) =:= 1.0;
+  assert (0 as float) =:= 0.0;
+  assert (-1 as float) =:= -1.0;
+end
+
+command (X is float) as integer
+requires integral :: X =:= X truncate
+  = foreign conversion.float-to-integer(X)
+test
+  assert (1.0 as integer) =:= 1;
+  assert (0.0 as integer) =:= 0;
+  assert (-1.0 as integer) =:= -1;
+end
+
+command (X is tuple) as interpolation
+  = foreign conversion.tuple-to-interpolation(X)
+test
+  assert ([] as interpolation) =:= ("" as interpolation);
+  assert (["a", 1, "c"] as interpolation) =:= "a[1]c";
+end
+
+command (X is text) as interpolation
+  = "[X]"
+test
+  assert ("abc" as interpolation) =:= "["abc"]";
+end
+
+
+local abstract conversion-mod;
+
+command #conversion-mod parse-integer: (X is text)
+  = foreign conversion.text-to-integer(X);
+
+command #conversion-mod parse-float: (X is text)
+  = foreign conversion.text-to-float(X);
+
+
+abstract conversion-error;
+type error-parsing-integer is conversion-error(value);
+type error-parsing-float is conversion-error(value);
+
+command #integer try-parse: (X is text) -> result do
+  let Result = #conversion-mod parse-integer: X;
+  condition
+    when Result =:= nothing => (#result error: new error-parsing-integer(X));
+    always => #result ok: Result;
+  end
+test
+  assert (#integer try-parse: "123").value =:= 123;
+  assert (#integer try-parse: "-123").value =:= -123;
+  assert (#integer try-parse: "123.0") is error;
+  assert (#integer try-parse: "nope") is error;
+end
+
+command #float try-parse: (X is text) -> result do
+  let Result = #conversion-mod parse-float: X;
+  condition
+    when Result =:= nothing => (#result error: new error-parsing-float(X));
+    always => #result ok: Result;
+  end
+test
+  assert (#float try-parse: "123").value =:= 123.0;
+  assert (#float try-parse: "123.123").value =:= 123.123;
+  assert (#float try-parse: "-123.0").value =:= -123.0;
+  assert (#float try-parse: "nope") is error;
+end
+  

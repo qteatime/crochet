@@ -1,0 +1,113 @@
+% crochet
+
+command #result ok: Value = new ok(Value);
+command #result error: Reason = new error(Reason);
+
+command ok value = self.value;
+command error reason = self.reason;
+
+
+command ok map: (Fun is function-1) = #result ok: Fun(self value);
+command error map: (Fun is function-1) = self;
+
+test "result map: Fun" do
+  assert (#result ok: 1 | map: (_ + 1)) === (#result ok: 2);
+  assert (#result error: 1 | map: (_ + 1)) === (#result error: 1);
+end
+
+
+command ok map-error: (Fun is function-1) = self;
+command error map-error: (Fun is function-1) = #result error: Fun(self reason);
+
+test "result map-error: Fun" do
+  assert (#result ok: 1 | map-error: (_ + 1)) === (#result ok: 1);
+  assert (#result error: 1 | map-error: (_ + 1)) === (#result error: 2);
+end
+
+
+command ok then: (Fun is function-1) = Fun(self value);
+command error then: (Fun is function-1) = self;
+
+test "result then: Fun" do
+  assert (#result ok: 1 | then: { A in #result ok: (A + 1) })
+    === (#result ok: 2);
+
+  assert (#result ok: 1 | then: { A in #result error: (A + 1) })
+    === (#result error: 2);
+
+  assert (#result error: 1 | then: { A in #result ok: (A + 1) })
+    === (#result error: 1);
+end
+
+
+command ok recover: (Fun is function-1) = self;
+command error recover: (Fun is function-1) = Fun(self reason);
+
+test "result recover: Fun" do
+  assert (#result ok: 1 | recover: { A in #result ok: (A + 1) })
+    === (#result ok: 1);
+
+  assert (#result error: 1 | recover: { A in #result error: (A + 1) })
+    === (#result error: 2);
+
+  assert (#result error: 1 | recover: { A in #result ok: (A + 1) })
+    === (#result ok: 2);
+end
+
+
+command ok swap = #result error: self value;
+command error swap = #result ok: self reason;
+
+test "result swap" do
+  assert (#result ok: 1 | swap) === (#result error: 1);
+  assert (#result error: 1 | swap) === (#result ok: 1);
+end
+
+
+command ok value-or-default: Default = self value;
+command error value-or-default: Default = Default;
+
+test "result value-or-default: Default" do
+  assert (#result ok: 1 | value-or-default: 2) === 1;
+  assert (#result error: 1 | value-or-default: 2) === 2;
+end
+
+
+command ok value-or-else: (Fun is function-1) = self value;
+command error value-or-else: (Fun is function-1) = Fun(self reason);
+
+test "result value-or-else: Fun" do
+  assert (#result ok: 1 | value-or-else: (_ + 1)) === 1;
+  assert (#result error: 1 | value-or-else: (_ + 1)) === 2;
+end
+
+
+command ok value-or-panic: Reason = self value;
+command error value-or-panic: Reason = panic: Reason;
+
+test "result value-or-panic: Reason" do
+  assert (#result ok: 1 | value-or-panic: "Okay!") === 1;
+  // FIXME: test panic
+end
+
+
+command ok value-or-reason = self value;
+command error value-or-reason = self reason;
+
+
+command ok and (That is result) = That;
+command error and (That is result) = self;
+
+command ok or (That is result) = self;
+command error or (That is result) = That;
+
+
+command debug-representation of: (X is ok) =
+  debug-representation type: "ok"
+    | value: X value
+    | finish;
+
+command debug-representation of: (X is error) =
+  debug-representation type: "error"
+    | value: X reason
+    | finish;

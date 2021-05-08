@@ -1,0 +1,217 @@
+% crochet
+
+command (X is record) count
+  = foreign record.count(X)
+test
+  assert [->] count === 0;
+  assert [a -> 1] count === 1;
+  assert [a -> 1, b -> 2, c -> 3] count === 3;
+end
+
+
+command (X is record) is-empty
+  = X count =:= 0
+test
+  assert [->] is-empty;
+  assert not ([a -> 1] is-empty);
+end
+
+
+command (X is record) keys
+  = foreign record.keys(X)
+test
+  // Records SHOULD maintain source ordering
+  assert [->] keys === [];
+  assert [a -> 1] keys === ["a"];
+  assert [a -> 1, b -> 2] keys === ["a", "b"];
+end
+
+
+command (X is record) values
+  = foreign record.values(X)
+test
+  assert [->] values === [];
+  assert [a -> 1] values === [1];
+  assert [a -> 1, b -> 2] values === [1, 2];
+end
+
+
+command (X is record) pairs
+  = foreign record.pairs(X)
+test
+  assert [->] pairs === [];
+  assert [a -> 1] pairs === [[key -> "a", value -> 1]];
+  assert [a -> 1, b -> 2] pairs === [
+    [key -> "a", value -> 1],
+    [key -> "b", value -> 2],
+  ];
+end
+
+
+command #record from-pairs: (Pairs is tuple) =
+  foreign record.from-pairs(Pairs)
+test
+  assert (#record from-pairs: []) === [->];
+  assert (#record from-pairs: [[key -> "a", value -> 1]]) === [a -> 1];
+    assert (#record from-pairs: [
+    [key -> "a", value -> 1],
+    [key -> "b", value -> 2],
+  ]) === [a -> 1, b -> 2];
+end
+
+
+command (X is record) merge: (That is record) =
+  foreign record.concat(X, That)
+test
+  assert ([->] merge: [a -> 1, b -> 2]) === [a -> 1, b -> 2];
+  assert ([a -> 1, b -> 2] merge: [->]) === [a -> 1, b -> 2];
+  assert ([a -> 1] merge: [b -> 2]) === [a -> 1, b -> 2];
+  assert ([a -> 1, c -> 4] merge: [a -> 2, b -> 3]) === [a -> 2, c -> 4, b -> 3];
+end
+
+
+command (X is record) at: (K is text) =
+  X.[K]
+test
+  assert ([a -> 1, b -> 2] at: "a") === 1;
+  assert (["a a" -> 1, b -> 2] at: "a a") === 1;
+  assert ([a -> 1, B -> 2] at: "B") === 2;
+end
+
+
+command (X is record) at: (K is text) default: V =
+  foreign record.at-default(X, K, V)
+test
+  assert ([a -> 1, b -> 2] at: "a" default: 0) === 1;
+  assert (["a a" -> 1, b -> 2] at: "a a" default: 0) === 1;
+  assert ([a -> 1, B -> 2] at: "B" default: 0) === 2;
+  assert ([->] at: "a" default: 0) === 0;
+  assert ([a -> 1, b -> 2] at: "c" default: 0) === 0;
+end
+
+
+command (X is record) contains-key: (Key is text) =
+  foreign record.has-key(X, Key)
+test
+  assert [a -> 1, b -> 2] contains-key: "a";
+  assert ["a a" -> 1, b -> 2] contains-key: "a a";
+  assert [a -> 1, B -> 2] contains-key: "B";
+  assert not ([a -> 1, b -> 2] contains-key: "c");
+  assert not ([->] contains-key: "a");
+end
+
+
+command (X is record) at: (K is text) put: V =
+  foreign record.at-put(X, K, V)
+test
+  let A = [a -> 1, b -> 2];
+  assert ([->] at: "a" put: 1) === [a -> 1];
+  assert (A at: "a" put: 2) === [a -> 2, b -> 2];
+  assert A === [a -> 1, b -> 2];
+  assert (A at: "c" put: 3) === [a -> 1, b -> 2, c -> 3];
+end
+
+
+command record at: (K is text) update: (Fun is function-1) do
+  condition
+    when self contains-key: K =>
+      self at: K put: Fun(self.[K]);
+    always =>
+      self;
+  end
+test
+  assert ([->] at: "a" update: (_ + 1)) === [->];
+  assert ([a -> 1] at: "a" update: (_ + 1)) === [a -> 2];
+  assert ([a -> 1, b -> 2] at: "a" update: (_ + 1)) === [a -> 2, b -> 2];
+  assert ([a -> 1, b -> 2] at: "c" update: (_ + 1)) === [a -> 1, b -> 2];
+end
+
+
+command record at: (K is text) default: V update: (Fun is function-1) do
+  condition
+    when self contains-key: K =>
+      self at: K put: Fun(self.[K]);
+    always =>
+      self at: K put: V;
+  end
+test
+  assert ([->] at: "a" default: 1 update: (_ + 1)) === [a -> 1];
+  assert ([a -> 1] at: "a" default: 1 update: (_ + 1)) === [a -> 2];
+  assert ([a -> 1, b -> 2] at: "a" default: 1 update: (_ + 1)) === [a -> 2, b -> 2];
+  assert ([a -> 1, b -> 2] at: "c" default: 1 update: (_ + 1)) === [a -> 1, b -> 2, c -> 1];
+end
+
+
+command record fold-from: Initial with: (Fun is function-3) do
+  self pairs fold-from: Initial with: { A, P in Fun(A, P.key, P.value) };
+test
+  assert ([->] fold-from: [->] with: { A, K, V in A at: V put: K })
+    === [->];
+
+  assert ([a -> "b"] fold-from: [->] with: { A, K, V in A at: V put: K })
+    === [b -> "a"];
+
+  assert ([a -> "b", c -> "d"] fold-from: [->] with: { A, K, V in A at: V put: K })
+    === [b -> "a", d -> "c"];
+
+  assert ([a -> 1, b -> 2] fold-from: [->] with: { A, K, _ in A at: K put: 0 })
+    === [a -> 0, b -> 0];
+end
+
+
+command (X is record) delete-at: (Key is text) =
+  foreign record.delete-at(X, Key)
+test
+  assert ([a -> 1] delete-at: "a") === [->];
+  assert ([a -> 1, b -> 2] delete-at: "a") === [b -> 2];
+end
+
+
+command (X is record) map: (Fun is function-2) do
+  self fold-from: [->] with: { R, K, V in R at: K put: Fun(K, V) };
+test
+  assert ([a -> 1] map: { _, V in V + 1 }) === [a -> 2];
+  assert ([->] map: { _, V in V + 1 }) === [->];
+  assert ([a -> 1, b -> 2] map: { _, V in V + 1 }) === [a -> 2, b -> 3];
+end
+
+
+command (X is record) filter: (Fun is function-2) do
+  self fold-from: [->] with: { R, K, V in
+    condition
+      when Fun(K, V) => R at: K put: V;
+      always => R;
+    end
+  }
+test
+  assert ([->] filter: { _, V in V === 2 }) === [->];
+  assert ([a -> 1] filter: { _, V in V === 2 }) === [->];
+  assert ([a -> 1, b -> 2] filter: { _, V in V === 2 }) === [b -> 2];
+  assert ([a -> 2, b -> 2] filter: { _, V in V === 2 }) === [a -> 2, b -> 2];
+end
+
+
+command (X is record) with-only-keys: (Keys is tuple) do
+  self filter: { K, _ in Keys contains: K };
+test
+  assert ([->] with-only-keys: ["a", "b"]) === [->];
+  assert ([a -> 1] with-only-keys: ["a", "b"]) === [a -> 1];
+  assert ([a -> 1, b -> 2] with-only-keys: ["a", "b"]) === [a -> 1, b -> 2];
+  assert ([a -> 1, b -> 2, c -> 3] with-only-keys: ["a"]) === [a -> 1];
+  assert ([a -> 1, b -> 2, c -> 3] with-only-keys: ["a", "b"]) === [a -> 1, b -> 2];
+end
+
+
+command (X is record) without-keys: (Keys is tuple) do
+  self filter: { K, _ in not (Keys contains: K) };
+test
+  assert ([->] without-keys: ["a", "b"]) === [->];
+  assert ([a -> 1] without-keys: ["a", "b"]) === [->];
+  assert ([a -> 1, b -> 2] without-keys: ["a", "b"]) === [->];
+  assert ([a -> 1, b -> 2, c -> 3] without-keys: ["a"]) === [b -> 2, c -> 3];
+  assert ([a -> 1, b -> 2, c -> 3] without-keys: ["a", "b"]) === [c -> 3];
+end
+
+
+command (X is record) ++ (Y is record)
+  = X merge: Y;

@@ -1,0 +1,41 @@
+% crochet
+
+command representation text: X = foreign conversion.any-to-text(X);
+
+command representation text: (Xs is tuple) do
+  condition
+    when Xs is-empty => "\[\]";
+    when Xs count === 1 => "\[[representation text: Xs first]\]";
+    always do
+      let First = representation text: Xs first;
+      let R = Xs but-first fold-from: (representation text: Xs first) with: { A, B in
+        "[A], [representation text: B]"
+      };
+      "\[[R]\]";
+    end
+  end
+end
+
+command representation text: (Xs is record) do
+  let Pairs = Xs pairs;
+
+  condition
+    when Pairs is-empty => "\[->\]";
+    always do
+      let First = Pairs first;
+      let FirstR = "[representation text: First.key] -> [representation text: First.value]";
+      let R = Pairs but-first fold-from: FirstR with: { A, B in
+        "[A], [representation text: B.key] -> [representation text: B.value]"
+      };
+      "\[[R]\]";
+    end
+  end
+end
+
+command representation text: (X is ok) do
+  "ok<[representation text: X value]>";
+end
+
+command representation text: (X is error) do
+  "error<[representation text: X reason]>";
+end

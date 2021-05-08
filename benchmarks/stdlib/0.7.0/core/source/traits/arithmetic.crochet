@@ -1,0 +1,211 @@
+% crochet
+
+// # Integers
+
+/// Arithmetic addition for integers
+command (X is integer) + (Y is integer) =
+  foreign integer.add(X, Y)
+test
+  assert (0 + 1) =:= 1;
+  assert (0 + 1) =:= 1;
+  assert (1 + 0) =:= 1;
+  assert (-3 + 1) =:= -2;
+  assert (5 + 3) =:= 8;
+  assert (1234567890123456789 + 1234567890123456789) =:= 2469135780246913578;
+end
+
+/// Arithmetic subtraction for integers
+command (X is integer) - (Y is integer) =
+  foreign integer.sub(X, Y)
+test
+  assert (0 - 0) =:= 0;
+  assert (0 - 1) =:= -1;
+  assert (1 - 0) =:= 1;
+  assert (-3 - 1) =:= -4;
+  assert (5 - 3) =:= 2;
+  assert (1234567890123456789 - 1) =:= 1234567890123456788;
+end
+
+/// Arithmetic multiplication for integers
+command (X is integer) * (Y is integer) =
+  foreign integer.mul(X, Y)
+test
+  assert (0 * 0) =:= 0;
+  assert (0 * 1) =:= 0;
+  assert (1 * 0) =:= 0;
+  assert (3 * -1) =:= -3;
+  assert (-1 * 3) =:= -3;
+  assert (3 * 3) =:= 9;
+  assert (123456789 * 123456789) =:= 15241578750190521;
+end
+
+/// Truncating arithmetic division for integers
+command (X is integer) divided-by: (Y is integer)
+requires non-zero-divisor :: Y =/= 0
+  = foreign integer.div(X, Y)
+test
+  assert (4 divided-by: 2) =:= 2;
+  assert (3 divided-by: 2) =:= 1;
+  assert (1 divided-by: 3) =:= 0;
+  assert (0 divided-by: 1) =:= 0;
+  assert (3 divided-by: -1) =:= -3;
+  assert (123456789 divided-by: 12) =:= 10288065;
+end
+
+/// Remainder of an arithmetic division for integers
+command (X is integer) % (Y is integer)
+requires non-zero-divisor :: Y =/= 0
+  = foreign integer.rem(X, Y)
+test
+  assert (4 % 2) =:= 0;
+  assert (3 % 2) =:= 1;
+  assert (1 % 3) =:= 1;
+  assert (0 % 1) =:= 0;
+  assert (3 % -1) =:= 0;
+  assert (123456789 % 12) =:= 9;  
+end
+
+/// Convenience function for getting the quotient and remainder
+/// of a division for integers
+command (X is integer) divide-by-with-remainder: (Y is integer) do
+  [
+    quotient -> X divided-by: Y,
+    remainder -> X % Y,
+  ];
+test
+  assert (5 divide-by-with-remainder: 2) =:= [
+    quotient -> 2,
+    remainder -> 1,
+  ];
+end
+
+/// Arithmetic exponentiation for integers
+command (X is integer) ** (P is integer)
+requires positive-exponent :: P >= 0
+  = foreign integer.power(X, P)
+test
+  assert (1 ** 0) =:= 1;
+  assert (0 ** 0) =:= 1;
+  assert (3 ** 0) =:= 1;
+  assert (1 ** 1) =:= 1;
+  assert (-1 ** 1) =:= -1;
+  assert (2 ** 6) =:= 64;
+end
+
+
+// # Floating points
+/// Arithmetic addition for floats
+command (X is float) + (Y is float) =
+  foreign float.add(X, Y)
+test
+  assert (0.0 + 1.0) =:= 1.0;
+  assert (0.0 + 1.0) =:= 1.0;
+  assert (1.0 + 0.0) =:= 1.0;
+  assert (-3.0 + 1.0) =:= -2.0;
+  assert (5.0 + 3.0) =:= 8.0;
+end
+
+/// Arithmetic subtraction for floats
+command (X is float) - (Y is float) =
+  foreign float.sub(X, Y)
+test
+  assert (0.0 - 0.0) =:= 0.0;
+  assert (0.0 - 1.0) =:= -1.0;
+  assert (1.0 - 0.0) =:= 1.0;
+  assert (-3.0 - 1.0) =:= -4.0;
+  assert (5.0 - 3.0) =:= 2.0;
+end
+
+/// Arithmetic multiplication for floats
+command (X is float) * (Y is float) =
+  foreign float.mul(X, Y)
+test
+  assert (0.0 * 0.0) =:= 0.0;
+  assert (0.0 * 1.0) =:= 0.0;
+  assert (1.0 * 0.0) =:= 0.0;
+  assert (3.0 * -1.0) =:= -3.0;
+  assert (-1.0 * 3.0) =:= -3.0;
+  assert (3.0 * 3.0) =:= 9.0;
+end
+
+/// Arithmetic division for floats
+command (X is float) / (Y is float)
+// Technically, IEEE754 allows division by zero, but we choose to be
+// consistent with the other numeric types in Crochet instead
+requires non-zero-divisor :: Y =/= 0.0
+  = foreign float.div(X, Y)
+test
+  assert (4.0 / 2.0) =:= 2.0;
+  assert (3.0 / 2.0) =:= 1.5;
+  assert (1.0 / 4.0) =:= 0.25;
+  assert (0.0 / 1.0) =:= 0.0;
+  assert (3.0 / -1.0) =:= -3.0;
+end
+
+/// Truncating arithmetic division for floats
+command (X is float) divided-by: (Y is float)
+requires non-zero-divisor :: Y =/= 0.0 do
+  (X / Y) truncate;
+test
+  assert (4.0 divided-by: 2.0) =:= 2.0;
+  assert (3.0 divided-by: 2.0) =:= 1.0;
+  assert (1.0 divided-by: 3.0) =:= 0.0;
+  assert (0.0 divided-by: 1.0) =:= 0.0;
+  assert (3.0 divided-by: -1.0) =:= -3.0;
+  assert (123456789.0 divided-by: 12.0) =:= 10288065.0;
+end
+
+/// Remainder of an arithmetic division for floats
+command (X is float) % (Y is float)
+requires non-zero-divisor :: Y =/= 0.0
+  = foreign float.rem(X, Y)
+test
+  assert (4.0 % 2.0) =:= 0.0;
+  assert (3.0 % 2.0) =:= 1.0;
+  assert (1.0 % 3.0) =:= 1.0;
+  assert (0.0 % 1.0) =:= 0.0;
+  assert (3.0 % -1.0) =:= 0.0;
+  assert (123456789.0 % 12.0) =:= 9.0;
+end
+
+/// Convenience function for getting the quotient and remainder
+/// of a division for floats
+command (X is float) divide-by-with-remainder: (Y is float) do
+  [
+    quotient -> X divided-by: Y,
+    remainder -> X % Y,
+  ];
+test
+  assert (5.0 divide-by-with-remainder: 2.0) =:= [
+    quotient -> 2.0,
+    remainder -> 1.0,
+  ];
+end
+
+/// Arithmetic exponentiation for floats
+command (X is float) ** (P is integer)
+requires positive-exponent :: P >= 0
+  = foreign float.power(X, P)
+test
+  assert (1.0 ** 0) =:= 1.0;
+  assert (0.0 ** 0) =:= 1.0;
+  assert (3.0 ** 0) =:= 1.0;
+  assert (1.0 ** 1) =:= 1.0;
+  assert (-1.0 ** 1) =:= -1.0;
+  assert (2.0 ** 6) =:= 64.0;
+end
+
+// Arithmetic tower
+command (X is integer) + (Y is float) = (X as float) + Y;
+command (X is integer) - (Y is float) = (X as float) - Y;
+command (X is integer) * (Y is float) = (X as float) * Y;
+command (X is integer) / (Y is float) = (X as float) / Y;
+command (X is integer) % (Y is float) = (X as float) % Y;
+
+command (X is float) + (Y is integer) = X + (Y as float);
+command (X is float) - (Y is integer) = X - (Y as float);
+command (X is float) * (Y is integer) = X * (Y as float);
+command (X is float) / (Y is integer) = X / (Y as float);
+command (X is float) % (Y is integer) = X % (Y as float);
+
+command (X is integer) / (Y is integer) = (X as float) / (Y as float);

@@ -1,0 +1,83 @@
+% crochet
+
+/// The base type for all values in Crochet
+type any = foreign core.any;
+/// A sealed type for any value in Crochet
+type unknown = foreign core.unknown;
+/// The unit type which represents the absense of useful values
+type nothing = foreign core.nothing;
+
+/// The base type for two-valued logical values
+type boolean = foreign core.boolean;
+/// The true case of booleans
+type true = foreign core.true;
+/// The false case of booleans
+type false = foreign core.false;
+
+
+/// The base type for the numeric tower
+type numeric = foreign core.numeric;
+/// The base type for fractional numbers
+type fractional = foreign core.fractional;
+/// The type for IEEE-754 64-bit floating point numbers
+type float = foreign core.float;
+/// The base type for integral numbers
+type integral = foreign core.integral;
+/// The type of arbitrary-precision integers
+type integer = foreign core.integer;
+
+
+/// The type of textual values
+type text = foreign core.text;
+/// The type of text *literals* in source programs
+type static-text = foreign core.static-text;
+/// The type of interpolation sequences
+/// (treated as a kind of mixed textual value)
+type interpolation = foreign core.interpolation;
+
+
+/// The type of any applicable function
+type function = foreign core.function;
+type function-0 = foreign core.function-0;
+type function-1 = foreign core.function-1;
+type function-2 = foreign core.function-2;
+type function-3 = foreign core.function-3;
+type function-4 = foreign core.function-4;
+type function-5 = foreign core.function-5;
+type function-6 = foreign core.function-6;
+
+
+/// The type of lazy expressions
+type thunk = foreign core.thunk;
+
+
+/// The type of records
+type record = foreign core.record;
+
+
+/// The type of fixed-length sequences
+type tuple = foreign core.tuple;
+
+
+/// The base type of enumerations
+type 'enum = foreign core.enum;
+
+
+/// The type of results that may fail
+abstract result;
+type ok is result(value);
+type error is result(reason);
+
+
+/// The type of mutable cells
+type cell = foreign core.cell;
+
+
+/// The module for representations
+singleton representation;
+
+
+// Other types
+type indexed(index is integer, value);
+
+singleton debug-representation;
