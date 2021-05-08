@@ -5,14 +5,13 @@
     "crochet.codec.basic",
     "crochet.core",
     "crochet.debug",
-    "crochet.collections",
-    "crochet.mathematics",
-    "crochet.mathematics.units",
+    "crochet.language.cli-arguments",
     "crochet.language.csv",
     "crochet.language.json",
+    "crochet.mathematics",
+    "crochet.parsing.combinators",
     "crochet.random",
-    "crochet.text",
-    "crochet.text.internationalisation",
+    "crochet.text.parsing.lingua",
     "crochet.time",
     {
       "name": "crochet.time.wall-clock",
@@ -22,40 +21,32 @@
     {
       "name": "crochet.wrapper.node.file-system",
       "target": "node",
-      "capabilities": ["file-system", "native"]
+      "capabilities": ["file-system"]
     },
     {
       "name": "crochet.wrapper.node.http",
       "target": "node",
-      "capabilities": ["native", "network"]
+      "capabilities": ["network"]
     },
     {
       "name": "crochet.wrapper.node.io",
       "target": "node",
-      "capabilities": ["native", "io"]
+      "capabilities": ["io"]
     },
     {
       "name": "crochet.wrapper.node.os",
       "target": "node",
-      "capabilities": ["native", "os"]
+      "capabilities": ["os"]
     },
     {
       "name": "crochet.wrapper.node.shell",
       "target": "node",
-      "capabilities": ["native", "shell"]
+      "capabilities": ["shell"]
     }
   ],
   "sources": [],
   "capabilities": {
-    "requires": [
-      "io",
-      "file-system",
-      "os",
-      "network",
-      "shell",
-      "native",
-      "wall-clock"
-    ],
+    "requires": ["io", "file-system", "os", "network", "shell", "wall-clock"],
     "provides": []
   }
 }

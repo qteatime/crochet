@@ -12,8 +12,7 @@
     "crochet.parsing.combinators",
     "crochet.random",
     "crochet.text.parsing.lingua",
-    "crochet.time",
-    "crochet.time.wall-clock"
+    "crochet.time"
   ],
   "sources": [
     "types.crochet",
