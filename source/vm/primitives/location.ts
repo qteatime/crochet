@@ -128,6 +128,10 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.CELL, x);
       return `<cell ${simple_value(x.payload.value)}`;
     }
+    case Tag.ACTION: {
+      assert_tag(Tag.ACTION, x);
+      return `<action ${x.payload.name}>`;
+    }
     default:
       throw unreachable(x.tag, `Value ${x}`);
   }

@@ -39,7 +39,10 @@ export class ForeignInterface {
     );
   }
 
-  defmachine(name: string, fn: (...args: CrochetValue[]) => Machine) {
+  defmachine(
+    name: string,
+    fn: (...args: CrochetValue[]) => Machine<CrochetValue>
+  ) {
     this.#package.native_functions.define(
       name,
       new NativeFunction(NativeTag.NATIVE_MACHINE, name, this.#package, fn)
@@ -121,7 +124,7 @@ export class ForeignInterface {
     return new NSAwait(value);
   }
 
-  run_synchronous(fn: () => Machine) {
+  run_synchronous(fn: () => Machine<CrochetValue>) {
     const env = new Environment(null, null, this.#module);
     return run_native_sync(this.#universe, env, this.#package, fn());
   }

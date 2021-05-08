@@ -230,7 +230,7 @@ export function from_enum_integer(
       "_ from-enum-integer: _",
       ["_", "N"],
       [type, new IR.LocalType(meta, "integer")],
-      new IR.BasicBlock([...cond, new IR.Return(meta)])
+      new IR.BasicBlock(cond)
     );
   }
 }
@@ -1138,6 +1138,7 @@ export class LowerToIR {
             this.simulation_goal(goal),
             signals.flatMap((x) => this.simulation_signal(x))
           ),
+          new IR.Drop(id),
         ];
       },
     });

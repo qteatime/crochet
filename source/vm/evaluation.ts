@@ -18,12 +18,15 @@ import {
   NativeSignalTag,
   NativeTag,
   NSBase,
+  SimulationSignal,
+  SimulationState,
   State,
   Universe,
   _done,
   _return,
 } from "./intrinsics";
 import { Relation, run_match_case, run_search, search } from "./logic";
+import { Namespace } from "./namespaces";
 import {
   Environments,
   Literals,
@@ -35,6 +38,8 @@ import {
   Lambdas,
   StackTrace,
 } from "./primitives";
+import { Contexts } from "./simulation";
+import { run_simulation } from "./simulation/simulation";
 
 export enum RunResultTag {
   DONE,
@@ -780,12 +785,39 @@ export class Thread {
       }
 
       case t.SIMULATE: {
-        throw new Error(
-          `internal: ${Location.simple_op(
-            op,
-            activation.instruction
-          )} not yet supported`
+        const actors0 = this.pop(activation);
+        const actors = Values.get_array(actors0);
+        const context = Contexts.lookup_context(this.module, op.context);
+        const signals = new Namespace<SimulationSignal>(null, null);
+        for (const signal of op.signals) {
+          signals.define(
+            signal.name,
+            new SimulationSignal(
+              signal.meta,
+              signal.name,
+              signal.parameters,
+              signal.body
+            )
+          );
+        }
+        const simulation_state = new SimulationState(
+          this.state,
+          this.module,
+          this.env,
+          this.state.random,
+          actors,
+          context,
+          op.goal,
+          signals
         );
+        const new_activation = new NativeActivation(
+          activation,
+          null,
+          this.env,
+          run_simulation(simulation_state),
+          _return
+        );
+        return new JumpSignal(new_activation);
       }
 
       default:

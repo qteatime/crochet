@@ -13,9 +13,13 @@ import {
   Environment,
   CrochetTest,
   CrochetPrelude,
+  CrochetContext,
+  Action,
+  When,
 } from "./intrinsics";
 import { Tree, Relation } from "./logic";
 import { Commands, Modules, Tests, Types, World } from "./primitives";
+import { Contexts } from "./simulation";
 
 export function make_universe() {
   const world = new CrochetWorld();
@@ -160,6 +164,7 @@ export function make_universe() {
   const Enum = new CrochetType(null, "enum", "", Any, [], [], false, null);
   const Cell = new CrochetType(null, "cell", "", Any, [], [], false, null);
   const Type = new CrochetType(null, "type", "", Any, [], [], false, null);
+  const Action = new CrochetType(null, "action", "", Any, [], [], false, null);
 
   world.native_types.define("crochet.core/core.any", Any);
   world.native_types.define("crochet.core/core.unknown", Unknown);
@@ -184,6 +189,7 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.tuple", Tuple);
   world.native_types.define("crochet.core/core.enum", Enum);
   world.native_types.define("crochet.core/core.cell", Cell);
+  world.native_types.define("crochet.core/core.action", Action);
 
   return new Universe(world, XorShift.new_random(), {
     Any,
@@ -203,6 +209,7 @@ export function make_universe() {
     Enum,
     Type,
     Cell,
+    Action,
   });
 }
 
@@ -331,13 +338,63 @@ export function load_declaration(
       break;
     }
 
-    case t.ACTION:
-    case t.CONTEXT:
-    case t.WHEN:
-      throw new ErrArbitrary(
-        "unsupported",
-        `Unsupported declaration ${t[declaration.tag]}`
+    case t.CONTEXT: {
+      const context = new CrochetContext(
+        declaration.meta,
+        module,
+        declaration.name,
+        declaration.documentation
       );
+      Contexts.define_context(module, context);
+      break;
+    }
+
+    case t.ACTION: {
+      const actor = Types.materialise_type(universe, module, declaration.actor);
+      const action_type = new CrochetType(
+        module,
+        `action ${declaration.name}`,
+        "",
+        universe.types.Action,
+        [],
+        [],
+        false,
+        null
+      );
+      Types.define_type(
+        module,
+        action_type.name,
+        action_type,
+        IR.Visibility.GLOBAL
+      );
+      const action = new Action(
+        action_type,
+        declaration.meta,
+        module,
+        declaration.name,
+        declaration.documentation,
+        actor,
+        declaration.predicate,
+        declaration.rank_function,
+        declaration.body
+      );
+      const context = Contexts.lookup_context(module, declaration.context);
+      Contexts.add_action(module, context, action);
+      break;
+    }
+
+    case t.WHEN: {
+      const event = new When(
+        declaration.meta,
+        module,
+        declaration.documentation,
+        declaration.predicate,
+        declaration.body
+      );
+      const context = Contexts.lookup_context(module, declaration.context);
+      Contexts.add_event(context, event);
+      break;
+    }
 
     default:
       throw unreachable(declaration, `Declaration`);
