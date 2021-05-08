@@ -2,50 +2,54 @@
 
 open crochet.debug;
 
-relation Who* at: Where;
+relation Who* search-at: Where;
 
-singleton lielle with
-  at: foyer;
+abstract thing;
+
+singleton lielle is thing with
+  search-at: foyer;
 end
 
-singleton karis with
-  at: foyer;
+singleton karis is thing with
+  search-at: foyer;
 end
 
-singleton alice with
-  at: garden;
+singleton alice is thing with
+  search-at: garden;
 end
 
-singleton foyer;
-singleton garden;
+singleton foyer is thing;
+singleton garden is thing;
+
+command (A is thing) === (B is thing) = A =:= B;
 
 test "Search" do
-  assert (search Who at: garden) === [
+  assert (search Who search-at: garden) === [
     [Who -> alice]
   ];
 
-  assert (search lielle at: Where) === [
+  assert (search lielle search-at: Where) === [
     [Where -> foyer]
   ];
   
-  let Near = search A at: P,
-                    B at: P,
-                    if not (A =:= B);
+  let Near = search A search-at: P,
+                    B search-at: P,
+                    if A =/= B;
   assert Near === [
     [A -> lielle, B -> karis, P -> foyer],
     [A -> karis, B -> lielle, P -> foyer]
   ];
 
-  let Not-near = search A at: P,
-                        let N = (search B at: P, if not (A =:= B)) count,
+  let Not-near = search A search-at: P,
+                        let N = (search B search-at: P, if A =/= B) count,
                         if N === 0;
   assert Not-near === [
     [A -> alice, P -> garden, N -> 0]
   ];
 
   let Count = search let Place = garden,
-                     let N = (search Who at: Place) count,
-                     let S = (search Who at: Place);
+                     let N = (search Who search-at: Place) count,
+                     let S = (search Who search-at: Place);
   assert Count === [
     [
       Place -> garden,
@@ -55,13 +59,27 @@ test "Search" do
   ];
 
   let Person = lielle;
-  assert (search Person at: Where) === [
+  assert (search Person search-at: Where) === [
     [Where -> foyer]
   ];
-  
-  // transcript inspect:
-  //   match
-  //     when lielle at: garden do "Umpossible!" end
-  //     always do "A fallback" end
-  //   end;
+
+  let Match = 
+    (match
+      when lielle search-at: garden do "Umpossible!" end
+      always do "A fallback" end
+    end);
+  assert Match === [
+    "A fallback"
+  ];
+
+  let Match2 =
+    (match
+      when A search-at: B do [A, B] end
+      always do "A fallback" end
+    end);
+  assert Match2 === [
+    [lielle, foyer],
+    [karis, foyer],
+    [alice, garden],
+  ]
 end

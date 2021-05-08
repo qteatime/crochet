@@ -23,7 +23,7 @@ import {
   _done,
   _return,
 } from "./intrinsics";
-import { Relation, run_search, search } from "./logic";
+import { Relation, run_match_case, run_search, search } from "./logic";
 import {
   Environments,
   Literals,
@@ -759,7 +759,26 @@ export class Thread {
         return new JumpSignal(new_activation);
       }
 
-      case t.MATCH_SEARCH:
+      case t.MATCH_SEARCH: {
+        const bindings0 = this.pop(activation);
+        const bindings = Values.get_array(bindings0).map((x) =>
+          Values.get_map(x)
+        );
+        if (bindings.length === 0) {
+          activation.push_block(op.alternate);
+          return _continue;
+        } else {
+          const new_activation = new NativeActivation(
+            activation,
+            null,
+            this.env,
+            run_match_case(this.universe, this.env, bindings, op.block),
+            _return
+          );
+          return new JumpSignal(new_activation);
+        }
+      }
+
       case t.SIMULATE: {
         throw new Error(
           `internal: ${Location.simple_op(

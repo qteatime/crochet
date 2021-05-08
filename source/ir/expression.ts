@@ -365,14 +365,14 @@ export class Search extends BaseOp {
   }
 }
 
-export class MatchSearchCase {
-  constructor(readonly predicate: Predicate, readonly body: BasicBlock) {}
-}
-
 export class MatchSearch extends BaseOp {
   readonly tag = OpTag.MATCH_SEARCH;
 
-  constructor(readonly meta: Metadata, readonly cases: MatchSearchCase[]) {
+  constructor(
+    readonly meta: Metadata,
+    readonly block: BasicBlock,
+    readonly alternate: BasicBlock
+  ) {
     super();
   }
 }

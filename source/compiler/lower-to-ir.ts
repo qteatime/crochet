@@ -993,7 +993,7 @@ export class LowerToIR {
 
         return cases.reduceRight(
           (previous: IR.Op[], x) => {
-            const id = this.context.register(pos);
+            const id = this.context.register(x.pos);
 
             return [
               ...this.expression(x.guard),
@@ -1037,18 +1037,34 @@ export class LowerToIR {
 
       MatchSearch: (pos, cases) => {
         const id = this.context.register(pos);
-        return [
-          new IR.MatchSearch(
-            id,
-            cases.map(
-              (x) =>
-                new IR.MatchSearchCase(
-                  this.predicate(x.predicate),
-                  this.statements(x.body)
-                )
-            )
-          ),
-        ];
+
+        return cases.reduceRight(
+          (previous: IR.Op[], x) => {
+            const id = this.context.register(x.pos);
+
+            return [
+              new IR.Search(id, this.predicate(x.predicate)),
+              new IR.MatchSearch(
+                id,
+                new IR.BasicBlock([
+                  ...x.body.flatMap((x) => this.statement(x)),
+                  new IR.Return(id),
+                ]),
+                new IR.BasicBlock(previous)
+              ),
+            ];
+          },
+          [
+            new IR.PushLiteral(new IR.LiteralFalse()),
+            new IR.Assert(
+              id,
+              IR.AssertType.UNREACHABLE,
+              "unreachable",
+              "None of the cases matched",
+              null
+            ),
+          ]
+        );
       },
 
       Select: () => {

@@ -5,6 +5,17 @@ export function clone(env: Environment) {
   return new Environment(env, env.raw_receiver, env.raw_module);
 }
 
+export function clone_with_bindings(
+  env: Environment,
+  bindings: Map<string, CrochetValue>
+) {
+  const result = clone(env);
+  for (const [k, v] of bindings) {
+    result.define(k, v);
+  }
+  return result;
+}
+
 export function extend(env: Environment, receiver: CrochetValue | null) {
   return new Environment(env, receiver, env.raw_module);
 }
