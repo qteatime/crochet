@@ -20,7 +20,8 @@
     "interpolation.crochet",
     "multimethod.crochet",
     "search.crochet",
-    "branch.crochet"
+    "branch.crochet",
+    "actions.crochet"
   ],
   "capabilities": {
     "requires": [],

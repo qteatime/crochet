@@ -556,3 +556,23 @@ export function from_plain_object(
     );
   }
 }
+
+export function float_to_number(x: CrochetValue) {
+  assert_tag(Tag.FLOAT_64, x);
+  return x.payload;
+}
+
+export function to_number(x: CrochetValue) {
+  switch (x.tag) {
+    case Tag.FLOAT_64: {
+      assert_tag(Tag.FLOAT_64, x);
+      return x.payload;
+    }
+    case Tag.INTEGER: {
+      assert_tag(Tag.INTEGER, x);
+      return Number(x.payload);
+    }
+    default:
+      throw new ErrArbitrary("invalid-type", `Expected a numeric value`);
+  }
+}

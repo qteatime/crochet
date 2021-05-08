@@ -6,6 +6,7 @@ import {
   CrochetModule,
   CrochetRelation,
   Environment,
+  ProceduralRelation,
   RelationTag,
   State,
   Tree as RelationTree,
@@ -44,6 +45,22 @@ export function define_concrete(
   }
 }
 
+export function make_functional_layer(
+  module: CrochetModule,
+  funs: Map<string, ProceduralRelation>
+) {
+  // FIXME: this needs some more thinking
+  const prefixes = new Set([...module.open_prefixes, module.pkg.name]);
+  const layer = new Namespace(module.relations, null, prefixes);
+  for (const [name, fun] of funs) {
+    layer.define(
+      name,
+      new CrochetRelation(RelationTag.PROCEDURAL, name, "", fun)
+    );
+  }
+  return layer;
+}
+
 export function lookup(
   module: CrochetModule,
   relations: Namespace<CrochetRelation>,
@@ -70,11 +87,17 @@ export function search(
 ) {
   switch (relation.tag) {
     case RelationTag.CONCRETE: {
+      assert_tag(RelationTag.CONCRETE, relation);
       return Tree.search(state, module, env, relation.payload.tree, patterns);
     }
 
+    case RelationTag.PROCEDURAL: {
+      assert_tag(RelationTag.PROCEDURAL, relation);
+      return relation.payload.search(env, patterns);
+    }
+
     default:
-      throw unreachable(relation as never, `Relation`);
+      throw unreachable(relation.tag, `Relation`);
   }
 }
 
@@ -89,6 +112,7 @@ export function sample(
 ) {
   switch (relation.tag) {
     case RelationTag.CONCRETE: {
+      assert_tag(RelationTag.CONCRETE, relation);
       return Tree.sample(
         state,
         module,
@@ -100,8 +124,18 @@ export function sample(
       );
     }
 
+    case RelationTag.PROCEDURAL: {
+      assert_tag(RelationTag.PROCEDURAL, relation);
+      if (relation.payload.sample == null) {
+        const result = relation.payload.search(env, patterns);
+        return random.random_choice_many(size, result);
+      } else {
+        return relation.payload.sample(env, patterns, size);
+      }
+    }
+
     default:
-      throw unreachable(relation as never, `Relation`);
+      throw unreachable(relation.tag, `Relation`);
   }
 }
 

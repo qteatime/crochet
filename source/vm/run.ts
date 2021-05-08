@@ -74,7 +74,7 @@ export function run_native_sync(
   universe: Universe,
   env: Environment,
   pkg: CrochetPackage,
-  machine: Machine
+  machine: Machine<CrochetValue>
 ) {
   const fn = new NativeFunction(
     NativeTag.NATIVE_MACHINE,
@@ -93,7 +93,7 @@ export async function run_native(
   universe: Universe,
   env: Environment,
   pkg: CrochetPackage,
-  machine: Machine
+  machine: Machine<CrochetValue>
 ) {
   const fn = new NativeFunction(
     NativeTag.NATIVE_MACHINE,

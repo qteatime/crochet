@@ -6,6 +6,7 @@ import {
   CrochetModule,
   CrochetRelation,
   Environment,
+  Machine,
   NativeSignal,
   NSEvaluate,
   State,
@@ -28,7 +29,7 @@ export function search(
   function* go(
     predicate: IR.Predicate,
     env: Environment
-  ): Generator<NativeSignal, Environment[], CrochetValue> {
+  ): Machine<Environment[]> {
     switch (predicate.tag) {
       case t.ALWAYS: {
         return [env];
@@ -167,7 +168,7 @@ export function search(
 export function* run_search(
   universe: Universe,
   mark: Environment,
-  machine: Generator<NativeSignal, Environment[], CrochetValue>
+  machine: Machine<Environment[]>
 ) {
   const envs = yield* machine;
   const result: CrochetValue[] = [];
@@ -183,7 +184,7 @@ export function* run_match_case(
   base_env: Environment,
   bindings: Map<string, CrochetValue>[],
   block: IR.BasicBlock
-): Generator<NativeSignal, CrochetValue, CrochetValue> {
+): Machine<CrochetValue> {
   const result: CrochetValue[] = [];
   for (const binds of bindings) {
     const new_env = Environments.clone_with_bindings(base_env, binds);

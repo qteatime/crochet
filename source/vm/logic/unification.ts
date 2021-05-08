@@ -83,3 +83,20 @@ export function unify(
       throw unreachable(pattern, `Pattern`);
   }
 }
+
+export function unify_all(
+  state: State,
+  module: CrochetModule,
+  env: Environment,
+  value: CrochetValue[],
+  pattern: IR.Pattern
+) {
+  const result = [];
+  for (const x of value) {
+    const new_env = unify(state, module, env, x, pattern);
+    if (new_env != null) {
+      result.push(new_env);
+    }
+  }
+  return result;
+}

@@ -1,5 +1,4 @@
 import * as IR from "../ir";
-import { BasicBlock } from "../ir";
 import { XorShift } from "../utils/xorshift";
 import { Namespace, PassthroughNamespace } from "./namespaces";
 
@@ -20,6 +19,7 @@ export enum Tag {
   THUNK,
   CELL,
   TYPE,
+  ACTION,
   UNKNOWN,
 }
 
@@ -39,6 +39,7 @@ export type PayloadType = {
   [Tag.THUNK]: CrochetThunk;
   [Tag.CELL]: CrochetCell;
   [Tag.TYPE]: CrochetType;
+  [Tag.ACTION]: Action;
   [Tag.UNKNOWN]: unknown;
 };
 
@@ -72,7 +73,7 @@ export class CrochetCell {
 
 export class CrochetThunk {
   public value: CrochetValue | null = null;
-  constructor(readonly env: Environment, readonly body: BasicBlock) {}
+  constructor(readonly env: Environment, readonly body: IR.BasicBlock) {}
 }
 
 export class CrochetType {
@@ -125,11 +126,13 @@ export enum NativeTag {
   NATIVE_MACHINE,
 }
 
-export type Machine = Generator<NativeSignal, CrochetValue, CrochetValue>;
+export type Machine<T> = Generator<NativeSignal, T, CrochetValue>;
 
 export type NativePayload = {
   [NativeTag.NATIVE_SYNCHRONOUS]: (...args: CrochetValue[]) => CrochetValue;
-  [NativeTag.NATIVE_MACHINE]: (...args: CrochetValue[]) => Machine;
+  [NativeTag.NATIVE_MACHINE]: (
+    ...args: CrochetValue[]
+  ) => Machine<CrochetValue>;
 };
 
 export class NativeFunction<T extends NativeTag = NativeTag> {
@@ -153,7 +156,7 @@ export class CrochetTest {
 }
 
 export class CrochetPrelude {
-  constructor(readonly env: Environment, readonly body: BasicBlock) {}
+  constructor(readonly env: Environment, readonly body: IR.BasicBlock) {}
 }
 
 export class CrochetWorld {
@@ -163,6 +166,9 @@ export class CrochetWorld {
   readonly relations = new Namespace<CrochetRelation>(null, null);
   readonly native_types = new Namespace<CrochetType>(null, null);
   readonly native_functions = new Namespace<NativeFunction>(null, null);
+  readonly actions = new Namespace<Action>(null, null);
+  readonly contexts = new Namespace<CrochetContext>(null, null);
+  readonly global_context = new GlobalContext();
   readonly prelude: CrochetPrelude[] = [];
   readonly tests: CrochetTest[] = [];
   readonly packages = new Map<string, CrochetPackage>();
@@ -173,6 +179,8 @@ export class CrochetPackage {
   readonly definitions: PassthroughNamespace<CrochetValue>;
   readonly relations: PassthroughNamespace<CrochetRelation>;
   readonly native_functions: Namespace<NativeFunction>;
+  readonly actions: PassthroughNamespace<Action>;
+  readonly contexts: PassthroughNamespace<CrochetContext>;
   readonly dependencies = new Set<string>();
 
   constructor(
@@ -184,6 +192,8 @@ export class CrochetPackage {
     this.definitions = new PassthroughNamespace(world.definitions, name);
     this.native_functions = new Namespace(world.native_functions, name);
     this.relations = new PassthroughNamespace(world.relations, name);
+    this.actions = new PassthroughNamespace(world.actions, name);
+    this.contexts = new PassthroughNamespace(world.contexts, name);
   }
 }
 
@@ -191,6 +201,8 @@ export class CrochetModule {
   readonly types: Namespace<CrochetType>;
   readonly definitions: Namespace<CrochetValue>;
   readonly relations: Namespace<CrochetRelation>;
+  readonly actions: Namespace<Action>;
+  readonly contexts: Namespace<CrochetContext>;
   readonly open_prefixes: Set<string>;
 
   constructor(readonly pkg: CrochetPackage, readonly filename: string) {
@@ -203,6 +215,8 @@ export class CrochetModule {
       this.open_prefixes
     );
     this.relations = new Namespace(pkg.relations, pkg.name, this.open_prefixes);
+    this.actions = new Namespace(pkg.actions, pkg.name, this.open_prefixes);
+    this.contexts = new Namespace(pkg.contexts, pkg.name, this.open_prefixes);
   }
 }
 //#endregion
@@ -210,10 +224,12 @@ export class CrochetModule {
 //#region Relations
 export enum RelationTag {
   CONCRETE,
+  PROCEDURAL,
 }
 
 export type RelationPayload = {
   [RelationTag.CONCRETE]: ConcreteRelation;
+  [RelationTag.PROCEDURAL]: ProceduralRelation;
 };
 
 export class CrochetRelation<T extends RelationTag = RelationTag> {
@@ -231,6 +247,22 @@ export class ConcreteRelation {
     readonly meta: number,
     readonly type: TreeType,
     public tree: Tree
+  ) {}
+}
+
+export class ProceduralRelation {
+  constructor(
+    readonly search: (
+      env: Environment,
+      patterns: IR.Pattern[]
+    ) => Environment[],
+    readonly sample:
+      | null
+      | ((
+          env: Environment,
+          patterns: IR.Pattern[],
+          size: number
+        ) => Environment[])
   ) {}
 }
 
@@ -291,6 +323,87 @@ export class TreeEnd extends TreeBase {
 }
 
 export const tree_end = new TreeEnd();
+//#endregion
+
+//#region Simulation
+export class Action {
+  readonly fired = new Set<CrochetValue>();
+
+  constructor(
+    readonly type: CrochetType,
+    readonly meta: number,
+    readonly module: CrochetModule,
+    readonly name: string,
+    readonly documentation: string,
+    readonly actor_type: CrochetType,
+    readonly predicate: IR.Predicate,
+    readonly rank_function: IR.BasicBlock,
+    readonly body: IR.BasicBlock
+  ) {}
+}
+
+export class When {
+  constructor(
+    readonly meta: number,
+    readonly module: CrochetModule,
+    readonly documentation: string,
+    readonly predicate: IR.Predicate,
+    readonly body: IR.BasicBlock
+  ) {}
+}
+
+export type Context = CrochetContext | GlobalContext;
+
+export enum ContextTag {
+  LOCAL,
+  GLOBAL,
+}
+
+export class GlobalContext {
+  readonly tag = ContextTag.GLOBAL;
+  readonly actions: Action[] = [];
+  readonly events: When[] = [];
+}
+
+export class CrochetContext {
+  readonly tag = ContextTag.LOCAL;
+  readonly actions: Action[] = [];
+  readonly events: When[] = [];
+
+  constructor(
+    readonly meta: number,
+    readonly module: CrochetModule,
+    readonly name: string,
+    readonly documentation: string
+  ) {}
+}
+
+export class SimulationSignal {
+  constructor(
+    readonly meta: number,
+    readonly name: string,
+    readonly parameters: string[],
+    readonly body: IR.BasicBlock
+  ) {}
+}
+
+export class SimulationState {
+  public rounds: bigint = 0n;
+  public acted = new Set<CrochetValue>();
+  public turn: CrochetValue | null = null;
+
+  constructor(
+    readonly state: State,
+    readonly module: CrochetModule,
+    readonly env: Environment,
+    readonly random: XorShift,
+    readonly actors: CrochetValue[],
+    readonly context: Context,
+    readonly goal: IR.SimulationGoal,
+    readonly signals: Namespace<SimulationSignal>
+  ) {}
+}
+
 //#endregion
 
 //#region Evaluation
@@ -494,7 +607,7 @@ export class NativeActivation implements IActivation {
     readonly parent: Activation | null,
     readonly location: NativeLocation,
     readonly env: Environment,
-    readonly routine: Machine,
+    readonly routine: Machine<CrochetValue>,
     readonly continuation: Continuation
   ) {}
 }
@@ -529,6 +642,7 @@ export class Universe {
       Enum: CrochetType;
       Type: CrochetType;
       Cell: CrochetType;
+      Action: CrochetType;
     }
   ) {
     this.nothing = new CrochetValue(Tag.NOTHING, types.Nothing, null);

@@ -67,7 +67,7 @@ export function insert(tree: Tree, values: CrochetValue[]): boolean {
         } else {
           go(tree.value.tree, index + 1);
         }
-        break;
+        return;
       }
 
       case TreeTag.MANY: {
@@ -75,7 +75,7 @@ export function insert(tree: Tree, values: CrochetValue[]): boolean {
         for (const pair of tree.pairs) {
           if (Values.equals(head, pair.value)) {
             go(pair.tree, index + 1);
-            break;
+            return;
           }
         }
 
@@ -83,11 +83,11 @@ export function insert(tree: Tree, values: CrochetValue[]): boolean {
         tree.pairs.push(new Pair(head, subtree));
         changed = true;
         go(subtree, index + 1);
-        break;
+        return;
       }
 
       case TreeTag.END: {
-        break;
+        return;
       }
 
       default:
