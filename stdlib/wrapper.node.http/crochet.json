@@ -3,10 +3,10 @@
   "target": "node",
   "stability": "experimental",
   "dependencies": ["crochet.core"],
-  "sources": ["source/url.crochet", "source/client.crochet"],
+  "sources": ["source/client.crochet"],
   "native_sources": ["native/http.js"],
   "capabilities": {
-    "requires": ["native"],
+    "requires": [],
     "provides": ["network"]
   }
 }
