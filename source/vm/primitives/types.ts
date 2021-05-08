@@ -1,3 +1,4 @@
+import { CrochetValue } from "../../crochet";
 import * as IR from "../../ir";
 import { unreachable } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
@@ -163,4 +164,15 @@ export function compare(t1: CrochetType, t2: CrochetType): number {
 
 export function seal(type: CrochetType) {
   type.sealed = true;
+}
+
+export function* registered_instances(
+  universe: Universe,
+  type: CrochetType
+): Generator<CrochetValue, any, any> {
+  const instances = universe.registered_instances.get(type) ?? [];
+  yield* instances;
+  for (const sub_type of type.sub_types) {
+    yield* registered_instances(universe, sub_type);
+  }
 }

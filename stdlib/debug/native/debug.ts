@@ -27,9 +27,20 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
-  ffi.defun("debug.write-inspect", (value) => {
-    console.log(ffi.to_debug_string(value));
-    return ffi.nothing;
+  ffi.defmachine("debug.write-inspect", function* (value) {
+    const printer_type = ffi.lookup_type_namespaced(
+      "crochet.core",
+      "debug-printer"
+    );
+    if (printer_type == null) {
+      console.log(ffi.to_debug_string(value));
+      return ffi.nothing;
+    } else {
+      const printer = ffi.instantiate(printer_type, []);
+      const repr = yield ffi.invoke("_ show: _", [printer, value]);
+      console.log(ffi.text_to_string(repr));
+      return ffi.nothing;
+    }
   });
 
   ffi.defmachine("debug.time", function* (label, computation) {

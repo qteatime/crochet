@@ -23,6 +23,7 @@ import {
   _done,
   _return,
 } from "./intrinsics";
+import { Relation, run_search, search } from "./logic";
 import {
   Environments,
   Literals,
@@ -107,7 +108,8 @@ export class Thread {
         new Environment(null, null, module),
         _done,
         block
-      )
+      ),
+      universe.random
     );
     const thread = new Thread(root);
     const value = thread.run_synchronous();
@@ -321,6 +323,17 @@ export class Thread {
           return new JumpSignal(new_activation);
         }
 
+        case NativeSignalTag.EVALUATE: {
+          const new_activation = new CrochetActivation(
+            activation,
+            null,
+            value.env,
+            _return,
+            value.block
+          );
+          return new JumpSignal(new_activation);
+        }
+
         case NativeSignalTag.AWAIT: {
           return new AwaitSignal(value.promise);
         }
@@ -489,7 +502,11 @@ export class Thread {
                 Values.update_thunk(thunk, value);
                 this.push(activation, value);
                 activation.next();
-                return new State(this.universe, activation);
+                return new State(
+                  this.universe,
+                  activation,
+                  this.universe.random
+                );
               }),
               thunk.body
             )
@@ -699,10 +716,50 @@ export class Thread {
         return _continue;
       }
 
-      case t.SEARCH:
+      case t.FACT: {
+        const values = this.pop_many(activation, op.arity);
+        const relation = Relation.lookup(
+          this.module,
+          this.module.relations,
+          op.relation
+        );
+        Relation.insert(relation, values);
+        activation.next();
+        return _continue;
+      }
+
+      case t.FORGET: {
+        const values = this.pop_many(activation, op.arity);
+        const relation = Relation.lookup(
+          this.module,
+          this.module.relations,
+          op.relation
+        );
+        Relation.remove(relation, values);
+        activation.next();
+        return _continue;
+      }
+
+      case t.SEARCH: {
+        const machine = search(
+          this.state,
+          this.env,
+          this.module,
+          this.state.random,
+          this.module.relations,
+          op.predicate
+        );
+        const new_activation = new NativeActivation(
+          activation,
+          null,
+          this.env,
+          run_search(this.universe, this.env, machine),
+          _return
+        );
+        return new JumpSignal(new_activation);
+      }
+
       case t.MATCH_SEARCH:
-      case t.FACT:
-      case t.FORGET:
       case t.SIMULATE: {
         throw new Error(
           `internal: ${Location.simple_op(

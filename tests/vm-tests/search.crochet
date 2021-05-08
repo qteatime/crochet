@@ -1,0 +1,67 @@
+% crochet
+
+open crochet.debug;
+
+relation Who* at: Where;
+
+singleton lielle with
+  at: foyer;
+end
+
+singleton karis with
+  at: foyer;
+end
+
+singleton alice with
+  at: garden;
+end
+
+singleton foyer;
+singleton garden;
+
+test "Search" do
+  assert (search Who at: garden) === [
+    [Who -> alice]
+  ];
+
+  assert (search lielle at: Where) === [
+    [Where -> foyer]
+  ];
+  
+  let Near = search A at: P,
+                    B at: P,
+                    if not (A =:= B);
+  assert Near === [
+    [A -> lielle, B -> karis, P -> foyer],
+    [A -> karis, B -> lielle, P -> foyer]
+  ];
+
+  let Not-near = search A at: P,
+                        let N = (search B at: P, if not (A =:= B)) count,
+                        if N === 0;
+  assert Not-near === [
+    [A -> alice, P -> garden, N -> 0]
+  ];
+
+  let Count = search let Place = garden,
+                     let N = (search Who at: Place) count,
+                     let S = (search Who at: Place);
+  assert Count === [
+    [
+      Place -> garden,
+      N -> 1,
+      S -> [[Who -> alice]]
+    ]
+  ];
+
+  let Person = lielle;
+  assert (search Person at: Where) === [
+    [Where -> foyer]
+  ];
+  
+  // transcript inspect:
+  //   match
+  //     when lielle at: garden do "Umpossible!" end
+  //     always do "A fallback" end
+  //   end;
+end

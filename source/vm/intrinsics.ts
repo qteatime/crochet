@@ -1,6 +1,9 @@
 import * as IR from "../ir";
 import { BasicBlock } from "../ir";
+import { XorShift } from "../utils/xorshift";
+import { Namespace, PassthroughNamespace } from "./namespaces";
 
+//#region Base values
 export enum Tag {
   NOTHING = 0,
   INTEGER,
@@ -75,6 +78,7 @@ export class CrochetThunk {
 export class CrochetType {
   public sealed = false;
   readonly layout: Map<string, number>;
+  readonly sub_types: CrochetType[] = [];
 
   constructor(
     readonly module: CrochetModule | null,
@@ -89,7 +93,9 @@ export class CrochetType {
     this.layout = new Map(this.fields.map((k, i) => [k, i]));
   }
 }
+//#endregion
 
+//#region Commands
 export class CrochetCommand {
   readonly branches: CrochetCommandBranch[] = [];
   readonly versions: CrochetCommandBranch[][] = [];
@@ -134,7 +140,9 @@ export class NativeFunction<T extends NativeTag = NativeTag> {
     readonly payload: NativePayload[T]
   ) {}
 }
+//#endregion
 
+//#region World
 export class CrochetTest {
   constructor(
     readonly module: CrochetModule,
@@ -152,6 +160,7 @@ export class CrochetWorld {
   readonly commands = new Namespace<CrochetCommand>(null, null);
   readonly types = new Namespace<CrochetType>(null, null);
   readonly definitions = new Namespace<CrochetValue>(null, null);
+  readonly relations = new Namespace<CrochetRelation>(null, null);
   readonly native_types = new Namespace<CrochetType>(null, null);
   readonly native_functions = new Namespace<NativeFunction>(null, null);
   readonly prelude: CrochetPrelude[] = [];
@@ -162,6 +171,7 @@ export class CrochetWorld {
 export class CrochetPackage {
   readonly types: PassthroughNamespace<CrochetType>;
   readonly definitions: PassthroughNamespace<CrochetValue>;
+  readonly relations: PassthroughNamespace<CrochetRelation>;
   readonly native_functions: Namespace<NativeFunction>;
   readonly dependencies = new Set<string>();
 
@@ -173,23 +183,119 @@ export class CrochetPackage {
     this.types = new PassthroughNamespace(world.types, name);
     this.definitions = new PassthroughNamespace(world.definitions, name);
     this.native_functions = new Namespace(world.native_functions, name);
+    this.relations = new PassthroughNamespace(world.relations, name);
   }
 }
 
 export class CrochetModule {
   readonly types: Namespace<CrochetType>;
   readonly definitions: Namespace<CrochetValue>;
+  readonly relations: Namespace<CrochetRelation>;
+  readonly open_prefixes: Set<string>;
 
   constructor(readonly pkg: CrochetPackage, readonly filename: string) {
-    this.types = new Namespace(pkg.types, pkg.name);
-    this.types.allowed_prefixes.add("crochet.core");
-    this.definitions = new Namespace(pkg.definitions, pkg.name);
-    this.definitions.allowed_prefixes.add("crochet.core");
+    this.open_prefixes = new Set();
+    this.open_prefixes.add("crochet.core");
+    this.types = new Namespace(pkg.types, pkg.name, this.open_prefixes);
+    this.definitions = new Namespace(
+      pkg.definitions,
+      pkg.name,
+      this.open_prefixes
+    );
+    this.relations = new Namespace(pkg.relations, pkg.name, this.open_prefixes);
+  }
+}
+//#endregion
+
+//#region Relations
+export enum RelationTag {
+  CONCRETE,
+}
+
+export type RelationPayload = {
+  [RelationTag.CONCRETE]: ConcreteRelation;
+};
+
+export class CrochetRelation<T extends RelationTag = RelationTag> {
+  constructor(
+    readonly tag: T,
+    readonly name: string,
+    readonly documentation: string,
+    readonly payload: RelationPayload[T]
+  ) {}
+}
+
+export class ConcreteRelation {
+  constructor(
+    readonly module: CrochetModule,
+    readonly meta: number,
+    readonly type: TreeType,
+    public tree: Tree
+  ) {}
+}
+
+export class Pair {
+  constructor(readonly value: CrochetValue, public tree: Tree) {}
+}
+
+export enum TreeTag {
+  ONE,
+  MANY,
+  END,
+}
+
+export type TreeType = TTOne | TTMany | TTEnd;
+
+export class TTOne {
+  readonly tag = TreeTag.ONE;
+  constructor(readonly next: TreeType) {}
+}
+
+export class TTMany {
+  readonly tag = TreeTag.MANY;
+  constructor(readonly next: TreeType) {}
+}
+
+export class TTEnd {
+  readonly tag = TreeTag.END;
+}
+
+export const type_end = new TTEnd();
+
+export type Tree = TreeOne | TreeMany | TreeEnd;
+
+export abstract class TreeBase {
+  abstract tag: TreeTag;
+}
+
+export class TreeOne extends TreeBase {
+  readonly tag = TreeTag.ONE;
+  public value: Pair | null = null;
+  constructor(readonly type: TreeType) {
+    super();
   }
 }
 
+export class TreeMany extends TreeBase {
+  readonly tag = TreeTag.MANY;
+  public pairs: Pair[] = [];
+  constructor(readonly type: TreeType) {
+    super();
+  }
+}
+export class TreeEnd extends TreeBase {
+  readonly tag = TreeTag.END;
+  constructor() {
+    super();
+  }
+}
+
+export const tree_end = new TreeEnd();
+//#endregion
+
+//#region Evaluation
 export class Environment {
-  private bindings = new Map<string, CrochetValue>();
+  readonly bindings = new Map<string, CrochetValue>();
 
   constructor(
     readonly parent: Environment | null,
@@ -221,85 +327,12 @@ export class Environment {
   }
 }
 
-export class Namespace<V> {
-  private bindings = new Map<string, V>();
-  readonly allowed_prefixes = new Set<string>();
-
-  constructor(
-    readonly parent: Namespace<V> | null,
-    readonly prefix: string | null
-  ) {}
-
-  prefixed(name: string): string {
-    return this.make_namespace(this.prefix, name);
-  }
-
-  make_namespace(namespace: string | null, name: string) {
-    if (namespace == null) {
-      return name;
-    } else {
-      return `${namespace}/${name}`;
-    }
-  }
-
-  define(name: string, value: V): boolean {
-    if (this.has_own(name)) {
-      return false;
-    }
-    this.bindings.set(this.prefixed(name), value);
-    return true;
-  }
-
-  has_own(name: string) {
-    return this.bindings.has(this.prefixed(name));
-  }
-
-  has(name: string) {
-    return this.try_lookup(name) != null;
-  }
-
-  try_lookup(name: string) {
-    const value = this.try_lookup_namespaced(this.prefix, name);
-    if (value != null) {
-      return value;
-    } else {
-      for (const prefix of this.allowed_prefixes) {
-        const value = this.try_lookup_namespaced(prefix, name);
-        if (value != null) {
-          return value;
-        }
-      }
-      return null;
-    }
-  }
-
-  try_lookup_namespaced(namespace: string | null, name: string): V | null {
-    const value = this.bindings.get(this.make_namespace(namespace, name));
-    if (value != null) {
-      return value;
-    } else if (this.parent != null) {
-      return this.parent.try_lookup_namespaced(namespace, name);
-    } else {
-      return null;
-    }
-  }
-}
-
-export class PassthroughNamespace<V> extends Namespace<V> {
-  constructor(
-    readonly parent: Namespace<V> | null,
-    readonly prefix: string | null
-  ) {
-    super(parent, prefix);
-  }
-
-  define(name: string, value: V): boolean {
-    return this.parent?.define(this.prefixed(name), value) ?? false;
-  }
-}
-
 export class State {
-  constructor(readonly universe: Universe, public activation: Activation) {}
+  constructor(
+    readonly universe: Universe,
+    public activation: Activation,
+    readonly random: XorShift
+  ) {}
 }
 
 export enum ContinuationTag {
@@ -414,9 +447,10 @@ export enum NativeSignalTag {
   INVOKE,
   APPLY,
   AWAIT,
+  EVALUATE,
 }
 
-export type NativeSignal = NSInvoke | NSApply | NSAwait;
+export type NativeSignal = NSInvoke | NSApply | NSAwait | NSEvaluate;
 
 export abstract class NSBase {}
 
@@ -444,11 +478,21 @@ export class NSAwait extends NSBase {
   }
 }
 
+export class NSEvaluate extends NSBase {
+  readonly tag = NativeSignalTag.EVALUATE;
+
+  constructor(readonly env: Environment, readonly block: IR.BasicBlock) {
+    super();
+  }
+}
+
+export type NativeLocation = NativeFunction | null;
+
 export class NativeActivation implements IActivation {
   readonly tag = ActivationTag.NATIVE_ACTIVATION;
   constructor(
     readonly parent: Activation | null,
-    readonly fn: NativeFunction,
+    readonly location: NativeLocation,
     readonly env: Environment,
     readonly routine: Machine,
     readonly continuation: Continuation
@@ -466,6 +510,7 @@ export class Universe {
 
   constructor(
     readonly world: CrochetWorld,
+    readonly random: XorShift,
     readonly types: {
       Any: CrochetType;
       Unknown: CrochetType;
@@ -522,3 +567,4 @@ export class Universe {
     return new CrochetValue(Tag.TEXT, this.types.Text, x);
   }
 }
+//#endregion

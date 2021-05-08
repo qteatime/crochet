@@ -1,5 +1,7 @@
 import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
+import { XorShift } from "../utils/xorshift";
+import { ErrArbitrary } from "./errors";
 import { Thread } from "./evaluation";
 import {
   Universe,
@@ -12,6 +14,7 @@ import {
   CrochetTest,
   CrochetPrelude,
 } from "./intrinsics";
+import { Tree, Relation } from "./logic";
 import { Commands, Modules, Tests, Types, World } from "./primitives";
 
 export function make_universe() {
@@ -182,7 +185,7 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.enum", Enum);
   world.native_types.define("crochet.core/core.cell", Cell);
 
-  return new Universe(world, {
+  return new Universe(world, XorShift.new_random(), {
     Any,
     Unknown,
     Nothing,
@@ -267,6 +270,7 @@ export function load_declaration(
         false,
         declaration.meta
       );
+      parent.sub_types.push(type);
 
       Types.define_type(module, declaration.name, type, declaration.visibility);
       break;
@@ -313,7 +317,29 @@ export function load_declaration(
       break;
     }
 
+    case t.RELATION: {
+      const type = Tree.materialise_type(declaration.type);
+      const tree = Tree.materialise(type);
+      Relation.define_concrete(
+        module,
+        declaration.meta,
+        declaration.name,
+        declaration.documentation,
+        type,
+        tree
+      );
+      break;
+    }
+
+    case t.ACTION:
+    case t.CONTEXT:
+    case t.WHEN:
+      throw new ErrArbitrary(
+        "unsupported",
+        `Unsupported declaration ${t[declaration.tag]}`
+      );
+
     default:
-      throw unreachable(declaration as never, `Declaration`);
+      throw unreachable(declaration, `Declaration`);
   }
 }

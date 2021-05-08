@@ -2,6 +2,7 @@ import { XorShift } from "../utils/xorshift";
 import {
   CrochetModule,
   CrochetPackage,
+  CrochetType,
   CrochetValue,
   Environment,
   ErrNativePanic,
@@ -214,6 +215,18 @@ export class ForeignInterface {
 
   to_debug_string(x: CrochetValue) {
     return Location.simple_value(x);
+  }
+
+  lookup_type(name: string) {
+    return this.#module.types.try_lookup(name);
+  }
+
+  lookup_type_namespaced(namespace: string, name: string) {
+    return this.#module.types.try_lookup_namespaced(namespace, name);
+  }
+
+  instantiate(type: CrochetType, args: CrochetValue[]) {
+    return Values.instantiate(type, args);
   }
 
   // == Etc

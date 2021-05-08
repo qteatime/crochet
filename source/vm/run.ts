@@ -30,7 +30,7 @@ export async function run_command(
     _done,
     new IR.BasicBlock([new IR.Invoke(0, name, args.length), new IR.Return(0)])
   );
-  const state = new State(universe, activation);
+  const state = new State(universe, activation, universe.random);
 
   activation.stack.push.apply(activation.stack, args);
 
@@ -43,7 +43,7 @@ export async function run_command(
 export async function run_prelude(universe: Universe) {
   for (const x of universe.world.prelude) {
     const activation = new CrochetActivation(null, x, x.env, _done, x.body);
-    const state = new State(universe, activation);
+    const state = new State(universe, activation, universe.random);
     const thread = new Thread(state);
     await thread.run_to_completion();
   }
@@ -52,7 +52,7 @@ export async function run_prelude(universe: Universe) {
 export async function run_test(universe: Universe, test: CrochetTest) {
   const env = new Environment(test.env, null, test.module);
   const activation = new CrochetActivation(null, test, env, _done, test.body);
-  const state = new State(universe, activation);
+  const state = new State(universe, activation, universe.random);
   const thread = new Thread(state);
   const value = await thread.run_to_completion();
   return value;
@@ -64,7 +64,7 @@ export async function run_block(
   block: IR.BasicBlock
 ) {
   const activation = new CrochetActivation(null, null, env, _done, block);
-  const state = new State(universe, activation);
+  const state = new State(universe, activation, universe.random);
   const thread = new Thread(state);
   const value = await thread.run_to_completion();
   return value;
@@ -83,7 +83,7 @@ export function run_native_sync(
     () => machine
   );
   const activation = new NativeActivation(null, fn, env, machine, _done);
-  const state = new State(universe, activation);
+  const state = new State(universe, activation, universe.random);
   const thread = new Thread(state);
   const value = thread.run_synchronous();
   return value;
@@ -102,7 +102,7 @@ export async function run_native(
     () => machine
   );
   const activation = new NativeActivation(null, fn, env, machine, _done);
-  const state = new State(universe, activation);
+  const state = new State(universe, activation, universe.random);
   const thread = new Thread(state);
   const value = await thread.run_to_completion();
   return value;
