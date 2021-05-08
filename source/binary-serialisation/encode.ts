@@ -4,7 +4,7 @@ import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
 export const MAGIC = "CROC";
-export const VERSION = 13;
+export const VERSION = 14;
 
 export enum Section {
   DECLARATION = 1,
@@ -338,10 +338,8 @@ class CrochetIREncoder extends BinaryWriter {
 
       case IR.OpTag.MATCH_SEARCH: {
         this.encode_meta_id(x.meta);
-        this.array(x.cases, (kase) => {
-          this.encode_predicate(kase.predicate);
-          this.encode_basic_block(kase.body);
-        });
+        this.encode_basic_block(x.block);
+        this.encode_basic_block(x.alternate);
         break;
       }
 

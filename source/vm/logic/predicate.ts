@@ -177,3 +177,18 @@ export function* run_search(
   }
   return Values.make_tuple(universe, result);
 }
+
+export function* run_match_case(
+  universe: Universe,
+  base_env: Environment,
+  bindings: Map<string, CrochetValue>[],
+  block: IR.BasicBlock
+): Generator<NativeSignal, CrochetValue, CrochetValue> {
+  const result: CrochetValue[] = [];
+  for (const binds of bindings) {
+    const new_env = Environments.clone_with_bindings(base_env, binds);
+    const value = yield new NSEvaluate(new_env, block);
+    result.push(value);
+  }
+  return Values.make_tuple(universe, result);
+}

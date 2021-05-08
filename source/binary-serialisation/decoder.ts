@@ -344,13 +344,8 @@ class CrochetIRDecoder extends BinaryReader {
       case t.MATCH_SEARCH:
         return new IR.MatchSearch(
           this.decode_meta_id(),
-          this.array(
-            (_) =>
-              new IR.MatchSearchCase(
-                this.decode_predicate(),
-                this.decode_basic_block()
-              )
-          )
+          this.decode_basic_block(),
+          this.decode_basic_block()
         );
 
       case t.FACT:

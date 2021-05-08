@@ -25,13 +25,3 @@ test "Match" do
 
   assert Res =:= ["[lielle] at foyer"];
 end
-
-test "Condition + Match" do
-  let Res =
-    condition
-      when search karis branch-at: foyer do "nope" end
-      always do "ok" end
-    end;
-
-  assert Res =:= "ok";
-end
