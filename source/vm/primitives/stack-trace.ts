@@ -52,7 +52,7 @@ export function collect_trace(
 
     case ActivationTag.NATIVE_ACTIVATION: {
       return [
-        new TraceEntry(activation.fn, null, null),
+        new TraceEntry(activation.location, null, null),
         ...collect_trace(activation.parent, depth + 1),
       ];
     }
