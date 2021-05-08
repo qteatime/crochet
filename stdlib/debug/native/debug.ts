@@ -48,7 +48,7 @@ export default (ffi: ForeignInterface) => {
     const result = yield ffi.apply(computation, []);
     const ns_end = process.hrtime.bigint();
     const diff = ns_end - ns_start;
-    console.log(`[{ffi.text_to_string(label)}] ${format_time_diff(diff)}`);
+    console.log(`[${ffi.text_to_string(label)}] ${format_time_diff(diff)}`);
     return result;
   });
 };

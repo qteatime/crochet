@@ -505,7 +505,10 @@ export class LowerToIR {
   rank_function(x: Ast.Rank) {
     return x.match({
       Expr: (expr) => {
-        return new IR.BasicBlock(this.expression(expr));
+        return new IR.BasicBlock([
+          ...this.expression(expr),
+          new IR.Return(NO_INFO),
+        ]);
       },
 
       Unranked: (_) => {

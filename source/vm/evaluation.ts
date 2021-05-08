@@ -177,7 +177,9 @@ export class Thread {
   }
 
   run(initial_signal?: Signal) {
-    logger.debug(`Running`, Location.simple_activation(this.state.activation));
+    logger.debug(`Running`, () =>
+      Location.simple_activation(this.state.activation)
+    );
     try {
       let signal = initial_signal ?? this.step();
       while (true) {
@@ -198,9 +200,8 @@ export class Thread {
 
           case SignalTag.JUMP: {
             this.state.activation = signal.activation;
-            logger.debug(
-              "Jump to",
-              Location.simple_activation(signal.activation)
+            logger.debug("Jump to", () =>
+              Location.simple_activation((signal as JumpSignal).activation)
             );
             signal = this.step();
             continue;
@@ -266,7 +267,7 @@ export class Thread {
       }
 
       case ContinuationTag.TAP: {
-        logger.debug("Applying continuation", k.continuation);
+        logger.debug("Applying continuation", () => k.continuation);
         const new_state = k.continuation(k.saved_state, this.state, value);
         return new SetStateSignal(new_state);
       }
@@ -359,17 +360,15 @@ export class Thread {
         return _continue;
       } else {
         const value = activation.return_value ?? this.universe.nothing;
-        logger.debug(
-          `Finished with activation, return value:`,
+        logger.debug(`Finished with activation, return value:`, () =>
           Location.simple_value(value)
         );
         return this.do_return(value, activation.parent);
       }
     }
 
-    logger.debug(`Stack:`, activation.stack.map(Location.simple_value));
-    logger.debug(
-      `Executing operation:`,
+    logger.debug(`Stack:`, () => activation.stack.map(Location.simple_value));
+    logger.debug(`Executing operation:`, () =>
       Location.simple_op(op, activation.instruction)
     );
 

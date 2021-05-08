@@ -10,9 +10,10 @@ type room;
 relation Room* to: Direction* lays: Room;
 relation Dungeon-Generator* room: Room*;
 
-predicate Dungeon room-allowance: Allowance do
-  when let Rooms = (search Dungeon room: _) count,
-       let Allowance = Rooms - Dungeon.Max-Rooms;
+
+command dungeon-gen room-allowance do
+  let Rooms = (search self room: _) count;
+  Rooms - self.Max-Rooms;
 end
 
 enum direction = north, east, south, west;
@@ -28,15 +29,14 @@ command dungeon generate-with-max-rooms: N do
   Dungeon;  
 end
 
-action "Generate initial room"
-when Dungeon simulate-turn, not Dungeon room: _ do
+action (Dungeon is dungeon-gen) generate-initial-room
+when not Dungeon room: _ do
   fact Dungeon room: (new room);
 end
 
-action "Extrude room"
+action (Dungeon is dungeon-gen) extrude-room
 when
-  Dungeon simulate-turn,
-  Dungeon room-allowance: Max,
+  let Max = Dungeon room-allowance,
   if Max =/= 0,
   Dungeon room: Room,
   Direction is direction,
@@ -64,14 +64,17 @@ command dungeon-gen draw do
   Room draw-at: new point(X, Y);
 
   for IY in 1 to: Size do
-    for IX in 1 to: Size do
-      match
-        when IX y: IY char: Char => Char;
-        always => " ";
-      end first;
-    end
-    |> _ as interpolation
-    |> _ as text
+    let Columns =
+      for IX in 1 to: Size do
+        let Chars = match
+                      when IX y: IY char: Char => Char;
+                      always => " ";
+                    end;
+        Chars first;
+      end;
+    Columns
+      |> _ as interpolation
+      |> _ flatten-into-plain-text
   end
 end
 
@@ -86,6 +89,10 @@ command room draw-at: Point do
       let P1 = Point move: Direction;
       P1 draw: Direction connecting-symbol;
       Room draw-at: (P1 move: Direction);
+    end
+
+    always do
+
     end
   end
 end
@@ -103,11 +110,12 @@ command south connecting-symbol = "|";
 command east connecting-symbol = "—";
 command west connecting-symbol = "—";
 
-scene main do
+command main: _ do
   let Dungeon = benchmark block: { dungeon generate-with-max-rooms: 20 } tag: "Generate";
   let Map = benchmark block: { Dungeon draw } tag: "Draw";
   for Line in Map do
     transcript write: Line;
   end
+  nothing;
 end
 
