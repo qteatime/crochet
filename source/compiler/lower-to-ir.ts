@@ -417,7 +417,7 @@ export class LowerToIR {
         return new IR.PConstrained(
           id,
           this.predicate(pred),
-          new IR.BasicBlock(this.expression(constraint))
+          new IR.BasicBlock([...this.expression(constraint), new IR.Return(id)])
         );
       },
 
@@ -437,7 +437,7 @@ export class LowerToIR {
         return new IR.PLet(
           id,
           name.name,
-          new IR.BasicBlock(this.expression(value))
+          new IR.BasicBlock([...this.expression(value), new IR.Return(id)])
         );
       },
 

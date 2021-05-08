@@ -169,7 +169,11 @@ export function simple_activation(x: Activation): string {
     }
 
     case ActivationTag.NATIVE_ACTIVATION: {
-      return `native activation ${x.fn.name} in ${x.fn.pkg.name}`;
+      if (x.location) {
+        return `native activation ${x.location.name} in ${x.location.pkg.name}`;
+      } else {
+        return `native activation`;
+      }
     }
   }
 }

@@ -4,7 +4,7 @@ import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
 export const MAGIC = "CROC";
-export const VERSION = 12;
+export const VERSION = 13;
 
 export enum Section {
   DECLARATION = 1,

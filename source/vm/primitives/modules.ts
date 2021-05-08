@@ -7,8 +7,7 @@ import { assert_open_allowed } from "./packages";
 
 export function open(module: CrochetModule, namespace: string) {
   assert_open_allowed(module.pkg, namespace);
-  module.definitions.allowed_prefixes.add(namespace);
-  module.types.allowed_prefixes.add(namespace);
+  module.open_prefixes.add(namespace);
 }
 
 export function define(

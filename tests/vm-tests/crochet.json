@@ -18,7 +18,8 @@
     "types.crochet",
     "for-all.crochet",
     "interpolation.crochet",
-    "multimethod.crochet"
+    "multimethod.crochet",
+    "search.crochet"
   ],
   "capabilities": {
     "requires": [],
