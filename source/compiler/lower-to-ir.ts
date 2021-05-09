@@ -644,7 +644,7 @@ export class LowerToIR {
           new IR.PushLambda(
             id,
             [name.name],
-            new IR.BasicBlock([...this.comprehension(body)])
+            new IR.BasicBlock([...this.comprehension(body), new IR.Return(id)])
           ),
           new IR.Invoke(id, "_ flat-map: _", 2),
         ];
@@ -658,7 +658,7 @@ export class LowerToIR {
           new IR.Branch(
             id,
             new IR.BasicBlock(this.comprehension(body)),
-            new IR.BasicBlock([new IR.PushTuple(id, 0), new IR.Return(id)])
+            new IR.BasicBlock([new IR.PushTuple(id, 0)])
           ),
         ];
       },
@@ -666,11 +666,7 @@ export class LowerToIR {
       Do: (pos, body) => {
         const id = this.context.register(pos);
 
-        return [
-          ...this.expression(body),
-          new IR.PushTuple(id, 1),
-          new IR.Return(id),
-        ];
+        return [...this.expression(body), new IR.PushTuple(id, 1)];
       },
     });
   }
