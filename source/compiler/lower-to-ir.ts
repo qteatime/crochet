@@ -235,6 +235,27 @@ export function from_enum_integer(
   }
 }
 
+function is_implicit_return(xs: IR.Op[]) {
+  if (xs.length === 0) {
+    return false;
+  }
+  const x = xs[xs.length - 1];
+
+  switch (x.tag) {
+    case IR.OpTag.DROP:
+    case IR.OpTag.LET:
+    case IR.OpTag.ASSERT:
+    case IR.OpTag.REGISTER_INSTANCE:
+    case IR.OpTag.FACT:
+    case IR.OpTag.FORGET:
+    case IR.OpTag.SIMULATE:
+      return false;
+
+    default:
+      return true;
+  }
+}
+
 export class LowerToIR {
   constructor(readonly context: Context) {}
 
@@ -559,7 +580,7 @@ export class LowerToIR {
       id,
       parameters,
       signatureName(x.signature),
-      this.statements(x.body)
+      new IR.BasicBlock(this.fun_body(x.body))
     );
   }
 
@@ -665,8 +686,12 @@ export class LowerToIR {
 
       Do: (pos, body) => {
         const id = this.context.register(pos);
+        const result = this.expression(body);
+        const ret = is_implicit_return(result)
+          ? [new IR.PushTuple(id, 1)]
+          : [new IR.PushTuple(id, 0)];
 
-        return [...this.expression(body), new IR.PushTuple(id, 1)];
+        return [...result, ...ret];
       },
     });
   }
@@ -894,7 +919,7 @@ export class LowerToIR {
           new IR.PushLambda(
             id,
             params.map((x) => x.name),
-            new IR.BasicBlock([...this.expression(body), new IR.Return(id)])
+            new IR.BasicBlock(this.fun_body(body))
           ),
         ];
       },
@@ -1045,10 +1070,7 @@ export class LowerToIR {
               new IR.Search(id, this.predicate(x.predicate)),
               new IR.MatchSearch(
                 id,
-                new IR.BasicBlock([
-                  ...x.body.flatMap((x) => this.statement(x)),
-                  new IR.Return(id),
-                ]),
+                new IR.BasicBlock(this.fun_body(x.body)),
                 new IR.BasicBlock(previous)
               ),
             ];
@@ -1074,6 +1096,23 @@ export class LowerToIR {
 
   statements(xs: Ast.Statement[]) {
     return new IR.BasicBlock(xs.flatMap((x) => this.statement(x)));
+  }
+
+  fun_body(xs: Ast.Statement[]) {
+    if (xs.length === 0) {
+      return [
+        new IR.PushLiteral(new IR.LiteralNothing()),
+        new IR.Return(NO_INFO),
+      ];
+    } else {
+      const last = xs[xs.length - 1];
+      let ret: IR.Op[] = [];
+      if (last instanceof Ast.$$Statement$_Expr) {
+        const id = this.context.register(get_pos(last.value));
+        ret = [new IR.Return(id)];
+      }
+      return [...xs.flatMap((x) => this.statement(x)), ...ret];
+    }
   }
 
   statement(x: Ast.Statement): IR.Op[] {
@@ -1290,8 +1329,7 @@ export class LowerToIR {
                 IR.AssertType.PRECONDITION,
                 contract.pre
               ),
-              ...body.flatMap((x) => this.statement(x)),
-              new IR.Return(id),
+              ...this.fun_body(body),
               ...this.contract_return(contract.ret),
               ...this.contract_conditions(
                 IR.AssertType.POSTCONDITION,

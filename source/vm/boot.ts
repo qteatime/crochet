@@ -16,6 +16,7 @@ import {
   CrochetContext,
   Action,
   When,
+  Metadata,
 } from "./intrinsics";
 import { Tree, Relation } from "./logic";
 import { Commands, Modules, Tests, Types, World } from "./primitives";
@@ -218,7 +219,11 @@ export function load_module(
   pkg: CrochetPackage,
   program: IR.Program
 ) {
-  const module = new CrochetModule(pkg, program.filename);
+  const module = new CrochetModule(
+    pkg,
+    program.filename,
+    new Metadata(program.source, program.meta_table)
+  );
 
   for (const x of program.declarations) {
     load_declaration(universe, module, x);

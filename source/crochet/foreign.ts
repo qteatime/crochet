@@ -29,7 +29,7 @@ export class ForeignInterface {
   constructor(universe: Universe, pkg: CrochetPackage, filename: string) {
     this.#universe = universe;
     this.#package = pkg;
-    this.#module = new CrochetModule(pkg, filename);
+    this.#module = new CrochetModule(pkg, filename, null);
   }
 
   defun(name: string, fn: (...args: CrochetValue[]) => CrochetValue) {

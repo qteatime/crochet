@@ -145,6 +145,15 @@ export class NativeFunction<T extends NativeTag = NativeTag> {
 }
 //#endregion
 
+//#region Metadata
+export class Metadata {
+  constructor(
+    readonly source: string,
+    readonly table: Map<number, IR.Interval>
+  ) {}
+}
+//#endregion
+
 //#region World
 export class CrochetTest {
   constructor(
@@ -205,7 +214,11 @@ export class CrochetModule {
   readonly contexts: Namespace<CrochetContext>;
   readonly open_prefixes: Set<string>;
 
-  constructor(readonly pkg: CrochetPackage, readonly filename: string) {
+  constructor(
+    readonly pkg: CrochetPackage,
+    readonly filename: string,
+    readonly metadata: Metadata | null
+  ) {
     this.open_prefixes = new Set();
     this.open_prefixes.add("crochet.core");
     this.types = new Namespace(pkg.types, pkg.name, this.open_prefixes);

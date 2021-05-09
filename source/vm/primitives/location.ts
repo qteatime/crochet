@@ -10,8 +10,10 @@ import {
   CrochetThunk,
   CrochetType,
   CrochetValue,
+  Metadata,
   Tag,
 } from "../intrinsics";
+import { get_line_column } from "./meta";
 import { assert_tag } from "./values";
 
 export function module_location(x: CrochetModule) {
@@ -35,6 +37,14 @@ export function from_suffix(x: CrochetModule | null) {
     return "";
   } else {
     return `, from ${module_location(x)}`;
+  }
+}
+
+export function from_suffix_newline(x: CrochetModule | null) {
+  if (x == null) {
+    return "";
+  } else {
+    return `\n    from ${module_location(x)}`;
   }
 }
 
@@ -178,6 +188,19 @@ export function simple_activation(x: Activation): string {
       } else {
         return `native activation`;
       }
+    }
+  }
+}
+
+export function format_position_suffix(id: number, meta: Metadata | null) {
+  if (meta == null) {
+    return "";
+  } else {
+    const pos = get_line_column(id, meta);
+    if (pos == null) {
+      return "";
+    } else {
+      return ` at line ${pos.line}`;
     }
   }
 }

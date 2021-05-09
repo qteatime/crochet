@@ -34,7 +34,7 @@ export async function repl(vm: CrochetForNode, pkg_name: string) {
     output: process.stdout,
   });
   const pkg = vm.system.universe.world.packages.get(pkg_name)!;
-  const module = new VM.CrochetModule(pkg, "(repl)");
+  const module = new VM.CrochetModule(pkg, "(repl)", null);
   const env = new VM.Environment(null, null, module);
 
   console.log(`Crochet v${pkg_meta.version} | interactive shell`);
