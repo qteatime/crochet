@@ -226,10 +226,16 @@ void (async function () {
 
   const seed = seed0 ? Number(seed0) : new Date().getTime() | 0;
   const verbose = verbose0 === "verbose";
-  const test_all = test_all0 === "full-regression";
-  const vms = test_all ? all_vms : all_vms.slice(-4);
-  console.log(`Usage: run [<seed>] [verbose] [full-regression]`);
-  if (!test_all) {
+  const vms =
+    test_all0 === "full_regression"
+      ? all_vms
+      : test_all0 === "latest"
+      ? all_vms.slice(-4)
+      : all_vms.filter((x) => x.version === test_all0);
+  console.log(
+    `Usage: run [<seed>] [verbose] [full-regression|latest|<version>]`
+  );
+  if (test_all0 === "latest") {
     console.log("-- Benchmarking the 4 last releases");
   }
   logger.verbose = verbose;
