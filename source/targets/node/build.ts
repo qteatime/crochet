@@ -7,11 +7,7 @@ import { execFileSync } from "child_process";
 import { logger } from "../../utils/logger";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
-const linguaPath = Path.join(
-  __dirname,
-  rootRelative,
-  "node_modules/.bin/lingua"
-);
+const linguaPath = Path.join(__dirname, rootRelative, "tools/lingua.js");
 
 export async function build(pkg: Package.ResolvedPackage) {
   for (const file of pkg.sources) {
