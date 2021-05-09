@@ -13,7 +13,6 @@
     "benchmark": "node --expose-gc build/test/benchmarks/run.js"
   },
   "dependencies": {
-    "express": "^4.17.1",
     "ohm-js": "^15.3.0"
   },
   "devDependencies": {
