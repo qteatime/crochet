@@ -20656,11 +20656,11 @@ function up(n) {
 }
 
 function typeName(n) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.replace)(down(n), "_", "-");
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.replace)(down(n), "_", "-").toLocaleLowerCase();
 }
 
 function varName(n) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.replace)(up(n), "_", "-");
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.replace)(up(n.toLocaleLowerCase()), "_", "-");
 }
 
 function genTypeApp(t_mut) {
@@ -20797,7 +20797,7 @@ function genVisitorParams(binders) {
 function genTypeName(e) {
     switch (e.tag) {
         case 3: {
-            return id(e.fields[0]);
+            return typeName(e.fields[0]);
         }
         case 2: {
             return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("%P()--%P()", [genTypeName(e.fields[0]), typeName(e.fields[1])]));
@@ -20885,20 +20885,6 @@ function generate(g) {
 //# sourceMappingURL=CrochetCodegen.js.map
 
 
-/***/ }),
-/* 32 */
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("yargs");;
-
-/***/ }),
-/* 33 */
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("prettier");;
-
 /***/ })
 /******/ 	]);
 /************************************************************************/
@@ -20976,12 +20962,8 @@ __webpack_require__.r(__webpack_exports__);
 const fs = __webpack_require__(1);
 const path = __webpack_require__(2);
 
-const yargs = __webpack_require__(32);
-const prettier = __webpack_require__(33);
 
-const argv = yargs.argv;
-
-const [file, target0] = argv._;
+const [file, target0] = process.argv.slice(2);
 const target = target0 ?? "typescript";
 
 if (file == null) {
@@ -20995,8 +20977,7 @@ const ast = _build_source_App__WEBPACK_IMPORTED_MODULE_0__.parse(source)(file);
 switch (target) {
   case "typescript": {
     const out = _build_source_App__WEBPACK_IMPORTED_MODULE_0__.generate(ast);
-    const pretty = prettier.format(out, { parser: "typescript" });
-    console.log(pretty);
+    console.log(out);
     break;
   }
   case "crochet": {
