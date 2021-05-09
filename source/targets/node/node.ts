@@ -36,7 +36,7 @@ export class CrochetForNode {
   }
 
   get trusted_core() {
-    return new Set(["crochet.core"]);
+    return new Set(["crochet.core", "crochet.debug"]);
   }
 
   get system() {
@@ -55,13 +55,18 @@ export class CrochetForNode {
     return this._root;
   }
 
-  async boot(filename: string, target: Package.Target) {
+  async boot_from_file(filename: string, target: Package.Target) {
+    const pkg = await this.crochet.read_package_from_file(filename);
+    return this.boot(pkg, target);
+  }
+
+  async boot(entry: Package.Package, target: Package.Target) {
     if (this._booted_system != null) {
       throw new Error(`Crochet already booted.`);
     }
 
     await this.register_libraries();
-    const root = await this.crochet.register_package(filename);
+    const root = await this.crochet.register_package(entry);
     const booted = await this.crochet.boot(root.meta.name, target);
     await booted.initialise(root.meta.name);
     this._root = root;
@@ -280,7 +285,7 @@ export class CrochetForNode {
     for (const dir of FS.readdirSync(root)) {
       const path = Path.join(root, dir, "crochet.json");
       if (FS.existsSync(path)) {
-        const pkg = await this.crochet.register_package(path);
+        const pkg = await this.crochet.register_package_from_file(path);
         result.push(pkg);
       }
     }

@@ -66,22 +66,26 @@ export class Crochet {
     this.trusted.add(pkg);
   }
 
-  async register_package(filename: string) {
+  async register_package_from_file(filename: string) {
     const pkg = await this.read_package_from_file(filename);
+    return this.register_package(pkg);
+  }
+
+  async register_package(pkg: Package.Package) {
     const old = this.registered_packages.get(pkg.meta.name);
     if (old != null) {
       if (Path.resolve(old.filename) !== Path.resolve(pkg.filename)) {
         throw new Error(
           [
             `Duplicated package ${pkg.meta.name}.\n`,
-            `Defined in ${filename} and ${old.filename}`,
+            `Defined in ${pkg.filename} and ${old.filename}`,
           ].join("")
         );
       } else {
         return old;
       }
     }
-    logger.debug(`Registered package ${pkg.meta.name} for ${filename}`);
+    logger.debug(`Registered package ${pkg.meta.name} for ${pkg.filename}`);
     this.registered_packages.set(pkg.meta.name, pkg);
     return pkg;
   }

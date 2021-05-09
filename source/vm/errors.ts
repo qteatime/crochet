@@ -19,8 +19,7 @@ export class CrochetEvaluationError extends CrochetError {
   readonly trace: TraceEntry[];
 
   constructor(source: Error, trace: TraceEntry[], formatted_trace: string) {
-    let native_trace =
-      source instanceof ErrNativePanic ? source.stack ?? "" : "";
+    let native_trace = source instanceof Error ? source.stack ?? "" : "";
     if (native_trace != "") {
       const trace = native_trace.replace(/^.*?\n\s*at /, "");
       native_trace = `\n\nArising from the native code:\n${trace}`;
