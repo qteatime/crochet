@@ -1,9 +1,24 @@
 import * as Path from "path";
 import * as FS from "fs";
-import * as Yargs from "yargs";
+import * as Package from "../../pkg";
+import { CrochetForBench } from "../../targets/bench";
+import type { XorShift } from "../../utils/xorshift";
+import { logger } from "../../utils/logger";
+import { Values } from "../../vm";
 
-type Crochet0 = { new (): any };
-type Crochet1 = { new (path: string): any };
+type OldCrochet = {
+  initialise(): Promise<void>;
+  load_from_file(file: string): Promise<void>;
+  run(name: string): Promise<void>;
+  format_error?(error: any): string;
+  world: {
+    global_random: XorShift;
+  };
+};
+
+type Crochet0 = { new (): CrochetForBench & OldCrochet };
+type Crochet1 = { new (path: string): CrochetForBench & OldCrochet };
+type AnyCrochet = CrochetForBench | (CrochetForBench & OldCrochet);
 
 const Crochet_v0_2 = require("../../../versions/crochet-v0.2.0")
   .Crochet as Crochet0;
@@ -28,6 +43,62 @@ interface IBenchmark {
   versions: {
     [key: string]: string;
   };
+}
+
+function is_crochet_1(vm: AnyCrochet): vm is CrochetForBench & OldCrochet {
+  return "world" in vm;
+}
+
+function reseed(seed: number, vm: AnyCrochet) {
+  if (is_crochet_1(vm)) {
+    if (vm.world.global_random) {
+      return vm.world.global_random.reseed(seed);
+    }
+  } else {
+    return vm.reseed(seed);
+  }
+}
+
+async function initialise(vm: AnyCrochet, filename: string) {
+  if (is_crochet_1(vm)) {
+    await vm.initialise();
+    await vm.load_from_file(filename);
+  } else {
+    const pkg = Package.parse(
+      {
+        name: `(bench) ${Path.basename(filename)}`,
+        target: "node",
+        sources: [filename],
+        dependencies: ["crochet.core", "crochet.debug", "crochet.mathematics"],
+      },
+      filename
+    );
+    await vm.boot(pkg, Package.target_node());
+  }
+}
+
+async function run(vm: AnyCrochet) {
+  if (is_crochet_1(vm)) {
+    await vm.run("main");
+  } else {
+    await vm.run("main: _", [Values.make_tuple(vm.system.universe, [])]);
+  }
+}
+
+async function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+}
+
+function format_error(error: any, vm: AnyCrochet) {
+  if (is_crochet_1(vm)) {
+    if (vm.format_error) {
+      return vm.format_error(error);
+    } else {
+      return error.stack ?? error.message ?? error;
+    }
+  } else {
+    return error.stack ?? error.message;
+  }
 }
 
 const benchmarkDir = Path.join(root, "benchmarks");
@@ -115,12 +186,12 @@ const all_vms = [
     tag: "(stable)",
     vm: () => new Crochet_v0_7_0(benchStdlib("0.7.0")),
   },
-  // {
-  // version: pkg.version,
-  // tag: "(current)",
-  // random: false,
-  // vm: () => new Crochet(StdlibPath),
-  // },
+  {
+    version: pkg.version,
+    tag: "(current)",
+    random: false,
+    vm: () => new CrochetForBench(StdlibPath, new Set([])),
+  },
 ];
 
 async function time(
@@ -151,20 +222,21 @@ function mb(x: number) {
 }
 
 void (async function () {
-  const seed0 = Yargs.argv["seed"];
+  const [seed0, verbose0, test_all0] = process.argv.slice(2);
+
   const seed = seed0 ? Number(seed0) : new Date().getTime() | 0;
-  const verbose = Boolean(Yargs.argv["verbose"]);
-  const test_all = Boolean(Yargs.argv["full-regression"]);
+  const verbose = verbose0 === "verbose";
+  const test_all = test_all0 === "full-regression";
   const vms = test_all ? all_vms : all_vms.slice(-4);
+  console.log(`Usage: run [<seed>] [verbose] [full-regression]`);
   if (!test_all) {
-    console.log(
-      "-- Benchmarking the 4 last releases (use --full-regression benchmark all)"
-    );
+    console.log("-- Benchmarking the 4 last releases");
   }
+  logger.verbose = verbose;
   if (!verbose) {
     console.debug = () => {};
   }
-  console.log("-- Using seed", seed, " (use --seed <seed> to reproduce)");
+  console.log("-- Using seed", seed);
 
   for (const bench of benchmarks) {
     console.log("=".repeat(72));
@@ -177,6 +249,7 @@ void (async function () {
       }
 
       global.gc?.();
+      await sleep(10);
 
       console.log("---");
       console.log(":: Crochet", version, tag ?? "");
@@ -184,11 +257,10 @@ void (async function () {
         console.log("(Reproducible PRNG not supported in this version)");
       }
       const vm = Crochet();
-      vm.world.global_random?.reseed(seed);
       try {
         let total = 0;
-        total += await time("Initialisation", () => vm.initialise());
-        total += await time("Load file", () => vm.load_from_file(fullPath));
+        total += await time("Initialisation", () => initialise(vm, fullPath));
+        reseed(seed, vm);
         {
           const end_memory = process.memoryUsage();
           console.log(
@@ -198,7 +270,7 @@ void (async function () {
           );
           global.gc?.();
         }
-        total += await time("Run benchmark", () => vm.run("main"));
+        total += await time("Run benchmark", () => run(vm));
         {
           console.log(`--> Total: ${total}ms`);
           const end_memory = process.memoryUsage();
@@ -211,7 +283,7 @@ void (async function () {
       } catch (error) {
         console.error(
           `Failed to execute ${version}:\n`,
-          vm.format_error(error)
+          format_error(error, vm)
         );
       }
     }

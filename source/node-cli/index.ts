@@ -139,7 +139,7 @@ async function show_ir([file]: string[], options: Options) {
 
 async function run([file]: string[], options: Options) {
   const crochet = new CrochetForNode([], new Set([]), true);
-  await crochet.boot(file, Crochet.pkg.target_node());
+  await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const value = await crochet.run("main: _", [crochet.ffi.tuple([])]);
   if (value.tag === Crochet.vm.Tag.NOTHING) {
     return;
@@ -165,7 +165,7 @@ async function run([file]: string[], options: Options) {
 
 async function test([file]: string[], options: Options) {
   const crochet = new CrochetForNode([], new Set([]), true);
-  await crochet.boot(file, Crochet.pkg.target_node());
+  await crochet.boot_from_file(file, Crochet.pkg.target_node());
   await crochet.run_tests(compile_test_filter(options.test));
 }
 
@@ -178,7 +178,7 @@ async function repl([file0]: string[], options: Options) {
   const crochet = new CrochetForNode([], new Set([]), true);
   let file = REPL.resolve_file(file0);
 
-  await crochet.boot(file, Crochet.pkg.target_node());
+  await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const pkg = await crochet.crochet.read_package_from_file(file);
   await REPL.repl(crochet, pkg.meta.name);
 }
