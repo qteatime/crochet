@@ -92,7 +92,7 @@ type Expression =
   | Hole(pos: Meta)
   | Return(pos: Meta)
   | Type(pos: Meta, typ: TypeApp)
-  | Lambda(pos: Meta, params: Name[], body: Expression)
+  | Lambda(pos: Meta, params: Name[], body: Statement[])
   | IntrinsicEqual(pos: Meta, left: Expression, right: Expression)
   | ForeignInvoke(pos: Meta, name: Namespace, args: Expression[])
   | Parens(pos: Meta, value: Expression)
@@ -689,9 +689,9 @@ grammar Crochet : Program {
     | l:literal             -> Expression.Lit(l)
 
   lambdaExpression =
-    | s<"{"> e:expression s<"}">
+    | s<"{"> e:statements s<"}">
       -> Expression.Lambda(meta, [], e)
-    | s<"{"> p:list1<name, s<",">> in_ e:expression s<"}">
+    | s<"{"> p:list1<name, s<",">> in_ e:statements s<"}">
       -> Expression.Lambda(meta, p, e)
 
   atomicExpression =

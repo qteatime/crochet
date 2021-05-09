@@ -81,20 +81,17 @@ end
 command maze generate-width: Width height: Height do
   let Maze = new maze-gen(Width, Height);
 
-  for IY in 1 to: Height do
-    for IX in 1 to: Width do
-      let Point = new point(IX, IY);
-      let Cell = new cell(Point);
-      fact Maze cell: Cell;
-      fact y: IY x: IX cell: Cell;
-      Cell set-state: cs-unvisited;
-    end
+  for IY in 1 to: Height, IX in 1 to: Width do
+    let Point = new point(IX, IY);
+    let Cell = new cell(Point);
+    fact Maze cell: Cell;
+    fact y: IY x: IX cell: Cell;
+    Cell set-state: cs-unvisited;
   end
 
   for Cell in (search Maze cell: C).C do
     for Adjacent in Cell adjacent-cells do
       fact Cell adjacent: Adjacent;
-      nothing;
     end
   end
 

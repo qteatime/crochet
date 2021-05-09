@@ -12,13 +12,17 @@ import {
   NativeFunction,
 } from "../intrinsics";
 import {
+  branch_location,
+  branch_name,
   branch_name_location,
   command_signature,
   from_suffix,
+  from_suffix_newline,
   module_location,
   thunk_location,
   type_name,
 } from "./location";
+import { get_annotated_source } from "./meta";
 
 export class TraceEntry {
   constructor(
@@ -75,17 +79,17 @@ export function format_entry(entry: TraceEntry) {
 
 export function format_location(location: ActivationLocation) {
   if (location instanceof CrochetLambda) {
-    return `anonymous function(${location.parameters.join(", ")})${from_suffix(
-      location.env.raw_module
-    )}`;
+    return `anonymous function(${location.parameters.join(
+      ", "
+    )})${from_suffix_newline(location.env.raw_module)}`;
   } else if (location instanceof CrochetCommandBranch) {
-    return branch_name_location(location);
+    return `${branch_name(location)}\n    from ${branch_location(location)}`;
   } else if (location instanceof CrochetThunk) {
     return thunk_location(location);
   } else if (location instanceof CrochetPrelude) {
-    return `prelude${from_suffix(location.env.raw_module)}`;
+    return `prelude${from_suffix_newline(location.env.raw_module)}`;
   } else if (location instanceof CrochetTest) {
-    return `test "${location.title}"${from_suffix(location.module)}`;
+    return `test "${location.title}"${from_suffix_newline(location.module)}`;
   } else if (location instanceof NativeFunction) {
     return `native ${location.name} in ${location.pkg.name}`;
   } else if (location == null) {
@@ -99,5 +103,13 @@ export function format_slice(
   module: CrochetModule | null,
   meta: number | null
 ) {
-  return ``;
+  if (module == null || meta == null || module.metadata == null) {
+    return "\n";
+  }
+  const line = get_annotated_source(meta, module.metadata);
+  if (line == null) {
+    return "\n";
+  } else {
+    return `\n    ${line}\n`;
+  }
 }
