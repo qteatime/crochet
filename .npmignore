@@ -1,5 +1,8 @@
 /.ionide
 /.vscode
+/.github
 /bin/
 /docs
 /support
+.binary
+tsconfig.tsbuildinfo
