@@ -21,7 +21,8 @@
     "multimethod.crochet",
     "search.crochet",
     "branch.crochet",
-    "actions.crochet"
+    "actions.crochet",
+    "effects.crochet"
   ],
   "capabilities": {
     "requires": [],

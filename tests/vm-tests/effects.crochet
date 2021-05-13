@@ -1,0 +1,86 @@
+% crochet
+
+effect io with
+  read();
+  write(X);
+end
+
+type io-tuple(input, output);
+
+command io-tuple read do
+  let Res = self.input value first;
+  self.input <- self.input value but-first;
+  Res;
+end
+
+command io-tuple write: X do
+  self.output <- self.output value append: X;
+  nothing;
+end
+
+test "Basic handlers" do
+  let Result =
+    handle
+      let Who = perform io.read();
+      perform io.write("Hello, [Who]");
+    with
+      on io.read() => "World";
+      on io.write(X) => X;
+    end;
+
+  assert Result =:= "Hello, ["World"]";
+end
+
+test "Nested handlers" do
+  let IO1 = new io-tuple(#cell with-value: ["Alis"],
+                         #cell with-value: []);
+  let IO2 = new io-tuple(#cell with-value: ["Yup", "No..."],
+                         IO1.output);
+
+  let Answer =
+    with-io: IO1 do: {
+      perform io.write("Who are you?");
+      let Name = perform io.read();
+      with-io: IO2 do: {
+        perform io.write("Hello, [Name]. Are you a morning person?");
+        let Answer = perform io.read();
+        perform io.write("Ah, so you answered '[Answer]', mmh...");
+        Answer;
+      }
+    };
+  
+  assert Answer =:= "Yup";
+  assert IO1.input value =:= [];
+  assert IO2.input value =:= ["No..."];
+  assert IO1.output value =:= IO2.output value;
+  assert IO1.output value =:= [
+    "Who are you?",
+    "Hello, ["Alis"]. Are you a morning person?",
+    "Ah, so you answered '["Yup"]', mmh..."
+  ];  
+end
+
+test "Abstracted performs" do
+  let Result =
+    handle
+      let Who = io read;
+      io write: "Hello, [Who]";
+    with
+      on io.read() => "World";
+      on io.write(X) => X;
+    end;
+
+  assert Result =:= "Hello, ["World"]";  
+end
+
+command with-io: IO do: Block do
+  handle Block()
+  with
+    on io.read() => continue with IO read;
+    on io.write(X) => continue with IO write: X;
+  end
+end
+
+singleton io;
+command io read = perform io.read();
+command io write: X = perform io.write(X);
