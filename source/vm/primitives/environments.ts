@@ -1,8 +1,25 @@
 import { zip } from "../../utils/utils";
-import { CrochetModule, CrochetValue, Environment } from "../intrinsics";
+import {
+  CrochetActivation,
+  CrochetModule,
+  CrochetValue,
+  Environment,
+} from "../intrinsics";
 
 export function clone(env: Environment) {
-  return new Environment(env, env.raw_receiver, env.raw_module);
+  return new Environment(
+    env,
+    env.raw_receiver,
+    env.raw_module,
+    env.raw_continuation
+  );
+}
+
+export function clone_with_continuation(
+  env: Environment,
+  k: CrochetActivation
+) {
+  return new Environment(env, env.raw_receiver, env.raw_module, k);
 }
 
 export function clone_with_bindings(
@@ -17,7 +34,7 @@ export function clone_with_bindings(
 }
 
 export function extend(env: Environment, receiver: CrochetValue | null) {
-  return new Environment(env, receiver, env.raw_module);
+  return new Environment(env, receiver, env.raw_module, env.raw_continuation);
 }
 
 export function extend_with_parameters(

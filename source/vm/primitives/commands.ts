@@ -70,6 +70,7 @@ export function prepare_activation(
     branch,
     env,
     _return,
+    parent_activation.handlers,
     branch.body
   );
   return activation;

@@ -125,7 +125,7 @@ export class ForeignInterface {
   }
 
   run_synchronous(fn: () => Machine<CrochetValue>) {
-    const env = new Environment(null, null, this.#module);
+    const env = new Environment(null, null, this.#module, null);
     return run_native_sync(this.#universe, env, this.#package, fn());
   }
 

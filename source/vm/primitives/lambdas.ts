@@ -38,6 +38,7 @@ export function prepare_activation(
         lambda.payload,
         env,
         _return,
+        parent_activation.handlers,
         p.body
       );
       return activation;

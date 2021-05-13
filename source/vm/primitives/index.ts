@@ -11,6 +11,7 @@ import * as Modules from "./modules";
 import * as Packages from "./packages";
 import * as World from "./world";
 import * as StackTrace from "./stack-trace";
+import * as Effects from "./effect";
 
 export {
   Commands,
@@ -26,4 +27,5 @@ export {
   Types,
   Values,
   World,
+  Effects,
 };
