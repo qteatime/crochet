@@ -48,6 +48,10 @@ export enum OpTag {
   FACT,
   FORGET,
   SIMULATE,
+
+  HANDLE,
+  PERFORM,
+  CONTINUE_WITH,
 }
 
 export enum AssertType {
@@ -95,7 +99,10 @@ export type Op =
   | MatchSearch
   | Fact
   | Forget
-  | Simulate;
+  | Simulate
+  | Handle
+  | Perform
+  | ContinueWith;
 
 export abstract class BaseOp {
   abstract tag: OpTag;
@@ -419,6 +426,69 @@ export class Simulate extends BaseOp {
     readonly goal: SimulationGoal,
     readonly signals: SimulationSignal[]
   ) {
+    super();
+  }
+}
+
+export class Handle extends BaseOp {
+  readonly tag = OpTag.HANDLE;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly body: BasicBlock,
+    readonly handlers: HandlerCase[]
+  ) {
+    super();
+  }
+}
+
+export enum HandlerCaseTag {
+  ON,
+  USE,
+}
+
+export type HandlerCase = HandlerCaseOn | HandlerCaseUse;
+
+export class HandlerCaseOn {
+  readonly tag = HandlerCaseTag.ON;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly effect: string,
+    readonly variant: string,
+    readonly parameters: string[],
+    readonly block: BasicBlock
+  ) {}
+}
+
+export class HandlerCaseUse {
+  readonly tag = HandlerCaseTag.USE;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly handler: string,
+    readonly args: BasicBlock,
+    readonly arity: number
+  ) {}
+}
+
+export class Perform extends BaseOp {
+  readonly tag = OpTag.PERFORM;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly effect: string,
+    readonly variant: string,
+    readonly arity: number
+  ) {
+    super();
+  }
+}
+
+export class ContinueWith extends BaseOp {
+  readonly tag = OpTag.CONTINUE_WITH;
+
+  constructor(readonly meta: Metadata) {
     super();
   }
 }

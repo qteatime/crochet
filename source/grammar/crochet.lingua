@@ -26,6 +26,20 @@ type Declaration =
   | Open(pos: Meta, ns: Namespace)
   | Local(pos: Meta, decl: Declaration)
   | Test(pos: Meta, title: String, body: Statement[])
+  | Effect(pos: Meta, cmeta: Metadata, name: Name, cases: EffectCase[])
+  | Handler( pos: Meta,
+             cmeta: Metadata,
+             name: Name,
+             parameters: Name[],
+             body: Statement[],
+             handlers: Handler[]
+             )
+
+type EffectCase(pos: Meta, cmeta: Metadata, name: Name, params: Parameter[])
+
+type Handler =
+  | On(pos: Meta, name: Name, variant: Name, args: Name[], body: Statement[])
+  | Use(pos: Meta, name: Name, args: Expression[])
 
 type TrailingTest(pos: Meta, body: Statement[])
 
@@ -97,6 +111,9 @@ type Expression =
   | ForeignInvoke(pos: Meta, name: Namespace, args: Expression[])
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
+  | Handle(pos: Meta, body: Statement[], handlers: Handler[])
+  | Perform(pos: Meta, effect: Name, variant: Name, args: Expression[])
+  | ContinueWith(pos: Meta, value: Expression)
 
 type ForExpression =
   | Map(pos: Meta, name: Name, stream: Expression, body: ForExpression)
@@ -222,6 +239,38 @@ grammar Crochet : Program {
     | openDeclaration
     | localDeclaration
     | testDeclaration
+    | effectDeclaration
+    | handlerDeclaration
+
+  effectDeclaration =
+    | m:declarationMeta effect_ n:Name with_ cs:effectCase+ end_
+      -> Declaration.Effect(meta, m, n, cs)
+
+  effectCase =
+    | m:declarationMeta s:atom xs:typeParams s<";">
+      -> EffectCase(meta, m, s, xs)
+    | m:declarationMeta s:atom s<";">
+      -> EffectCase(meta, m, s, [])
+
+  handlerDeclaration =
+    | m:declarationMeta handler_ n:atom xs:nameParams b:handlerBody with_ hs:handlers end_
+      -> Declaration.Handler(meta, m, n, xs, b, hs)
+
+  typeParams =
+    | s<"("> xs:list0<typeField, s<",">> s<")"> -> xs
+
+  nameParams =
+    | s<"("> xs:list0<name, s<",">> s<")"> -> xs
+
+  handlerBody =
+    | do_ xs:statements -> xs
+    |                   -> []
+
+  handlers =
+    | on_ n:atom s<"."> v:atom s<"("> xs:list0<name, s<",">> s<")"> b:eblock
+      -> Handler.On(meta, n, v, xs, b)
+    | n:atom s<"("> xs:list0<expression, s<",">> s<")"> s<";">
+      -> Handler.Use(meta, n, xs)
 
   testDeclaration =
     | test_ s:string do_ b:statements end_
@@ -525,6 +574,7 @@ grammar Crochet : Program {
     | s<lazyExpression>
     | s<forceExpression>
     | s<foreignExpression>
+    | s<continueWithExpression>
     | s<pipeExpression>
 
   searchExpression =
@@ -540,6 +590,10 @@ grammar Crochet : Program {
   foreignExpression =
     | foreign_ ns:namespace s<"("> xs:list0<expression, s<",">> s<")">
       -> Expression.ForeignInvoke(meta, ns, xs)
+
+  continueWithExpression =
+    | continue_ with_ e:pipeExpression
+      -> Expression.ContinueWith(meta, e)
 
   expressionBlock =
     | do_ b:statements end_ -> Expression.Block(meta, b)
@@ -617,6 +671,7 @@ grammar Crochet : Program {
     | recordExpression<expression>
     | listExpression<expression>
     | lambdaExpression
+    | performExpression
     | hole
     | s<"#"> t:typeAppPrimary       -> Expression.Type(meta, t)
     | return_                       -> Expression.Return(meta)
@@ -661,6 +716,9 @@ grammar Crochet : Program {
   forExprDo =
     | b:expressionBlock -> ForExpression.Do(meta, b)
 
+  performExpression =
+    | perform_ n:atom s<"."> v:atom s<"("> xs:list0<expression, s<",">> s<")">
+      -> Expression.Perform(meta, n, v, xs)
 
   newExpression<e> =
     | new_ n:atom fs:newFields<e>   -> Expression.New(meta, n, fs)
@@ -694,6 +752,10 @@ grammar Crochet : Program {
     | s<"{"> p:list1<name, s<",">> in_ e:statements s<"}">
       -> Expression.Lambda(meta, p, e)
 
+  handleExpression =
+    | handle_ b:statements with_ hs:handlers end_
+      -> Expression.Handle(meta, b, hs)
+
   atomicExpression =
     | a:atom                                -> Expression.Global(meta, a)
     | lazyExpression
@@ -707,6 +769,7 @@ grammar Crochet : Program {
     | conditionExpression
     | matchSearchExpression
     | forExpression
+    | handleExpression
 
   interpolateExpression =
     | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
@@ -949,6 +1012,10 @@ grammar Crochet : Program {
   requires_ = kw<"requires">
   ensures_ = kw<"ensures">
   nothing_ = kw<"nothing">
+  effect_ = kw<"effect">
+  handler_ = kw<"handler">
+  handle_ = kw<"handle">
+  continue_ = kw<"continue">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -959,4 +1026,5 @@ grammar Crochet : Program {
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
+    | effect_ | handler_ | handle_ | continue_
 }

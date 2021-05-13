@@ -1,5 +1,5 @@
 import { Type } from "./type";
-import { BasicBlock } from "./expression";
+import { BasicBlock, HandlerCase } from "./expression";
 import { Predicate } from "./logic";
 
 type Metadata = number;
@@ -17,6 +17,8 @@ export enum DeclarationTag {
   WHEN,
   CONTEXT,
   FOREIGN_TYPE,
+  EFFECT,
+  HANDLER,
 }
 
 export enum Visibility {
@@ -36,9 +38,13 @@ export type Declaration =
   | DAction
   | DContext
   | DWhen
-  | DForeignType;
+  | DForeignType
+  | DEffect
+  | DHandler;
 
-abstract class BaseDeclaration {}
+abstract class BaseDeclaration {
+  abstract tag: DeclarationTag;
+}
 
 export class DCommand extends BaseDeclaration {
   readonly tag = DeclarationTag.COMMAND;
@@ -199,6 +205,44 @@ export class DForeignType extends BaseDeclaration {
     readonly visibility: Visibility,
     readonly name: string,
     readonly target: string
+  ) {
+    super();
+  }
+}
+
+export class DEffect extends BaseDeclaration {
+  readonly tag = DeclarationTag.EFFECT;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly cases: EffectCase[]
+  ) {
+    super();
+  }
+}
+
+export class EffectCase {
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly parameters: string[],
+    readonly types: Type[]
+  ) {}
+}
+
+export class DHandler extends BaseDeclaration {
+  readonly tag = DeclarationTag.HANDLER;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly parameters: string[],
+    readonly initialisation: BasicBlock,
+    readonly handlers: HandlerCase[]
   ) {
     super();
   }
