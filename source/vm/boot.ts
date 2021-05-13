@@ -166,6 +166,7 @@ export function make_universe() {
   const Cell = new CrochetType(null, "cell", "", Any, [], [], false, null);
   const Type = new CrochetType(null, "type", "", Any, [], [], false, null);
   const Action = new CrochetType(null, "action", "", Any, [], [], false, null);
+  const Effect = new CrochetType(null, "effect", "", null, [], [], false, null);
 
   world.native_types.define("crochet.core/core.any", Any);
   world.native_types.define("crochet.core/core.unknown", Unknown);
@@ -211,6 +212,7 @@ export function make_universe() {
     Type,
     Cell,
     Action,
+    Effect,
   });
 }
 
@@ -249,7 +251,7 @@ export function load_declaration(
 
       const branch = new CrochetCommandBranch(
         module,
-        new Environment(null, null, module),
+        new Environment(null, null, module, null),
         declaration.name,
         declaration.documentation,
         declaration.parameters,
@@ -288,6 +290,37 @@ export function load_declaration(
       break;
     }
 
+    case t.EFFECT: {
+      const effect = universe.types.Effect;
+      const parent = new CrochetType(
+        module,
+        declaration.name,
+        declaration.documentation,
+        effect,
+        [],
+        [],
+        false,
+        declaration.meta
+      );
+      for (const c of declaration.cases) {
+        const type = new CrochetType(
+          module,
+          `${declaration.name}.${c.name}`,
+          c.documentation,
+          parent,
+          c.parameters,
+          c.types.map((t) => Types.materialise_type(universe, module, t)),
+          false,
+          c.meta
+        );
+        parent.sub_types.push(type);
+        Types.define_type(module, type.name, type, IR.Visibility.GLOBAL);
+      }
+      Types.define_type(module, declaration.name, parent, IR.Visibility.GLOBAL);
+      Types.seal(parent);
+      break;
+    }
+
     case t.FOREIGN_TYPE: {
       const type = Types.get_foreign_type(universe, module, declaration.target);
       Types.define_type(module, declaration.name, type, IR.Visibility.GLOBAL);
@@ -303,7 +336,7 @@ export function load_declaration(
     case t.TEST: {
       const test = new CrochetTest(
         module,
-        new Environment(null, null, module),
+        new Environment(null, null, module, null),
         declaration.name,
         declaration.body
       );
@@ -323,7 +356,7 @@ export function load_declaration(
     }
 
     case t.PRELUDE: {
-      const env = new Environment(null, null, module);
+      const env = new Environment(null, null, module, null);
       const prelude = new CrochetPrelude(env, declaration.body);
       World.add_prelude(universe.world, prelude);
       break;
@@ -400,6 +433,10 @@ export function load_declaration(
       const context = Contexts.lookup_context(module, declaration.context);
       Contexts.add_event(context, event);
       break;
+    }
+
+    case t.HANDLER: {
+      throw new Error(`Unsupported handler`);
     }
 
     default:

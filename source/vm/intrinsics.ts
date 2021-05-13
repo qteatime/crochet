@@ -427,7 +427,8 @@ export class Environment {
   constructor(
     readonly parent: Environment | null,
     readonly raw_receiver: CrochetValue | null,
-    readonly raw_module: CrochetModule | null
+    readonly raw_module: CrochetModule | null,
+    readonly raw_continuation: CrochetActivation | null
   ) {}
 
   define(name: string, value: CrochetValue): boolean {
@@ -459,6 +460,24 @@ export class State {
     readonly universe: Universe,
     public activation: Activation,
     readonly random: XorShift
+  ) {}
+}
+
+export class HandlerStack {
+  public activation: CrochetActivation | null = null;
+
+  constructor(
+    readonly parent: HandlerStack | null,
+    readonly handlers: Handler[]
+  ) {}
+}
+
+export class Handler {
+  constructor(
+    readonly guard: CrochetType,
+    readonly parameters: string[],
+    readonly env: Environment,
+    readonly body: IR.BasicBlock
   ) {}
 }
 
@@ -508,6 +527,7 @@ export interface IActivation {
   tag: ActivationTag;
   parent: Activation | null;
   continuation: Continuation;
+  handlers: HandlerStack;
 }
 
 export type ActivationLocation =
@@ -521,8 +541,8 @@ export type ActivationLocation =
 
 export class CrochetActivation implements IActivation {
   readonly tag = ActivationTag.CROCHET_ACTIVATION;
-  readonly stack: CrochetValue[] = [];
-  readonly block_stack: [number, IR.BasicBlock][] = [];
+  public stack: CrochetValue[] = [];
+  public block_stack: [number, IR.BasicBlock][] = [];
   private _return: CrochetValue | null = null;
   public instruction: number = 0;
 
@@ -531,6 +551,7 @@ export class CrochetActivation implements IActivation {
     readonly location: ActivationLocation,
     readonly env: Environment,
     readonly continuation: Continuation,
+    readonly handlers: HandlerStack,
     public block: IR.BasicBlock
   ) {}
 
@@ -622,6 +643,7 @@ export class NativeActivation implements IActivation {
     readonly location: NativeLocation,
     readonly env: Environment,
     readonly routine: Machine<CrochetValue>,
+    readonly handlers: HandlerStack,
     readonly continuation: Continuation
   ) {}
 }
@@ -657,6 +679,7 @@ export class Universe {
       Type: CrochetType;
       Cell: CrochetType;
       Action: CrochetType;
+      Effect: CrochetType;
     }
   ) {
     this.nothing = new CrochetValue(Tag.NOTHING, types.Nothing, null);

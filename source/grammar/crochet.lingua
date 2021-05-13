@@ -243,14 +243,12 @@ grammar Crochet : Program {
     | handlerDeclaration
 
   effectDeclaration =
-    | m:declarationMeta effect_ n:Name with_ cs:effectCase+ end_
+    | m:declarationMeta effect_ n:atom with_ cs:effectCase+ end_
       -> Declaration.Effect(meta, m, n, cs)
 
   effectCase =
     | m:declarationMeta s:atom xs:typeParams s<";">
       -> EffectCase(meta, m, s, xs)
-    | m:declarationMeta s:atom s<";">
-      -> EffectCase(meta, m, s, [])
 
   handlerDeclaration =
     | m:declarationMeta handler_ n:atom xs:nameParams b:handlerBody with_ hs:handlers end_
@@ -1016,6 +1014,7 @@ grammar Crochet : Program {
   handler_ = kw<"handler">
   handle_ = kw<"handle">
   continue_ = kw<"continue">
+  perform_ = kw<"perform">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
@@ -1026,5 +1025,5 @@ grammar Crochet : Program {
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
-    | effect_ | handler_ | handle_ | continue_
+    | effect_ | handler_ | handle_ | continue_ | perform_
 }

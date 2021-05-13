@@ -14,6 +14,7 @@ import {
   CrochetModule,
   CrochetValue,
   Environment,
+  HandlerStack,
   NativeActivation,
   NativeSignalTag,
   NativeTag,
@@ -37,6 +38,7 @@ import {
   Commands,
   Lambdas,
   StackTrace,
+  Effects,
 } from "./primitives";
 import { Contexts } from "./simulation";
 import { run_simulation } from "./simulation/simulation";
@@ -110,8 +112,9 @@ export class Thread {
       new CrochetActivation(
         null,
         null,
-        new Environment(null, null, module),
+        new Environment(null, null, module, null),
         _done,
+        new HandlerStack(null, []),
         block
       ),
       universe.random
@@ -335,6 +338,7 @@ export class Thread {
             null,
             value.env,
             _return,
+            activation.handlers,
             value.block
           );
           return new JumpSignal(new_activation);
@@ -512,6 +516,7 @@ export class Thread {
                   this.universe.random
                 );
               }),
+              activation.handlers,
               thunk.body
             )
           );
@@ -556,6 +561,7 @@ export class Thread {
               fn,
               this.env,
               machine,
+              activation.handlers,
               _return
             );
             return new JumpSignal(new_activation);
@@ -758,6 +764,7 @@ export class Thread {
           null,
           this.env,
           run_search(this.universe, this.env, machine),
+          activation.handlers,
           _return
         );
         return new JumpSignal(new_activation);
@@ -777,6 +784,7 @@ export class Thread {
             null,
             this.env,
             run_match_case(this.universe, this.env, bindings, op.block),
+            activation.handlers,
             _return
           );
           return new JumpSignal(new_activation);
@@ -814,9 +822,56 @@ export class Thread {
           null,
           this.env,
           run_simulation(simulation_state),
+          activation.handlers,
           _return
         );
         return new JumpSignal(new_activation);
+      }
+
+      case t.PERFORM: {
+        const args = this.pop_many(activation, op.arity);
+        const type = Effects.materialise_effect(
+          this.module,
+          op.effect,
+          op.variant
+        );
+        Effects.assert_can_perform(this.module, type);
+        const value = Values.instantiate(type, args);
+        const { handler, stack } = Effects.find_handler(
+          activation.handlers,
+          value
+        );
+        const new_activation = Effects.prepare_handler_activation(
+          activation,
+          stack,
+          handler,
+          value
+        );
+        return new JumpSignal(new_activation);
+      }
+
+      case t.CONTINUE_WITH: {
+        const k = this.env.raw_continuation;
+        if (k == null) {
+          throw new ErrArbitrary(
+            "no-continuation",
+            `'continue with' can only be used from inside handlers.`
+          );
+        }
+        const value = this.pop(activation);
+        return new JumpSignal(Effects.apply_continuation(k, activation, value));
+      }
+
+      case t.HANDLE: {
+        return new JumpSignal(
+          Effects.make_handle(
+            activation,
+            this.module,
+            this.env,
+            op.body,
+            op.handlers
+          )
+        );
       }
 
       default:
