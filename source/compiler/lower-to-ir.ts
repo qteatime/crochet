@@ -1,5 +1,6 @@
 import * as Ast from "../generated/crochet-grammar";
 import * as IR from "../ir";
+import { HandlerCaseOn, HandlerCaseUse } from "../ir";
 import { cast, force_cast } from "../utils/utils";
 import {
   resolve_escape,
@@ -1091,6 +1092,60 @@ export class LowerToIR {
       Select: () => {
         throw new Error(`internal: select not supported`);
       },
+
+      Handle: (pos, body, handlers) => {
+        const id = this.context.register(pos);
+
+        return [
+          new IR.Handle(
+            id,
+            new IR.BasicBlock(this.fun_body(body)),
+            this.handlers(handlers)
+          ),
+        ];
+      },
+
+      Perform: (pos, effect, variant, args) => {
+        const id = this.context.register(pos);
+
+        return [
+          ...args.flatMap((x) => this.expression(x)),
+          new IR.Perform(id, effect.name, variant.name, args.length),
+        ];
+      },
+
+      ContinueWith: (pos, value) => {
+        const id = this.context.register(pos);
+
+        return [...this.expression(value), new IR.ContinueWith(id)];
+      },
+    });
+  }
+
+  handlers(handlers: Ast.Handler[]) {
+    return handlers.map((x) => this.handler(x));
+  }
+
+  handler(handler: Ast.Handler) {
+    return handler.match<IR.HandlerCase>({
+      On: (pos, name, variant, args, body) => {
+        return new HandlerCaseOn(
+          this.context.register(pos),
+          name.name,
+          variant.name,
+          args.map((x) => x.name),
+          new IR.BasicBlock(this.fun_body(body))
+        );
+      },
+
+      Use: (pos, name, args) => {
+        return new HandlerCaseUse(
+          this.context.register(pos),
+          name.name,
+          new IR.BasicBlock(args.flatMap((x) => this.expression(x))),
+          args.length
+        );
+      },
     });
   }
 
@@ -1619,6 +1674,44 @@ export class LowerToIR {
         return [
           new IR.DContext(id, this.documentation(cmeta), name.name),
           ...this.declarations(items, name.name),
+        ];
+      },
+
+      Effect: (pos, cmeta, name, cases) => {
+        const id = this.context.register(pos);
+
+        return [
+          new IR.DEffect(
+            id,
+            this.documentation(cmeta),
+            name.name,
+            cases.map((x) => {
+              const { types, parameters } = this.parameters(x.params);
+
+              return new IR.EffectCase(
+                this.context.register(x.pos),
+                this.documentation(x.cmeta),
+                x.name.name,
+                parameters,
+                types
+              );
+            })
+          ),
+        ];
+      },
+
+      Handler: (pos, cmeta, name, parameters, body, handlers) => {
+        const id = this.context.register(pos);
+
+        return [
+          new IR.DHandler(
+            id,
+            this.documentation(cmeta),
+            name.name,
+            parameters.map((x) => x.name),
+            this.statements(body),
+            this.handlers(handlers)
+          ),
         ];
       },
     });

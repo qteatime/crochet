@@ -167,8 +167,64 @@ class CrochetIRDecoder extends BinaryReader {
           this.string()
         );
 
+      case t.EFFECT: {
+        return new IR.DEffect(
+          this.decode_meta_id(),
+          this.string(),
+          this.string(),
+          this.array(
+            (_) =>
+              new IR.EffectCase(
+                this.decode_meta_id(),
+                this.string(),
+                this.string(),
+                this.array((_) => this.string()),
+                this.array((_) => this.decode_type())
+              )
+          )
+        );
+      }
+
+      case t.HANDLER: {
+        return new IR.DHandler(
+          this.decode_meta_id(),
+          this.string(),
+          this.string(),
+          this.array((_) => this.string()),
+          this.decode_basic_block(),
+          this.array((_) => this.decode_handler_case())
+        );
+      }
+
       default:
         throw unreachable(tag, "Declaration");
+    }
+  }
+
+  decode_handler_case() {
+    const tag = this.decode_enum_tag(IR.HandlerCaseTag, "handler case");
+    switch (tag) {
+      case IR.HandlerCaseTag.ON: {
+        return new IR.HandlerCaseOn(
+          this.decode_meta_id(),
+          this.string(),
+          this.string(),
+          this.array((_) => this.string()),
+          this.decode_basic_block()
+        );
+      }
+
+      case IR.HandlerCaseTag.USE: {
+        return new IR.HandlerCaseUse(
+          this.decode_meta_id(),
+          this.string(),
+          this.decode_basic_block(),
+          this.uint32()
+        );
+      }
+
+      default:
+        throw unreachable(tag, "handler case");
     }
   }
 
@@ -374,6 +430,27 @@ class CrochetIRDecoder extends BinaryReader {
               )
           )
         );
+
+      case t.HANDLE: {
+        return new IR.Handle(
+          this.decode_meta_id(),
+          this.decode_basic_block(),
+          this.array((_) => this.decode_handler_case())
+        );
+      }
+
+      case t.PERFORM: {
+        return new IR.Perform(
+          this.decode_meta_id(),
+          this.string(),
+          this.string(),
+          this.uint32()
+        );
+      }
+
+      case t.CONTINUE_WITH: {
+        return new IR.ContinueWith(this.decode_meta_id());
+      }
 
       default:
         throw unreachable(tag, "Operation");
