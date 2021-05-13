@@ -4,7 +4,7 @@ import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
 export const MAGIC = "CROC";
-export const VERSION = 22;
+export const VERSION = 23;
 
 export enum Section {
   DECLARATION = 1,
@@ -161,44 +161,17 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
-      case IR.DeclarationTag.HANDLER: {
-        this.encode_meta_id(x.meta);
-        this.string(x.documentation);
-        this.string(x.name);
-        this.array(x.parameters, (p) => this.string(p));
-        this.encode_basic_block(x.initialisation);
-        this.array(x.handlers, (h) => this.encode_handler(h));
-        break;
-      }
-
       default:
         throw unreachable(x, `Declaration`);
     }
   }
 
   encode_handler(x: IR.HandlerCase) {
-    this.encode_enum_tag(x.tag);
-    switch (x.tag) {
-      case IR.HandlerCaseTag.ON: {
-        this.encode_meta_id(x.meta);
-        this.string(x.effect);
-        this.string(x.variant);
-        this.array(x.parameters, (p) => this.string(p));
-        this.encode_basic_block(x.block);
-        break;
-      }
-
-      case IR.HandlerCaseTag.USE: {
-        this.encode_meta_id(x.meta);
-        this.string(x.handler);
-        this.encode_basic_block(x.args);
-        this.uint32(x.arity);
-        break;
-      }
-
-      default:
-        throw unreachable(x, `Handler case`);
-    }
+    this.encode_meta_id(x.meta);
+    this.string(x.effect);
+    this.string(x.variant);
+    this.array(x.parameters, (p) => this.string(p));
+    this.encode_basic_block(x.block);
   }
 
   encode_basic_block(x: IR.BasicBlock) {

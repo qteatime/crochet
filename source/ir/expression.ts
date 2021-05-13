@@ -442,33 +442,13 @@ export class Handle extends BaseOp {
   }
 }
 
-export enum HandlerCaseTag {
-  ON,
-  USE,
-}
-
-export type HandlerCase = HandlerCaseOn | HandlerCaseUse;
-
-export class HandlerCaseOn {
-  readonly tag = HandlerCaseTag.ON;
-
+export class HandlerCase {
   constructor(
     readonly meta: Metadata,
     readonly effect: string,
     readonly variant: string,
     readonly parameters: string[],
     readonly block: BasicBlock
-  ) {}
-}
-
-export class HandlerCaseUse {
-  readonly tag = HandlerCaseTag.USE;
-
-  constructor(
-    readonly meta: Metadata,
-    readonly handler: string,
-    readonly args: BasicBlock,
-    readonly arity: number
   ) {}
 }
 

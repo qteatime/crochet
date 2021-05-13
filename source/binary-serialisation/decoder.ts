@@ -185,47 +185,19 @@ class CrochetIRDecoder extends BinaryReader {
         );
       }
 
-      case t.HANDLER: {
-        return new IR.DHandler(
-          this.decode_meta_id(),
-          this.string(),
-          this.string(),
-          this.array((_) => this.string()),
-          this.decode_basic_block(),
-          this.array((_) => this.decode_handler_case())
-        );
-      }
-
       default:
         throw unreachable(tag, "Declaration");
     }
   }
 
   decode_handler_case() {
-    const tag = this.decode_enum_tag(IR.HandlerCaseTag, "handler case");
-    switch (tag) {
-      case IR.HandlerCaseTag.ON: {
-        return new IR.HandlerCaseOn(
-          this.decode_meta_id(),
-          this.string(),
-          this.string(),
-          this.array((_) => this.string()),
-          this.decode_basic_block()
-        );
-      }
-
-      case IR.HandlerCaseTag.USE: {
-        return new IR.HandlerCaseUse(
-          this.decode_meta_id(),
-          this.string(),
-          this.decode_basic_block(),
-          this.uint32()
-        );
-      }
-
-      default:
-        throw unreachable(tag, "handler case");
-    }
+    return new IR.HandlerCase(
+      this.decode_meta_id(),
+      this.string(),
+      this.string(),
+      this.array((_) => this.string()),
+      this.decode_basic_block()
+    );
   }
 
   decode_type() {
