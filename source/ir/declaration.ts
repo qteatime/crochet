@@ -18,7 +18,6 @@ export enum DeclarationTag {
   CONTEXT,
   FOREIGN_TYPE,
   EFFECT,
-  HANDLER,
 }
 
 export enum Visibility {
@@ -39,8 +38,7 @@ export type Declaration =
   | DContext
   | DWhen
   | DForeignType
-  | DEffect
-  | DHandler;
+  | DEffect;
 
 abstract class BaseDeclaration {
   abstract tag: DeclarationTag;
@@ -231,19 +229,4 @@ export class EffectCase {
     readonly parameters: string[],
     readonly types: Type[]
   ) {}
-}
-
-export class DHandler extends BaseDeclaration {
-  readonly tag = DeclarationTag.HANDLER;
-
-  constructor(
-    readonly meta: Metadata,
-    readonly documentation: string,
-    readonly name: string,
-    readonly parameters: string[],
-    readonly initialisation: BasicBlock,
-    readonly handlers: HandlerCase[]
-  ) {
-    super();
-  }
 }

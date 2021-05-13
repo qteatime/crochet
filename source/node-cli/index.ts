@@ -152,9 +152,13 @@ async function run([file]: string[], options: Options) {
       "crochet.core",
       "debug-printer"
     )!;
-    const printer = Crochet.vm.Values.instantiate(type, []);
-    const repr0 = await crochet.run("_ show: _", [printer, value]);
-    repr = Crochet.vm.Values.text_to_string(repr0);
+    if (type == null) {
+      repr = Crochet.vm.Location.simple_value(value);
+    } else {
+      const printer = Crochet.vm.Values.instantiate(type, []);
+      const repr0 = await crochet.run("_ show: _", [printer, value]);
+      repr = Crochet.vm.Values.text_to_string(repr0);
+    }
   } catch (e) {
     console.error(e);
     repr = Crochet.vm.Location.simple_value(value);

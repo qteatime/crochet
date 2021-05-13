@@ -1,6 +1,5 @@
 import * as Ast from "../generated/crochet-grammar";
 import * as IR from "../ir";
-import { HandlerCaseOn, HandlerCaseUse } from "../ir";
 import { cast, force_cast } from "../utils/utils";
 import {
   resolve_escape,
@@ -1127,26 +1126,13 @@ export class LowerToIR {
   }
 
   handler(handler: Ast.Handler) {
-    return handler.match<IR.HandlerCase>({
-      On: (pos, name, variant, args, body) => {
-        return new HandlerCaseOn(
-          this.context.register(pos),
-          name.name,
-          variant.name,
-          args.map((x) => x.name),
-          new IR.BasicBlock(this.fun_body(body))
-        );
-      },
-
-      Use: (pos, name, args) => {
-        return new HandlerCaseUse(
-          this.context.register(pos),
-          name.name,
-          new IR.BasicBlock(args.flatMap((x) => this.expression(x))),
-          args.length
-        );
-      },
-    });
+    return new IR.HandlerCase(
+      this.context.register(handler.pos),
+      handler.name.name,
+      handler.variant.name,
+      handler.args.map((x) => x.name),
+      new IR.BasicBlock(this.fun_body(handler.body))
+    );
   }
 
   statements(xs: Ast.Statement[]) {
@@ -1696,21 +1682,6 @@ export class LowerToIR {
                 types
               );
             })
-          ),
-        ];
-      },
-
-      Handler: (pos, cmeta, name, parameters, body, handlers) => {
-        const id = this.context.register(pos);
-
-        return [
-          new IR.DHandler(
-            id,
-            this.documentation(cmeta),
-            name.name,
-            parameters.map((x) => x.name),
-            this.statements(body),
-            this.handlers(handlers)
           ),
         ];
       },

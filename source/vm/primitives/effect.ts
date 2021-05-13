@@ -16,13 +16,20 @@ import { module_location, simple_value } from "./location";
 import { assert_tag, has_type } from "./values";
 import * as Environments from "./environments";
 
+export function effect_name(x: string) {
+  return `effect ${x}`;
+}
+
+export function variant_name(x: string, variant: string) {
+  return `effect ${x}.${variant}`;
+}
+
 export function materialise_effect(
   module: CrochetModule,
   name: string,
   variant: string
 ) {
-  const full_name = `${name}.${variant}`;
-  const type = module.types.try_lookup(full_name);
+  const type = module.types.try_lookup(variant_name(name, variant));
   if (type == null) {
     throw new ErrArbitrary(
       `undefined-effect`,
@@ -57,6 +64,7 @@ export function try_find_handler(stack: HandlerStack, value: CrochetValue) {
         return { handler, stack: current };
       }
     }
+    current = current.parent;
   }
   return null;
 }
@@ -133,16 +141,8 @@ export function make_handle(
   const env = Environments.clone(env0);
   const handlers: Handler[] = [];
   for (const h of cases) {
-    switch (h.tag) {
-      case IR.HandlerCaseTag.ON: {
-        const type = materialise_effect(module, h.effect, h.variant);
-        handlers.push(new Handler(type, h.parameters, env, h.block));
-        break;
-      }
-
-      default:
-        throw new Error(`Unsupported ${IR.HandlerCaseTag[h.tag]}`);
-    }
+    const type = materialise_effect(module, h.effect, h.variant);
+    handlers.push(new Handler(type, h.parameters, env, h.block));
   }
 
   const stack = new HandlerStack(activation.handlers, handlers);
@@ -154,6 +154,6 @@ export function make_handle(
     stack,
     body
   );
-  stack.activation = new_activation;
+  stack.activation = activation;
   return new_activation;
 }

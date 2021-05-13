@@ -19,7 +19,7 @@ import {
   Metadata,
 } from "./intrinsics";
 import { Tree, Relation } from "./logic";
-import { Commands, Modules, Tests, Types, World } from "./primitives";
+import { Commands, Effects, Modules, Tests, Types, World } from "./primitives";
 import { Contexts } from "./simulation";
 
 export function make_universe() {
@@ -294,7 +294,7 @@ export function load_declaration(
       const effect = universe.types.Effect;
       const parent = new CrochetType(
         module,
-        declaration.name,
+        Effects.effect_name(declaration.name),
         declaration.documentation,
         effect,
         [],
@@ -305,7 +305,7 @@ export function load_declaration(
       for (const c of declaration.cases) {
         const type = new CrochetType(
           module,
-          `${declaration.name}.${c.name}`,
+          Effects.variant_name(declaration.name, c.name),
           c.documentation,
           parent,
           c.parameters,
@@ -316,7 +316,7 @@ export function load_declaration(
         parent.sub_types.push(type);
         Types.define_type(module, type.name, type, IR.Visibility.GLOBAL);
       }
-      Types.define_type(module, declaration.name, parent, IR.Visibility.GLOBAL);
+      Types.define_type(module, parent.name, parent, IR.Visibility.GLOBAL);
       Types.seal(parent);
       break;
     }
@@ -433,10 +433,6 @@ export function load_declaration(
       const context = Contexts.lookup_context(module, declaration.context);
       Contexts.add_event(context, event);
       break;
-    }
-
-    case t.HANDLER: {
-      throw new Error(`Unsupported handler`);
     }
 
     default:

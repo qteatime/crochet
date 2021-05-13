@@ -27,19 +27,10 @@ type Declaration =
   | Local(pos: Meta, decl: Declaration)
   | Test(pos: Meta, title: String, body: Statement[])
   | Effect(pos: Meta, cmeta: Metadata, name: Name, cases: EffectCase[])
-  | Handler( pos: Meta,
-             cmeta: Metadata,
-             name: Name,
-             parameters: Name[],
-             body: Statement[],
-             handlers: Handler[]
-             )
 
 type EffectCase(pos: Meta, cmeta: Metadata, name: Name, params: Parameter[])
 
-type Handler =
-  | On(pos: Meta, name: Name, variant: Name, args: Name[], body: Statement[])
-  | Use(pos: Meta, name: Name, args: Expression[])
+type Handler(pos: Meta, name: Name, variant: Name, args: Name[], body: Statement[])
 
 type TrailingTest(pos: Meta, body: Statement[])
 
@@ -240,7 +231,6 @@ grammar Crochet : Program {
     | localDeclaration
     | testDeclaration
     | effectDeclaration
-    | handlerDeclaration
 
   effectDeclaration =
     | m:declarationMeta effect_ n:atom with_ cs:effectCase+ end_
@@ -250,25 +240,8 @@ grammar Crochet : Program {
     | m:declarationMeta s:atom xs:typeParams s<";">
       -> EffectCase(meta, m, s, xs)
 
-  handlerDeclaration =
-    | m:declarationMeta handler_ n:atom xs:nameParams b:handlerBody with_ hs:handlers end_
-      -> Declaration.Handler(meta, m, n, xs, b, hs)
-
   typeParams =
     | s<"("> xs:list0<typeField, s<",">> s<")"> -> xs
-
-  nameParams =
-    | s<"("> xs:list0<name, s<",">> s<")"> -> xs
-
-  handlerBody =
-    | do_ xs:statements -> xs
-    |                   -> []
-
-  handlers =
-    | on_ n:atom s<"."> v:atom s<"("> xs:list0<name, s<",">> s<")"> b:eblock
-      -> Handler.On(meta, n, v, xs, b)
-    | n:atom s<"("> xs:list0<expression, s<",">> s<")"> s<";">
-      -> Handler.Use(meta, n, xs)
 
   testDeclaration =
     | test_ s:string do_ b:statements end_
@@ -754,6 +727,13 @@ grammar Crochet : Program {
     | handle_ b:statements with_ hs:handlers end_
       -> Expression.Handle(meta, b, hs)
 
+  handlers =
+    | xs:one_handler+ -> xs
+
+  one_handler =
+    | on_ n:atom s<"."> v:atom s<"("> xs:list0<name, s<",">> s<")"> b:eblock
+      -> Handler(meta, n, v, xs, b)
+
   atomicExpression =
     | a:atom                                -> Expression.Global(meta, a)
     | lazyExpression
@@ -1011,7 +991,6 @@ grammar Crochet : Program {
   ensures_ = kw<"ensures">
   nothing_ = kw<"nothing">
   effect_ = kw<"effect">
-  handler_ = kw<"handler">
   handle_ = kw<"handle">
   continue_ = kw<"continue">
   perform_ = kw<"perform">
@@ -1025,5 +1004,5 @@ grammar Crochet : Program {
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
-    | effect_ | handler_ | handle_ | continue_ | perform_
+    | effect_ | handle_ | continue_ | perform_
 }
