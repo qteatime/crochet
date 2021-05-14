@@ -63,6 +63,15 @@ type tuple = foreign core.tuple;
 type 'enum = foreign core.enum;
 
 
+// Skeleton-based DSLs
+type skeleton-ast = foreign core.skeleton-ast;
+type skeleton-node = foreign core.skeleton-node;
+type skeleton-name = foreign core.skeleton-name;
+type skeleton-literal = foreign core.skeleton-literal;
+type skeleton-tuple = foreign core.skeleton-tuple;
+type skeleton-dynamic = foreign core.skeleton-dynamic;
+
+
 /// The type of results that may fail
 abstract result;
 type ok is result(value);

@@ -75,7 +75,7 @@ command doc nested: (Indent is integer) =
   new doc-nest(Indent, self);
 
 command doc aligned =
-  new doc-dynamic({ Column, Indent in self nested: (Column - Indent) });
+  new doc-dynamic({ Column, Indent in self nested: Column });
 
 command doc break =
   new doc-join(self, doc-break);
@@ -272,7 +272,7 @@ end
 
 command debug-representation of: (X is record) do
   condition
-    when X is-empty => #doc text: "->" | between: "[" and: "]";
+    when X is-empty => #doc text: "->" | between: "\[" and: "\]";
     always do
       let Pairs = X pairs map: { P in
         #doc text: P.key
@@ -309,10 +309,10 @@ command type-representation finish =
 command type-field as doc =
   #doc text: self.name
     | append: " -> "
-    | append: (debug-representation of: self.value);
+    | append: (debug-representation of: self.value | aligned);
 
 command type-pos as doc =
-  debug-representation of: self.value;
+  debug-representation of: self.value | aligned;
 
 command type-representation as doc do
   let Fields = self.fields map: (_ as doc);

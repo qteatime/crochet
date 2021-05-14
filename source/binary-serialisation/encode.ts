@@ -4,7 +4,7 @@ import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
 export const MAGIC = "CROC";
-export const VERSION = 23;
+export const VERSION = 25;
 
 export enum Section {
   DECLARATION = 1,
@@ -413,9 +413,65 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.OpTag.DSL: {
+        this.encode_meta_id(x.meta);
+        this.encode_type(x.type);
+        this.array(x.ast, (n) => this.encode_dsl_node(n));
+        break;
+      }
+
       default:
         throw unreachable(x, `Expression Op`);
     }
+  }
+
+  encode_dsl_node(x: IR.DslNode) {
+    this.encode_enum_tag(x.tag);
+    switch (x.tag) {
+      case IR.DslNodeTag.NODE: {
+        this.encode_dsl_meta(x.meta);
+        this.string(x.name);
+        this.array(x.children, (n) => this.encode_dsl_node(n));
+        this.map(x.attributes, (k, v) => {
+          this.string(k);
+          this.encode_dsl_node(v);
+        });
+        break;
+      }
+
+      case IR.DslNodeTag.LITERAL: {
+        this.encode_dsl_meta(x.meta);
+        this.encode_literal(x.value);
+        break;
+      }
+
+      case IR.DslNodeTag.VARIABLE: {
+        this.encode_dsl_meta(x.meta);
+        this.string(x.name);
+        break;
+      }
+
+      case IR.DslNodeTag.EXPRESSION: {
+        this.encode_dsl_meta(x.meta);
+        this.string(x.source);
+        this.encode_basic_block(x.value);
+        break;
+      }
+
+      case IR.DslNodeTag.LIST: {
+        this.encode_dsl_meta(x.meta);
+        this.array(x.children, (n) => this.encode_dsl_node(n));
+        break;
+      }
+
+      default:
+        throw unreachable(x, "DSL node");
+    }
+  }
+
+  encode_dsl_meta(x: IR.DslMeta) {
+    this.uint32(x.line);
+    this.uint32(x.column);
   }
 
   encode_simulation_goal(x: IR.SimulationGoal) {

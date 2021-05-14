@@ -35,7 +35,8 @@
     "source/indexed.crochet",
     "source/tuple.crochet",
     "source/result.crochet",
-    "source/thunk.crochet"
+    "source/thunk.crochet",
+    "source/skeleton.crochet"
   ],
   "capabilities": {
     "requires": [],

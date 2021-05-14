@@ -22,7 +22,8 @@
     "search.crochet",
     "branch.crochet",
     "actions.crochet",
-    "effects.crochet"
+    "effects.crochet",
+    "dsl.crochet"
   ],
   "capabilities": {
     "requires": [],

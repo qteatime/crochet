@@ -168,6 +168,67 @@ export function make_universe() {
   const Action = new CrochetType(null, "action", "", Any, [], [], false, null);
   const Effect = new CrochetType(null, "effect", "", null, [], [], false, null);
 
+  const Skeleton = new CrochetType(
+    null,
+    "skeleton",
+    "",
+    Any,
+    [],
+    [],
+    false,
+    null
+  );
+  const SNode = new CrochetType(
+    null,
+    "skeleton-node",
+    "",
+    Skeleton,
+    ["name", "children", "attributes"],
+    [Text, Tuple, Record],
+    false,
+    null
+  );
+  const SLiteral = new CrochetType(
+    null,
+    "skeleton-literal",
+    "",
+    Skeleton,
+    ["value"],
+    [Any],
+    false,
+    null
+  );
+  const SName = new CrochetType(
+    null,
+    "skeleton-name",
+    "",
+    Skeleton,
+    ["name"],
+    [Text],
+    false,
+    null
+  );
+  const SDynamic = new CrochetType(
+    null,
+    "skeleton-dynamic",
+    "",
+    Skeleton,
+    ["thunk"],
+    [Thunk],
+    false,
+    null
+  );
+  const SList = new CrochetType(
+    null,
+    "skeleton-tuple",
+    "",
+    Skeleton,
+    ["children"],
+    [Tuple],
+    false,
+    null
+  );
+
   world.native_types.define("crochet.core/core.any", Any);
   world.native_types.define("crochet.core/core.unknown", Unknown);
   world.native_types.define("crochet.core/core.nothing", Nothing);
@@ -193,6 +254,13 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.cell", Cell);
   world.native_types.define("crochet.core/core.action", Action);
 
+  world.native_types.define("crochet.core/core.skeleton-ast", Skeleton);
+  world.native_types.define("crochet.core/core.skeleton-node", SNode);
+  world.native_types.define("crochet.core/core.skeleton-name", SName);
+  world.native_types.define("crochet.core/core.skeleton-literal", SLiteral);
+  world.native_types.define("crochet.core/core.skeleton-dynamic", SDynamic);
+  world.native_types.define("crochet.core/core.skeleton-tuple", SList);
+
   return new Universe(world, XorShift.new_random(), {
     Any,
     Unknown,
@@ -213,6 +281,13 @@ export function make_universe() {
     Cell,
     Action,
     Effect,
+    Skeleton: {
+      Node: SNode,
+      Name: SName,
+      Literal: SLiteral,
+      Dynamic: SDynamic,
+      Tuple: SList,
+    },
   });
 }
 

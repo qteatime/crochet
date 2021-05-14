@@ -1118,7 +1118,93 @@ export class LowerToIR {
 
         return [...this.expression(value), new IR.ContinueWith(id)];
       },
+
+      Dsl: (pos, language, ast) => {
+        return [
+          new IR.Dsl(
+            this.context.register(pos),
+            this.type(language),
+            ast.map((x) => this.dsl_node(x))
+          ),
+        ];
+      },
     });
+  }
+
+  dsl_node(x: Ast.DslAst): IR.DslNode {
+    return x.match<IR.DslNode>({
+      Node: (pos, sig, attrs) => {
+        const { name, values } = this.dsl_signature(sig);
+        return new IR.DslAstNode(
+          this.dsl_meta(pos),
+          name,
+          values.map((x) => this.dsl_node(x)),
+          this.dsl_attributes(attrs)
+        );
+      },
+
+      Lit: (pos, x) => {
+        return new IR.DslAstLiteral(this.dsl_meta(pos), this.literal(x));
+      },
+
+      Var: (pos, name) => {
+        return new IR.DslAstVariable(this.dsl_meta(pos), name.name);
+      },
+
+      Dynamic: (pos, x) => {
+        return new IR.DslAstExpression(
+          this.dsl_meta(pos),
+          pos.source_slice,
+          new IR.BasicBlock([
+            ...this.expression(x),
+            new IR.Return(this.context.register(pos)),
+          ])
+        );
+      },
+
+      List: (pos, values) => {
+        return new IR.DslAstNodeList(
+          this.dsl_meta(pos),
+          values.map((x) => this.dsl_node(x))
+        );
+      },
+    });
+  }
+
+  dsl_meta(x: Ast.Meta): IR.DslMeta {
+    return x.position;
+  }
+
+  dsl_signature(xs: Ast.DslSignature<Ast.DslAst>[]) {
+    const name = xs
+      .map((x) => {
+        if (x instanceof Ast.$$DslSignature$_Name) {
+          return x.name.name;
+        } else {
+          return "_";
+        }
+      })
+      .join(" ");
+
+    const values = xs.flatMap((x) => {
+      if (x instanceof Ast.$$DslSignature$_Child) {
+        return [x.value as Ast.DslAst];
+      } else {
+        return [];
+      }
+    });
+
+    return { name, values };
+  }
+
+  dsl_attributes(xs: Ast.DslAttr[]) {
+    const result = new Map<string, IR.DslNode>();
+
+    for (const x of xs) {
+      result.set(x.key.name.replace(/^--/, ""), this.dsl_node(x.value));
+    }
+
+    return result;
   }
 
   handlers(handlers: Ast.Handler[]) {

@@ -1,0 +1,41 @@
+% crochet
+
+command skeleton-node name = self.name;
+command skeleton-node children = self.children;
+command skeleton-node attributes = self.attributes;
+
+command skeleton-literal value = self.value;
+
+command skeleton-name name = self.name;
+
+command skeleton-dynamic thunk = self.thunk;
+
+command skeleton-tuple children = self.children;
+
+
+command debug-representation of: (X is skeleton-node) =
+  debug-representation type: "skeleton-node"
+    | field: "name" value: X name
+    | field: "children" value: X children
+    | field: "attributes" value: X attributes
+    | finish;
+
+command debug-representation of: (X is skeleton-literal) =
+  debug-representation type: "skeleton-literal"
+    | value: X value
+    | finish;
+
+command debug-representation of: (X is skeleton-name) =
+  debug-representation type: "skeleton-name"
+    | value: X value
+    | finish;
+
+command debug-representation of: (X is skeleton-dynamic) =
+  debug-representation type: "skeleton-dynamic"
+    | value: X thunk
+    | finish;
+
+command debug-representation of: (X is skeleton-tuple) =
+  debug-representation type: "skeleton-tuple"
+    | value: X children
+    | finish;

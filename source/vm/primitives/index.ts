@@ -12,6 +12,7 @@ import * as Packages from "./packages";
 import * as World from "./world";
 import * as StackTrace from "./stack-trace";
 import * as Effects from "./effect";
+import * as DSL from "./dsl";
 
 export {
   Commands,
@@ -28,4 +29,5 @@ export {
   Values,
   World,
   Effects,
+  DSL,
 };

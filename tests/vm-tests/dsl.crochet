@@ -1,0 +1,80 @@
+% crochet
+
+abstract arithmetic;
+
+command #arithmetic evaluate: (X is skeleton-node) do
+  condition
+    when X name =:= "add _ _" do
+      let Left = X children first;
+      let Right = X children second;
+      (self evaluate: Left) + (self evaluate: Right);
+    end
+      
+    when X name =:= "sub _ _" do
+      let Left = X children first;
+      let Right = X children second;
+      (self evaluate: Left) - (self evaluate: Right);
+    end
+
+    when X name =:= "display _" do
+      [ value -> self evaluate: X children first,
+        tag -> (X attributes).tag
+      ]
+    end
+
+    when X name =:= "list _" do
+      self evaluate: X children first;
+    end
+  end
+end
+
+command #arithmetic evaluate: (Xs is tuple) do
+  for X in Xs do self evaluate: X end
+end
+
+command #arithmetic evaluate: (X is skeleton-literal) = X value;
+command #arithmetic evaluate: (X is skeleton-dynamic) = force X thunk;
+command #arithmetic evaluate: (X is skeleton-tuple) =
+  self evaluate: X children;
+
+test "Simple evaluation" do
+  let Result =
+    dsl arithmetic with
+      add 1 (add 2 (sub 3 2))
+    end;
+
+  assert Result =:= [1 + (2 + (3 - 2))];
+end
+
+test "Evaluation with thunks" do
+  let Result =
+    dsl arithmetic with
+      add 1 (add 2 @(3 - 2))
+    end;
+
+  assert Result =:= [1 + (2 + (3 - 2))];
+end
+
+test "Attributes" do
+  let Result =
+    dsl arithmetic with
+      add 1 2 --tag "1 + 2";
+      add 3 4 --tag "3 + 4";
+    end;
+
+  assert Result =:= [
+    [value -> 1 + 2, tag -> "1 + 2"],
+    [value -> 3 + 4, tag -> "3 + 4"]
+  ]
+end
+
+test "List children" do
+  let Result =
+    dsl arithmetic with
+      list [1; 2; 3; 4]
+    end;
+
+  assert Result =:= [
+    [1, 2, 3, 4]
+  ];
+end
