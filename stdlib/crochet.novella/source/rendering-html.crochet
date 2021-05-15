@@ -1,0 +1,80 @@
+% crochet
+
+local singleton html;
+
+command nvl-empty render: html =
+  foreign html.empty();
+
+command nvl-flow render: html =
+  foreign html.element(
+    [data-kind -> "flow"],
+    self.children map: (_ render: html)
+  );
+
+command nvl-stack render: html =
+  foreign html.element(
+    [data-kind -> "stack"],
+    self.children map: (_ render: html)
+  );
+
+command nvl-text render: html =
+  foreign html.text(self.x);
+
+command nvl-style render: html =
+  foreign html.element(
+    [class -> #text join: self.classes with: " " | flatten-into-plain-text],
+    [self.child render: html]
+  );
+
+command nvl-role render: html =
+  foreign html.role(self.role, self.child render: html);
+
+
+command novella with-root: Element do: (Block is function-0) do
+  let Canvas = foreign html.make-canvas(Element);
+  handle
+    Block();
+  with
+    on novella.show(X) do
+      foreign html.show(Canvas, X render: html);
+      continue with nothing;
+    end
+
+    on novella.wait-interaction() do
+      foreign html.wait(Canvas);
+      continue with nothing;
+    end
+
+    on novella.wait-selection(Reference) do
+      let Selected = html.wait-selection(Reference);
+      continue with Selected;
+    end
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

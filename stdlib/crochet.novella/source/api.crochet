@@ -1,0 +1,7 @@
+% crochet
+
+command novella show: X =
+  perform novella.show(X as element);
+
+command novella wait-interaction =
+  perform novella.wait-interaction();

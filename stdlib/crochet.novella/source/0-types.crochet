@@ -1,0 +1,23 @@
+% crochet
+
+singleton novella;
+
+singleton novella-dsl;
+type novella-env(parent, bindings);
+
+type canvas(x);
+
+abstract element;
+singleton nvl-empty is element;
+type nvl-flow is element(children is tuple<element>);
+type nvl-stack is element(children is tuple<element>);
+type nvl-text is element(x is text);
+type nvl-style is element(child is element, classes is tuple<text>);
+type nvl-role is element(child is element, role is text);
+
+effect novella with
+  show(X is element);
+  wait-interaction();
+  wait-selection(Reference);
+end
+

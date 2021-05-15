@@ -1,0 +1,65 @@
+% crochet
+
+command novella stack: (Xs is tuple<element>) =
+  new nvl-stack(Xs map: (_ as element));
+
+command element style: (Classes is tuple<text>) =
+  new nvl-style(self, Classes);
+
+command element role: (Role is text) =
+  new nvl-role(self, Role);
+
+command element append: (That is element) =
+  new nvl-flow([self, That]);
+
+command element prepend: (That is element) =
+  new nvl-flow([That, self]);
+
+command element between: (X is element) and: (Y is element) =
+  new nvl-flow([X, self, Y]);
+
+
+command element title =
+  self style: ["novella-title"]
+    | role: "h1";
+
+command element subtitle =
+  self style: ["novella-subtitle"]
+    | role: "h2";
+
+command element paragraph =
+  self style: ["novella-paragraph"]
+    | role: "p";
+
+command element divisor =
+  self style: ["novella-divisor"]
+    | role: "hr";
+
+command element header =
+  self style: ["novella-header"]
+    | role: "header";
+
+command element strong =
+  self style: ["novella-strong"]
+    | role: "strong";
+
+command element emphasis =
+  self style: ["novella-emphasis"]
+    | role: "em";
+
+
+command element as element =
+  self;
+
+command text as element =
+  new nvl-text(self);
+
+command tuple as element =
+  new nvl-flow(self map: (_ as element));
+
+command interpolation as element =
+  (self parts map: (_ as element)) as element;
+
+command numeric as element =
+  (self as text) as element;
+

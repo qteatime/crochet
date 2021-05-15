@@ -84,3 +84,21 @@ test
   assert not ("abc" is-empty);
   assert not ("​" is-empty); // zero-width space (u200B)
 end
+
+/// Joins a set of texts
+command #text join: (Parts is tuple) with: (Separator is text) do
+  condition
+    when Parts is-empty => "" as interpolation;
+    when Parts count =:= 1 => Parts as interpolation;
+    always => Parts fold-with: { A, B in "[A][Separator][B]" };
+  end
+test
+  assert (#text join: ["a", "b", "c"] with: ", " | flatten-into-plain-text)
+    === "a, b, c";
+
+  assert (#text join: [] with: ", " | flatten-into-plain-text)
+    === "";
+
+  assert (#text join: ["a"] with: ", " | flatten-into-plain-text)
+    === "a";
+end

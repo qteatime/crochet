@@ -1,0 +1,14 @@
+{
+  "name": "crochet.novella",
+  "description": "A tool for writing interactive story books",
+  "stability": "experimental",
+  "version": "1.0.0",
+  "dependencies": ["crochet.core"],
+  "sources": [
+    "source/0-types.crochet",
+    "source/elements.crochet",
+    "source/api.crochet",
+    "source/rendering-html.crochet"
+  ],
+  "native_sources": ["native/html.js"]
+}
