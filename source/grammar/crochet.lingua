@@ -768,13 +768,18 @@ grammar Crochet : Program {
     | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
 
   interpolateText<t> =
-    | s<"\""> xs:interpolatePart<t>* "\""
+    | s<"\"\"\""> xs:interpolatePart<t, "\"\"\"">* "\"\"\""
+      -> Interpolation(meta, xs)
+    | s<"\""> xs:interpolatePart<t, "\"">* "\""
       -> Interpolation(meta, xs)
 
-  interpolatePart<p> =
+  interpolatePart<p, e> =
     | "\\" c:escape_sequence     -> InterpolationPart.Escape(meta, c)
     | "[" x:s<p> s<"]">          -> InterpolationPart.Dynamic(meta, x)
-    | ~"\"" c:any                -> InterpolationPart.Static(meta, c)
+    | c:interpolateStatic<e>     -> InterpolationPart.Static(meta, c)
+
+  token interpolateStatic<e> =
+    | (~(e | "\\" | "[") any)+ 
 
 
   // -- DSLs

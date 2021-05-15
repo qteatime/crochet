@@ -1,5 +1,6 @@
 import * as FS from "fs";
 import * as Path from "path";
+import * as Util from "util";
 import { CrochetForNode } from "../targets/node";
 import Crochet from "../index";
 import { logger } from "../utils/logger";
@@ -82,6 +83,12 @@ function parse_options(args0: string[]) {
   }
 
   return { args: positional, options: options };
+}
+
+async function show_ast([file]: string[], options: Options) {
+  const source = FS.readFileSync(file, "utf-8");
+  const ast = Crochet.compiler.parse(source, file);
+  console.log(Util.inspect(ast, false, null, true));
 }
 
 async function show_ir([file]: string[], options: Options) {
@@ -281,6 +288,7 @@ function help(command?: string) {
           "  crochet test <crochet.json> [options]\n",
           "  crochet build <crochet.json> [options]\n",
           "  crochet show-ir <file.crochet> [options]\n",
+          "  crochet show-ast <file.crochet> [options]\n",
           "  crochet help [<command>]\n",
           "  crochet version\n",
           "\n",
@@ -322,6 +330,8 @@ void (async function main() {
     switch (command) {
       case "show-ir":
         return await show_ir(args, options);
+      case "show-ast":
+        return await show_ast(args, options);
       case "run":
         return await run(args, options);
       case "test":
