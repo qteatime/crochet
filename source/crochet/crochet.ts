@@ -11,9 +11,13 @@ export interface IFileSystem {
   exists(x: string): Promise<boolean>;
   read_package(name: string): Promise<Package.Package>;
   read_file(x: string): Promise<string>;
-  read_binary(x: string): Promise<Buffer>;
+  read_binary(
+    file: Package.ResolvedFile,
+    pkg: Package.ResolvedPackage
+  ): Promise<Buffer>;
   read_native_module(
-    x: string
+    file: Package.ResolvedFile,
+    pkg: Package.ResolvedPackage
   ): Promise<(_: ForeignInterface) => Promise<void>>;
 }
 
@@ -21,21 +25,6 @@ export interface ISignal {
   request_capabilities(
     graph: Package.PackageGraph,
     root: Package.Package
-  ): Promise<boolean>;
-
-  no_binary(
-    x: Package.ResolvedFile,
-    pkg: Package.ResolvedPackage
-  ): Promise<boolean>;
-
-  compile_external_language(
-    x: Package.ResolvedFile,
-    pkg: Package.ResolvedPackage
-  ): Promise<boolean>;
-
-  outdated_binary(
-    x: Package.ResolvedFile,
-    pkg: Package.ResolvedPackage
   ): Promise<boolean>;
 }
 
@@ -164,9 +153,7 @@ export class BootedCrochet {
     logger.debug(
       `Loading native module ${x.relative_filename} from package ${pkg.name}`
     );
-    const module = await this.crochet.fs.read_native_module(
-      x.absolute_filename
-    );
+    const module = await this.crochet.fs.read_native_module(x, pkg);
     const ffi = new ForeignInterface(this.universe, cpkg, x.relative_filename);
     await module(ffi);
   }
@@ -179,46 +166,19 @@ export class BootedCrochet {
     logger.debug(
       `Loading module ${x.relative_filename} from package ${pkg.name}`
     );
-    if (!(await this.crochet.fs.exists(x.binary_image))) {
-      if (!(await this.crochet.signal.no_binary(x, pkg))) {
-        throw new Error(
-          [
-            `Failed to load ${x.relative_filename} in ${pkg.name} because `,
-            `it has not been compiled yet.`,
-          ].join("")
-        );
-      }
-    }
 
-    if (!x.is_crochet) {
-      if (!(await this.crochet.signal.compile_external_language(x, pkg))) {
-        throw new Error(
-          [
-            `Failed to load ${x.relative_filename} in ${pkg.name} because `,
-            `it's not a supported extension.`,
-          ].join("")
-        );
-      }
-    }
-
-    const source = await this.crochet.fs.read_file(
-      x.crochet_file.absolute_filename
-    );
-    const buffer = await this.crochet.fs.read_binary(x.binary_image);
+    const buffer = await this.crochet.fs.read_binary(x, pkg);
     const header = Binary.decode_header(buffer);
-    const hash = Binary.hash_file(source);
 
-    if (header.version !== Binary.VERSION || !header.hash.equals(hash)) {
-      if (!(await this.crochet.signal.outdated_binary(x, pkg))) {
-        throw new Error(
-          [
-            `Failed to load ${x.relative_filename} in ${pkg.name}. `,
-            `The compiled binary image is outdated.`,
-          ].join("")
-        );
-      } else {
-        return this.load_source(x, pkg, cpkg);
-      }
+    if (header.version !== Binary.VERSION) {
+      throw new Error(
+        [
+          `Failed to load ${x.relative_filename} in ${pkg.name}. `,
+          `The compiled binary image cannot be decoded by this VM `,
+          `due to a version mismatch (expected ${Binary.VERSION}, `,
+          `found ${header.version})`,
+        ].join("")
+      );
     }
 
     const ir = Binary.decode_program(buffer);

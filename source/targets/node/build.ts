@@ -76,18 +76,44 @@ function is_crochet_up_to_date(file: Package.ResolvedFile, source: string) {
   if (!FS.existsSync(file.binary_image)) {
     return false;
   }
-  const current_hash = Binary.hash_file(source);
   const bin = FS.readFileSync(file.binary_image);
-  const { version, hash } = Binary.decode_header(bin);
-
-  if (
-    version !== Binary.VERSION ||
-    hash.toString("hex") !== current_hash.toString("hex")
-  ) {
+  const header = Binary.decode_header(bin);
+  if (is_up_to_date(bin, source)) {
+    logger.debug(`Skipping ${file} (already up-to-date)`);
+    logger.debug(
+      `--- (version ${header.version}, hash ${header.hash.toString("hex")})`
+    );
+    return true;
+  } else {
     return false;
   }
+}
 
-  logger.debug(`Skipping ${file} (already up-to-date)`);
-  logger.debug(`--- (version ${version}, hash ${hash.toString("hex")})`);
-  return true;
+function is_up_to_date(buffer: Buffer, source: string) {
+  const current_hash = Binary.hash_file(source);
+  const { version, hash } = Binary.decode_header(buffer);
+
+  return (
+    version === Binary.VERSION &&
+    hash.toString("hex") === current_hash.toString("hex")
+  );
+}
+
+export async function read_updated_binary(
+  file: Package.ResolvedFile,
+  pkg: Package.ResolvedPackage
+): Promise<Buffer> {
+  if (!FS.existsSync(file.binary_image)) {
+    await build_file(file, pkg);
+    return read_updated_binary(file, pkg);
+  }
+
+  const buffer = FS.readFileSync(file.binary_image);
+  const source = FS.readFileSync(file.crochet_file.absolute_filename, "utf-8");
+  if (is_up_to_date(buffer, source)) {
+    return buffer;
+  } else {
+    await compile_crochet(file, source);
+    return read_updated_binary(file, pkg);
+  }
 }

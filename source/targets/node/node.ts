@@ -12,7 +12,7 @@ import {
 import { logger } from "../../utils/logger";
 import { question } from "../../utils/prompt";
 import { union } from "../../utils/collections";
-import { build, build_file } from "./build";
+import { build, build_file, read_updated_binary } from "./build";
 import { CrochetTest, CrochetValue } from "../../vm";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
@@ -117,8 +117,11 @@ export class CrochetForNode {
       return FS.readFileSync(x, "utf-8");
     },
 
-    async read_binary(x: string) {
-      return FS.readFileSync(x);
+    async read_binary(
+      file: Package.ResolvedFile,
+      pkg: Package.ResolvedPackage
+    ) {
+      return read_updated_binary(file, pkg);
     },
 
     read_package: async (name: string) => {
@@ -136,15 +139,20 @@ export class CrochetForNode {
       );
     },
 
-    async read_native_module(x: string) {
+    async read_native_module(
+      file: Package.ResolvedFile,
+      pkg: Package.ResolvedPackage
+    ) {
       // FIXME: sandbox
-      const module = require(x);
+      const module = require(file.absolute_filename);
       if (typeof module.default === "function") {
         return module.default;
       } else if (typeof module === "function") {
         return module;
       } else {
-        throw new Error(`Native module ${x} does not expose a function`);
+        throw new Error(
+          `Native module ${file.relative_filename} in ${pkg.name} does not expose a function`
+        );
       }
     },
   };
@@ -191,35 +199,6 @@ export class CrochetForNode {
           }
         }
       }
-    },
-
-    no_binary: async (
-      file: Package.ResolvedFile,
-      pkg: Package.ResolvedPackage
-    ) => {
-      logger.debug(`Compiling ${file.relative_filename} in ${pkg.name}`);
-      await build_file(file, pkg);
-      return true;
-    },
-
-    compile_external_language: async (
-      file: Package.ResolvedFile,
-      pkg: Package.ResolvedPackage
-    ) => {
-      logger.debug(
-        `Compiling ${file.relative_filename} in ${pkg.name} to Crochet`
-      );
-      await build_file(file, pkg);
-      return true;
-    },
-
-    outdated_binary: async (
-      file: Package.ResolvedFile,
-      pkg: Package.ResolvedPackage
-    ) => {
-      logger.debug(`Re-compiling ${file.relative_filename} in ${pkg.name}`);
-      await build_file(file, pkg);
-      return true;
     },
   };
 
