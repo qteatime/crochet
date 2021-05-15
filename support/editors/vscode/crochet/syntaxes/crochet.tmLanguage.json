@@ -31,6 +31,23 @@
       "match": "(?<![a-zA-Z0-9\\-])[a-z][a-zA-Z0-9\\-]*:"
     },
     {
+      "name": "string.quoted.triple",
+      "begin": "<<",
+      "end": ">>",
+      "patterns": [
+        {
+          "name": "meta.string.interpolation",
+          "begin": "\\[",
+          "end": "\\]",
+          "contentName": "meta.embedded.line.crochet"
+        },
+        {
+          "name": "constant.character.escape",
+          "match": "\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\\{[0-9A-Fa-f]+\\}|.|$)"
+        }
+      ]
+    },
+    {
       "name": "string.quoted.double",
       "begin": "\"",
       "end": "\"",
@@ -42,7 +59,7 @@
           "contentName": "meta.embedded.line.crochet"
         },
         {
-          "name": "constant.character.escape.js",
+          "name": "constant.character.escape",
           "match": "\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\\{[0-9A-Fa-f]+\\}|.|$)"
         }
       ]

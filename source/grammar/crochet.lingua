@@ -768,7 +768,7 @@ grammar Crochet : Program {
     | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
 
   interpolateText<t> =
-    | s<"\"\"\""> xs:interpolatePart<t, "\"\"\"">* "\"\"\""
+    | s<"<<"> xs:interpolatePart<t, ">>">* ">>"
       -> Interpolation(meta, xs)
     | s<"\""> xs:interpolatePart<t, "\"">* "\""
       -> Interpolation(meta, xs)
