@@ -190,7 +190,7 @@ async function repl([file0]: string[], options: Options) {
   let file = REPL.resolve_file(file0);
 
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
-  const pkg = await crochet.crochet.read_package_from_file(file);
+  const pkg = crochet.read_package_from_file(file);
   await REPL.repl(crochet, pkg.meta.name);
 }
 

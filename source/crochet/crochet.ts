@@ -9,6 +9,7 @@ import { CrochetValue, Environment } from "../vm";
 
 export interface IFileSystem {
   exists(x: string): Promise<boolean>;
+  read_package(name: string): Promise<Package.Package>;
   read_file(x: string): Promise<string>;
   read_binary(x: string): Promise<Buffer>;
   read_native_module(
@@ -45,7 +46,7 @@ export class Crochet {
   constructor(readonly fs: IFileSystem, readonly signal: ISignal) {}
 
   async boot(root: string, target: Package.Target) {
-    const pkg = this.get_package(root);
+    const pkg = await this.get_package(root);
     const graph = await Package.build_package_graph(
       pkg,
       target,
@@ -67,7 +68,8 @@ export class Crochet {
   }
 
   async register_package_from_file(filename: string) {
-    const pkg = await this.read_package_from_file(filename);
+    const source = await this.fs.read_file(filename);
+    const pkg = Package.parse_from_string(source, filename);
     return this.register_package(pkg);
   }
 
@@ -96,17 +98,14 @@ export class Crochet {
     },
   };
 
-  private get_package(name: string) {
+  private async get_package(name: string) {
     const pkg = this.registered_packages.get(name);
     if (pkg == null) {
-      throw new Error(`Package ${name} is not registered.`);
+      const pkg = await this.fs.read_package(name);
+      this.register_package(pkg);
+      return pkg;
     }
     return pkg;
-  }
-
-  async read_package_from_file(filename: string) {
-    const source = await this.fs.read_file(filename);
-    return Package.parse(JSON.parse(source), filename);
   }
 }
 

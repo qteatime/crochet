@@ -1,0 +1,26 @@
+% crochet
+
+command function-0 apply: (Args is tuple)
+requires nullary :: Args count =:= 0
+do
+  self();
+end
+
+command function-1 apply: (Args is tuple)
+requires unary :: Args count =:= 1
+do
+  self(Args at: 1)
+end
+
+command function-2 apply: (Args is tuple)
+requires binary :: Args count =:= 2
+do
+  self(Args at: 1, Args at: 2)
+end
+
+command function-3 apply: (Args is tuple)
+requires ternary :: Args count =:= 3
+do
+  self(Args at: 1, Args at: 2, Args at: 3)
+end
+

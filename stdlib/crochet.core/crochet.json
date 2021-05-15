@@ -36,7 +36,8 @@
     "source/tuple.crochet",
     "source/result.crochet",
     "source/thunk.crochet",
-    "source/skeleton.crochet"
+    "source/skeleton.crochet",
+    "source/lambda.crochet"
   ],
   "capabilities": {
     "requires": [],

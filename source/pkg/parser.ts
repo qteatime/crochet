@@ -99,3 +99,7 @@ export function parse(x: unknown, filename: string): Package {
     );
   }
 }
+
+export function parse_from_string(x: string, filename: string): Package {
+  return parse(JSON.parse(x), filename);
+}

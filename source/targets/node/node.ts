@@ -31,6 +31,10 @@ export class CrochetForNode {
     this.crochet = new Crochet(this.fs, this.signal);
   }
 
+  get search_paths() {
+    return [this.stdlib_path, ...this.library_paths];
+  }
+
   get stdlib_path() {
     return Path.join(__dirname, rootRelative, "stdlib");
   }
@@ -56,7 +60,7 @@ export class CrochetForNode {
   }
 
   async boot_from_file(filename: string, target: Package.Target) {
-    const pkg = await this.crochet.read_package_from_file(filename);
+    const pkg = this.read_package_from_file(filename);
     return this.boot(pkg, target);
   }
 
@@ -87,8 +91,13 @@ export class CrochetForNode {
   }
 
   async build(file: string) {
-    const pkg = await this.crochet.read_package_from_file(file);
+    const pkg = await this.read_package_from_file(file);
     await build(new Package.ResolvedPackage(pkg, Package.target_any()));
+  }
+
+  read_package_from_file(filename: string) {
+    const source = FS.readFileSync(filename, "utf-8");
+    return Package.parse_from_string(source, filename);
   }
 
   get ffi() {
@@ -110,6 +119,21 @@ export class CrochetForNode {
 
     async read_binary(x: string) {
       return FS.readFileSync(x);
+    },
+
+    read_package: async (name: string) => {
+      for (const root of this.search_paths) {
+        const full_path = Path.join(root, name, "crochet.json");
+        if (FS.existsSync(full_path)) {
+          const source = FS.readFileSync(full_path, "utf-8");
+          return Package.parse_from_string(source, full_path);
+        }
+      }
+      throw new Error(
+        `The package ${name} was not found in any the library directories:\n  - ${this.search_paths.join(
+          "\n  - "
+        )}`
+      );
     },
 
     async read_native_module(x: string) {
