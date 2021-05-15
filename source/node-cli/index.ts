@@ -6,6 +6,7 @@ import Crochet from "../index";
 import { logger } from "../utils/logger";
 import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
+import Server from "./server";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -33,6 +34,9 @@ function read(file: string) {
 
 interface Options {
   verbose: boolean;
+  web: {
+    port: number;
+  };
   test: {
     title?: string;
     module?: string;
@@ -47,6 +51,9 @@ function parse_options(args0: string[]) {
 
   options.verbose = false;
   options.test = {};
+  options.web = {
+    port: 8000,
+  };
 
   while (current < args0.length) {
     const x = args0[current];
@@ -72,6 +79,12 @@ function parse_options(args0: string[]) {
 
       case "--test-package": {
         options.test.package = args0[current + 1] ?? "";
+        current += 2;
+        continue;
+      }
+
+      case "--port": {
+        options.web.port = Number(args0[current + 1]) ?? options.web.port;
         current += 2;
         continue;
       }
@@ -194,6 +207,10 @@ async function repl([file0]: string[], options: Options) {
   await REPL.repl(crochet, pkg.meta.name);
 }
 
+async function run_web([file]: string[], options: Options) {
+  await Server(file, options.web.port);
+}
+
 function help(command?: string) {
   switch (command) {
     case "run":
@@ -284,6 +301,7 @@ function help(command?: string) {
           "\n",
           "Usage:\n",
           "  crochet run <crochet.json> [options] [-- <app-args...>]\n",
+          "  crochet run-web <crochet.json> [options]\n",
           "  crochet repl <crochet.json> [options]\n",
           "  crochet test <crochet.json> [options]\n",
           "  crochet build <crochet.json> [options]\n",
@@ -334,6 +352,8 @@ void (async function main() {
         return await show_ast(args, options);
       case "run":
         return await run(args, options);
+      case "run-web":
+        return await run_web(args, options);
       case "test":
         return await test(args, options);
       case "build":

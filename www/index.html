@@ -12,5 +12,24 @@
   <body>
     <div id="crochet"></div>
     <script src="/crochet.js"></script>
+    <script>
+      void (async function () {
+        try {
+          const root = document.querySelector("#crochet");
+          const crochet = new Crochet.CrochetForBrowser(
+            "library",
+            new Set([]),
+            false
+          );
+          await crochet.boot_from_file(
+            "game/crochet.json",
+            Crochet.Package.target_web()
+          );
+          await crochet.run("main-html: _", [crochet.ffi.box(root)]);
+        } catch (error) {
+          console.error(error);
+        }
+      })();
+    </script>
   </body>
 </html>
