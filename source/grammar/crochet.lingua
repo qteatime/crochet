@@ -330,7 +330,12 @@ grammar Crochet : Program {
     | s<"("> n:name is_ t:typeApp s<")">  -> Parameter.Typed(meta, n, t)
     | t:typeAppStatic                     -> Parameter.TypedOnly(meta, t)
 
+  typeAppConstraint =
+    | t:typeApp is_ c:typeApp -> c
+    | typeApp
+
   typeApp =
+    | t:typeAppStatic s<"<"> list0<typeAppConstraint, s<",">> s<">"> -> t
     | typeAppStatic
 
   typeAppStatic =
@@ -338,7 +343,9 @@ grammar Crochet : Program {
     | typeAppPrimary
 
   typeAppPrimary =
-    | t:typeName                  -> TypeApp.Named(meta, t)
+    | t:typeName                          -> TypeApp.Named(meta, t)
+    | n:name                              -> TypeApp.Any(meta)
+    | s<"("> t:typeAppConstraint s<")">   -> t
 
   typeName =
     | atom
