@@ -79,41 +79,6 @@ Try also running some of the web games with:
 $ node crochet.js run-web examples/web-games/cloak-of-darkness
 ```
 
-## PL Details for PL People
-
-The language Crochet uses is a mix of Logic, Functional, and Object Oriented
-programming. In essence:
-
-- There's a logic DSL featuring classic relational logic and a system of
-  typing facts that treats them as a path in a tree, allowing users to
-  declare the number of values allowed at each step. This mainly gets rid
-  of the need to explicitly negate facts, as new facts automatically replace
-  old ones for steps that only allow one value.
-
-- There's a small "functional" language in the outer side: expression-based,
-  mostly pure (the tree of facts is a global mutable database), based on
-  continuations, and (eventually) supporting algebraic effect handlers for
-  tracing, exploration, and re-playing games from traces.
-
-  There are no lambdas, however, only a very restricted form of partial
-  application. This is a conscious choice in order to more easily support
-  an IDE that allows writers to live-program their games.
-
-- Finally, a lot of the language is based on objects, subtyping, and
-  multi-methods. There's no multi-inheritance, and dispatch chooses the
-  most specific branch to evaluate.
-
-There's a lot that still needs to happen on the language design front, but
-I'm currently priorising finishing and publishing my games before I tackle
-some of the more "interesting" problems.
-
-The current VM implementation is pretty much a CESK machine on top of
-JavaScript's weird delimited continuations (by way of generators) and
-absolutely no optimisation whatsoever. There are a few optimisations that
-I want to apply when I have the time, like using polymorphic inline caches
-to support incremental searches, as most facts remain constant throughout
-the game.
-
 ## Licence
 
 Copyright (c) 2021 Q.  
