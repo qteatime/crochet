@@ -109,10 +109,6 @@ export class CrochetForNode {
   }
 
   fs: IFileSystem = {
-    async exists(x: string) {
-      return FS.existsSync(x);
-    },
-
     async read_file(x: string) {
       return FS.readFileSync(x, "utf-8");
     },
@@ -147,8 +143,6 @@ export class CrochetForNode {
       const module = require(file.absolute_filename);
       if (typeof module.default === "function") {
         return module.default;
-      } else if (typeof module === "function") {
-        return module;
       } else {
         throw new Error(
           `Native module ${file.relative_filename} in ${pkg.name} does not expose a function`

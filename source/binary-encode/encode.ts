@@ -1,15 +1,8 @@
 import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
-import { Writer, BinaryWriter } from "./binary";
+import { Writer, BinaryWriter } from "../binary/binary";
 import { hash_file } from "./hash";
-
-export const MAGIC = "CROC";
-export const VERSION = 27;
-
-export enum Section {
-  DECLARATION = 1,
-  SOURCE_INFO = 2,
-}
+import { MAGIC, Section, VERSION } from "../binary";
 
 class CrochetIREncoder extends BinaryWriter {
   constructor(target: Writer) {

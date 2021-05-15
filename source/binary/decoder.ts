@@ -5,7 +5,7 @@ const logger = {
 };
 import { unreachable } from "../utils/utils";
 import { BinaryReader } from "./binary";
-import { MAGIC, VERSION, Section } from "./encode";
+import { MAGIC, VERSION, Section } from "./constants";
 
 type enum_values<T> = T extends { [key: string]: infer U } ? U : never;
 type not<T, U> = T extends U ? never : T;

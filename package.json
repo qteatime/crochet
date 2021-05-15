@@ -9,6 +9,7 @@
     "build-ts": "just build-ts",
     "build-stdlib": "tsc -p stdlib",
     "build-grammar": "just build-grammar",
+    "build-browser": "browserify build/targets/browser/index.js -o www/crochet.js -s Crochet",
     "test": "just test && npm run build-stdlib && node crochet test tests/vm-tests/crochet.json",
     "benchmark": "node --expose-gc build/test/benchmarks/run.js"
   },

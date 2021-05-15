@@ -2,13 +2,12 @@ import * as Path from "path";
 import * as Package from "../pkg";
 import * as IR from "../ir";
 import * as VM from "../vm";
-import * as Binary from "../binary-serialisation";
+import * as Binary from "../binary";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
 import { CrochetValue, Environment } from "../vm";
 
 export interface IFileSystem {
-  exists(x: string): Promise<boolean>;
   read_package(name: string): Promise<Package.Package>;
   read_file(x: string): Promise<string>;
   read_binary(

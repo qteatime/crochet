@@ -1,10 +1,12 @@
 import * as Path from "path";
 import * as FS from "fs";
-import * as Binary from "../../binary-serialisation";
+import * as BinaryEnc from "../../binary-encode";
+import * as Binary from "../../binary";
 import * as Compiler from "../../compiler";
 import * as Package from "../../pkg";
 import { execFileSync } from "child_process";
 import { logger } from "../../utils/logger";
+import { hash_file } from "../../binary-encode/hash";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
 const linguaPath = Path.join(__dirname, rootRelative, "tools/lingua.js");
@@ -68,7 +70,7 @@ export async function compile_crochet(
   const program = Compiler.lower_to_ir(file.relative_filename, source, ast);
   // FIXME: actually use file streams...
   const stream = new Binary.BufferedWriter();
-  Binary.encode_program(program, stream);
+  BinaryEnc.encode_program(program, stream);
   FS.writeFileSync(file.binary_image, stream.collect());
 }
 
@@ -90,7 +92,7 @@ function is_crochet_up_to_date(file: Package.ResolvedFile, source: string) {
 }
 
 function is_up_to_date(buffer: Buffer, source: string) {
-  const current_hash = Binary.hash_file(source);
+  const current_hash = hash_file(source);
   const { version, hash } = Binary.decode_header(buffer);
 
   return (

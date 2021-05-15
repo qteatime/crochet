@@ -1,6 +1,6 @@
 import type * as IR from "./ir";
 import type * as Compiler from "./compiler";
-import type * as Binary from "./binary-serialisation";
+import type * as Binary from "./binary";
 import type * as VM from "./vm";
 import type * as Package from "./pkg";
 

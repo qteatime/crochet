@@ -4,7 +4,8 @@ import * as Assert from "assert";
 import { inspect } from "util";
 
 import * as Compiler from "../../compiler";
-import * as Binary from "../../binary-serialisation";
+import * as Binary from "../../binary";
+import * as BinaryEnc from "../../binary-encode";
 import * as Package from "../../pkg";
 import { logger } from "../../utils/logger";
 
@@ -39,7 +40,7 @@ for (const pkg of packages) {
       );
 
       const writer = new Binary.BufferedWriter();
-      Binary.encode_program(program, writer);
+      BinaryEnc.encode_program(program, writer);
 
       if (logger.verbose) {
         FS.writeFileSync(
