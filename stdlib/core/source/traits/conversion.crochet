@@ -25,7 +25,6 @@ end
 command (X is tuple) as interpolation
   = foreign conversion.tuple-to-interpolation(X)
 test
-  assert ([] as interpolation) =:= ("" as interpolation);
   assert (["a", 1, "c"] as interpolation) =:= "["a"][1]["c"]";
 end
 

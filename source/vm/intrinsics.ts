@@ -686,6 +686,7 @@ export class Universe {
         Literal: CrochetType;
         Dynamic: CrochetType;
         Tuple: CrochetType;
+        Interpolation: CrochetType;
       };
     }
   ) {

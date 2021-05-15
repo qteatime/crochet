@@ -493,6 +493,7 @@ export enum DslNodeTag {
   LITERAL,
   VARIABLE,
   LIST,
+  INTERPOLATION,
   EXPRESSION,
 }
 
@@ -501,6 +502,7 @@ export type DslNode =
   | DslAstLiteral
   | DslAstVariable
   | DslAstExpression
+  | DslAstInterpolation
   | DslAstNodeList;
 
 export type DslMeta = {
@@ -545,4 +547,29 @@ export class DslAstExpression {
     readonly source: string,
     readonly value: BasicBlock
   ) {}
+}
+
+export class DslAstInterpolation {
+  readonly tag = DslNodeTag.INTERPOLATION;
+
+  constructor(readonly meta: DslMeta, readonly parts: DslInterpolationPart[]) {}
+}
+
+export enum DslInterpolationTag {
+  STATIC,
+  DYNAMIC,
+}
+
+export type DslInterpolationPart =
+  | DslInterpolationStatic
+  | DslInterpolationDynamic;
+
+export class DslInterpolationStatic {
+  readonly tag = DslInterpolationTag.STATIC;
+  constructor(readonly text: string) {}
+}
+
+export class DslInterpolationDynamic {
+  readonly tag = DslInterpolationTag.DYNAMIC;
+  constructor(readonly node: DslNode) {}
 }

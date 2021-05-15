@@ -4,7 +4,7 @@ import { Writer, BinaryWriter } from "./binary";
 import { hash_file } from "./hash";
 
 export const MAGIC = "CROC";
-export const VERSION = 25;
+export const VERSION = 27;
 
 export enum Section {
   DECLARATION = 1,
@@ -464,8 +464,32 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.DslNodeTag.INTERPOLATION: {
+        this.encode_dsl_meta(x.meta);
+        this.array(x.parts, (n) => this.encode_dsl_interpolation_part(n));
+        break;
+      }
+
       default:
         throw unreachable(x, "DSL node");
+    }
+  }
+
+  encode_dsl_interpolation_part(x: IR.DslInterpolationPart) {
+    this.encode_enum_tag(x.tag);
+    switch (x.tag) {
+      case IR.DslInterpolationTag.STATIC: {
+        this.string(x.text);
+        break;
+      }
+
+      case IR.DslInterpolationTag.DYNAMIC: {
+        this.encode_dsl_node(x.node);
+        break;
+      }
+
+      default:
+        throw unreachable(x, "DSL Interpolation part");
     }
   }
 

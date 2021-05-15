@@ -860,7 +860,7 @@ export class Thread {
           );
         }
         const value = this.pop(activation);
-        return new JumpSignal(Effects.apply_continuation(k, activation, value));
+        return new JumpSignal(Effects.apply_continuation(k, value));
       }
 
       case t.HANDLE: {

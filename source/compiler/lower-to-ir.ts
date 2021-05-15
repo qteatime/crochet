@@ -59,54 +59,55 @@ class Context {
 }
 
 // Interpolation pass
-type InterpolationPart = IPEscape | IPStatic | IPDynamic;
+type InterpolationPart<T> = IPEscape<T> | IPStatic<T> | IPDynamic<T>;
 
-abstract class InterpolationPartBase {
-  merge(that: InterpolationPart): InterpolationPart | null {
+abstract class InterpolationPartBase<T> {
+  merge(that: InterpolationPart<T>): InterpolationPart<T> | null {
     return null;
   }
-  apply_indent(re: RegExp): InterpolationPart {
+  apply_indent(re: RegExp): InterpolationPart<T> {
     return this as any;
   }
-  trim_start(): InterpolationPart {
+  trim_start(): InterpolationPart<T> {
     return this as any;
   }
-  trim_end(): InterpolationPart {
+  trim_end(): InterpolationPart<T> {
     return this as any;
   }
-  resolve_escapes(): InterpolationPart {
+  resolve_escapes(): InterpolationPart<T> {
     return this as any;
   }
-  compile(): IR.Op[] {
-    return [];
+  compile<U>(on_static: (x: string) => U, on_dynamic: (_: T) => U): U {
+    return on_static(this.static_compile()!);
   }
+
   abstract static_compile(): string | null;
 }
 
-class IPStatic extends InterpolationPartBase {
+class IPStatic<T> extends InterpolationPartBase<T> {
   constructor(readonly value: string) {
     super();
   }
-  merge(that: InterpolationPart) {
+  merge(that: InterpolationPart<T>) {
     if (that instanceof IPStatic) {
-      return new IPStatic(this.value + that.value);
+      return new IPStatic<T>(this.value + that.value);
     } else {
       return null;
     }
   }
 
   apply_indent(re: RegExp) {
-    return new IPStatic(this.value.replace(re, (_, nl) => nl));
+    return new IPStatic<T>(this.value.replace(re, (_, nl) => nl));
   }
 
   trim_start() {
-    return new IPStatic(
+    return new IPStatic<T>(
       this.value.replace(/^[ \t]*(\r\n|\r|\n)/g, (_, nl) => nl)
     );
   }
 
   trim_end() {
-    return new IPStatic(
+    return new IPStatic<T>(
       this.value.replace(/(\r\n|\r|\n)[\t]*$/g, (_, nl) => nl)
     );
   }
@@ -116,12 +117,12 @@ class IPStatic extends InterpolationPartBase {
   }
 }
 
-class IPEscape extends InterpolationPartBase {
+class IPEscape<T> extends InterpolationPartBase<T> {
   constructor(readonly code: string) {
     super();
   }
   resolve_escapes() {
-    return new IPStatic(resolve_escape(this.code));
+    return new IPStatic<T>(resolve_escape(this.code));
   }
 
   static_compile(): null {
@@ -129,12 +130,12 @@ class IPEscape extends InterpolationPartBase {
   }
 }
 
-class IPDynamic extends InterpolationPartBase {
-  constructor(readonly body: IR.Op[]) {
+class IPDynamic<T> extends InterpolationPartBase<T> {
+  constructor(readonly body: T) {
     super();
   }
-  compile() {
-    return this.body;
+  compile<U>(on_static: (_: string) => U, on_dynamic: (_: T) => U) {
+    return on_dynamic(this.body);
   }
   static_compile() {
     return null;
@@ -322,8 +323,8 @@ export class LowerToIR {
     };
   }
 
-  interpolation_part(x: Ast.InterpolationPart<Ast.Expression>) {
-    return x.match<InterpolationPart>({
+  interpolation_part<T>(x: Ast.InterpolationPart<T>) {
+    return x.match<InterpolationPart<T>>({
       Escape: (_, code) => {
         return new IPEscape(code);
       },
@@ -331,16 +332,13 @@ export class LowerToIR {
         return new IPStatic(text);
       },
       Dynamic: (_, expr) => {
-        return new IPDynamic(this.expression(expr));
+        return new IPDynamic(expr);
       },
     });
   }
 
-  interpolation_parts(
-    pos: Ast.Meta,
-    xs: Ast.InterpolationPart<Ast.Expression>[]
-  ) {
-    const optimise_parts = (xs: InterpolationPart[]) => {
+  interpolation_parts<T>(pos: Ast.Meta, xs: Ast.InterpolationPart<T>[]) {
+    const optimise_parts = (xs: InterpolationPart<T>[]) => {
       if (xs.length === 0) {
         return [];
       } else {
@@ -355,7 +353,7 @@ export class LowerToIR {
               return { now: b, list: prev.list };
             }
           },
-          { now: hd, list: [] as InterpolationPart[] }
+          { now: hd, list: [] as InterpolationPart<T>[] }
         );
         const list = result.list;
         list.push(result.now);
@@ -366,7 +364,7 @@ export class LowerToIR {
     const column = pos.position.column;
     const indent = new RegExp(`(\r\n|\r|\n)[ \t]{0,${column}}`, "g");
 
-    const parts0 = xs.map((x) => this.interpolation_part(x));
+    const parts0 = xs.map((x) => this.interpolation_part<T>(x));
     const parts1 = optimise_parts(parts0);
     const parts2 = parts1.map((x) => x.apply_indent(indent));
     if (parts2.length > 0) {
@@ -742,7 +740,7 @@ export class LowerToIR {
         const x1 = new Ast.Expression.IntrinsicEqual(
           x.pos,
           new Ast.Expression.Variable(lpos, new Ast.Name(lpos, l)),
-          new Ast.Expression.Variable(rpos, new Ast.Name(rpos, l))
+          new Ast.Expression.Variable(rpos, new Ast.Name(rpos, r))
         );
         return [
           ["_ =:= _", [l, r]],
@@ -889,7 +887,12 @@ export class LowerToIR {
             ...parts
               .slice()
               .reverse()
-              .flatMap((x) => x.compile()),
+              .flatMap((x) =>
+                x.compile(
+                  () => [],
+                  (u) => this.expression(u)
+                )
+              ),
             new IR.Interpolate(
               id,
               parts.map((x) => x.static_compile())
@@ -1167,6 +1170,31 @@ export class LowerToIR {
           this.dsl_meta(pos),
           values.map((x) => this.dsl_node(x))
         );
+      },
+
+      Interpolation: (pos, value) => {
+        const parts = this.interpolation_parts(pos, value.parts);
+        if (parts.length === 0) {
+          return new IR.DslAstLiteral(
+            this.dsl_meta(pos),
+            new IR.LiteralText("")
+          );
+        } else if (parts.length === 1 && parts[0] instanceof IPStatic) {
+          return new IR.DslAstLiteral(
+            this.dsl_meta(pos),
+            new IR.LiteralText(parts[0].value)
+          );
+        } else {
+          return new IR.DslAstInterpolation(
+            this.dsl_meta(pos),
+            parts.map((x) =>
+              x.compile<IR.DslInterpolationPart>(
+                (s) => new IR.DslInterpolationStatic(s),
+                (x) => new IR.DslInterpolationDynamic(this.dsl_node(x))
+              )
+            )
+          );
+        }
       },
     });
   }

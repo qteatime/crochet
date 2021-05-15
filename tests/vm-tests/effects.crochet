@@ -24,7 +24,7 @@ test "Basic handlers" do
       let Who = perform io.read();
       perform io.write("Hello, [Who]");
     with
-      on io.read() => "World";
+      on io.read() => continue with "World";
       on io.write(X) => X;
     end;
 
@@ -66,7 +66,7 @@ test "Abstracted performs" do
       let Who = io read;
       io write: "Hello, [Who]";
     with
-      on io.read() => "World";
+      on io.read() => continue with "World";
       on io.write(X) => X;
     end;
 

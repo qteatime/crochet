@@ -228,6 +228,16 @@ export function make_universe() {
     false,
     null
   );
+  const SInterpolation = new CrochetType(
+    null,
+    "skeleton-interpolation",
+    "",
+    Skeleton,
+    ["parts"],
+    [Tuple],
+    false,
+    null
+  );
 
   world.native_types.define("crochet.core/core.any", Any);
   world.native_types.define("crochet.core/core.unknown", Unknown);
@@ -260,6 +270,10 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.skeleton-literal", SLiteral);
   world.native_types.define("crochet.core/core.skeleton-dynamic", SDynamic);
   world.native_types.define("crochet.core/core.skeleton-tuple", SList);
+  world.native_types.define(
+    "crochet.core/core.skeleton-interpolation",
+    SInterpolation
+  );
 
   return new Universe(world, XorShift.new_random(), {
     Any,
@@ -287,6 +301,7 @@ export function make_universe() {
       Literal: SLiteral,
       Dynamic: SDynamic,
       Tuple: SList,
+      Interpolation: SInterpolation,
     },
   });
 }

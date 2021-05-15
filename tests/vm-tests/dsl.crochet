@@ -18,7 +18,7 @@ command #arithmetic evaluate: (X is skeleton-node) do
 
     when X name =:= "display _" do
       [ value -> self evaluate: X children first,
-        tag -> (X attributes).tag
+        tag -> self evaluate: (X attributes).tag
       ]
     end
 
@@ -34,8 +34,22 @@ end
 
 command #arithmetic evaluate: (X is skeleton-literal) = X value;
 command #arithmetic evaluate: (X is skeleton-dynamic) = force X thunk;
+
 command #arithmetic evaluate: (X is skeleton-tuple) =
   self evaluate: X children;
+
+command #arithmetic evaluate: (X is skeleton-interpolation) do
+  let Parts =
+    for P in X parts do
+      condition
+        when P is static-text => P;
+        when P is skeleton-ast => self evaluate: P;
+      end
+    end;
+  
+  Parts as interpolation;
+end
+
 
 test "Simple evaluation" do
   let Result =
@@ -58,8 +72,8 @@ end
 test "Attributes" do
   let Result =
     dsl arithmetic with
-      add 1 2 --tag "1 + 2";
-      add 3 4 --tag "3 + 4";
+      display (add 1 2) --tag "1 + 2";
+      display (add 3 4) --tag "3 + 4";
     end;
 
   assert Result =:= [
@@ -76,5 +90,21 @@ test "List children" do
 
   assert Result =:= [
     [1, 2, 3, 4]
+  ];
+end
+
+open crochet.debug;
+
+test "Interpolations" do
+  let Result =
+    dsl arithmetic with
+      display <<Hello, [list [1; 2]] to [add 1 2]>> --tag "a";
+    end;
+
+  assert Result =:= [
+    [
+      value -> "["Hello, "][[1, 2]][" to "][1 + 2]",
+      tag -> "a"
+    ]
   ];
 end

@@ -12,6 +12,8 @@ command skeleton-dynamic thunk = self.thunk;
 
 command skeleton-tuple children = self.children;
 
+command skeleton-interpolation parts = self.parts;
+
 
 command debug-representation of: (X is skeleton-node) =
   debug-representation type: "skeleton-node"
@@ -38,4 +40,9 @@ command debug-representation of: (X is skeleton-dynamic) =
 command debug-representation of: (X is skeleton-tuple) =
   debug-representation type: "skeleton-tuple"
     | value: X children
+    | finish;
+
+command debug-representation of: (X is skeleton-interpolation) =
+  debug-representation type: "skeleton-interpolation"
+    | value: X parts
     | finish;

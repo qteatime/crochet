@@ -60,10 +60,10 @@ end
 command (X is interpolation) static-text =
   foreign interpolation.static-text(X)
 test
-  assert ("abc" as interpolation) static-text =:= "_";
-  assert ("a[1]c" ++ "abc") static-text =:= "a_c_";
-  assert "abc[1]def" static-text =:= "abc_def";
-  assert "[1][2]" static-text =:= "__";
+  assert ("abc" as interpolation) static-text =:= "\[_\]";
+  assert ("a[1]c" ++ "abc") static-text =:= "a\[_\]c\[_\]";
+  assert "abc[1]def" static-text =:= "abc\[_\]def";
+  assert "[1][2]" static-text =:= "\[_\]\[_\]";
 end
 
 command (X is interpolation) flatten-into-plain-text =

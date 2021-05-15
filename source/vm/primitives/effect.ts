@@ -109,26 +109,11 @@ export function prepare_handler_activation(
   );
 }
 
-export function apply_continuation(
-  k: CrochetActivation,
-  activation: CrochetActivation,
-  value: CrochetValue
-) {
-  const new_activation = new CrochetActivation(
-    activation,
-    k.location,
-    k.env,
-    k.continuation,
-    k.handlers,
-    k.block
-  );
-  new_activation.instruction = k.instruction;
-  new_activation.next();
-  new_activation.stack = k.stack.slice();
-  new_activation.stack.push(value);
-  new_activation.block_stack = k.block_stack.slice();
-  new_activation.set_return_value(k.return_value!);
-  return new_activation;
+// TODO: Clone continuation in tracing mode
+export function apply_continuation(k: CrochetActivation, value: CrochetValue) {
+  k.stack.push(value);
+  k.next();
+  return k;
 }
 
 export function make_handle(
@@ -148,7 +133,7 @@ export function make_handle(
   const stack = new HandlerStack(activation.handlers, handlers);
   const new_activation = new CrochetActivation(
     activation,
-    activation.location,
+    null,
     env,
     _return,
     stack,

@@ -475,8 +475,34 @@ class CrochetIRDecoder extends BinaryReader {
         );
       }
 
+      case IR.DslNodeTag.INTERPOLATION: {
+        return new IR.DslAstInterpolation(
+          this.decode_dsl_meta(),
+          this.array((_) => this.decode_dsl_interpolation_part())
+        );
+      }
+
       default:
         throw unreachable(tag, `DSL Node`);
+    }
+  }
+
+  decode_dsl_interpolation_part() {
+    const tag = this.decode_enum_tag(
+      IR.DslInterpolationTag,
+      "DSL Interpolation part"
+    );
+    switch (tag) {
+      case IR.DslInterpolationTag.STATIC: {
+        return new IR.DslInterpolationStatic(this.string());
+      }
+
+      case IR.DslInterpolationTag.DYNAMIC: {
+        return new IR.DslInterpolationDynamic(this.decode_dsl_node());
+      }
+
+      default:
+        throw unreachable(tag, "DSL Interpolation tag");
     }
   }
 

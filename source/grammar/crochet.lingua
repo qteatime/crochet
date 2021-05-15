@@ -112,6 +112,7 @@ type DslAst =
   | Lit(pos: Meta, value: Literal)
   | Var(pos: Meta, name: Name)
   | List(pos: Meta, values: DslAst[])
+  | Interpolation(pos: Meta, parts: Interpolation<DslAst>)
   | Dynamic(pos: Meta, value: Expression)
 
 type DslSignature<T> =
@@ -796,11 +797,12 @@ grammar Crochet : Program {
     | dslPrimary
 
   dslPrimary =
-    | n:name                    -> DslAst.Var(meta, n)
-    | l:literal                 -> DslAst.Lit(meta, l)
-    | x:dslCrochet              -> DslAst.Dynamic(meta, x)
-    | xs:dslNodeTuple           -> DslAst.List(meta, xs)
-    | s<"("> x:dslNode s<")">   -> x
+    | n:name                      -> DslAst.Var(meta, n)
+    | x:interpolateText<dslNode>  -> DslAst.Interpolation(meta, x)
+    | l:literal                   -> DslAst.Lit(meta, l)
+    | x:dslCrochet                -> DslAst.Dynamic(meta, x)
+    | xs:dslNodeTuple             -> DslAst.List(meta, xs)
+    | s<"("> x:dslNode s<")">     -> x
 
   dslNodeTuple =
     | s<"["> xs:dslNodeList s<"]"> -> xs

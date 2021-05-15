@@ -18,14 +18,14 @@ export default (ffi: ForeignInterface) => {
   }
 
   function from_json(x: unknown): unknown {
-    if (typeof x === "object" && x != null) {
+    if (Array.isArray(x)) {
+      return x.map(from_json);
+    } else if (typeof x === "object" && x != null) {
       const result = new Map<string, unknown>();
       for (const [k, v] of Object.entries(x)) {
         result.set(k, from_json(v));
       }
       return result;
-    } else if (Array.isArray(x)) {
-      return x.map(from_json);
     } else {
       return x;
     }

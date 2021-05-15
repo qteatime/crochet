@@ -69,6 +69,7 @@ type skeleton-node = foreign core.skeleton-node;
 type skeleton-name = foreign core.skeleton-name;
 type skeleton-literal = foreign core.skeleton-literal;
 type skeleton-tuple = foreign core.skeleton-tuple;
+type skeleton-interpolation = foreign core.skeleton-interpolation;
 type skeleton-dynamic = foreign core.skeleton-dynamic;
 
 

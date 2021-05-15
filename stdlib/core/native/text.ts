@@ -136,8 +136,13 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("text.from-lines", (xs) => {
     let result = "";
+    let first = true;
     for (const x of ffi.tuple_to_array(xs)) {
+      if (!first) {
+        result += "\n";
+      }
       result += ffi.text_to_string(x);
+      first = false;
     }
     return ffi.text(result);
   });

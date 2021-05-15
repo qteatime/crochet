@@ -66,6 +66,27 @@ export function reify_dsl_node(
       ]);
     }
 
+    case IR.DslNodeTag.INTERPOLATION: {
+      const parts = node.parts.map((x) => {
+        switch (x.tag) {
+          case IR.DslInterpolationTag.STATIC: {
+            return make_static_text(universe, x.text);
+          }
+
+          case IR.DslInterpolationTag.DYNAMIC: {
+            return reify_dsl_node(universe, module, env, x.node);
+          }
+
+          default:
+            throw unreachable(x, "DSL Interpolation part");
+        }
+      });
+
+      return instantiate(universe.types.Skeleton.Interpolation, [
+        make_tuple(universe, parts),
+      ]);
+    }
+
     default:
       throw unreachable(node, "DSL Node");
   }
