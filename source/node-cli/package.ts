@@ -91,7 +91,7 @@ export async function copy_tree(from: string, to: string) {
     const stat = FS.statSync(Path.join(from, file));
     if (stat.isFile()) {
       FS.copyFileSync(Path.join(from, file), Path.join(to, file));
-    } else if (stat.isDirectory()) {
+    } else if (stat.isDirectory() && !/^\./.test(file)) {
       await copy_tree(Path.join(from, file), Path.join(to, file));
     } else {
       throw new Error(`Unsupported resource type at ${Path.join(from, file)}`);
