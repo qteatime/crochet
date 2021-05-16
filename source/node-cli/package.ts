@@ -88,10 +88,17 @@ export async function package_for_browser(
 export async function copy_tree(from: string, to: string) {
   await mkdirp(to);
   for (const file of FS.readdirSync(from)) {
+    if (/(^\.)/.test(file)) {
+      console.log(
+        `:: Skipping ${Path.join(from, file)} -- not copying special files`
+      );
+      continue;
+    }
+
     const stat = FS.statSync(Path.join(from, file));
     if (stat.isFile()) {
       FS.copyFileSync(Path.join(from, file), Path.join(to, file));
-    } else if (stat.isDirectory() && !/^\./.test(file)) {
+    } else if (stat.isDirectory()) {
       await copy_tree(Path.join(from, file), Path.join(to, file));
     } else {
       throw new Error(`Unsupported resource type at ${Path.join(from, file)}`);
