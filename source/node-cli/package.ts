@@ -30,6 +30,7 @@ export async function package_app(
   const pkg = crochet.read_package_from_file(filename);
   const out_dir = Path.join(out_dir0, pkg.meta.name);
   const target = target0 ?? pkg.meta.target;
+  const package_type = type_from_target(target);
 
   if (FS.existsSync(out_dir)) {
     throw new Error(`Aborting. ${out_dir} is not empty`);
@@ -57,7 +58,6 @@ export async function package_app(
   console.log(`--> Building ${pkg.meta.name}`);
   await crochet.build(Path.join(app_path, "crochet.json"));
 
-  const package_type = type_from_target(target);
   switch (package_type) {
     case PackageType.BROWSER: {
       await package_for_browser(pkg, filename, target, out_dir);
