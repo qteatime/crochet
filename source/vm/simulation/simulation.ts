@@ -1,17 +1,23 @@
 import * as IR from "../../ir";
-import { CrochetValue } from "../../crochet";
+import { CrochetValue, Machine } from "../../crochet";
 import { logger } from "../../utils/logger";
-import { unreachable } from "../../utils/utils";
+import { unreachable, zip } from "../../utils/utils";
 import {
+  ActionChoice,
+  CrochetActivation,
   CrochetRelation,
   NSEvaluate,
+  NSJump,
   ProceduralRelation,
+  SimulationSignal,
   SimulationState,
+  Tag,
   Universe,
+  _done,
+  _return,
 } from "../intrinsics";
 import { Environments, Location, Values } from "../primitives";
 import {
-  ActionChoice,
   available_actions,
   available_events,
   mark_action_fired,
@@ -114,10 +120,52 @@ function* pick_action(
     relations,
     actor
   );
-  const sorted_actions = actions
-    .sort((a, b) => a.score - b.score)
-    .map((x) => [x.score, x] as [number, ActionChoice]);
-  return state.random.random_weighted_choice(sorted_actions);
+  const sorted_actions = actions.sort((a, b) => a.score - b.score);
+  const signal = state.signals.try_lookup("pick-action: _ for: _");
+  if (signal == null) {
+    const choices = sorted_actions.map(
+      (x) => [x.score, x] as [number, ActionChoice]
+    );
+    return state.random.random_weighted_choice(choices);
+  } else {
+    const choices = sorted_actions.map((x) => make_action_choice(state, x));
+    const args = [Values.make_tuple(state.state.universe, choices), actor];
+    const choice0 = yield* trigger_signal(state, signal, args);
+    if (choice0.tag === Tag.NOTHING) {
+      return null;
+    } else {
+      const choice = Values.get_action_choice(choice0);
+      return choice;
+    }
+  }
+}
+
+function make_action_choice(state: SimulationState, choice: ActionChoice) {
+  const universe = state.state.universe;
+  return Values.make_action_choice(universe, choice);
+}
+
+function* trigger_signal(
+  state: SimulationState,
+  signal: SimulationSignal,
+  args: CrochetValue[]
+): Machine<CrochetValue> {
+  const env = Environments.clone(state.env);
+  for (const [k, v] of zip(signal.parameters, args)) {
+    env.define(k, v);
+  }
+  const result = yield new NSJump(
+    (parent) =>
+      new CrochetActivation(
+        parent,
+        signal,
+        env,
+        _return,
+        parent.handlers,
+        signal.body
+      )
+  );
+  return result;
 }
 
 function* check_goal(

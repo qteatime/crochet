@@ -10,6 +10,7 @@ import {
   CrochetThunk,
   ActivationLocation,
   NativeFunction,
+  SimulationSignal,
 } from "../intrinsics";
 import {
   branch_location,
@@ -92,6 +93,8 @@ export function format_location(location: ActivationLocation) {
     return `test "${location.title}"${from_suffix_newline(location.module)}`;
   } else if (location instanceof NativeFunction) {
     return `native ${location.name} in ${location.pkg.name}`;
+  } else if (location instanceof SimulationSignal) {
+    return `signal ${location.name}${from_suffix_newline(location.module)}`;
   } else if (location == null) {
     return `(root)`;
   } else {

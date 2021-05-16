@@ -349,6 +349,10 @@ export class Thread {
           return new AwaitSignal(value.promise);
         }
 
+        case NativeSignalTag.JUMP: {
+          return new JumpSignal(value.activation(activation));
+        }
+
         default:
           throw unreachable(value, `Native Signal`);
       }
@@ -804,7 +808,8 @@ export class Thread {
               signal.meta,
               signal.name,
               signal.parameters,
-              signal.body
+              signal.body,
+              this.module
             )
           );
         }

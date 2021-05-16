@@ -9,6 +9,8 @@ import {
 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import {
+  Action,
+  ActionChoice,
   CrochetCell,
   CrochetLambda,
   CrochetModule,
@@ -117,6 +119,28 @@ export function make_record_from_map(
   value: Map<string, CrochetValue>
 ) {
   return new CrochetValue(Tag.RECORD, universe.types.Record, value);
+}
+
+export function make_action(action: Action) {
+  return new CrochetValue(Tag.ACTION, action.type, action);
+}
+
+export function get_action(value: CrochetValue) {
+  assert_tag(Tag.ACTION, value);
+  return value.payload;
+}
+
+export function make_action_choice(universe: Universe, choice: ActionChoice) {
+  return new CrochetValue(
+    Tag.ACTION_CHOICE,
+    universe.types.ActionChoice,
+    choice
+  );
+}
+
+export function get_action_choice(value: CrochetValue) {
+  assert_tag(Tag.ACTION_CHOICE, value);
+  return value.payload;
 }
 
 export function record_at_put(
@@ -575,4 +599,8 @@ export function to_number(x: CrochetValue) {
     default:
       throw new ErrArbitrary("invalid-type", `Expected a numeric value`);
   }
+}
+
+export function is_nothing(x: CrochetValue) {
+  return x.tag === Tag.NOTHING;
 }

@@ -20,6 +20,7 @@ export enum Tag {
   CELL,
   TYPE,
   ACTION,
+  ACTION_CHOICE,
   UNKNOWN,
 }
 
@@ -40,8 +41,15 @@ export type PayloadType = {
   [Tag.CELL]: CrochetCell;
   [Tag.TYPE]: CrochetType;
   [Tag.ACTION]: Action;
+  [Tag.ACTION_CHOICE]: ActionChoice;
   [Tag.UNKNOWN]: unknown;
 };
+
+export interface ActionChoice {
+  score: number;
+  action: Action;
+  env: Environment;
+}
 
 export class CrochetValue<T extends Tag = Tag> {
   constructor(
@@ -397,7 +405,8 @@ export class SimulationSignal {
     readonly meta: number,
     readonly name: string,
     readonly parameters: string[],
-    readonly body: IR.BasicBlock
+    readonly body: IR.BasicBlock,
+    readonly module: CrochetModule
   ) {}
 }
 
@@ -537,6 +546,7 @@ export type ActivationLocation =
   | CrochetPrelude
   | CrochetTest
   | NativeFunction
+  | SimulationSignal
   | null;
 
 export class CrochetActivation implements IActivation {
@@ -596,9 +606,10 @@ export enum NativeSignalTag {
   APPLY,
   AWAIT,
   EVALUATE,
+  JUMP,
 }
 
-export type NativeSignal = NSInvoke | NSApply | NSAwait | NSEvaluate;
+export type NativeSignal = NSInvoke | NSApply | NSAwait | NSEvaluate | NSJump;
 
 export abstract class NSBase {}
 
@@ -630,6 +641,14 @@ export class NSEvaluate extends NSBase {
   readonly tag = NativeSignalTag.EVALUATE;
 
   constructor(readonly env: Environment, readonly block: IR.BasicBlock) {
+    super();
+  }
+}
+
+export class NSJump extends NSBase {
+  readonly tag = NativeSignalTag.JUMP;
+
+  constructor(readonly activation: (parent: Activation) => Activation) {
     super();
   }
 }
@@ -679,6 +698,7 @@ export class Universe {
       Type: CrochetType;
       Cell: CrochetType;
       Action: CrochetType;
+      ActionChoice: CrochetType;
       Effect: CrochetType;
       Skeleton: {
         Node: CrochetType;

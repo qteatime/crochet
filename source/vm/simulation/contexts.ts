@@ -4,6 +4,7 @@ import { XorShift } from "../../utils/xorshift";
 import { ErrArbitrary } from "../errors";
 import {
   Action,
+  ActionChoice,
   Context,
   CrochetContext,
   CrochetModule,
@@ -62,12 +63,6 @@ export function add_action(
 
 export function add_event(context: Context, event: When) {
   context.events.push(event);
-}
-
-export interface ActionChoice {
-  score: number;
-  action: Action;
-  env: Environment;
 }
 
 export function* available_actions(

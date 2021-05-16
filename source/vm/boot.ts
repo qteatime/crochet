@@ -25,6 +25,7 @@ import { Contexts } from "./simulation";
 export function make_universe() {
   const world = new CrochetWorld();
 
+  // Core types
   const Any = new CrochetType(null, "any", "", null, [], [], false, null);
   const Unknown = new CrochetType(
     null,
@@ -165,9 +166,22 @@ export function make_universe() {
   const Enum = new CrochetType(null, "enum", "", Any, [], [], false, null);
   const Cell = new CrochetType(null, "cell", "", Any, [], [], false, null);
   const Type = new CrochetType(null, "type", "", Any, [], [], false, null);
-  const Action = new CrochetType(null, "action", "", Any, [], [], false, null);
   const Effect = new CrochetType(null, "effect", "", null, [], [], false, null);
 
+  // Simulations
+  const Action = new CrochetType(null, "action", "", Any, [], [], false, null);
+  const ActionChoice = new CrochetType(
+    null,
+    "action-choice",
+    "",
+    Any,
+    ["score", "action", "environment"],
+    [Integer, Action, Record],
+    false,
+    null
+  );
+
+  // Skeleton DSL
   const Skeleton = new CrochetType(
     null,
     "skeleton",
@@ -274,6 +288,8 @@ export function make_universe() {
     "crochet.core/core.skeleton-interpolation",
     SInterpolation
   );
+  world.native_types.define("crochet.core/core.action", Action);
+  world.native_types.define("crochet.core/core.action-choice", ActionChoice);
 
   return new Universe(world, XorShift.new_random(), {
     Any,
@@ -294,6 +310,7 @@ export function make_universe() {
     Type,
     Cell,
     Action,
+    ActionChoice,
     Effect,
     Skeleton: {
       Node: SNode,
