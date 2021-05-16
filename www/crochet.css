@@ -29,7 +29,7 @@ body {
   background: #fafafa;
   color: #424242;
   font-family: Lora, "serif";
-  font-size: 24px;
+  font-size: 20px;
   margin: 0;
   padding: 3em 2em;
   position: fixed;
@@ -37,6 +37,12 @@ body {
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+@media screen and (max-width: 400px) {
+  body {
+    font-size: 16px;
+  }
 }
 
 #crochet {
@@ -73,10 +79,6 @@ body {
 
 .novella-text {
   display: inline;
-}
-
-.novella-flow > .novella-element {
-  display: inline-block;
 }
 
 .novella-stack {
