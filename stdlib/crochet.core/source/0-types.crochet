@@ -73,6 +73,9 @@ type skeleton-interpolation = foreign core.skeleton-interpolation;
 type skeleton-dynamic = foreign core.skeleton-dynamic;
 
 
+// Actions
+type action-choice = foreign core.action-choice;
+
 /// The type of results that may fail
 abstract result;
 type ok is result(value);

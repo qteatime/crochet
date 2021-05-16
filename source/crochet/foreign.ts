@@ -172,6 +172,14 @@ export class ForeignInterface {
     return Values.get_map(x);
   }
 
+  action_choice(x: CrochetValue) {
+    const choice = Values.get_action_choice(x);
+    return {
+      score: choice.score,
+      action: Values.make_action(choice.action),
+    };
+  }
+
   unbox(x: CrochetValue) {
     return Values.unbox(x);
   }

@@ -18,6 +18,17 @@ command element prepend: (That is element) =
 command element between: (X is element) and: (Y is element) =
   new nvl-flow([X, self, Y]);
 
+command element button-for: Reference value: Value =
+  new nvl-button(self, Reference, Value);
+
+command novella menu: (Xs is tuple<nvl-button>) =
+  new nvl-menu(Xs);
+
+command novella action-choice-menu: (Xs is tuple<action-choice>) for: Reference do
+  let Choices = Xs map: { X in X title as element | button-for: Reference value: X };
+  novella menu: Choices;
+end
+
 
 command element title =
   self style: ["novella-title"]

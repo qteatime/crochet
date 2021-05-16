@@ -3,6 +3,43 @@ import { CrochetValue, ForeignInterface } from "../../../build/crochet";
 export default (ffi: ForeignInterface) => {
   const known_tags = ["h1", "h2", "p", "header", "strong", "em"];
 
+  //#region Selections
+  const references = new WeakMap<CrochetValue, string>();
+  const refered_elements = new WeakMap<
+    CrochetValue,
+    { value: CrochetValue; element: HTMLElement }[]
+  >();
+
+  function make_id() {
+    const id = new Uint8Array(16);
+    crypto.getRandomValues(id);
+    return Array.from(id)
+      .map((x) => x.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  function get_reference(value: CrochetValue) {
+    const ref = references.get(value);
+    if (ref != null) {
+      return ref;
+    } else {
+      const id = make_id();
+      references.set(value, id);
+      return id;
+    }
+  }
+
+  function set_reference(
+    ref: CrochetValue,
+    element: HTMLElement,
+    value: CrochetValue
+  ) {
+    element.setAttribute("data-reference", get_reference(ref));
+    const elements = refered_elements.get(ref) ?? [];
+    elements.push({ value, element });
+    refered_elements.set(ref, elements);
+  }
+
   //#region Utilities
   interface Deferred<T> {
     promise: Promise<T>;
@@ -194,5 +231,54 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("html.make-canvas", (element) => {
     return ffi.box(new Canvas(ffi.unbox(element) as HTMLElement));
+  });
+
+  ffi.defun("html.button", (element0, ref, value) => {
+    const element = ffi.unbox(element0) as HTMLElement;
+    const button = document.createElement("button");
+    button.className = "novella-element novella-button";
+    button.setAttribute("data-interactive", "true");
+    button.appendChild(element);
+    set_reference(ref, button, value);
+    return ffi.box(button);
+  });
+
+  ffi.defmachine("html.wait-selection", function* (ref) {
+    const deferred = defer<CrochetValue>();
+    const elements = refered_elements.get(ref);
+    if (elements == null) {
+      throw ffi.panic(
+        "no-refered-elements",
+        `The reference ${ffi.to_debug_string(
+          ref
+        )} does not have any associated novella elements.`
+      );
+    }
+
+    let listeners: {
+      element: HTMLElement;
+      listener: (_: MouseEvent) => void;
+    }[] = [];
+    for (const { value, element } of elements) {
+      const listener = (ev: MouseEvent) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        for (const x of elements) {
+          if (x.element !== element) {
+            x.element.setAttribute("data-selected", "false");
+          }
+        }
+        for (const { element, listener } of listeners) {
+          element.removeEventListener("click", listener);
+        }
+        element.setAttribute("data-selected", "true");
+        deferred.resolve(value);
+      };
+      listeners.push({ element, listener });
+      element.addEventListener("click", listener, { once: true });
+    }
+
+    const result = yield ffi.await(deferred.promise);
+    return result;
   });
 };

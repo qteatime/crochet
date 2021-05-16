@@ -14,6 +14,8 @@ type nvl-stack is element(children is tuple<element>);
 type nvl-text is element(x is text);
 type nvl-style is element(child is element, classes is tuple<text>);
 type nvl-role is element(child is element, role is text);
+type nvl-menu is element(children is tuple<nvl-button>);
+type nvl-button is element(child is element, reference, value);
 
 effect novella with
   show(X is element);

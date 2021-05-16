@@ -10,7 +10,8 @@
     "native/record.js",
     "native/cell.js",
     "native/text.js",
-    "native/etc.js"
+    "native/etc.js",
+    "native/action.js"
   ],
   "sources": [
     "source/0-types.crochet",
@@ -37,7 +38,8 @@
     "source/result.crochet",
     "source/thunk.crochet",
     "source/skeleton.crochet",
-    "source/lambda.crochet"
+    "source/lambda.crochet",
+    "source/action.crochet"
   ],
   "capabilities": {
     "requires": [],

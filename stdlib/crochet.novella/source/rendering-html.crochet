@@ -29,6 +29,20 @@ command nvl-style render: html =
 command nvl-role render: html =
   foreign html.role(self.role, self.child render: html);
 
+command nvl-button render: html =
+  foreign html.button(
+    self.child render: html,
+    self.reference,
+    self.value
+  );
+
+command nvl-menu render: html =
+  foreign html.element(
+    [class -> "novella-menu"],
+    self.children map: (_ render: html)
+  );
+
+
 
 command novella with-root: Element do: (Block is function-0) do
   let Canvas = foreign html.make-canvas(Element);
@@ -46,7 +60,7 @@ command novella with-root: Element do: (Block is function-0) do
     end
 
     on novella.wait-selection(Reference) do
-      let Selected = html.wait-selection(Reference);
+      let Selected = foreign html.wait-selection(Reference);
       continue with Selected;
     end
   end

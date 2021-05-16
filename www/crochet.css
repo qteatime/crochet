@@ -160,9 +160,13 @@ body {
   width: 80%;
   cursor: pointer;
   padding: 0.3em 1em;
-  margin-bottom: 0.5em;
+  margin: 0 0 0.5em 0;
+  border: none;
   border-bottom: 1px solid #ddd;
   transition: all 250ms ease-out;
+
+  font: inherit;
+  text-align: inherit;
 }
 
 .novella-button:hover,
@@ -172,8 +176,7 @@ body {
   background: #f3f3f3;
 }
 
-.novella-menu[data-selected="true"]
-  > :not(.novella-button[data-selected="true"]) {
+.novella-menu > .novella-button[data-selected="false"] {
   height: 0px;
   opacity: 0;
   margin: 0;

@@ -1,0 +1,7 @@
+% crochet
+
+command action-choice score =
+  foreign action.score(self);
+
+command action-choice title =
+  (foreign action.action(self)) title;
