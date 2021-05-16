@@ -15,8 +15,8 @@
     <script src="/crochet.js"></script>
     <script>
       void (async function () {
+        const root = document.querySelector("#crochet");
         try {
-          const root = document.querySelector("#crochet");
           const crochet = new Crochet.CrochetForBrowser(
             "library",
             new Set([]),
@@ -29,6 +29,10 @@
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
         } catch (error) {
           console.error(error);
+          const element = document.createElement("div");
+          element.className = "crochet-error";
+          element.appendChild(document.createTextNode(error.message));
+          root.appendChild(element);
         }
       })();
     </script>
