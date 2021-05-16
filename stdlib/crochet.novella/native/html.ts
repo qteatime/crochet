@@ -107,6 +107,7 @@ export default (ffi: ForeignInterface) => {
   //#region Rendering
   class Canvas {
     public mark: HTMLElement | null = null;
+    public new_page: boolean = true;
 
     constructor(readonly root: HTMLElement) {}
   }
@@ -166,6 +167,28 @@ export default (ffi: ForeignInterface) => {
     }
   }
 
+  async function animate(x: HTMLElement, frames: Keyframe[], time: number) {
+    const deferred = defer<void>();
+    const animation = x.animate(frames, time);
+    animation.addEventListener("finish", () => deferred.resolve());
+    animation.addEventListener("cancel", () => deferred.resolve());
+    await deferred.promise;
+  }
+
+  async function animate_appear(x: HTMLElement, time: number) {
+    x.style.opacity = "0";
+    x.style.top = "-1em";
+    x.style.position = "relative";
+    const appear = [
+      { opacity: 0, top: "-1em" },
+      { opacity: 1, top: "0px" },
+    ];
+    await animate(x, appear, time);
+    x.style.opacity = "1";
+    x.style.top = "0px";
+    x.style.position = "relative";
+  }
+
   function get_canvas(x0: CrochetValue) {
     const x = ffi.unbox(x0);
     if (x instanceof Canvas) {
@@ -216,16 +239,22 @@ export default (ffi: ForeignInterface) => {
   ffi.defmachine("html.show", function* (canvas0, element0) {
     const canvas = get_canvas(canvas0);
     const element = ffi.unbox(element0) as HTMLElement;
-
-    yield ffi.await(wait_mark(canvas, element).then((_) => ffi.nothing));
-    canvas.root.appendChild(element);
-    element.scrollIntoView();
+    element.classList.add("novella-appear");
+    if (canvas.new_page) {
+      canvas.new_page = false;
+      canvas.mark = element;
+      canvas.root.appendChild(element);
+      element.scrollIntoView({ block: "start", behavior: "smooth" });
+    } else {
+      canvas.root.appendChild(element);
+    }
     return ffi.nothing;
   });
 
   ffi.defmachine("html.wait", function* (canvas0) {
     const canvas = get_canvas(canvas0);
     yield ffi.await(click_to_continue(canvas, null).then((_) => ffi.nothing));
+    canvas.new_page = true;
     return ffi.nothing;
   });
 
@@ -243,7 +272,8 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(button);
   });
 
-  ffi.defmachine("html.wait-selection", function* (ref) {
+  ffi.defmachine("html.wait-selection", function* (canvas0, ref) {
+    const canvas = get_canvas(canvas0);
     const deferred = defer<CrochetValue>();
     const elements = refered_elements.get(ref);
     if (elements == null) {
@@ -279,6 +309,7 @@ export default (ffi: ForeignInterface) => {
     }
 
     const result = yield ffi.await(deferred.promise);
+    canvas.new_page = true;
     return result;
   });
 };

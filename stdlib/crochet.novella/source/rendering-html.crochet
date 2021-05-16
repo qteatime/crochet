@@ -60,7 +60,7 @@ command novella with-root: Element do: (Block is function-0) do
     end
 
     on novella.wait-selection(Reference) do
-      let Selected = foreign html.wait-selection(Reference);
+      let Selected = foreign html.wait-selection(Canvas, Reference);
       continue with Selected;
     end
   end

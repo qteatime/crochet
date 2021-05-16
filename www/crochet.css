@@ -56,21 +56,10 @@ body {
   box-sizing: border-box;
 }
 
-#crochet[data-wait="true"]::after {
-  content: "(Click to continue)";
-  font-size: 14px;
-  font-family: sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  position: fixed;
-  background: #fafafa;
-  text-align: center;
-  width: 100%;
-  bottom: 2em;
-  left: 0px;
-  padding: 0.5em 0;
-  font-weight: bold;
-  color: #999;
+#crochet::after {
+  content: " ";
+  height: 100vh;
+  display: block;
 }
 
 .novella-element {
@@ -181,19 +170,19 @@ body {
   text-align: inherit;
 }
 
-.novella-button:hover,
+.novella-button:hover:not([data-selected]),
 .novella-button[data-selected="true"] {
   padding-left: 2em;
   font-weight: bold;
   background: #f3f3f3;
 }
 
+.novella-button[data-selected] {
+  cursor: default;
+}
+
 .novella-menu > .novella-button[data-selected="false"] {
-  height: 0px;
-  opacity: 0;
-  margin: 0;
-  padding: 0 1em;
-  overflow: hidden;
+  opacity: 0.2;
 }
 
 .novella-image {
@@ -225,4 +214,8 @@ body {
 
 .novella-emphasis {
   font-style: oblique;
+}
+
+.novella-appear {
+  animation: show 0.25s ease-out;
 }
