@@ -7,13 +7,13 @@ command nvl-empty render: html =
 
 command nvl-flow render: html =
   foreign html.element(
-    [data-kind -> "flow"],
+    [data-kind -> "flow", class -> "novella-flow"],
     self.children map: (_ render: html)
   );
 
 command nvl-stack render: html =
   foreign html.element(
-    [data-kind -> "stack"],
+    [data-kind -> "stack", class -> "novella-stack"],
     self.children map: (_ render: html)
   );
 

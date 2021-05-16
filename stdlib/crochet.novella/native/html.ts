@@ -1,7 +1,7 @@
 import { CrochetValue, ForeignInterface } from "../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
-  const known_tags = ["h1", "h2", "hr", "p", "header", "strong", "em"];
+  const known_tags = ["h1", "h2", "p", "header", "strong", "em"];
 
   //#region Utilities
   interface Deferred<T> {
@@ -141,7 +141,7 @@ export default (ffi: ForeignInterface) => {
   //#region Foreign functions
   ffi.defun("html.empty", () => {
     const element = document.createElement("span");
-    element.classList.add("novella-element");
+    element.className = "novella-element novella-empty";
     return ffi.box(element);
   });
 
@@ -162,7 +162,7 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("html.text", (x) => {
     const element = document.createElement("span");
     element.appendChild(document.createTextNode(ffi.text_to_string(x)));
-    element.classList.add("novella-element");
+    element.className = "novella-text";
     return ffi.box(element);
   });
 
@@ -171,7 +171,7 @@ export default (ffi: ForeignInterface) => {
     const tag = role_to_tag(role);
     const element = document.createElement(tag);
     element.setAttribute("data-role", role);
-    element.classList.add("novella-element");
+    element.className = "novella-element";
     element.appendChild(ffi.unbox(child) as HTMLElement);
     return ffi.box(element);
   });

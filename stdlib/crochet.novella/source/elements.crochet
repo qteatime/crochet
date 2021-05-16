@@ -31,8 +31,8 @@ command element paragraph =
   self style: ["novella-paragraph"]
     | role: "p";
 
-command element divisor =
-  self style: ["novella-divisor"]
+command element divider =
+  self style: ["novella-divider"]
     | role: "hr";
 
 command element header =
