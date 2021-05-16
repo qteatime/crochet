@@ -22,7 +22,7 @@ export default async (root: string, port: number) => {
   const express = require("express") as typeof Express;
   const app = express();
 
-  app.get("/game/.binary/*", async (req, res) => {
+  app.get("/app/.binary/*", async (req, res) => {
     const path = req.params[0];
     const source = rpkg.sources.find((x) => x.binary_image.includes(path));
     if (!source) {
@@ -32,7 +32,7 @@ export default async (root: string, port: number) => {
     res.sendFile(Path.resolve(source.binary_image));
   });
 
-  app.get("/game/crochet.json", async (req, res) => {
+  app.get("/app/crochet.json", async (req, res) => {
     res.sendFile(Path.resolve(root));
   });
 

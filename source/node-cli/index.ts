@@ -7,6 +7,7 @@ import { logger } from "../utils/logger";
 import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
 import Server from "./server";
+import * as Packaging from "./package";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -37,6 +38,9 @@ interface Options {
   web: {
     port: number;
   };
+  packaging: {
+    out_dir: string;
+  };
   test: {
     title?: string;
     module?: string;
@@ -53,6 +57,9 @@ function parse_options(args0: string[]) {
   options.test = {};
   options.web = {
     port: 8000,
+  };
+  options.packaging = {
+    out_dir: "packages",
   };
 
   while (current < args0.length) {
@@ -85,6 +92,13 @@ function parse_options(args0: string[]) {
 
       case "--port": {
         options.web.port = Number(args0[current + 1]) ?? options.web.port;
+        current += 2;
+        continue;
+      }
+
+      case "--package-to": {
+        options.packaging.out_dir =
+          args0[current + 1] ?? options.packaging.out_dir;
         current += 2;
         continue;
       }
@@ -211,6 +225,10 @@ async function run_web([file]: string[], options: Options) {
   await Server(file, options.web.port);
 }
 
+async function package_app([file]: string[], options: Options) {
+  await Packaging.package_app(file, null, options.packaging.out_dir);
+}
+
 function help(command?: string) {
   switch (command) {
     case "run":
@@ -302,6 +320,7 @@ function help(command?: string) {
           "Usage:\n",
           "  crochet run <crochet.json> [options] [-- <app-args...>]\n",
           "  crochet run-web <crochet.json> [options]\n",
+          "  crochet package <crochet.json> [options]\n",
           "  crochet repl <crochet.json> [options]\n",
           "  crochet test <crochet.json> [options]\n",
           "  crochet build <crochet.json> [options]\n",
@@ -358,6 +377,8 @@ void (async function main() {
         return await test(args, options);
       case "build":
         return await build(args, options);
+      case "package":
+        return await package_app(args, options);
       case "repl":
         return await repl(args, options);
       case "version": {

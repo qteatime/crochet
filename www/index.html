@@ -3,7 +3,7 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Crochet</title>
-    <link rel="stylesheet" href="/crochet.css" />
+    <link rel="stylesheet" href="crochet.css" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap"
@@ -12,7 +12,7 @@
   </head>
   <body>
     <div id="crochet"></div>
-    <script src="/crochet.js"></script>
+    <script src="crochet.js"></script>
     <script>
       void (async function () {
         const root = document.querySelector("#crochet");
@@ -23,7 +23,7 @@
             false
           );
           await crochet.boot_from_file(
-            "game/crochet.json",
+            "app/crochet.json",
             Crochet.Package.target_web()
           );
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
