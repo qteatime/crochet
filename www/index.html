@@ -18,12 +18,12 @@
         const root = document.querySelector("#crochet");
         try {
           const crochet = new Crochet.CrochetForBrowser(
-            "library",
+            document.location.pathname + "library",
             new Set([]),
             false
           );
           await crochet.boot_from_file(
-            "app/crochet.json",
+            document.location.pathname + "app/crochet.json",
             Crochet.Package.target_web()
           );
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
