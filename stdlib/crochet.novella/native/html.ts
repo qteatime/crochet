@@ -1,7 +1,7 @@
 import { CrochetValue, ForeignInterface } from "../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
-  const known_tags = ["h1", "h2", "p", "header", "strong", "em"];
+  const known_tags = ["h1", "h2", "p", "header", "section", "strong", "em"];
 
   //#region Selections
   const references = new WeakMap<CrochetValue, string>();

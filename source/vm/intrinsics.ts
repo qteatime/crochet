@@ -40,13 +40,18 @@ export type PayloadType = {
   [Tag.THUNK]: CrochetThunk;
   [Tag.CELL]: CrochetCell;
   [Tag.TYPE]: CrochetType;
-  [Tag.ACTION]: Action;
+  [Tag.ACTION]: BoundAction;
   [Tag.ACTION_CHOICE]: ActionChoice;
   [Tag.UNKNOWN]: unknown;
 };
 
 export interface ActionChoice {
   score: number;
+  action: Action;
+  env: Environment;
+}
+
+export interface BoundAction {
   action: Action;
   env: Environment;
 }

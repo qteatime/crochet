@@ -77,6 +77,16 @@ body {
   display: block;
 }
 
+.novella-flow > .novella-element {
+  display: inline-block;
+}
+
+.novella-header > .novella-flow > .novella-element,
+.novella-section > .novella-flow > .novella-element,
+.novella-menu > .novella-flow > .novella-element {
+  display: block;
+}
+
 .novella-text {
   display: inline;
 }
@@ -206,4 +216,12 @@ body {
   position: absolute;
   top: 0px;
   left: 0px;
+}
+
+.novella-strong {
+  font-weight: bold;
+}
+
+.novella-emphasis {
+  font-style: oblique;
 }

@@ -1,6 +1,6 @@
 % crochet
 
-open crochet.ui.html;
+open crochet.novella;
 
 relation Item* short-name: Name;
 relation Item* name: Name;
@@ -17,36 +17,13 @@ relation Thing* place;
 
 relation State state;
 
-type state;
-singleton on-going is state;
-singleton won is state;
-singleton lost is state;
+enum state = on-going, won, lost;
+enum direction = north, east, south, west;
 
-
-type direction;
-singleton north is direction with
-  command to-html do
-    "north" text
-  end
-end
-
-singleton east is direction with
-  command to-html do
-    "east" text
-  end
-end
-
-singleton south is direction with
-  command to-html do
-    "south" text
-  end
-end
-
-singleton west is direction with
-  command to-html do
-    "west" text
-  end
-end
+command north as element = "north" as element;
+command east as element = "east" as element;
+command south as element = "south" as element;
+command west as element = "west" as element;
 
 type thing;
 type room is thing;
@@ -112,106 +89,115 @@ end
 
 command Room describe-full do
   let R = (search Room name: Name, Room description: Description) first;
-  section: [
-    paragraph: (strong: R.Name),
-    paragraph: R.Description
+  novella section: [
+    novella text: R.Name | strong,
+    novella paragraph: R.Description
   ];
 end
 
 command Room describe do
-  match
-    when cloak on: player, if Room =:= bar do
-      paragraph: "It's pitch dark here. You can't see a thing.";
-    end
+  let Desc =
+    match
+      when cloak on: player, if Room =:= bar do
+        novella paragraph: "It's pitch dark here. You can't see a thing.";
+      end
 
-    when player visited: Room, Room short-name: Name do
-      paragraph: "You're back at the [Name]";
-    end
+      when player visited: Room, Room short-name: Name do
+        novella paragraph: "You're back at the [Name]";
+      end
 
-    when Room name: Name, Room description: Description do
-      fact player visited: Room;
-      Room describe-full;
-    end
-  end first;
+      when Room name: Name, Room description: Description do
+        fact player visited: Room;
+        Room describe-full;
+      end
+    end;
+  Desc first;
 end
 
 prelude
   fact on-going state;
 end
 
-scene main do
-  header: [
-    title: "Cloak of Darkness",
-    subtitle: "The classic interactive fiction demo"
-  ] | show;
-  
-  paragraph: 
-    "Hurrying through the rainswept November night, you're glad to see the
-    bright lights of the Opera House. It's surprising that there aren't
-    more people about but, hey, what do you expect in a cheap demo game...?"
-  | show;
+command main-html: Root do
+  novella with-root: Root do: {
+    novella show: (
+      novella header: [
+        "Cloak of Darkness" as element | title,
+        "The classic interactive fiction demo" as element | subtitle
+      ]
+    );
 
-  foyer describe show;
+    novella show: (
+      novella paragraph: 
+        "Hurrying through the rainswept November night, you're glad to see the
+        bright lights of the Opera House. It's surprising that there aren't
+        more people about but, hey, what do you expect in a cheap demo game...?"
+    );
 
-  simulate for [player]
-  until not on-going state
-  on pick-action: Actions for: _ do
-    let Items = for X in Actions do [Title -> X.Title, Value -> X] end;
-    (menu: Items) show selected;
-  end
+    novella show: foyer describe;
+
+    simulate for [player]
+    until not on-going state
+    on pick-action: Actions for: _ do
+      novella choose-action: Actions;
+    end
+  }
 end
 
 
-action "Go [Direction]"
+action player go-unvisited "Go [self.Direction]"
 when
   player at: Room,
   Room to: Direction lays: Target,
   not player visited: Target
 do
-  Target describe show;
+  novella show: Target describe;
   fact player at: Target;
 end
 
-action "Go [Direction], to the [Name]"
+action player go-visited "Go [self.Direction], to the [self.Name]"
 when
   player at: Room,
   Room to: Direction lays: Target,
   Target short-name: Name,
   player visited: Target
 do
-  Target describe show;
+  novella show: Target describe;
   fact player at: Target;
 end
 
-action "Go north, to the street"
+action player go-street "Go north, to the street"
 when player at: foyer
 do
-  "You've only just arrived, and besides, the weather outside seems to be
-  getting worse." show;
+  novella show: (
+    novella paragraph:
+      "You've only just arrived, and besides, the weather outside seems to be
+      getting worse."
+  );
 end
 
-action "Look around"
+action player look-around "Look around"
 when
   player at: Room,
   not (cloak on: player, player at: bar)
 do
-  Room describe-full show;
+  novella show: Room describe-full;
 end
 
 
 // Bar actions
-action "Look around"
+action player look-around-bar "Look around"
 when
   player at: bar,
   cloak on: player,
   bar times-disturbed: N
 do
-  "In the dark? You could easily disturb something!" show;
+  novella show: "In the dark? You could easily disturb something!";
 
   fact bar times-disturbed: (N + 1);
 end
 
-action "Examine the message"
+action player examine-message "Examine the message"
 when
   player at: bar,
   not cloak on: player,
@@ -219,13 +205,15 @@ when
 do
   condition
     when N < 2 do
-      "The message, neatly marked in the sawdust reads... [strong: "you won"]" show;
+      novella show:
+        "The message, neatly marked in the sawdust reads... ["you won" as element | strong]";
       fact won state;
     end
 
     always do
-      "The message has been carelessly trampled, making it difficult to read.
-       You can just distinguish the words... [strong: "you have lost"]" show;
+      novella show:
+        "The message has been carelessly trampled, making it difficult to read.
+        You can just distinguish the words... ["you have lost" as element | strong]";
        fact lost state;
     end
   end
@@ -233,7 +221,7 @@ end
 
 
 // Cloakroom actions
-action "Place cloak on the [Name]"
+action player place-cloak "Place cloak on the [self.Name]"
 when
   player at: cloakroom,
   cloak on: player,
@@ -241,12 +229,12 @@ when
   Thing short-name: Name,
   Thing place
 do
-  "You place your cloak on [Name]." show;
+  novella show: "You place your cloak on the [Name].";
 
   fact cloak on: Thing;
 end
 
-action "Take cloak from the [Name]"
+action player take-cloak "Take cloak from the [self.Name]"
 when
   player at: cloakroom,
   Thing on: cloakroom,
@@ -254,7 +242,7 @@ when
   Thing short-name: Name,
   Thing place
 do
-  "You take your cloak from [Name]." show;
+  novella show: "You take your cloak from [Name].";
 
   fact cloak on: player;
 end

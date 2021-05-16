@@ -1,0 +1,6 @@
+{
+  "name": "crochet.examples.browser.cloak-of-darkness",
+  "target": "browser",
+  "dependencies": ["crochet.core", "crochet.novella"],
+  "sources": ["cloak-of-darkness.crochet"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "crochet.examples.browser.tic-tac-toe",
+  "target": "browser",
+  "sources": ["tic-tac-toe.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.novella",
+    "crochet.random",
+    "crochet.debug"
+  ]
+}

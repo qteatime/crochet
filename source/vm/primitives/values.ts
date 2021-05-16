@@ -121,8 +121,8 @@ export function make_record_from_map(
   return new CrochetValue(Tag.RECORD, universe.types.Record, value);
 }
 
-export function make_action(action: Action) {
-  return new CrochetValue(Tag.ACTION, action.type, action);
+export function make_action(action: Action, env: Environment) {
+  return new CrochetValue(Tag.ACTION, action.type, { env, action });
 }
 
 export function get_action(value: CrochetValue) {
@@ -408,6 +408,18 @@ export function project(value: CrochetValue, key: string): CrochetValue {
       assert_tag(Tag.TUPLE, value);
       const results = value.payload.map((x) => project(x, key));
       return new CrochetValue(Tag.TUPLE, value.type, results);
+    }
+
+    case Tag.ACTION: {
+      assert_tag(Tag.ACTION, value);
+      const result = value.payload.env.try_lookup(key);
+      if (result == null) {
+        throw new ErrArbitrary(
+          "no-bound-variable",
+          `The name ${key} is not bound in the action ${value.payload.action.name}`
+        );
+      }
+      return result;
     }
 
     default:

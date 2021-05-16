@@ -1,7 +1,33 @@
 % crochet
 
+command novella text: X =
+  X as element;
+
 command novella stack: (Xs is tuple<element>) =
   new nvl-stack(Xs map: (_ as element));
+
+command novella section: (Xs is tuple<element>) =
+  new nvl-flow(Xs map: (_ as element))
+    | section;
+
+command novella header: (Xs is tuple<element>) =
+  new nvl-flow(Xs map: (_ as element))
+    | header;
+
+command novella paragraph: X =
+  (X as element) | paragraph;
+
+command novella divider =
+  nvl-empty divider;
+
+command novella menu: (Xs is tuple<nvl-button>) =
+  new nvl-menu(Xs);
+
+command novella action-choice-menu: (Xs is tuple<action-choice>) for: Reference do
+  let Choices = Xs map: { X in X title as element | button-for: Reference value: X };
+  novella menu: Choices;
+end
+
 
 command element style: (Classes is tuple<text>) =
   new nvl-style(self, Classes);
@@ -20,14 +46,6 @@ command element between: (X is element) and: (Y is element) =
 
 command element button-for: Reference value: Value =
   new nvl-button(self, Reference, Value);
-
-command novella menu: (Xs is tuple<nvl-button>) =
-  new nvl-menu(Xs);
-
-command novella action-choice-menu: (Xs is tuple<action-choice>) for: Reference do
-  let Choices = Xs map: { X in X title as element | button-for: Reference value: X };
-  novella menu: Choices;
-end
 
 
 command element title =
@@ -50,6 +68,10 @@ command element header =
   self style: ["novella-header"]
     | role: "header";
 
+command element section =
+  self style: ["novella-section"]
+    | role: "section";
+
 command element strong =
   self style: ["novella-strong"]
     | role: "strong";
@@ -58,6 +80,8 @@ command element emphasis =
   self style: ["novella-emphasis"]
     | role: "em";
 
+command element monospace =
+  self style: ["novella-mono"];
 
 command element as element =
   self;

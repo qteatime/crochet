@@ -176,7 +176,7 @@ export class ForeignInterface {
     const choice = Values.get_action_choice(x);
     return {
       score: choice.score,
-      action: Values.make_action(choice.action),
+      action: Values.make_action(choice.action, choice.env),
     };
   }
 

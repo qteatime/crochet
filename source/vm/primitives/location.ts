@@ -140,7 +140,7 @@ export function simple_value(x: CrochetValue): string {
     }
     case Tag.ACTION: {
       assert_tag(Tag.ACTION, x);
-      return `<action ${x.payload.name}>`;
+      return `<action ${x.payload.action.name}>`;
     }
     case Tag.ACTION_CHOICE: {
       assert_tag(Tag.ACTION_CHOICE, x);
