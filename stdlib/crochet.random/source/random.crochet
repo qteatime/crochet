@@ -2,9 +2,23 @@
 
 abstract random;
 local type xor-shift is random(seed, inc);
+local type mutable-random is random(random is cell);
 
 local type random-next(value, random is random);
-local type mutable-random(random is cell);
+
+// Effects
+effect random with
+  get-random();
+end
+
+command #random with-source: (Instance0 is random) do: (Block is function-0) do
+  let Instance = Instance0 mutable;
+  handle
+    Block();
+  with
+    on random.get-random() => continue with Instance;
+  end
+end
 
 
 // Constructors
@@ -21,6 +35,10 @@ requires unsigned-small-integer :: (Seed >= 0) and (Seed < (2 ** 32));
 command #random xor-shift -> xor-shift do
   let State = foreign xorshift.random-seed();
   new xor-shift(State.seed, State.inc);
+end
+
+command #random global -> random do
+  perform random.get-random();
 end
 
 command random mutable = new mutable-random(#cell with-value: self);
