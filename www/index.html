@@ -4,6 +4,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Crochet</title>
     <link rel="stylesheet" href="crochet.css" />
+    <link rel="stylesheet" href="./fa-solid.css" />
+    <link rel="stylesheet" href="./fontawesome.min.css" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap"
@@ -11,7 +13,9 @@
     />
   </head>
   <body>
-    <div id="crochet"></div>
+    <div id="crochet" class="crochet-loading">
+      <div class="crochet-loading-screen">Loading...</div>
+    </div>
     <script src="crochet.js"></script>
     <script>
       void (async function () {
@@ -26,6 +30,10 @@
             document.location.pathname + "app/crochet.json",
             Crochet.Package.target_web()
           );
+          root.className = "";
+          for (const child of root.children) {
+            child.remove();
+          }
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
         } catch (error) {
           console.error(error);

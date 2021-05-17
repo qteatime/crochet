@@ -3,6 +3,9 @@
 command novella text: X =
   X as element;
 
+command novella flow: (Xs is tuple<element>) =
+  new nvl-flow(Xs map: (_ as element));
+
 command novella stack: (Xs is tuple<element>) =
   new nvl-stack(Xs map: (_ as element));
 
@@ -71,6 +74,9 @@ command element header =
 command element section =
   self style: ["novella-section"]
     | role: "section";
+
+command element block =
+  self style: ["novella-block"];
 
 command element strong =
   self style: ["novella-strong"]

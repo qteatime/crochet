@@ -1,5 +1,8 @@
 % crochet
 
+command novella show: (X is tuple) =
+  novella show: (novella flow: (X map: { E in E as element | block }));
+
 command novella show: X =
   perform novella.show(X as element);
 

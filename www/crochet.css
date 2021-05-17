@@ -1,15 +1,31 @@
 @keyframes show {
   from {
-    position: relative;
     opacity: 0;
-    top: -1em;
+    left: -100;
   }
 
   to {
-    position: relative;
     opacity: 1;
-    top: 0;
+    left: 0;
   }
+}
+
+@keyframes hide-not-selected {
+  from {
+    max-height: 3em;
+    opacity: 1;
+  }
+
+  to {
+    max-height: 0em;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+:root {
+  --primary: #c44569;
 }
 
 h1,
@@ -49,11 +65,19 @@ body {
   max-width: 700px;
   margin: 0 auto;
   padding: 1em 1.5em;
-  scroll-behavior: smooth;
-  overflow: auto;
   height: 100%;
   position: relative;
   box-sizing: border-box;
+
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#crochet::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 #crochet::after {
@@ -62,17 +86,11 @@ body {
   display: block;
 }
 
+#crochet > .novella-element {
+  scroll-snap-align: start;
+}
+
 .novella-element {
-  display: block;
-}
-
-.novella-flow > .novella-element {
-  display: inline-block;
-}
-
-.novella-header > .novella-flow > .novella-element,
-.novella-section > .novella-flow > .novella-element,
-.novella-menu > .novella-flow > .novella-element {
   display: block;
 }
 
@@ -162,12 +180,28 @@ body {
   cursor: pointer;
   padding: 0.3em 1em;
   margin: 0 0 0.5em 0;
+  background: none;
   border: none;
   border-bottom: 1px solid #ddd;
   transition: all 250ms ease-out;
 
   font: inherit;
   text-align: inherit;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.novella-button::before {
+  content: "\f105";
+  margin-right: 0.5em;
+  font-family: "Font Awesome 5 Free";
+  opacity: 0.5;
+}
+
+.novella-button:hover::before,
+.novella-button[data-selected="true"]::before {
+  opacity: 1;
 }
 
 .novella-button:hover:not([data-selected]),
@@ -175,6 +209,7 @@ body {
   padding-left: 2em;
   font-weight: bold;
   background: #f3f3f3;
+  color: var(--primary);
 }
 
 .novella-button[data-selected] {
@@ -182,7 +217,8 @@ body {
 }
 
 .novella-menu > .novella-button[data-selected="false"] {
-  opacity: 0.2;
+  overflow: hidden;
+  animation: hide-not-selected 250ms ease-in forwards;
 }
 
 .novella-image {
@@ -217,5 +253,12 @@ body {
 }
 
 .novella-appear {
-  animation: show 0.25s ease-out;
+  animation: show 250ms ease-out forwards;
+  position: relative;
+}
+
+#crochet.crochet-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
