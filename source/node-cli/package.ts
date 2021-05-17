@@ -79,10 +79,7 @@ export async function package_for_browser(
 ) {
   console.log(`--> Copying Crochet's browser assets`);
   const www_dir = Path.join(__dirname, "../../www");
-  const files = ["crochet.css", "crochet.js", "index.html"];
-  for (const file of files) {
-    FS.copyFileSync(Path.join(www_dir, file), Path.join(out_dir, file));
-  }
+  await copy_tree(www_dir, out_dir);
 }
 
 export async function copy_tree(from: string, to: string) {
