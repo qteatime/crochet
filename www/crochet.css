@@ -170,16 +170,17 @@ body {
 
 .novella-menu {
   display: flex;
-  margin: 2em 1em 2em 2em;
+  margin: 2em 0;
   flex-direction: column;
   justify-content: flex-end;
+  border-top: 3px solid #ececea;
+  padding-top: 0.5em;
 }
 
 .novella-button {
-  width: 80%;
   cursor: pointer;
   padding: 0.3em 1em;
-  margin: 0 0 0.5em 0;
+  margin-bottom: 0.5em;
   background: none;
   border: none;
   border-bottom: 1px solid #ddd;
