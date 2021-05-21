@@ -63,7 +63,10 @@ export function extend_with_parameters_and_receiver(
   return env;
 }
 
-export function bound_values_up_to(mark_env: Environment, env: Environment) {
+export function bound_values_up_to(
+  mark_env: Environment | null,
+  env: Environment
+) {
   let current: Environment | null = env;
   let result = new Map<string, CrochetValue>();
   while (current != null && current !== mark_env) {

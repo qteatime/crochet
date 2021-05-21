@@ -8,7 +8,7 @@ const repo_root = Path.resolve(__dirname, "../../");
 
 export default async (root: string, port: number) => {
   console.log("Building all dependencies...");
-  const crochet = new CrochetForNode([], new Set([]), false);
+  const crochet = new CrochetForNode(false, [], new Set([]), false);
   const pkg = crochet.read_package_from_file(root);
   await crochet.build(root);
   for (const dep of pkg.meta.dependencies) {

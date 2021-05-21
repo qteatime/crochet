@@ -14,20 +14,24 @@ import { question } from "../../utils/prompt";
 import { union } from "../../utils/collections";
 import { build, build_file, read_updated_binary } from "./build";
 import { CrochetTest, CrochetValue } from "../../vm";
+import { TerminalRenderer } from "../../services/representation/terminal-renderer";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
 
 export class CrochetForNode {
+  readonly renderer: TerminalRenderer;
   readonly crochet: Crochet;
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
   private _ffi: ForeignInterface | null = null;
 
   constructor(
+    disclose_debug: boolean,
     readonly library_paths: string[],
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean
   ) {
+    this.renderer = new TerminalRenderer(disclose_debug);
     this.crochet = new Crochet(this.fs, this.signal);
   }
 

@@ -47,17 +47,7 @@ export class ReplStatements extends ReplExpr {
     env: VM.Environment
   ): Promise<void> {
     const value = await vm.system.run_block(this.block, env);
-    const type = module.pkg.types.try_lookup_namespaced(
-      "crochet.core",
-      "debug-printer"
-    );
-    if (type == null) {
-      console.log(VM.Location.simple_value(value));
-    } else {
-      const printer = VM.Values.instantiate(type, []);
-      const repr = await vm.system.invoke("_ show: _", [printer, value]);
-      console.log(VM.Values.text_to_string(repr));
-    }
+    console.log(vm.renderer.render_value(value));
   }
 }
 

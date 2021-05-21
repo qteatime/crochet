@@ -35,6 +35,7 @@ function read(file: string) {
 
 interface Options {
   verbose: boolean;
+  disclose_debug: boolean;
   web: {
     port: number;
   };
@@ -100,6 +101,12 @@ function parse_options(args0: string[]) {
         options.packaging.out_dir =
           args0[current + 1] ?? options.packaging.out_dir;
         current += 2;
+        continue;
+      }
+
+      case "--disclose-debug": {
+        options.disclose_debug = true;
+        current++;
         continue;
       }
 
@@ -172,48 +179,49 @@ async function show_ir([file]: string[], options: Options) {
 }
 
 async function run([file]: string[], options: Options) {
-  const crochet = new CrochetForNode([], new Set([]), true);
+  const crochet = new CrochetForNode(
+    options.disclose_debug,
+    [],
+    new Set([]),
+    true
+  );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const value = await crochet.run("main: _", [crochet.ffi.tuple([])]);
   if (value.tag === Crochet.vm.Tag.NOTHING) {
     return;
   }
 
-  let repr;
-  try {
-    const pkg = crochet.system.universe.world.packages.get("crochet.core");
-    const type = pkg?.types.try_lookup_namespaced(
-      "crochet.core",
-      "debug-printer"
-    )!;
-    if (type == null) {
-      repr = Crochet.vm.Location.simple_value(value);
-    } else {
-      const printer = Crochet.vm.Values.instantiate(type, []);
-      const repr0 = await crochet.run("_ show: _", [printer, value]);
-      repr = Crochet.vm.Values.text_to_string(repr0);
-    }
-  } catch (e) {
-    console.error(e);
-    repr = Crochet.vm.Location.simple_value(value);
-  }
-
-  console.log(repr);
+  console.log(crochet.renderer.render_value(value));
 }
 
 async function test([file]: string[], options: Options) {
-  const crochet = new CrochetForNode([], new Set([]), true);
+  const crochet = new CrochetForNode(
+    options.disclose_debug,
+    [],
+    new Set([]),
+    true
+  );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   await crochet.run_tests(compile_test_filter(options.test));
 }
 
 async function build([file]: string[], options: Options) {
-  const crochet = new CrochetForNode([], new Set([]), true);
+  const crochet = new CrochetForNode(
+    options.disclose_debug,
+    [],
+    new Set([]),
+    true
+  );
   await crochet.build(file);
 }
 
 async function repl([file0]: string[], options: Options) {
-  const crochet = new CrochetForNode([], new Set([]), true);
+  const crochet = new CrochetForNode(
+    options.disclose_debug,
+    [],
+    new Set([]),
+    true
+  );
   let file = REPL.resolve_file(file0);
 
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
