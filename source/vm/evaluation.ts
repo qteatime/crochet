@@ -5,6 +5,7 @@ import { unreachable } from "../utils/utils";
 import { CrochetEvaluationError, ErrArbitrary } from "./errors";
 import {
   Activation,
+  ActivationLocation,
   ActivationTag,
   Continuation,
   ContinuationReturn,
@@ -293,6 +294,28 @@ export class Thread {
     }
   }
 
+  find_crochet_location(
+    start_activation: Activation
+  ): ActivationLocation | null {
+    let activation: Activation | null = start_activation;
+    while (activation != null) {
+      switch (activation.tag) {
+        case ActivationTag.CROCHET_ACTIVATION: {
+          return activation.location;
+        }
+
+        case ActivationTag.NATIVE_ACTIVATION: {
+          activation = activation.parent;
+          continue;
+        }
+
+        default:
+          throw unreachable(activation, "Activation");
+      }
+    }
+    return null;
+  }
+
   step_native(activation: NativeActivation, input: CrochetValue): Signal {
     const { value, done } = activation.routine.next(input);
     if (done) {
@@ -351,6 +374,16 @@ export class Thread {
 
         case NativeSignalTag.JUMP: {
           return new JumpSignal(value.activation(activation));
+        }
+
+        case NativeSignalTag.TRANSCRIPT_WRITE: {
+          const loc = this.find_crochet_location(activation);
+
+          this.universe.transcript.publish(value.tag_name, value.message, {
+            category: "transcript.write",
+            location: loc,
+          });
+          return this.step_native(activation, this.universe.nothing);
         }
 
         default:

@@ -13,6 +13,7 @@ import {
   NSApply,
   NSAwait,
   NSInvoke,
+  NSTranscriptWrite,
   run_native_sync,
   Tag,
   Universe,
@@ -247,5 +248,9 @@ export class ForeignInterface {
 
   xorshift_random() {
     return XorShift.new_random();
+  }
+
+  push_transcript(tag: string, x: CrochetValue | string) {
+    return new NSTranscriptWrite(tag, x);
   }
 }

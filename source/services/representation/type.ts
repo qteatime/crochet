@@ -1,5 +1,5 @@
 import { CrochetType } from "../../vm";
-import { RFlow, RKeyword, RStatic, space } from "./ir";
+import { RFlow, RKeyword, RStatic, space } from "./ast";
 
 export function type_to_repr(type: CrochetType) {
   return new RFlow([

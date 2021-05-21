@@ -6,6 +6,7 @@ import * as Binary from "../binary";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
 import { CrochetValue, Environment } from "../vm";
+import { ITranscript } from "../vm/interfaces";
 
 export interface IFileSystem {
   read_package(name: string): Promise<Package.Package>;
@@ -31,7 +32,11 @@ export class Crochet {
   readonly trusted = new Set<Package.Package>();
   readonly registered_packages: Map<string, Package.Package> = new Map();
 
-  constructor(readonly fs: IFileSystem, readonly signal: ISignal) {}
+  constructor(
+    readonly transcript: ITranscript,
+    readonly fs: IFileSystem,
+    readonly signal: ISignal
+  ) {}
 
   async boot(root: string, target: Package.Target) {
     const pkg = await this.get_package(root);
@@ -102,7 +107,7 @@ export class BootedCrochet {
   readonly universe: VM.Universe;
 
   constructor(readonly crochet: Crochet, readonly graph: Package.PackageGraph) {
-    this.universe = VM.make_universe();
+    this.universe = VM.make_universe(crochet.transcript);
   }
 
   async initialise(root: string) {
@@ -187,10 +192,11 @@ export class BootedCrochet {
 
   async run_tests(filter: (_: VM.CrochetTest) => boolean) {
     const tests0 = VM.Tests.grouped_tests(this.universe);
-    const { total, skipped, tests: tests1 } = VM.Tests.filter_grouped_tests(
-      tests0,
-      filter
-    );
+    const {
+      total,
+      skipped,
+      tests: tests1,
+    } = VM.Tests.filter_grouped_tests(tests0, filter);
     const failures = [];
     const start = new Date().getTime();
 

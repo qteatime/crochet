@@ -1,15 +1,14 @@
-import { CrochetModule, CrochetValue } from "../../vm";
+import type { ActivationLocation, CrochetValue } from "../../vm";
 
 export interface Metadata {
   category: string;
-  module: CrochetModule;
-  meta_id: number;
+  location: ActivationLocation;
 }
 
 export class Entry {
   constructor(
     readonly tag: string,
-    readonly message: CrochetValue,
+    readonly message: CrochetValue | string,
     readonly metadata: Metadata
   ) {}
 }
@@ -25,9 +24,9 @@ export class Transcript {
     }
   }
 
-  publish(entry: Entry) {
+  publish(tag: string, message: CrochetValue | string, meta: Metadata) {
     for (const push of this.subscribers) {
-      push(entry);
+      push(new Entry(tag, message, meta));
     }
   }
 }

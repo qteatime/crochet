@@ -1,5 +1,6 @@
 import * as IR from "../ir";
 import { XorShift } from "../utils/xorshift";
+import { ITranscript } from "./interfaces";
 import { Namespace, PassthroughNamespace } from "./namespaces";
 
 //#region Base values
@@ -612,9 +613,16 @@ export enum NativeSignalTag {
   AWAIT,
   EVALUATE,
   JUMP,
+  TRANSCRIPT_WRITE,
 }
 
-export type NativeSignal = NSInvoke | NSApply | NSAwait | NSEvaluate | NSJump;
+export type NativeSignal =
+  | NSInvoke
+  | NSApply
+  | NSAwait
+  | NSEvaluate
+  | NSJump
+  | NSTranscriptWrite;
 
 export abstract class NSBase {}
 
@@ -658,6 +666,17 @@ export class NSJump extends NSBase {
   }
 }
 
+export class NSTranscriptWrite extends NSBase {
+  readonly tag = NativeSignalTag.TRANSCRIPT_WRITE;
+
+  constructor(
+    readonly tag_name: string,
+    readonly message: CrochetValue | string
+  ) {
+    super();
+  }
+}
+
 export type NativeLocation = NativeFunction | null;
 
 export class NativeActivation implements IActivation {
@@ -682,6 +701,7 @@ export class Universe {
   readonly float_cache: CrochetValue[];
 
   constructor(
+    readonly transcript: ITranscript,
     readonly world: CrochetWorld,
     readonly random: XorShift,
     readonly types: {

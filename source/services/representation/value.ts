@@ -17,7 +17,7 @@ import {
   RText,
   RTyped,
   space,
-} from "./ir";
+} from "./ast";
 import { type_to_repr } from "./type";
 
 export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
