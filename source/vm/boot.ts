@@ -197,8 +197,8 @@ export function make_universe() {
     "skeleton-node",
     "",
     Skeleton,
-    ["name", "children", "attributes"],
-    [Text, Tuple, Record],
+    ["name", "children", "attributes", "meta"],
+    [Text, Tuple, Record, Any],
     false,
     null
   );
@@ -207,8 +207,8 @@ export function make_universe() {
     "skeleton-literal",
     "",
     Skeleton,
-    ["value"],
-    [Any],
+    ["value", "meta"],
+    [Any, Any],
     false,
     null
   );
@@ -217,8 +217,8 @@ export function make_universe() {
     "skeleton-name",
     "",
     Skeleton,
-    ["name"],
-    [Text],
+    ["name", "meta"],
+    [Text, Any],
     false,
     null
   );
@@ -227,8 +227,8 @@ export function make_universe() {
     "skeleton-dynamic",
     "",
     Skeleton,
-    ["thunk"],
-    [Thunk],
+    ["thunk", "meta"],
+    [Thunk, Any],
     false,
     null
   );
@@ -237,8 +237,8 @@ export function make_universe() {
     "skeleton-tuple",
     "",
     Skeleton,
-    ["children"],
-    [Tuple],
+    ["children", "meta"],
+    [Tuple, Any],
     false,
     null
   );
@@ -247,8 +247,8 @@ export function make_universe() {
     "skeleton-interpolation",
     "",
     Skeleton,
-    ["parts"],
-    [Tuple],
+    ["parts", "meta"],
+    [Tuple, Any],
     false,
     null
   );

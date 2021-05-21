@@ -66,3 +66,5 @@ test
   assert (#float try-parse: "nope") is error;
 end
   
+command integer to-text = foreign integer.to-text(self);
+command float to-text = foreign float.to-text(self);

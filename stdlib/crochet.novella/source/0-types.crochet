@@ -1,9 +1,7 @@
 % crochet
 
 singleton novella;
-
 singleton novella-dsl;
-type novella-env(parent, bindings);
 
 type canvas(x);
 
@@ -23,3 +21,6 @@ effect novella with
   wait-selection(Reference);
 end
 
+effect novella-dsl with
+  get-state();
+end

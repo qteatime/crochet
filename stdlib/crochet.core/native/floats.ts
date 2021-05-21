@@ -106,4 +106,8 @@ export default (ffi: ForeignInterface) => {
       }
     }
   });
+
+  ffi.defun("float.to-text", (x0) => {
+    return ffi.text(ffi.float_to_number(x0).toString());
+  });
 };

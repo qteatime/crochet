@@ -2,6 +2,8 @@
 
 open crochet.novella;
 
+singleton game;
+
 relation Item* short-name: Name;
 relation Item* name: Name;
 relation Item* description: Description;
@@ -99,11 +101,11 @@ command Room describe do
   let Desc =
     match
       when cloak on: player, if Room =:= bar do
-        novella paragraph: "It's pitch dark here. You can't see a thing.";
+        "It's pitch dark here. You can't see a thing.";
       end
 
       when player visited: Room, Room short-name: Name do
-        novella paragraph: "You're back at the [Name]";
+        "You're back at the [Name]";
       end
 
       when Room name: Name, Room description: Description do
@@ -120,28 +122,32 @@ end
 
 command main-html: Root do
   novella with-root: Root do: {
-    novella show: (
-      novella header: [
-        "Cloak of Darkness" as element | title,
-        "The classic interactive fiction demo" as element | subtitle
-      ]
-    );
-
-    novella show: (
-      novella paragraph: 
-        "Hurrying through the rainswept November night, you're glad to see the
-        bright lights of the Opera House. It's surprising that there aren't
-        more people about but, hey, what do you expect in a cheap demo game...?"
-    );
-
-    novella show: foyer describe;
-
-    simulate for [player]
-    until not on-going state
-    on pick-action: Actions for: _ do
-      novella choose-action: Actions;
-    end
+    novella-dsl do: {
+      game run;
+    }
   }
+end
+
+command game run do
+  dsl novella-dsl with
+    header [
+      title "Cloak of Darkness";
+      subtitle "The classic interactive fiction demo";
+    ];
+
+    paragraph
+      "Hurrying through the rainswept November night, you're glad to see the
+      bright lights of the Opera House. It's surprising that there aren't
+      more people about but, hey, what do you expect in a cheap demo game...?";
+
+    paragraph @(foyer describe);
+  end
+
+  simulate for [player]
+  until not on-going state
+  on pick-action: Actions for: _ do
+    novella choose-action: Actions;
+  end
 end
 
 
@@ -169,11 +175,11 @@ end
 action player go-street "Go north, to the street"
 when player at: foyer
 do
-  novella show: (
-    novella paragraph:
+  dsl novella-dsl with
+    paragraph
       "You've only just arrived, and besides, the weather outside seems to be
       getting worse."
-  );
+  end
 end
 
 action player look-around "Look around"
@@ -205,16 +211,23 @@ when
 do
   condition
     when N < 2 do
-      novella show:
-        "The message, neatly marked in the sawdust reads... ["you won" as element | strong]";
+      dsl novella-dsl with
+        paragraph
+          "The message, neatly marked in the sawdust reads...
+           [strong "you won"]";
+      end
+
       fact won state;
     end
 
     always do
-      novella show:
-        "The message has been carelessly trampled, making it difficult to read.
-        You can just distinguish the words... ["you have lost" as element | strong]";
-       fact lost state;
+      dsl novella-dsl with
+        paragraph
+          "The message has been carelessly trampled, making it difficult
+           to read. You can just distinguish the words...
+           [strong "you have lost"]";
+      end;
+      fact lost state;
     end
   end
 end

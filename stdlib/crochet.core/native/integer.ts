@@ -65,6 +65,11 @@ export default (ffi: ForeignInterface) => {
     }
   });
 
+  ffi.defun("integer.to-text", (x0) => {
+    const x1 = ffi.integer_to_bigint(x0);
+    return ffi.text(x1.toString());
+  });
+
   // Enumeration
   ffi.defun("integer.range", (from0, to0, by0) => {
     const from = ffi.integer_to_bigint(from0);

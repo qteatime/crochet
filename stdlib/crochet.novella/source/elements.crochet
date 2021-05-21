@@ -102,5 +102,5 @@ command interpolation as element =
   (self parts map: (_ as element)) as element;
 
 command numeric as element =
-  (self as text) as element;
+  self to-text as element;
 

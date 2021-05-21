@@ -3,16 +3,22 @@
 command skeleton-node name = self.name;
 command skeleton-node children = self.children;
 command skeleton-node attributes = self.attributes;
+command skeleton-node meta = self.meta;
 
 command skeleton-literal value = self.value;
+command skeleton-literal meta = self.meta;
 
 command skeleton-name name = self.name;
+command skeleton-name meta = self.meta;
 
 command skeleton-dynamic thunk = self.thunk;
+command skeleton-dynamic meta = self.meta;
 
 command skeleton-tuple children = self.children;
+command skeleton-tuple meta = self.meta;
 
 command skeleton-interpolation parts = self.parts;
+command skeleton-interpolation meta = self.meta;
 
 
 command debug-representation of: (X is skeleton-node) =
@@ -46,3 +52,12 @@ command debug-representation of: (X is skeleton-interpolation) =
   debug-representation type: "skeleton-interpolation"
     | value: X parts
     | finish;
+
+
+command skeleton-ast position-message do
+  let Meta = self meta;
+  condition
+    when Meta is nothing => "(unknown position)";
+    always => "line [Meta.line to-text], column [Meta.column to-text]";
+  end
+end

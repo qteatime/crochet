@@ -1,0 +1,125 @@
+% crochet
+
+local type novella-env(parent, bindings is cell);
+local type novella-ref(name is text);
+
+define root-env = lazy new novella-env(nothing, #cell with-value: [
+  "paragraph _" -> { _, Xs in (Xs as element) paragraph },
+  "flow _" -> { _, Xs in novella flow: (Xs as element) },
+  "stack _" -> { _, Xs in novella stack: (Xs as element) },
+  "section _" -> { _, Xs in (Xs as element) section },
+  "header _" -> { _, Xs in (Xs as element) header },
+  "divider" -> { _ in novella divider },
+  "menu _" -> { _, Xs in novella menu: (Xs as element) },
+  "action-menu _" -> { O, Xs in novella action-choice-menu: Xs for: O.reference },
+  "title _" -> { _, X in (X as element) title },
+  "subtitle _" -> { _, X in (X as element) subtitle },
+  "block _" -> { _, X in (X as element) block },
+  "strong _" -> { _, X in (X as element) strong },
+  "emphasis _" -> { _, X in (X as element) emphasis },
+  "monospace _" -> { _, X in (X as element) monospace },
+  "style _" -> { O, X in (X as element) style: O.class }
+]);
+
+command novella-env lookup: (Name is text) =
+  condition
+    when self.bindings value contains-key: Name => (self.bindings value).[Name];
+    when not (self.parent is nothing) => self.parent lookup: Name;
+    always => panic: "[Name] is not defined" tag: "undefined-name";
+  end;
+
+command novella-env set: (Name is text) to: Value do
+  self.bindings <- (self.bindings ++ [ [Name] -> Value ]);
+  nothing;
+end
+
+command #novella-env get = perform novella-dsl.get-state();
+
+command #novella-dsl evaluate: (X is skeleton-node) do
+  let Args = X children map: (#novella-dsl evaluate: _);
+  let Command = #novella-env get lookup: X name;
+  Command apply: ([X attributes] ++ Args);
+end
+
+command #novella-dsl evaluate: (X is skeleton-literal) do
+  X value;
+end
+
+command #novella-dsl evaluate: (X is skeleton-name) do
+  #novella-env get lookup: X name;
+end
+
+command #novella-dsl evaluate: (X is skeleton-dynamic) do
+  force X thunk;
+end
+
+command #novella-dsl evaluate: (X is skeleton-tuple) do
+  X children map: (#novella-dsl evaluate: _);
+end
+
+command #novella-dsl evaluate: (X is skeleton-interpolation) do
+  (X parts map: (#novella-dsl evaluate: _)) as interpolation;
+end
+
+command #novella-dsl evaluate: (X is tuple) do
+  for Command in X do
+    #novella-dsl evaluate-top: Command;
+  end
+  nothing;
+end
+
+command #novella-dsl evaluate-name: (X is skeleton-name) do
+  X name;
+end
+
+command #novella-dsl evaluate-name: X do
+  panic: "Expected a name";
+end
+
+command #novella-dsl evaluate-top: (X is skeleton-node) do
+  condition
+    when X name =:= "let _ = _" do
+      let Name = #novella-dsl evaluate-name: (X children first);
+      let Value = #novella-dsl evaluate: (X children second);
+      #novella-env get set: Name to: Value;
+      nothing;
+    end
+      
+    when X name =:= "wait" do
+      novella wait-interaction;
+    end
+
+    when X name =:= "reference _" do
+      let Name = #novella-dsl evaluate-name: (X children first);
+      #novella-env get set: Name to: new novella-ref(Name);
+      nothing;
+    end
+
+    when X name =:= "show _" do
+      let Arg = #novella-dsl evaluate: (X children first);
+      novella show: (Arg as element);
+    end
+
+    always do
+      let Element = #novella-dsl evaluate: X;
+      novella show: Element;
+    end
+  end
+end
+
+command #novella-dsl evaluate-top: X do
+  panic: "Unknown novella operation at [X position-message]";
+end
+
+command novella-dsl with-env: (Env is novella-env) do: (Block is function-0) do
+  handle
+    Block();
+  with
+    on novella-dsl.get-state() => continue with Env;
+  end
+end
+
+command novella-dsl do: Block =
+  novella-dsl
+    with-env: new novella-env(force root-env, #cell with-value: [->])
+    do: Block;

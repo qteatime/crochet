@@ -10,12 +10,27 @@ import {
 import { materialise_literal } from "./literals";
 import {
   instantiate,
+  make_integer,
   make_record_from_map,
   make_static_text,
   make_text,
   make_thunk,
   make_tuple,
 } from "./values";
+
+export function reify_meta(
+  universe: Universe,
+  module: CrochetModule,
+  node: IR.DslNode
+) {
+  return make_record_from_map(
+    universe,
+    new Map([
+      ["line", make_integer(universe, BigInt(node.meta.line))],
+      ["column", make_integer(universe, BigInt(node.meta.column))],
+    ])
+  );
+}
 
 export function reify_dsl_node(
   universe: Universe,
@@ -36,24 +51,28 @@ export function reify_dsl_node(
         make_static_text(universe, node.name),
         make_tuple(universe, children),
         make_record_from_map(universe, attrs),
+        reify_meta(universe, module, node),
       ]);
     }
 
     case IR.DslNodeTag.LITERAL: {
       return instantiate(universe.types.Skeleton.Literal, [
         materialise_literal(universe, node.value),
+        reify_meta(universe, module, node),
       ]);
     }
 
     case IR.DslNodeTag.VARIABLE: {
       return instantiate(universe.types.Skeleton.Name, [
         make_static_text(universe, node.name),
+        reify_meta(universe, module, node),
       ]);
     }
 
     case IR.DslNodeTag.EXPRESSION: {
       return instantiate(universe.types.Skeleton.Dynamic, [
         make_thunk(universe, env, node.value),
+        reify_meta(universe, module, node),
       ]);
     }
 
@@ -63,6 +82,7 @@ export function reify_dsl_node(
       );
       return instantiate(universe.types.Skeleton.Tuple, [
         make_tuple(universe, children),
+        reify_meta(universe, module, node),
       ]);
     }
 
@@ -70,7 +90,10 @@ export function reify_dsl_node(
       const parts = node.parts.map((x) => {
         switch (x.tag) {
           case IR.DslInterpolationTag.STATIC: {
-            return make_static_text(universe, x.text);
+            return instantiate(universe.types.Skeleton.Literal, [
+              materialise_literal(universe, new IR.LiteralText(x.text)),
+              universe.nothing,
+            ]);
           }
 
           case IR.DslInterpolationTag.DYNAMIC: {
@@ -84,6 +107,7 @@ export function reify_dsl_node(
 
       return instantiate(universe.types.Skeleton.Interpolation, [
         make_tuple(universe, parts),
+        reify_meta(universe, module, node),
       ]);
     }
 
