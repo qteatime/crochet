@@ -7,9 +7,13 @@ import {
   ISignal,
 } from "../../crochet";
 import { CrochetValue, CrochetTest } from "../../vm";
+import { Transcript } from "../../services/transcript";
+import { html } from "../../services/representation/html-renderer";
+import { DebugUI } from "../../services/debug/app";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
+  readonly debug_ui: DebugUI;
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
   private _ffi: ForeignInterface | null = null;
@@ -19,7 +23,9 @@ export class CrochetForBrowser {
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean
   ) {
-    this.crochet = new Crochet(this.fs, this.signal);
+    const transcript = new Transcript();
+    this.crochet = new Crochet(transcript, this.fs, this.signal);
+    this.debug_ui = new DebugUI(transcript);
   }
 
   get trusted_core() {

@@ -21,7 +21,7 @@ export class TerminalRenderer {
       }
 
       case ReprTag.NUMBER: {
-        return x.value.toString();
+        return x.value.toLocaleString();
       }
 
       case ReprTag.KEYWORD: {

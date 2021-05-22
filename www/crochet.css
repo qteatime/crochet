@@ -24,16 +24,21 @@
   }
 }
 
-:root {
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#crochet-container {
   --primary: #c44569;
 }
 
-h1,
-h2,
-p,
-header,
-strong,
-em {
+#crochet-container h1,
+#crochet-container h2,
+#crochet-container p,
+#crochet-container header,
+#crochet-container strong,
+#crochet-container em {
   font-size: 100%;
   margin: 0;
   padding: 0;
@@ -41,12 +46,12 @@ em {
   font-style: normal;
 }
 
-body {
+#crochet-container {
   background: #fafafa;
   color: #424242;
+  margin: 0;
   font-family: Lora, "serif";
   font-size: 20px;
-  margin: 0;
   padding: 3em 2em;
   position: fixed;
   width: 100%;
@@ -56,7 +61,7 @@ body {
 }
 
 @media screen and (max-width: 400px) {
-  body {
+  #crochet-container {
     font-size: 16px;
   }
 }

@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Crochet</title>
     <link rel="stylesheet" href="crochet.css" />
+    <link rel="stylesheet" href="debugger.css" />
     <link rel="stylesheet" href="./fa-solid.css" />
     <link rel="stylesheet" href="./fontawesome.min.css" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
@@ -13,9 +14,12 @@
     />
   </head>
   <body>
-    <div id="crochet" class="crochet-loading">
-      <div class="crochet-loading-screen">Loading...</div>
+    <div id="crochet-container">
+      <div id="crochet" class="crochet-loading">
+        <div class="crochet-loading-screen">Loading...</div>
+      </div>
     </div>
+    <div id="crochet-tools"></div>
     <script src="crochet.js"></script>
     <script>
       void (async function () {
@@ -34,6 +38,8 @@
           for (const child of root.children) {
             child.remove();
           }
+          const tools = document.querySelector("#crochet-tools");
+          crochet.debug_ui.render(tools);
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
         } catch (error) {
           console.error(error);

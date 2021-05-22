@@ -1,0 +1,100 @@
+@media screen and (max-width: 700) {
+  #crochet-tools {
+    display: none;
+  }
+}
+
+#crochet-tools {
+  --primary: #c44569;
+}
+
+#crochet-tools {
+  position: fixed;
+  background: #fff;
+  width: 100%;
+  bottom: 0px;
+  left: 0px;
+  box-sizing: border-box;
+  border-top: 1px solid #ddd;
+  font-family: sans-serif;
+}
+
+#crochet-debug-ui
+  > .crochet-ui--foldable[data-folded="true"]
+  .crochet-debug-ui--main-tabs
+  > .crochet-ui--tab-view {
+  height: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.crochet-debug-ui--main-tabs {
+  box-shadow: 0px -1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.crochet-ui--tabs {
+  background: #f3f3f3;
+  display: flex;
+  flex-direction: column;
+}
+
+.crochet-ui--tab-bar-button {
+  padding: 0.5em 1.5em;
+  font-size: 1.1em;
+  border-bottom: 2px solid #ececea;
+  cursor: pointer;
+}
+
+.crochet-ui--tab-bar-button[data-selected="true"] {
+  border-bottom: 2px solid var(--primary);
+}
+
+.crochet-ui--tab-view {
+  padding: 2em 1.5em;
+  background: #fff;
+  transition: all 100ms ease-out;
+  height: 50vh;
+  overflow-y: auto;
+}
+
+.crochet-ui--tab-bar {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid #ececea;
+}
+
+.crochet-ui--tab-bar-button:hover {
+  background: #ececea;
+  border-bottom: 2px solid var(--primary);
+}
+
+#crochet-debug-ui
+  > .crochet-ui--foldable
+  > .crochet-ui--foldable-button::after {
+  content: "\f106";
+  position: absolute;
+  display: block;
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 0.5em 1em;
+  right: 0px;
+  top: 0px;
+  font-family: "Font Awesome 5 Free";
+  cursor: pointer;
+}
+
+#crochet-debug-ui
+  > .crochet-ui--foldable
+  > .crochet-ui--foldable-button:hover::after {
+  background: #ececea;
+}
+
+#crochet-debug-ui
+  > .crochet-ui--foldable[data-folded="false"]
+  > .crochet-ui--foldable-button::after {
+  content: "\f107";
+}
+
+.crochet-ui--foldable {
+  position: relative;
+}
