@@ -129,13 +129,7 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
         return new RStatic(`<thunk>`);
       } else {
         const seen1 = see(x, seen);
-        return new RFlow([
-          new RStatic("<"),
-          new RKeyword("thunk"),
-          space,
-          value_to_repr(x.payload.value, seen1),
-          new RStatic(">"),
-        ]);
+        return new RTagged("Thunk", value_to_repr(x.payload.value, seen1));
       }
     }
 
