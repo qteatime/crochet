@@ -225,13 +225,9 @@
 .crochet-ui--style-repr-list-item {
   border-bottom: 1px solid #ececea;
   padding: 0.2em 0.5em 0.3em 0.5em;
-  margin-bottom: 1em;
+  margin-bottom: 0.5em;
   position: relative;
   counter-increment: crochet-list-item;
-}
-
-.crochet-ui--foldable {
-  position: relative;
 }
 
 .crochet-ui--style-repr-list
@@ -241,27 +237,11 @@
   display: none;
 }
 
-.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="false"] {
-  padding-bottom: 2em;
-}
-
-.crochet-ui--style-repr-list
-  > .crochet-ui--foldable
-  > .crochet-ui--foldable-button::after {
-  content: "(expand)";
-  cursor: pointer;
-  color: var(--primary);
-  position: absolute;
-  bottom: 0px;
-  padding: 0.5em;
-  width: 100%;
-  text-align: center;
-}
-
-.crochet-ui--style-repr-list
-  > .crochet-ui--foldable[data-folded="false"]
-  > .crochet-ui--foldable-button::after {
-  content: "(collapse)";
+.crochet-ui--style-repr-map
+  > .crochet-ui--foldable[data-folded="true"]
+  > .crochet-ui-repr--map
+  > .crochet-ui-repr--map-row:nth-child(n + 5) {
+  display: none;
 }
 
 .crochet-ui--grid {
@@ -294,16 +274,6 @@
   font-weight: bold;
 }
 
-.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="true"],
-.crochet-ui--style-repr-map > .crochet-ui--foldable[data-folded="true"] {
-  position: relative;
-}
-
-.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="false"],
-.crochet-ui--style-repr-map > .crochet-ui--foldable[data-folded="false"] {
-  padding-bottom: 2em;
-}
-
 .crochet-ui--style-repr-list
   > .crochet-ui--foldable
   > .crochet-ui--foldable-button::after,
@@ -317,6 +287,7 @@
   padding: 0.5em;
   width: 100%;
   text-align: center;
+  display: block;
 }
 
 .crochet-ui--style-repr-list
@@ -334,11 +305,13 @@
 
 .crochet-ui--grid-row {
   display: table-row;
+  vertical-align: top;
 }
 
 .crochet-ui--grid-column {
   display: table-cell;
   padding: 0.5em;
+  vertical-align: top;
 }
 
 .crochet-ui-repr--map-row > .crochet-ui-repr--map-cell {
@@ -500,4 +473,8 @@ span.crochet-ui--style-repr-typed-tag {
 
 .crochet-ui-repr--map-row:last-child .crochet-ui-repr--map-cell {
   border-bottom: none;
+}
+
+.crochet-ui-repr--map {
+  border: 1px solid #ececea;
 }
