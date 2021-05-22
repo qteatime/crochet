@@ -224,14 +224,21 @@
 
 .crochet-ui--style-repr-list-item {
   border-bottom: 1px solid #ececea;
-  padding: 0.2em 0.5em;
-  margin-bottom: 0.3em;
+  padding: 0.2em 0.5em 0.3em 0.5em;
+  margin-bottom: 1em;
+  position: relative;
+  counter-increment: crochet-list-item;
 }
 
-.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="true"] {
-  max-height: 6em;
-  overflow: hidden;
+.crochet-ui--foldable {
   position: relative;
+}
+
+.crochet-ui--style-repr-list
+  > .crochet-ui--foldable[data-folded="true"]
+  > .crochet-ui--column
+  > .crochet-ui--style-repr-list-item:nth-child(n + 5) {
+  display: none;
 }
 
 .crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="false"] {
@@ -249,12 +256,6 @@
   padding: 0.5em;
   width: 100%;
   text-align: center;
-  background: rgb(255, 255, 255);
-  background: linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
 }
 
 .crochet-ui--style-repr-list
@@ -295,8 +296,6 @@
 
 .crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="true"],
 .crochet-ui--style-repr-map > .crochet-ui--foldable[data-folded="true"] {
-  max-height: 6em;
-  overflow: hidden;
   position: relative;
 }
 
@@ -314,17 +313,10 @@
   content: "(expand)";
   cursor: pointer;
   color: var(--primary);
-  position: absolute;
-  bottom: 0px;
+  position: relative;
   padding: 0.5em;
   width: 100%;
   text-align: center;
-  background: rgb(255, 255, 255);
-  background: linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
 }
 
 .crochet-ui--style-repr-list
@@ -481,4 +473,31 @@ span.crochet-ui--style-repr-typed-tag {
   border: 1px solid #ececea;
   display: inline-block;
   padding: 0.2em;
+}
+
+.crochet-ui--style-repr-list-item::before {
+  content: counter(crochet-list-item);
+  top: -0.1em;
+  left: -1em;
+  background: var(--primary);
+  padding: 0.5em;
+  position: absolute;
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #fff;
+}
+
+.crochet-ui--style-repr-list {
+  counter-reset: crochet-list-item;
+  border: 1px solid #ececea;
+  display: inline-block;
+}
+
+.crochet-ui--style-repr-list-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.crochet-ui-repr--map-row:last-child .crochet-ui-repr--map-cell {
+  border-bottom: none;
 }
