@@ -13,6 +13,7 @@ import { DebugUI } from "../../services/debug/app";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
+  readonly transcript: Transcript;
   readonly debug_ui: DebugUI;
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
@@ -23,9 +24,9 @@ export class CrochetForBrowser {
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean
   ) {
-    const transcript = new Transcript();
-    this.crochet = new Crochet(transcript, this.fs, this.signal);
-    this.debug_ui = new DebugUI(transcript);
+    this.transcript = new Transcript();
+    this.crochet = new Crochet(this.transcript, this.fs, this.signal);
+    this.debug_ui = new DebugUI();
   }
 
   get trusted_core() {

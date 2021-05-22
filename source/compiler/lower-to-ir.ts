@@ -1842,3 +1842,21 @@ export function lower_statements(source: string, xs: Ast.Statement[]) {
     meta: context.generate_meta_table(),
   };
 }
+
+export function lower_to_repl(source: string, x: Ast.REPL) {
+  return x.match<IR.ReplNode>({
+    Declarations: (xs) => {
+      const { declarations, meta } = lower_declarations(source, xs);
+      return new IR.ReplDeclarations(declarations, source, meta);
+    },
+
+    Statements: (xs) => {
+      const { block, meta } = lower_statements(source, xs);
+      return new IR.ReplStatements(block, source, meta);
+    },
+
+    Command: (_) => {
+      throw new Error(`Unsupported`);
+    },
+  });
+}

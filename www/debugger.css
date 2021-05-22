@@ -5,7 +5,16 @@
 }
 
 #crochet-tools {
-  --primary: #c44569;
+  --primary: #f78fb3;
+  --button-primary: #f8a5c2;
+  --error: #c44569;
+  --outdated: #f7d794;
+  --outdated-accent: #f3a683;
+  --outdated-border: #f19066;
+  --type-tag-bg: #f7d794;
+  --repr-keyword: #574b90;
+  --repr-text: #303952;
+  --repr-number: #546de5;
 }
 
 #crochet-tools {
@@ -53,6 +62,9 @@
   padding: 2em 1.5em;
   background: #fff;
   transition: all 100ms ease-out;
+}
+
+.crochet-debug-ui--main-tabs > .crochet-ui--tab-view {
   height: 50vh;
   overflow-y: auto;
 }
@@ -97,4 +109,312 @@
 
 .crochet-ui--foldable {
   position: relative;
+}
+
+.crochet-ui--code-editor textarea {
+  min-height: 6em;
+  font-family: monospace;
+  padding: 0.5em;
+  box-sizing: border-box;
+  border: 1px solid #aaa;
+  border-radius: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.crochet-ui--button {
+  width: 48px;
+  height: 48px;
+  border: none;
+  font-size: 20px;
+  background: var(--primary);
+  color: #fff;
+  text-shadow: 0px -1px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 1px 1px rgb(0 0 0 / 30%);
+  cursor: pointer;
+  transition: background 100ms ease-in;
+}
+
+.crochet-ui--button:hover {
+  background: var(--button-primary);
+}
+
+.crochet-ui--playground-code-editor {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.crochet-ui--playground-code-editor .crochet-ui--playground-run-code {
+  height: auto;
+}
+
+.crochet-ui--button-add {
+  display: block;
+  margin: 0 auto;
+}
+
+.crochet-ui--playground-notebook {
+  margin-bottom: 2em;
+}
+
+.crochet-ui--playground-editor {
+  margin-bottom: 1.2em;
+}
+
+.crochet-ui--code-editor {
+  display: flex;
+  flex-grow: 1;
+}
+
+.crochet-ui--playground-result {
+  border: 1px solid #ececea;
+  background: #fafafa;
+  padding: 1em;
+}
+
+.crochet-ui--playground-error-result {
+  color: var(--error);
+  font-family: monospace;
+  font-size: 1.2em;
+  white-space: pre-wrap;
+}
+
+.crochet-debug--transcript-message-text {
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 1.2em;
+}
+
+.crochet-ui--playground-editor[data-changed="true"]
+  > .crochet-ui--playground-result {
+  background: var(--outdated);
+  position: relative;
+  border: 1px solid var(--outdated-border);
+  border-top: 0px;
+}
+
+.crochet-ui--playground-editor[data-changed="true"]
+  > .crochet-ui--playground-result::after {
+  display: block;
+  position: absolute;
+  content: "Outdated";
+  background: var(--outdated-accent);
+  border: 1px solid var(--outdated-border);
+  border-top: 0px;
+  top: 0px;
+  right: 0px;
+  padding: 0.3em 0.5em;
+}
+
+.crochet-ui--tab-view-container[data-selected="false"] {
+  display: none;
+}
+
+.crochet-ui--column {
+  display: flex;
+  flex-direction: column;
+}
+
+.crochet-ui--playground-editor-actions .crochet-ui--button:not(:last-child) {
+  border-bottom: 1px solid var(--button-primary);
+}
+
+.crochet-ui--style-repr-list-item {
+  border-bottom: 1px solid #ececea;
+  padding: 0.2em 0.5em;
+  margin-bottom: 0.3em;
+}
+
+.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="true"] {
+  max-height: 6em;
+  overflow: hidden;
+  position: relative;
+}
+
+.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="false"] {
+  padding-bottom: 2em;
+}
+
+.crochet-ui--style-repr-list
+  > .crochet-ui--foldable
+  > .crochet-ui--foldable-button::after {
+  content: "(expand)";
+  cursor: pointer;
+  color: var(--primary);
+  position: absolute;
+  bottom: 0px;
+  padding: 0.5em;
+  width: 100%;
+  text-align: center;
+  background: rgb(255, 255, 255);
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.crochet-ui--style-repr-list
+  > .crochet-ui--foldable[data-folded="false"]
+  > .crochet-ui--foldable-button::after {
+  content: "(collapse)";
+}
+
+.crochet-ui--grid {
+  display: table;
+}
+
+.crochet-ui--grid-row {
+  display: table-row;
+}
+
+.crochet-ui--grid-column {
+  display: table-cell;
+  padding: 0.5em;
+}
+
+.crochet-ui-repr--map-row > .crochet-ui-repr--map-cell {
+  border-bottom: 1px solid #ececea;
+  margin-bottom: 0.3em;
+}
+
+.crochet-ui-repr--map-row > .crochet-ui-repr--map-cell:first-child::after {
+  content: " \f061 ";
+  font-family: "Font Awesome 5 Free";
+  font-size: 0.8em;
+  color: #bbb;
+  margin-left: 0.5em;
+}
+
+.crochet-ui-repr--map-row > .crochet-ui-repr--map-cell:first-child {
+  font-weight: bold;
+}
+
+.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="true"],
+.crochet-ui--style-repr-map > .crochet-ui--foldable[data-folded="true"] {
+  max-height: 6em;
+  overflow: hidden;
+  position: relative;
+}
+
+.crochet-ui--style-repr-list > .crochet-ui--foldable[data-folded="false"],
+.crochet-ui--style-repr-map > .crochet-ui--foldable[data-folded="false"] {
+  padding-bottom: 2em;
+}
+
+.crochet-ui--style-repr-list
+  > .crochet-ui--foldable
+  > .crochet-ui--foldable-button::after,
+.crochet-ui--style-repr-map
+  > .crochet-ui--foldable
+  > .crochet-ui--foldable-button::after {
+  content: "(expand)";
+  cursor: pointer;
+  color: var(--primary);
+  position: absolute;
+  bottom: 0px;
+  padding: 0.5em;
+  width: 100%;
+  text-align: center;
+  background: rgb(255, 255, 255);
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.crochet-ui--style-repr-list
+  > .crochet-ui--foldable[data-folded="false"]
+  > .crochet-ui--foldable-button::after,
+.crochet-ui--style-repr-map
+  > .crochet-ui--foldable[data-folded="false"]
+  > .crochet-ui--foldable-button::after {
+  content: "(collapse)";
+}
+
+.crochet-ui--grid {
+  display: table;
+}
+
+.crochet-ui--grid-row {
+  display: table-row;
+}
+
+.crochet-ui--grid-column {
+  display: table-cell;
+  padding: 0.5em;
+}
+
+.crochet-ui-repr--map-row > .crochet-ui-repr--map-cell {
+  border-bottom: 1px solid #ececea;
+  margin-bottom: 0.3em;
+}
+
+.crochet-ui-repr--map-row > .crochet-ui-repr--map-cell:first-child::after {
+  content: " \f061 ";
+  font-family: "Font Awesome 5 Free";
+  font-size: 0.8em;
+  color: #bbb;
+  margin-left: 0.5em;
+}
+
+.crochet-ui-repr--map-row > .crochet-ui-repr--map-cell:first-child {
+  font-weight: bold;
+}
+
+span.crochet-ui--style-repr-typed-tag {
+  background: var(--type-tag-bg);
+  padding: 0.3em;
+  font-size: 0.9em;
+  font-variant: small-caps;
+}
+
+.crochet-ui--style-repr-typed {
+  display: inline-block;
+}
+
+.crochet-ui--style-repr-typed-value {
+  border-top: 1px solid #ececea;
+  display: block;
+}
+
+.crochet-ui--style-repr-keyword {
+  font-weight: bold;
+  color: var(--repr-keyword);
+}
+
+.crochet-ui--style-repr-secret
+  > [data-folded="true"]
+  > :not(.crochet-ui--foldable-button) {
+  display: none;
+}
+
+.crochet-ui--style-repr-secret
+  > [data-folded="true"]
+  > .crochet-ui--foldable-button::after {
+  content: "\f06e";
+  font-family: "Font Awesome 5 Free";
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.crochet-ui--style-repr-text {
+  color: var(--repr-text);
+}
+
+.crochet-ui--style-repr-text::before {
+  content: "“";
+}
+.crochet-ui--style-repr-text::after {
+  content: "”";
+}
+
+.crochet-ui--style-repr-number {
+  color: var(--repr-number);
+}
+
+.crochet-debug--transcript-message-value {
+  display: inline-block;
 }

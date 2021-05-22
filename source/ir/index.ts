@@ -7,3 +7,4 @@ export * from "./goal";
 export * from "./expression";
 export * from "./declaration";
 export * from "./program";
+export * from "./repl";

@@ -101,3 +101,5 @@ export class TerminalRenderer {
     return this.render(type_to_repr(x));
   }
 }
+
+export const text_unsafe = new TerminalRenderer(true);

@@ -43,17 +43,20 @@ export class TabBar extends React.Component<ITabBar, { selected: any }> {
 export function TabView(
   props: IElement & { selected: any; tabs: [any, React.ReactNode][] }
 ) {
-  const result = props.tabs.find(([k, _]) => k === props.selected);
-  if (result == null) {
-    return null;
-  } else {
-    const [_, content] = result;
-    return (
-      <div className={classes("crochet-ui--tab-view", props.style)}>
-        {content}
-      </div>
-    );
-  }
+  return (
+    <div className={classes("crochet-ui--tab-view", props.style)}>
+      {props.tabs.map(([key, view]) => {
+        return (
+          <div
+            className="crochet-ui--tab-view-container"
+            data-selected={key === props.selected}
+          >
+            {view}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 type ITabs = IElement & {
@@ -63,7 +66,7 @@ type ITabs = IElement & {
 export class Tabs extends React.Component<ITabs, { selected: any }> {
   constructor(props: ITabs) {
     super(props);
-    this.state = { selected: props.selected };
+    this.state = { selected: props.selected ?? props.tabs[0]?.key };
   }
 
   render() {

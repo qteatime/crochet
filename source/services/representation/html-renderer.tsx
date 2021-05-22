@@ -22,7 +22,11 @@ export class HTMLRenderer {
         return (
           <Style theme="repr-list">
             <MaybeFoldable foldWhen={x.items.length > 5}>
-              <Column>{x.items.map((a) => this.render(a))}</Column>
+              <Column>
+                {x.items.map((a) => (
+                  <Style theme="repr-list-item">{this.render(a)}</Style>
+                ))}
+              </Column>
             </MaybeFoldable>
           </Style>
         );
@@ -34,9 +38,13 @@ export class HTMLRenderer {
               <Grid style="crochet-ui-repr--map">
                 {x.items.map(([k, v]) => {
                   return (
-                    <GridRow>
-                      <GridColumn>{this.render(k)}</GridColumn>
-                      <GridColumn>{this.render(v)}</GridColumn>
+                    <GridRow style="crochet-ui-repr--map-row">
+                      <GridColumn style="crochet-ui-repr--map-cell">
+                        {this.render(k)}
+                      </GridColumn>
+                      <GridColumn style="crochet-ui-repr--map-cell">
+                        {this.render(v)}
+                      </GridColumn>
                     </GridRow>
                   );
                 })}
@@ -48,7 +56,9 @@ export class HTMLRenderer {
       case ReprTag.INTERPOLATION:
         return (
           <Style theme="repr-interpolation">
-            {x.parts.map((a) => this.render(a))}
+            {x.parts.map((a) => (
+              <Style theme="repr-interpolation-part">{this.render(a)}</Style>
+            ))}
           </Style>
         );
 
@@ -65,7 +75,11 @@ export class HTMLRenderer {
 
       case ReprTag.STACK:
         return (
-          <Style theme="repr-stack">{x.items.map((a) => this.render(a))}</Style>
+          <Style theme="repr-stack">
+            {x.items.map((a) => (
+              <Style theme="repr-stack-item">{this.render(a)}</Style>
+            ))}
+          </Style>
         );
 
       case ReprTag.CIRCULAR:

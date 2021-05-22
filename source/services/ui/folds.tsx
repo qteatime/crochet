@@ -40,6 +40,6 @@ export function MaybeFoldable(props: IElement & { foldWhen: boolean }) {
   if (props.foldWhen) {
     return <Foldable>{props.children}</Foldable>;
   } else {
-    return <React.Fragment>props.children</React.Fragment>;
+    return <React.Fragment>{props.children}</React.Fragment>;
   }
 }

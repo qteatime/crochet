@@ -6,6 +6,7 @@ import * as React from "react";
 import { Log } from "../ui/log";
 import { Column, Row } from "../ui/basic";
 import { Tabs } from "../ui/tabs";
+import { Value } from "../ui/value";
 
 type ITranscriptUI = {
   transcript: Transcript;
@@ -71,30 +72,7 @@ export class TranscriptUI extends React.Component<
         <div className="crochet-debug--transcript-message-plain-text">{x}</div>
       );
     } else {
-      return (
-        <Tabs
-          tabs={[
-            {
-              key: "structure",
-              tab: "Structure",
-              content: (
-                <div className="crochet-debug--transcript-message-value">
-                  {html.render_value(x)}
-                </div>
-              ),
-            },
-            {
-              key: "plain-text",
-              tab: "Plain Text",
-              content: (
-                <div className="crochet-debug--transcript-message-text">
-                  {this.text_renderer.render_value(x)}
-                </div>
-              ),
-            },
-          ]}
-        />
-      );
+      return <Value value={x} />;
     }
   }
 }

@@ -4,17 +4,21 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Foldable } from "../ui/folds";
 import { TabBar, Tabs } from "../ui/tabs";
+import { PlaygroundUI } from "../playground/ui";
+import { CrochetForBrowser } from "../../targets/browser";
+import { CrochetModule } from "../../vm";
 
 export class DebugUI {
-  readonly transcript_ui: React.ReactNode;
+  render(crochet: CrochetForBrowser, root: HTMLElement) {
+    const pkg = crochet.root;
+    const cpkg = crochet.system.universe.world.packages.get(pkg.meta.name)!;
+    const module = new CrochetModule(cpkg, "(playground)", null);
 
-  constructor(readonly transcript: Transcript) {
-    this.transcript_ui = <TranscriptUI transcript={transcript} />;
-  }
-
-  render(root: HTMLElement) {
     ReactDOM.render(
-      <DebugUIApp transcript={this.transcript_ui}></DebugUIApp>,
+      <DebugUIApp
+        transcript={<TranscriptUI transcript={crochet.transcript} />}
+        playground={<PlaygroundUI crochet={crochet.system} module={module} />}
+      ></DebugUIApp>,
       root
     );
   }
@@ -22,6 +26,7 @@ export class DebugUI {
 
 type IDebugUI = {
   transcript: React.ReactNode;
+  playground: React.ReactNode;
 };
 
 export class DebugUIApp extends React.Component<IDebugUI> {
@@ -41,6 +46,11 @@ export class DebugUIApp extends React.Component<IDebugUI> {
                 key: "transcript",
                 tab: "Transcript",
                 content: this.props.transcript,
+              },
+              {
+                key: "playground",
+                tab: "Playground",
+                content: this.props.playground,
               },
             ]}
           />
