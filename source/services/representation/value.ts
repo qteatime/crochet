@@ -49,42 +49,48 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
 
     case Tag.INTERPOLATION: {
       Values.assert_tag(Tag.INTERPOLATION, x);
-      seen.add(x);
+      const seen1 = see(x, seen);
       return new RInterpolation(
         x.payload.map((a) =>
           typeof a === "string"
             ? new RStatic(a)
             : new RFlow([
                 new RStatic("["),
-                value_to_repr(a, seen),
+                value_to_repr(a, seen1),
                 new RStatic("]"),
               ])
         )
       );
     }
 
-    case Tag.TUPLE:
+    case Tag.TUPLE: {
       Values.assert_tag(Tag.TUPLE, x);
-      seen.add(x);
-      return new RList(x.payload.map((a) => value_to_repr(a, seen)));
+      const seen1 = see(x, seen);
+      return new RList(x.payload.map((a) => value_to_repr(a, seen1)));
+    }
 
     case Tag.RECORD: {
       Values.assert_tag(Tag.RECORD, x);
-      seen.add(x);
+      const seen1 = see(x, seen);
       return new RMap(
-        [...x.payload].map(([k, v]) => [new RStatic(k), value_to_repr(v, seen)])
+        [...x.payload].map(([k, v]) => [
+          new RStatic(k),
+          value_to_repr(v, seen1),
+        ])
       );
     }
 
     case Tag.INSTANCE: {
       Values.assert_tag(Tag.INSTANCE, x);
-      seen.add(x);
+      const seen1 = see(x, seen);
       if (x.type.fields.length !== x.payload.length) {
         return new RTyped(
           type_to_repr(x.type),
           new RTagged(
             "corrupted",
-            new RList(x.payload.map((a) => new RSecret(value_to_repr(a, seen))))
+            new RList(
+              x.payload.map((a) => new RSecret(value_to_repr(a, seen1)))
+            )
           )
         );
       } else {
@@ -94,7 +100,7 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
           new RMap(
             pairs.map(([k, v]) => [
               new RStatic(k),
-              new RSecret(value_to_repr(v, seen)),
+              new RSecret(value_to_repr(v, seen1)),
             ])
           )
         );
@@ -122,12 +128,12 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
       if (x.payload.value == null) {
         return new RStatic(`<thunk>`);
       } else {
-        seen.add(x);
+        const seen1 = see(x, seen);
         return new RFlow([
           new RStatic("<"),
           new RKeyword("thunk"),
           space,
-          value_to_repr(x.payload.value, seen),
+          value_to_repr(x.payload.value, seen1),
           new RStatic(">"),
         ]);
       }
@@ -135,12 +141,12 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
 
     case Tag.CELL: {
       Values.assert_tag(Tag.CELL, x);
-      seen.add(x);
+      const seen1 = see(x, seen);
       return new RFlow([
         new RStatic("<"),
         new RKeyword("cell"),
         space,
-        value_to_repr(x.payload.value, seen),
+        value_to_repr(x.payload.value, seen1),
         new RStatic(">"),
       ]);
     }
@@ -158,43 +164,45 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
 
     case Tag.ACTION: {
       Values.assert_tag(Tag.ACTION, x);
+      const seen1 = see(x, seen);
       return new RFlow([
-        new RStatic("<"),
-        new RKeyword("action"),
+        new RKeyword("action:"),
         space,
         new RStatic(x.payload.action.name),
-        new RTagged(
-          "Bound values",
-          new RMap(
-            [...Environments.bound_values_up_to(null, x.payload.env)].map(
-              ([k, v]) => [new RStatic(k), value_to_repr(v, seen)]
+        new RBlock(
+          new RTagged(
+            "Bound values",
+            new RMap(
+              [...Environments.bound_values_up_to(null, x.payload.env)].map(
+                ([k, v]) => [new RStatic(k), value_to_repr(v, seen1)]
+              )
             )
           )
         ),
-        new RStatic(">"),
       ]);
     }
 
     case Tag.ACTION_CHOICE: {
       Values.assert_tag(Tag.ACTION_CHOICE, x);
+      const seen1 = see(x, seen);
       return new RFlow([
-        new RStatic("<"),
-        new RKeyword("action-choice"),
+        new RKeyword("choice:"),
         space,
         new RStatic(x.payload.action.name),
         space,
-        new RKeyword("rank"),
+        new RKeyword("rank:"),
         space,
         new RNumber(x.payload.score),
-        new RTagged(
-          "Bound values",
-          new RMap(
-            [...Environments.bound_values_up_to(null, x.payload.env)].map(
-              ([k, v]) => [new RStatic(k), value_to_repr(v, seen)]
+        new RBlock(
+          new RTagged(
+            "Bound values",
+            new RMap(
+              [...Environments.bound_values_up_to(null, x.payload.env)].map(
+                ([k, v]) => [new RStatic(k), value_to_repr(v, seen1)]
+              )
             )
           )
         ),
-        new RStatic(">"),
       ]);
     }
 
@@ -208,4 +216,8 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
     default:
       throw unreachable(x.tag, "Value");
   }
+}
+
+function see(x: CrochetValue, seen: Set<CrochetValue>) {
+  return new Set([...seen, x]);
 }

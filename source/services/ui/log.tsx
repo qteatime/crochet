@@ -17,8 +17,10 @@ export class Log extends React.Component<ILog> {
 
   render() {
     return (
-      <div className="log" ref={this.log}>
-        {this.props.items}
+      <div className="crochet-ui--log" ref={this.log}>
+        {this.props.items.map((x) => (
+          <div className="crochet-ui--log-entry">{x}</div>
+        ))}
       </div>
     );
   }
@@ -26,7 +28,7 @@ export class Log extends React.Component<ILog> {
   append(x: React.ReactNode) {
     this.entries.push(x);
     const root = document.createElement("div");
-    root.className = "crochet-ui--log-dynamic-entry";
+    root.className = "crochet-ui--log-entry crochet-ui--log-dynamic-entry";
     ReactDOM.render(<React.Fragment>{x}</React.Fragment>, root);
     this.log.current?.appendChild(root);
   }

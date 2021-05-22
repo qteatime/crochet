@@ -15,6 +15,8 @@
   --repr-keyword: #574b90;
   --repr-text: #303952;
   --repr-number: #546de5;
+  --log-tag-bg: #f7d794;
+  --repr-tag: #f7d794;
 }
 
 #crochet-tools {
@@ -368,7 +370,6 @@ span.crochet-ui--style-repr-typed-tag {
   background: var(--type-tag-bg);
   padding: 0.3em;
   font-size: 0.9em;
-  font-variant: small-caps;
 }
 
 .crochet-ui--style-repr-typed {
@@ -417,4 +418,67 @@ span.crochet-ui--style-repr-typed-tag {
 
 .crochet-debug--transcript-message-value {
   display: inline-block;
+}
+
+.crochet-ui--log-entry {
+  margin-bottom: 1em;
+  border-bottom: 1px solid #ececea;
+  padding-bottom: 1em;
+}
+
+.crochet-debug--transcript-meta {
+  background: #fafafa;
+  padding: 0.5em;
+  font-size: 0.9em;
+  border-top: 1px solid #ccc;
+  margin-bottom: 0.5em;
+}
+
+.crochet-debug--transcript-tag {
+  background: var(--log-tag-bg);
+  text-transform: uppercase;
+  margin-right: 1em;
+  margin-bottom: 0.5em;
+  padding: 0.3em 0.5em;
+  margin-top: -0.6em;
+}
+
+.crochet-ui--row {
+  display: flex;
+  flex-direction: row;
+}
+
+.crochet-debug--transcript-category {
+  color: #777;
+}
+
+.crochet-debug--transcript-location {
+  white-space: pre-wrap;
+  margin-left: 2em;
+  font-family: monospace;
+  color: #777;
+}
+
+.crochet-ui--style-repr-block {
+  display: block;
+  margin: 0.5em 0 1em 1.5em;
+}
+
+.crochet-ui--style-repr-tagged {
+  display: block;
+}
+
+.crochet-ui--style-repr-tagged-tag {
+  display: block;
+  background: var(--repr-tag);
+  text-transform: uppercase;
+  font-size: 0.8em;
+  padding: 0.3em 0.5em;
+  width: fit-content;
+}
+
+.crochet-ui--style-repr-tagged-value {
+  border: 1px solid #ececea;
+  display: inline-block;
+  padding: 0.2em;
 }
