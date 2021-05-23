@@ -1,7 +1,10 @@
 import * as IR from "../ir";
+import { unreachable, zip } from "../utils/utils";
 import { XorShift } from "../utils/xorshift";
 import { ITranscript } from "./interfaces";
 import { Namespace, PassthroughNamespace } from "./namespaces";
+
+export type Primitive = boolean | null | bigint | number;
 
 //#region Base values
 export enum Tag {
@@ -106,6 +109,95 @@ export class CrochetType {
     readonly meta: IR.Metadata | null
   ) {
     this.layout = new Map(this.fields.map((k, i) => [k, i]));
+  }
+}
+//#endregion
+
+//#region Core operations
+export function equals(left: CrochetValue, right: CrochetValue): boolean {
+  if (left.tag !== right.tag) {
+    return false;
+  }
+
+  switch (left.tag) {
+    case Tag.NOTHING:
+    case Tag.TRUE:
+    case Tag.FALSE:
+      return left.tag === right.tag;
+
+    case Tag.INTEGER: {
+      return left.payload === right.payload;
+    }
+
+    case Tag.FLOAT_64: {
+      return left.payload === right.payload;
+    }
+
+    case Tag.PARTIAL: {
+      const l = left as CrochetValue<Tag.PARTIAL>;
+      const r = right as CrochetValue<Tag.PARTIAL>;
+
+      return (
+        l.payload.module === r.payload.module &&
+        l.payload.name === r.payload.name
+      );
+    }
+
+    case Tag.TEXT: {
+      return left.payload === right.payload;
+    }
+
+    case Tag.INTERPOLATION: {
+      const l = left as CrochetValue<Tag.INTERPOLATION>;
+      const r = right as CrochetValue<Tag.INTERPOLATION>;
+
+      if (l.payload.length !== r.payload.length) {
+        return false;
+      }
+      for (const [a, b] of zip(l.payload, r.payload)) {
+        if (typeof a === "string" && typeof b === "string") {
+          if (a !== b) return false;
+        } else if (a instanceof CrochetValue && b instanceof CrochetValue) {
+          if (!equals(a, b)) return false;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    case Tag.TUPLE: {
+      const l = left as CrochetValue<Tag.TUPLE>;
+      const r = right as CrochetValue<Tag.TUPLE>;
+
+      if (l.payload.length !== r.payload.length) {
+        return false;
+      }
+      for (const [a, b] of zip(l.payload, r.payload)) {
+        if (!equals(a, b)) return false;
+      }
+      return true;
+    }
+
+    case Tag.RECORD: {
+      const l = left as CrochetValue<Tag.RECORD>;
+      const r = right as CrochetValue<Tag.RECORD>;
+
+      if (l.payload.size !== r.payload.size) {
+        return false;
+      }
+
+      for (const [k, v] of l.payload.entries()) {
+        const rv = r.payload.get(k);
+        if (rv == null || !equals(v, rv)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    default:
+      return left === right;
   }
 }
 //#endregion
@@ -337,7 +429,7 @@ export class TreeOne extends TreeBase {
 
 export class TreeMany extends TreeBase {
   readonly tag = TreeTag.MANY;
-  public pairs: Pair[] = [];
+  public table = new CMap<Tree>();
   constructor(readonly type: TreeType) {
     super();
   }
@@ -771,4 +863,219 @@ export class Universe {
     return new CrochetValue(Tag.TEXT, this.types.Text, x);
   }
 }
+//#endregion
+
+//#region Intrinsic supporting data structures
+class CMapEntry<V> {
+  constructor(readonly key: CrochetValue, public value: V) {}
+}
+
+function cmap_is_slow(v: CrochetValue) {
+  switch (v.tag) {
+    case Tag.INTERPOLATION:
+    case Tag.TUPLE:
+    case Tag.RECORD:
+    case Tag.TEXT:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+function cmap_is_primitive(v: CrochetValue) {
+  switch (v.tag) {
+    case Tag.NOTHING:
+    case Tag.INTEGER:
+    case Tag.FLOAT_64:
+    case Tag.TRUE:
+    case Tag.FALSE:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+function cmap_get_primitive(v: CrochetValue): Primitive {
+  switch (v.tag) {
+    case Tag.TRUE:
+      return true;
+    case Tag.FALSE:
+      return false;
+    case Tag.NOTHING:
+      return null;
+    case Tag.INTEGER:
+    case Tag.FLOAT_64:
+      return v.payload as any;
+    default:
+      throw new Error(`Unsupported`);
+  }
+}
+
+export class CMap<V> {
+  private _types: {
+    integer: CrochetType;
+    float: CrochetType;
+    true: CrochetValue;
+    false: CrochetValue;
+    nothing: CrochetValue;
+  } = Object.create(null)!;
+  private slow_entries: CMapEntry<V>[] = [];
+  private table = new Map<CrochetValue | Primitive, V>();
+
+  get(key: CrochetValue): V | undefined {
+    if (cmap_is_slow(key)) {
+      return this.get_slow(key);
+    } else if (cmap_is_primitive(key)) {
+      return this.table.get(cmap_get_primitive(key));
+    } else {
+      return this.table.get(key);
+    }
+  }
+
+  private get_slow(key: CrochetValue): V | undefined {
+    for (const entry of this.slow_entries) {
+      if (equals(entry.key, key)) {
+        return entry.value;
+      }
+    }
+    return undefined;
+  }
+
+  has(key: CrochetValue): boolean {
+    return this.get(key) !== undefined;
+  }
+
+  set(key: CrochetValue, value: V) {
+    if (cmap_is_slow(key)) {
+      this.set_slow(key, value);
+    } else if (cmap_is_primitive(key)) {
+      const prim = cmap_get_primitive(key);
+      this.remember_type(prim, key);
+      this.table.set(cmap_get_primitive(key), value);
+    } else {
+      this.table.set(key, value);
+    }
+  }
+
+  private set_slow(key: CrochetValue, value: V) {
+    for (const entry of this.slow_entries) {
+      if (equals(entry.key, key)) {
+        entry.value = value;
+      }
+    }
+    this.slow_entries.push(new CMapEntry(key, value));
+  }
+
+  delete(key: CrochetValue) {
+    if (cmap_is_slow(key)) {
+      this.delete_slow(key);
+    } else if (cmap_is_primitive(key)) {
+      this.table.delete(cmap_get_primitive(key));
+    } else {
+      this.table.delete(key);
+    }
+  }
+
+  private delete_slow(key: CrochetValue) {
+    const new_entries = [];
+    for (const entry of this.slow_entries) {
+      if (!equals(entry.key, key)) {
+        new_entries.push(entry);
+      }
+    }
+    this.slow_entries = new_entries;
+  }
+
+  *entries(): Generator<[CrochetValue, V]> {
+    for (const [k, v] of this.table.entries()) {
+      yield [this.materialise_key(k), v];
+    }
+    for (const entry of this.slow_entries) {
+      yield [entry.key, entry.value];
+    }
+  }
+
+  *values() {
+    for (const value of this.table.values()) {
+      yield value;
+    }
+    for (const entry of this.slow_entries) {
+      yield entry.value;
+    }
+  }
+
+  *keys() {
+    for (const key of this.table.keys()) {
+      yield this.materialise_key(key);
+    }
+    for (const entry of this.slow_entries) {
+      yield entry.key;
+    }
+  }
+
+  private remember_type(primitive: Primitive, value: CrochetValue) {
+    if (primitive === null) {
+      if (this._types.nothing) return;
+      this._types.nothing = value;
+      return;
+    }
+
+    switch (typeof primitive) {
+      case "bigint":
+        if (this._types.integer) break;
+        this._types.integer = value.type;
+        break;
+
+      case "number":
+        if (this._types.float) break;
+        this._types.float = value.type;
+        break;
+
+      case "boolean":
+        if (primitive) {
+          if (this._types.true) break;
+          this._types.true = value;
+          break;
+        } else {
+          if (this._types.false) break;
+          this._types.false = value;
+          break;
+        }
+
+      default:
+        throw unreachable(primitive, "unreachable");
+    }
+  }
+
+  private materialise_key(key: CrochetValue | Primitive) {
+    if (key instanceof CrochetValue) {
+      return key;
+    } else if (key === null) {
+      return this._types.nothing;
+    } else {
+      switch (typeof key) {
+        case "number":
+          return new CrochetValue(Tag.FLOAT_64, this._types.float, key);
+        case "bigint":
+          return new CrochetValue(Tag.INTEGER, this._types.integer, key);
+        case "boolean": {
+          if (key) {
+            return this._types.true;
+          } else {
+            return this._types.false;
+          }
+        }
+        default:
+          throw unreachable(key, "unreachable");
+      }
+    }
+  }
+
+  get size() {
+    return this.table.size + this.slow_entries.length;
+  }
+}
+
 //#endregion

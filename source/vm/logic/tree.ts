@@ -72,18 +72,17 @@ export function insert(tree: Tree, values: CrochetValue[]): boolean {
 
       case TreeTag.MANY: {
         const head = values[index];
-        for (const pair of tree.pairs) {
-          if (Values.equals(head, pair.value)) {
-            go(pair.tree, index + 1);
-            return;
-          }
+        const subtree = tree.table.get(head);
+        if (subtree != null) {
+          go(subtree, index + 1);
+          return;
+        } else {
+          const subtree = materialise(tree.type);
+          tree.table.set(head, subtree);
+          changed = true;
+          go(subtree, index + 1);
+          return;
         }
-
-        const subtree = materialise(tree.type);
-        tree.pairs.push(new Pair(head, subtree));
-        changed = true;
-        go(subtree, index + 1);
-        return;
       }
 
       case TreeTag.END: {
@@ -132,24 +131,21 @@ export function remove(
 
       case TreeTag.MANY: {
         const head = values[index];
-        const new_pairs: Pair[] = [];
-        for (const pair of tree.pairs) {
-          if (Values.equals(head, pair.value)) {
-            const result = go(pair.tree, index + 1);
+        for (const [key, subtree] of tree.table.entries()) {
+          if (Values.equals(head, key)) {
+            const result = go(subtree, index + 1);
             if (result == null) {
+              tree.table.delete(key);
               changed = true;
             } else {
-              new_pairs.push(new Pair(pair.value, result));
+              tree.table.set(key, result);
             }
-          } else {
-            new_pairs.push(pair);
           }
         }
 
-        if (new_pairs.length === 0) {
+        if (tree.table.size === 0) {
           return null;
         } else {
-          tree.pairs = new_pairs;
           return tree;
         }
       }
@@ -195,10 +191,10 @@ export function search(
 
       case TreeTag.MANY: {
         const head = patterns[index];
-        for (const pair of tree.pairs) {
-          const new_env = unify(state, module, env, pair.value, head);
+        for (const [key, subtree] of tree.table.entries()) {
+          const new_env = unify(state, module, env, key, head);
           if (new_env != null) {
-            yield* go(pair.tree, new_env, index + 1);
+            yield* go(subtree, new_env, index + 1);
           }
         }
         break;
@@ -249,10 +245,10 @@ export function sample(
         const head = patterns[index];
 
         const pairs: { env: Environment; tree: Tree }[] = [];
-        for (const pair of tree.pairs) {
-          const new_env = unify(state, module, env, pair.value, head);
+        for (const [key, subtree] of tree.table.entries()) {
+          const new_env = unify(state, module, env, key, head);
           if (new_env != null) {
-            pairs.push({ env: new_env, tree: pair.tree });
+            pairs.push({ env: new_env, tree: subtree });
           }
         }
 

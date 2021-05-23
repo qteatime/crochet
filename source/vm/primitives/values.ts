@@ -1,12 +1,5 @@
 import * as IR from "../../ir";
-import {
-  clone_map,
-  copy_map,
-  every,
-  unreachable,
-  zip,
-  zip3,
-} from "../../utils/utils";
+import { clone_map, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import {
   Action,
@@ -19,6 +12,7 @@ import {
   CrochetType,
   CrochetValue,
   Environment,
+  equals,
   Tag,
   Universe,
 } from "../intrinsics";
@@ -258,92 +252,6 @@ export function get_interpolation_parts(
 ): (string | CrochetValue)[] {
   assert_tag(Tag.INTERPOLATION, x);
   return x.payload;
-}
-
-export function equals(left: CrochetValue, right: CrochetValue): boolean {
-  if (left.tag !== right.tag) {
-    return false;
-  }
-
-  switch (left.tag) {
-    case Tag.NOTHING:
-    case Tag.TRUE:
-    case Tag.FALSE:
-      return left.tag === right.tag;
-
-    case Tag.INTEGER: {
-      assert_tag(Tag.INTEGER, left);
-      assert_tag(Tag.INTEGER, right);
-      return left.payload === right.payload;
-    }
-
-    case Tag.FLOAT_64: {
-      assert_tag(Tag.FLOAT_64, left);
-      assert_tag(Tag.FLOAT_64, right);
-      return left.payload === right.payload;
-    }
-
-    case Tag.PARTIAL: {
-      assert_tag(Tag.PARTIAL, left);
-      assert_tag(Tag.PARTIAL, right);
-      return (
-        left.payload.module === right.payload.module &&
-        left.payload.name === right.payload.name
-      );
-    }
-
-    case Tag.TEXT: {
-      assert_tag(Tag.TEXT, left);
-      assert_tag(Tag.TEXT, right);
-      return left.payload === right.payload;
-    }
-
-    case Tag.INTERPOLATION: {
-      assert_tag(Tag.INTERPOLATION, left);
-      assert_tag(Tag.INTERPOLATION, right);
-      return (
-        left.payload.length === right.payload.length &&
-        every(zip(left.payload, right.payload), ([l, r]) => {
-          if (typeof l === "string" && typeof r === "string") {
-            return l === r;
-          } else if (l instanceof CrochetValue && r instanceof CrochetValue) {
-            return equals(l, r);
-          } else {
-            return false;
-          }
-        })
-      );
-    }
-
-    case Tag.TUPLE: {
-      assert_tag(Tag.TUPLE, left);
-      assert_tag(Tag.TUPLE, right);
-      return (
-        left.payload.length === right.payload.length &&
-        every(zip(left.payload, right.payload), ([l, r]) => equals(l, r))
-      );
-    }
-
-    case Tag.RECORD: {
-      assert_tag(Tag.RECORD, left);
-      assert_tag(Tag.RECORD, right);
-      if (left.payload.size !== right.payload.size) {
-        return false;
-      }
-      for (const [k, v] of left.payload.entries()) {
-        const rv = right.payload.get(k);
-        if (rv == null) {
-          return false;
-        } else if (!equals(v, rv)) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    default:
-      return left === right;
-  }
 }
 
 export function register_instance(universe: Universe, value: CrochetValue) {
@@ -616,3 +524,5 @@ export function to_number(x: CrochetValue) {
 export function is_nothing(x: CrochetValue) {
   return x.tag === Tag.NOTHING;
 }
+
+export { equals };
