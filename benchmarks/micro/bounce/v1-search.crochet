@@ -1,0 +1,88 @@
+% crochet
+// This file is derived from the SOM benchmarks from the AWFY suite
+// See https://github.com/smarr/are-we-fast-yet/tree/master/benchmarks/SOM
+
+open crochet.random;
+open crochet.debug;
+
+type ball;
+
+relation Ball* x: _;
+relation Ball* y: _;
+relation Ball* x-speed: _;
+relation Ball* y-speed: _;
+
+define max-y = 500;
+define max-x = 500;
+
+command main: Seed do
+  #random with-source: (#random with-seed: Seed) do: {
+    let Balls = for I in 1 to: 100 do #ball make end;
+
+    let Bounces = #cell with-value: 0;
+    for _ in 1 to: 50 do
+      for Ball in Balls do
+        let Bounced = Ball update;
+        condition
+          when Bounced => Bounces <- (Bounces value + 1);
+          always => nothing;
+        end
+      end
+    end
+
+    Bounces value;
+  }
+end
+
+command verify: Result do
+  assert Result =:= 1328;
+end
+
+command #ball make do
+  let Random = #random global;
+  let Ball = new ball;
+  fact Ball x: (Random between: 0 and: max-x);
+  fact Ball y: (Random between: 0 and: max-y);
+  fact Ball x-speed: (Random between: -150 and: 150);
+  fact Ball y-speed: (Random between: -150 and: 150);
+  Ball;
+end
+
+command ball update do
+  let Result =
+    match
+      when self x: X0, self y: Y0, self x-speed: Xs0, self y-speed: Ys0 do
+        let X1 = X0 + Xs0;
+        let Y1 = Y0 + Ys0;
+        let Bounced = #cell with-value: false;
+
+        condition
+          when (X1 < 0) or (X1 > max-x) do
+            fact self x: (X1 clamp-between: 0 and: max-x);
+            fact self x-speed: (Xs0 * -1);
+            Bounced <- true;
+          end
+
+          always do
+            fact self x: X1;
+          end
+        end
+
+        condition
+          when (Y1 < 0) or (Y1 > max-y) do
+            fact self y: (Y1 clamp-between: 0 and: max-y);
+            fact self y-speed: (Ys0 * -1);
+            Bounced <- true;
+          end
+
+          always do
+            fact self y: Y1;
+          end
+        end
+
+        Bounced value;
+      end
+    end;
+
+  Result first;
+end

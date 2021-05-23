@@ -1,0 +1,23 @@
+{
+  "title": "Bouncing balls simulation",
+  "versions": {
+    "0.9.0": [
+      {
+        "tag": "[with search]",
+        "source": "v1-search.crochet"
+      },
+      {
+        "tag": "[with cells]",
+        "source": "v1-cells.crochet"
+      }
+    ]
+  },
+  "baseline": "bounce.js",
+  "seed": 1731859351,
+  "dependencies": [
+    "crochet.core",
+    "crochet.debug",
+    "crochet.random",
+    "crochet.mathematics"
+  ]
+}

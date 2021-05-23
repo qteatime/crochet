@@ -1,0 +1,19 @@
+{
+  "title": "Maze generation",
+  "versions": {
+    "0.8.0": "v6.crochet",
+    "0.7.0": "v5.crochet",
+    "0.6.0": "v4.crochet",
+    "0.4.0": "v3.crochet",
+    "0.3.0": "v2.crochet",
+    "0.2.0": "v1.crochet"
+  },
+  "baseline": "maze.js",
+  "seed": 218379128,
+  "dependencies": [
+    "crochet.core",
+    "crochet.debug",
+    "crochet.random",
+    "crochet.mathematics"
+  ]
+}

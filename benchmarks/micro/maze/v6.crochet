@@ -145,21 +145,23 @@ end
 
 
 command maze-gen draw do
-  for IY in 1 to: self.Height do
-    let Line =
-      for IX in 1 to: self.Width do
-        (cell-at: new point(IX, IY)) draw;
-      end;
-    Line as interpolation
-      |> _ flatten-into-plain-text
-      |> transcript write: _
-  end
+  let Lines =
+    for IY in 1 to: self.Height do
+      let Line =
+        for IX in 1 to: self.Width do
+          (cell-at: new point(IX, IY)) draw;
+        end;
+      Line as interpolation
+        |> _ flatten-into-plain-text
+    end;
+  
+  #text from-lines: Lines;
 end
 
 command cell draw do
   let Char =
     match
-      when self state: cs-cut => " ";
+      when self state: cs-cut => "_";
       when self state: cs-path => ".";
       when self state: cs-begin => "B";
       when self state: cs-end => "E";
@@ -171,7 +173,32 @@ command cell draw do
 end
 
 command main: _ do
-  let Maze = benchmark block: { maze generate-width: 20 height: 20 } tag: "Generate";
-  benchmark block: { Maze draw } tag: "Draw";
-  nothing;
+  let Maze = maze generate-width: 20 height: 20;
+  Maze draw;
+end
+
+command verify: Result do
+  let Expected =
+"#_#?#_#___#__#_#____
+___#__#_#_#_#____##_
+##___#___#___##_#__#
+_###__#_#__##_#___#_
+___##___##B#____##__
+##__#_#______##____#
+___#___#_##_#__#_#__
+_#___#_#__#_#_#_#__#
+#_##_##__#__#____#__
+___##_##__#__#_#___#
+_#_______#__#?#__#__
+#_#_###_#?#__#?##__#
+___##____#__#_#__#__
+_#____#_#_#_#__#_#_#
+_#_#_#__#____#______
+#_#___##__#_#__#_#_#
+#___#__#_#_#__#__#__
+_#_#__#_#____#_#E#_#
+____#____#_#___##__#
+_#_#__#_#__#_#___#__";
+
+  assert Result === Expected;
 end

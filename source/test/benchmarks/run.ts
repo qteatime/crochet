@@ -4,7 +4,7 @@ import * as Package from "../../pkg";
 import { CrochetForBench } from "../../targets/bench";
 import type { XorShift } from "../../utils/xorshift";
 import { logger } from "../../utils/logger";
-import { Values } from "../../vm";
+import { CrochetValue, Values } from "../../vm";
 
 type OldCrochet = {
   initialise(): Promise<void>;
@@ -41,8 +41,16 @@ const root = Path.join(__dirname, "../../../");
 interface IBenchmark {
   title: string;
   versions: {
-    [key: string]: string;
+    [key: string]: string | IVariant[];
   };
+  baseline?: string;
+  seed: number;
+  dependencies: string[];
+}
+
+interface IVariant {
+  tag: string;
+  source: string;
 }
 
 function is_crochet_1(vm: AnyCrochet): vm is CrochetForBench & OldCrochet {
@@ -59,7 +67,7 @@ function reseed(seed: number, vm: AnyCrochet) {
   }
 }
 
-async function initialise(vm: AnyCrochet, filename: string) {
+async function initialise(vm: AnyCrochet, filename: string, bench: Benchmark) {
   if (is_crochet_1(vm)) {
     await vm.initialise();
     await vm.load_from_file(filename);
@@ -69,7 +77,7 @@ async function initialise(vm: AnyCrochet, filename: string) {
         name: `(bench) ${Path.basename(filename)}`,
         target: "node",
         sources: [filename],
-        dependencies: ["crochet.core", "crochet.debug", "crochet.mathematics"],
+        dependencies: bench.data.dependencies,
       },
       filename
     );
@@ -77,11 +85,21 @@ async function initialise(vm: AnyCrochet, filename: string) {
   }
 }
 
-async function run(vm: AnyCrochet) {
+async function run(vm: AnyCrochet, seed: number): Promise<CrochetValue> {
   if (is_crochet_1(vm)) {
-    await vm.run("main");
+    return (await vm.run("main")) as any;
   } else {
-    await vm.run("main: _", [Values.make_tuple(vm.system.universe, [])]);
+    return await vm.run("main: _", [
+      Values.make_integer(vm.system.universe, BigInt(seed)),
+    ]);
+  }
+}
+
+async function verify(vm: AnyCrochet, result: CrochetValue) {
+  if (is_crochet_1(vm)) {
+    console.log("(Skipping verification: not supported)");
+  } else {
+    await vm.run("verify: _", [result]);
   }
 }
 
@@ -137,35 +155,58 @@ class Version {
 
 class Benchmark {
   readonly title: string;
-  readonly versions: [Version, string][];
-  constructor(data: IBenchmark) {
+  readonly versions: { version: Version; variants: IVariant[] }[];
+  readonly baseline: null | string = null;
+  readonly seed: number;
+  constructor(readonly root_dir: string, readonly data: IBenchmark) {
     this.title = data.title;
     this.versions = [];
-    for (const [version, file] of Object.entries(data.versions)) {
-      this.versions.push([Version.parse(version), file]);
+    for (const [version, variants] of Object.entries(data.versions)) {
+      const parsed_version = Version.parse(version);
+      if (typeof variants === "string") {
+        this.versions.push({
+          version: parsed_version,
+          variants: [
+            {
+              tag: "",
+              source: Path.resolve(root_dir, variants),
+            },
+          ],
+        });
+      } else {
+        this.versions.push({
+          version: parsed_version,
+          variants: variants.map((v) => ({
+            tag: v.tag,
+            source: Path.resolve(root_dir, v.source),
+          })),
+        });
+      }
     }
-    this.versions.sort(([a, _1], [b, _2]) => b.compare_to(a));
+    this.versions.sort((a, b) => b.version.compare_to(a.version));
+    if (data.baseline != null) {
+      this.baseline = Path.resolve(root_dir, data.baseline);
+    }
+    this.seed = data.seed;
   }
 
   static from_file(filename: string) {
-    return new Benchmark(JSON.parse(FS.readFileSync(filename, "utf8")));
+    return new Benchmark(
+      Path.dirname(filename),
+      JSON.parse(FS.readFileSync(filename, "utf8"))
+    );
   }
 
-  file_for_version(version: string): string | null {
+  variants_for_version(version: string): IVariant[] | null {
     const v = Version.parse(version);
-    for (const [version, file] of this.versions) {
+    for (const { version, variants } of this.versions) {
       if (v.gte(version)) {
-        return Path.resolve(root, file);
+        return variants;
       }
     }
     return null;
   }
 }
-
-const benchmarks = FS.readdirSync(benchmarkDir)
-  .map((x) => Path.join(benchmarkDir, x))
-  .filter((x) => FS.statSync(x).isFile())
-  .map((x) => Benchmark.from_file(x));
 
 const StdlibPath = Path.join(__dirname, "../../../stdlib");
 
@@ -194,47 +235,64 @@ const all_vms = [
   },
 ];
 
-async function time(
+export function format_time_diff(n: bigint) {
+  const units: [bigint, string][] = [
+    [1000n, "μs"],
+    [1000n, "ms"],
+    [1000n, "s"],
+  ];
+
+  let value = n;
+  let suffix = "ns";
+  for (const [divisor, unit] of units) {
+    if (value > divisor) {
+      value = value / divisor;
+      suffix = unit;
+    } else {
+      break;
+    }
+  }
+
+  return `${value}${suffix}`;
+}
+
+async function time<T>(
   label: string,
-  code: () => Promise<unknown>
-): Promise<number> {
-  const log = console.log;
-  const debug = console.debug;
+  code: () => Promise<T>
+): Promise<[bigint, T]> {
   try {
-    console.log = () => {};
-    const start = new Date().getTime();
+    const start = process.hrtime.bigint();
     const result = await code();
-    const end = new Date().getTime();
+    const end = process.hrtime.bigint();
     const diff = end - start;
-    console.log = log;
-    console.debug = debug;
-    console.log(`--> ${label} (${diff}ms)`);
-    return diff;
+    console.log(`--> ${label} ${format_time_diff(diff)}`);
+    return [diff, result];
   } catch (e) {
-    console.log = log;
-    console.debug = debug;
     throw e;
   }
 }
 
-function mb(x: number) {
-  return `${(x / 1024 / 1024).toFixed(3)}MB`;
-}
-
 void (async function () {
-  const [seed0, verbose0, test_all0] = process.argv.slice(2);
+  const [suite, test_all0, verbose0] = process.argv.slice(2);
+  console.log(
+    `Usage: run <suite> <full-regression|latest|<version>> [verbose]`
+  );
+  if (!suite) {
+    process.exit(1);
+  }
 
-  const seed = seed0 ? Number(seed0) : new Date().getTime() | 0;
+  const bench = Benchmark.from_file(suite);
+  const seed = bench.seed;
+
   const verbose = verbose0 === "verbose";
   const vms =
     test_all0 === "full_regression"
       ? all_vms
       : test_all0 === "latest"
       ? all_vms.slice(-4)
-      : all_vms.filter((x) => x.version === test_all0);
-  console.log(
-    `Usage: run [<seed>] [verbose] [full-regression|latest|<version>]`
-  );
+      : test_all0
+      ? all_vms.filter((x) => x.version === test_all0)
+      : all_vms.slice(-1);
   if (test_all0 === "latest") {
     console.log("-- Benchmarking the 4 last releases");
   }
@@ -242,50 +300,54 @@ void (async function () {
   if (!verbose) {
     console.debug = () => {};
   }
+
   console.log("-- Using seed", seed);
 
-  for (const bench of benchmarks) {
-    console.log("=".repeat(72));
-    console.log("##", bench.title);
-    for (const { version, tag, random, vm: Crochet } of vms) {
-      const fullPath = bench.file_for_version(version);
-      if (fullPath == null) {
-        console.log(`Skipping ${version}, no suitable benchmark found`);
-        continue;
-      }
+  console.log("=".repeat(72));
+  console.log("##", bench.title);
 
+  if (bench.baseline != null) {
+    console.log("---");
+    console.log(":: JavaScript baseline");
+    const runner = require(bench.baseline);
+    const [_, result] = await time("Run", () => runner.run(seed));
+    if (!runner.verify(result)) {
+      console.log(`(Invalid result)`);
+    }
+  }
+
+  for (const { version, tag, random, vm: Crochet } of vms) {
+    const variants = bench.variants_for_version(version);
+    if (variants == null) {
+      console.log(`Skipping ${version}, no suitable benchmark found`);
+      continue;
+    }
+
+    for (const variant of variants) {
       global.gc?.();
       await sleep(10);
 
       console.log("---");
-      console.log(":: Crochet", version, tag ?? "");
+      console.log(":: Crochet", version, tag ?? "", variant.tag ?? "");
       if (random) {
         console.log("(Reproducible PRNG not supported in this version)");
       }
       const vm = Crochet();
       try {
-        let total = 0;
-        total += await time("Initialisation", () => initialise(vm, fullPath));
+        let total = 0n;
+        const [init_time, _] = await time("Initialisation", () =>
+          initialise(vm, variant.source, bench)
+        );
+        total += init_time;
+
         reseed(seed, vm);
-        {
-          const end_memory = process.memoryUsage();
-          console.log(
-            `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
-              end_memory.heapTotal
-            )} | RSS ${mb(end_memory.rss)}`
-          );
-          global.gc?.();
-        }
-        total += await time("Run benchmark", () => run(vm));
-        {
-          console.log(`--> Total: ${total}ms`);
-          const end_memory = process.memoryUsage();
-          console.log(
-            `--> Memory: Used ${mb(end_memory.heapUsed)} | Total ${mb(
-              end_memory.heapTotal
-            )} | RSS ${mb(end_memory.rss)}`
-          );
-        }
+
+        const [run_time, result] = await time("Run benchmark", () =>
+          run(vm, seed)
+        );
+        await verify(vm, result);
+        total += run_time;
+        console.log("--> Total:", format_time_diff(total));
       } catch (error) {
         console.error(
           `Failed to execute ${version}:\n`,
@@ -293,6 +355,6 @@ void (async function () {
         );
       }
     }
-    console.log("\n");
   }
+  console.log("\n");
 })();
