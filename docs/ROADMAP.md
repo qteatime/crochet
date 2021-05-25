@@ -20,10 +20,10 @@ use for this goal.
 
 The rough expectations here are:
 
-- [ ] A fully-functioning Crochet VM (see core language in the language overview);
+- [x] A fully-functioning Crochet VM (see core language in the language overview);
 - [ ] A tool for managing Crochet projects, CLI-based (compiling, REPL, running, templating);
 - [ ] A reasonable collection of basic packages (mostly wrapping JS ones):
-  - [ ] Core types (tuple, record, boolean, integer, float, result, function, text, thunk);
+  - [x] Core types (tuple, record, boolean, integer, float, result, function, text, thunk);
   - [ ] Collections (linked lists, sets, maps);
   - [ ] Mathematics (trigonometry, geometry);
   - [x] PRNG (currently a xorshift);
