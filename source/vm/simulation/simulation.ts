@@ -213,13 +213,7 @@ function setup_relations(state: SimulationState) {
           if (state.turn == null) {
             return [];
           } else {
-            return unify_all(
-              state.state,
-              state.module,
-              env,
-              [state.turn],
-              pattern
-            );
+            return unify_all(env, [state.turn], pattern);
           }
         }, null),
       ],
@@ -230,7 +224,7 @@ function setup_relations(state: SimulationState) {
             state.state.universe,
             state.rounds
           );
-          return unify_all(state.state, state.module, env, [rounds], pattern);
+          return unify_all(env, [rounds], pattern);
         }, null),
       ],
     ])
