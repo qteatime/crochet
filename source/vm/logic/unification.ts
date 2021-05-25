@@ -1,21 +1,79 @@
 import * as IR from "../../ir";
 import { Values, Types, Literals, Environments } from "../primitives";
-import type {
+import {
   CrochetModule,
+  CrochetType,
   CrochetValue,
   Environment,
   State,
+  Tag,
 } from "../intrinsics";
 import { ErrArbitrary } from "../errors";
 import { unreachable } from "../../utils/utils";
 
-export function unify(
+export abstract class Pattern {
+  abstract unify(env: Environment, value: CrochetValue): Environment | null;
+}
+
+export class ValuePattern extends Pattern {
+  constructor(readonly value: CrochetValue) {
+    super();
+  }
+
+  unify(env: Environment, value: CrochetValue<Tag>): Environment | null {
+    if (Values.equals(this.value, value)) {
+      return env;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class VariablePattern extends Pattern {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  unify(env: Environment, value: CrochetValue<Tag>): Environment | null {
+    const local = env.try_lookup(this.name);
+    if (local == null) {
+      const new_env = Environments.clone(env);
+      new_env.define(this.name, value);
+      return new_env;
+    } else if (Values.equals(local, value)) {
+      return env;
+    } else {
+      return null;
+    }
+  }
+}
+
+export class WildcardPattern extends Pattern {
+  unify(env: Environment, value: CrochetValue<Tag>): Environment | null {
+    return env;
+  }
+}
+
+export class TypePattern extends Pattern {
+  constructor(readonly type: CrochetType, readonly pattern: Pattern) {
+    super();
+  }
+
+  unify(env: Environment, value: CrochetValue<Tag>): Environment | null {
+    if (Values.has_type(this.type, value)) {
+      return this.pattern.unify(env, value);
+    } else {
+      return null;
+    }
+  }
+}
+
+export function compile_pattern(
   state: State,
   module: CrochetModule,
   env: Environment,
-  value: CrochetValue,
   pattern: IR.Pattern
-): Environment | null {
+): Pattern {
   const t = IR.PatternTag;
   switch (pattern.tag) {
     case t.GLOBAL: {
@@ -26,74 +84,55 @@ export function unify(
           `${pattern.name} is not defined`
         );
       }
-      if (Values.equals(global, value)) {
-        return env;
-      } else {
-        return null;
-      }
+      return new ValuePattern(global);
     }
 
     case t.HAS_TYPE: {
       const type = Types.materialise_type(state.universe, module, pattern.type);
-      if (Values.has_type(type, value)) {
-        return unify(state, module, env, value, pattern.pattern);
-      } else {
-        return null;
-      }
+      return new TypePattern(
+        type,
+        compile_pattern(state, module, env, pattern.pattern)
+      );
     }
 
     case t.LITERAL: {
       const lit = Literals.materialise_literal(state.universe, pattern.literal);
-      if (Values.equals(value, lit)) {
-        return env;
-      } else {
-        return null;
-      }
+      return new ValuePattern(lit);
     }
 
     case t.SELF: {
       if (env.raw_receiver == null) {
         throw new ErrArbitrary("no-receiver", `self with no receiver`);
       }
-      if (Values.equals(value, env.raw_receiver)) {
-        return env;
-      } else {
-        return null;
-      }
+      return new ValuePattern(env.raw_receiver);
     }
 
     case t.VARIABLE: {
       const local = env.try_lookup(pattern.name);
-      if (local == null) {
-        const new_env = Environments.clone(env);
-        new_env.define(pattern.name, value);
-        return new_env;
-      } else if (Values.equals(local, value)) {
-        return env;
+      if (local != null) {
+        return new ValuePattern(local);
       } else {
-        return null;
+        return new VariablePattern(pattern.name);
       }
     }
 
     case t.WILDCARD: {
-      return env;
+      return new WildcardPattern();
     }
 
     default:
-      throw unreachable(pattern, `Pattern`);
+      throw unreachable(pattern, "Pattern");
   }
 }
 
 export function unify_all(
-  state: State,
-  module: CrochetModule,
   env: Environment,
   value: CrochetValue[],
-  pattern: IR.Pattern
+  pattern: Pattern
 ) {
   const result = [];
   for (const x of value) {
-    const new_env = unify(state, module, env, x, pattern);
+    const new_env = pattern.unify(env, x);
     if (new_env != null) {
       result.push(new_env);
     }

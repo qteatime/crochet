@@ -17,7 +17,7 @@ import {
   TTOne,
 } from "../intrinsics";
 import { Values } from "../primitives";
-import { unify } from "./unification";
+import { Pattern, ValuePattern } from "./unification";
 
 export function materialise_type(type: IR.RelationType[]) {
   return type.reduceRight((prev, type) => {
@@ -168,7 +168,7 @@ export function search(
   module: CrochetModule,
   env: Environment,
   tree: Tree,
-  patterns: IR.Pattern[]
+  patterns: Pattern[]
 ) {
   function* go(
     tree: Tree,
@@ -182,7 +182,7 @@ export function search(
         }
 
         const head = patterns[index];
-        const new_env = unify(state, module, env, tree.value.value, head);
+        const new_env = head.unify(env, tree.value.value);
         if (new_env != null) {
           yield* go(tree.value.tree, new_env, index + 1);
         }
@@ -191,10 +191,17 @@ export function search(
 
       case TreeTag.MANY: {
         const head = patterns[index];
-        for (const [key, subtree] of tree.table.entries()) {
-          const new_env = unify(state, module, env, key, head);
-          if (new_env != null) {
-            yield* go(subtree, new_env, index + 1);
+        if (head instanceof ValuePattern) {
+          const subtree = tree.table.get(head.value);
+          if (subtree != null) {
+            yield* go(subtree, env, index + 1);
+          }
+        } else {
+          for (const [key, subtree] of tree.table.entries()) {
+            const new_env = head.unify(env, key);
+            if (new_env != null) {
+              yield* go(subtree, new_env, index + 1);
+            }
           }
         }
         break;
@@ -220,7 +227,7 @@ export function sample(
   size: number,
   env: Environment,
   tree: Tree,
-  patterns: IR.Pattern[]
+  patterns: Pattern[]
 ) {
   function* go(
     tree: Tree,
@@ -234,7 +241,7 @@ export function sample(
         }
 
         const head = patterns[index];
-        const new_env = unify(state, module, env, tree.value.value, head);
+        const new_env = head.unify(env, tree.value.value);
         if (new_env != null) {
           yield* go(tree.value.tree, new_env, index + 1);
         }
@@ -245,10 +252,17 @@ export function sample(
         const head = patterns[index];
 
         const pairs: { env: Environment; tree: Tree }[] = [];
-        for (const [key, subtree] of tree.table.entries()) {
-          const new_env = unify(state, module, env, key, head);
-          if (new_env != null) {
-            pairs.push({ env: new_env, tree: subtree });
+        if (head instanceof ValuePattern) {
+          const subtree = tree.table.get(head.value);
+          if (subtree != null) {
+            pairs.push({ env: env, tree: subtree });
+          }
+        } else {
+          for (const [key, subtree] of tree.table.entries()) {
+            const new_env = head.unify(env, key);
+            if (new_env != null) {
+              pairs.push({ env: new_env, tree: subtree });
+            }
           }
         }
 

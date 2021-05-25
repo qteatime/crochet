@@ -17,6 +17,7 @@ import { Namespace } from "../namespaces";
 import { Location } from "../primitives";
 import { XorShift } from "../../utils/xorshift";
 import { CrochetValue } from "../../crochet";
+import { compile_pattern } from "./unification";
 
 export function define_concrete(
   module: CrochetModule,
@@ -83,8 +84,9 @@ export function search(
   module: CrochetModule,
   env: Environment,
   relation: CrochetRelation,
-  patterns: IR.Pattern[]
+  patterns0: IR.Pattern[]
 ) {
+  const patterns = patterns0.map((p) => compile_pattern(state, module, env, p));
   switch (relation.tag) {
     case RelationTag.CONCRETE: {
       assert_tag(RelationTag.CONCRETE, relation);
@@ -108,8 +110,9 @@ export function sample(
   size: number,
   env: Environment,
   relation: CrochetRelation,
-  patterns: IR.Pattern[]
+  patterns0: IR.Pattern[]
 ) {
+  const patterns = patterns0.map((p) => compile_pattern(state, module, env, p));
   switch (relation.tag) {
     case RelationTag.CONCRETE: {
       assert_tag(RelationTag.CONCRETE, relation);

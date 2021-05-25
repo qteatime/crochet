@@ -3,6 +3,8 @@ import { unreachable, zip } from "../utils/utils";
 import { XorShift } from "../utils/xorshift";
 import { ITranscript } from "./interfaces";
 import { Namespace, PassthroughNamespace } from "./namespaces";
+// Only imported so callbacks get the correct type here
+import type { Pattern } from "./logic/unification";
 
 export type Primitive = boolean | null | bigint | number;
 
@@ -371,17 +373,10 @@ export class ConcreteRelation {
 
 export class ProceduralRelation {
   constructor(
-    readonly search: (
-      env: Environment,
-      patterns: IR.Pattern[]
-    ) => Environment[],
+    readonly search: (env: Environment, patterns: Pattern[]) => Environment[],
     readonly sample:
       | null
-      | ((
-          env: Environment,
-          patterns: IR.Pattern[],
-          size: number
-        ) => Environment[])
+      | ((env: Environment, patterns: Pattern[], size: number) => Environment[])
   ) {}
 }
 
