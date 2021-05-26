@@ -31,5 +31,6 @@ export class Log extends React.Component<ILog> {
     root.className = "crochet-ui--log-entry crochet-ui--log-dynamic-entry";
     ReactDOM.render(<React.Fragment>{x}</React.Fragment>, root);
     this.log.current?.appendChild(root);
+    root.scrollIntoView();
   }
 }

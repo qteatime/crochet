@@ -8,12 +8,11 @@ import {
 } from "../../crochet";
 import { CrochetValue, CrochetTest } from "../../vm";
 import { Transcript } from "../../services/transcript";
-import { html } from "../../services/representation/html-renderer";
+import { html } from "../../services/debug/representation/html-renderer";
 import { DebugUI } from "../../services/debug/app";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
-  readonly transcript: Transcript;
   readonly debug_ui: DebugUI;
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
@@ -24,8 +23,7 @@ export class CrochetForBrowser {
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean
   ) {
-    this.transcript = new Transcript();
-    this.crochet = new Crochet(this.transcript, this.fs, this.signal);
+    this.crochet = new Crochet(this.fs, this.signal);
     this.debug_ui = new DebugUI();
   }
 
@@ -149,5 +147,7 @@ export class CrochetForBrowser {
       );
       // TODO: implement capability granting
     },
+
+    booted: async () => {},
   };
 }

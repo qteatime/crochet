@@ -3,9 +3,9 @@ import * as IR from "../../ir";
 import * as Compiler from "../../compiler";
 import { BootedCrochet, CrochetValue } from "../../crochet";
 import { unreachable } from "../../utils/utils";
-import { AddButton, Button, Column, Icon, IElement, If } from "../ui/basic";
-import { CodeEditor } from "../ui/code-editor";
-import { Value } from "../ui/value";
+import { AddButton, Button, Column, Icon, IElement, If } from "./ui/basic";
+import { CodeEditor } from "./ui/code-editor";
+import { Value } from "./ui/value";
 import { CrochetModule, Environment, Environments } from "../../vm";
 
 type IPlayground = {

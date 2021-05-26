@@ -1,4 +1,4 @@
-import { CrochetValue } from "../../vm";
+import { CrochetValue } from "../../../vm";
 
 export enum ReprTag {
   TEXT,

@@ -69,6 +69,7 @@
 .crochet-debug-ui--main-tabs > .crochet-ui--tab-view {
   height: 50vh;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .crochet-ui--tab-bar {
@@ -477,4 +478,41 @@ span.crochet-ui--style-repr-typed-tag {
 
 .crochet-ui-repr--map {
   border: 1px solid #ececea;
+}
+
+.crochet-ui--style-relation {
+  font-size: 1.2em;
+  font-weight: bold;
+  border-bottom: 1px solid #ececea;
+  padding: 0.3em 0.5em;
+  display: block;
+}
+
+.crochet-ui-info-list {
+  counter-reset: crochet-list-item;
+}
+
+.crochet-ui-info-list-item {
+  border-bottom: 1px solid #ececea;
+  padding: 0.2em 0.5em 0.3em 0.5em;
+  margin-bottom: 0.5em;
+  position: relative;
+  counter-increment: crochet-list-item;
+}
+
+.crochet-ui-info-list-item::before {
+  content: counter(crochet-list-item);
+  top: -0.1em;
+  left: -1em;
+  background: var(--primary);
+  padding: 0.5em;
+  position: absolute;
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #fff;
+}
+
+.crochet-ui-info-list-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }

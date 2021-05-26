@@ -1,10 +1,10 @@
-import type { Transcript } from "../transcript";
-import { TranscriptUI } from "../transcript/ui";
+import { Transcript } from "../transcript";
+import { TranscriptUI } from "./transcript";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Foldable } from "../ui/folds";
-import { TabBar, Tabs } from "../ui/tabs";
-import { PlaygroundUI } from "../playground/ui";
+import { Foldable } from "./ui/folds";
+import { TabBar, Tabs } from "./ui/tabs";
+import { PlaygroundUI } from "./playground";
 import { CrochetForBrowser } from "../../targets/browser";
 import { CrochetModule } from "../../vm";
 
@@ -13,10 +13,11 @@ export class DebugUI {
     const pkg = crochet.root;
     const cpkg = crochet.system.universe.world.packages.get(pkg.meta.name)!;
     const module = new CrochetModule(cpkg, "(playground)", null);
+    const transcript = new Transcript(crochet.system.universe.trace);
 
     ReactDOM.render(
       <DebugUIApp
-        transcript={<TranscriptUI transcript={crochet.transcript} />}
+        transcript={<TranscriptUI transcript={transcript} />}
         playground={<PlaygroundUI crochet={crochet.system} module={module} />}
       ></DebugUIApp>,
       root

@@ -1,32 +1,26 @@
-import type { ActivationLocation, CrochetValue } from "../../vm";
+import type {
+  ActivationLocation,
+  CrochetTrace,
+  CrochetValue,
+  TraceEvent,
+} from "../../vm";
 
-export interface Metadata {
-  category: string;
-  location: ActivationLocation;
-}
-
-export class Entry {
-  constructor(
-    readonly tag: string,
-    readonly message: CrochetValue | string,
-    readonly metadata: Metadata
-  ) {}
-}
-
-export type Subscriber = (_: Entry) => void;
+type Subscriber = (_: TraceEvent) => void;
 
 export class Transcript {
   private subscribers: Subscriber[] = [];
 
-  subscribe(x: Subscriber) {
-    if (!this.subscribers.includes(x)) {
-      this.subscribers.push(x);
-    }
+  constructor(readonly trace: CrochetTrace) {
+    trace.subscribe(this.on_event);
   }
 
-  publish(tag: string, message: CrochetValue | string, meta: Metadata) {
-    for (const push of this.subscribers) {
-      push(new Entry(tag, message, meta));
+  on_event = (event: TraceEvent) => {
+    for (const f of this.subscribers) {
+      f(event);
     }
+  };
+
+  subscribe(x: Subscriber) {
+    this.subscribers.push(x);
   }
 }

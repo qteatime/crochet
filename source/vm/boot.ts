@@ -2,7 +2,6 @@ import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
 import { XorShift } from "../utils/xorshift";
 import { Thread } from "./evaluation";
-import { ITranscript } from "./interfaces";
 import {
   Universe,
   CrochetCommandBranch,
@@ -21,8 +20,9 @@ import {
 import { Tree, Relation } from "./logic";
 import { Commands, Effects, Modules, Tests, Types, World } from "./primitives";
 import { Contexts } from "./simulation";
+import { CrochetTrace } from "./tracing";
 
-export function make_universe(transcript: ITranscript) {
+export function make_universe() {
   const world = new CrochetWorld();
 
   // Core types
@@ -291,7 +291,7 @@ export function make_universe(transcript: ITranscript) {
   world.native_types.define("crochet.core/core.action", Action);
   world.native_types.define("crochet.core/core.action-choice", ActionChoice);
 
-  return new Universe(transcript, world, XorShift.new_random(), {
+  return new Universe(new CrochetTrace(), world, XorShift.new_random(), {
     Any,
     Unknown,
     Nothing,

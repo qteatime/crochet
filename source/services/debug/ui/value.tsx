@@ -1,4 +1,4 @@
-import { CrochetValue } from "../../vm";
+import { CrochetValue } from "../../../vm";
 import * as React from "react";
 import { Tabs } from "./tabs";
 import { text_unsafe, html } from "../representation";
