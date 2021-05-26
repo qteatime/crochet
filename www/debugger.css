@@ -61,15 +61,16 @@
 }
 
 .crochet-ui--tab-view {
-  padding: 2em 1.5em;
   background: #fff;
   transition: all 100ms ease-out;
 }
 
 .crochet-debug-ui--main-tabs > .crochet-ui--tab-view {
   height: 50vh;
-  overflow-y: auto;
-  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: hidden;
 }
 
 .crochet-ui--tab-bar {
@@ -211,7 +212,6 @@
 }
 
 .crochet-ui--tab-view-container[data-selected="false"] {
-  display: none;
 }
 
 .crochet-ui--column {
@@ -515,4 +515,26 @@ span.crochet-ui--style-repr-typed-tag {
 .crochet-ui-info-list-item:last-child {
   border-bottom: none;
   margin-bottom: 0;
+}
+
+.crochet-ui--log {
+  scroll-behavior: smooth;
+}
+
+.crochet-ui--tab-view-container {
+  flex: 0 0 100%;
+  width: 100%;
+  padding: 2em 1.5em;
+  scroll-behavior: smooth;
+  overflow-y: auto;
+  height: 100%;
+  transition: all 150ms ease-in;
+  box-sizing: border-box;
+}
+
+.crochet-ui--tab-view-container[data-selected="false"] {
+  width: 0px;
+  flex: 0 0 0%;
+  padding-left: 0px;
+  padding-right: 0px;
 }
