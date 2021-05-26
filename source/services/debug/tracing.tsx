@@ -39,18 +39,28 @@ export class Tracing extends React.Component<Props, State> {
         checked: false,
       },
       {
-        title: "Simulation action execution",
+        title: "Simulation: new turn",
+        value: TraceTag.SIMULATION_TURN,
+        checked: false,
+      },
+      {
+        title: "Simulation: action execution",
         value: TraceTag.SIMULATION_ACTION,
         checked: false,
       },
       {
-        title: "Simulation event execution",
+        title: "Simulation: event execution",
         value: TraceTag.SIMULATION_EVENT,
         checked: false,
       },
       {
-        title: "Simulation action choice",
+        title: "Simulation: action choice",
         value: TraceTag.SIMULATION_ACTION_CHOICE,
+        checked: false,
+      },
+      {
+        title: "Simulation: goal reached",
+        value: TraceTag.SIMULATION_GOAL_REACHED,
         checked: false,
       },
     ];

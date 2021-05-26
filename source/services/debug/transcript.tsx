@@ -2,9 +2,14 @@ import {
   ActivationLocation,
   CrochetValue,
   StackTrace,
+  TEAction,
+  TEActionChoice,
+  TEEvent,
   TEFact,
   TEForget,
+  TEGoalReached,
   TELog,
+  TETurn,
   TraceEvent,
   TraceTag,
 } from "../../vm";
@@ -15,9 +20,10 @@ import * as React from "react";
 import { Log } from "./ui/log";
 import { Column, IElement, Row, Style } from "./ui/basic";
 import { Tabs } from "./ui/tabs";
-import { Value } from "./ui/value";
+import { EnvV, ListV, LongListV, MapV, Value, ValueS } from "./ui/value";
 import { unreachable } from "../../utils/utils";
-import { List } from "./ui/info";
+import { Heading, List } from "./ui/info";
+import { Foldable } from "./ui/folds";
 
 type ITranscriptUI = {
   transcript: Transcript;
@@ -79,7 +85,11 @@ export class TranscriptUI extends React.Component<
             <Style theme="relation">
               {x.relation.name} (from {x.relation.payload.module.pkg.name})
             </Style>
-            <List values={x.values.map((a) => html.render_value(a))} />
+            <ListV
+              values={x.values.map((a) => (
+                <ValueS value={a} />
+              ))}
+            />
           </Message>
         </React.Fragment>
       );
@@ -94,7 +104,84 @@ export class TranscriptUI extends React.Component<
             <Style theme="relation">
               {x.relation.name} (from {x.relation.payload.module.pkg.name})
             </Style>
-            <List values={x.values.map((a) => html.render_value(a))} />
+            <ListV values={x.values.map((a) => html.render_value(a))} />
+          </Message>
+        </React.Fragment>
+      );
+    } else if (x instanceof TEAction) {
+      return (
+        <React.Fragment>
+          <Meta>
+            <Category tag={"Simulation action"} />
+            <Location location={x.location} />
+          </Meta>
+          <Message>
+            <Heading>
+              {x.choice.action.name} ({x.choice.score})
+            </Heading>
+            <EnvV env={x.choice.env} />
+          </Message>
+        </React.Fragment>
+      );
+    } else if (x instanceof TEEvent) {
+      return (
+        <React.Fragment>
+          <Meta>
+            <Category tag={"Simulation event"} />
+            <Location location={x.location} />
+          </Meta>
+          <Message>
+            <EnvV env={x.event.env} />
+          </Message>
+        </React.Fragment>
+      );
+    } else if (x instanceof TETurn) {
+      return (
+        <React.Fragment>
+          <Meta>
+            <Category tag={"Simulation turn"} />
+            <Location location={x.location} />
+          </Meta>
+          <Message>
+            <ValueS value={x.turn} />
+          </Message>
+        </React.Fragment>
+      );
+    } else if (x instanceof TEGoalReached) {
+      return (
+        <React.Fragment>
+          <Meta>
+            <Category tag={"Simulation goal reached"} />
+            <Location location={x.location} />
+          </Meta>
+        </React.Fragment>
+      );
+    } else if (x instanceof TEActionChoice) {
+      return (
+        <React.Fragment>
+          <Meta>
+            <Category tag={"Simulation action choice"} />
+            <Location location={x.location} />
+          </Meta>
+          <Message>
+            <div className="crochet-debug-transcript-simulation-action-choice-turn">
+              <ValueS value={x.turn} />
+            </div>
+
+            <LongListV
+              values={x.choices.map((a) => {
+                return (
+                  <React.Fragment>
+                    <Heading>
+                      {a.action.name} ({a.score})
+                    </Heading>
+                    <Foldable style="crochet-debug-transcript-action-choice-env">
+                      <EnvV env={a.env} />
+                    </Foldable>
+                  </React.Fragment>
+                );
+              })}
+            />
           </Message>
         </React.Fragment>
       );

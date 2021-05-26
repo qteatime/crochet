@@ -19,6 +19,8 @@ export class Transcript {
     [TraceTag.SIMULATION_ACTION]: false,
     [TraceTag.SIMULATION_ACTION_CHOICE]: false,
     [TraceTag.SIMULATION_EVENT]: false,
+    [TraceTag.SIMULATION_GOAL_REACHED]: false,
+    [TraceTag.SIMULATION_TURN]: false,
   };
 
   constructor(readonly trace: CrochetTrace) {

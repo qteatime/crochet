@@ -1,3 +1,15 @@
+@keyframes crochet-ui-show-tab {
+  from {
+    opacity: 0;
+    top: -100;
+  }
+
+  to {
+    opacity: 1;
+    top: 0;
+  }
+}
+
 @media screen and (max-width: 700) {
   #crochet-tools {
     display: none;
@@ -209,9 +221,6 @@
   top: 0px;
   right: 0px;
   padding: 0.3em 0.5em;
-}
-
-.crochet-ui--tab-view-container[data-selected="false"] {
 }
 
 .crochet-ui--column {
@@ -528,13 +537,93 @@ span.crochet-ui--style-repr-typed-tag {
   scroll-behavior: smooth;
   overflow-y: auto;
   height: 100%;
-  transition: all 150ms ease-in;
   box-sizing: border-box;
+  position: relative;
+  top: 0px;
 }
 
 .crochet-ui--tab-view-container[data-selected="false"] {
-  width: 0px;
-  flex: 0 0 0%;
-  padding-left: 0px;
-  padding-right: 0px;
+  display: none;
+}
+
+.crochet-ui--tab-view-container[data-selected="true"] {
+  animation: crochet-ui-show-tab 150ms ease-in forwards;
+}
+
+.crochet-ui-info-heading {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
+}
+
+.crochet-ui-info-proplist {
+  display: table;
+}
+
+.crochet-ui-info-proplist-item {
+  display: table-row;
+}
+
+.crochet-ui-info-proplist-field:last-child,
+.crochet-ui-info-proplist-value:last-child {
+  border-bottom: none;
+  margin-bottom: 1em;
+}
+
+.crochet-ui-info-proplist-field,
+.crochet-ui-info-proplist-value {
+  display: table-cell;
+  border-bottom: 1px solid #ececea;
+  margin-bottom: 0.3em;
+  padding: 0.3em 0.5em;
+}
+
+.crochet-ui-info-proplist-field {
+  font-weight: bold;
+}
+
+.crochet-ui-info-proplist-field::after {
+  content: " \f061 ";
+  font-family: "Font Awesome 5 Free";
+  font-size: 0.8em;
+  color: #bbb;
+  margin-left: 0.5em;
+}
+
+.crochet-debug-transcript-action-choice-env {
+  position: relative;
+  padding-left: 2.2em;
+  max-height: 2em;
+  overflow-y: hidden;
+}
+
+.crochet-debug-transcript-action-choice-env[data-folded="true"]
+  > :not(.crochet-ui--foldable-button) {
+  /* display: none; */
+}
+
+.crochet-debug-transcript-action-choice-env
+  > .crochet-ui--foldable-button::after {
+  content: "\f0fe";
+  font-family: "Font Awesome 5 Free";
+  top: 0;
+  display: block;
+  padding: 0.3em;
+  color: var(--primary);
+  position: absolute;
+  left: 0;
+  cursor: pointer;
+}
+
+.crochet-debug-transcript-action-choice-env[data-folded="false"]
+  > .crochet-ui--foldable-button::after {
+  content: "\f146";
+}
+
+.crochet-ui--foldable-button {
+}
+
+.crochet-debug-transcript-action-choice-env[data-folded="false"] {
+  max-height: fit-content;
 }
