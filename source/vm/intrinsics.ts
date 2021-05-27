@@ -1,10 +1,10 @@
 import * as IR from "../ir";
 import { unreachable, zip } from "../utils/utils";
 import { XorShift } from "../utils/xorshift";
-import { ITranscript } from "./interfaces";
 import { Namespace, PassthroughNamespace } from "./namespaces";
 // Only imported so callbacks get the correct type here
 import type { Pattern } from "./logic/unification";
+import type { CrochetTrace } from "./tracing/trace";
 
 export type Primitive = boolean | null | bigint | number;
 
@@ -788,7 +788,7 @@ export class Universe {
   readonly float_cache: CrochetValue[];
 
   constructor(
-    readonly transcript: ITranscript,
+    readonly trace: CrochetTrace,
     readonly world: CrochetWorld,
     readonly random: XorShift,
     readonly types: {

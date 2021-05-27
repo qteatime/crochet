@@ -5,8 +5,7 @@ import * as VM from "../vm";
 import * as Binary from "../binary";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
-import { CrochetValue, Environment } from "../vm";
-import { ITranscript } from "../vm/interfaces";
+import { CrochetValue, Environment, CrochetTrace } from "../vm";
 
 export interface IFileSystem {
   read_package(name: string): Promise<Package.Package>;
@@ -26,17 +25,15 @@ export interface ISignal {
     graph: Package.PackageGraph,
     root: Package.Package
   ): Promise<boolean>;
+
+  booted(vm: BootedCrochet): Promise<void>;
 }
 
 export class Crochet {
   readonly trusted = new Set<Package.Package>();
   readonly registered_packages: Map<string, Package.Package> = new Map();
 
-  constructor(
-    readonly transcript: ITranscript,
-    readonly fs: IFileSystem,
-    readonly signal: ISignal
-  ) {}
+  constructor(readonly fs: IFileSystem, readonly signal: ISignal) {}
 
   async boot(root: string, target: Package.Target) {
     const pkg = await this.get_package(root);
@@ -53,7 +50,9 @@ export class Crochet {
       );
     }
 
-    return new BootedCrochet(this, graph);
+    const vm = new BootedCrochet(this, graph);
+    await this.signal.booted(vm);
+    return vm;
   }
 
   trust(pkg: Package.Package) {
@@ -107,7 +106,7 @@ export class BootedCrochet {
   readonly universe: VM.Universe;
 
   constructor(readonly crochet: Crochet, readonly graph: Package.PackageGraph) {
-    this.universe = VM.make_universe(crochet.transcript);
+    this.universe = VM.make_universe();
   }
 
   async initialise(root: string) {

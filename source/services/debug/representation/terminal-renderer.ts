@@ -1,5 +1,5 @@
-import { unreachable } from "../../utils/utils";
-import { CrochetType, CrochetValue } from "../../vm";
+import { unreachable } from "../../../utils/utils";
+import { CrochetType, CrochetValue } from "../../../vm";
 import { Repr, ReprTag } from "./ast";
 import { type_to_repr } from "./type";
 import { value_to_repr } from "./value";

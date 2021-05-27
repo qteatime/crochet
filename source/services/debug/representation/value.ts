@@ -1,6 +1,6 @@
 import { inspect } from "util";
-import { unreachable, zip } from "../../utils/utils";
-import { CrochetValue, Environments, Tag, Values } from "../../vm";
+import { unreachable, zip } from "../../../utils/utils";
+import { CrochetValue, Environments, Tag, Values } from "../../../vm";
 import {
   RBlock,
   RCircular,

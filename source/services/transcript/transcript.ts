@@ -1,32 +1,47 @@
-import type { ActivationLocation, CrochetValue } from "../../vm";
+import {
+  ActivationLocation,
+  CrochetTrace,
+  CrochetValue,
+  TraceEvent,
+  TraceTag,
+} from "../../vm";
 
-export interface Metadata {
-  category: string;
-  location: ActivationLocation;
-}
+type Subscriber = (_: TraceEvent) => void;
 
-export class Entry {
-  constructor(
-    readonly tag: string,
-    readonly message: CrochetValue | string,
-    readonly metadata: Metadata
-  ) {}
-}
-
-export type Subscriber = (_: Entry) => void;
+type Filter = Record<TraceTag, boolean>;
 
 export class Transcript {
   private subscribers: Subscriber[] = [];
+  private filter: Filter = {
+    [TraceTag.LOG]: true,
+    [TraceTag.FACT]: false,
+    [TraceTag.FORGET]: false,
+    [TraceTag.SIMULATION_ACTION]: false,
+    [TraceTag.SIMULATION_ACTION_CHOICE]: false,
+    [TraceTag.SIMULATION_EVENT]: false,
+    [TraceTag.SIMULATION_GOAL_REACHED]: false,
+    [TraceTag.SIMULATION_TURN]: false,
+  };
 
-  subscribe(x: Subscriber) {
-    if (!this.subscribers.includes(x)) {
-      this.subscribers.push(x);
+  constructor(readonly trace: CrochetTrace) {
+    trace.subscribe(this.on_event);
+  }
+
+  on_event = (event: TraceEvent) => {
+    if (this.filter[event.tag]) {
+      for (const f of this.subscribers) {
+        f(event);
+      }
+    }
+  };
+
+  set_filter(filter: Partial<Filter>) {
+    for (const [k, v] of Object.entries(filter)) {
+      this.filter[k as any as TraceTag] = Boolean(v);
     }
   }
 
-  publish(tag: string, message: CrochetValue | string, meta: Metadata) {
-    for (const push of this.subscribers) {
-      push(new Entry(tag, message, meta));
-    }
+  subscribe(x: Subscriber) {
+    this.subscribers.push(x);
   }
 }

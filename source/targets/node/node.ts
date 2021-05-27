@@ -13,9 +13,8 @@ import { logger } from "../../utils/logger";
 import { question } from "../../utils/prompt";
 import { union } from "../../utils/collections";
 import { build, build_file, read_updated_binary } from "./build";
-import { CrochetTest, CrochetValue } from "../../vm";
-import { TerminalRenderer } from "../../services/representation/terminal-renderer";
-import { Transcript } from "../../services";
+import { CrochetTest, CrochetValue, TELog, TraceEvent } from "../../vm";
+import { TerminalRenderer } from "../../services/debug/representation/terminal-renderer";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
 
@@ -33,17 +32,17 @@ export class CrochetForNode {
     readonly interactive: boolean
   ) {
     this.renderer = new TerminalRenderer(disclose_debug);
-    const transcript = new Transcript.Transcript();
-    transcript.subscribe(this.render_entry);
-    this.crochet = new Crochet(transcript, this.fs, this.signal);
+    this.crochet = new Crochet(this.fs, this.signal);
   }
 
-  render_entry = (entry: Transcript.Entry) => {
-    const message = entry.message;
-    if (typeof message === "string") {
-      console.log(`[${entry.tag}] ${message}`);
-    } else {
-      console.log(`[${entry.tag}] ${this.renderer.render_value(message)}`);
+  render_entry = (entry: TraceEvent) => {
+    if (entry instanceof TELog) {
+      const message = entry.value;
+      if (typeof message === "string") {
+        console.log(`[${entry.tag}] ${message}`);
+      } else {
+        console.log(`[${entry.tag}] ${this.renderer.render_value(message)}`);
+      }
     }
   };
 
@@ -209,6 +208,10 @@ export class CrochetForNode {
           }
         }
       }
+    },
+
+    booted: async (vm: BootedCrochet) => {
+      vm.universe.trace.subscribe(this.render_entry);
     },
   };
 

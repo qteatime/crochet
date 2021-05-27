@@ -1,5 +1,5 @@
-import { CrochetValue } from "../../vm";
-import { unreachable } from "../../utils/utils";
+import { CrochetValue } from "../../../vm";
+import { unreachable } from "../../../utils/utils";
 import { Repr, ReprTag } from "./ast";
 import { value_to_repr } from "./value";
 import * as React from "react";

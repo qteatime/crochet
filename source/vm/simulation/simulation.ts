@@ -44,6 +44,8 @@ function* run_turn(
   state: SimulationState,
   relations: Namespace<CrochetRelation>
 ) {
+  const location = state.state.activation.location;
+  const trace = state.state.universe.trace;
   let actions_fired = 0;
   let events_fired = 0;
   state.acted.clear();
@@ -51,11 +53,13 @@ function* run_turn(
   let actor = yield* next_actor(state);
   while (actor != null) {
     state.turn = actor;
-    logger.debug(`New turn ${Location.simple_value(actor)}`);
+    trace.publish_turn(location, actor);
+    logger.debug(`Turn ${Location.simple_value(actor)}`);
     const action = yield* pick_action(state, actor, relations);
     if (action != null) {
       actions_fired += 1;
       mark_action_fired(action.action, actor);
+      trace.publish_action(location, action);
       logger.debug(`Running action ${action.action.name}`);
       yield new NSEvaluate(action.env, action.action.body);
 
@@ -69,6 +73,7 @@ function* run_turn(
       );
       for (const reaction of reactions) {
         events_fired += 1;
+        trace.publish_event(location, reaction);
         yield new NSEvaluate(reaction.env, reaction.event.body);
       }
     }
@@ -88,6 +93,7 @@ function* run_turn(
       )}`
     );
     if (ended) {
+      trace.publish_goal_reached(location, state.goal);
       return false;
     } else {
       actor = next_turn;
@@ -119,6 +125,11 @@ function* pick_action(
     state.random,
     relations,
     actor
+  );
+  state.state.universe.trace.publish_action_choice(
+    state.state.activation.location,
+    actor,
+    actions
   );
   const sorted_actions = actions.sort((a, b) => a.score - b.score);
   const signal = state.signals.try_lookup("pick-action: _ for: _");
