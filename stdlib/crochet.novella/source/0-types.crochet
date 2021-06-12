@@ -15,6 +15,9 @@ type nvl-role is element(child is element, role is text);
 type nvl-menu is element(children is tuple<nvl-button>);
 type nvl-button is element(child is element, reference, value);
 
+abstract image;
+type network-image(url is text);
+
 effect novella with
   show(X is element);
   wait-interaction();

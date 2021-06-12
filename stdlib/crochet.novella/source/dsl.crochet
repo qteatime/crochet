@@ -1,7 +1,41 @@
 % crochet
 
+local type node;
+// Auxiliar types
+local type n-scene(meta, name is text, block is tuple<node>);
+local type n-choice(meta, title is node, block is tuple<node>);
+// Statement
+local type n-let is node(meta, name is text, value is node);
+local type n-wait is node(meta);
+local type n-show is node(meta, value is node);
+local type n-menu is node(meta, choices is tuple<n-choice>);
+local type n-goto is node(meta, name is text);
+local singleton n-noop is node;
+// Expression
+local type n-apply is node(meta, name is text, attributes is record<node>, arguments is tuple<node>);
+local type n-value is node(value);
+local type n-load is node(meta, name is text);
+local type n-thunk is node(meta, thunk);
+local type n-tuple is node(meta, items is tuple<node>);
+local type n-interpolation is node(meta, parts is tuple<node>);
+// Result types
+local abstract n-result;
+local singleton n-halt;
+local singleton n-continue;
+local type n-call(block is tuple<node>);
+local type n-jump(block is tuple<node>);
+
+local type novella-state(continuation, block is tuple<node>);
 local type novella-env(parent, bindings is cell);
 local type novella-ref(name is text);
+
+define top-apply = [
+  "paragraph _",
+  "section _",
+  "header _",
+  "title _",
+  "subtitle _"
+];
 
 define root-env = lazy new novella-env(nothing, #cell with-value: [
   "paragraph _" -> { _, Xs in (Xs as element) paragraph },
@@ -21,51 +55,23 @@ define root-env = lazy new novella-env(nothing, #cell with-value: [
   "style _" -> { O, X in (X as element) style: O.class }
 ]);
 
-command novella-env lookup: (Name is text) =
+command novella-env lookup: (Name is text) meta: Meta =
   condition
     when self.bindings value contains-key: Name => (self.bindings value).[Name];
-    when not (self.parent is nothing) => self.parent lookup: Name;
-    always => panic: "[Name] is not defined" tag: "undefined-name";
+    when not (self.parent is nothing) => self.parent lookup: Name meta: Meta;
+    always => panic: "[Name] is not defined, at [Meta position-message]" tag: "undefined-name";
   end;
 
 command novella-env set: (Name is text) to: Value do
-  self.bindings <- (self.bindings ++ [ [Name] -> Value ]);
+  self.bindings <- (self.bindings value ++ [ [Name] -> Value ]);
   nothing;
 end
 
 command #novella-env get = perform novella-dsl.get-state();
 
-command #novella-dsl evaluate: (X is skeleton-node) do
-  let Args = X children map: (#novella-dsl evaluate: _);
-  let Command = #novella-env get lookup: X name;
-  Command apply: ([X attributes] ++ Args);
-end
-
-command #novella-dsl evaluate: (X is skeleton-literal) do
-  X value;
-end
-
-command #novella-dsl evaluate: (X is skeleton-name) do
-  #novella-env get lookup: X name;
-end
-
-command #novella-dsl evaluate: (X is skeleton-dynamic) do
-  force X thunk;
-end
-
-command #novella-dsl evaluate: (X is skeleton-tuple) do
-  X children map: (#novella-dsl evaluate: _);
-end
-
-command #novella-dsl evaluate: (X is skeleton-interpolation) do
-  (X parts map: (#novella-dsl evaluate: _)) as interpolation;
-end
-
 command #novella-dsl evaluate: (X is tuple) do
-  for Command in X do
-    #novella-dsl evaluate-top: Command;
-  end
-  nothing;
+  let Program = X map: (#novella-dsl compile: _);
+  #novella-dsl run: new novella-state(nothing, Program);
 end
 
 command #novella-dsl evaluate-name: (X is skeleton-name) do
@@ -73,49 +79,216 @@ command #novella-dsl evaluate-name: (X is skeleton-name) do
 end
 
 command #novella-dsl evaluate-name: X do
-  panic: "Expected a name";
+  panic: "Expected a name at [X position-message]";
 end
 
-command #novella-dsl evaluate-top: (X is skeleton-node) do
+// # Evaluation
+command #novella-dsl run: nothing do 
+  nothing;
+end
+
+command #novella-dsl run: (State is novella-state) do
   condition
-    when X name =:= "let _ = _" do
-      let Name = #novella-dsl evaluate-name: (X children first);
-      let Value = #novella-dsl evaluate: (X children second);
-      #novella-env get set: Name to: Value;
-      nothing;
-    end
-      
-    when X name =:= "wait" do
-      novella wait-interaction;
-    end
-
-    when X name =:= "reference _" do
-      let Name = #novella-dsl evaluate-name: (X children first);
-      #novella-env get set: Name to: new novella-ref(Name);
-      nothing;
-    end
-
-    when X name =:= "show _" do
-      let Arg = #novella-dsl evaluate: (X children first);
-      novella show: (Arg as element);
-    end
+    when State.block is-empty =>
+      #novella-dsl run: State.continuation;
 
     always do
-      let Element = #novella-dsl evaluate: X;
-      novella show: Element;
+      let Result = #novella-dsl run-statement: State.block first;
+      #novella-dsl handle: Result state: State;
     end
   end
 end
 
-command #novella-dsl evaluate-top: X do
-  panic: "Unknown novella operation at [X position-message]";
+command #novella-dsl handle: n-halt state: _ =
+  nothing;
+
+command #novella-dsl handle: n-continue state: State =
+  #novella-dsl run: new novella-state(State.continuation, State.block but-first);
+
+command #novella-dsl handle: (R is n-jump) state: State =
+  #novella-dsl run: new novella-state(nothing, R.block);
+
+command #novella-dsl handle: (R is n-call) state: State =
+  #novella-dsl run: new novella-state( new novella-state(State.continuation, State.block but-first)
+                                     , R.block);
+
+
+command #novella-dsl run-statement: (X is n-let) do
+  let Env = #novella-env get;
+  Env set: X.name to: (#novella-dsl run-expr: X.value);
+  n-continue;
 end
 
+command #novella-dsl run-statement: (X is n-wait) do
+  novella wait-interaction;
+  n-continue;
+end
+
+command #novella-dsl run-statement: (X is n-show) do
+  let Arg = #novella-dsl run-expr: X.value;
+  novella show: (Arg as element);
+  n-continue;
+end
+
+command #novella-dsl run-statement: (X is n-menu) do
+  let Ref = new novella-ref("menu");
+  let Choices = X.choices map: { C in 
+                  #novella-dsl run-expr: C.title
+                    |> _ as element
+                    |> _ button-for: Ref value: C.block };
+  let Menu = novella menu: Choices;
+  novella show: Menu;
+  let Block = novella wait-selection: Ref;
+  new n-call(Block);
+end
+
+command #novella-dsl run-statement: (X is n-goto) do
+  let Env = #novella-env get;
+  let Scene = Env lookup: X.name meta: X.meta;
+  new n-jump(Scene.block);
+end
+
+command #novella-dsl run-statement: (X is n-noop) do
+  n-continue;
+end
+
+command #novella-dsl run-expr: (X is n-apply) do
+  let Env = #novella-env get;
+  let Fun = Env lookup: X.name meta: X.meta;
+  let Args = X.arguments map: (#novella-dsl run-expr: _);
+  let Attrs = X.attributes map: { _, V in #novella-dsl run-expr: V };
+  Fun apply: ([Attrs] ++ Args);
+end
+
+command #novella-dsl run-expr: (X is n-value) do
+  X.value;
+end
+
+command #novella-dsl run-expr: (X is n-load) do
+  let Env = #novella-env get;
+  Env lookup: X.name meta: X.meta;
+end
+
+command #novella-dsl run-expr: (X is n-thunk) do
+  force X.thunk;
+end
+
+command #novella-dsl run-expr: (X is n-tuple) do
+  X.items map: (#novella-dsl run-expr: _);
+end
+
+command #novella-dsl run-expr: (X is n-interpolation) do
+  (X.parts map: (#novella-dsl run-expr: _)) as interpolation;
+end
+
+// # Compilation
+command #novella-dsl compile: (X is skeleton-node) do
+  condition
+    when X name =:= "let _ = _" do
+      let Name = #novella-dsl evaluate-name: X children first;
+      let Value = #novella-dsl compile-expr: X children second;
+      new n-let(X, Name, Value);
+    end
+
+    when X name =:= "wait" do
+      new n-wait(X);
+    end
+
+    when X name =:= "show _" do
+      let Arg = #novella-dsl compile-expr: X children first;
+      new n-show(X, Arg);
+    end
+
+    when X name =:= "menu _" do
+      let Choices = X children first children map: (#novella-dsl compile-choice: _);
+      new n-menu(X, Choices);
+    end
+
+    when X name =:= "go to _" do
+      let Name = #novella-dsl evaluate-name: X children first;
+      new n-goto(X, Name);
+    end
+
+    when X name =:= "scene _ _" do
+      let Name = #novella-dsl evaluate-name: X children first;
+      let Block = X children second children map: (#novella-dsl compile: _);
+      let Env = #novella-env get;
+      Env set: Name to: new n-scene(X, Name, Block);
+      n-noop;
+    end
+
+    when top-apply contains: X name do
+      let Arg = #novella-dsl compile-expr: X;
+      new n-show(X, new n-apply(X, X name, [->], [Arg]));
+    end
+
+    always do
+      panic: "Unknown statement [X name] at [X position-message]";
+    end
+  end
+end
+
+command #novella-dsl compile: (X is skeleton-literal) do
+  new n-show(X, new n-apply(X, "paragraph _", [->], [#novella-dsl compile-expr: X]));
+end
+
+command #novella-dsl compile: (X is skeleton-interpolation) do
+  new n-show(X, new n-apply(X, "paragraph _", [->], [#novella-dsl compile-expr: X]));
+end
+
+command #novella-dsl compile: (X is skeleton-tuple) do
+  X children map: (#novella-dsl compile: _);
+end
+
+command #novella-dsl compile: X do
+  panic: "Invalid top-level Novella syntax at [X position-message]";
+end
+
+
+command #novella-dsl compile-expr: (X is skeleton-node) do
+  new n-apply( X
+             , X name
+             , X attributes map: { _, V in #novella-dsl compile-expr: V }
+             , X children map: (#novella-dsl compile-expr: _));
+end
+
+command #novella-dsl compile-expr: (X is skeleton-literal) do
+  new n-value(X value as element);
+end
+
+command #novella-dsl compile-expr: (X is skeleton-name) do
+  new n-load(X, X name);
+end
+
+command #novella-dsl compile-expr: (X is skeleton-dynamic) do
+  new n-thunk(X, X thunk);
+end
+
+command #novella-dsl compile-expr: (X is skeleton-tuple) do
+  new n-tuple(X, X children map: (#novella-dsl compile-expr: _));
+end
+
+command #novella-dsl compile-expr: (X is skeleton-interpolation) do
+  new n-interpolation(X, X parts map: (#novella-dsl compile-expr: _));
+end
+
+
+command #novella-dsl compile-choice: (X is skeleton-node) do
+  let Title = #novella-dsl compile-expr: (X children first);
+  let Block = #novella-dsl compile: (X children second);
+  new n-choice(X, Title, Block);
+end
+
+command #novella-dsl compile-choice: X do
+  panic: "Invalid choice syntax at [X position-message]";
+end
+
+// == Handlers
 command novella-dsl with-env: (Env is novella-env) do: (Block is function-0) do
   handle
     Block();
   with
-    on novella-dsl.get-state() => continue with Env;
+    on novella-dsl.get-state() => continue with Env; 
   end
 end
 
