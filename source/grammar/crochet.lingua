@@ -1008,7 +1008,6 @@ grammar Crochet : Program {
   enum_ = kw<"enum">
   define_ = kw<"define">
   singleton_ = kw<"singleton">
-  scene_ = kw<"scene">
   action_ = kw<"action">
   let_ = kw<"let">
   return_ = kw<"return">
@@ -1065,7 +1064,7 @@ grammar Crochet : Program {
   dsl_ = kw<"dsl">
 
   reserved =
-    | relation_ | predicate_ | when_ | do_ | command_ | scene_ | action_
+    | relation_ | predicate_ | when_ | do_ | command_ | action_
     | type_ | enum_ | define_ | singleton_ | goto_ | call_
     | let_ | return_ | fact_ | forget_ | new_ | search_ | if_ | simulate_
     | true_ | false_ | not_ | and_ | or_ | is_ | self_ | as_
