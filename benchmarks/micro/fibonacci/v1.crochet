@@ -1,0 +1,17 @@
+% crochet
+
+command integer fib do
+  condition
+    when self === 0 => 0;
+    when self === 1 => 1;
+    always => (self - 1) fib + (self - 2) fib;
+  end
+end
+
+command main: _ do
+  30 fib;
+end
+
+command verify: Result do
+  assert Result =:= 832040;
+end

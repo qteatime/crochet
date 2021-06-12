@@ -1,0 +1,9 @@
+{
+  "title": "Fibonacci",
+  "versions": {
+    "0.9.0": "v1.crochet"
+  },
+  "baseline": "fibonacci.js",
+  "seed": 0,
+  "dependencies": ["crochet.core"]
+}
