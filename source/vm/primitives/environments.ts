@@ -22,6 +22,10 @@ export function clone_with_continuation(
   return new Environment(env, env.raw_receiver, env.raw_module, k);
 }
 
+export function clone_with_receiver(env: Environment, receiver: CrochetValue) {
+  return new Environment(env, receiver, env.raw_module, env.raw_continuation);
+}
+
 export function clone_with_bindings(
   env: Environment,
   bindings: Map<string, CrochetValue>

@@ -241,6 +241,11 @@ export class ForeignInterface {
     return Values.instantiate(type, args);
   }
 
+  action_fired<T extends Tag>(action: CrochetValue<T>, value: CrochetValue) {
+    Values.assert_tag(Tag.ACTION, action);
+    return action.payload.action.fired.has(value);
+  }
+
   // == Etc
   xorshift(seed: number, inc: number) {
     return new XorShift(seed, inc);

@@ -74,6 +74,7 @@ type skeleton-dynamic = foreign core.skeleton-dynamic;
 
 
 // Actions
+type 'action = foreign core.action;
 type action-choice = foreign core.action-choice;
 
 /// The type of results that may fail

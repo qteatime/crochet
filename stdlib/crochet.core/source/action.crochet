@@ -5,3 +5,6 @@ command action-choice score =
 
 command action-choice title =
   (foreign action.action(self)) title;
+
+command 'action fired-for: Value =
+  (foreign action.fired-for(self, Value));

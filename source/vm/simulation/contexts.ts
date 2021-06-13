@@ -80,7 +80,8 @@ export function* available_actions(
     if (!Values.has_type(action.actor_type, actor)) {
       continue;
     }
-    const env = Environments.clone(env0);
+    const action_value = Values.make_action(action, env0);
+    const env = Environments.clone_with_receiver(env0, action_value);
     env.define(action.self_parameter, actor);
 
     const envs = yield* search(
