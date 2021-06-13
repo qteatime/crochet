@@ -187,14 +187,21 @@ export function instantiate(type: CrochetType, values: CrochetValue[]) {
   return new CrochetValue(Tag.INSTANCE, type, values);
 }
 
-export function make_static_type(type: CrochetType) {
+export function make_static_type(universe: Universe, type: CrochetType) {
   if (!type.is_static) {
     throw new ErrArbitrary(
       "no-static-type",
       `The operation tried to construct a static type value, but wasn't provided with a static type`
     );
   }
-  return new CrochetValue(Tag.TYPE, type, type);
+  const stype = universe.static_type_cache.get(type);
+  if (stype == null) {
+    const value = new CrochetValue(Tag.TYPE, type, type);
+    universe.static_type_cache.set(type, value);
+    return value;
+  } else {
+    return stype;
+  }
 }
 
 export function tag_to_name(x: Tag): string {

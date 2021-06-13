@@ -120,6 +120,13 @@ export function compile_pattern(
       return new WildcardPattern();
     }
 
+    case t.STATIC_TYPE: {
+      const type = Types.materialise_type(state.universe, module, pattern.type);
+      const stype = Types.get_static_type(state.universe, type);
+      const value = Values.make_static_type(state.universe, stype);
+      return new ValuePattern(value);
+    }
+
     default:
       throw unreachable(pattern, "Pattern");
   }

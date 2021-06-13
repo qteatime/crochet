@@ -639,6 +639,12 @@ class CrochetIRDecoder extends BinaryReader {
       case t.WILDCARD:
         return new IR.WildcardPattern(this.decode_meta_id());
 
+      case t.STATIC_TYPE:
+        return new IR.StaticTypePattern(
+          this.decode_meta_id(),
+          this.decode_type()
+        );
+
       default:
         throw unreachable(tag, "Pattern");
     }

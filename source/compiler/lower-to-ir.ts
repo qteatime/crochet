@@ -416,6 +416,11 @@ export class LowerToIR {
         const id = this.context.register(pos);
         return new IR.WildcardPattern(id);
       },
+
+      StaticType: (pos, type) => {
+        const id = this.context.register(pos);
+        return new IR.StaticTypePattern(id, this.type(type));
+      },
     });
   }
 

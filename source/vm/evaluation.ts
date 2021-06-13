@@ -502,7 +502,7 @@ export class Thread {
           op.type
         );
         const static_type = Types.get_static_type(this.universe, type);
-        const value = Values.make_static_type(static_type);
+        const value = Values.make_static_type(this.universe, static_type);
         this.push(activation, value);
         activation.next();
         return _continue;
@@ -926,7 +926,7 @@ export class Thread {
           op.type
         );
         const stype = Types.get_static_type(this.universe, type);
-        const type_arg = Values.make_static_type(stype);
+        const type_arg = Values.make_static_type(this.universe, stype);
         const nodes = op.ast.map((x) =>
           DSL.reify_dsl_node(this.universe, this.module, this.env, x)
         );

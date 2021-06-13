@@ -7,6 +7,7 @@ type uint32 = number;
 export enum PatternTag {
   HAS_TYPE,
   GLOBAL,
+  STATIC_TYPE,
   VARIABLE,
   SELF,
   WILDCARD,
@@ -19,7 +20,8 @@ export type Pattern =
   | VariablePattern
   | SelfPattern
   | WildcardPattern
-  | LiteralPattern;
+  | LiteralPattern
+  | StaticTypePattern;
 
 export abstract class PatternBase {}
 
@@ -71,6 +73,14 @@ export class WildcardPattern extends PatternBase {
   readonly tag = PatternTag.WILDCARD;
 
   constructor(readonly meta: Metadata) {
+    super();
+  }
+}
+
+export class StaticTypePattern extends PatternBase {
+  readonly tag = PatternTag.STATIC_TYPE;
+
+  constructor(readonly meta: Metadata, readonly type: Type) {
     super();
   }
 }

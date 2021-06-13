@@ -635,6 +635,12 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.PatternTag.STATIC_TYPE: {
+        this.encode_meta_id(x.meta);
+        this.encode_type(x.type);
+        break;
+      }
+
       default:
         throw unreachable(x, `Pattern`);
     }

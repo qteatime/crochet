@@ -175,6 +175,7 @@ type SamplingPool =
 
 type Pattern =
   | HasType(pos: Meta, typ: TypeApp, name: Pattern)
+  | StaticType(pos: Meta, typ: TypeApp)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
   | Self(pos: Meta)
@@ -501,6 +502,7 @@ grammar Crochet : Program {
 
   pattern =
     | s<"("> c:patternComplex s<")">  -> c
+    | s<"#"> p:typeAppPrimary -> Pattern.StaticType(meta, p)
     | n:atom                  -> Pattern.Global(meta, n)
     | self_                   -> Pattern.Self(meta)
     | l:literal               -> Pattern.Lit(l)
