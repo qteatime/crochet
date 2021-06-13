@@ -227,8 +227,8 @@ export function make_universe() {
     "skeleton-dynamic",
     "",
     Skeleton,
-    ["thunk", "meta"],
-    [Thunk, Any],
+    ["expression", "meta"],
+    [functions[0], Any],
     false,
     null
   );

@@ -11,7 +11,7 @@ command skeleton-literal meta = self.meta;
 command skeleton-name name = self.name;
 command skeleton-name meta = self.meta;
 
-command skeleton-dynamic thunk = self.thunk;
+command skeleton-dynamic expression = self.expression;
 command skeleton-dynamic meta = self.meta;
 
 command skeleton-tuple children = self.children;

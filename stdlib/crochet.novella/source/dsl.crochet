@@ -10,12 +10,13 @@ local type n-wait is node(meta);
 local type n-show is node(meta, value is node);
 local type n-menu is node(meta, choices is tuple<n-choice>);
 local type n-goto is node(meta, name is text);
+local type n-run is node(meta, lambda is function-0);
 local singleton n-noop is node;
 // Expression
 local type n-apply is node(meta, name is text, attributes is record<node>, arguments is tuple<node>);
 local type n-value is node(value);
 local type n-load is node(meta, name is text);
-local type n-thunk is node(meta, thunk);
+local type n-crochet is node(meta, lambda is function-0);
 local type n-tuple is node(meta, items is tuple<node>);
 local type n-interpolation is node(meta, parts is tuple<node>);
 // Result types
@@ -148,6 +149,11 @@ command #novella-dsl run-statement: (X is n-goto) do
   new n-jump(Scene.block);
 end
 
+command #novella-dsl run-statement: (X is n-run) do
+  X.lambda();
+  n-continue;
+end
+
 command #novella-dsl run-statement: (X is n-noop) do
   n-continue;
 end
@@ -169,8 +175,8 @@ command #novella-dsl run-expr: (X is n-load) do
   Env lookup: X.name meta: X.meta;
 end
 
-command #novella-dsl run-expr: (X is n-thunk) do
-  force X.thunk;
+command #novella-dsl run-expr: (X is n-crochet) do
+  X.lambda();
 end
 
 command #novella-dsl run-expr: (X is n-tuple) do
@@ -217,6 +223,11 @@ command #novella-dsl compile: (X is skeleton-node) do
       n-noop;
     end
 
+    when X name =:= "run _" do
+      let Code = X children first expression;
+      new n-run(X, Code);
+    end
+
     when top-apply contains: X name do
       let Arg = #novella-dsl compile-expr: X;
       new n-show(X, new n-apply(X, X name, [->], [Arg]));
@@ -261,7 +272,7 @@ command #novella-dsl compile-expr: (X is skeleton-name) do
 end
 
 command #novella-dsl compile-expr: (X is skeleton-dynamic) do
-  new n-thunk(X, X thunk);
+  new n-thunk(X, X expression);
 end
 
 command #novella-dsl compile-expr: (X is skeleton-tuple) do

@@ -11,6 +11,7 @@ import { materialise_literal } from "./literals";
 import {
   instantiate,
   make_integer,
+  make_lambda,
   make_record_from_map,
   make_static_text,
   make_text,
@@ -71,7 +72,7 @@ export function reify_dsl_node(
 
     case IR.DslNodeTag.EXPRESSION: {
       return instantiate(universe.types.Skeleton.Dynamic, [
-        make_thunk(universe, env, node.value),
+        make_lambda(universe, env, [], node.value),
         reify_meta(universe, module, node),
       ]);
     }
