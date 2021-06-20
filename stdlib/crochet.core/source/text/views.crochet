@@ -17,7 +17,7 @@ end
 command #text from-code-points: (Points is tuple)
   = foreign text.from-code-points(Points)
 test
-  assert #text from-code-points: ("abc❤🌹✨" unicode-code-points) =:= "abc❤🌹✨";
+  assert (#text from-code-points: ("abc❤🌹✨" unicode-code-points)) =:= "abc❤🌹✨";
 end
 
 command #text from-lines: (Lines is tuple) do

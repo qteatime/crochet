@@ -33,7 +33,7 @@ command #arithmetic evaluate: (Xs is tuple) do
 end
 
 command #arithmetic evaluate: (X is skeleton-literal) = X value;
-command #arithmetic evaluate: (X is skeleton-dynamic) = force X thunk;
+command #arithmetic evaluate: (X is skeleton-dynamic) = (X expression)();
 
 command #arithmetic evaluate: (X is skeleton-tuple) =
   self evaluate: X children;

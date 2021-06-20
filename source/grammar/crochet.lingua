@@ -570,6 +570,7 @@ grammar Crochet : Program {
     | s<forceExpression>
     | s<foreignExpression>
     | s<continueWithExpression>
+    | s<assignExpression>
     | s<pipeExpression>
 
   searchExpression =
@@ -593,26 +594,45 @@ grammar Crochet : Program {
   expressionBlock =
     | do_ b:statements end_ -> Expression.Block(meta, b)
 
+  assignExpression =
+    | l:invokePostfix op:named<"<-"> r:pipeExpression
+      -> Expression.Invoke(meta, Signature.Binary(meta, op, l, r))
+
   pipeExpression =
-    | l:pipeExpression s<"|>"> r:invokeInfixExpression
+    | l:pipeExpression s<"|>"> r:invokeMixfix
       -> Expression.Pipe(meta, l, r)
     | l:pipeExpression s<"|"> r:partialSignature<invokePostfix>
       -> Expression.PipeInvoke(meta, l, r)
-    | invokeInfixExpression
-
-  invokeInfixExpression =
-    | l:invokeMixfix s<"=:="> r:invokeMixfix
-      -> Expression.IntrinsicEqual(meta, l, r)
-    | l:invokeInfixExpression op:infix_symbol r:invokeMixfix
-      -> Expression.Invoke(meta, Signature.Binary(meta, op, l, r))
     | invokeMixfix
 
   invokeMixfix =
-    | s:castExpression ps:signaturePair<invokePostfix>+
+    | s:invokeInfixExpression ps:signaturePair<invokeInfixExpression>+
       -> Expression.Invoke(meta, Signature.Keyword(meta, s, ps))
-    | ps:signaturePair<invokePostfix>+
+    | ps:signaturePair<invokeInfixExpression>+
       -> Expression.Invoke(meta, Signature.KeywordSelfless(meta, ps))
+    | invokeInfixExpression
+
+  invokeInfixExpression =
+    | l:invokePostfix s<"=:="> r:invokePostfix
+      -> Expression.IntrinsicEqual(meta, l, r)
+    | l:invokePostfix op:named<t_relational_op> r:invokePostfix
+      -> Expression.Invoke(meta, Signature.Binary(meta, op, l, r))
+    | invokeInfixSequence<named<"++">>
+    | invokeInfixSequence<named<"+">>
+    | invokeInfixSequence<named<"-">>
+    | invokeInfixSequence<named<"**">>
+    | invokeInfixSequence<named<"*">>
+    | invokeInfixSequence<named<"/">>
+    | invokeInfixSequence<named<"%">>
+    | invokeInfixSequence<and>
+    | invokeInfixSequence<or>
     | castExpression
+
+  invokeInfixSequence<op> =
+    | l:invokeInfixSequence<op> x:op r:invokePostfix
+      -> Expression.Invoke(meta, Signature.Binary(meta, x, l, r))
+    | l:invokePostfix x:op r:invokePostfix
+      -> Expression.Invoke(meta, Signature.Binary(meta, x, l, r))
 
   castExpression =
     | s:invokePrePost op:as t:castType
@@ -875,6 +895,8 @@ grammar Crochet : Program {
   namespace = x:s<nonemptyListOf<t_atom, s<".">>>  -> Namespace(meta, x)
 
   // -- Higher-order
+  named<n> = x:s<n> -> Name(meta, x)
+
   logicSignature<t> =
     | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)
     | s:t n:atom                      -> Signature.Unary(meta, s, n)
@@ -964,13 +986,20 @@ grammar Crochet : Program {
     | as_
 
   token t_any_infix =
+    | "<-"
+    | t_relational_op
+    | t_arithmetic_op
+
+  token t_relational_op =
+    | "===" | "=/="
+    | ">=" | ">"
+    | "<=" | "<"
+
+  token t_arithmetic_op =
     | "++" | "+"
-    | "<-" | "-"
+    | "-"
     | "**" | "*"
     | "/"
-    | "<=" | "<"
-    | ">=" | ">"
-    | "===" | "=/="
     | "%"
 
   token infix_character = "+" | "-" | "*" | "/" | "<" | ">" | "=" | "%"
