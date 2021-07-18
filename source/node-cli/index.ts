@@ -237,6 +237,42 @@ async function package_app([file]: string[], options: Options) {
   await Packaging.package_app(file, null, options.packaging.out_dir);
 }
 
+async function new_package([name]: string[], options: Options) {
+  const root = Path.join(process.cwd(), name);
+  if (FS.existsSync(root)) {
+    console.error(`Directory ${name} already exists`);
+    process.exit(1);
+  }
+  FS.mkdirSync(root);
+  FS.mkdirSync(Path.join(root, "source"));
+  FS.mkdirSync(Path.join(root, "native"));
+  FS.mkdirSync(Path.join(root, "test"));
+  const pkg = {
+    name: name,
+    target: "*",
+    native_sources: [],
+    sources: ["source/main.crochet"],
+    dependencies: ["crochet.core"],
+    capabilities: {
+      requires: [],
+      provides: [],
+    },
+  };
+  FS.writeFileSync(
+    Path.join(root, "crochet.json"),
+    JSON.stringify(pkg, null, 2)
+  );
+  const main = `% crochet
+  
+command main: (Args is tuple) do
+  "Hello, world";
+test
+  assert (main: []) =:= "Hello, world";
+end`;
+  FS.writeFileSync(Path.join(root, "source/main.crochet"), main);
+  console.log(`Created ${name}`);
+}
+
 function help(command?: string) {
   switch (command) {
     case "run":
@@ -334,6 +370,7 @@ function help(command?: string) {
           "  crochet build <crochet.json> [options]\n",
           "  crochet show-ir <file.crochet> [options]\n",
           "  crochet show-ast <file.crochet> [options]\n",
+          "  crochet new <name> [options]\n",
           "  crochet help [<command>]\n",
           "  crochet version\n",
           "\n",
@@ -389,6 +426,8 @@ void (async function main() {
         return await package_app(args, options);
       case "repl":
         return await repl(args, options);
+      case "new":
+        return await new_package(args, options);
       case "version": {
         const version = require("../../package.json").version;
         console.log(`Crochet version ${version}`);
