@@ -1,0 +1,12 @@
+{
+  "comments": [["Until_newline", "//"]],
+  "escapable_string_literals": {
+    "delimiters": ["\""],
+    "escape_character": "\\"
+  },
+  "raw_string_literals": [],
+  "user_defined_delimiters": [
+    ["do", "end"],
+    ["with", "end"]
+  ]
+}
