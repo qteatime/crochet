@@ -8,17 +8,17 @@ type regular-type-parameters(a, b, c);
 
 // Extensions on types
 abstract list;
-type list-node is list(value, rest is list);
+type list-node(value, rest is list) is list;
 singleton list-end is list;
 type list-a is list;
 
 singleton list1;
-type list-node1 is list1(value, rest is list1);
+type list-node1(value, rest is list1) is list1;
 singleton list-end1 is list1;
 type list-a1 is list1;
 
 type list2;
-type list-node2 is list2(value, rest is list2);
+type list-node2(value, rest is list2) is list2;
 singleton list-end2 is list2;
 type list-a2 is list2;
 
