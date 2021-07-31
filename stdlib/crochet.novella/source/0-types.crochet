@@ -7,13 +7,13 @@ type canvas(x);
 
 abstract element;
 singleton nvl-empty is element;
-type nvl-flow is element(children is tuple<element>);
-type nvl-stack is element(children is tuple<element>);
-type nvl-text is element(x is text);
-type nvl-style is element(child is element, classes is tuple<text>);
-type nvl-role is element(child is element, role is text);
-type nvl-menu is element(children is tuple<nvl-button>);
-type nvl-button is element(child is element, reference, value);
+type nvl-flow(children is tuple<element>) is element;
+type nvl-stack(children is tuple<element>) is element;
+type nvl-text(x is text) is element;
+type nvl-style(child is element, classes is tuple<text>) is element;
+type nvl-role(child is element, role is text) is element;
+type nvl-menu(children is tuple<nvl-button>) is element;
+type nvl-button(child is element, reference, value) is element;
 
 abstract image;
 type network-image(url is text);

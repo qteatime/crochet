@@ -8,7 +8,7 @@ local enum colour = black, red, green, yellow, blue, magenta, cyan, white;
 
 local abstract formatting;
 local singleton f-bold is formatting;
-local type f-colour is formatting(colour is colour);
+local type f-colour(colour is colour) is formatting;
 
 command black render = "0";
 command red render = "1";
@@ -34,11 +34,11 @@ command f-colour render-stop =
 
 
 local abstract doc;
-local type doc-text is doc(size is integer, text is text);
-local type doc-join is doc(left is doc, right is doc);
-local type doc-nest is doc(indent is integer, doc is doc);
-local type doc-dynamic is doc(block is function-2);
-local type doc-format is doc(formatting is formatting, doc is doc);
+local type doc-text(size is integer, text is text) is doc;
+local type doc-join(left is doc, right is doc) is doc;
+local type doc-nest(indent is integer, doc is doc) is doc;
+local type doc-dynamic(block is function-2) is doc;
+local type doc-format(formatting is formatting, doc is doc) is doc;
 local singleton doc-break is doc;
 local singleton doc-empty is doc;
 
@@ -103,7 +103,7 @@ local singleton sd-end;
 type debug-printer;
 
 local abstract debug-printer-list;
-local type cons is debug-printer-list(indent is integer, doc is doc, rest is debug-printer-list);
+local type cons(indent is integer, doc is doc, rest is debug-printer-list) is debug-printer-list;
 local singleton nil is debug-printer-list;
 
 command debug-printer show: X =
@@ -290,9 +290,9 @@ command debug-representation of: (X is doc-like) =
   X as doc;
 
 
-local type type-representation is doc-like(name is text, fields is tuple);
-local type type-field is doc-like(name is text, value);
-local type type-pos is doc-like(value);
+local type type-representation(name is text, fields is tuple) is doc-like;
+local type type-field(name is text, value) is doc-like;
+local type type-pos(value) is doc-like;
 
 command debug-representation type: (X is static-text) =
   new type-representation(X, []);

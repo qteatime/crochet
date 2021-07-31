@@ -13,3 +13,4 @@ versions/current.js
 .binary/
 *.croc
 stdlib/**/*.js
+_build

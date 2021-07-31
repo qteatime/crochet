@@ -6,7 +6,7 @@ singleton cli;
 
 // Parser types
 abstract cli-arg-type;
-type cli-arg-exact is cli-arg-type(value is text);
+type cli-arg-exact(value is text) is cli-arg-type;
 singleton cli-arg-text is cli-arg-type;
 singleton cli-arg-boolean is cli-arg-type;
 
@@ -14,48 +14,48 @@ singleton cli-arg-boolean is cli-arg-type;
 // Rules that can be defined
 abstract cli-arg;
 
-type cli-app is cli-arg(
+type cli-app(
   name is text,
   description is text,
   commands is tuple
-);
+) is cli-arg;
 
-type cli-command is cli-arg(
+type cli-command(
   name is text,
   description is text,
   command-arg is cli-arg,
   arguments is tuple
-);
+) is cli-arg;
 
-type cli-options is cli-arg(
+type cli-options(
   name is text,
   options is tuple
-);
+) is cli-arg;
 
 abstract cli-arg-single is cli-arg;
-type cli-positional is cli-arg-single(
+type cli-positional(
   name is text,
   description is text,
   arg-type is cli-arg-type
-);
+) is cli-arg-single;
 
-type cli-option is cli-arg-single(
+type cli-option(
   key is text,
   description is text,
   default,
   arg-type is cli-arg-type
-);
+) is cli-arg-single;
 
-type cli-functor is cli-arg-single(
+type cli-functor(
   arg is cli-arg,
   functor is function-1
-);
+) is cli-arg-single;
 
 
 // Errors that may happen specific to this parser
 abstract cli-parser-error is parser-error;
-type cli-parser-error-type is cli-parser-error(expected is cli-arg-type);
-type cli-parser-error-arg is cli-parser-error(expected is cli-arg);
+type cli-parser-error-type(expected is cli-arg-type) is cli-parser-error;
+type cli-parser-error-arg(expected is cli-arg) is cli-parser-error;
 
 
 // Specific CLI parser results that we need to know how to merge
@@ -66,7 +66,7 @@ singleton cli-trilean-true is cli-trilean;
 singleton cli-trilean-false is cli-trilean;
 singleton cli-trilean-unknown  is cli-trilean;
 
-type cli-text is cli-parser-result(value is text);
-type cli-tuple is cli-parser-result(values is tuple);
-type cli-record is cli-parser-result(value is record);
-type cli-box is cli-parser-result(value);
+type cli-text(value is text) is cli-parser-result;
+type cli-tuple(values is tuple) is cli-parser-result;
+type cli-record(value is record) is cli-parser-result;
+type cli-box(value) is cli-parser-result;

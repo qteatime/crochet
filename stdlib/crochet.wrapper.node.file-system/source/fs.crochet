@@ -2,9 +2,9 @@
 
 singleton file-system;
 local abstract node;
-local type inode is node(path is path-obj);
-local type file is node(path is path-obj);
-local type directory is node(path is path-obj);
+local type inode(path is path-obj) is node;
+local type file(path is path-obj) is node;
+local type directory(path is path-obj) is node;
 
 command file-system at: (Path is path-obj)
   = new inode(Path);

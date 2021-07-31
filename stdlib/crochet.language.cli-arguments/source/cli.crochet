@@ -32,8 +32,8 @@ end
 
 
 local type test-cli;
-type test-cli-run is test-cli(package, options);
-type test-cli-repl is test-cli(package, options);
+type test-cli-run(package, options) is test-cli;
+type test-cli-repl(package, options) is test-cli;
 
 command test-cli === (That is test-cli) =
   (self.package =:= That.package) and (self.options =:= That.options);

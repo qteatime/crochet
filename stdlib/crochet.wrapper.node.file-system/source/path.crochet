@@ -2,7 +2,7 @@
 
 
 abstract path;
-type path-obj is path(path is text);
+type path-obj(path is text) is path;
 
 command #path from-text: (Text is text)
   = new path-obj(Text);

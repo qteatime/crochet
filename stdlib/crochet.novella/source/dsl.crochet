@@ -5,20 +5,20 @@ local type node;
 local type n-scene(meta, name is text, block is tuple<node>);
 local type n-choice(meta, title is node, block is tuple<node>);
 // Statement
-local type n-let is node(meta, name is text, value is node);
-local type n-wait is node(meta);
-local type n-show is node(meta, value is node);
-local type n-menu is node(meta, choices is tuple<n-choice>);
-local type n-goto is node(meta, name is text);
-local type n-run is node(meta, lambda is function-0);
+local type n-let(meta, name is text, value is node) is node;
+local type n-wait(meta) is node;
+local type n-show(meta, value is node) is node;
+local type n-menu(meta, choices is tuple<n-choice>) is node;
+local type n-goto(meta, name is text) is node;
+local type n-run(meta, lambda is function-0) is node;
 local singleton n-noop is node;
 // Expression
-local type n-apply is node(meta, name is text, attributes is record<node>, arguments is tuple<node>);
-local type n-value is node(value);
-local type n-load is node(meta, name is text);
-local type n-crochet is node(meta, lambda is function-0);
-local type n-tuple is node(meta, items is tuple<node>);
-local type n-interpolation is node(meta, parts is tuple<node>);
+local type n-apply(meta, name is text, attributes is record<node>, arguments is tuple<node>) is node;
+local type n-value(value) is node;
+local type n-load(meta, name is text) is node;
+local type n-crochet(meta, lambda is function-0) is node;
+local type n-tuple(meta, items is tuple<node>) is node;
+local type n-interpolation(meta, parts is tuple<node>) is node;
 // Result types
 local abstract n-result;
 local singleton n-halt;

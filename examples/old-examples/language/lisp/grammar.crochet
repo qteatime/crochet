@@ -5,13 +5,13 @@ open crochet.text.parsing.lingua;
 
 // Type definitions
 abstract node;
-type program is node(pos is interval, forms is tuple);
+type program(pos is interval, forms is tuple) is node;
 
 abstract form is node;
-type form--apply is form(pos is interval, callee is form, arguments is tuple);
-type form--integer is form(pos is interval, value is text);
-type form--atom is form(pos is interval, name is text);
-type form--unit is form(pos is interval);
+type form--apply(pos is interval, callee is form, arguments is tuple) is form;
+type form--integer(pos is interval, value is text) is form;
+type form--atom(pos is interval, name is text) is form;
+type form--unit(pos is interval) is form;
 
 // Grammar definition
 define grammar = lazy (#lingua grammar: "\r\n  Lisp {\r\n    Program  = Form* end  -- alt1\n\n\nForm  = Apply  -- alt1\n | Integer  -- alt2\n | Atom  -- alt3\n | Unit  -- alt4\n\n\nApply  = \"(\" Form Form+ \")\"  -- alt1\n\n\nInteger  = integer  -- alt1\n\n\nAtom  = atom  -- alt1\n\n\nUnit  = \"(\" \")\"  -- alt1\n\n\natom  = letter+  -- alt1\n\n\ninteger  = digit+  -- alt1\n\r\n  }\r\n  ");

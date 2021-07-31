@@ -20709,11 +20709,11 @@ function generateType(t) {
 }
 
 function genRecord(n, fs) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P() is node(%P());", [typeName(n), genFields(fs)]));
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P()(%P()) is node;", [typeName(n), genFields(fs)]));
 }
 
 function genVariant(p, _arg1) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P()--%P() is %P()(%P());", [typeName(p), typeName(_arg1.fields[0]), typeName(p), genFields(_arg1.fields[1])]));
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P()--%P()(%P()) is %P();", [typeName(p), typeName(_arg1.fields[0]), genFields(_arg1.fields[1]), typeName(p)]));
 }
 
 function generateTypes(ts) {

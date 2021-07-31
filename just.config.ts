@@ -21,11 +21,11 @@ task("build-web", () => {
   );
 });
 
+task("build", series("build-grammar", "build-ts"));
+
 task(
   "test",
-  series("build-ts", () => {
+  series("build", () => {
     require("./build/test/suites/serialisation");
   })
 );
-
-task("build", series("build-grammar", "build-ts"));

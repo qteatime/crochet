@@ -1,8 +1,8 @@
 % crochet
 
 abstract random;
-local type xor-shift is random(seed, inc);
-local type mutable-random is random(random is cell);
+local type xor-shift(seed, inc) is random;
+local type mutable-random(random is cell) is random;
 
 local type random-next(value, random is random);
 

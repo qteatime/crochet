@@ -79,8 +79,8 @@ type action-choice = foreign core.action-choice;
 
 /// The type of results that may fail
 abstract result;
-type ok is result(value);
-type error is result(reason);
+type ok(value) is result;
+type error(reason) is result;
 
 
 /// The type of mutable cells

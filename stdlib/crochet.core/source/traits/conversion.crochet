@@ -36,8 +36,8 @@ end
 
 
 abstract conversion-error;
-type error-parsing-integer is conversion-error(value);
-type error-parsing-float is conversion-error(value);
+type error-parsing-integer(value) is conversion-error;
+type error-parsing-float(value) is conversion-error;
 
 command #integer try-parse: (X is text) -> result do
   let Result = foreign integer.parse(X);

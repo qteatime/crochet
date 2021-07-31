@@ -8,31 +8,31 @@ type parser-stream(position is integer, stream is tuple);
 abstract parser;
 singleton parser-always is parser;
 singleton parser-any is parser;
-type parser-lazy is parser(parser is thunk);
-type parser-alt is parser(left is parser, right is parser);
-type parser-backtrack is parser(parser is parser);
-type parser-seq is parser(left is parser, right is parser);
-type parser-many is parser(parser is parser);
-type parser-opt is parser(parser is parser);
-type parser-eq is parser(value);
-type parser-not is parser(parser is parser);
-type parser-lookahead is parser(parser is parser);
-type parser-action is parser(parser is parser, semantic is function-1);
-type parser-predicate is parser(parser is parser, pred is function-1);
+type parser-lazy(parser is thunk) is parser;
+type parser-alt(left is parser, right is parser) is parser;
+type parser-backtrack(parser is parser) is parser;
+type parser-seq(left is parser, right is parser) is parser;
+type parser-many(parser is parser) is parser;
+type parser-opt(parser is parser) is parser;
+type parser-eq(value) is parser;
+type parser-not(parser is parser) is parser;
+type parser-lookahead(parser is parser) is parser;
+type parser-action(parser is parser, semantic is function-1) is parser;
+type parser-predicate(parser is parser, pred is function-1) is parser;
 
 // Reasons for parsing error
 abstract parser-error;
 singleton parser-error-end-of-stream is parser-error;
-type parser-error-alt is parser-error(left is parser-error, right is parser-error);
-type parser-error-expected is parser-error(expected);
-type parser-error-unexpected is parser-error(parser is parser);
-type parser-error-not-satisfied is parser-error(parser is parser);
-type parser-error-arbitrary is parser-error(failure is text);
+type parser-error-alt(left is parser-error, right is parser-error) is parser-error;
+type parser-error-expected(expected) is parser-error;
+type parser-error-unexpected(parser is parser) is parser-error;
+type parser-error-not-satisfied(parser is parser) is parser-error;
+type parser-error-arbitrary(failure is text) is parser-error;
 
 // An intermediate parser result
 abstract parser-result;
-type parser-result-ok is parser-result(value, position is parser-stream);
-type parser-result-error is parser-result(reason is parser-error, position is parser-stream);
+type parser-result-ok(value, position is parser-stream) is parser-result;
+type parser-result-error(reason is parser-error, position is parser-stream) is parser-result;
 
 type parser-result-pair(left, right);
 

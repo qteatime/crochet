@@ -367,8 +367,8 @@ grammar Crochet : Program {
     | m:declarationMeta ws singleton_ t:basicType i:typeInitBlock
       -> Declaration.SingletonType(meta, m, t, i)
 
-    | m:declarationMeta ws type_ t:basicType fs:typeFields s<";">
-      -> Declaration.Type(meta, m, t, fs)
+    | m:declarationMeta ws type_ n:atom fs:typeFields p:typeDefParent s<";">
+      -> Declaration.Type(meta, m, TypeDef(p, n), fs)
 
   basicType =
     | n:atom p:typeDefParent    -> TypeDef(p, n)

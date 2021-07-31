@@ -5,11 +5,11 @@ open crochet.text.parsing.lingua;
 
 // Type definitions
 abstract node;
-type csv is node(rows is tuple);
+type csv(rows is tuple) is node;
 
-type row is node(cells is tuple);
+type row(cells is tuple) is node;
 
-type cell is node(value is text);
+type cell(value is text) is node;
 
 // Grammar definition
 define grammar = lazy (#lingua grammar: "\r\n  Csv {\r\n    file  = listOf<row, newline> newline? end  -- alt1\n\n\nrow  = nonemptyListOf<cell, \",\">  -- alt1\n\n\ncell  = escaped_cell  -- alt1\n | non_escaped_cell  -- alt2\n\n\nescaped_cell  = \"\\\"\" escaped_text \"\\\"\"  -- alt1\n\n\nnon_escaped_cell  = text_data  -- alt1\n\n\nescaped_text  = escaped_text_char*  -- alt1\n\n\nescaped_text_char  = \"\\\"\\\"\"  -- alt1\n | ~\"\\\"\" any  -- alt2\n\n\ntext_data  = text_char*  -- alt1\n\n\ntext_char  = ~separator_char any  -- alt1\n\n\nseparator_char  = \",\"  -- alt1\n | \"\\\"\"  -- alt2\n | newline  -- alt3\n\n\nnewline  = \"\\r\\n\"  -- alt1\n | \"\\r\"  -- alt2\n | \"\\n\"  -- alt3\n\r\n  }\r\n  ");
