@@ -32,8 +32,14 @@ export function fulfills_constraint(
   );
 }
 
-export function has_trait(trait: CrochetTrait, type: CrochetType) {
-  return type.traits.has(trait);
+export function has_trait(trait: CrochetTrait, type: CrochetType): boolean {
+  if (type.traits.has(trait)) {
+    return true;
+  } else if (type.parent != null) {
+    return has_trait(trait, type.parent);
+  } else {
+    return false;
+  }
 }
 
 export function get_static_type(universe: Universe, type: CrochetType) {
@@ -256,7 +262,7 @@ export function compare_constraints(
   t1: CrochetTypeConstraint,
   t2: CrochetTypeConstraint
 ): number {
-  return constraint_distance(t1) - constraint_distance(t2);
+  return constraint_distance(t2) - constraint_distance(t1);
 }
 
 export function constraint_distance(t: CrochetTypeConstraint) {
