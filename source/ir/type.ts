@@ -48,3 +48,52 @@ export class LocalType extends BaseType {
     super();
   }
 }
+
+export enum TypeConstraintTag {
+  TYPE,
+  WITH_TRAIT,
+}
+
+export type TypeConstraint = TypeConstraintType | TypeConstraintWithTrait;
+
+abstract class BaseConstraint {
+  abstract tag: TypeConstraintTag;
+}
+
+export class TypeConstraintType extends BaseConstraint {
+  readonly tag = TypeConstraintTag.TYPE;
+
+  constructor(readonly meta: Metadata, readonly type: Type) {
+    super();
+  }
+}
+
+export class TypeConstraintWithTrait extends BaseConstraint {
+  readonly tag = TypeConstraintTag.WITH_TRAIT;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly type: TypeConstraint,
+    readonly traits: Trait[]
+  ) {
+    super();
+  }
+}
+
+export enum TraitTag {
+  LOCAL,
+}
+
+export type Trait = LocalTrait;
+
+abstract class BaseTrait {
+  abstract tag: TraitTag;
+}
+
+export class LocalTrait extends BaseTrait {
+  readonly tag = TraitTag.LOCAL;
+
+  constructor(readonly meta: Metadata, readonly name: string) {
+    super();
+  }
+}

@@ -12,6 +12,8 @@ type Declaration =
   | EnumType(pos: Meta, cmeta: Metadata, name: Name, variants: Name[])
   | SingletonType(pos: Meta, cmeta: Metadata, typ: TypeDef, init: TypeInit[])
   | Type(pos: Meta, cmeta: Metadata, typ: TypeDef, fields: Parameter[])
+  | Trait(pos: Meta, cmeta: Metadata, name: Name)
+  | ImplementTrait(pos: Meta, typ: TypeApp, trait: Trait)
   | Action( pos: Meta
           , cmeta: Metadata
           , self: Parameter
@@ -37,7 +39,7 @@ type TrailingTest(pos: Meta, body: Statement[])
 type Contract(pos: Meta, ret: TypeApp?, pre: ContractCondition[], post: ContractCondition[])
 type ContractCondition(pos: Meta, name: Name, expr: Expression)
 
-type TypeDef(parent: TypeApp?, name: Name)
+type TypeDef(parent: TypeConstraint?, name: Name)
 type FFI(pos: Meta, name: Namespace, args: Name[])
 
 type Rank =
@@ -50,13 +52,20 @@ type TypeInit =
 
 type Parameter =
   | Untyped(pos: Meta, name: Name)
-  | Typed(pos: Meta, name: Name, typ: TypeApp)
-  | TypedOnly(pos: Meta, typ: TypeApp)
+  | Typed(pos: Meta, name: Name, typ: TypeConstraint)
+  | TypedOnly(pos: Meta, typ: TypeConstraint)
 
 type TypeApp =
   | Named(pos: Meta, name: Name)
   | Static(pos: Meta, typ: TypeApp)
   | Any(pos: Meta)
+
+type TypeConstraint =
+  | Type(pos: Meta, typ: TypeApp)
+  | Has(pos: Meta, typ: TypeConstraint, traits: Trait[])
+
+type Trait =
+  | Named(pos: Meta, name: Name)
 
 type Statement =
   | Fact(pos: Meta, signature: Signature<Expression>)
@@ -92,6 +101,7 @@ type Expression =
   | Interpolate(pos: Meta, value: Interpolation<Expression>)
   | Condition(pos: Meta, cases: ConditionCase[])
   | HasType(pos: Meta, value: Expression, typ: TypeApp)
+  | HasTrait(pos: Meta, value: Expression, typ: Trait)
   | Force(pos: Meta, value: Expression)
   | Lazy(pos: Meta, value: Expression)
   | Hole(pos: Meta)
@@ -247,6 +257,20 @@ grammar Crochet : Program {
     | localDeclaration
     | testDeclaration
     | effectDeclaration
+    | traitDeclaration
+    | traitImplementDeclaration
+
+  traitDeclaration =
+    | m:declarationMeta trait_ n:atom with_ cs:traitCommand+ end_
+      -> Declaration.Trait(meta, m, n)
+
+  // Currently ignored
+  traitCommand =
+    | command_ signature<parameter>
+  
+  traitImplementDeclaration =
+    | implement_ tr:traitName for_ tp:typeApp s<";">
+      -> Declaration.ImplementTrait(meta, tr, tp)
 
   effectDeclaration =
     | m:declarationMeta effect_ n:atom with_ cs:effectCase+ end_
@@ -327,16 +351,27 @@ grammar Crochet : Program {
       -> ContractCondition(meta, n, e)
 
   parameter =
-    | n:name                              -> Parameter.Untyped(meta, n)
-    | s<"("> n:name is_ t:typeApp s<")">  -> Parameter.Typed(meta, n, t)
-    | t:typeAppStatic                     -> Parameter.TypedOnly(meta, t)
+    | n:name                                     -> Parameter.Untyped(meta, n)
+    | s<"("> n:name is_ t:typeConstraint s<")">  -> Parameter.Typed(meta, n, t)
+    | t:typeAppStatic                            -> Parameter.TypedOnly(meta, TypeConstraint.Type(meta, t))
 
-  typeAppConstraint =
-    | t:typeApp is_ c:typeApp -> c
-    | typeApp
+  typeConstraint =
+    | t:typeConstraint1 has_ trs:list1<traitName, s<",">>
+        -> TypeConstraint.Has(meta, t, trs)
+    | t:typeConstraint1
+        -> TypeConstraint.Type(meta, t)
 
+  typeConstraint1 =
+    | n:name is_ c:typeApp -> TypeConstraint.Type(meta, c)
+    | typeConstraint2
+
+  typeConstraint2 =
+    | n:name                         -> TypeConstraint.Type(meta, TypeApp.Any(meta))
+    | t:typeName                     -> TypeConstraint.Type(meta, TypeApp.Named(meta, t))
+    | s<"("> t:typeConstraint s<")"> -> t
+  
   typeApp =
-    | t:typeAppStatic s<"<"> list0<typeAppConstraint, s<",">> s<">"> -> t
+    | t:typeAppStatic s<"<"> list0<typeConstraint, s<",">> s<">"> -> t
     | typeAppStatic
 
   typeAppStatic =
@@ -344,15 +379,17 @@ grammar Crochet : Program {
     | typeAppPrimary
 
   typeAppPrimary =
-    | t:typeName                          -> TypeApp.Named(meta, t)
-    | n:name                              -> TypeApp.Any(meta)
-    | s<"("> t:typeAppConstraint s<")">   -> t
+    | t:typeName                -> TypeApp.Named(meta, t)
+    | s<"("> t:typeApp s<")">   -> t
 
   typeName =
     | atom
     | x:nothing_  -> Name(meta, x)
     | x:true_     -> Name(meta, x)
     | x:false_    -> Name(meta, x)
+
+  traitName =
+    | x:atom -> Trait.Named(meta, x)
 
   typeDeclaration =
     | m:declarationMeta ws type_ t:typeName s<"="> foreign_ n:namespace s<";">
@@ -374,8 +411,8 @@ grammar Crochet : Program {
     | n:atom p:typeDefParent    -> TypeDef(p, n)
 
   typeDefParent =
-    | is_ t:typeApp   -> t
-    |                 -> null
+    | is_ t:typeConstraint   -> t
+    |                        -> null
 
   typeInitBlock =
     | with_ x:typeInit* end_    -> x
@@ -386,8 +423,8 @@ grammar Crochet : Program {
     |                                            -> []
 
   typeField =
-    | n:typeFieldName is_ t:typeApp                -> Parameter.Typed(meta, n, t)
-    | n:typeFieldName                              -> Parameter.Untyped(meta, n)
+    | n:typeFieldName is_ t:typeConstraint                -> Parameter.Typed(meta, n, t)
+    | n:typeFieldName                                     -> Parameter.Untyped(meta, n)
 
   typeFieldName = name | atom
 
@@ -480,7 +517,7 @@ grammar Crochet : Program {
     | predicatePrimary
 
   predicateType =
-    | n:name is_ t:typeApp                 -> Predicate.Typed(meta, n, t)
+    | n:name is_ t:typeApp                    -> Predicate.Typed(meta, n, t)
 
   predicateLet =
     | let_ n:name s<"="> e:s<expression>      -> Predicate.Let(meta, n, e)
@@ -924,7 +961,7 @@ grammar Crochet : Program {
     | kws:signaturePair<t>+           -> Signature.KeywordSelfless(meta, kws)
 
   asParameter =
-    | t:typeAppPrimary -> Parameter.TypedOnly(meta, TypeApp.Static(meta, t))
+    | t:typeAppPrimary -> Parameter.TypedOnly(meta, TypeConstraint.Type(meta, TypeApp.Static(meta, t)))
 
   list0<t, s> =
     | xs:listOf<t, s> s? -> xs
@@ -1093,6 +1130,9 @@ grammar Crochet : Program {
   continue_ = kw<"continue">
   perform_ = kw<"perform">
   dsl_ = kw<"dsl">
+  trait_ = kw<"trait">
+  implement_ = kw<"implement">
+  has_ = kw<"has">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | action_
@@ -1103,5 +1143,5 @@ grammar Crochet : Program {
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
-    | effect_ | handle_ | continue_ | perform_ | dsl_
+    | effect_ | handle_ | continue_ | perform_ | dsl_ | trait_ | implement_ | has_
 }

@@ -41,7 +41,7 @@ class CrochetIREncoder extends BinaryWriter {
         this.string(x.documentation);
         this.string(x.name);
         this.array(x.parameters, (param) => this.string(param));
-        this.array(x.types, (type) => this.encode_type(type));
+        this.array(x.types, (type) => this.encode_type_constraint(type));
         this.encode_basic_block(x.body);
         break;
       }
@@ -51,9 +51,9 @@ class CrochetIREncoder extends BinaryWriter {
         this.string(x.documentation);
         this.encode_enum_tag(x.visibility);
         this.string(x.name);
-        this.encode_type(x.parent);
+        this.encode_type_constraint(x.parent);
         this.array(x.fields, (field) => this.string(field));
-        this.array(x.types, (type) => this.encode_type(type));
+        this.array(x.types, (type) => this.encode_type_constraint(type));
         break;
       }
 
@@ -107,7 +107,7 @@ class CrochetIREncoder extends BinaryWriter {
         this.string(x.documentation);
         this.maybe(x.context, (c) => this.string(c));
         this.string(x.name);
-        this.encode_type(x.actor);
+        this.encode_type_constraint(x.actor);
         this.string(x.parameter);
         this.encode_basic_block(x.rank_function);
         this.encode_predicate(x.predicate);
@@ -149,8 +149,22 @@ class CrochetIREncoder extends BinaryWriter {
           this.string(c.documentation);
           this.string(c.name);
           this.array(c.parameters, (p) => this.string(p));
-          this.array(c.types, (t) => this.encode_type(t));
+          this.array(c.types, (t) => this.encode_type_constraint(t));
         });
+        break;
+      }
+
+      case IR.DeclarationTag.TRAIT: {
+        this.encode_meta_id(x.meta);
+        this.string(x.documentation);
+        this.string(x.name);
+        break;
+      }
+
+      case IR.DeclarationTag.IMPLEMENT_TRAIT: {
+        this.encode_meta_id(x.meta);
+        this.encode_trait(x.trait);
+        this.encode_type(x.type);
         break;
       }
 
@@ -410,6 +424,12 @@ class CrochetIREncoder extends BinaryWriter {
         this.encode_meta_id(x.meta);
         this.encode_type(x.type);
         this.array(x.ast, (n) => this.encode_dsl_node(n));
+        break;
+      }
+
+      case IR.OpTag.TRAIT_TEST: {
+        this.encode_meta_id(x.meta);
+        this.encode_trait(x.trait);
         break;
       }
 
@@ -713,6 +733,37 @@ class CrochetIREncoder extends BinaryWriter {
 
       default:
         throw unreachable(x, `Type`);
+    }
+  }
+
+  encode_type_constraint(x: IR.TypeConstraint) {
+    this.encode_enum_tag(x.tag);
+    switch (x.tag) {
+      case IR.TypeConstraintTag.TYPE: {
+        this.encode_meta_id(x.meta);
+        this.encode_type(x.type);
+        break;
+      }
+
+      case IR.TypeConstraintTag.WITH_TRAIT: {
+        this.encode_meta_id(x.meta);
+        this.encode_type_constraint(x.type);
+        this.array(x.traits, (t) => this.encode_trait(t));
+      }
+    }
+  }
+
+  encode_trait(x: IR.Trait) {
+    this.encode_enum_tag(x.tag);
+    switch (x.tag) {
+      case IR.TraitTag.LOCAL: {
+        this.encode_meta_id(x.meta);
+        this.string(x.name);
+        break;
+      }
+
+      default:
+        throw unreachable(x as never, `Trait`);
     }
   }
 

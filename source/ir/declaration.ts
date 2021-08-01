@@ -1,4 +1,4 @@
-import { Type } from "./type";
+import { Trait, Type, TypeConstraint } from "./type";
 import { BasicBlock, HandlerCase } from "./expression";
 import { Predicate } from "./logic";
 
@@ -18,6 +18,8 @@ export enum DeclarationTag {
   CONTEXT,
   FOREIGN_TYPE,
   EFFECT,
+  TRAIT,
+  IMPLEMENT_TRAIT,
 }
 
 export enum Visibility {
@@ -38,7 +40,9 @@ export type Declaration =
   | DContext
   | DWhen
   | DForeignType
-  | DEffect;
+  | DEffect
+  | DTrait
+  | DImplementTrait;
 
 abstract class BaseDeclaration {
   abstract tag: DeclarationTag;
@@ -52,7 +56,7 @@ export class DCommand extends BaseDeclaration {
     readonly documentation: string,
     readonly name: string,
     readonly parameters: string[],
-    readonly types: Type[],
+    readonly types: TypeConstraint[],
     readonly body: BasicBlock
   ) {
     super();
@@ -67,9 +71,9 @@ export class DType extends BaseDeclaration {
     readonly documentation: string,
     readonly visibility: Visibility,
     readonly name: string,
-    readonly parent: Type,
+    readonly parent: TypeConstraint,
     readonly fields: string[],
-    readonly types: Type[]
+    readonly types: TypeConstraint[]
   ) {
     super();
   }
@@ -158,7 +162,7 @@ export class DAction extends BaseDeclaration {
     readonly documentation: string,
     readonly context: string | null,
     readonly name: string,
-    readonly actor: Type,
+    readonly actor: TypeConstraint,
     readonly parameter: string,
     readonly rank_function: BasicBlock,
     readonly predicate: Predicate,
@@ -227,6 +231,30 @@ export class EffectCase {
     readonly documentation: string,
     readonly name: string,
     readonly parameters: string[],
-    readonly types: Type[]
+    readonly types: TypeConstraint[]
   ) {}
+}
+
+export class DTrait extends BaseDeclaration {
+  readonly tag = DeclarationTag.TRAIT;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+
+export class DImplementTrait extends BaseDeclaration {
+  readonly tag = DeclarationTag.IMPLEMENT_TRAIT;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly trait: Trait,
+    readonly type: Type
+  ) {
+    super();
+  }
 }

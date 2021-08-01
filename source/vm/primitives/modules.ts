@@ -53,3 +53,7 @@ export function get_type_namespace(
       return module.pkg.types;
   }
 }
+
+export function get_trait_namespace(module: CrochetModule) {
+  return module.pkg.traits;
+}

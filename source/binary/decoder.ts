@@ -71,7 +71,7 @@ class CrochetIRDecoder extends BinaryReader {
           this.string(),
           this.string(),
           this.array((_) => this.string()),
-          this.array((_) => this.decode_type()),
+          this.array((_) => this.decode_type_constraint()),
           this.decode_basic_block()
         );
       }
@@ -82,9 +82,9 @@ class CrochetIRDecoder extends BinaryReader {
           this.string(),
           this.decode_enum_tag(IR.Visibility, "visibility"),
           this.string(),
-          this.decode_type(),
+          this.decode_type_constraint(),
           this.array((_) => this.string()),
-          this.array((_) => this.decode_type())
+          this.array((_) => this.decode_type_constraint())
         );
 
       case t.SEAL:
@@ -135,7 +135,7 @@ class CrochetIRDecoder extends BinaryReader {
           this.string(),
           this.maybe(() => this.string()),
           this.string(),
-          this.decode_type(),
+          this.decode_type_constraint(),
           this.string(),
           this.decode_basic_block(),
           this.decode_predicate(),
@@ -179,9 +179,25 @@ class CrochetIRDecoder extends BinaryReader {
                 this.string(),
                 this.string(),
                 this.array((_) => this.string()),
-                this.array((_) => this.decode_type())
+                this.array((_) => this.decode_type_constraint())
               )
           )
+        );
+      }
+
+      case t.TRAIT: {
+        return new IR.DTrait(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case t.IMPLEMENT_TRAIT: {
+        return new IR.DImplementTrait(
+          this.decode_meta_id(),
+          this.decode_trait(),
+          this.decode_type()
         );
       }
 
@@ -200,7 +216,7 @@ class CrochetIRDecoder extends BinaryReader {
     );
   }
 
-  decode_type() {
+  decode_type(): IR.Type {
     const tag = this.decode_enum_tag(IR.TypeTag, "type");
     switch (tag) {
       case IR.TypeTag.ANY: {
@@ -229,6 +245,41 @@ class CrochetIRDecoder extends BinaryReader {
 
       default:
         throw unreachable(tag, "Type");
+    }
+  }
+
+  decode_type_constraint(): IR.TypeConstraint {
+    const tag = this.decode_enum_tag(IR.TypeConstraintTag, "type constraint");
+    switch (tag) {
+      case IR.TypeConstraintTag.TYPE: {
+        return new IR.TypeConstraintType(
+          this.decode_meta_id(),
+          this.decode_type()
+        );
+      }
+
+      case IR.TypeConstraintTag.WITH_TRAIT: {
+        return new IR.TypeConstraintWithTrait(
+          this.decode_meta_id(),
+          this.decode_type_constraint(),
+          this.array((_) => this.decode_trait())
+        );
+      }
+
+      default:
+        throw unreachable(tag, "type constraint");
+    }
+  }
+
+  decode_trait() {
+    const tag = this.decode_enum_tag(IR.TraitTag, "trait");
+    switch (tag) {
+      case IR.TraitTag.LOCAL: {
+        return new IR.LocalTrait(this.decode_meta_id(), this.string());
+      }
+
+      default:
+        throw unreachable(tag, "Trait");
     }
   }
 
@@ -430,6 +481,10 @@ class CrochetIRDecoder extends BinaryReader {
           this.decode_type(),
           this.array((_) => this.decode_dsl_node())
         );
+      }
+
+      case t.TRAIT_TEST: {
+        return new IR.TraitTest(this.decode_meta_id(), this.decode_trait());
       }
 
       default:

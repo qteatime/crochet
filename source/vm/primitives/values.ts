@@ -9,6 +9,7 @@ import {
   CrochetModule,
   CrochetPartial,
   CrochetThunk,
+  CrochetTrait,
   CrochetType,
   CrochetValue,
   Environment,
@@ -16,7 +17,7 @@ import {
   Tag,
   Universe,
 } from "../intrinsics";
-import { simple_value, type_name } from "./location";
+import { simple_value, trait_name, type_name } from "./location";
 import { get_function_type, is_subtype } from "./types";
 
 export function get_nothing(universe: Universe) {
@@ -154,6 +155,10 @@ export function has_type(type: CrochetType, value: CrochetValue) {
   return is_subtype(value.type, type);
 }
 
+export function has_trait(trait: CrochetTrait, value: CrochetValue) {
+  return value.type.traits.has(trait);
+}
+
 export function instantiate(type: CrochetType, values: CrochetValue[]) {
   if (type.sealed) {
     throw new ErrArbitrary(
@@ -172,15 +177,30 @@ export function instantiate(type: CrochetType, values: CrochetValue[]) {
   }
 
   for (const [f, t, v] of zip3(type.fields, type.types, values)) {
-    if (!has_type(t, v)) {
+    if (!has_type(t.type, v)) {
       throw new ErrArbitrary(
         "invalid-field-type",
         `The field ${f} of type ${type_name(
           type
         )} expects a value of type ${type_name(
-          t
+          t.type
         )}, but was provided a value of type ${type_name(v.type)}`
       );
+    }
+
+    for (const trait of t.traits) {
+      if (!has_trait(trait, v)) {
+        throw new ErrArbitrary(
+          "invalid-field-type",
+          `The field ${f} of type ${type_name(
+            type
+          )} expects a value with trait ${trait_name(
+            trait
+          )}, but the provided value of type ${type_name(
+            v.type
+          )} does not implement it.`
+        );
+      }
     }
   }
 

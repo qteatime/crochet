@@ -1,10 +1,16 @@
-import { CrochetValue } from "../../crochet";
 import * as IR from "../../ir";
 import { unreachable } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
-import { Universe, CrochetModule, CrochetType } from "../intrinsics";
+import {
+  Universe,
+  CrochetModule,
+  CrochetType,
+  CrochetTrait,
+  CrochetValue,
+  CrochetTypeConstraint,
+} from "../intrinsics";
 import * as Location from "./location";
-import { get_type_namespace } from "./modules";
+import { get_trait_namespace, get_type_namespace } from "./modules";
 
 export function is_subtype(type: CrochetType, parent: CrochetType): boolean {
   if (type === parent) {
@@ -14,6 +20,20 @@ export function is_subtype(type: CrochetType, parent: CrochetType): boolean {
   } else {
     return false;
   }
+}
+
+export function fulfills_constraint(
+  constraint: CrochetTypeConstraint,
+  type: CrochetType
+) {
+  return (
+    is_subtype(type, constraint.type) &&
+    constraint.traits.every((t) => has_trait(t, type))
+  );
+}
+
+export function has_trait(trait: CrochetTrait, type: CrochetType) {
+  return type.traits.has(trait);
 }
 
 export function get_static_type(universe: Universe, type: CrochetType) {
@@ -49,6 +69,18 @@ export function get_type(module: CrochetModule, name: string) {
     throw new ErrArbitrary(
       "no-type",
       `No type ${name} is accessible from ${Location.module_location(module)}`
+    );
+  }
+}
+
+export function get_trait(module: CrochetModule, name: string) {
+  const value = module.pkg.traits.try_lookup(name);
+  if (value != null) {
+    return value;
+  } else {
+    throw new ErrArbitrary(
+      "no-trait",
+      `No trait ${name} is accessible from ${Location.module_location(module)}`
     );
   }
 }
@@ -101,6 +133,48 @@ export function materialise_type(
   }
 }
 
+export function materialise_type_constraint(
+  universe: Universe,
+  module: CrochetModule,
+  constraint: IR.TypeConstraint
+): CrochetTypeConstraint {
+  switch (constraint.tag) {
+    case IR.TypeConstraintTag.TYPE: {
+      return new CrochetTypeConstraint(
+        materialise_type(universe, module, constraint.type),
+        []
+      );
+    }
+
+    case IR.TypeConstraintTag.WITH_TRAIT: {
+      const base = materialise_type_constraint(
+        universe,
+        module,
+        constraint.type
+      );
+      return new CrochetTypeConstraint(base.type, [
+        ...base.traits,
+        ...constraint.traits.map((t) => materialise_trait(universe, module, t)),
+      ]);
+    }
+  }
+}
+
+export function materialise_trait(
+  universe: Universe,
+  module: CrochetModule,
+  trait: IR.Trait
+) {
+  switch (trait.tag) {
+    case IR.TraitTag.LOCAL: {
+      return get_trait(module, trait.name);
+    }
+
+    default:
+      throw unreachable(trait as never, "Trait");
+  }
+}
+
 export function get_foreign_type(
   universe: Universe,
   module: CrochetModule,
@@ -138,6 +212,22 @@ export function define_type(
   }
 }
 
+export function define_trait(
+  module: CrochetModule,
+  name: string,
+  trait: CrochetTrait
+) {
+  const ns = get_trait_namespace(module);
+  if (!ns.define(name, trait)) {
+    throw new ErrArbitrary(
+      "duplicated-trait",
+      `Duplicated definition of trait ${name} in ${Location.module_location(
+        module
+      )}`
+    );
+  }
+}
+
 export function get_function_type(universe: Universe, arity: number) {
   const type = universe.types.Function[arity];
   if (type != null) {
@@ -160,6 +250,22 @@ export function distance(type: CrochetType): number {
 
 export function compare(t1: CrochetType, t2: CrochetType): number {
   return distance(t2) - distance(t1);
+}
+
+export function compare_constraints(
+  t1: CrochetTypeConstraint,
+  t2: CrochetTypeConstraint
+): number {
+  return constraint_distance(t1) - constraint_distance(t2);
+}
+
+export function constraint_distance(t: CrochetTypeConstraint) {
+  const d = distance(t.type) * 2;
+  if (t.traits.length !== 0) {
+    return d + 1;
+  } else {
+    return d;
+  }
 }
 
 export function seal(type: CrochetType) {

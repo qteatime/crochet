@@ -1,5 +1,5 @@
 import { Literal } from "./literal";
-import { AnyStaticType, Type } from "./type";
+import { AnyStaticType, Trait, Type, TypeConstraint } from "./type";
 import { Predicate } from "./logic";
 import { SimulationGoal } from "./goal";
 
@@ -40,6 +40,7 @@ export enum OpTag {
   ASSERT, // meta tag message
   BRANCH, // meta consequent alternate
   TYPE_TEST, // meta type
+  TRAIT_TEST, // meta trait
   INTRINSIC_EQUAL, // meta (left right)
   REGISTER_INSTANCE, // meta (value)
 
@@ -95,6 +96,7 @@ export type Op =
   | Assert
   | Branch
   | TypeTest
+  | TraitTest
   | IntrinsicEqual
   | RegisterInstance
   | Search
@@ -347,6 +349,14 @@ export class TypeTest extends BaseOp {
   readonly tag = OpTag.TYPE_TEST;
 
   constructor(readonly meta: Metadata, readonly type: Type) {
+    super();
+  }
+}
+
+export class TraitTest extends BaseOp {
+  readonly tag = OpTag.TRAIT_TEST;
+
+  constructor(readonly meta: Metadata, readonly trait: Trait) {
     super();
   }
 }
