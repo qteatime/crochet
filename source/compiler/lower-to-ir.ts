@@ -142,7 +142,9 @@ class IPDynamic<T> extends InterpolationPartBase<T> {
   }
 }
 
-function get_pos(x: Ast.Expression | Ast.TypeApp | Ast.Literal): Ast.Meta {
+function get_pos(
+  x: Ast.Expression | Ast.TypeApp | Ast.TypeConstraint | Ast.Literal
+): Ast.Meta {
   if (x instanceof Ast.$$Expression$_Lit) {
     return get_pos(x.value);
   } else {
@@ -230,7 +232,10 @@ export function from_enum_integer(
       "",
       "_ from-enum-integer: _",
       ["_", "N"],
-      [type, new IR.LocalType(meta, "integer")],
+      [
+        new IR.TypeConstraintType(NO_INFO, type),
+        new IR.TypeConstraintType(meta, new IR.LocalType(meta, "integer")),
+      ],
       new IR.BasicBlock(cond)
     );
   }
@@ -266,11 +271,13 @@ export class LowerToIR {
 
   type_def(x: Ast.TypeDef) {}
 
-  type_parent(x: Ast.TypeApp | null) {
-    return x == null ? new IR.AnyType() : this.type(x);
+  type_parent(x: Ast.TypeConstraint | null) {
+    return x == null
+      ? new IR.TypeConstraintType(NO_INFO, new IR.AnyType())
+      : this.type_constraint(x);
   }
 
-  type(x: Ast.TypeApp) {
+  type(x: Ast.TypeApp): IR.Type {
     return x.match<IR.Type>({
       Any: (_) => new IR.AnyType(),
       Named: (pos, name) => {
@@ -292,23 +299,50 @@ export class LowerToIR {
     });
   }
 
+  type_constraint(x: Ast.TypeConstraint): IR.TypeConstraint {
+    return x.match<IR.TypeConstraint>({
+      Type: (pos, t) => {
+        const id = this.context.register(pos);
+        return new IR.TypeConstraintType(id, this.type(t));
+      },
+
+      Has: (pos, type, traits) => {
+        const id = this.context.register(pos);
+        return new IR.TypeConstraintWithTrait(
+          id,
+          this.type_constraint(type),
+          traits.map((x) => this.trait(x))
+        );
+      },
+    });
+  }
+
+  trait(x: Ast.Trait) {
+    return x.match<IR.Trait>({
+      Named: (pos, name) => {
+        const id = this.context.register(pos);
+        return new IR.LocalTrait(id, name.name);
+      },
+    });
+  }
+
   parameter(x: Ast.Parameter) {
     return x.match({
       Typed: (_, name, type) => {
         return {
-          type: this.type(type),
+          type: this.type_constraint(type),
           parameter: name.name,
         };
       },
       TypedOnly: (_, type) => {
         return {
-          type: this.type(type),
+          type: this.type_constraint(type),
           parameter: "_",
         };
       },
       Untyped: (_, name) => {
         return {
-          type: new IR.AnyType(),
+          type: new IR.TypeConstraintType(NO_INFO, new IR.AnyType()),
           parameter: name.name,
         };
       },
@@ -604,7 +638,7 @@ export class LowerToIR {
         "",
         "_ title",
         ["_"],
-        [type],
+        [new IR.TypeConstraintType(NO_INFO, type)],
         new IR.BasicBlock([...title, new IR.Return(id)])
       ),
     ];
@@ -985,6 +1019,15 @@ export class LowerToIR {
         ];
       },
 
+      HasTrait: (pos, value, trait) => {
+        const id = this.context.register(pos);
+
+        return [
+          ...this.expression(value),
+          new IR.TraitTest(id, this.trait(trait)),
+        ];
+      },
+
       Hole: (_) => {
         throw new Error(
           `internal: Hole found outside of function application.`
@@ -1343,7 +1386,7 @@ export class LowerToIR {
   }
 
   expand_type_initialiser(
-    type: Ast.TypeApp,
+    type: Ast.TypeConstraint,
     name: Ast.Expression,
     x: Ast.TypeInit
   ) {
@@ -1377,7 +1420,13 @@ export class LowerToIR {
     const id = this.context.register(pos);
     const type = new Ast.TypeApp.Named(pos, new Ast.Name(pos, name));
     const self = new Ast.Expression.Global(pos, new Ast.Name(pos, name));
-    const init = init0.map((x) => this.expand_type_initialiser(type, self, x));
+    const init = init0.map((x) =>
+      this.expand_type_initialiser(
+        new Ast.TypeConstraint.Type(pos, type),
+        self,
+        x
+      )
+    );
     const statements = init.filter(
       (x) => x instanceof Ast.Statement
     ) as Ast.Statement[];
@@ -1396,7 +1445,7 @@ export class LowerToIR {
     id: uint32,
     cmeta: Ast.Metadata,
     name: string,
-    parent: IR.Type,
+    parent: IR.TypeConstraint,
     init: Ast.TypeInit[],
     context: string | null
   ) {
@@ -1632,6 +1681,7 @@ export class LowerToIR {
       EnumType: (pos, cmeta, name, variants0) => {
         const id = this.context.register(pos);
         const parent = new IR.LocalType(id, name.name);
+        const parent_constraint = new IR.TypeConstraintType(id, parent);
         const variants = variants0.flatMap((v, i) => {
           const variant_id = this.context.register(v.pos);
 
@@ -1641,7 +1691,7 @@ export class LowerToIR {
               variant_id,
               NO_METADATA,
               v.name,
-              parent,
+              parent_constraint,
               [],
               context
             ),
@@ -1650,7 +1700,12 @@ export class LowerToIR {
               "",
               "_ to-enum-integer",
               ["_"],
-              [new IR.LocalType(variant_id, v.name)],
+              [
+                new IR.TypeConstraintType(
+                  variant_id,
+                  new IR.LocalType(variant_id, v.name)
+                ),
+              ],
               new IR.BasicBlock([
                 new IR.PushLiteral(new IR.LiteralInteger(BigInt(i + 1))),
                 new IR.Return(variant_id),
@@ -1665,7 +1720,10 @@ export class LowerToIR {
             this.documentation(cmeta),
             IR.Visibility.GLOBAL,
             name.name,
-            new IR.GlobalType(id, "crochet.core", "enum"),
+            new IR.TypeConstraintType(
+              id,
+              new IR.GlobalType(id, "crochet.core", "enum")
+            ),
             [],
             []
           ),
@@ -1687,7 +1745,7 @@ export class LowerToIR {
             "",
             "_ lower-bound",
             ["_"],
-            [parent],
+            [parent_constraint],
             new IR.BasicBlock([
               new IR.PushGlobal(id, variants0[0].name),
               new IR.Return(id),
@@ -1698,7 +1756,7 @@ export class LowerToIR {
             "",
             "_ upper-bound",
             ["_"],
-            [parent],
+            [parent_constraint],
             new IR.BasicBlock([
               new IR.PushGlobal(id, variants0[variants0.length - 1].name),
               new IR.Return(id),
@@ -1803,6 +1861,16 @@ export class LowerToIR {
             })
           ),
         ];
+      },
+
+      Trait: (pos, cmeta, name) => {
+        const id = this.context.register(pos);
+        return [new IR.DTrait(id, this.documentation(cmeta), name.name)];
+      },
+
+      ImplementTrait: (pos, type, trait) => {
+        const id = this.context.register(pos);
+        return [new IR.DImplementTrait(id, this.trait(trait), this.type(type))];
       },
     });
   }

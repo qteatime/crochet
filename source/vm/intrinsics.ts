@@ -95,10 +95,22 @@ export class CrochetThunk {
   constructor(readonly env: Environment, readonly body: IR.BasicBlock) {}
 }
 
+export class CrochetTrait {
+  readonly implemented_by = new Set<CrochetType>();
+
+  constructor(
+    readonly module: CrochetModule | null,
+    readonly name: string,
+    readonly documentation: string,
+    readonly meta: IR.Metadata | null
+  ) {}
+}
+
 export class CrochetType {
   public sealed = false;
   readonly layout: Map<string, number>;
   readonly sub_types: CrochetType[] = [];
+  readonly traits = new Set<CrochetTrait>();
 
   constructor(
     readonly module: CrochetModule | null,
@@ -106,12 +118,16 @@ export class CrochetType {
     readonly documentation: string,
     readonly parent: CrochetType | null,
     readonly fields: string[],
-    readonly types: CrochetType[],
+    readonly types: CrochetTypeConstraint[],
     readonly is_static: boolean,
     readonly meta: IR.Metadata | null
   ) {
     this.layout = new Map(this.fields.map((k, i) => [k, i]));
   }
+}
+
+export class CrochetTypeConstraint {
+  constructor(readonly type: CrochetType, readonly traits: CrochetTrait[]) {}
 }
 //#endregion
 
@@ -219,7 +235,7 @@ export class CrochetCommandBranch {
     readonly name: string,
     readonly documentation: string,
     readonly parameters: string[],
-    readonly types: CrochetType[],
+    readonly types: CrochetTypeConstraint[],
     readonly body: IR.BasicBlock,
     readonly meta: IR.Metadata | null
   ) {}
@@ -279,6 +295,7 @@ export class CrochetPrelude {
 export class CrochetWorld {
   readonly commands = new Namespace<CrochetCommand>(null, null);
   readonly types = new Namespace<CrochetType>(null, null);
+  readonly traits = new Namespace<CrochetTrait>(null, null);
   readonly definitions = new Namespace<CrochetValue>(null, null);
   readonly relations = new Namespace<CrochetRelation>(null, null);
   readonly native_types = new Namespace<CrochetType>(null, null);
@@ -293,6 +310,7 @@ export class CrochetWorld {
 
 export class CrochetPackage {
   readonly types: PassthroughNamespace<CrochetType>;
+  readonly traits: PassthroughNamespace<CrochetTrait>;
   readonly definitions: PassthroughNamespace<CrochetValue>;
   readonly relations: PassthroughNamespace<CrochetRelation>;
   readonly native_functions: Namespace<NativeFunction>;
@@ -306,6 +324,7 @@ export class CrochetPackage {
     readonly filename: string
   ) {
     this.types = new PassthroughNamespace(world.types, name);
+    this.traits = new PassthroughNamespace(world.traits, name);
     this.definitions = new PassthroughNamespace(world.definitions, name);
     this.native_functions = new Namespace(world.native_functions, name);
     this.relations = new PassthroughNamespace(world.relations, name);
@@ -449,7 +468,7 @@ export class Action {
     readonly module: CrochetModule,
     readonly name: string,
     readonly documentation: string,
-    readonly actor_type: CrochetType,
+    readonly actor_type: CrochetTypeConstraint,
     readonly self_parameter: string,
     readonly predicate: IR.Predicate,
     readonly rank_function: IR.BasicBlock,

@@ -77,7 +77,7 @@ export function* available_actions(
   const result: ActionChoice[] = [];
 
   for (const action of context.actions) {
-    if (!Values.has_type(action.actor_type, actor)) {
+    if (!Types.fulfills_constraint(action.actor_type, actor.type)) {
       continue;
     }
     const action_value = Values.make_action(action, env0);

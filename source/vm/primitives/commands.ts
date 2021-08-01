@@ -8,6 +8,7 @@ import {
   CrochetCommand,
   CrochetCommandBranch,
   CrochetType,
+  CrochetTypeConstraint,
   CrochetValue,
   Universe,
   _return,
@@ -79,7 +80,7 @@ export function prepare_activation(
 // == Assertions
 export function assert_no_ambiguity(
   branches: CrochetCommandBranch[],
-  types: CrochetType[]
+  types: CrochetTypeConstraint[]
 ) {
   const selected = [...select_exact(branches, types)];
   if (selected.length > 1) {
@@ -99,11 +100,13 @@ export function assert_no_ambiguity(
 // == Selection
 export function* select_exact(
   branches: CrochetCommandBranch[],
-  types: CrochetType[]
+  types: CrochetTypeConstraint[]
 ) {
   outer: for (const branch of branches) {
     for (const [bt, t] of zip(branch.types, types)) {
-      if (bt !== t) continue outer;
+      if (bt.type !== t.type) continue outer;
+      if (bt.traits.length !== t.traits.length) continue outer;
+      if (bt.traits.some((btt) => !t.traits.includes(btt))) continue outer;
     }
     yield branch;
   }
@@ -115,7 +118,7 @@ export function compare_branches(
   b2: CrochetCommandBranch
 ) {
   for (const [t1, t2] of zip(b1.types, b2.types)) {
-    const r = Types.compare(t1, t2);
+    const r = Types.compare_constraints(t1, t2);
     if (r !== 0) {
       return r;
     }
@@ -131,8 +134,8 @@ export function branch_accepts(
     return false;
   }
 
-  for (const [bt, t] of zip(branch.types, types)) {
-    if (!Types.is_subtype(t, bt)) {
+  for (const [constraint, t] of zip(branch.types, types)) {
+    if (!Types.fulfills_constraint(constraint, t)) {
       return false;
     }
   }

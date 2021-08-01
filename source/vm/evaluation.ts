@@ -940,6 +940,21 @@ export class Thread {
         return new JumpSignal(new_activation);
       }
 
+      case t.TRAIT_TEST: {
+        const trait = Types.materialise_trait(
+          this.universe,
+          this.module,
+          op.trait
+        );
+        const value = this.pop(activation);
+        const result = Values.make_boolean(
+          this.universe,
+          Values.has_trait(trait, value)
+        );
+        this.push(activation, result);
+        return _continue;
+      }
+
       default:
         throw unreachable(op, `Operation`);
     }

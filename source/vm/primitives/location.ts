@@ -8,7 +8,9 @@ import {
   CrochetCommandBranch,
   CrochetModule,
   CrochetThunk,
+  CrochetTrait,
   CrochetType,
+  CrochetTypeConstraint,
   CrochetValue,
   Metadata,
   Tag,
@@ -48,9 +50,12 @@ export function from_suffix_newline(x: CrochetModule | null) {
   }
 }
 
-export function command_signature(name: string, types: CrochetType[]) {
+export function command_signature(
+  name: string,
+  types: CrochetTypeConstraint[] | CrochetType[]
+) {
   let i = 0;
-  return name.replace(/_/g, (_) => `(${type_name(types[i++])})`);
+  return name.replace(/_/g, (_) => `(${type_or_constraint_name(types[i++])})`);
 }
 
 export function thunk_location(thunk: CrochetThunk) {
@@ -62,11 +67,39 @@ export function thunk_location(thunk: CrochetThunk) {
   }
 }
 
+export function type_or_constraint_name(
+  x: CrochetType | CrochetTypeConstraint
+) {
+  if (x instanceof CrochetType) {
+    return type_name(x);
+  } else if (x instanceof CrochetTypeConstraint) {
+    return type_constraint_name(x);
+  } else {
+    throw unreachable(x, "type or constraint");
+  }
+}
+
+export function type_constraint_name(x: CrochetTypeConstraint) {
+  if (x.traits.length === 0) {
+    return type_name(x.type);
+  } else {
+    return `${type_name(x.type)} has ${x.traits.map(trait_name).join(", ")}`;
+  }
+}
+
 export function type_name(x: CrochetType) {
   if (x.module != null) {
     return `${x.module.pkg.name}/${x.name}`;
   } else {
     return x.name;
+  }
+}
+
+export function trait_name(x: CrochetTrait) {
+  if (x.module != null) {
+    return `trait ${x.module.pkg.name}/${x.name}`;
+  } else {
+    return `trait ${x.name}`;
   }
 }
 
@@ -171,17 +204,18 @@ export function simple_op(op: IR.Op, index: number | null): string {
     .split(/\n/g)
     .map((x) => `    ${x}`)
     .join("\n");
-  const hs = (op.tag === IR.OpTag.HANDLE
-    ? [
-        "\n",
-        ...op.handlers.map((x) => {
-          return (
-            `on ${x.effect}.${x.variant} [${x.parameters.join(", ")}]:\n` +
-            x.block.ops.map((x, i) => "  " + simple_op(x, i) + "\n").join("")
-          );
-        }),
-      ]
-    : []
+  const hs = (
+    op.tag === IR.OpTag.HANDLE
+      ? [
+          "\n",
+          ...op.handlers.map((x) => {
+            return (
+              `on ${x.effect}.${x.variant} [${x.parameters.join(", ")}]:\n` +
+              x.block.ops.map((x, i) => "  " + simple_op(x, i) + "\n").join("")
+            );
+          }),
+        ]
+      : []
   )
     .join("\n")
     .split(/\n/g)

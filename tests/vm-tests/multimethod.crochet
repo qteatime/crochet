@@ -1,14 +1,26 @@
 % crochet
 
+trait spice;
+trait pain;
+implement spice for float;
+implement pain for float;
+implement pain for text;
+
 command any multimethod-test-other = "any other";
 command any multimethod-test = "any test";
+command (any has spice, pain) multimethod-test = "any+spice,pain test";
 command integer multimethod-test = "integer test";
 command function multimethod-test = "function test";
 command boolean multimethod-test = "boolean test";
 command true multimethod-test = "true test";
 command #integer multimethod-test = "#integer test";
+command (float has pain) multimethod-other = "float+pain other";
+command float multimethod-other = "float other";
+command (fractional has pain) multimethod-other = "fractional+pain other";
+command (any has pain) multimethod-other = "any+pain other";
 
 test "Multimethod selection and dispatch" do
+  // Only subtyping
   assert 1 multimethod-test-other =:= "any other";
   assert 1 multimethod-test =:= "integer test";
   assert (_ + 1) multimethod-test =:= "function test";
@@ -16,4 +28,9 @@ test "Multimethod selection and dispatch" do
   assert false multimethod-test =:= "boolean test";
   assert #integer multimethod-test =:= "#integer test";
   assert #integral multimethod-test =:= "any test";
+
+  // Subtyping + traits
+  assert 1.0 multimethod-test =:= "any+spice,pain test";
+  assert 1.0 multimethod-other =:= "float+pain other";
+  assert "a" multimethod-other =:= "any+pain other";
 end

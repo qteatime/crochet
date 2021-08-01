@@ -16,6 +16,8 @@ import {
   Action,
   When,
   Metadata,
+  CrochetTrait,
+  CrochetTypeConstraint,
 } from "./intrinsics";
 import { Tree, Relation } from "./logic";
 import { Commands, Effects, Modules, Tests, Types, World } from "./primitives";
@@ -176,7 +178,11 @@ export function make_universe() {
     "",
     Any,
     ["score", "action", "environment"],
-    [Integer, Action, Record],
+    [
+      new CrochetTypeConstraint(Integer, []),
+      new CrochetTypeConstraint(Action, []),
+      new CrochetTypeConstraint(Record, []),
+    ],
     false,
     null
   );
@@ -198,7 +204,12 @@ export function make_universe() {
     "",
     Skeleton,
     ["name", "children", "attributes", "meta"],
-    [Text, Tuple, Record, Any],
+    [
+      new CrochetTypeConstraint(Text, []),
+      new CrochetTypeConstraint(Tuple, []),
+      new CrochetTypeConstraint(Record, []),
+      new CrochetTypeConstraint(Any, []),
+    ],
     false,
     null
   );
@@ -208,7 +219,7 @@ export function make_universe() {
     "",
     Skeleton,
     ["value", "meta"],
-    [Any, Any],
+    [new CrochetTypeConstraint(Any, []), new CrochetTypeConstraint(Any, [])],
     false,
     null
   );
@@ -218,7 +229,7 @@ export function make_universe() {
     "",
     Skeleton,
     ["name", "meta"],
-    [Text, Any],
+    [new CrochetTypeConstraint(Text, []), new CrochetTypeConstraint(Any, [])],
     false,
     null
   );
@@ -228,7 +239,10 @@ export function make_universe() {
     "",
     Skeleton,
     ["expression", "meta"],
-    [functions[0], Any],
+    [
+      new CrochetTypeConstraint(functions[0], []),
+      new CrochetTypeConstraint(Any, []),
+    ],
     false,
     null
   );
@@ -238,7 +252,7 @@ export function make_universe() {
     "",
     Skeleton,
     ["children", "meta"],
-    [Tuple, Any],
+    [new CrochetTypeConstraint(Tuple, []), new CrochetTypeConstraint(Any, [])],
     false,
     null
   );
@@ -248,7 +262,7 @@ export function make_universe() {
     "",
     Skeleton,
     ["parts", "meta"],
-    [Tuple, Any],
+    [new CrochetTypeConstraint(Tuple, []), new CrochetTypeConstraint(Any, [])],
     false,
     null
   );
@@ -363,7 +377,7 @@ export function load_declaration(
         declaration.documentation,
         declaration.parameters,
         declaration.types.map((t) =>
-          Types.materialise_type(universe, module, t)
+          Types.materialise_type_constraint(universe, module, t)
         ),
         declaration.body,
         declaration.meta
@@ -374,11 +388,11 @@ export function load_declaration(
     }
 
     case t.TYPE: {
-      const parent = Types.materialise_type(
+      const parent = Types.materialise_type_constraint(
         universe,
         module,
         declaration.parent
-      );
+      ).type;
       const type = new CrochetType(
         module,
         declaration.name,
@@ -386,7 +400,7 @@ export function load_declaration(
         parent,
         declaration.fields,
         declaration.types.map((t) =>
-          Types.materialise_type(universe, module, t)
+          Types.materialise_type_constraint(universe, module, t)
         ),
         false,
         declaration.meta
@@ -416,7 +430,9 @@ export function load_declaration(
           c.documentation,
           parent,
           c.parameters,
-          c.types.map((t) => Types.materialise_type(universe, module, t)),
+          c.types.map((t) =>
+            Types.materialise_type_constraint(universe, module, t)
+          ),
           false,
           c.meta
         );
@@ -495,7 +511,11 @@ export function load_declaration(
     }
 
     case t.ACTION: {
-      const actor = Types.materialise_type(universe, module, declaration.actor);
+      const actor = Types.materialise_type_constraint(
+        universe,
+        module,
+        declaration.actor
+      );
       const action_type = new CrochetType(
         module,
         `action ${declaration.name}`,
@@ -539,6 +559,30 @@ export function load_declaration(
       );
       const context = Contexts.lookup_context(module, declaration.context);
       Contexts.add_event(context, event);
+      break;
+    }
+
+    case t.TRAIT: {
+      const trait = new CrochetTrait(
+        module,
+        declaration.name,
+        declaration.documentation,
+        declaration.meta
+      );
+      Types.define_trait(module, declaration.name, trait);
+      break;
+    }
+
+    case t.IMPLEMENT_TRAIT: {
+      const type = Types.materialise_type(universe, module, declaration.type);
+      const trait = Types.materialise_trait(
+        universe,
+        module,
+        declaration.trait
+      );
+
+      type.traits.add(trait);
+      trait.implemented_by.add(type);
       break;
     }
 
