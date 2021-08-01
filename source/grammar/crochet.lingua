@@ -263,6 +263,8 @@ grammar Crochet : Program {
   traitDeclaration =
     | m:declarationMeta trait_ n:atom with_ cs:traitCommand+ end_
       -> Declaration.Trait(meta, m, n)
+    | m:declarationMeta trait_ n:atom s<";">
+      -> Declaration.Trait(meta, m, n)
 
   // Currently ignored
   traitCommand =
@@ -270,7 +272,7 @@ grammar Crochet : Program {
   
   traitImplementDeclaration =
     | implement_ tr:traitName for_ tp:typeApp s<";">
-      -> Declaration.ImplementTrait(meta, tr, tp)
+      -> Declaration.ImplementTrait(meta, tp, tr)
 
   effectDeclaration =
     | m:declarationMeta effect_ n:atom with_ cs:effectCase+ end_
@@ -351,15 +353,19 @@ grammar Crochet : Program {
       -> ContractCondition(meta, n, e)
 
   parameter =
-    | n:name                                     -> Parameter.Untyped(meta, n)
-    | s<"("> n:name is_ t:typeConstraint s<")">  -> Parameter.Typed(meta, n, t)
-    | t:typeAppStatic                            -> Parameter.TypedOnly(meta, TypeConstraint.Type(meta, t))
+    | n:name
+      -> Parameter.Untyped(meta, n)
+    | s<"("> n:name is_ t:typeConstraint s<")"> 
+      -> Parameter.Typed(meta, n, t)
+    | s<"("> n:name has_ trs:list1<traitName, s<",">> s<")">
+      -> Parameter.Typed(meta, n, TypeConstraint.Has(meta, TypeConstraint.Type(meta, TypeApp.Any(meta)), trs))
+    | t:typeAppStatic
+      -> Parameter.TypedOnly(meta, TypeConstraint.Type(meta, t))
 
   typeConstraint =
     | t:typeConstraint1 has_ trs:list1<traitName, s<",">>
         -> TypeConstraint.Has(meta, t, trs)
-    | t:typeConstraint1
-        -> TypeConstraint.Type(meta, t)
+    | typeConstraint1
 
   typeConstraint1 =
     | n:name is_ c:typeApp -> TypeConstraint.Type(meta, c)
@@ -367,7 +373,7 @@ grammar Crochet : Program {
 
   typeConstraint2 =
     | n:name                         -> TypeConstraint.Type(meta, TypeApp.Any(meta))
-    | t:typeName                     -> TypeConstraint.Type(meta, TypeApp.Named(meta, t))
+    | t:typeApp                      -> TypeConstraint.Type(meta, t)
     | s<"("> t:typeConstraint s<")"> -> t
   
   typeApp =
