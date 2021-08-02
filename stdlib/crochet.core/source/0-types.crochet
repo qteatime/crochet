@@ -1,69 +1,165 @@
 % crochet
 
-/// The base type for all values in Crochet
+// -- The hierarchy
+
+/// The base of the type hierarchy in Crochet.
+///
+/// The `any` type matches any value, but provides no information about them.
+/// It effectively opts out of the type system in some region of the code.
 type any = foreign core.any;
-/// A sealed type for any value in Crochet
+
+/// A sealed type for any value in Crochet.
+///
+/// Values can be wrapped in `unknown` to pass them around without granting
+/// any capabilities. This gives Crochet a stronger gradual-typing guarantee,
+/// but at the cost of being practical. Values must be explicitly sealed and
+/// unsealed.
 type unknown = foreign core.unknown;
-/// The unit type which represents the absense of useful values
+
+/// The unit type which represents the absense of useful values.
 type nothing = foreign core.nothing;
 
-/// The base type for two-valued logical values
+
+// -- The logic
+
+/// The base type for two-valued logical values.
+///
+/// Booleans model a two-valued logic with two possible values:
+/// [true] and [false].
 type boolean = foreign core.boolean;
-/// The true case of booleans
+
+/// The true case of booleans.
 type true = foreign core.true;
-/// The false case of booleans
+
+/// The false case of booleans.
 type false = foreign core.false;
 
 
-/// The base type for the numeric tower
+// -- The numeric tower
+
+/// The base type for the numeric tower.
+///
+/// Any numeric types in Crochet are expected to be a subtype of [numeric].
 type numeric = foreign core.numeric;
-/// The base type for fractional numbers
+
+/// The base type for fractional numbers.
+///
+/// Any representations of fractions or real numbers with a fractional part
+/// should be a subtype of [fractional].
 type fractional = foreign core.fractional;
-/// The type for IEEE-754 64-bit floating point numbers
+
+/// The type for IEEE-754 64-bit floating point numbers.
 type float = foreign core.float;
-/// The base type for integral numbers
+
+/// The base type for integral numbers.
+///
+/// Any representation of whole integral numbers should be a subtype of
+/// [integral].
 type integral = foreign core.integral;
-/// The type of arbitrary-precision integers
+
+/// The type of arbitrary-precision integers.
 type integer = foreign core.integer;
 
 
-/// The type of textual values
+// -- The textual representation
+
+/// The type of textual values.
+///
+/// All textual types descend from [text]. And a [text] is always to be
+/// considered an opaque blob, only operated on through whatever text
+/// commands are available, and with representation that's entirely up
+/// to the runtime---indeed, the representation may change if the runtime
+/// thinks that's more efficient.
 type text = foreign core.text;
-/// The type of text *literals* in source programs
+
+/// The type of text *literals* in source programs.
+///
+/// This type assures users that the piece of text originates from the
+/// program itself. In this sense, [static-text] represents a piece of
+/// text that is trusted to not come from external sources.
 type static-text = foreign core.static-text;
-/// The type of interpolation sequences
-/// (treated as a kind of mixed textual value)
+
+/// The type of interpolation sequences.
+///
+/// An interpolation is not a descendant of [text], but rather its own
+/// first class concept of mixed values. Interpolations reify the idea
+/// of text that may contain other pieces of data within it, and turn
+/// this into a kind of tree-based representation of values. This
+/// makes sure we don't violate implicit rules in pieces of text
+/// by simply composing them with other things, just like typed
+/// data does for combining distinct data points.
 type interpolation = foreign core.interpolation;
 
 
-/// The type of any applicable function
+// -- The functions
+
+/// The type of any applicable function.
 type function = foreign core.function;
+
+/// Functions that take no arguments.
 type function-0 = foreign core.function-0;
+
+/// Functions that take one argument.
 type function-1 = foreign core.function-1;
+
+/// Functions that take two arguments.
 type function-2 = foreign core.function-2;
+
+/// Functions that take three arguments.
 type function-3 = foreign core.function-3;
+
+/// Functions that take four arguments.
 type function-4 = foreign core.function-4;
+
+/// Functions that take five arguments.
 type function-5 = foreign core.function-5;
+
+/// Functions that take six arguments.
 type function-6 = foreign core.function-6;
 
 
-/// The type of lazy expressions
+/// The type of lazy expressions.
+///
+/// A [thunk] is similar to a [function-0], in that it represents
+/// a computation that hasn't been evaluated yet (therefore we don't know
+/// what it's value will be). However, [thunk]s also provide a guarantee
+/// that the computation will be evaluated at most once, no matter how 
+/// many times we try to get the value out of it.
 type thunk = foreign core.thunk;
 
 
-/// The type of records
+// -- The collections
+
+/// The type of records.
+///
+/// A record is a collection of named data points, like typed data, but
+/// without the "type" part of it. In that sense, it can bring together
+/// independent values and identify them in many contexts where security,
+/// privacy, and command specialisation are not a concern.
+///
+/// Records are constructable by anyone, inspectable by anyone, and
+/// extensible by anyone.
 type record = foreign core.record;
 
-
-/// The type of fixed-length sequences
+/// The type of fixed-length sequences.
+///
+/// A tuple is an ordered sequence of values, possibly of different types.
+/// This sequence is fixed---you cannot modify it to have more or less
+/// values. And although there are certain tuple operations that allow
+/// you to construct new ones that have more or less elements, this is
+/// not optimised, and thus not expected to be a common occurrence.
+///
+/// This limitation of tuples is also its strength: it allows the runtime
+/// to choose more efficient ways of storing and using it.
 type tuple = foreign core.tuple;
 
-
-/// The base type of enumerations
+/// The base type of enumerations.
+///
+/// An enumeration is a bounded collection of distinct and ordered values.
 type 'enum = foreign core.enum;
 
 
-// Skeleton-based DSLs
+// -- The skeleton DSL
 type skeleton-ast = foreign core.skeleton-ast;
 type skeleton-node = foreign core.skeleton-node;
 type skeleton-name = foreign core.skeleton-name;
@@ -73,25 +169,45 @@ type skeleton-interpolation = foreign core.skeleton-interpolation;
 type skeleton-dynamic = foreign core.skeleton-dynamic;
 
 
-// Actions
+//-- The actions
+
+/// The base type for all actions.
 type 'action = foreign core.action;
+
+/// The type of possible choices for actions (with bound environments) that
+/// the simulation constructs on each turn.
 type action-choice = foreign core.action-choice;
 
-/// The type of results that may fail
+
+// -- The idea of computational failure
+
+/// The type of results that may fail.
+///
+/// A result explicitly models the idea that a computation may fail, and then
+/// reifies the status of the evaluation (whether it succeeded or failed),
+/// along with the value it would otherwise produce.
 abstract result;
+
+/// Represents successful evaluations.
 type ok(value) is result;
+
+/// Represents failed evaluations.
 type error(reason) is result;
 
 
-/// The type of mutable cells
+// -- The idea of state
+
+/// The type of mutable cells.
 type cell = foreign core.cell;
 
 
+// -- The idea of inspecting data
+
 /// The module for representations
 singleton representation;
-
-
-// Other types
-type indexed(index is integer, value);
-
 singleton debug-representation;
+
+
+
+//-- Other types Other types
+type indexed(index is integer, value);
