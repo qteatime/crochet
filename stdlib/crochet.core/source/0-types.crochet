@@ -208,6 +208,149 @@ singleton representation;
 singleton debug-representation;
 
 
-
 //-- Other types Other types
 type indexed(index is integer, value);
+
+
+// -- Traits
+
+/// A type is [comparable] if it's possible to determine, for any pair of
+/// values it can have, if they're equal or not.
+///
+/// We assume that equality is "structural". That is, there's an expectation
+/// that `A === B` will hold even if `A` and `B` are not the exact same
+/// typed data, as long as they can *mean* the same thing.
+///
+/// What "mean the same thing" should stand for is up to each type.
+trait comparable with
+  /// True if two values (of the same type) mean the same thing.
+  command A === B -> boolean;
+
+  /// (optional) True if two values (of the same type) do not mean the same thing.
+  command A =/= B -> boolean;
+end
+
+
+/// A type is [ordered] if for any pair of values, the operation `A <= B`
+/// makes sense. It builds upon [comparable] because of that.
+trait ordered with
+  requires trait comparable;
+
+  /// True if `A` is considered lower than `B`.
+  command A < B -> boolean;
+
+  /// True if `A` is considered higher than `B`.
+  command A > B -> boolean;
+
+  /// (optional) True if `A` is less than or equal to `B`.
+  command A <= B -> boolean;
+
+  /// (optional) True if `A` is greater than or equal to `B`.
+  command A >= B -> boolean;
+end
+
+
+/// A type is [bounded] if it's comparable, but there are known discrete
+/// limits that determine the range of values in the type. Such limits
+/// are described by [_ lower-bound] and [_ upper-bound].
+trait bounded with
+  requires trait comparable;
+
+  /// The minimum value in the type.
+  command A lower-bound;
+
+  /// The maximum value in the type.
+  command A upper-bound;
+end
+
+
+/// A type is [enumerable] if its values are discretely ordered such that
+/// it's possible to always get the immediate next smaller or greater value.
+trait enumerable with
+  requires trait comparable;
+
+  /// The value that comes immediately after `A`.
+  command A successor;
+
+  /// The value that comes immediately before `A`.
+  command A predecessor;
+
+  /// (optional) Inclusive arithmetic sequence `(Start, Stop)`
+  command Start to: Stop;
+
+  /// (optional) End-exclusive arithmetic sequence `(Start, Stop(`
+  command Start until: Stop;
+end
+
+
+/// A type has a [boolean-algebra] if it can implement the common boolean
+/// operations (respecting their laws).
+///
+/// A proper implementation of [boolean-algebra] requires:
+///
+/// * Associativity of `or`:                x or (y or z) =:= (x or y) or z
+/// * Associativity of `and`:               x and (y and z) =:= (x and y) and z
+/// * Commutativity of `or`:                x or y =:= y or x
+/// * Commutativity of `and`:               x and y =:= y and x
+/// * Distributivity of `or` over `and`:    x or (y and z) =:= (x and y) or (x and z)
+/// * Idempotence of `or`:                  x or x =:= x
+/// * Idempotence of `and`:                 x and x =:= x
+/// * Absorption:                           x and (x or y) =:= x
+///                                         x or (x and y) =:= x
+/// * Double negation:                      not (not x) =:= x
+trait boolean-algebra with
+  /// Logical conjunction.
+  command A and B;
+
+  /// Logical disjunction.
+  command A or B;
+
+  /// Logical negation.
+  command not A;
+end
+
+
+/// A type has an [arithmetic] if it can implement the common
+/// arithmetic operations. This generally means you have
+/// some kind of number.
+///
+/// Common arithmetic laws apply.
+trait arithmetic with
+  /// Arithmetic addition.
+  command A + B;
+
+  /// Arithmetic subtraction.
+  command A - B;
+
+  /// Arithmetic multiplication.
+  command A * B;
+
+  /// Truncating arithmetic division (the result is always an integer)
+  command A divided-by: B;
+
+  /// Fractional arithmetic division (the result might be a real number).
+  command A / B;
+
+  /// Remainder of an arithmetic division.
+  command A % B;
+
+  /// Exponentiation (exponents are expected to be integrals)
+  command A ** B;
+end
+
+
+/// A type generally has [rounding-strategies] if it's a
+/// fractional type.
+trait rounding-strategies with
+  /// Gets rid of the fractional part.
+  command A truncate;
+
+  /// Returns the next smaller integer.
+  command A floor;
+
+  /// Returns the next larger integer.
+  command A ceiling;
+
+  /// Returns the nearest integer.
+  command A round;
+end
