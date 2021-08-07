@@ -10,7 +10,7 @@
     "build-stdlib": "node make.js build-stdlib",
     "build-grammar": "node make.js build-grammar",
     "build-browser": "node make.js build-browser",
-    "test": "node make.js test",
+    "test": "node make.js run-tests",
     "benchmark": "node make.js benchmark"
   },
   "dependencies": {

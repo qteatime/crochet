@@ -88,7 +88,11 @@ w.task(
   () => {}
 ).with_doc("Builds a complete Crochet system");
 
-w.task("test", ["build"], () => {
+w.task("test", ["build", "run-tests"], () => {}).with_doc(
+  "Builds Crochet and runs all tests"
+);
+
+w.task("run-tests", [], () => {
   require("./build/test/suites/serialisation");
   exec("node crochet test tests/vm-tests/crochet.json");
 }).with_doc("Runs all Crochet tests");
