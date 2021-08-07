@@ -58,6 +58,7 @@ type Parameter =
 type TypeApp =
   | Named(pos: Meta, name: Name)
   | Static(pos: Meta, typ: TypeApp)
+  | Function(pos: Meta, args: TypeConstraint[], ret: TypeConstraint)
   | Any(pos: Meta)
 
 type TypeConstraint =
@@ -382,10 +383,18 @@ grammar Crochet : Program {
 
   typeConstraint2 =
     | n:name                         -> TypeConstraint.Type(meta, TypeApp.Any(meta))
-    | t:typeApp                      -> TypeConstraint.Type(meta, t)
+    | t:typeApp1                     -> TypeConstraint.Type(meta, t)
     | s<"("> t:typeConstraint s<")"> -> t
   
   typeApp =
+    | ts:typeAppArgs s<"->"> t:typeConstraint2 -> TypeApp.Function(meta, ts, t)
+    | typeApp1
+
+  typeAppArgs =
+    | s<"("> ts:list0<typeConstraint, s<",">> s<")"> -> ts
+    | typeConstraint2
+
+  typeApp1 =
     | t:typeAppStatic s<"<"> list0<typeConstraint, s<",">> s<">"> -> t
     | typeAppStatic
 

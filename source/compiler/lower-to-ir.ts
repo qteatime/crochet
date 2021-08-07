@@ -294,7 +294,14 @@ export class LowerToIR {
           Static: (_1, _2) => {
             throw new Error(`internal: invalid ##type`);
           },
+          Function: (_1, _2, _3) => {
+            throw new Error(`internal: invalid #(... -> ...)`);
+          },
         });
+      },
+      Function: (pos, args, _ret) => {
+        const id = this.context.register(pos);
+        return new IR.LocalType(id, `function-${args.length}`);
       },
     });
   }
