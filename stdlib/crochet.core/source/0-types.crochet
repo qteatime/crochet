@@ -200,6 +200,9 @@ type error(reason) is result;
 /// The type of mutable cells.
 type cell = foreign core.cell;
 
+/// A wrapper that allows accessing the value of a cell but not changing it.
+type read-only-cell(cell);
+
 
 // -- The idea of inspecting data
 
