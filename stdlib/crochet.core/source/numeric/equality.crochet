@@ -1,5 +1,8 @@
 % crochet
 
+implement equality for integer;
+implement equality for float;
+
 /// True if two integers are equal.
 command integer === (That is integer)
   = self =:= That
