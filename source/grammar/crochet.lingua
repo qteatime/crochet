@@ -387,12 +387,12 @@ grammar Crochet : Program {
     | s<"("> t:typeConstraint s<")"> -> t
   
   typeApp =
-    | ts:typeAppArgs s<"->"> t:typeConstraint2 -> TypeApp.Function(meta, ts, t)
+    | ts:typeAppArgs s<"->"> t:typeConstraintPrimary -> TypeApp.Function(meta, ts, t)
     | typeApp1
 
   typeAppArgs =
     | s<"("> ts:list0<typeConstraint, s<",">> s<")"> -> ts
-    | typeConstraint2
+    | t:typeConstraintPrimary -> [t]
 
   typeApp1 =
     | t:typeAppStatic s<"<"> list0<typeConstraint, s<",">> s<">"> -> t
