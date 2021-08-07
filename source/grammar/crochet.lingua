@@ -36,7 +36,7 @@ type Handler(pos: Meta, name: Name, variant: Name, args: Name[], body: Statement
 
 type TrailingTest(pos: Meta, body: Statement[])
 
-type Contract(pos: Meta, ret: TypeApp?, pre: ContractCondition[], post: ContractCondition[])
+type Contract(pos: Meta, ret: TypeConstraint?, pre: ContractCondition[], post: ContractCondition[])
 type ContractCondition(pos: Meta, name: Name, expr: Expression)
 
 type TypeDef(parent: TypeConstraint?, name: Name)
@@ -344,7 +344,7 @@ grammar Crochet : Program {
       -> Contract(meta, ret, pre, post)
 
   retContractDefinition =
-    | s<"->"> t:typeAppPrimary
+    | s<"->"> t:typeConstraintPrimary
       -> t
     | -> null
 
@@ -379,9 +379,9 @@ grammar Crochet : Program {
 
   typeConstraint1 =
     | n:name is_ c:typeApp -> TypeConstraint.Type(meta, c)
-    | typeConstraint2
+    | typeConstraintPrimary
 
-  typeConstraint2 =
+  typeConstraintPrimary =
     | n:name                         -> TypeConstraint.Type(meta, TypeApp.Any(meta))
     | t:typeApp1                     -> TypeConstraint.Type(meta, t)
     | s<"("> t:typeConstraint s<")"> -> t
