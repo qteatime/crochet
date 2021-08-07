@@ -261,14 +261,23 @@ grammar Crochet : Program {
     | traitImplementDeclaration
 
   traitDeclaration =
-    | m:declarationMeta trait_ n:atom with_ cs:traitCommand+ end_
+    | m:declarationMeta trait_ n:atom with_ cs:traitInstruction+ end_
       -> Declaration.Trait(meta, m, n)
     | m:declarationMeta trait_ n:atom s<";">
       -> Declaration.Trait(meta, m, n)
 
   // Currently ignored
+  traitInstruction =
+    | traitCommand
+    | traitRequires
+
   traitCommand =
-    | command_ signature<parameter>
+    | declarationMeta command_ signature<parameter> contractDefinition s<";">
+      -> null
+
+  traitRequires =
+    | requires_ trait_ n:traitName s<";">
+      -> null
   
   traitImplementDeclaration =
     | implement_ tr:traitName for_ tp:typeApp s<";">
