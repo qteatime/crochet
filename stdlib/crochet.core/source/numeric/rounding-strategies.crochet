@@ -1,5 +1,7 @@
 % crochet
 
+implement rounding-strategies for float;
+
 /// Truncate a floating point number
 command (X is float) truncate = foreign float.trunc(X)
 test

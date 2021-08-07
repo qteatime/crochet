@@ -1,5 +1,8 @@
 % crochet
 
+implement arithmetic for integer;
+implement arithmetic for float;
+
 // # Integers
 
 /// Arithmetic addition for integers
@@ -209,12 +212,3 @@ command (X is float) / (Y is integer) = X / (Y as float);
 command (X is float) % (Y is integer) = X % (Y as float);
 
 command (X is integer) / (Y is integer) = (X as float) / (Y as float);
-
-// Clamping
-command (X is integer) clamp-between: (Min is integer) and: (Max is integer) do
-  condition
-    when X < Min => Min;
-    when X > Max => Max;
-    always => X;
-  end
-end

@@ -214,7 +214,7 @@ type indexed(index is integer, value);
 
 // -- Traits
 
-/// A type is [comparable] if it's possible to determine, for any pair of
+/// A type has [equality] if it's possible to determine, for any pair of
 /// values it can have, if they're equal or not.
 ///
 /// We assume that equality is "structural". That is, there's an expectation
@@ -222,7 +222,7 @@ type indexed(index is integer, value);
 /// typed data, as long as they can *mean* the same thing.
 ///
 /// What "mean the same thing" should stand for is up to each type.
-trait comparable with
+trait equality with
   /// True if two values (of the same type) mean the same thing.
   command A === B -> boolean;
 
@@ -231,10 +231,10 @@ trait comparable with
 end
 
 
-/// A type is [ordered] if for any pair of values, the operation `A <= B`
-/// makes sense. It builds upon [comparable] because of that.
-trait ordered with
-  requires trait comparable;
+/// A type has a [total-ordering] if for any pair of values, the operation
+/// `A <= B` makes sense. It builds upon [equality] because of that.
+trait total-ordering with
+  requires trait equality;
 
   /// True if `A` is considered lower than `B`.
   command A < B -> boolean;
@@ -250,11 +250,11 @@ trait ordered with
 end
 
 
-/// A type is [bounded] if it's comparable, but there are known discrete
-/// limits that determine the range of values in the type. Such limits
-/// are described by [_ lower-bound] and [_ upper-bound].
-trait bounded with
-  requires trait comparable;
+/// A type has [bounds] if it has [total-ordering] and there are known
+/// discrete limits that determine the range of values in the type.
+/// Such limits are described by [_ lower-bound] and [_ upper-bound].
+trait bounds with
+  requires trait total-ordering;
 
   /// The minimum value in the type.
   command A lower-bound;
@@ -264,10 +264,10 @@ trait bounded with
 end
 
 
-/// A type is [enumerable] if its values are discretely ordered such that
+/// A type has [enumeration] if its values are discretely ordered such that
 /// it's possible to always get the immediate next smaller or greater value.
-trait enumerable with
-  requires trait comparable;
+trait enumeration with
+  requires trait total-ordering;
 
   /// The value that comes immediately after `A`.
   command A successor;
