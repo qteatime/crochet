@@ -1,7 +1,7 @@
 % crochet
 
-implement ordered for integer;
-implement ordered for float;
+implement total-ordering for integer;
+implement total-ordering for float;
 
 
 /// Relational less than operator for integers
