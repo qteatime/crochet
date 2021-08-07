@@ -1,5 +1,7 @@
 % crochet
 
+implement boolean-algebra for boolean;
+
 /// Universal logical conjunction
 command boolean and boolean = false;
 command true and true = true;

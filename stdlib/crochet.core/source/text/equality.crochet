@@ -1,0 +1,12 @@
+% crochet
+
+implement equality for text;
+
+/// True if two pieces of text have the exact same
+/// *representation* in memory.
+///
+/// If you want to compare pieces of text written in 
+/// natural language, this is not the command you're looking
+/// for.
+command text === (That is text) =
+  self =:= That;

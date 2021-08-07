@@ -2,31 +2,24 @@
 
 enum ordering = less-than, equal, greater-than;
 
-// Ordering
-//
-// - Required: `_ < _` and `_ > _` with equality
-// - Get: `_ <= _`, `_ >= _`, `greater-of:and:`, `lesser-of:and:` for free.
-//
-// We could derive `<` from `>` and vice-versa, but Crochet doesn't offer
-// good features for checking this yet, and that causes recursion issues...
-
-/// Default less or equal to
-command X <= Y =
+/// True if [X] is less than or equal to [Y].
+command (X has total-ordering) <= (Y has total-ordering) =
   (X === Y) or (X < Y)
 test
   assert 1 <= 1;
   assert 1 <= 2;
 end
 
-/// Default greater or equal to
-command X >= Y =
+/// True if [X] is greater than or equal to [Y].
+command (X has total-ordering) >= (Y has total-ordering) =
   (X === Y) or (X > Y)
 test
   assert 1 >= 1;
   assert 2 >= 1;
 end
 
-command greater-of: X and: Y =
+/// Returns the bigger value of the pair [X] and [Y].
+command greater-of: (X has total-ordering) and: (Y has total-ordering) =
   condition
     when X >= Y => X;
     always => Y;
@@ -38,7 +31,8 @@ test
   assert (greater-of: 1 and: -1) =:= 1;
 end
 
-command lesser-of: X and: Y =
+/// Returns the smaller value of the pair [X] and [Y].
+command lesser-of: (X has total-ordering) and: (Y has total-ordering) =
   condition
     when X <= Y => X;
     always => Y;
@@ -50,9 +44,9 @@ test
   assert (lesser-of: 1 and: -1) =:= -1;
 end
 
-
-// # Generic comparison
-command X compare-to: Y do
+/// Compares two values and returns the ordering relationship
+/// between [X] and [Y], from [X]'s point of view.
+command (X has total-ordering) compare-to: (Y has total-ordering) do
   condition
     when X === Y => equal;
     when X < Y   => less-than;
@@ -64,17 +58,10 @@ test
   assert (1 compare-to: 0) =:= greater-than;
 end
 
-
-// # Enums
-
-
-
-// # Numbers
-
 /// Returns [X] restricted to the range between [Min] and [Max].
 /// That is, if [X] is outside of the range, will return [Min]
 /// or [Max].
-command (X has ordered) clamp-between: (Min has ordered) and: (Max has ordered) do
+command (X has toal-ordering) clamp-between: (Min has total-ordering) and: (Max has total-ordering) do
   condition
     when X < Min => Min;
     when X > Max => Max;

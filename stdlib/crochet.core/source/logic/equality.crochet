@@ -1,0 +1,12 @@
+% crochet
+
+implement equality for boolean;
+
+/// True if both booleans are the same.
+command boolean === (That is boolean)
+  = self =:= That
+test
+  assert true === true;
+  assert false === false;
+  assert not (true === false);
+end
