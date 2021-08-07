@@ -46,7 +46,7 @@ export default (ffi: ForeignInterface) => {
       }
       const req = Http.request(url, options, (res) => {
         const result = new Map<string, CrochetValue>();
-        result.set("status-code", ffi.integer(BigInt(res.statusCode)));
+        result.set("status-code", ffi.integer(BigInt(res.statusCode!)));
         result.set("headers", ffi.from_plain_native(from_dict(res.headers)));
 
         res.setEncoding("utf8");

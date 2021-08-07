@@ -80,7 +80,7 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("text.code-points", (x0) => {
     const points = [];
     for (const point of ffi.text_to_string(x0)) {
-      points.push(ffi.integer(BigInt(point.codePointAt(0))));
+      points.push(ffi.integer(BigInt(point.codePointAt(0)!)));
     }
     return ffi.tuple(points);
   });
