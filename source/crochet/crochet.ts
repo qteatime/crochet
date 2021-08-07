@@ -231,6 +231,8 @@ export class BootedCrochet {
     console.log(
       `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failed`
     );
+
+    return failures;
   }
 
   async load_declaration(x: IR.Declaration, module: VM.CrochetModule) {

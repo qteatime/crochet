@@ -1,0 +1,112 @@
+% crochet
+
+implement total-ordering for integer;
+implement total-ordering for float;
+
+
+/// Relational less than operator for integers
+command (X is integer) < (Y is integer) = 
+  foreign integer.lt(X, Y)
+test
+  assert 0 < 1;
+  assert -1 < 0;
+  assert not (0 < 0);
+  assert not (1 < 0);
+end
+
+/// Relational less than or equal operator for integers (provided for perf)
+command (X is integer) <= (Y is integer) = 
+  foreign integer.lte(X, Y)
+test
+  assert 0 <= 1;
+  assert -1 <= 0;
+  assert 0 <= 0;
+  assert not (1 <= 0);
+end
+
+/// Relational greater than operator for integers
+command (X is integer) > (Y is integer) = 
+  foreign integer.gt(X, Y)
+test
+  assert 1 > 0;
+  assert 0 > -1;
+  assert not (0 > 0);
+  assert not (0 > 1);
+end
+
+/// Relational greater or equal operator for integers (provided for perf)
+command (X is integer) >= (Y is integer) = 
+  foreign integer.gte(X, Y)
+test
+  assert 1 >= 0;
+  assert 0 >= -1;
+  assert 0 >= 0;
+  assert not (0 >= 1);
+end
+
+
+/// Relational less than operator for floats
+command (X is float) < (Y is float) = 
+  foreign float.lt(X, Y)
+test
+  assert 0.0 < 1.0;
+  assert -1.0 < 0.0;
+  assert not (0.0 < 0.0);
+  assert not (1.0 < 0.0);
+end
+
+/// Relational less than or equal operator for floats (provided for perf)
+command (X is float) <= (Y is float) = 
+  foreign float.lte(X, Y)
+test
+  assert 0.0 <= 1.0;
+  assert -1.0 <= 0.0;
+  assert 0.0 <= 0.0;
+  assert not (1.0 <= 0.0);
+end
+
+/// Relational greater than operator for floats
+command (X is float) > (Y is float) = 
+  foreign float.gt(X, Y)
+test
+  assert 1.0 > 0.0;
+  assert 0.0 > -1.0;
+  assert not (0.0 > 0.0);
+  assert not (0.0 > 1.0);
+end
+
+/// Relational greater or equal operator for floats (provided for perf)
+command (X is float) >= (Y is float) = 
+  foreign float.gte(X, Y)
+test
+  assert 1.0 >= 0.0;
+  assert 0.0 >= -1.0;
+  assert 0.0 >= 0.0;
+  assert not (0.0 >= 1.0);
+end
+
+
+// # Relational operators across numeric types
+command (X is integer) <  (Y is float) = (X as float) < Y;
+command (X is integer) <= (Y is float) = (X as float) <= Y;
+command (X is integer) >  (Y is float) = (X as float) > Y;
+command (X is integer) >= (Y is float) = (X as float) >= Y;
+
+command (X is float) <  (Y is integer) = X <  (Y as float);
+command (X is float) <= (Y is integer) = X <= (Y as float);
+command (X is float) >  (Y is integer) = X >  (Y as float);
+command (X is float) >= (Y is integer) = X >= (Y as float);
+
+
+test "Relational conversions" do
+  assert (0 < 1.1);
+  assert (0 <= 0.0);
+  assert (1 > 0.0);
+  assert (1 >= 0.9);
+
+  assert (0.9 < 1);
+  assert (0.0 <= 0);
+  assert (1.1 > 0);
+  assert (0.0 >= 0);
+end
+

@@ -1,6 +1,6 @@
 import * as Ast from "../generated/crochet-grammar";
 import * as IR from "../ir";
-import { cast, force_cast } from "../utils/utils";
+import { cast, force_cast, unreachable } from "../utils/utils";
 import {
   resolve_escape,
   parseNumber,
@@ -55,6 +55,19 @@ class Context {
 
   fresh_name(prefix: string) {
     return `${prefix}$${this.name_id++}`;
+  }
+}
+
+function constraint_to_type(constraint: IR.TypeConstraint): IR.Type {
+  switch (constraint.tag) {
+    case IR.TypeConstraintTag.TYPE:
+      return constraint.type;
+
+    case IR.TypeConstraintTag.WITH_TRAIT:
+      return constraint_to_type(constraint.type);
+
+    default:
+      throw unreachable(constraint, `Constraint`);
   }
 }
 
@@ -294,7 +307,14 @@ export class LowerToIR {
           Static: (_1, _2) => {
             throw new Error(`internal: invalid ##type`);
           },
+          Function: (_1, _2, _3) => {
+            throw new Error(`internal: invalid #(... -> ...)`);
+          },
         });
+      },
+      Function: (pos, args, _ret) => {
+        const id = this.context.register(pos);
+        return new IR.LocalType(id, `function-${args.length}`);
       },
     });
   }
@@ -1500,14 +1520,15 @@ export class LowerToIR {
     return xs.flatMap((x) => this.contract_condition(kind, x));
   }
 
-  contract_return(ret: Ast.TypeApp | null) {
+  contract_return(ret: Ast.TypeConstraint | null) {
     if (ret == null) {
       return [];
     } else {
       const id = this.context.register(get_pos(ret));
+      const constraint = this.type_constraint(ret);
       return [
         new IR.PushReturn(id),
-        new IR.TypeTest(id, this.type(ret)),
+        new IR.TypeTest(id, constraint_to_type(constraint)),
         new IR.Assert(
           id,
           IR.AssertType.RETURN_TYPE,

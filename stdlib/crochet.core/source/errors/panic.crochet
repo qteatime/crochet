@@ -1,10 +1,13 @@
 % crochet
 
+/// Stops the program with a panic message.
 command panic: (Message is text) tag: (Tag is text) =
   foreign etc.panic(Tag, Message);
 
+/// Stops the program with a panic message.
 command panic: (Message is interpolation) tag: Tag =
   panic: Message flatten-into-plain-text tag: Tag;
 
+/// Stops the program with a panic message.
 command panic: Message =
   panic: Message tag: "panic";

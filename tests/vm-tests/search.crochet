@@ -21,6 +21,7 @@ end
 singleton foyer is thing;
 singleton garden is thing;
 
+implement equality for thing;
 command (A is thing) === (B is thing) = A =:= B;
 
 test "Search" do

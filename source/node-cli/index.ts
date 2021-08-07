@@ -202,7 +202,8 @@ async function test([file]: string[], options: Options) {
     true
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
-  await crochet.run_tests(compile_test_filter(options.test));
+  const failures = await crochet.run_tests(compile_test_filter(options.test));
+  process.exitCode = failures.length;
 }
 
 async function build([file]: string[], options: Options) {

@@ -54,7 +54,7 @@ test
 end
 
 command #json pretty-print: Value indentation: (Indent is integer) -> text
-requires positive-indentation :: Indent >= 0;
+requires positive-indentation :: Indent >= 0
 do
   foreign json.pretty-print(#json from: Value, Indent)
 test

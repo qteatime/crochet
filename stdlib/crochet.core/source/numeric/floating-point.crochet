@@ -1,11 +1,13 @@
 % crochet
 
+/// True if a floating point value is NaN
 command (X is float) is-nan = foreign float.is-nan(X)
 test
   assert #float nan is-nan;
   assert not (1.0 is-nan);
 end
 
+/// True if a floating point value represents a real number.
 command (X is float) is-finite = foreign float.is-finite(X)
 test
   assert not (#float positive-infinity is-finite);
@@ -13,16 +15,19 @@ test
   assert 1.0 is-finite;
 end
 
+/// The special `not a number` representation.
 command #float nan = foreign float.nan()
 test
   #float nan;
 end
 
+/// The special positive infinity representation.
 command #float positive-infinity = foreign float.infinity()
 test
   #float positive-infinity
 end
 
+/// The special negative infinity representation.
 command #float negative-infinity = foreign float.negative-infinity()
 test
   #float negative-infinity

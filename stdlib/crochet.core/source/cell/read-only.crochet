@@ -1,0 +1,24 @@
+% crochet
+
+/// Constructs a special [cell] wrapper which only allows reading the original
+/// [cell]'s value, but not changing it.
+command (X is cell) read-only =
+  new read-only-cell(X)
+test
+  assert (#cell with-value: 1) read-only is read-only-cell;
+end
+
+
+/// Returns the current value of the wrapped [cell].
+command (X is read-only-cell) value =
+  X.cell value
+test
+  let C = #cell with-value: 1;
+  let R = C read-only;
+  assert R value =:= 1;
+  assert C value =:= 1;
+
+  C <- 2;
+  assert R value =:= 2;
+  assert C value =:= 2;
+end

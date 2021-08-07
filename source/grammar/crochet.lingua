@@ -36,7 +36,7 @@ type Handler(pos: Meta, name: Name, variant: Name, args: Name[], body: Statement
 
 type TrailingTest(pos: Meta, body: Statement[])
 
-type Contract(pos: Meta, ret: TypeApp?, pre: ContractCondition[], post: ContractCondition[])
+type Contract(pos: Meta, ret: TypeConstraint?, pre: ContractCondition[], post: ContractCondition[])
 type ContractCondition(pos: Meta, name: Name, expr: Expression)
 
 type TypeDef(parent: TypeConstraint?, name: Name)
@@ -58,6 +58,7 @@ type Parameter =
 type TypeApp =
   | Named(pos: Meta, name: Name)
   | Static(pos: Meta, typ: TypeApp)
+  | Function(pos: Meta, args: TypeConstraint[], ret: TypeConstraint)
   | Any(pos: Meta)
 
 type TypeConstraint =
@@ -261,14 +262,23 @@ grammar Crochet : Program {
     | traitImplementDeclaration
 
   traitDeclaration =
-    | m:declarationMeta trait_ n:atom with_ cs:traitCommand+ end_
+    | m:declarationMeta trait_ n:atom with_ cs:traitInstruction+ end_
       -> Declaration.Trait(meta, m, n)
     | m:declarationMeta trait_ n:atom s<";">
       -> Declaration.Trait(meta, m, n)
 
   // Currently ignored
+  traitInstruction =
+    | traitCommand
+    | traitRequires
+
   traitCommand =
-    | command_ signature<parameter>
+    | declarationMeta command_ signature<parameter> contractDefinition s<";">
+      -> null
+
+  traitRequires =
+    | requires_ trait_ n:traitName s<";">
+      -> null
   
   traitImplementDeclaration =
     | implement_ tr:traitName for_ tp:typeApp s<";">
@@ -334,17 +344,17 @@ grammar Crochet : Program {
       -> Contract(meta, ret, pre, post)
 
   retContractDefinition =
-    | s<"->"> t:typeAppPrimary
+    | s<"->"> t:typeConstraintPrimary
       -> t
     | -> null
 
   preContractDefinition =
-    | requires_ cs:list1<contractCondition, s<";">>
+    | requires_ cs:list1<contractCondition, s<",">>
       -> cs
     | -> []
   
   postContractDefinition =
-    | ensures_ cs:list1<contractCondition, s<";">>
+    | ensures_ cs:list1<contractCondition, s<",">>
       -> cs
     | -> []
 
@@ -369,14 +379,22 @@ grammar Crochet : Program {
 
   typeConstraint1 =
     | n:name is_ c:typeApp -> TypeConstraint.Type(meta, c)
-    | typeConstraint2
+    | typeConstraintPrimary
 
-  typeConstraint2 =
+  typeConstraintPrimary =
     | n:name                         -> TypeConstraint.Type(meta, TypeApp.Any(meta))
-    | t:typeApp                      -> TypeConstraint.Type(meta, t)
+    | t:typeApp1                     -> TypeConstraint.Type(meta, t)
     | s<"("> t:typeConstraint s<")"> -> t
   
   typeApp =
+    | ts:typeAppArgs s<"->"> t:typeConstraintPrimary -> TypeApp.Function(meta, ts, t)
+    | typeApp1
+
+  typeAppArgs =
+    | s<"("> ts:list0<typeConstraint, s<",">> s<")"> -> ts
+    | t:typeConstraintPrimary -> [t]
+
+  typeApp1 =
     | t:typeAppStatic s<"<"> list0<typeConstraint, s<",">> s<">"> -> t
     | typeAppStatic
 

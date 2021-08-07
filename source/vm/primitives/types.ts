@@ -80,7 +80,7 @@ export function get_type(module: CrochetModule, name: string) {
 }
 
 export function get_trait(module: CrochetModule, name: string) {
-  const value = module.pkg.traits.try_lookup(name);
+  const value = module.traits.try_lookup(name);
   if (value != null) {
     return value;
   } else {

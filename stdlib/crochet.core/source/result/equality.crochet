@@ -1,0 +1,16 @@
+% crochet
+
+implement equality for result;
+
+/// True if two [result] values have the same state and
+/// value/reason.
+command result === result = false;
+command ok === (That is ok) = self value === That value;
+command error === (That is error) = self reason === That reason;
+
+test "result === result" do
+  assert (#result ok: 1) === (#result ok: 1);
+  assert (#result error: 1) === (#result error: 1);
+  assert not ((#result ok: 1) === (#result error: 1));
+  assert not ((#result error: 1) === (#result ok: 1));
+end

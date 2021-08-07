@@ -1,0 +1,63 @@
+% crochet
+
+implement equality for integer;
+implement equality for float;
+
+/// True if two integers are equal.
+command integer === (That is integer)
+  = self =:= That
+test
+  assert 0 === 0;
+  assert 1 === 1;
+  assert not (1 === -1);
+end
+
+/// True if two floating point values are equal.
+///
+/// Note that we follow IEEE-754, so NaNs are unordered
+/// and therefore never equal.
+command float === (That is float)
+  = self =:= That
+test
+  assert 0.0 === 0.0;
+  assert 0.1 === 0.1;
+  assert not (0.1 === 0.0);
+  assert not (1.0 === -1.0);
+
+  assert #float positive-infinity === #float positive-infinity;
+  assert not (#float positive-infinity === #float negative-infinity);
+  assert not (#float nan === #float nan);
+  assert not (0.0 === #float nan);
+end
+
+/// True if two floating point values are not equal.
+///
+/// Note that we follow IEEE-754, so NaNs are unordered
+/// and therefore never equal.
+command (Self is float) =/= (That is float)
+  = foreign float.neq(Self, That)
+test
+  assert 0.1 =/= 0.0;
+  assert 1.0 =/= -1.0;
+  assert 0.0 =/= #float nan;
+  assert not (0.0 =/= 0.0);
+  assert not (0.1 =/= 0.1);
+
+  assert #float nan =/= #float nan;
+  assert not (#float positive-infinity =/= #float positive-infinity);
+  assert not (#float negative-infinity =/= #float negative-infinity);
+  assert #float positive-infinity =/= #float negative-infinity;
+end
+
+// -- Equality across the numeric tower
+command (X is integer) === (Y is float) = (X as float) === Y;
+command (X is integer) =/= (Y is float) = (X as float) =/= Y;
+command (X is float) === (Y is integer) = X === (Y as float);
+command (X is float) =/= (Y is integer) = X =/= (Y as float);
+
+test "Numeric equality tower" do
+  assert (1.0 === 1);
+  assert (1.1 =/= 1);
+  assert (1 === 1.0);
+  assert (1 =/= 1.1);
+end

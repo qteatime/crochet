@@ -1,0 +1,175 @@
+% crochet
+
+/// Constructs a [result] that represents a successful completion,
+/// with its associated value.
+command #result ok: Value = new ok(Value);
+
+/// Constructs a [result] that represents a failed computation,
+/// along with the reason for its failure.
+command #result error: Reason = new error(Reason);
+
+/// Retrieves the value associated with a successful [result].
+command ok value = self.value;
+
+/// Retrieves the reason associated with a failed [result].
+command error reason = self.reason;
+
+
+// -- Transformations
+
+/// Transforms the value of a successful [result] with the
+/// given transformation function.
+command ok map: (Fun is (V1 -> V2)) -> result<V2, R> =
+  #result ok: Fun(self value);
+command error map: (Fun is (V1 -> V2)) -> result<V2, R> =
+  self;
+
+test "result map: Fun" do
+  assert (#result ok: 1 | map: (_ + 1)) === (#result ok: 2);
+  assert (#result error: 1 | map: (_ + 1)) === (#result error: 1);
+end
+
+
+/// Transforms the reason of a failed [result] with the given
+/// transformation function.
+command ok map-error: (Fun is (R1 -> R2)) -> result<V1, R2> =
+  self;
+command error map-error: (Fun is (R1 -> R2)) -> result<V1, R2> =
+  #result error: Fun(self reason);
+
+test "result map-error: Fun" do
+  assert (#result ok: 1 | map-error: (_ + 1)) === (#result ok: 1);
+  assert (#result error: 1 | map-error: (_ + 1)) === (#result error: 2);
+end
+
+
+/// Given a successful [result], performs a new computation with
+/// the completion value, as described by [Fun]. Returns the
+/// outcome of this new computation.
+command ok then: (Fun is (V1 -> result<V2, R>)) -> result<V2, R> =
+  Fun(self value);
+command error then: (Fun is (V1 -> result<V2, R>)) -> result<V2, R> =
+  self;
+
+test "result then: Fun" do
+  assert (#result ok: 1 | then: { A in #result ok: (A + 1) })
+    === (#result ok: 2);
+
+  assert (#result ok: 1 | then: { A in #result error: (A + 1) })
+    === (#result error: 2);
+
+  assert (#result error: 1 | then: { A in #result ok: (A + 1) })
+    === (#result error: 1);
+end
+
+
+/// Given a failed [result], performs a new computation with the
+/// reason of the failure, as described by [Fun]. Returns the
+/// outcome of this new computation.
+command ok recover: (Fun is (R1 -> result<V1, R2>)) -> result<V1, R2> =
+  self;
+command error recover: (Fun is (R1 -> result<V1, R2>)) -> result<V1, R2> =
+  Fun(self reason);
+
+test "result recover: Fun" do
+  assert (#result ok: 1 | recover: { A in #result ok: (A + 1) })
+    === (#result ok: 1);
+
+  assert (#result error: 1 | recover: { A in #result error: (A + 1) })
+    === (#result error: 2);
+
+  assert (#result error: 1 | recover: { A in #result ok: (A + 1) })
+    === (#result ok: 2);
+end
+
+
+/// Swaps the state of the [result] while keeping its value. That
+/// is, turns successes into failures, and failures into
+/// successes.
+command ok swap -> result<R, V> =
+  #result error: self value;
+command error swap -> result<R, V> =
+  #result ok: self reason;
+
+test "result swap" do
+  assert (#result ok: 1 | swap) === (#result error: 1);
+  assert (#result error: 1 | swap) === (#result ok: 1);
+end
+
+
+// -- Retrieving parts of the value
+
+/// Retrieves the value of a successful [result]. If the [result]
+/// is a failure, returns the provided default value instead.
+command ok value-or-default: Default =
+  self value;
+command error value-or-default: Default =
+  Default;
+
+test "result value-or-default: Default" do
+  assert (#result ok: 1 | value-or-default: 2) === 1;
+  assert (#result error: 1 | value-or-default: 2) === 2;
+end
+
+
+/// Retrieves the value of a successful [result]. If the [result]
+/// is a failure, computes a return value instead by feeding
+/// the failure reason into the provided [Fun].
+command ok value-or-else: (Fun is (R -> V)) =
+  self value;
+command error value-or-else: (Fun is (R -> V)) =
+  Fun(self reason);
+
+test "result value-or-else: Fun" do
+  assert (#result ok: 1 | value-or-else: (_ + 1)) === 1;
+  assert (#result error: 1 | value-or-else: (_ + 1)) === 2;
+end
+
+
+/// Retrieves the value of a successful [result]. If the [result]
+/// is a failure, stops the program in a panic, with the given
+/// panic message as the reason.
+command ok value-or-panic: Reason =
+  self value;
+command error value-or-panic: Reason =
+  panic: Reason;
+
+test "result value-or-panic: Reason" do
+  assert (#result ok: 1 | value-or-panic: "Okay!") === 1;
+  // FIXME: test panic
+end
+
+
+/// Retrieves the internal value of the [result], regardless
+/// of its state. That is, returns either the successful value,
+/// or failure reason; whichever makes sense.
+command ok value-or-reason = self value;
+command error value-or-reason = self reason;
+
+
+// -- Combining results
+
+/// Returns [That] if given a successful [self]. Otherwise
+/// propagates the error.
+command ok and (That is result) = That;
+command error and (That is result) = self;
+
+/// Returns [self] if it's successful. Otherwise propagates
+/// [That].
+command ok or (That is result) = self;
+command error or (That is result) = That;
+
+
+// -- Displaying results
+
+/// The debug representation of an [ok].
+command debug-representation of: (X is ok) =
+  debug-representation type: "ok"
+    | value: X value
+    | finish;
+
+/// The debug representation of an [error].
+command debug-representation of: (X is error) =
+  debug-representation type: "error"
+    | value: X reason
+    | finish;

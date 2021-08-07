@@ -1,25 +1,32 @@
 % crochet
 
-local type read-only-cell(cell);   // FIXME: currently this leaks because `.` is universal
-
+/// Constructs a [cell] with the given value.
 command #cell with-value: V -> cell
   = foreign cell.make(V)
 test
   assert (#cell with-value: 1) is cell;
 end
 
+
+/// Constructs a [cell] with [nothing] inside.
 command #cell empty -> cell
   = #cell with-value: nothing
 test
   assert (#cell empty) is cell;
 end
 
+
+/// Retrieves the value of a [cell].
 command (X is cell) value = foreign cell.deref(X)
 test
   let C = #cell with-value: 1;
   assert C value =:= 1;  
 end
 
+
+/// Updates the value of a [cell], but only if its current value matches
+/// the provided [Old] value. The comparison and update are performed
+/// atomically.
 command (X is cell) compare: Old and-set: New -> boolean
   = foreign cell.cas(X, Old, New)
 test
@@ -30,6 +37,10 @@ test
   assert C value =:= 4;
 end
 
+
+/// Updates the value of a [cell] to [Value] unconditionally, but atomically.
+///
+/// This function is basically [cell compare: _ and-set: _] with a spin-loop.
 command (X is cell) <- Value -> cell do
   let Old = X value;
   let Set = X compare: Old and-set: Value;
@@ -40,24 +51,4 @@ command (X is cell) <- Value -> cell do
 test
   let C = #cell with-value: 1;
   assert (C <- 2) value =:= 2;
-end
-
-// Read-only capabilities
-command (X is cell) read-only =
-  new read-only-cell(X)
-test
-  assert (#cell with-value: 1) read-only is read-only-cell;
-end
-
-command (X is read-only-cell) value =
-  X.cell value
-test
-  let C = #cell with-value: 1;
-  let R = C read-only;
-  assert R value =:= 1;
-  assert C value =:= 1;
-
-  C <- 2;
-  assert R value =:= 2;
-  assert C value =:= 2;
 end

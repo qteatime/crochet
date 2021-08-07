@@ -1,0 +1,80 @@
+% crochet
+
+implement enumeration for integer;
+
+/// Returns the immediately next integer.
+command integer successor = self + 1
+test
+  assert -1 successor =:= 0;
+  assert 0 successor =:= 1;
+  assert 1 successor =:= 2;
+end
+
+/// Returns the immediately preceding integer.
+command integer predecessor = self - 1
+test
+  assert -1 predecessor =:= -2;
+  assert 0 predecessor =:= -1;
+  assert 1 predecessor =:= 0;
+end
+
+/// The range of integers from [Min] to [Max], inclusive on
+/// both bounds, and with [Step] arithmetic steps.
+///
+/// That is, for `0 to: 10 by: 2` we would have the
+/// arithmetic sequence of `[0, 2, 4, 6, 8, 10]`.
+command (Min is integer) to: (Max is integer) by: (Step is integer)
+requires
+  progress :: Step > 0,
+  ordered :: Min <= Max
+  = foreign integer.range(Min, Max, Step)
+test
+  assert (1 to: 3 by: 1) =:= [1, 2, 3];
+  assert (2 to: 3 by: 1) =:= [2, 3];
+  assert (3 to: 3 by: 1) =:= [3];
+
+  assert (0 to: 6 by: 2) =:= [0, 2, 4, 6];
+  assert (2 to: 6 by: 2) =:= [2, 4, 6];
+  assert (3 to: 6 by: 2) =:= [3, 5];
+end
+
+/// The range of integers from [Min] to [Max], considering
+/// `1` as the arithmetic step.
+///
+/// @see: [integer to: integer by: integer]
+command (Min is integer) to: (Max is integer)
+  = Min to: Max by: 1
+test
+  assert (1 to: 3) =:= [1, 2, 3];
+  assert (2 to: 3) =:= [2, 3];
+  assert (3 to: 3) =:= [3];  
+end
+
+/// The range of integers from [Min] until (but not including)
+/// [Max].
+///
+/// That is, for `0 until: 10 by: 2` we would have the
+/// arithmetic sequence of `[0, 2, 4, 6, 8]`.
+command (Min is integer) until: (Max is integer) by: (Step is integer)
+do
+  condition
+    when Min =:= Max => [];
+    always => Min to: (Max - 1) by: Step;
+  end
+test
+  assert (1 until: 3 by: 1) =:= [1, 2];
+  assert (2 until: 3 by: 1) =:= [2];
+  assert (3 until: 3 by: 1) =:= [];
+end
+
+/// The range of integers from [Min] until (but not including)
+/// [Max], considering `1` as the arithmetic step.
+///
+/// @see: [integer until: integer by: integer]
+command (Min is integer) until: (Max is integer)
+  = Min until: Max by: 1
+test
+  assert (1 until: 3) =:= [1, 2];
+  assert (2 until: 3) =:= [2];
+  assert (3 until: 3) =:= [];
+end

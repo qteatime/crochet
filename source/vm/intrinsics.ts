@@ -339,6 +339,7 @@ export class CrochetModule {
   readonly relations: Namespace<CrochetRelation>;
   readonly actions: Namespace<Action>;
   readonly contexts: Namespace<CrochetContext>;
+  readonly traits: Namespace<CrochetTrait>;
   readonly open_prefixes: Set<string>;
 
   constructor(
@@ -357,6 +358,7 @@ export class CrochetModule {
     this.relations = new Namespace(pkg.relations, pkg.name, this.open_prefixes);
     this.actions = new Namespace(pkg.actions, pkg.name, this.open_prefixes);
     this.contexts = new Namespace(pkg.contexts, pkg.name, this.open_prefixes);
+    this.traits = new Namespace(pkg.traits, pkg.name, this.open_prefixes);
   }
 }
 //#endregion

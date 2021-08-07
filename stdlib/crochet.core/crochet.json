@@ -15,31 +15,53 @@
   ],
   "sources": [
     "source/0-types.crochet",
+
+    "source/enum/bounds.crochet",
+    "source/enum/enumeration.crochet",
+    "source/enum/equality.crochet",
+    "source/enum/total-ordering.crochet",
+
+    "source/logic/boolean-algebra.crochet",
+    "source/logic/equality.crochet",
+
+    "source/numeric/arithmetic.crochet",
+    "source/numeric/enumeration.crochet",
+    "source/numeric/equality.crochet",
+    "source/numeric/floating-point.crochet",
+    "source/numeric/rounding-strategies.crochet",
+    "source/numeric/total-ordering.crochet",
+
+    "source/result/equality.crochet",
+    "source/result/result.crochet",
+
+    "source/text/ascii.crochet",
+    "source/text/basic.crochet",
+    "source/text/equality.crochet",
+    "source/text/interpolation.crochet",
+    "source/text/views.crochet",
+
+    "source/traits/conversion.crochet",
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
     "source/traits/ordering.crochet",
-    "source/traits/conversion.crochet",
-    "source/numeric/arithmetic.crochet",
-    "source/numeric/fractional.crochet",
-    "source/numeric/float.crochet",
-    "source/text/interpolation.crochet",
-    "source/text/basic.crochet",
-    "source/text/ascii.crochet",
-    "source/text/views.crochet",
 
-    "source/boolean.crochet",
-    "source/cell.crochet",
-    "source/record.crochet",
-    "source/error.crochet",
-    "source/representation.crochet",
-    "source/debug-representation.crochet",
-    "source/indexed.crochet",
-    "source/tuple.crochet",
-    "source/result.crochet",
-    "source/thunk.crochet",
-    "source/skeleton.crochet",
-    "source/lambda.crochet",
-    "source/action.crochet"
+    "source/action/action.crochet",
+
+    "source/cell/cell.crochet",
+    "source/cell/read-only.crochet",
+
+    "source/collection/indexed.crochet",
+    "source/collection/record.crochet",
+    "source/collection/tuple.crochet",
+
+    "source/debugging/debug-representation.crochet",
+
+    "source/errors/panic.crochet",
+
+    "source/functional/lambda.crochet",
+    "source/functional/thunk.crochet",
+
+    "source/skeleton/skeleton.crochet"
   ],
   "capabilities": {
     "requires": [],
