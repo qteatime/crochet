@@ -23,7 +23,7 @@ export default async (root: string, port: number) => {
   const app = express();
 
   app.get("/app/.binary/*", async (req, res) => {
-    const path = req.params[0];
+    const path = (req.params as any)[0];
     const source = rpkg.sources.find((x) => x.binary_image.includes(path));
     if (!source) {
       throw new Error(`Unknown image ${path}`);

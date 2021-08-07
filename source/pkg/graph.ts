@@ -225,7 +225,7 @@ export class ResolvedFile {
     return Path.resolve(this.pkg.root, this.relative_filename);
   }
 
-  get crochet_file() {
+  get crochet_file(): ResolvedFile {
     if (this.is_crochet) {
       return this;
     } else {
