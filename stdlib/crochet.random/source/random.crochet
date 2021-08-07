@@ -29,7 +29,7 @@ command #random with-random-seed -> xor-shift
   = #random xor-shift;
 
 command #random xor-shift: Seed 
-requires unsigned-small-integer :: (Seed >= 0) and (Seed < (2 ** 32));
+requires unsigned-small-integer :: (Seed >= 0) and (Seed < (2 ** 32))
   = new xor-shift(Seed, Seed);
 
 command #random xor-shift -> xor-shift do
