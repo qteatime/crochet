@@ -129,8 +129,8 @@ end
 
 command (X is tuple) slice-from: (Start is integer) to: (End is integer)
 requires
-  positive :: Start >= 1;
-  progressive :: Start <= End;
+  positive :: Start >= 1,
+  progressive :: Start <= End
   = foreign tuple.slice(X, Start, End)
 test
   assert ([] slice-from: 1 to: 4) =:= [];

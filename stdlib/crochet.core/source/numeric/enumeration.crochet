@@ -25,8 +25,8 @@ end
 /// arithmetic sequence of `[0, 2, 4, 6, 8, 10]`.
 command (Min is integer) to: (Max is integer) by: (Step is integer)
 requires
-  progress :: Step > 0;
-  ordered :: Min <= Max;
+  progress :: Step > 0,
+  ordered :: Min <= Max
   = foreign integer.range(Min, Max, Step)
 test
   assert (1 to: 3 by: 1) =:= [1, 2, 3];

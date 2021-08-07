@@ -348,12 +348,12 @@ grammar Crochet : Program {
     | -> null
 
   preContractDefinition =
-    | requires_ cs:list1<contractCondition, s<";">>
+    | requires_ cs:list1<contractCondition, s<",">>
       -> cs
     | -> []
   
   postContractDefinition =
-    | ensures_ cs:list1<contractCondition, s<";">>
+    | ensures_ cs:list1<contractCondition, s<",">>
       -> cs
     | -> []
 

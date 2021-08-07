@@ -2,7 +2,7 @@
 
 command text ends-with: (Text is text)
 requires
-  non-empty :: not (Text is-empty);
+  non-empty :: not (Text is-empty)
 do
   foreign text.ends-with(self, Text)
 test
@@ -14,7 +14,7 @@ end
 
 command text starts-with: (Text is text)
 requires
-  non-empty :: not (Text is-empty);
+  non-empty :: not (Text is-empty)
 do
   foreign text.starts-with(self, Text)
 test
@@ -26,7 +26,7 @@ end
 
 command text contains: (Text is text)
 requires
-  non-empty :: not (Text is-empty);
+  non-empty :: not (Text is-empty)
 do
   foreign text.contains(self, Text)
 test

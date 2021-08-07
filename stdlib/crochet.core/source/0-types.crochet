@@ -270,16 +270,22 @@ trait enumeration with
   requires trait total-ordering;
 
   /// The value that comes immediately after `A`.
-  command A successor;
+  command A successor
+    ensures greater :: return > A;
 
   /// The value that comes immediately before `A`.
-  command A predecessor;
+  command A predecessor
+    ensures lesser :: return < A;
 
   /// (optional) Inclusive arithmetic sequence `(Start, Stop)`
-  command Start to: Stop;
+  command Start to: Stop by: Step
+    requires ordered :: Start <= Stop,
+             progress :: Step > 0;
 
   /// (optional) End-exclusive arithmetic sequence `(Start, Stop(`
-  command Start until: Stop;
+  command Start until: Stop by: Step
+    requires ordered :: Start <= Stop,
+             progress :: Step > 0;
 end
 
 
@@ -326,16 +332,20 @@ trait arithmetic with
   command A * B;
 
   /// Truncating arithmetic division (the result is always an integer)
-  command A divided-by: B;
+  command A divided-by: B
+    requires non-zero-divisor :: B =/= 0;
 
   /// Fractional arithmetic division (the result might be a real number).
-  command A / B;
+  command A / B
+    requires non-zero-divisor :: B =/= 0;
 
   /// Remainder of an arithmetic division.
-  command A % B;
+  command A % B
+    requires non-zero-divisor :: B =/= 0;
 
   /// Exponentiation (exponents are expected to be integrals)
-  command A ** B;
+  command A ** B
+    requires positive-exponent :: B >= 0;
 end
 
 
