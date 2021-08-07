@@ -1,0 +1,13 @@
+% crochet
+
+implement equality for 'enum;
+
+local enum test-enum = ta, tb;
+
+/// True if two enumeration values are the same.
+command 'enum === (That is 'enum)
+  = self =:= That
+test
+  assert ta === ta;
+  assert not (ta === tb);
+end

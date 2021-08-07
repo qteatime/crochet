@@ -1,0 +1,55 @@
+% crochet
+
+// Implementation is automatically generated
+implement enumeration for 'enum;
+
+local enum test-enum = ta, tb, tc;
+
+
+/// Range of enums (inclusive on both ends)
+command (From0 is 'enum) to: (To0 is 'enum)
+requires ordered :: From0 <= To0
+do
+  // FIXME: ideally we wouldn't depend on integers here
+  let From = From0 to-enum-integer;
+  let To = To0 to-enum-integer;
+  for I in From to: To do From0 from-enum-integer: I end
+test
+  assert (ta to: tc) =:= [ta, tb, tc];
+  assert (tb to: tc) =:= [tb, tc];
+  assert (tc to: tc) =:= [tc];
+end
+
+/// Range of enums, only inclusive on the starting end
+command (From0 is 'enum) until: (To0 is 'enum)
+requires ordered :: From0 <= To0
+do
+  // FIXME: ideally we wouldn't depend on integers here
+  let From = From0 to-enum-integer;
+  let To = To0 to-enum-integer;
+  for I in From until: To do From0 from-enum-integer: I end
+test
+  assert (ta to: tc) =:= [ta, tb, tc];
+  assert (tb to: tc) =:= [tb, tc];
+  assert (tc to: tc) =:= [tc];
+end
+
+/// Successor of the current enum
+command 'enum successor
+requires not-last :: self to-enum-integer < self upper-bound to-enum-integer
+do
+  self from-enum-integer: (self to-enum-integer + 1);
+test
+  assert ta successor =:= tb;
+  assert tb successor =:= tc;
+end
+
+/// Predecessor of the current enum
+command 'enum predecessor
+requires not-first :: self to-enum-integer > 1
+do
+  self from-enum-integer: (self to-enum-integer - 1);
+test
+  assert tb predecessor =:= ta;
+  assert tc predecessor =:= tb;
+end

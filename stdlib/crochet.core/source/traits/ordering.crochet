@@ -66,25 +66,7 @@ end
 
 
 // # Enums
-local enum test-enum = ta, tb, tc;
 
-/// Less than relationship
-command 'enum < (Other is 'enum) =
-  self to-enum-integer < Other to-enum-integer
-test
-  assert ta < tb;
-  assert tb < tc;
-  assert not (tc < ta);
-end
-
-/// Greater than relationship
-command 'enum > (Other is 'enum) =
-  self to-enum-integer > Other to-enum-integer
-test
-  assert tb > ta;
-  assert tc > tb;
-  assert not (ta > tc);
-end
 
 
 // # Numbers

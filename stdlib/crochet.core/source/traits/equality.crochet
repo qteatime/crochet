@@ -1,12 +1,8 @@
 % crochet
 
-// Equality
-//
-// Implement `_ === _`, get `_ =/= _` for free.
-
-command Left =/= Right = not (Left === Right);
-
-// # Numbers
+/// True if two values with an equality trait are not equal.
+command (Left has equality) =/= (Right has equality) =
+  not (Left === Right);
 
 
 // # Boolean
@@ -19,14 +15,7 @@ test
 end
 
 // # Enum
-local enum test-enum = ta, tb;
 
-command 'enum === (That is 'enum)
-  = self =:= That
-test
-  assert ta === ta;
-  assert not (ta === tb);
-end
 
 // # Text
 command text === (That is text) = self =:= That;

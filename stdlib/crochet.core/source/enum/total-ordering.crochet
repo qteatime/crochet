@@ -1,0 +1,31 @@
+% crochet
+
+implement total-ordering for 'enum;
+
+local enum test-enum = ta, tb, tc;
+
+/// True if [self] is strictly lower than [Other].
+///
+/// Enums are ordered by their declaration order, so this
+/// means that [self] must come before [Other] in the enum
+/// declaration.
+command 'enum < (Other is 'enum) =
+  self to-enum-integer < Other to-enum-integer
+test
+  assert ta < tb;
+  assert tb < tc;
+  assert not (tc < ta);
+end
+
+/// True if [self] is strictly higher than [Other].
+///
+/// Enums are ordered by their declaration order, so this
+/// means that [self] must come after [Other] in the enum
+/// declaration.
+command 'enum > (Other is 'enum) =
+  self to-enum-integer > Other to-enum-integer
+test
+  assert tb > ta;
+  assert tc > tb;
+  assert not (ta > tc);
+end
