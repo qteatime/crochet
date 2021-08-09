@@ -48,7 +48,7 @@ test
 end
 
 
-command #record from-pairs: (Pairs is tuple) =
+command #record from-pairs: (Pairs is list) =
   foreign record.from-pairs(Pairs)
 test
   assert (#record from-pairs: []) === [->];
@@ -191,7 +191,7 @@ test
 end
 
 
-command (X is record) with-only-keys: (Keys is tuple) do
+command (X is record) with-only-keys: (Keys is list) do
   self filter: { K, _ in Keys contains: K };
 test
   assert ([->] with-only-keys: ["a", "b"]) === [->];
@@ -202,7 +202,7 @@ test
 end
 
 
-command (X is record) without-keys: (Keys is tuple) do
+command (X is record) without-keys: (Keys is list) do
   self filter: { K, _ in not (Keys contains: K) };
 test
   assert ([->] without-keys: ["a", "b"]) === [->];

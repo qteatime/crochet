@@ -22,8 +22,8 @@ test
   assert (-1.0 as integer) =:= -1;
 end
 
-command (X is tuple) as interpolation
-  = foreign conversion.tuple-to-interpolation(X)
+command (X is list) as interpolation
+  = foreign conversion.list-to-interpolation(X)
 test
   assert (["a", 1, "c"] as interpolation) =:= "["a"][1]["c"]";
 end

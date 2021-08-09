@@ -2,24 +2,24 @@
 
 local singleton usage-mod;
 
-command usage-mod flow: (Items is tuple) =
+command usage-mod flow: (Items is list) =
   Items fold-from: "" with: { A, B in "[A] [B]" };
 
-command usage-mod stack: (Items is tuple) =
+command usage-mod stack: (Items is list) =
   Items fold-from: "" with: { A, B in "[A]\n[B]" };
 
-command usage-mod command-list: (Items is tuple) =
+command usage-mod command-list: (Items is list) =
   Items map: { X in "  [X usage-line]" }
     |> usage-mod stack: _;
 
 command usage-mod usage-options: nothing = "";
 command usage-mod usage-options: (Options is cli-options) = Options usage;
 
-command usage-mod options-list: (Items is tuple) =
+command usage-mod options-list: (Items is list) =
   Items map: _ usage
     |> usage-mod stack: _;
 
-command usage-mod collect-options: (Args is tuple) do
+command usage-mod collect-options: (Args is list) do
   Args fold-from: nothing with: (usage-mod merge-options: _ and: _);
 end
 
@@ -31,7 +31,7 @@ command usage-mod merge-options: _ and: (X is cli-options) = X;
 command usage-mod merge-options: _ and: _ = nothing;
 
 
-command usage-mod collect-positionals: (Args is tuple) =
+command usage-mod collect-positionals: (Args is list) =
   for X in Args if X is cli-positional do X end;
 
 

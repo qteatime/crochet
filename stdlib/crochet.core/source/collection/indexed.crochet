@@ -1,14 +1,32 @@
 % crochet
 
-command indexed index = self.index;
-command indexed value = self.value;
+/// Retrieves the element at the [Index] in the list.
+command (X is list) at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= X count)
+  = foreign list.at(X, Index)
+test
+  assert (["a", "b", "c"] at: 1) =:= "a";
+  assert (["a", "b", "c"] at: 2) =:= "b";
+  assert (["a", "b", "c"] at: 3) =:= "c";
+end
 
-command indexed === (That is indexed) =
-  (self index === That index) and
-  (self value === That value);
+/// Updates the element at the given index with the provided value.
+command (X is list) at: (Index is integer) put: Value
+requires within-bounds :: (Index >= 1) and (Index <= X count)
+  = foreign list.at-put(X, Index, Value)
+test
+  assert (["a", "b", "c"] at: 1 put: "d") =:= ["d", "b", "c"];
+  assert (["a", "b", "c"] at: 2 put: "d") =:= ["a", "d", "c"];
+  assert (["a", "b", "c"] at: 3 put: "d") =:= ["a", "b", "d"];
+end
 
-
-command debug-representation of: (X is indexed) =
-  debug-representation of: X index
-    | append: ": "
-    | append: (debug-representation of: X value);
+/// Removes the element at the given index, bringing the next ones one space
+/// forward.
+command (X is list) delete-at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= X count)
+  = foreign list.at-delete(X, Index)
+test
+  assert (["a"] delete-at: 1) =:= [];
+  assert (["a", "b", "c"] delete-at: 2) =:= ["a", "c"];
+  assert (["a", "b", "c"] delete-at: 3) =:= ["a", "b"];
+end

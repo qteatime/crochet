@@ -3,20 +3,20 @@
 command parser-result-pair first = self.left;
 command parser-result-pair second = self.right;
 
-command parser-result-pair as tuple =
+command parser-result-pair as list =
   [self first, self second];
 
 command parser-result-pair at: (Index is integer) =
-  (self as tuple) at: Index;
+  (self as list) at: Index;
 
 command parser-result-pair ++ (That is parser-result-pair) =
-  (self as tuple) ++ (That as tuple);
+  (self as list) ++ (That as list);
 
-command parser-result-pair ++ (That is tuple) =
-  (self as tuple) ++ That;
+command parser-result-pair ++ (That is list) =
+  (self as list) ++ That;
 
-command tuple ++ (That is parser-result-pair) =
-  self ++ (That as tuple);
+command list ++ (That is parser-result-pair) =
+  self ++ (That as list);
 
 command parser-result-pair flatten do
   (flattener flatten: self.left) ++ (flattener flatten: self.right);

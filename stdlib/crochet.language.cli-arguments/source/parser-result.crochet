@@ -33,11 +33,11 @@ command (X is cli-record) realise do
 end
 
 
-command (X is cli-tuple) merge: (Y is cli-tuple) do
-  new cli-tuple(X.values ++ Y.values);
+command (X is cli-list) merge: (Y is cli-list) do
+  new cli-list(X.values ++ Y.values);
 end
 
-command cli-tuple realise do
+command cli-list realise do
   for X in self.values do X realise end;
 end
 
@@ -45,9 +45,9 @@ end
 command cli-box realise = self.value;
 
 
-command #cli-parser-result merge: (Xs is tuple) do
+command #cli-parser-result merge: (Xs is list) do
   condition
     when Xs count < 2 => Xs;
-    always => Xs but-first fold-from: Xs first with: (_ merge: _);
+    always => Xs rest fold-from: Xs first with: (_ merge: _);
   end
 end

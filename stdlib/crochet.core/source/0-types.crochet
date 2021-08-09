@@ -143,15 +143,34 @@ type record = foreign core.record;
 
 /// The type of fixed-length sequences.
 ///
-/// A tuple is an ordered sequence of values, possibly of different types.
+/// A list is an ordered sequence of values, possibly of different types.
 /// This sequence is fixed---you cannot modify it to have more or less
-/// values. And although there are certain tuple operations that allow
+/// values. And although there are certain list operations that allow
 /// you to construct new ones that have more or less elements, this is
 /// not optimised, and thus not expected to be a common occurrence.
 ///
-/// This limitation of tuples is also its strength: it allows the runtime
+/// This limitation of lists is also its strength: it allows the runtime
 /// to choose more efficient ways of storing and using it.
-type tuple = foreign core.tuple;
+type list = foreign core.list;
+
+/// The type of linked lists.
+///
+/// A linked list is an ordered sequence of values of the same type
+/// which can grow by having new values prepended to this sequence.
+/// Prepending elements and iterating elements in order is cheap,
+/// but linked lists are not great for use cases where elements
+/// need to be accessed out of order, or where many insertions
+/// happen at the end of the list.
+///
+/// Linked lists are an inductive structure with two cases:
+/// it can be either the [empty-list], meaning there's nothing in it,
+/// or a [cons-list], meaning there's one value that's followed by
+/// possibly many others, as described by its `rest` field.
+abstract linked-list;
+/// The empty case of linked lists.
+singleton empty-list is linked-list;
+/// The at-least-one-value case of linked lists.
+type cons-list(value, rest is linked-list);
 
 /// The base type of enumerations.
 ///
@@ -164,7 +183,7 @@ type skeleton-ast = foreign core.skeleton-ast;
 type skeleton-node = foreign core.skeleton-node;
 type skeleton-name = foreign core.skeleton-name;
 type skeleton-literal = foreign core.skeleton-literal;
-type skeleton-tuple = foreign core.skeleton-tuple;
+type skeleton-list = foreign core.skeleton-list;
 type skeleton-interpolation = foreign core.skeleton-interpolation;
 type skeleton-dynamic = foreign core.skeleton-dynamic;
 

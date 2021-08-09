@@ -9,7 +9,7 @@ type io-tuple(input, output);
 
 command io-tuple read do
   let Res = self.input value first;
-  self.input <- self.input value but-first;
+  self.input <- self.input value rest;
   Res;
 end
 

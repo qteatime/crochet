@@ -1,99 +1,18 @@
 % crochet
 
 // -- Constructors
-command #tuple empty = [];
+command #list empty = [];
 
 
-// -- Containership
-command (X is tuple) count =
-  foreign tuple.count(X)
-test
-  assert [] count =:= 0;
-  assert [1] count =:= 1;
-  assert [1, 2, 3] count =:= 3;
-end
 
 
-command (X is tuple) is-empty =
-  X count =:= 0
-test
-  assert [] is-empty;
-  assert not ([0] is-empty);
-end
 
 
-command (X is tuple) contains: Value =
-  foreign tuple.contains(X, Value)
-test
-  assert not ([] contains: 1);
-  assert ([1] contains: 1);
-  assert ([0, 1, 2] contains: 1);
-  assert not ([0, 1, 2] contains: 3);
-end
 
 
-// -- Indexing and sequencing
-command (X is tuple) at: (Index is integer)
+command (X is list) at: (Index is integer) insert: Value
 requires within-bounds :: (Index >= 1) and (Index <= X count)
-  = foreign tuple.at(X, Index)
-test
-  assert (["a", "b", "c"] at: 1) =:= "a";
-  assert (["a", "b", "c"] at: 2) =:= "b";
-  assert (["a", "b", "c"] at: 3) =:= "c";
-end
-
-
-command tuple first = self at: 1
-test
-  assert [1] first =:= 1;
-  assert [1, 2, 3] first =:= 1;
-end
-
-
-command tuple second = self at: 2
-test
-  assert [1, 2] second =:= 2;
-  assert [1, 2, 3] second =:= 2;
-end
-
-
-command tuple third = self at: 3
-test
-  assert [1, 2, 3] third === 3;
-  assert [1, 2, 3, 4] third === 3;
-end
-
-
-command tuple last = self at: self count
-test
-  assert [1] last =:= 1;
-  assert [1, 2, 3] last =:= 3;
-end
-
-
-command (X is tuple) at: (Index is integer) put: Value
-requires within-bounds :: (Index >= 1) and (Index <= X count)
-  = foreign tuple.at-put(X, Index, Value)
-test
-  assert (["a", "b", "c"] at: 1 put: "d") =:= ["d", "b", "c"];
-  assert (["a", "b", "c"] at: 2 put: "d") =:= ["a", "d", "c"];
-  assert (["a", "b", "c"] at: 3 put: "d") =:= ["a", "b", "d"];
-end
-
-
-command (X is tuple) delete-at: (Index is integer)
-requires within-bounds :: (Index >= 1) and (Index <= X count)
-  = foreign tuple.at-delete(X, Index)
-test
-  assert (["a"] delete-at: 1) =:= [];
-  assert (["a", "b", "c"] delete-at: 2) =:= ["a", "c"];
-  assert (["a", "b", "c"] delete-at: 3) =:= ["a", "b"];
-end
-
-
-command (X is tuple) at: (Index is integer) insert: Value
-requires within-bounds :: (Index >= 1) and (Index <= X count)
-  = foreign tuple.at-insert(X, Index, Value)
+  = foreign list.at-insert(X, Index, Value)
 test
   assert (["a", "b", "c"] at: 1 insert: 0) =:= [0, "a", "b", "c"];
   assert (["a", "b", "c"] at: 2 insert: 0) =:= ["a", 0, "b", "c"];
@@ -101,7 +20,7 @@ test
 end
 
 
-command (X is tuple) append: Value =
+command (X is list) append: Value =
   X ++ [Value]
 test
   assert ([] append: 1) === [1];
@@ -109,7 +28,7 @@ test
 end
 
 
-command (X is tuple) prepend: Value =
+command (X is list) prepend: Value =
   [Value] ++ X
 test
   assert ([] prepend: 1) === [1];
@@ -117,8 +36,8 @@ test
 end
 
 
-command (X is tuple) ++ (Y is tuple) = 
-  foreign tuple.concat(X, Y)
+command (X is list) ++ (Y is list) = 
+  foreign list.concat(X, Y)
 test
   assert ([] ++ []) =:= [];
   assert ([1, 2, 3] ++ []) =:= [1, 2, 3];
@@ -127,11 +46,11 @@ test
 end
 
 
-command (X is tuple) slice-from: (Start is integer) to: (End is integer)
+command (X is list) slice-from: (Start is integer) to: (End is integer)
 requires
   positive :: Start >= 1,
   progressive :: Start <= End
-  = foreign tuple.slice(X, Start, End)
+  = foreign list.slice(X, Start, End)
 test
   assert ([] slice-from: 1 to: 4) =:= [];
   assert ([0, 1, 2, 3] slice-from: 1 to: 4) =:= [0, 1, 2, 3];
@@ -142,7 +61,7 @@ test
 end
 
 
-command tuple slice-from: Start =
+command list slice-from: Start =
   self slice-from: Start to: (greater-of: Start and: self count)
 test
   assert ([] slice-from: 1) === [];
@@ -153,7 +72,7 @@ test
 end
 
 
-command tuple slice-to: End =
+command list slice-to: End =
   self slice-from: 1 to: End
 test
   assert ([] slice-to: 1) === [];
@@ -163,36 +82,11 @@ test
   assert ([1, 2, 3] slice-to: 3) === [1, 2, 3];
 end
 
-
-command tuple but-first =
-  condition
-    when self count < 2 => [];
-    always => self slice-from: 2 to: self count;
-  end
-test
-  assert [] but-first =:= [];
-  assert [1] but-first =:= [];
-  assert [1, 2, 3] but-first =:= [2, 3];
-end
-
-
-command tuple but-last =
-  condition
-    when self count < 2 => [];
-    always => self slice-from: 1 to: (self count - 1);
-  end
-test
-  assert [] but-last =:= [];
-  assert [1] but-last =:= [];
-  assert [1, 2, 3] but-last =:= [1, 2];
-end
-
-
-command tuple take-while: (Fun is function-1) do
+command list take-while: (Fun is function-1) do
   let Go = { Xs in
     condition
       when Xs is-empty => [];
-      when Fun(Xs first) => [Xs first] ++ Go(Xs but-first);
+      when Fun(Xs first) => [Xs first] ++ Go(Xs rest);
       always => [];
     end
   };
@@ -204,11 +98,11 @@ test
 end
 
 
-command tuple drop-while: (Fun is function-1) do
+command list drop-while: (Fun is function-1) do
   let Go = { Xs in
     condition
       when Xs is-empty => [];
-      when Fun(Xs first) => Go(Xs but-first);
+      when Fun(Xs first) => Go(Xs rest);
       always => Xs;
     end
   };
@@ -220,7 +114,7 @@ test
 end
 
 
-command tuple enumerate =
+command list enumerate =
   condition
     when self is-empty => [];
     always => (1 to: self count) zip: self with: { I, V in new indexed(I, V) };
@@ -233,7 +127,7 @@ end
 
 
 // -- Collection transformations
-command tuple keep-if: (Fun is function-1) do
+command list keep-if: (Fun is function-1) do
   for X in self if Fun(X) do X end
 test
   assert ([] keep-if: (_ > 2)) === [];
@@ -242,7 +136,7 @@ test
 end
 
 
-command tuple remove-if: (Fun is function-1) do
+command list remove-if: (Fun is function-1) do
   for X in self if not Fun(X) do X end;
 test
   assert ([] remove-if: (_ > 2)) === [];
@@ -251,8 +145,8 @@ test
 end
 
 
-command tuple map: (Fun is function-1) do
-  foreign tuple.map(self, Fun);
+command list map: (Fun is function-1) do
+  foreign list.map(self, Fun);
 test
   assert ([] map: (_ + 1)) === [];
   assert ([1] map: (_ + 1)) === [2];
@@ -260,15 +154,15 @@ test
 end
 
 
-command tuple flat-map: (Fun is function-1) do
-  foreign tuple.flatmap(self, Fun);
+command list flat-map: (Fun is function-1) do
+  foreign list.flatmap(self, Fun);
 test
   assert ([] flat-map: { A in [A, A] }) === [];
   assert ([1, 2, 3] flat-map: { A in [A, A] }) === [1, 1, 2, 2, 3, 3];
 end
 
 
-command tuple flatten-once do
+command list flatten-once do
   self flat-map: { X in X };
 test
   assert ([] flatten-once) === [];
@@ -277,8 +171,8 @@ end
 
 
 // -- Folding
-command (X is tuple) fold-from: Initial with: (Fun is function-2) =
-  foreign tuple.fold(X, Initial, Fun)
+command (X is list) fold-from: Initial with: (Fun is function-2) =
+  foreign list.fold(X, Initial, Fun)
 test
   assert ([1, 2, 3] fold-from: 0 with: (_ + _)) =:= (1 + 2 + 3 + 0);
   assert ([] fold-from: 0 with: (_ + _)) =:= 0;
@@ -287,8 +181,8 @@ test
 end
 
 
-command (X is tuple) fold-right-from: Initial with: (Fun is function-2) =
-  foreign tuple.foldr(X, Initial, Fun)
+command (X is list) fold-right-from: Initial with: (Fun is function-2) =
+  foreign list.foldr(X, Initial, Fun)
 test
   assert ([] fold-right-from: 0 with: (_ + _)) =:= 0;
   assert ([1] fold-right-from: 0 with: (_ + _)) =:= 1;
@@ -296,10 +190,10 @@ test
 end
 
 
-command tuple fold-with: (Fun is function-2)
+command list fold-with: (Fun is function-2)
 requires non-empty :: not (self is-empty)
 do
-  self but-first fold-from: self first with: Fun;
+  self rest fold-from: self first with: Fun;
 test
   assert ([1, 2, 3] fold-with: (_ + _)) =:= (1 + 2 + 3);
   assert ([1] fold-with: (_ + _)) =:= 1;
@@ -307,7 +201,7 @@ test
 end
 
 
-command tuple fold-right-with: (Fun is function-2)
+command list fold-right-with: (Fun is function-2)
 requires non-empty :: not (self is-empty)
 do
   self but-last fold-right-from: self last with: Fun;
@@ -317,7 +211,7 @@ test
 end
 
 
-command tuple some: (Fun is function-1) do
+command list some: (Fun is function-1) do
   self fold-from: false with: { A, B in A or Fun(B) };
 test
   assert ([] some: (_ === 2)) === false;
@@ -328,7 +222,7 @@ test
 end
 
 
-command tuple all: (Fun is function-1) do
+command list all: (Fun is function-1) do
   self fold-from: true with: { A, B in A and Fun(B) };
 test
   assert ([] all: (_ > 3)) === true;
@@ -338,7 +232,7 @@ test
 end
 
 
-command tuple all-true = self fold-from: true with: (_ and _)
+command list all-true = self fold-from: true with: (_ and _)
 test
   assert ([] all-true) === true;
   assert ([true, true] all-true) === true;
@@ -347,7 +241,7 @@ test
 end
 
 
-command tuple some-true = self fold-from: false with: (_ or _)
+command list some-true = self fold-from: false with: (_ or _)
 test
   assert ([] some-true) === false;
   assert ([true, true] some-true) === true;
@@ -356,21 +250,21 @@ test
 end
 
 
-command tuple sum = self fold-from: 0 with: (_ + _)
+command list sum = self fold-from: 0 with: (_ + _)
 test
   assert ([] sum) === 0;
   assert ([1, 2, 3, 4] sum) === (0 + 1 + 2 + 3 + 4);
 end
 
 
-command tuple product = self fold-from: 1 with: (_ * _)
+command list product = self fold-from: 1 with: (_ * _)
 test
   assert ([] product) === 1;
   assert ([1, 2, 3, 4] product) === (1 * 1 * 2 * 3 * 4);
 end
 
 
-command tuple average -> float
+command list average -> float
 requires non-empty :: not (self is-empty)
   = self sum / self count
 test
@@ -380,7 +274,7 @@ test
 end
 
 
-command tuple maximum
+command list maximum
 requires non-empty :: not (self is-empty)
   = self fold-with: (greater-of: _ and: _)
 test
@@ -390,7 +284,7 @@ test
 end
 
 
-command tuple minimum
+command list minimum
 requires non-empty :: not (self is-empty)
   = self fold-with: (lesser-of: _ and: _)
 test
@@ -401,15 +295,15 @@ end
 
 
 // -- Zipping
-command (X is tuple) zip: (That is tuple) with: (Fun is function-2)
+command (X is list) zip: (That is list) with: (Fun is function-2)
 requires same-size :: self count === That count
-  = foreign tuple.zip-with(X, That, Fun)
+  = foreign list.zip-with(X, That, Fun)
 test
   assert ([1, 2, 3] zip: [4, 5, 6] with: (_ + _)) === [1 + 4, 2 + 5, 3 + 6];
 end
 
 
-command tuple zip: That = self zip: That with: { A, B in [A, B] }
+command list zip: That = self zip: That with: { A, B in [A, B] }
 test
   assert ([] zip: []) =:= [];
   assert ([1] zip: [2]) =:= [[1, 2]];
@@ -419,9 +313,9 @@ end
 
 
 // -- Sorting
-command (X is tuple) reverse
+command (X is list) reverse
 ensures same-size :: self count === return count
-  = foreign tuple.reverse(X)
+  = foreign list.reverse(X)
 test
   assert [] reverse =:= [];
   assert [1] reverse =:= [1];
@@ -429,7 +323,7 @@ test
 end
 
 
-command tuple sort-by: (Comparator is function-2)
+command list sort-by: (Comparator is function-2)
 ensures same-size :: self count === return count do
   let Compare = { A, B in
     do
@@ -441,7 +335,7 @@ ensures same-size :: self count === return count do
       end
     end
   };
-  foreign tuple.sort(self, Compare)
+  foreign list.sort(self, Compare)
 test
   assert ([] sort-by: (_ compare-to: _)) =:= [];
   assert ([1] sort-by: (_ compare-to: _)) =:= [1];
@@ -449,7 +343,7 @@ test
 end
 
 
-command (X is tuple) sort
+command (X is list) sort
 ensures same-size :: self count === return count
   = self sort-by: (_ compare-to: _)
 test
@@ -460,7 +354,7 @@ end
 
 
 // -- Other
-command (X is tuple) without-duplicates = foreign tuple.unique(X)
+command (X is list) without-duplicates = foreign list.unique(X)
 test
   assert ([] without-duplicates) === [];
   assert ([1, 2, 1, 3, 1, 4] without-duplicates) === [1, 2, 3, 4];

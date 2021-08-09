@@ -1,0 +1,23 @@
+% crochet
+
+/// The identity combinator: always returns the value it's given.
+command Value identity = Value
+test
+  assert (1 identity) =:= 1;
+end
+
+/// The constant combinator: always discards its second argument and returns
+/// the first value it was given.
+command Value constant = { _ in Value }
+test
+  assert (1 constant)(2) =:= 1;
+end
+
+/// Left-to-right function composition.
+command (F is function-1) >> (G is function-1) = { X in G(F(X)) }
+test
+  let Double = _ * 2;
+  let Pred = _ - 1;
+  assert (Double >> Pred)(2) =:= 3;
+  assert (Pred >> Double)(2) =:= 2;
+end

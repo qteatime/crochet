@@ -3,7 +3,7 @@
 command text as parser-stream =
   new parser-stream(1, self characters);
 
-command tuple as parser-stream =
+command list as parser-stream =
   new parser-stream(1, self);
 
 command parser-stream contents =

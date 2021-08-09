@@ -3,9 +3,9 @@
 command X id = X;
 
 scene main do
-  let Tuple = [1, 2, 3, 4, 5, 6] shuffle;
-  transcript inspect: (Tuple);
-  transcript inspect: (Tuple sort: _ id);
-  transcript inspect: (Tuple sort);
-  transcript inspect: (Tuple sort reverse);
+  let List = [1, 2, 3, 4, 5, 6] shuffle;
+  transcript inspect: (List);
+  transcript inspect: (List sort: _ id);
+  transcript inspect: (List sort);
+  transcript inspect: (List sort reverse);
 end

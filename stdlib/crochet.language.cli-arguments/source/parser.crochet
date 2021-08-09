@@ -71,7 +71,7 @@ end
 command cli-arg parse: (Stream is parser-stream) =
   (self as parser) parse: Stream;
 
-command cli-arg parse: (Args is tuple) =
+command cli-arg parse: (Args is list) =
   self parse: (Args as parser-stream);
 
 command cli-arg map: (Fun is function-1) =

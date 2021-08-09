@@ -1,0 +1,52 @@
+% crochet
+
+// -- Default implementations
+/// The second element of a sequence.
+command (Xs has sequence) second = Xs rest first
+test
+  assert [1, 2] second =:= 2;
+  assert [1, 2, 3] second =:= 2;
+end
+
+/// The third element of a sequence.
+command (Xs has sequence) third = Xs rest rest first;
+test
+  assert [1, 2, 3] third =:= 3;
+  assert [1, 2, 3, 4] third =:= 3;
+end
+
+
+// -- List
+/// The first element of the list.
+command list first = self at: 1
+test
+  assert [1] first =:= 1;
+  assert [1, 2, 3] first =:= 1;
+end
+
+/// The second element of the list.
+command list second = self at: 2
+test
+  assert [1, 2] second =:= 2;
+  assert [1, 2, 3] second =:= 2;
+end
+
+/// The third element of the list.
+command list third = self at: 3
+test
+  assert [1, 2, 3] third === 3;
+  assert [1, 2, 3, 4] third === 3;
+end
+
+/// Returns a list which contains all elements after the first one.
+command list rest =
+  condition
+    when self count < 2 => [];
+    always => self slice-from: 2 to: self count;
+  end
+test
+  assert [] rest =:= [];
+  assert [1] rest =:= [];
+  assert [1, 2, 3] rest =:= [2, 3];
+end
+

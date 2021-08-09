@@ -19,7 +19,7 @@ command #json from: (X is text) = X;
 command #json from: (X is boolean) = X;
 command #json from: nothing = nothing;
 
-command #json from: (Xs is tuple) 
+command #json from: (Xs is list) 
   = for X in Xs do #json from: X end;
 
 command #json from: (X is record) do

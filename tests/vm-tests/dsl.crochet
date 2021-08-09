@@ -28,14 +28,14 @@ command #arithmetic evaluate: (X is skeleton-node) do
   end
 end
 
-command #arithmetic evaluate: (Xs is tuple) do
+command #arithmetic evaluate: (Xs is list) do
   for X in Xs do self evaluate: X end
 end
 
 command #arithmetic evaluate: (X is skeleton-literal) = X value;
 command #arithmetic evaluate: (X is skeleton-dynamic) = (X expression)();
 
-command #arithmetic evaluate: (X is skeleton-tuple) =
+command #arithmetic evaluate: (X is skeleton-list) =
   self evaluate: X children;
 
 command #arithmetic evaluate: (X is skeleton-interpolation) do

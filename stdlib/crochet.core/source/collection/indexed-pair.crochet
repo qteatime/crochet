@@ -1,0 +1,14 @@
+% crochet
+
+command indexed index = self.index;
+command indexed value = self.value;
+
+command indexed === (That is indexed) =
+  (self index === That index) and
+  (self value === That value);
+
+
+command debug-representation of: (X is indexed) =
+  debug-representation of: X index
+    | append: ": "
+    | append: (debug-representation of: X value);

@@ -6,8 +6,8 @@ command (Left has equality) =/= (Right has equality) =
 
 
 
-// # Tuple
-command tuple === (That is tuple) do
+// # List
+command list === (That is list) do
   condition
     when self count =/= That count => false;
     always =>

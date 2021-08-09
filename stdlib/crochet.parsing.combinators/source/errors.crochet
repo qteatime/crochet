@@ -32,13 +32,13 @@ command parser-error-end-of-stream error-message do
 end
 
 
-command error-mod join: (Errors0 is tuple) separator: (Sep is text) do
+command error-mod join: (Errors0 is list) separator: (Sep is text) do
   let Errors1 = for X in Errors0 do X error-message end;
   condition
     when Errors1 count === 0 => "[""]";
     when Errors1 count === 1 => "[Errors1 first]";
     always =>
-      Errors1 but-first fold-from: Errors1 first with: { A, B in "[A][Sep][B]" };
+      Errors1 rest fold-from: Errors1 first with: { A, B in "[A][Sep][B]" };
   end
 
 end

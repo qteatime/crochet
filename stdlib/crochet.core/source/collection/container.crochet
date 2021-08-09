@@ -1,0 +1,13 @@
+% crochet
+
+/// True if the list contains the provided value.
+command (X is list) contains: Value =
+  foreign list.contains(X, Value)
+test
+  assert not ([] contains: 1);
+  assert ([1] contains: 1);
+  assert ([0, 1, 2] contains: 1);
+  assert not ([0, 1, 2] contains: 3);
+end
+
+/// Remove an element of 

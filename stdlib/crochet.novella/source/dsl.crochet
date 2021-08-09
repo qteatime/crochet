@@ -2,31 +2,31 @@
 
 local type node;
 // Auxiliar types
-local type n-scene(meta, name is text, block is tuple<node>);
-local type n-choice(meta, title is node, block is tuple<node>);
+local type n-scene(meta, name is text, block is list<node>);
+local type n-choice(meta, title is node, block is list<node>);
 // Statement
 local type n-let(meta, name is text, value is node) is node;
 local type n-wait(meta) is node;
 local type n-show(meta, value is node) is node;
-local type n-menu(meta, choices is tuple<n-choice>) is node;
+local type n-menu(meta, choices is list<n-choice>) is node;
 local type n-goto(meta, name is text) is node;
 local type n-run(meta, lambda is function-0) is node;
 local singleton n-noop is node;
 // Expression
-local type n-apply(meta, name is text, attributes is record<node>, arguments is tuple<node>) is node;
+local type n-apply(meta, name is text, attributes is record<node>, arguments is list<node>) is node;
 local type n-value(value) is node;
 local type n-load(meta, name is text) is node;
 local type n-crochet(meta, lambda is function-0) is node;
-local type n-tuple(meta, items is tuple<node>) is node;
-local type n-interpolation(meta, parts is tuple<node>) is node;
+local type n-list(meta, items is list<node>) is node;
+local type n-interpolation(meta, parts is list<node>) is node;
 // Result types
 local abstract n-result;
 local singleton n-halt;
 local singleton n-continue;
-local type n-call(block is tuple<node>);
-local type n-jump(block is tuple<node>);
+local type n-call(block is list<node>);
+local type n-jump(block is list<node>);
 
-local type novella-state(continuation, block is tuple<node>);
+local type novella-state(continuation, block is list<node>);
 local type novella-env(parent, bindings is cell);
 local type novella-ref(name is text);
 
@@ -70,7 +70,7 @@ end
 
 command #novella-env get = perform novella-dsl.get-state();
 
-command #novella-dsl evaluate: (X is tuple) do
+command #novella-dsl evaluate: (X is list) do
   let Program = X map: (#novella-dsl compile: _);
   #novella-dsl run: new novella-state(nothing, Program);
 end
@@ -104,13 +104,13 @@ command #novella-dsl handle: n-halt state: _ =
   nothing;
 
 command #novella-dsl handle: n-continue state: State =
-  #novella-dsl run: new novella-state(State.continuation, State.block but-first);
+  #novella-dsl run: new novella-state(State.continuation, State.block rest);
 
 command #novella-dsl handle: (R is n-jump) state: State =
   #novella-dsl run: new novella-state(nothing, R.block);
 
 command #novella-dsl handle: (R is n-call) state: State =
-  #novella-dsl run: new novella-state( new novella-state(State.continuation, State.block but-first)
+  #novella-dsl run: new novella-state( new novella-state(State.continuation, State.block rest)
                                      , R.block);
 
 
@@ -179,7 +179,7 @@ command #novella-dsl run-expr: (X is n-crochet) do
   X.lambda();
 end
 
-command #novella-dsl run-expr: (X is n-tuple) do
+command #novella-dsl run-expr: (X is n-list) do
   X.items map: (#novella-dsl run-expr: _);
 end
 
@@ -247,7 +247,7 @@ command #novella-dsl compile: (X is skeleton-interpolation) do
   new n-show(X, new n-apply(X, "paragraph _", [->], [#novella-dsl compile-expr: X]));
 end
 
-command #novella-dsl compile: (X is skeleton-tuple) do
+command #novella-dsl compile: (X is skeleton-list) do
   X children map: (#novella-dsl compile: _);
 end
 
@@ -275,8 +275,8 @@ command #novella-dsl compile-expr: (X is skeleton-dynamic) do
   new n-thunk(X, X expression);
 end
 
-command #novella-dsl compile-expr: (X is skeleton-tuple) do
-  new n-tuple(X, X children map: (#novella-dsl compile-expr: _));
+command #novella-dsl compile-expr: (X is skeleton-list) do
+  new n-list(X, X children map: (#novella-dsl compile-expr: _));
 end
 
 command #novella-dsl compile-expr: (X is skeleton-interpolation) do

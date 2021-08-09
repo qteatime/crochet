@@ -1,6 +1,6 @@
 % crochet
 
-local type csv-with-header(header is row, rows is tuple);
+local type csv-with-header(header is row, rows is list);
 
 command #csv parse: (Source is text) -> csv do
   let Tree = (force grammar) parse: Source rule: "file";
@@ -31,7 +31,7 @@ command csv rows = self.rows;
 command csv with-header
 requires non-empty :: self.rows count > 0
 do
-  new csv-with-header(self rows first, self rows but-first);
+  new csv-with-header(self rows first, self rows rest);
 end
 
 command csv-with-header rows = self.rows;

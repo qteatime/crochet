@@ -55,7 +55,7 @@ command not entity-constraint =
 command ec-named in-package: (Name is text) =
   self and (trace-constraint package: Name);
 
-command ec-package procedures: (Names is tuple) do
+command ec-package procedures: (Names is list) do
   let Procedures = (for X in Names do trace-constraint procedure: X end);
   Procedures fold-from: self with: (_ and _);
 end
