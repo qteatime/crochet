@@ -186,7 +186,7 @@ async function run([file]: string[], options: Options) {
     true
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
-  const value = await crochet.run("main: _", [crochet.ffi.tuple([])]);
+  const value = await crochet.run("main: _", [crochet.ffi.list([])]);
   if (value.tag === Crochet.vm.Tag.NOTHING) {
     return;
   }
@@ -265,7 +265,7 @@ async function new_package([name]: string[], options: Options) {
   );
   const main = `% crochet
   
-command main: (Args is tuple) do
+command main: (Args is list) do
   "Hello, world";
 test
   assert (main: []) =:= "Hello, world";

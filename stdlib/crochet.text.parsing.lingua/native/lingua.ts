@@ -10,12 +10,12 @@ export default (ffi: ForeignInterface) => {
   function to_array(x: CrochetValue | unknown[]) {
     if (Array.isArray(x)) {
       return x;
-    } else if (ffi.is_tuple(x)) {
-      return ffi.tuple_to_array(x);
+    } else if (ffi.is_list(x)) {
+      return ffi.list_to_array(x);
     } else {
       throw ffi.panic(
         "invalid-type",
-        `Expected native array or tuple, got ${x}`
+        `Expected native array or list, got ${x}`
       );
     }
   }
@@ -33,23 +33,23 @@ export default (ffi: ForeignInterface) => {
           return children[0].visit();
         }
       }
-      return ffi.tuple(children.map((x: any) => x.visit()));
+      return ffi.list(children.map((x: any) => x.visit()));
     },
 
     nonemptyListOf(first: Ohm.Node, _: Ohm.Node, rest: Ohm.Node): any {
-      return ffi.tuple([first.visit(), ...to_array(rest.visit())]);
+      return ffi.list([first.visit(), ...to_array(rest.visit())]);
     },
 
     emptyListOf(): any {
-      return ffi.tuple([]);
+      return ffi.list([]);
     },
 
     NonemptyListOf(first: Ohm.Node, _: Ohm.Node, rest: Ohm.Node): any {
-      return ffi.tuple([first.visit(), ...to_array(rest.visit())]);
+      return ffi.list([first.visit(), ...to_array(rest.visit())]);
     },
 
     EmptyListOf(): any {
-      return ffi.tuple([]);
+      return ffi.list([]);
     },
   };
 

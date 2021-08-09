@@ -10,7 +10,7 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("interpolation.parts", (x) => {
-    return ffi.tuple(
+    return ffi.list(
       ffi.interpolation_to_parts(x).map((x) => {
         if (typeof x === "string") {
           return ffi.static_text(x);
@@ -22,7 +22,7 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("interpolation.holes", (x) => {
-    return ffi.tuple(
+    return ffi.list(
       ffi.interpolation_to_parts(x).filter((x) => typeof x !== "string") as any
     );
   });
@@ -74,7 +74,7 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("text.lines", (x0) => {
     const x = ffi.text_to_string(x0);
     const lines = x.split(/\r\n|\r|\n/).map((x) => ffi.text(x));
-    return ffi.tuple(lines);
+    return ffi.list(lines);
   });
 
   ffi.defun("text.code-points", (x0) => {
@@ -82,12 +82,12 @@ export default (ffi: ForeignInterface) => {
     for (const point of ffi.text_to_string(x0)) {
       points.push(ffi.integer(BigInt(point.codePointAt(0)!)));
     }
-    return ffi.tuple(points);
+    return ffi.list(points);
   });
 
   ffi.defun("text.from-code-points", (x0) => {
     const points = ffi
-      .tuple_to_array(x0)
+      .list_to_array(x0)
       .map((a) => Number(ffi.integer_to_bigint(a)));
     const text = String.fromCodePoint(...points);
     return ffi.text(text);
@@ -137,7 +137,7 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("text.from-lines", (xs) => {
     let result = "";
     let first = true;
-    for (const x of ffi.tuple_to_array(xs)) {
+    for (const x of ffi.list_to_array(xs)) {
       if (!first) {
         result += "\n";
       }

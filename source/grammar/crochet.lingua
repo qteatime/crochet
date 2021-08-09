@@ -891,10 +891,10 @@ grammar Crochet : Program {
     | x:interpolateText<dslNode>  -> DslAst.Interpolation(meta, x)
     | l:literal                   -> DslAst.Lit(meta, l)
     | x:dslCrochet                -> DslAst.Dynamic(meta, x)
-    | xs:dslNodeTuple             -> DslAst.List(meta, xs)
+    | xs:dslNodeList             -> DslAst.List(meta, xs)
     | s<"("> x:dslNode s<")">     -> x
 
-  dslNodeTuple =
+  dslNodeList =
     | s<"["> xs:dslNodeList s<"]"> -> xs
 
   dslCrochet =

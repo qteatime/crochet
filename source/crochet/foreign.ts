@@ -76,8 +76,8 @@ export class ForeignInterface {
     return Values.make_static_text(this.#universe, x);
   }
 
-  tuple(x: CrochetValue[]) {
-    return Values.make_tuple(this.#universe, x);
+  list(x: CrochetValue[]) {
+    return Values.make_list(this.#universe, x);
   }
 
   record(x: Map<string, CrochetValue>) {
@@ -149,7 +149,7 @@ export class ForeignInterface {
     return Values.text_to_string(x);
   }
 
-  tuple_to_array(x: CrochetValue): CrochetValue[] {
+  list_to_array(x: CrochetValue): CrochetValue[] {
     return Values.get_array(x);
   }
 
@@ -203,8 +203,8 @@ export class ForeignInterface {
     return x.tag === Tag.INTERPOLATION;
   }
 
-  is_tuple(x: CrochetValue) {
-    return x.tag === Tag.TUPLE;
+  is_list(x: CrochetValue) {
+    return x.tag === Tag.LIST;
   }
 
   is_thunk_forced(x: CrochetValue) {

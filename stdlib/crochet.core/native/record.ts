@@ -6,11 +6,11 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("record.keys", (x) =>
-    ffi.tuple([...ffi.record_to_map(x).keys()].map((x) => ffi.text(x)))
+    ffi.list([...ffi.record_to_map(x).keys()].map((x) => ffi.text(x)))
   );
 
   ffi.defun("record.values", (x) =>
-    ffi.tuple([...ffi.record_to_map(x).values()])
+    ffi.list([...ffi.record_to_map(x).values()])
   );
 
   ffi.defun("record.pairs", (x) => {
@@ -22,7 +22,7 @@ export default (ffi: ForeignInterface) => {
       ]);
       result.push(ffi.record(m));
     }
-    return ffi.tuple(result);
+    return ffi.list(result);
   });
 
   ffi.defun("record.concat", (x, y) => {
@@ -38,7 +38,7 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("record.from-pairs", (xs) => {
     const result = new Map();
-    for (const pair0 of ffi.tuple_to_array(xs)) {
+    for (const pair0 of ffi.list_to_array(xs)) {
       const pair = ffi.record_to_map(pair0);
       result.set(ffi.text_to_string(pair.get("key")!), pair.get("value"));
     }

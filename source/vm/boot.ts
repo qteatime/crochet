@@ -164,7 +164,7 @@ export function make_universe() {
 
   const Thunk = new CrochetType(null, "thunk", "", Any, [], [], false, null);
   const Record = new CrochetType(null, "record", "", Any, [], [], false, null);
-  const Tuple = new CrochetType(null, "tuple", "", Any, [], [], false, null);
+  const List = new CrochetType(null, "list", "", Any, [], [], false, null);
   const Enum = new CrochetType(null, "enum", "", Any, [], [], false, null);
   const Cell = new CrochetType(null, "cell", "", Any, [], [], false, null);
   const Type = new CrochetType(null, "type", "", Any, [], [], false, null);
@@ -206,7 +206,7 @@ export function make_universe() {
     ["name", "children", "attributes", "meta"],
     [
       new CrochetTypeConstraint(Text, []),
-      new CrochetTypeConstraint(Tuple, []),
+      new CrochetTypeConstraint(List, []),
       new CrochetTypeConstraint(Record, []),
       new CrochetTypeConstraint(Any, []),
     ],
@@ -248,11 +248,11 @@ export function make_universe() {
   );
   const SList = new CrochetType(
     null,
-    "skeleton-tuple",
+    "skeleton-list",
     "",
     Skeleton,
     ["children", "meta"],
-    [new CrochetTypeConstraint(Tuple, []), new CrochetTypeConstraint(Any, [])],
+    [new CrochetTypeConstraint(List, []), new CrochetTypeConstraint(Any, [])],
     false,
     null
   );
@@ -262,7 +262,7 @@ export function make_universe() {
     "",
     Skeleton,
     ["parts", "meta"],
-    [new CrochetTypeConstraint(Tuple, []), new CrochetTypeConstraint(Any, [])],
+    [new CrochetTypeConstraint(List, []), new CrochetTypeConstraint(Any, [])],
     false,
     null
   );
@@ -287,7 +287,7 @@ export function make_universe() {
   }
   world.native_types.define("crochet.core/core.thunk", Thunk);
   world.native_types.define("crochet.core/core.record", Record);
-  world.native_types.define("crochet.core/core.tuple", Tuple);
+  world.native_types.define("crochet.core/core.list", List);
   world.native_types.define("crochet.core/core.enum", Enum);
   world.native_types.define("crochet.core/core.cell", Cell);
   world.native_types.define("crochet.core/core.action", Action);
@@ -297,7 +297,7 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.skeleton-name", SName);
   world.native_types.define("crochet.core/core.skeleton-literal", SLiteral);
   world.native_types.define("crochet.core/core.skeleton-dynamic", SDynamic);
-  world.native_types.define("crochet.core/core.skeleton-tuple", SList);
+  world.native_types.define("crochet.core/core.skeleton-list", SList);
   world.native_types.define(
     "crochet.core/core.skeleton-interpolation",
     SInterpolation
@@ -319,7 +319,7 @@ export function make_universe() {
     Function: functions,
     Thunk,
     Record,
-    Tuple,
+    List: List,
     Enum,
     Type,
     Cell,
@@ -331,7 +331,7 @@ export function make_universe() {
       Name: SName,
       Literal: SLiteral,
       Dynamic: SDynamic,
-      Tuple: SList,
+      List: SList,
       Interpolation: SInterpolation,
     },
   });

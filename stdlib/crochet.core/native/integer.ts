@@ -80,6 +80,6 @@ export default (ffi: ForeignInterface) => {
     for (let i = from; i <= to; i += by) {
       result.push(ffi.integer(i));
     }
-    return ffi.tuple(result);
+    return ffi.list(result);
   });
 };

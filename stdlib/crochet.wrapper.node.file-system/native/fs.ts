@@ -78,7 +78,7 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("fs.readdir", (path) => {
     const xs = FS.readdirSync(ffi.text_to_string(path)).map((x) => ffi.text(x));
-    return ffi.tuple(xs);
+    return ffi.list(xs);
   });
 
   ffi.defun("fs.read-file-text", (path) => {

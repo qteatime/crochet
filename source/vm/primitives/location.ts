@@ -156,8 +156,8 @@ export function simple_value(x: CrochetValue): string {
         return `<thunk>`;
       }
     }
-    case Tag.TUPLE: {
-      assert_tag(Tag.TUPLE, x);
+    case Tag.LIST: {
+      assert_tag(Tag.LIST, x);
       return `[${x.payload.map((x) => simple_value(x)).join(", ")}]`;
     }
     case Tag.TYPE: {

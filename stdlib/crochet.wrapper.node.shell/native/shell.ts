@@ -33,7 +33,7 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("shell.exec-file", (file0, args0, options0) => {
     const file = ffi.text_to_string(file0);
-    const args = ffi.tuple_to_array(args0).map((x) => ffi.text_to_string(x));
+    const args = ffi.list_to_array(args0).map((x) => ffi.text_to_string(x));
     const options = make_options(ffi.record_to_map(options0));
 
     const result = execFileSync(file, args, options);

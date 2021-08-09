@@ -474,10 +474,10 @@ export class Thread {
         return _continue;
       }
 
-      case t.PUSH_TUPLE: {
+      case t.PUSH_LIST: {
         const values = this.pop_many(activation, op.arity);
-        const tuple = Values.make_tuple(this.state.universe, values);
-        this.push(activation, tuple);
+        const list = Values.make_list(this.state.universe, values);
+        this.push(activation, list);
         activation.next();
         return _continue;
       }
@@ -930,7 +930,7 @@ export class Thread {
         const nodes = op.ast.map((x) =>
           DSL.reify_dsl_node(this.universe, this.module, this.env, x)
         );
-        const arg = Values.make_tuple(this.universe, nodes);
+        const arg = Values.make_list(this.universe, nodes);
         const command = Commands.get_command(this.universe, "_ evaluate: _");
         const branch = Commands.select_branch(command, [type_arg, arg]);
         const new_activation = Commands.prepare_activation(activation, branch, [
