@@ -313,8 +313,8 @@ class CrochetIRDecoder extends BinaryReader {
       case t.PUSH_RETURN:
         return new IR.PushReturn(this.decode_meta_id());
 
-      case t.PUSH_TUPLE:
-        return new IR.PushTuple(this.decode_meta_id(), this.uint32());
+      case t.PUSH_LIST:
+        return new IR.PushList(this.decode_meta_id(), this.uint32());
 
       case t.PUSH_NEW:
         return new IR.PushNew(

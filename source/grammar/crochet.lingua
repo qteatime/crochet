@@ -875,10 +875,10 @@ grammar Crochet : Program {
 
   // -- DSLs
   dslExpression =
-    | dsl_ t:typeApp with_ x:dslNodeList end_
+    | dsl_ t:typeApp with_ x:dslNodeSeq end_
       -> Expression.Dsl(meta, t, x)
 
-  dslNodeList =
+  dslNodeSeq =
     | xs:list0<dslNode, s<";">> -> xs
 
   dslNode =

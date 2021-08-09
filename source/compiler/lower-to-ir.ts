@@ -736,7 +736,7 @@ export class LowerToIR {
           new IR.Branch(
             id,
             new IR.BasicBlock(this.comprehension(body)),
-            new IR.BasicBlock([new IR.PushTuple(id, 0)])
+            new IR.BasicBlock([new IR.PushList(id, 0)])
           ),
         ];
       },
@@ -745,8 +745,8 @@ export class LowerToIR {
         const id = this.context.register(pos);
         const result = this.expression(body);
         const ret = is_implicit_return(result)
-          ? [new IR.PushTuple(id, 1)]
-          : [new IR.PushTuple(id, 0)];
+          ? [new IR.PushList(id, 1)]
+          : [new IR.PushList(id, 0)];
 
         return [...result, ...ret];
       },
@@ -880,7 +880,7 @@ export class LowerToIR {
         const id = this.context.register(pos);
         return [
           ...values.flatMap((x) => this.expression(x)),
-          new IR.PushTuple(id, values.length),
+          new IR.PushList(id, values.length),
         ];
       },
 
