@@ -117,6 +117,15 @@ type function-5 = foreign core.function-5;
 /// Functions that take six arguments.
 type function-6 = foreign core.function-6;
 
+/// Functions that take seven arguments.
+type function-7 = foreign core.function-7;
+
+/// Functions that take eight arguments.
+type function-8 = foreign core.function-8;
+
+/// Functions that take nine arguments.
+type function-9 = foreign core.function-9;
+
 
 /// The type of lazy expressions.
 ///

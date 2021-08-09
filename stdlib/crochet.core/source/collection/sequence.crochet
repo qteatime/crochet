@@ -1,21 +1,5 @@
 % crochet
 
-// -- Default implementations
-/// The second element of a sequence.
-command (Xs has sequence) second = Xs rest first
-test
-  assert [1, 2] second =:= 2;
-  assert [1, 2, 3] second =:= 2;
-end
-
-/// The third element of a sequence.
-command (Xs has sequence) third = Xs rest rest first;
-test
-  assert [1, 2, 3] third =:= 3;
-  assert [1, 2, 3, 4] third =:= 3;
-end
-
-
 // -- List
 /// The first element of the list.
 command list first = self at: 1

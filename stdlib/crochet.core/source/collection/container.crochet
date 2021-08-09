@@ -9,5 +9,3 @@ test
   assert ([0, 1, 2] contains: 1);
   assert not ([0, 1, 2] contains: 3);
 end
-
-/// Remove an element of 

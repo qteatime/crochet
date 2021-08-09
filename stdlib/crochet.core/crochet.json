@@ -16,10 +16,31 @@
   "sources": [
     "source/0-types.crochet",
 
+    "source/action/action.crochet",
+
+    "source/cell/cell.crochet",
+    "source/cell/read-only.crochet",
+
+    "source/collection/container.crochet",
+    "source/collection/countable-container.crochet",
+    "source/collection/finite-sequence.crochet",
+    "source/collection/indexed-pair.crochet",
+    "source/collection/indexed.crochet",
+    "source/collection/record.crochet",
+    "source/collection/sequence.crochet",
+    "source/collection/tuple.crochet",
+
+    "source/debugging/debug-representation.crochet",
+
     "source/enum/bounds.crochet",
     "source/enum/enumeration.crochet",
     "source/enum/equality.crochet",
     "source/enum/total-ordering.crochet",
+
+    "source/errors/panic.crochet",
+
+    "source/functional/application.crochet",
+    "source/functional/thunk.crochet",
 
     "source/logic/boolean-algebra.crochet",
     "source/logic/equality.crochet",
@@ -34,6 +55,8 @@
     "source/result/equality.crochet",
     "source/result/result.crochet",
 
+    "source/skeleton/skeleton.crochet",
+
     "source/text/ascii.crochet",
     "source/text/basic.crochet",
     "source/text/equality.crochet",
@@ -43,25 +66,7 @@
     "source/traits/conversion.crochet",
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
-    "source/traits/ordering.crochet",
-
-    "source/action/action.crochet",
-
-    "source/cell/cell.crochet",
-    "source/cell/read-only.crochet",
-
-    "source/collection/indexed.crochet",
-    "source/collection/record.crochet",
-    "source/collection/tuple.crochet",
-
-    "source/debugging/debug-representation.crochet",
-
-    "source/errors/panic.crochet",
-
-    "source/functional/lambda.crochet",
-    "source/functional/thunk.crochet",
-
-    "source/skeleton/skeleton.crochet"
+    "source/traits/ordering.crochet"
   ],
   "capabilities": {
     "requires": [],

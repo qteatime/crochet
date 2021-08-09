@@ -895,7 +895,7 @@ grammar Crochet : Program {
     | s<"("> x:dslNode s<")">     -> x
 
   dslNodeList =
-    | s<"["> xs:dslNodeList s<"]"> -> xs
+    | s<"["> xs:dslNodeSeq s<"]"> -> xs
 
   dslCrochet =
     | s<"@("> x:expression s<")"> -> x
