@@ -1,25 +1,12 @@
 % crochet
 
 // -- List
+
 /// The first element of the list.
 command list first = self at: 1
 test
   assert [1] first =:= 1;
   assert [1, 2, 3] first =:= 1;
-end
-
-/// The second element of the list.
-command list second = self at: 2
-test
-  assert [1, 2] second =:= 2;
-  assert [1, 2, 3] second =:= 2;
-end
-
-/// The third element of the list.
-command list third = self at: 3
-test
-  assert [1, 2, 3] third === 3;
-  assert [1, 2, 3, 4] third === 3;
 end
 
 /// Returns a list which contains all elements after the first one.

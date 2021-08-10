@@ -1,22 +1,7 @@
 % crochet
 
-command record count
-  = foreign record.count(self)
-test
-  assert [->] count === 0;
-  assert [a -> 1] count === 1;
-  assert [a -> 1, b -> 2, c -> 3] count === 3;
-end
-
-
-command record is-empty
-  = self count =:= 0
-test
-  assert [->] is-empty;
-  assert not ([a -> 1] is-empty);
-end
-
-
+/// Returns a sequence of all keys in the record. The order of the keys
+/// in this sequence is unspecified.
 command record keys
   = foreign record.keys(self)
 test
@@ -26,7 +11,8 @@ test
   assert [a -> 1, b -> 2] keys === ["a", "b"];
 end
 
-
+/// Returns a sequence of all values in the record. The order of the values
+/// in this sequence is unspecified.
 command record values
   = foreign record.values(self)
 test
@@ -35,7 +21,8 @@ test
   assert [a -> 1, b -> 2] values === [1, 2];
 end
 
-
+/// Returns a sequence of all pairs in the record. The order of the values
+/// in this sequence is unspecified.
 command record pairs
   = foreign record.pairs(self)
 test
@@ -47,7 +34,7 @@ test
   ];
 end
 
-
+/// Constructs a new record from a sequence of pairs.
 command #record from-pairs: (Pairs is list) =
   foreign record.from-pairs(Pairs)
 test
@@ -60,86 +47,24 @@ test
 end
 
 
-command (X is record) merge: (That is record) =
-  foreign record.concat(X, That)
-test
-  assert ([->] merge: [a -> 1, b -> 2]) === [a -> 1, b -> 2];
-  assert ([a -> 1, b -> 2] merge: [->]) === [a -> 1, b -> 2];
-  assert ([a -> 1] merge: [b -> 2]) === [a -> 1, b -> 2];
-  assert ([a -> 1, c -> 4] merge: [a -> 2, b -> 3]) === [a -> 2, c -> 4, b -> 3];
-end
 
 
-command (X is record) at: (K is text) =
-  X.[K]
-test
-  assert ([a -> 1, b -> 2] at: "a") === 1;
-  assert (["a a" -> 1, b -> 2] at: "a a") === 1;
-  assert ([a -> 1, B -> 2] at: "B") === 2;
-end
 
 
-command (X is record) at: (K is text) default: V =
-  foreign record.at-default(X, K, V)
-test
-  assert ([a -> 1, b -> 2] at: "a" default: 0) === 1;
-  assert (["a a" -> 1, b -> 2] at: "a a" default: 0) === 1;
-  assert ([a -> 1, B -> 2] at: "B" default: 0) === 2;
-  assert ([->] at: "a" default: 0) === 0;
-  assert ([a -> 1, b -> 2] at: "c" default: 0) === 0;
-end
 
 
-command (X is record) contains-key: (Key is text) =
-  foreign record.has-key(X, Key)
-test
-  assert [a -> 1, b -> 2] contains-key: "a";
-  assert ["a a" -> 1, b -> 2] contains-key: "a a";
-  assert [a -> 1, B -> 2] contains-key: "B";
-  assert not ([a -> 1, b -> 2] contains-key: "c");
-  assert not ([->] contains-key: "a");
-end
 
 
-command (X is record) at: (K is text) put: V =
-  foreign record.at-put(X, K, V)
-test
-  let A = [a -> 1, b -> 2];
-  assert ([->] at: "a" put: 1) === [a -> 1];
-  assert (A at: "a" put: 2) === [a -> 2, b -> 2];
-  assert A === [a -> 1, b -> 2];
-  assert (A at: "c" put: 3) === [a -> 1, b -> 2, c -> 3];
-end
 
 
-command record at: (K is text) update: (Fun is function-1) do
-  condition
-    when self contains-key: K =>
-      self at: K put: Fun(self.[K]);
-    always =>
-      self;
-  end
-test
-  assert ([->] at: "a" update: (_ + 1)) === [->];
-  assert ([a -> 1] at: "a" update: (_ + 1)) === [a -> 2];
-  assert ([a -> 1, b -> 2] at: "a" update: (_ + 1)) === [a -> 2, b -> 2];
-  assert ([a -> 1, b -> 2] at: "c" update: (_ + 1)) === [a -> 1, b -> 2];
-end
 
 
-command record at: (K is text) default: V update: (Fun is function-1) do
-  condition
-    when self contains-key: K =>
-      self at: K put: Fun(self.[K]);
-    always =>
-      self at: K put: V;
-  end
-test
-  assert ([->] at: "a" default: 1 update: (_ + 1)) === [a -> 1];
-  assert ([a -> 1] at: "a" default: 1 update: (_ + 1)) === [a -> 2];
-  assert ([a -> 1, b -> 2] at: "a" default: 1 update: (_ + 1)) === [a -> 2, b -> 2];
-  assert ([a -> 1, b -> 2] at: "c" default: 1 update: (_ + 1)) === [a -> 1, b -> 2, c -> 1];
-end
+
+
+
+
+
+
 
 
 command record fold-from: Initial with: (Fun is function-3) do
@@ -159,14 +84,9 @@ test
 end
 
 
-command (X is record) remove-at: (Key is text) =
-  foreign record.remove-at(X, Key)
-test
-  assert ([a -> 1] remove-at: "a") === [->];
-  assert ([a -> 1, b -> 2] remove-at: "a") === [b -> 2];
-end
 
 
+/// Returns a record where all values are transformed by [Fun]
 command (X is record) map: (Fun is function-2) do
   self fold-from: [->] with: { R, K, V in R at: K put: Fun(K, V) };
 test

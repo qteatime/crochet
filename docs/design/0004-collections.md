@@ -36,15 +36,78 @@ Unlike most object-oriented (or hirerarchy-oriented) languages, Crochet does not
 
 And the traits:
 
-- indexed (`_ at: _`, `_ at: _ put: _`)
-- finite (`_ count`, `_ is-empty`)
-- ordered (`_ first`, `_ rest`, `_ append: _`, `_ prepend: _`)
-- indexed-and-ordered (`_ insert: _ after: _`, `_ insert: _ before: _`)
-- collection (`_ contains: _`, `_ remove: _`, `_ find: _`)
-- unordered-collection (`_ add: _`)
-- mappable (`_ map: _`)
-- foldable (`_ fold: _ from: _`, `_ fold-right: _ from: _`)
--
+### Containers
+
+- **container** (a collection of items)
+  - (list, linked-list, map, range, set, record)
+  - contains:
+- **countable container** (a collection of items with a known finite amount)
+  - (list, linked-list, map, range, set, record)
+  - count, is-empty^
+- **modifiable container** (a collection of items that can be changed)
+  - (list, linked-list, set)
+  - add:, remove:
+- **mapped container** (a collection of items identified by keys)
+  - (record, map)
+  - at:, at:default:, contains-key:
+- **modifiable mapped container** (a mapped container that can change)
+  - (record, map)
+  - at:put:, at:update:, remove-at:
+- **mergeable mapped container**
+  - (record, map)
+  - merge:
+
+### Sequences
+
+- **sequence** (a collection of ordered items)
+  : list, linked-list, stream, range
+  - first, rest
+- **appendable sequence** (a weaker modifiable sequence that only allows changes at boundaries)
+  : list, linked-list, stream
+  - append:, prepend:, ++
+- **finite sequence** (a collection of ordered items with a known finite amount)
+  : list, linked-list, range
+  - last, without-last
+- **indexed sequence** (a collection of ordered items that allows referring to items by their order)
+  : list, linked-list
+  - at:
+- **modifiable indexed sequence** (an indexed sequence that can change)
+  : list, linked-list
+  - at:put:, remove-at:, at:insert-before:, at:insert-after:
+- **sortable sequence** (a sequence that can have its order changed)
+  : list, linked-list
+  - sort-by:, sort^
+- **reversible sequence** (a sequence that can go backwards)
+  : list, linked-list, range
+  - reverse
+- **sliceable sequences** (a sequence that supports slices)
+  : list, linked-list
+  - slice-from:to:
+
+### Sets
+
+- **set algebra** (a collection that supports set operations)
+  : set
+  - union:, intersect:, complement:
+
+### Iteration
+
+- **iterable collection** (a collection that implements the iterator protocol)
+  - iterate
+    - next
+- **traversable collection** (a collection that can be iterated in order)
+  - traverse:
+- **transformable collection** (a collection that supports map)
+  : list, linked-list, stream, range, set, map
+  - map:
+- **chainable collection** (a collection that supports flatmap)
+  - flat-map:
+- **foldable collection** (a collection that supports fold)
+  - fold:with:, fold-right:with:
+- **zippable collection**
+  - zip:with:
+- **filterable collection**
+  - filter:
 
 Operations:
 
@@ -73,20 +136,19 @@ Operations:
 
       ## Sliceable indexed sequence (linked-list, list)
       _ slice-from: I
-      - slice-to: I
+      _ slice-to: I
       _ slice-from: I to: J
-      _ slice-from: I until: J
 
     # Containers
       ## Container (linked-list, set, list)
-      _ remove: X
       _ contains: X
 
       ## Countable container (linked-list, map, set, range, list, record)
       _ count
       _ is-empty
 
-      ## Unordered container (set)
+      ## Modifiable container (set, linked-list, set)
+      _ remove: X
       _ add: X
 
       ## Keyed container (map, record)

@@ -1,0 +1,21 @@
+% crochet
+
+// -- Lists
+
+/// Adds an element to the end of the list.
+command list add: Value =
+  self append: Value
+test
+  assert ([] add: 1) =:= [1];
+  assert ([1] add: 2) =:= [1, 2];
+  assert ([1, 2, 3] add: 4) =:= [1, 2, 3, 4];
+end
+
+/// Removes all elements intrisically equal to the provided one.
+command list remove: Value =
+  self remove-if: (_ =:= Value)
+test
+  assert ([] remove: 1) =:= [];
+  assert ([1] remove: 1) =:= [1];
+  assert ([1, 2, 1, 3, 4, 1] remove: 1) =:= [2, 3, 4];
+end

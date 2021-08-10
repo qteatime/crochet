@@ -1,8 +1,10 @@
 % crochet
 
+// -- Lists
+
 /// True if the list contains the provided value.
-command (X is list) contains: Value =
-  foreign list.contains(X, Value)
+command list contains: Value =
+  foreign list.contains(self, Value)
 test
   assert not ([] contains: 1);
   assert ([1] contains: 1);

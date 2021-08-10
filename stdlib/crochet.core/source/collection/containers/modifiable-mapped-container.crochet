@@ -1,0 +1,56 @@
+% crochet
+
+// -- Record
+
+/// Returns a new record where [Key] is now associated with [Value].
+command record at: (Key is text) put: Value =
+  foreign record.at-put(self, Key, Value)
+test
+  let A = [a -> 1, b -> 2];
+  assert ([->] at: "a" put: 1) === [a -> 1];
+  assert (A at: "a" put: 2) === [a -> 2, b -> 2];
+  assert A === [a -> 1, b -> 2];
+  assert (A at: "c" put: 3) === [a -> 1, b -> 2, c -> 3];
+end
+
+/// Returns a new record where the value identified by [Key] is transformed
+/// acording to the provided [Fun].
+command record at: (Key is text) update: (Fun is function-1) do
+  condition
+    when self contains-key: Key =>
+      self at: Key put: Fun(self.[Key]);
+    always =>
+      self;
+  end
+test
+  assert ([->] at: "a" update: (_ + 1)) === [->];
+  assert ([a -> 1] at: "a" update: (_ + 1)) === [a -> 2];
+  assert ([a -> 1, b -> 2] at: "a" update: (_ + 1)) === [a -> 2, b -> 2];
+  assert ([a -> 1, b -> 2] at: "c" update: (_ + 1)) === [a -> 1, b -> 2];
+end
+
+/// Returns a new record where the value identified by [Key] is transformed
+/// by the provided [Fun], if it exists. Otherwise, associates [Key] with
+/// the provided default [Value].
+command record at: (Key is text) default: Value update: (Fun is function-1) do
+  condition
+    when self contains-key: Key =>
+      self at: Key put: Fun(self.[Key]);
+    always =>
+      self at: Key put: Value;
+  end
+test
+  assert ([->] at: "a" default: 1 update: (_ + 1)) === [a -> 1];
+  assert ([a -> 1] at: "a" default: 1 update: (_ + 1)) === [a -> 2];
+  assert ([a -> 1, b -> 2] at: "a" default: 1 update: (_ + 1)) === [a -> 2, b -> 2];
+  assert ([a -> 1, b -> 2] at: "c" default: 1 update: (_ + 1)) === [a -> 1, b -> 2, c -> 1];
+end
+
+/// Returns a new record that no longer associates the given [Key] with any
+/// value.
+command record remove-at: (Key is text) =
+  foreign record.remove-at(self, Key)
+test
+  assert ([a -> 1] remove-at: "a") === [->];
+  assert ([a -> 1, b -> 2] remove-at: "a") === [b -> 2];
+end

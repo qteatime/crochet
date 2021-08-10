@@ -15,41 +15,6 @@ command #list empty = [];
 
 
 
-command (X is list) slice-from: (Start is integer) to: (End is integer)
-requires
-  positive :: Start >= 1,
-  progressive :: Start <= End
-  = foreign list.slice(X, Start, End)
-test
-  assert ([] slice-from: 1 to: 4) =:= [];
-  assert ([0, 1, 2, 3] slice-from: 1 to: 4) =:= [0, 1, 2, 3];
-  assert ([0, 1, 2, 3] slice-from: 1 to: 1) =:= [0];
-  assert ([0, 1, 2, 3] slice-from: 4 to: 4) =:= [3];
-  assert ([0, 1, 2, 3] slice-from: 2 to: 3) =:= [1, 2];
-  assert ([0, 1, 2, 3] slice-from: 3 to: 5) =:= [2, 3];
-end
-
-
-command list slice-from: Start =
-  self slice-from: Start to: (greater-of: Start and: self count)
-test
-  assert ([] slice-from: 1) === [];
-  assert ([1] slice-from: 1) === [1];
-  assert ([1, 2, 3] slice-from: 1) === [1, 2, 3];
-  assert ([1, 2, 3] slice-from: 2) === [2, 3];
-  assert ([1, 2, 3] slice-from: 3) === [3];
-end
-
-
-command list slice-to: End =
-  self slice-from: 1 to: End
-test
-  assert ([] slice-to: 1) === [];
-  assert ([1] slice-to: 1) === [1];
-  assert ([1, 2, 3] slice-to: 1) === [1];
-  assert ([1, 2, 3] slice-to: 2) === [1, 2];
-  assert ([1, 2, 3] slice-to: 3) === [1, 2, 3];
-end
 
 command list take-while: (Fun is function-1) do
   let Go = { Xs in
@@ -114,13 +79,7 @@ test
 end
 
 
-command list map: (Fun is function-1) do
-  foreign list.map(self, Fun);
-test
-  assert ([] map: (_ + 1)) === [];
-  assert ([1] map: (_ + 1)) === [2];
-  assert ([1, 2, 3, 4] map: (_ + 1)) === [2, 3, 4, 5];
-end
+
 
 
 command list flat-map: (Fun is function-1) do
@@ -140,23 +99,7 @@ end
 
 
 // -- Folding
-command (X is list) fold-from: Initial with: (Fun is function-2) =
-  foreign list.fold(X, Initial, Fun)
-test
-  assert ([1, 2, 3] fold-from: 0 with: (_ + _)) =:= (1 + 2 + 3 + 0);
-  assert ([] fold-from: 0 with: (_ + _)) =:= 0;
-  assert ([1] fold-from: 0 with: (_ + _)) =:= 1;
-  assert ([1, 2, 3] fold-from: 6 with: (_ - _)) =:= (((6 - 1) - 2) - 3);
-end
 
-
-command (X is list) fold-right-from: Initial with: (Fun is function-2) =
-  foreign list.foldr(X, Initial, Fun)
-test
-  assert ([] fold-right-from: 0 with: (_ + _)) =:= 0;
-  assert ([1] fold-right-from: 0 with: (_ + _)) =:= 1;
-  assert ([1, 2, 3] fold-right-from: 6 with: (_ - _)) =:= (1 - (2 - (3 - 6)));
-end
 
 
 command list fold-with: (Fun is function-2)
@@ -282,44 +225,8 @@ end
 
 
 // -- Sorting
-command (X is list) reverse
-ensures same-size :: self count === return count
-  = foreign list.reverse(X)
-test
-  assert [] reverse =:= [];
-  assert [1] reverse =:= [1];
-  assert [1, 2, 3] reverse =:= [3, 2, 1];
-end
 
 
-command list sort-by: (Comparator is function-2)
-ensures same-size :: self count === return count do
-  let Compare = { A, B in
-    do
-      let C = Comparator(A, B);
-      condition
-        when C === less-than => -1;
-        when C === equal => 0;
-        when C === greater-than => 1;
-      end
-    end
-  };
-  foreign list.sort(self, Compare)
-test
-  assert ([] sort-by: (_ compare-to: _)) =:= [];
-  assert ([1] sort-by: (_ compare-to: _)) =:= [1];
-  assert ([-2, 1, 0, 3] sort-by: (_ compare-to: _)) =:= [-2, 0, 1, 3];
-end
-
-
-command (X is list) sort
-ensures same-size :: self count === return count
-  = self sort-by: (_ compare-to: _)
-test
-  assert ([] sort) =:= [];
-  assert ([1] sort) =:= [1];
-  assert ([-2, 1, 0, 3] sort) =:= [-2, 0, 1, 3];
-end
 
 
 // -- Other

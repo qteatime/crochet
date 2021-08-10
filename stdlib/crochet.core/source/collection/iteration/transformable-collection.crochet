@@ -1,0 +1,23 @@
+% crochet
+
+// -- List
+
+/// Returns a list where all elements are transformed by [Fun].
+command list map: (Fun is function-1) do
+  foreign list.map(self, Fun);
+test
+  assert ([] map: (_ + 1)) === [];
+  assert ([1] map: (_ + 1)) === [2];
+  assert ([1, 2, 3, 4] map: (_ + 1)) === [2, 3, 4, 5];
+end
+
+// -- Record
+
+/// Returns a record where all values are transformed by [Fun]
+command record map: (Fun is (A -> B)) =
+  self map: { K, V in Fun(V) };
+test
+  assert ([a -> 1] map: (_ + 1)) === [a -> 2];
+  assert ([->] map: (_ + 1)) === [->];
+  assert ([a -> 1, b -> 2] map: (_ + 1)) === [a -> 2, b -> 3];
+end

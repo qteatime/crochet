@@ -1,16 +1,18 @@
 % crochet
 
+// -- Lists
+
 /// Adds the given value at the end of the list.
-command (X is list) append: Value =
-  X ++ [Value]
+command list append: Value =
+  self ++ [Value]
 test
   assert ([] append: 1) === [1];
   assert ([0, 1, 2] append: 1) === [0, 1, 2, 1];
 end
 
 /// Adds the given value at the beginning of the list.
-command (X is list) prepend: Value =
-  [Value] ++ X
+command list prepend: Value =
+  [Value] ++ self
 test
   assert ([] prepend: 1) === [1];
   assert ([0, 1, 2] prepend: 1) === [1, 0, 1, 2];
@@ -18,8 +20,8 @@ end
 
 /// Returns a list containing elemnets from the first list followed by the
 /// elements from the second list.
-command (X is list) ++ (Y is list) = 
-  foreign list.concat(X, Y)
+command list ++ (That is list) = 
+  foreign list.concat(self, That)
 test
   assert ([] ++ []) =:= [];
   assert ([1, 2, 3] ++ []) =:= [1, 2, 3];

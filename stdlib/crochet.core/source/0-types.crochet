@@ -162,6 +162,11 @@ type record = foreign core.record;
 /// to choose more efficient ways of storing and using it.
 type list = foreign core.list;
 
+/// The type of integer ranges.
+///
+/// Represents an inclusive integer range.
+type integer-range(start is integer, stop is integer, step is integer);
+
 /// The type of linked lists.
 ///
 /// A linked list is an ordered sequence of values of the same type

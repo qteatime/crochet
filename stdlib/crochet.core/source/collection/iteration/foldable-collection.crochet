@@ -1,0 +1,22 @@
+% crochet
+
+// -- Lists
+
+/// Folds a list left-to-right.
+command list fold-from: Initial with: (Fun is function-2) =
+  foreign list.fold(self, Initial, Fun)
+test
+  assert ([1, 2, 3] fold-from: 0 with: (_ + _)) =:= (1 + 2 + 3 + 0);
+  assert ([] fold-from: 0 with: (_ + _)) =:= 0;
+  assert ([1] fold-from: 0 with: (_ + _)) =:= 1;
+  assert ([1, 2, 3] fold-from: 6 with: (_ - _)) =:= (((6 - 1) - 2) - 3);
+end
+
+/// Folds a list right-to-left.
+command list fold-right-from: Initial with: (Fun is function-2) =
+  foreign list.foldr(self, Initial, Fun)
+test
+  assert ([] fold-right-from: 0 with: (_ + _)) =:= 0;
+  assert ([1] fold-right-from: 0 with: (_ + _)) =:= 1;
+  assert ([1, 2, 3] fold-right-from: 6 with: (_ - _)) =:= (1 - (2 - (3 - 6)));
+end
