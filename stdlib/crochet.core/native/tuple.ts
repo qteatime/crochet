@@ -46,6 +46,13 @@ export default (ffi: ForeignInterface) => {
     return ffi.list(xs);
   });
 
+  ffi.defun("list.after-insert", (xs0, i0, x) => {
+    const xs = ffi.list_to_array(xs0).slice();
+    const i = ffi.integer_to_bigint(i0);
+    xs.splice(Number(i), 0, x);
+    return ffi.list(xs);
+  });
+
   ffi.defun("list.reverse", (xs0) => {
     const source = ffi.list_to_array(xs0);
     const result = [];

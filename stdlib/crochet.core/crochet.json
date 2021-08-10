@@ -26,7 +26,7 @@
     "source/collection/countable-container.crochet",
     "source/collection/finite-sequence.crochet",
     "source/collection/indexed-pair.crochet",
-    "source/collection/indexed.crochet",
+    "source/collection/indexed-sequence.crochet",
     "source/collection/record.crochet",
     "source/collection/sequence.crochet",
     "source/collection/tuple.crochet",

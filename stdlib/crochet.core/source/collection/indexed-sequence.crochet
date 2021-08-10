@@ -30,3 +30,23 @@ test
   assert (["a", "b", "c"] delete-at: 2) =:= ["a", "c"];
   assert (["a", "b", "c"] delete-at: 3) =:= ["a", "b"];
 end
+
+/// Inserts [Value] before the element at [Index].
+command (X is list) before: (Index is integer) insert: Value
+requires within-bounds :: (Index >= 1) and (Index <= X count)
+  = foreign list.at-insert(X, Index, Value)
+test
+  assert (["a", "b", "c"] before: 1 insert: 0) =:= [0, "a", "b", "c"];
+  assert (["a", "b", "c"] before: 2 insert: 0) =:= ["a", 0, "b", "c"];
+  assert (["a", "b", "c"] before: 3 insert: 0) =:= ["a", "b", 0, "c"];
+end
+
+/// Inserts [Value] after the element at [Index].
+command list after: (Index is integer) insert: Value
+requires within-bounds :: (Index >= 1) and (Index <= self count)
+  = foreign list.after-insert(self, Index, Value)
+test
+  assert (["a", "b", "c"] after: 1 insert: 0) =:= ["a", 0, "b", "c"];
+  assert (["a", "b", "c"] after: 2 insert: 0) =:= ["a", "b", 0, "c"];
+  assert (["a", "b", "c"] after: 3 insert: 0) =:= ["a", "b", "c", 0];
+end

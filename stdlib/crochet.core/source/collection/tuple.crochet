@@ -10,14 +10,7 @@ command #list empty = [];
 
 
 
-command (X is list) at: (Index is integer) insert: Value
-requires within-bounds :: (Index >= 1) and (Index <= X count)
-  = foreign list.at-insert(X, Index, Value)
-test
-  assert (["a", "b", "c"] at: 1 insert: 0) =:= [0, "a", "b", "c"];
-  assert (["a", "b", "c"] at: 2 insert: 0) =:= ["a", 0, "b", "c"];
-  assert (["a", "b", "c"] at: 3 insert: 0) =:= ["a", "b", 0, "c"];
-end
+
 
 
 
