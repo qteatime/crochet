@@ -61,7 +61,7 @@ Operations:
       _ ++ Xs
 
       ## Finite sequence (linked-list, range, list)
-      _ but-last
+      _ without-last
       _ last
 
       ## Indexed sequence (linked-list, list)

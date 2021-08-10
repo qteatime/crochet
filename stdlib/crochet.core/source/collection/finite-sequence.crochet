@@ -11,13 +11,13 @@ end
 
 /// Returns a list which contains all elements up to (but not including) the
 /// last one.
-command list but-last =
+command list without-last =
   condition
     when self count < 2 => [];
     always => self slice-from: 1 to: (self count - 1);
   end
 test
-  assert [] but-last =:= [];
-  assert [1] but-last =:= [];
-  assert [1, 2, 3] but-last =:= [1, 2];
+  assert [] without-last =:= [];
+  assert [1] without-last =:= [];
+  assert [1, 2, 3] without-last =:= [1, 2];
 end

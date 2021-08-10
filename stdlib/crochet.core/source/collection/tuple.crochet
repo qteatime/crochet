@@ -180,7 +180,7 @@ end
 command list fold-right-with: (Fun is function-2)
 requires non-empty :: not (self is-empty)
 do
-  self but-last fold-right-from: self last with: Fun;
+  self without-last fold-right-from: self last with: Fun;
 test
   assert ([1] fold-right-with: (_ + _)) =:= 1;
   assert ([1, 2, 3] fold-right-with: (_ - _)) =:= (1 - (2 - 3));
