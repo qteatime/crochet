@@ -21,6 +21,7 @@
     "source/cell/cell.crochet",
     "source/cell/read-only.crochet",
 
+    "source/collection/appendable-sequence.crochet",
     "source/collection/container.crochet",
     "source/collection/countable-container.crochet",
     "source/collection/finite-sequence.crochet",

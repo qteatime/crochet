@@ -1,0 +1,28 @@
+% crochet
+
+/// Adds the given value at the end of the list.
+command (X is list) append: Value =
+  X ++ [Value]
+test
+  assert ([] append: 1) === [1];
+  assert ([0, 1, 2] append: 1) === [0, 1, 2, 1];
+end
+
+/// Adds the given value at the beginning of the list.
+command (X is list) prepend: Value =
+  [Value] ++ X
+test
+  assert ([] prepend: 1) === [1];
+  assert ([0, 1, 2] prepend: 1) === [1, 0, 1, 2];
+end
+
+/// Returns a list containing elemnets from the first list followed by the
+/// elements from the second list.
+command (X is list) ++ (Y is list) = 
+  foreign list.concat(X, Y)
+test
+  assert ([] ++ []) =:= [];
+  assert ([1, 2, 3] ++ []) =:= [1, 2, 3];
+  assert ([] ++ [1, 2, 3]) =:= [1, 2, 3];
+  assert ([1, 2] ++ [3, 4, 5]) =:= [1, 2, 3, 4, 5];
+end
