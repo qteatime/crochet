@@ -49,7 +49,7 @@ end
 /// Returns a new record that no longer associates the given [Key] with any
 /// value.
 command record remove-at: (Key is text) =
-  foreign record.remove-at(self, Key)
+  foreign record.delete-at(self, Key)
 test
   assert ([a -> 1] remove-at: "a") === [->];
   assert ([a -> 1, b -> 2] remove-at: "a") === [b -> 2];

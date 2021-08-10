@@ -15,7 +15,7 @@ end
 
 /// Returns a record where all values are transformed by [Fun]
 command record map: (Fun is (A -> B)) =
-  self map: { K, V in Fun(V) };
+  self map: { K, V in Fun(V) }
 test
   assert ([a -> 1] map: (_ + 1)) === [a -> 2];
   assert ([->] map: (_ + 1)) === [->];

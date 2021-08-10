@@ -3,7 +3,8 @@
 // -- Constructors
 command #list empty = [];
 
-
+command list second = self at: 2;
+command list third = self at: 3;
 
 
 
@@ -99,9 +100,6 @@ end
 
 
 // -- Folding
-
-
-
 command list fold-with: (Fun is function-2)
 requires non-empty :: not (self is-empty)
 do
