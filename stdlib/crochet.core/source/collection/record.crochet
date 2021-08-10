@@ -159,11 +159,11 @@ test
 end
 
 
-command (X is record) delete-at: (Key is text) =
-  foreign record.delete-at(X, Key)
+command (X is record) remove-at: (Key is text) =
+  foreign record.remove-at(X, Key)
 test
-  assert ([a -> 1] delete-at: "a") === [->];
-  assert ([a -> 1, b -> 2] delete-at: "a") === [b -> 2];
+  assert ([a -> 1] remove-at: "a") === [->];
+  assert ([a -> 1, b -> 2] remove-at: "a") === [b -> 2];
 end
 
 

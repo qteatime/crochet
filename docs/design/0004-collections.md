@@ -71,8 +71,6 @@ Operations:
       _ after: I insert: X
       _ remove-at: I
 
-      _ at: I insert: X (?)
-
       ## Sliceable indexed sequence (linked-list, list)
       _ slice-from: I
       - slice-to: I

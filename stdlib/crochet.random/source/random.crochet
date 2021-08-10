@@ -95,7 +95,7 @@ requires non-empty :: not (Items0 is-empty)
 do
   let Result = self between: 1 and: Items0 count;
   let Choice = Items0 at: Result.value;
-  let Items = Items0 delete-at: Result.value;
+  let Items = Items0 remove-at: Result.value;
   new random-next(
     [
       choice -> Choice,

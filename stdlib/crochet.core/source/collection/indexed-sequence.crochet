@@ -22,13 +22,13 @@ end
 
 /// Removes the element at the given index, bringing the next ones one space
 /// forward.
-command (X is list) delete-at: (Index is integer)
+command (X is list) remove-at: (Index is integer)
 requires within-bounds :: (Index >= 1) and (Index <= X count)
   = foreign list.at-delete(X, Index)
 test
-  assert (["a"] delete-at: 1) =:= [];
-  assert (["a", "b", "c"] delete-at: 2) =:= ["a", "c"];
-  assert (["a", "b", "c"] delete-at: 3) =:= ["a", "b"];
+  assert (["a"] remove-at: 1) =:= [];
+  assert (["a", "b", "c"] remove-at: 2) =:= ["a", "c"];
+  assert (["a", "b", "c"] remove-at: 3) =:= ["a", "b"];
 end
 
 /// Inserts [Value] before the element at [Index].
