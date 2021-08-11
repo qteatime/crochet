@@ -400,3 +400,201 @@ trait rounding-strategies with
   /// Returns the nearest integer.
   command A round;
 end
+
+/// A type has a [container] if it's an arbitrary collection of items, for
+/// which one can test if an item exists within it.
+trait container with
+  /// True if the [Value] exists within [Container]
+  command Container contains: Value -> boolean;
+end
+
+/// A type has a [countable-container] if it has a [container] with a known,
+/// finite number of items.
+trait countable-container with
+  requires trait container;
+
+  /// The number of items that exist within the container.
+  command Container count -> integer;
+
+  /// (optional) True if the container contains no items.
+  command Container is-empty -> boolean;
+end
+
+/// A type has a [modifiable-container] if it has a [container] that allows
+/// items to be added or removed from it.
+trait modifiable-container with
+  requires trait container;
+
+  /// Adds [Value] to the [Container].
+  command Container add: Value;
+
+  /// Removes [Value] from the [Container].
+  command Container remove: Value;
+end
+
+/// A type has a [mapped-container] if each item it contains is identified
+/// by a key. In other words, a [mapped-container] "maps" (in the mathematical
+/// sense) some key to some value.
+///
+/// There are no restrictions on whether a key may map to multiple values, or
+/// whether a value may be identified by multiple keys; that's up to each
+/// specific container.
+trait mapped-container with
+  /// Retrieves the value identified by the given [Key]. The [Key] must already
+  /// be known by the container.
+  command Container at: Key;
+
+  /// Retrieves the value identified by the given [Key]. If the [Key] is not
+  /// known by the container yet, returns the [Default] value instead.
+  command Container at: Key default: Default;
+
+  /// True if the [Key] is known by the container.
+  command Container contains-key: Key -> boolean;
+end
+
+/// A type has a [modifiable-mapped-container] if it has a [mapped-container]
+/// that allows the mappings within it to be added, removed, or updated.
+trait modifiable-mapped-container with
+  requires trait mapped-container;
+
+  /// Associates the [Key] with the given [Value]. Will create a new
+  /// association if none exists, and may overwrite existing associations
+  /// in some types.
+  command Container at: Key put: Value;
+
+  /// Updates values associated with the given [Key] by applying the provided
+  /// [Transformation] to them.
+  command Container at: Key update: Transformation;
+
+  /// Removes any value associated with the given [Key] from the [Container].
+  command Container remove-at: Key;
+end
+
+/// A type has a [mergeable-mapped-container] if it has a [mapped-container]
+/// and allows one to merge the mappings of its container with the mappings
+/// of another container.
+///
+/// What exactly it means to merge the mappings is left to specific types,
+/// however it's expected that the resulting container will have the union
+/// of the keys of both containers.
+trait mergeable-mapped-container with
+  /// Merges the mappings of both containers.
+  command This merge: That
+    ensures all-keys :: (set: (This keys ++ That keys)) === (set: return keys);
+end
+
+/// A type has a [sequence] if it contains a series of ordered items.
+trait sequence with
+  /// The first element in the sequence.
+  command Sequence first;
+
+  /// The sequence that starts from the second element.
+  command Sequence rest;
+end
+
+/// A type has an [appendable-sequence] if it has a [sequence] that allows
+/// elements to be added to the beginning or to the end.
+trait appendable-sequence with
+  requires trait sequence;
+
+  /// Adds a [Value] to the end of the sequence.
+  command Sequence append: Value;
+
+  /// Adds a [Value] to the beginning of the sequence.
+  command Sequence prepend: Value;
+
+  /// Adds all elements of [That] sequence to the end of [This] sequence.
+  command This ++ That;
+end
+
+/// A type has a [finite-sequence] if it has a [sequence] with a known,
+/// finite number of elements, such that one may actually reach the end
+/// of it by following all of the elements in order.
+trait finite-sequence with
+  requires trait sequence;
+
+  /// The last element in the sequence.
+  command Sequence last;
+
+  /// The sequence from the first element until (but not including) the
+  /// last element.
+  command Sequence without-last;
+end
+
+/// A type has an [indexed-sequence] if it has a [sequence] where each
+/// ordered value can be given an index---its position in the sequence
+/// is known.
+///
+/// Indexes in Crochet start, conventionally, at 1. However what is an
+/// index is up to each specific type implementing this trait.
+trait indexed-sequence with
+  requires trait sequence;
+
+  /// Retrieves the element at the [Index] position.
+  command Sequence at: Index;
+end
+
+/// A type has a [modifiable-indexed-sequence] if it has an [indexed-sequence]
+/// where new elements can be inserted or removed, therefore may change the
+/// position of existing elements by shifting them around.
+trait modifiable-indexed-sequence with
+  requires trait indexed-sequence;
+
+  /// Replaces the item at [Index] with the given [Value], but does not change
+  /// the position of any elements.
+  command Sequence at: Index put: Value;
+
+  /// Removes the item at [Index].
+  command Sequence remove-at: Index;
+
+  /// Inserts an item immediately before the one at [Index]. The old item is
+  /// shifted one position forward, and the inserted item will lie at [Index].
+  command Sequence at: Index insert-before: Value;
+
+  /// Inserts an item immediately after the one at [Index]. The old item remains
+  /// in the same position, but all items that followed it are shifted one
+  /// position forward. The new item will be at [Index + 1].
+  command Sequence at: Index insert-after: Value;
+end
+
+/// A type has a [sortable-sequence] if it has a [sequence] that allows the
+/// ordering of the elements within it to be changed.
+trait sortable-sequence with
+  requires trait sequence;
+
+  /// Re-orders the elements in the sequence according to the given
+  /// comparison function. Items that are ordered lower according to
+  /// the comparison function will be at the beginnning of the sequence.
+  ///
+  /// Whether items that compare equal will have their relative ordering
+  /// preserved---whether the sorting is stable---is up to each specific
+  /// type implementing this trait.
+  command Sequence sort-by: Comparison;
+
+  /// (optional) A convenience operation that re-orders the elements
+  /// according to their own intrinsic idea of ordering. All elements in
+  /// the sequence must implement [total-ordering] and be of the same type.
+  command Sequence sort;
+end
+
+/// A type has a [reversible-sequence] if it has a [sequence] that allows
+/// the ordering to be inverted. This is a weaker form of [sortable-sequence],
+/// where the only allowed change is to invert the ordering.
+trait reversible-sequence with
+  requires trait sequence;
+
+  /// Returns a sequence where the ordering of the elements is inverted,
+  /// thus making its first element be the last one, and the last one be
+  /// the first.
+  command Sequence reverse;
+end
+
+/// A type has a [sliceable-sequence] if it has an [indexed-sequence] that
+/// allows one to take a "slice" of it by giving a starting and ending index.
+trait sliceable-sequence with
+  requires trait indexed-sequence;
+
+  /// Returns a sub-sequence that contains all elements starting from the
+  /// [Start] index, up to (and including) the [End] index.
+  command Sequence slice-from: Start to: End;
+end
