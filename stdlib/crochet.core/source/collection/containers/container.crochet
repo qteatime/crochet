@@ -2,6 +2,8 @@
 
 // -- Lists
 
+implement container for list;
+
 /// True if the list contains the provided value.
 command list contains: Value =
   foreign list.contains(self, Value)

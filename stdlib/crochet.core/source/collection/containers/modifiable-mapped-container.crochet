@@ -2,6 +2,8 @@
 
 // -- Record
 
+implement modifiable-mapped-container for record;
+
 /// Returns a new record where [Key] is now associated with [Value].
 command record at: (Key is text) put: Value =
   foreign record.at-put(self, Key, Value)

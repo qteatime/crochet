@@ -1,0 +1,137 @@
+% crochet
+
+local singleton foldable with
+  command combine: no-value and: X with: F = new some(X);
+  command combine: (X is some) and: Y with: F = new some(F(X value, Y));
+
+  command combine-right: X and: no-value with: F = new some(X);
+  command combine-right: X and: (Y is some) with: F = new some(F(X, Y value));
+end
+
+
+local type foldable-test(a, b, c);
+implement foldable-collection for foldable-test;
+command foldable-test fold-from: I with: F = F(F(F(I, self.a), self.b), self.c);
+command foldable-test fold-right-from: I with: F = F(self.a, F(self.b, F(self.c, I)));
+
+local type foldable-test1(a);
+implement foldable-collection for foldable-test1;
+command foldable-test1 fold-from: I with: F = F(I, self.a);
+command foldable-test1 fold-right-from: I with: F = F(self.a, I);
+
+/// Convenience for [_ fold-from: _ with: _] that uses a value from the collection
+/// as the initial state.
+command (X has foldable-collection) fold-with: Computation do
+  X fold-from: no-value with: (foldable combine: _ and: _ with: Computation)
+    | value;
+test
+  assert (new foldable-test(1, 2, 3) fold-with: { A, B in [A, B] }) === [[1, 2], 3];
+  assert (new foldable-test1(1) fold-with: { A, B in [A, B] }) === 1;
+end
+
+/// Convenience for [_ fold-right-from: _ with: _] that uses a value from the
+/// collection as the initial state.
+command (X has foldable-collection) fold-right-with: Computation do
+  X fold-right-from: no-value with: (foldable combine-right: _ and: _ with: Computation)
+    | value;
+test
+  assert (new foldable-test(1, 2, 3) fold-right-with: { A, B in [A, B] }) === [1, [2, 3]];
+  assert (new foldable-test1(1) fold-with: { A, B in [A, B] }) === 1;
+end
+
+
+
+/// True if the given [Predicate] holds for at least one of the items in
+/// the collection.
+command (X has foldable-collection) some: (Predicate is (A -> boolean)) -> boolean do
+  X fold-from: false with: { A, B in A or Predicate(B) };
+test
+  assert ([] some: (_ === 2)) === false;
+  assert ([1] some: (_ === 2)) === false;
+  assert ([1, 2, 3] some: (_ === 2)) === true;
+  assert ([1, 2, 3, 2, 1] some: (_ === 2)) === true;
+  assert ([1, 3, 1, 3, 1] some: (_ === 2)) === false;
+end
+
+/// True if the given [Predicate] holds for all of the items in the
+/// collection.
+command (X has foldable-collection) all: (Predicate is (A -> boolean)) -> boolean do
+  X fold-from: true with: { A, B in A and Predicate(B) };
+test
+  assert ([] all: (_ > 3)) === true;
+  assert ([1] all: (_ > 3)) === false;
+  assert ([1, 2, 3] all: (_ > 3)) === false;
+  assert ([4, 5, 6] all: (_ > 3)) === true;
+end
+
+/// True if all of the items in the collection are [true].
+command (X has foldable-collection) all-true -> boolean do
+  X fold-from: true with: (_ and _);
+test
+  assert ([] all-true) === true;
+  assert ([true, true] all-true) === true;
+  assert ([false] all-true) === false;
+  assert ([false, true, false] all-true) === false;
+end
+
+/// True if at least one of the items in the collection is [true].
+command (X has foldable-collection) some-true -> boolean do
+  X fold-from: false with: (_ or _);
+test
+  assert ([] some-true) === false;
+  assert ([true, true] some-true) === true;
+  assert ([false] some-true) === false;
+  assert ([false, true, false] some-true) === true;
+end
+
+/// The arithmetic sum of all items in the collection. Every item must
+/// implement [arithmetic].
+command (X has foldable-collection) sum do
+  X fold-from: 0 with: (_ + _);
+test
+  assert ([] sum) === 0;
+  assert ([1, 2, 3, 4] sum) === (0 + 1 + 2 + 3 + 4);
+end
+
+/// The arithmetic product of all items in the collection. Every item must
+/// implement [arithmetic].
+command (X has foldable-collection) product do
+  X fold-from: 1 with: (_ * _);
+test
+  assert ([] product) === 1;
+  assert ([1, 2, 3, 4] product) === (1 * 1 * 2 * 3 * 4);
+end
+
+/// The average of all items in the collection. Every item must implement
+/// [arithmetic].
+command (X has foldable-collection, countable-container) average -> float
+requires non-empty :: not (X is-empty)
+do
+  X sum / X count;
+test
+  assert ([3] average) === 3.0;
+  assert ([1, 2, 3, 4, 5, 6, 7] average) === 4.0;
+  assert ([3, 5, 8, 1, 5] average) === 4.4;
+end
+
+/// The highest value in the collection. All values must have a [total-ordering].
+command (X has foldable-collection) maximum
+requires non-empty :: not (X is-empty)
+do
+  X fold-with: (greater-of: _ and: _)
+test
+  assert ([1] maximum) === 1;
+  assert ([1, 0, 2] maximum) === 2;
+  assert ([-3, 5, 2, -5] maximum) === 5;
+end
+
+/// The lowest value in the collection. All values must have a [total-ordering].
+command (X has foldable-collection) minimum
+requires non-empty :: not (X is-empty)
+do
+  X fold-with: (lesser-of: _ and: _)
+test
+  assert ([1] minimum) === 1;
+  assert ([1, 0, 2] minimum) === 0;
+  assert ([-3, 5, 2, -5] minimum) === -5;
+end

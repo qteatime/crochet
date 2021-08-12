@@ -1,5 +1,9 @@
 % crochet
 
+// -- Lists
+
+implement indexed-sequence for list;
+
 /// Retrieves the element at the [Index] in the list.
 command list at: (Index is integer)
 requires within-bounds :: (Index >= 1) and (Index <= self count)

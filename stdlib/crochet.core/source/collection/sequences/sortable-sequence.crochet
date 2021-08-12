@@ -2,6 +2,8 @@
 
 // -- Lists
 
+implement sortable-sequence for list;
+
 /// Returns an ordered list where the order is defined by the given
 /// [Comparator] function. The ordering is stable, and items that
 /// compare equal will remain in the same relative order.

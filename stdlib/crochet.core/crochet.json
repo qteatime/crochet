@@ -67,6 +67,7 @@
     "source/numeric/total-ordering.crochet",
 
     "source/result/equality.crochet",
+    "source/result/maybe.crochet",
     "source/result/result.crochet",
 
     "source/skeleton/skeleton.crochet",
@@ -80,6 +81,7 @@
     "source/traits/conversion.crochet",
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
+    "source/traits/foldable-collection.crochet",
     "source/traits/ordering.crochet"
   ],
   "capabilities": {

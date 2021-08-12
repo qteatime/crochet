@@ -2,6 +2,7 @@
 
 // -- Lists
 
+implement sliceable-sequence for list;
 
 /// Returns the sub-list that comprises elements at index [Start] up to
 /// (and including) element at index [End].

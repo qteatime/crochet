@@ -100,108 +100,30 @@ end
 
 
 // -- Folding
-command list fold-with: (Fun is function-2)
-requires non-empty :: not (self is-empty)
-do
-  self rest fold-from: self first with: Fun;
-test
-  assert ([1, 2, 3] fold-with: (_ + _)) =:= (1 + 2 + 3);
-  assert ([1] fold-with: (_ + _)) =:= 1;
-  assert ([1, 2, 3] fold-with: (_ - _)) =:= ((1 - 2) - 3);
-end
 
 
-command list fold-right-with: (Fun is function-2)
-requires non-empty :: not (self is-empty)
-do
-  self without-last fold-right-from: self last with: Fun;
-test
-  assert ([1] fold-right-with: (_ + _)) =:= 1;
-  assert ([1, 2, 3] fold-right-with: (_ - _)) =:= (1 - (2 - 3));
-end
 
 
-command list some: (Fun is function-1) do
-  self fold-from: false with: { A, B in A or Fun(B) };
-test
-  assert ([] some: (_ === 2)) === false;
-  assert ([1] some: (_ === 2)) === false;
-  assert ([1, 2, 3] some: (_ === 2)) === true;
-  assert ([1, 2, 3, 2, 1] some: (_ === 2)) === true;
-  assert ([1, 3, 1, 3, 1] some: (_ === 2)) === false;
-end
 
 
-command list all: (Fun is function-1) do
-  self fold-from: true with: { A, B in A and Fun(B) };
-test
-  assert ([] all: (_ > 3)) === true;
-  assert ([1] all: (_ > 3)) === false;
-  assert ([1, 2, 3] all: (_ > 3)) === false;
-  assert ([4, 5, 6] all: (_ > 3)) === true;
-end
 
 
-command list all-true = self fold-from: true with: (_ and _)
-test
-  assert ([] all-true) === true;
-  assert ([true, true] all-true) === true;
-  assert ([false] all-true) === false;
-  assert ([false, true, false] all-true) === false;
-end
 
 
-command list some-true = self fold-from: false with: (_ or _)
-test
-  assert ([] some-true) === false;
-  assert ([true, true] some-true) === true;
-  assert ([false] some-true) === false;
-  assert ([false, true, false] some-true) === true;
-end
 
 
-command list sum = self fold-from: 0 with: (_ + _)
-test
-  assert ([] sum) === 0;
-  assert ([1, 2, 3, 4] sum) === (0 + 1 + 2 + 3 + 4);
-end
 
 
-command list product = self fold-from: 1 with: (_ * _)
-test
-  assert ([] product) === 1;
-  assert ([1, 2, 3, 4] product) === (1 * 1 * 2 * 3 * 4);
-end
 
 
-command list average -> float
-requires non-empty :: not (self is-empty)
-  = self sum / self count
-test
-  assert ([3] average) === 3.0;
-  assert ([1, 2, 3, 4, 5, 6, 7] average) === 4.0;
-  assert ([3, 5, 8, 1, 5] average) === 4.4;
-end
 
 
-command list maximum
-requires non-empty :: not (self is-empty)
-  = self fold-with: (greater-of: _ and: _)
-test
-  assert ([1] maximum) === 1;
-  assert ([1, 0, 2] maximum) === 2;
-  assert ([-3, 5, 2, -5] maximum) === 5;
-end
 
 
-command list minimum
-requires non-empty :: not (self is-empty)
-  = self fold-with: (lesser-of: _ and: _)
-test
-  assert ([1] minimum) === 1;
-  assert ([1, 0, 2] minimum) === 0;
-  assert ([-3, 5, 2, -5] minimum) === -5;
-end
+
+
+
+
 
 
 // -- Zipping

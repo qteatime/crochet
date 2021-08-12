@@ -2,6 +2,8 @@
 
 // -- List
 
+implement sequence for list;
+
 /// The first element of the list.
 command list first = self at: 1
 test

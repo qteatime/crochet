@@ -2,6 +2,8 @@
 
 // -- Records
 
+implement mapped-container for record;
+
 /// Returns the value in the record identified by [Key], if it exists.
 command record at: (Key is text) =
   self.[Key]

@@ -228,6 +228,13 @@ type ok(value) is result;
 type error(reason) is result;
 
 
+/// The type of computations that can fail, but without any interesting
+/// additional information.
+abstract maybe;
+type some(value) is maybe;
+singleton no-value is maybe;
+
+
 // -- The idea of state
 
 /// The type of mutable cells.
@@ -597,4 +604,30 @@ trait sliceable-sequence with
   /// Returns a sub-sequence that contains all elements starting from the
   /// [Start] index, up to (and including) the [End] index.
   command Sequence slice-from: Start to: End;
+end
+
+/// A type has a [foldable-collection] if it supports the fold operations.
+trait foldable-collection with
+  requires trait foldable-collection;
+
+  /// Computes a final value by visiting every item in a collection and
+  /// keeping some intermediary state while doing so. The order in which
+  /// these items are processed is unspecified, and up to each specific
+  /// type, however the initial value will be used as the state for the
+  /// first computation.
+  command Collection fold-from: Initial with: Computation;
+
+  /// Similar to [_ fold-from: _ with: _], but uses the [Initial] value
+  /// in the *final* computation.
+  command Collection fold-right-from: Initial with: Computation;
+
+  /// (optional) Similar to [_ fold-from: _ with: _], but uses another value of the
+  /// collection as the initial value. The collection must have at least
+  /// two items.
+  command Collection fold-with: Computation;
+
+  /// (optional) Similar to [_ fold-right-from: _ with: _], but uses another value of
+  /// the collection as the initial value. The collection must have at least
+  /// two items.
+  command Collection fold-right-from: Computation;
 end

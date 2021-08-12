@@ -2,6 +2,8 @@
 
 // -- Lists
 
+implement modifiable-indexed-sequence for list;
+
 /// Updates the element at the given index with the provided value.
 command list at: (Index is integer) put: Value
 requires within-bounds :: (Index >= 1) and (Index <= self count)

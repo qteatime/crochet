@@ -2,6 +2,8 @@
 
 // -- Lists
 
+implement countable-container for list;
+
 /// Returns the number of elements contained in the list.
 command (X is list) count =
   foreign list.count(X)
@@ -20,6 +22,8 @@ test
 end
 
 // -- Records
+
+implement countable-container for record;
 
 /// Returns the number of entries in the record.
 command record count

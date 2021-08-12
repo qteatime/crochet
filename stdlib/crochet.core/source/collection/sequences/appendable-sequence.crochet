@@ -2,6 +2,8 @@
 
 // -- Lists
 
+implement appendable-sequence for list;
+
 /// Adds the given value at the end of the list.
 command list append: Value =
   self ++ [Value]

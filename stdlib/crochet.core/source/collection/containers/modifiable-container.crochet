@@ -2,6 +2,8 @@
 
 // -- Lists
 
+implement modifiable-container for list;
+
 /// Adds an element to the end of the list.
 command list add: Value =
   self append: Value

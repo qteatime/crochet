@@ -2,6 +2,8 @@
 
 // -- Lists
 
+implement finite-sequence for list;
+
 /// The last element of the list.
 command list last = self at: self count
 test

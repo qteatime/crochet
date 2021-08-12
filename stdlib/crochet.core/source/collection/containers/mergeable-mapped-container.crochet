@@ -2,6 +2,8 @@
 
 // -- Records
 
+implement mergeable-mapped-container for record;
+
 /// Returns a new record where the associations of [That] record are carried
 /// over, possibly overriding the previous associations in the [self] record,
 /// if associations for the same key already existed.
