@@ -1024,7 +1024,7 @@ grammar Crochet : Program {
   space += comment
 
   doc (a documentation comment) = xs:doc_line+ -> xs
-  doc_line (a documentation comment) = "///" hs? x:line nl -> x
+  doc_line (a documentation comment) = hs* "///" hs? x:line nl -> x
 
   semi = s<";">
 
