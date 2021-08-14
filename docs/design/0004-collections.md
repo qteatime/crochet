@@ -73,7 +73,10 @@ And the traits:
   - at:
 - **modifiable indexed sequence** (an indexed sequence that can change)
   : list, linked-list
-  - at:put:, remove-at:, at:insert-before:, at:insert-after:
+  - at:put:
+- **growable indexed sequence** (an indexed sequence that can grow/shrink)
+  : list, linked-list
+  - remove-at:, at:insert-before:, at:insert-after:
 - **sortable sequence** (a sequence that can have its order changed)
   : list, linked-list
   - sort-by:, sort^

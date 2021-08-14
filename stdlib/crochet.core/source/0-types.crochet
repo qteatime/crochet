@@ -249,9 +249,14 @@ singleton debug-representation;
 
 
 //-- Other types
+/// A pair constructed by zipping two elements together.
 type zip-pair(first, second);
+
+/// A value from an indexed sequence along with its index.
 type indexed(index is integer, value);
 
+/// Possible ordering relations between two values.
+enum ordering = less-than, equal, greater-than;
 
 // -- Traits
 
@@ -540,14 +545,20 @@ trait indexed-sequence with
 end
 
 /// A type has a [modifiable-indexed-sequence] if it has an [indexed-sequence]
-/// where new elements can be inserted or removed, therefore may change the
-/// position of existing elements by shifting them around.
+/// that allows elements at particular indexes to change.
 trait modifiable-indexed-sequence with
   requires trait indexed-sequence;
 
   /// Replaces the item at [Index] with the given [Value], but does not change
   /// the position of any elements.
   command Sequence at: Index put: Value;
+end
+
+/// A type has a [growable-indexed-sequence] if it has an [indexed-sequence]
+/// where new elements can be inserted or removed, therefore may change the
+/// position of existing elements by shifting them around.
+trait growable-indexed-sequence with
+  requires trait indexed-sequence;
 
   /// Removes the item at [Index].
   command Sequence remove-at: Index;
@@ -668,3 +679,4 @@ trait zippable-collection with
   /// the [Combine] function.
   command Collection zip: Other with: Combine;
 end
+

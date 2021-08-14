@@ -36,6 +36,7 @@
 
     "source/collection/sequences/appendable-sequence.crochet",
     "source/collection/sequences/finite-sequence.crochet",
+    "source/collection/sequences/growable-indexed-sequence.crochet",
     "source/collection/sequences/indexed-sequence.crochet",
     "source/collection/sequences/modifiable-indexed-sequence.crochet",
     "source/collection/sequences/reversible-sequence.crochet",
@@ -43,6 +44,7 @@
     "source/collection/sequences/sliceable-sequence.crochet",
     "source/collection/sequences/sortable-sequence.crochet",
 
+    "source/collection/equality.crochet",
     "source/collection/indexed-pair.crochet",
     "source/collection/record.crochet",
     "source/collection/list.crochet",

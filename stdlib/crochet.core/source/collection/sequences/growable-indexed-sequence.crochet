@@ -1,0 +1,35 @@
+% crochet
+
+// -- List
+implement growable-indexed-sequence for list;
+
+/// Removes the element at the given index, bringing the next ones one space
+/// forward.
+command list remove-at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= self count)
+  = foreign list.at-delete(self, Index)
+test
+  assert (["a"] remove-at: 1) =:= [];
+  assert (["a", "b", "c"] remove-at: 2) =:= ["a", "c"];
+  assert (["a", "b", "c"] remove-at: 3) =:= ["a", "b"];
+end
+
+/// Inserts [Value] before the element at [Index].
+command list at: (Index is integer) insert-before: Value
+requires within-bounds :: (Index >= 1) and (Index <= self count)
+  = foreign list.at-insert(self, Index, Value)
+test
+  assert (["a", "b", "c"] at: 1 insert-before: 0) =:= [0, "a", "b", "c"];
+  assert (["a", "b", "c"] at: 2 insert-before: 0) =:= ["a", 0, "b", "c"];
+  assert (["a", "b", "c"] at: 3 insert-before: 0) =:= ["a", "b", 0, "c"];
+end
+
+/// Inserts [Value] after the element at [Index].
+command list at: (Index is integer) insert-after: Value
+requires within-bounds :: (Index >= 1) and (Index <= self count)
+  = foreign list.after-insert(self, Index, Value)
+test
+  assert (["a", "b", "c"] at: 1 insert-after: 0) =:= ["a", 0, "b", "c"];
+  assert (["a", "b", "c"] at: 2 insert-after: 0) =:= ["a", "b", 0, "c"];
+  assert (["a", "b", "c"] at: 3 insert-after: 0) =:= ["a", "b", "c", 0];
+end

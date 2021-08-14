@@ -1,0 +1,21 @@
+% crochet
+
+// -- List
+implement equality for list;
+
+/// True if two lists have equal elements in the same order.
+command list === (That is list) do
+  condition
+    when self count =/= That count => false;
+    always =>
+      self zip: That with: (_ === _) | all-true;
+  end
+end
+
+// -- Record
+implement equality for record;
+
+/// True if two records have equal pairs.
+command record === (That is record) do
+  self =:= That; // FIXME: implement this properly
+end
