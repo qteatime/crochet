@@ -53,7 +53,7 @@ class Task {
 
 function exec(command) {
   console.log("$>", command);
-  execSync(command);
+  execSync(command, { stdio: ["inherit", "inherit", "inherit"] });
 }
 
 const w = new World();
