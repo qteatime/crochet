@@ -5,25 +5,25 @@ abstract arithmetic;
 command #arithmetic evaluate: (X is skeleton-node) do
   condition
     when X name =:= "add _ _" do
-      let Left = X children first;
-      let Right = X children second;
+      let Left = X children at: 1;
+      let Right = X children at: 2;
       (self evaluate: Left) + (self evaluate: Right);
     end
       
     when X name =:= "sub _ _" do
-      let Left = X children first;
-      let Right = X children second;
+      let Left = X children at: 1;
+      let Right = X children at: 2;
       (self evaluate: Left) - (self evaluate: Right);
     end
 
     when X name =:= "display _" do
-      [ value -> self evaluate: X children first,
+      [ value -> self evaluate: (X children at: 1),
         tag -> self evaluate: (X attributes).tag
       ]
     end
 
     when X name =:= "list _" do
-      self evaluate: X children first;
+      self evaluate: (X children at: 1);
     end
   end
 end

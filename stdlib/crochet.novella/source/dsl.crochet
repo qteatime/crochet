@@ -191,8 +191,8 @@ end
 command #novella-dsl compile: (X is skeleton-node) do
   condition
     when X name =:= "let _ = _" do
-      let Name = #novella-dsl evaluate-name: X children first;
-      let Value = #novella-dsl compile-expr: X children second;
+      let Name = #novella-dsl evaluate-name: (X at: 1);
+      let Value = #novella-dsl compile-expr: (X at: 2);
       new n-let(X, Name, Value);
     end
 
@@ -217,7 +217,7 @@ command #novella-dsl compile: (X is skeleton-node) do
 
     when X name =:= "scene _ _" do
       let Name = #novella-dsl evaluate-name: X children first;
-      let Block = X children second children map: (#novella-dsl compile: _);
+      let Block = (X children at: 2) children map: (#novella-dsl compile: _);
       let Env = #novella-env get;
       Env set: Name to: new n-scene(X, Name, Block);
       n-noop;
@@ -285,8 +285,8 @@ end
 
 
 command #novella-dsl compile-choice: (X is skeleton-node) do
-  let Title = #novella-dsl compile-expr: (X children first);
-  let Block = #novella-dsl compile: (X children second);
+  let Title = #novella-dsl compile-expr: (X children at: 1);
+  let Block = #novella-dsl compile: (X children at: 2);
   new n-choice(X, Title, Block);
 end
 
