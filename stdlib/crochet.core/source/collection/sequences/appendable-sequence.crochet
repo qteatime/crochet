@@ -30,3 +30,6 @@ test
   assert ([] ++ [1, 2, 3]) =:= [1, 2, 3];
   assert ([1, 2] ++ [3, 4, 5]) =:= [1, 2, 3, 4, 5];
 end
+
+/// Returns the empty list.
+command list empty = [];

@@ -22,4 +22,3 @@ test
   assert [1] rest =:= [];
   assert [1, 2, 3] rest =:= [2, 3];
 end
-

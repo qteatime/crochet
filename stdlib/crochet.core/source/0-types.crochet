@@ -500,6 +500,13 @@ trait sequence with
 
   /// The sequence that starts from the second element.
   command Sequence rest;
+
+  /// A sequence of elements from the first one until the [Predicate] fails.
+  command Sequence take-while: Predicate;
+
+  /// (optional) A sequence of elements excluding the initial ones for which
+  /// the [Predicate] holds.
+  command Sequence drop-while: Predicate;
 end
 
 /// A type has an [appendable-sequence] if it has a [sequence] that allows
@@ -512,6 +519,9 @@ trait appendable-sequence with
 
   /// Adds a [Value] to the beginning of the sequence.
   command Sequence prepend: Value;
+
+  /// A sequence of the same type that contains no elements.
+  command Sequence empty;
 
   /// Adds all elements of [That] sequence to the end of [This] sequence.
   command This ++ That;
