@@ -10,6 +10,12 @@ command #stream from: Xs -> stream<A> =
 command #stream from: Initial iterate: Computation =
   #linked-stream from: Initial iterate: Computation;
 
+command #stream cycle: Xs = #linked-stream cycle: Xs;
+
+command #stream repeat: X = #linked-stream repeat: X;
+
+command #stream non-negative-integers = #stream from: 0 iterate: (_ + 1);
+command #stream positive-integers = #stream from: 1 iterate: (_ + 1);
 
 /// Constructs a linked-stream from a sequence.
 command #linked-stream from: (Xs has sequence, countable-container) -> linked-stream<A> do
@@ -113,4 +119,45 @@ command linked-stream-cons drop-while: (Predicate is (A -> boolean)) =
 test "linked-stream drop-while: function-1" do
   let Naturals = #linked-stream from: 0 iterate: (_ + 1);
   assert (Naturals drop-while: (_ < 5) |> _ take: 5 |> _ as list) === [5, 6, 7, 8, 9];
+end
+
+/// Returns a stream of chunks of the specified [Size].
+command linked-stream-empty chunked-by-size: (Size is integer) = self;
+command linked-stream-cons chunked-by-size: (Size is integer) do
+  let Result = module chunk: self by-size: Size result: [];
+  new linked-stream-cons(Result.chunks, lazy Result.rest chunked-by-size: Size);
+end
+
+command module chunk: linked-stream-empty by-size: Size result: Result =
+  [chunks -> Result, rest -> linked-stream-empty];
+
+command module chunk: (Stream is linked-stream-cons) by-size: Size result: Result = 
+  condition
+    when Size === 0 => [chunks -> Result, rest -> Stream];
+    always => module chunk: Stream rest
+                     by-size: (Size - 1)
+                     result: (Result append: Stream first);
+  end;
+
+test "linked-stream chunked-by-size: integer" do
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals chunked-by-size: 2 |> _ take: 3 |> _ as list) === [[0, 1], [2, 3], [4, 5]];
+  assert (Naturals |> _ take: 5 |> _ chunked-by-size: 2 |> _ as list) === [[0, 1], [2, 3], [4]];
+  assert (Naturals |> _ take: 5 |> _ chunked-by-size: 10 |> _ as list) === [[0, 1, 2, 3, 4]];
+  assert (#linked-stream from: [] |> _ chunked-by-size: 5 |> _ as list) === [];
+end
+
+/// Pairs each element of the stream with an ordinal number describing its
+/// position.
+command linked-stream enumerate do
+  #stream positive-integers zip: self with: { A, B in new indexed(A, B) }
+test
+  assert (#linked-stream from: [] |> _ enumerate |> _ as list) === [];
+
+  assert (#linked-stream from: ["a", "b", "c"] |> _ enumerate |> _ as list)
+    === [
+          #indexed index: 1 value: "a",
+          #indexed index: 2 value: "b",
+          #indexed index: 3 value: "c",
+        ];
 end

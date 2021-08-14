@@ -33,4 +33,3 @@ test
   assert ([1, 2, 3, 4] drop-while: (_ <= 2)) === [3, 4];
   assert ([1, 2, 3, 2, 1] drop-while: (_ <= 2)) === [3, 2, 1];
 end
-

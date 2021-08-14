@@ -261,6 +261,9 @@ singleton debug-representation;
 /// A pair constructed by zipping two elements together.
 type zip-pair(first, second);
 
+/// A pair constructed by partitioning a collection.
+type partition-pair(satisfying, not-satisfying);
+
 /// A value from an indexed sequence along with its index.
 type indexed(index is integer, value);
 

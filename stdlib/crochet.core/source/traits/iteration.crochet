@@ -1,5 +1,8 @@
 % crochet
 
+local singleton module;
+
+// -- Folding
 local singleton foldable with
   command combine: no-value and: X with: F = new some(X);
   command combine: (X is some) and: Y with: F = new some(F(X value, Y));
@@ -134,4 +137,68 @@ test
   assert ([1] minimum) === 1;
   assert ([1, 0, 2] minimum) === 0;
   assert ([-3, 5, 2, -5] minimum) === -5;
+end
+
+/// Pairs each value in the collection with its position (as a positive integer).
+command (X has foldable-collection, appendable-sequence) enumerate do
+  let Result =
+    X fold-from: [index -> 1, result -> X empty]
+      with: { State, Value in 
+        [
+          index -> State.index + 1,
+          result -> State.result append: (#indexed index: State.index value: Value),
+        ]
+      };
+  Result.result;
+test
+  assert ([] enumerate) === [];
+
+  assert (["a", "b", "c"] enumerate) === [
+    #indexed index: 1 value: "a",
+    #indexed index: 2 value: "b",
+    #indexed index: 3 value: "c",
+  ];
+end
+
+
+// -- Zipping
+command zip-pair first = self.first;
+command zip-pair second = self.second;
+
+command zip-pair === (That is zip-pair) =
+  (self first === That first) and (self second === That second);
+
+/// Combines every element of [X] with the elements of [That], then produces
+/// a new collection of these pairs.
+command (X has zippable-collection) zip: (That has zippable-collection) =
+  self zip: That with: { A, B in new zip-pair(A, B) }
+test
+  assert ([] zip: []) === [];
+  assert ([1] zip: [2]) === [
+    new zip-pair(1, 2),
+  ];
+  assert ([1, 2, 3] zip: [4, 5, 6]) === [
+    new zip-pair(1, 4),
+    new zip-pair(2, 5),
+    new zip-pair(3, 6),
+  ];
+  assert ([1, 2] zip: ["a", "b"]) === [
+    new zip-pair(1, "a"),
+    new zip-pair(2, "b"),
+  ];
+end
+
+// -- Filtering
+
+command partition-pair satisfying = self.satisfying;
+command partition-pair not-satisfying = self.not-satisfying;
+
+/// Partitions the collection into two: one containing elements that satisfy
+/// the [Predicate], and one containing elements that don't satisfy it.
+command (X has filterable-collection) partition-by: (Predicate is (A -> boolean)) do
+  new partition-pair(X keep-if: Predicate, X remove-if: Predicate);
+test
+  let P = [1, 2, 3, 4, 5] partition-by: (_ < 3);
+  assert P satisfying === [1, 2];
+  assert P not-satisfying === [3, 4, 5];
 end

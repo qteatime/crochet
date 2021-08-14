@@ -1,3 +1,4 @@
 % crochet
 
+/// True if the container has no elements.
 command (X has countable-container) is-empty = X count === 0;
