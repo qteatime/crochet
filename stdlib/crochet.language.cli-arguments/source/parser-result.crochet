@@ -20,14 +20,15 @@ command (X is cli-record) merge: (Y is cli-record) do
     let VX = X.value at: K default: nothing;
     let VY = Y.value at: K default: nothing;
     let V = VX merge: VY;
-    [key -> K, value -> V];
+    #association key: K value: V;
   end;
   new cli-record(#record from-pairs: Pairs);
 end
 
 command (X is cli-record) realise do
   let Pairs = for Pair in X.value pairs do
-    [key -> Pair.key, value -> Pair.value realise];
+    #association key: Pair key
+                 value: Pair value realise
   end;
   #record from-pairs: Pairs;
 end

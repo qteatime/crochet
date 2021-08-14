@@ -23,27 +23,31 @@ end
 
 /// Returns a sequence of all pairs in the record. The order of the values
 /// in this sequence is unspecified.
-command record pairs
-  = foreign record.pairs(self)
+command record pairs -> list<association<K, V>> do
+  let Pairs = foreign record.pairs(self);
+  Pairs map: { X in new association(X.key, X.value) };
 test
   assert [->] pairs === [];
-  assert [a -> 1] pairs === [[key -> "a", value -> 1]];
+  assert [a -> 1] pairs === [
+    #association key: "a" value: 1,
+  ];
   assert [a -> 1, b -> 2] pairs === [
-    [key -> "a", value -> 1],
-    [key -> "b", value -> 2],
+    #association key: "a" value: 1,
+    #association key: "b" value: 2,
   ];
 end
 
 /// Constructs a new record from a sequence of pairs.
-command #record from-pairs: (Pairs is list) =
+command #record from-pairs: (Pairs0 is list<association<K, V>>) do
+  let Pairs = Pairs0 map: { X in [key -> X key, value -> X value] };
   foreign record.from-pairs(Pairs)
 test
   assert (#record from-pairs: []) === [->];
-  assert (#record from-pairs: [[key -> "a", value -> 1]]) === [a -> 1];
+  assert (#record from-pairs: [#association key: "a" value: 1]) === [a -> 1];
     assert (#record from-pairs: [
-    [key -> "a", value -> 1],
-    [key -> "b", value -> 2],
-  ]) === [a -> 1, b -> 2];
+              #association key: "a" value: 1,
+              #association key: "b" value: 2,
+            ]) === [a -> 1, b -> 2];
 end
 
 

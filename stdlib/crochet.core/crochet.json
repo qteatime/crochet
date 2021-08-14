@@ -44,6 +44,7 @@
     "source/collection/sequences/sliceable-sequence.crochet",
     "source/collection/sequences/sortable-sequence.crochet",
 
+    "source/collection/association.crochet",
     "source/collection/equality.crochet",
     "source/collection/indexed-pair.crochet",
     "source/collection/record.crochet",

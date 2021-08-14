@@ -1,0 +1,17 @@
+% crochet
+
+/// Constructs a new association.
+command #association key: Key value: Value = new association(Key, Value);
+
+/// Retrieves the key of an association.
+command association key = self.key;
+
+/// Retrieves the value of an association.
+command association value = self.value;
+
+
+implement equality for association;
+
+/// True if two associations have equal keys and values.
+command association === (That is association) =
+  (self key === That key) and (self value === That value);

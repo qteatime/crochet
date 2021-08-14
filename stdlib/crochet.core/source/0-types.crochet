@@ -255,6 +255,9 @@ type zip-pair(first, second);
 /// A value from an indexed sequence along with its index.
 type indexed(index is integer, value);
 
+/// An association pair in a mapped collection.
+type association(key, value);
+
 /// Possible ordering relations between two values.
 enum ordering = less-than, equal, greater-than;
 

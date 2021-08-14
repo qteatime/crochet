@@ -24,7 +24,8 @@ command #json from: (Xs is list)
 
 command #json from: (X is record) do
   let Pairs = for Pair in X pairs do
-    [key -> Pair.key, value -> #json from: Pair.value];
+    #association key: Pair key
+                 value: (#json from: Pair value)
   end;
   #record from-pairs: Pairs;
 end

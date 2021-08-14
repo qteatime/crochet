@@ -39,7 +39,7 @@ command csv-with-header header = self.header;
 command csv-with-header rows-as-records do
   let Keys = self header contents;
   for Row in self rows do
-    let Pairs = Keys zip: Row contents with: { K, V in [key -> K, value -> V]};
+    let Pairs = Keys zip: Row contents with: { K, V in #association key: K value: V };
     #record from-pairs: Pairs;
   end
 test
