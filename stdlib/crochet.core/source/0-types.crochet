@@ -161,6 +161,11 @@ type record = foreign core.record;
 type list = foreign core.list;
 
 
+/// A set is a collection of unordered elements that allows efficiently
+/// checking if an item is in the collection.
+type set(box);
+
+
 /// Represents an inclusive integer range.
 type integer-range(start is integer, stop is integer, step is integer);
 
@@ -693,3 +698,14 @@ trait zippable-collection with
   command Collection zip: Other with: Combine;
 end
 
+/// A type has a [set-algebra] if it supports the common set operations.
+trait set-algebra with
+  /// The union of two sets.
+  command A union: B;
+
+  /// The intersection of two sets.
+  command A intersection: B;
+
+  /// The complement of two sets.
+  command A complement: B;
+end

@@ -6,12 +6,13 @@
     "native/floats.js",
     "native/integer.js",
     "native/conversion.js",
-    "native/tuple.js",
+    "native/list.js",
     "native/record.js",
     "native/cell.js",
     "native/text.js",
     "native/etc.js",
-    "native/action.js"
+    "native/action.js",
+    "native/set.js"
   ],
   "sources": [
     "source/0-types.crochet",
@@ -47,8 +48,10 @@
     "source/collection/association.crochet",
     "source/collection/equality.crochet",
     "source/collection/indexed-pair.crochet",
-    "source/collection/record.crochet",
     "source/collection/list.crochet",
+    "source/collection/record.crochet",
+    "source/collection/set.crochet",
+    "source/collection/set-algebra.crochet",
 
     "source/debugging/debug-representation.crochet",
 
@@ -85,11 +88,13 @@
     "source/text/views.crochet",
 
     "source/traits/conversion.crochet",
+    "source/traits/countable-container.crochet",
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
     "source/traits/foldable-collection.crochet",
     "source/traits/ordering.crochet",
     "source/traits/sequence.crochet",
+    "source/traits/set-algebra.crochet",
     "source/traits/zippable-collection.crochet"
   ],
   "capabilities": {

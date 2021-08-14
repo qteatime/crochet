@@ -1,7 +1,6 @@
 % crochet
 
 // -- Lists
-
 implement countable-container for list;
 
 /// Returns the number of elements contained in the list.
@@ -22,7 +21,6 @@ test
 end
 
 // -- Records
-
 implement countable-container for record;
 
 /// Returns the number of entries in the record.
@@ -40,4 +38,16 @@ command record is-empty
 test
   assert [->] is-empty;
   assert not ([a -> 1] is-empty);
+end
+
+// -- Sets
+implement countable-container for set;
+
+/// The number of elements in the set.
+command set count -> integer do
+  foreign set.count(self.box)
+test
+  assert (#set from: [1, 2, 3] | count) === 3;
+  assert (#set from: [1, 1, 1] | count) === 1;
+  assert (#set from: [] | count) === 0;
 end

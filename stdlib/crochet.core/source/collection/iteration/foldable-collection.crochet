@@ -64,3 +64,17 @@ test
   assert ([a -> 1, b -> 2] fold-from: [->] with: { A, P in A at: P key put: 0 })
     === [a -> 0, b -> 0];
 end
+
+// -- Sets
+implement foldable-collection for set;
+
+/// Folds a set.
+command set fold-from: Start with: (Combine is ((A, Value) -> A)) do
+  foreign set.fold(self.box, Start, Combine);
+test
+  assert ((#set from: [1, 2, 3]) fold-from: 0 with: (_ + _))
+    === (0 + 1 + 2 + 3);
+
+  assert ((#set from: []) fold-from: 0 with: (_ + _))
+    === 0;
+end

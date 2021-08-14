@@ -19,3 +19,18 @@ test
   assert ([] flatten-once) === [];
   assert ([[1], [2, 3], [4, [5], 6]] flatten-once) === [1, 2, 3, 4, [5], 6];
 end
+
+// -- Sets
+implement chainable-collection for set;
+
+/// Transforms every element of the set with the given [Fun], which must
+/// return a new set.
+command set flat-map: (Fun is (A -> set<B>)) do
+  new set(foreign set.flatmap(self.box, { A in let R = Fun(A); assert R is set; R.box }));
+test
+  assert (#set from: [1, 2, 3] | flat-map: { X in (#set from: [X, X + 0.5])})
+    === (#set from: [1, 1.5, 2, 2.5, 3, 3.5]);
+
+  assert (#set from: [] | flat-map: { X in (#set from: [X, X + 1]) })
+    === (#set from: []);
+end

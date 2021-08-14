@@ -1,0 +1,3 @@
+% crochet
+
+command (X has countable-container) is-empty = X count === 0;

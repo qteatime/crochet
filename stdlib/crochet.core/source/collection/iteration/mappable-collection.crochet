@@ -1,7 +1,6 @@
 % crochet
 
 // -- List
-
 implement mappable-collection for list;
 
 /// Returns a list where all elements are transformed by [Fun].
@@ -14,7 +13,6 @@ test
 end
 
 // -- Record
-
 implement mappable-collection for record;
 
 /// Returns a record where all values are transformed by [Fun]
@@ -24,4 +22,20 @@ test
   assert ([a -> 1] map: { P in P value + 1 }) === [a -> 2];
   assert ([->] map: { P in P value + 1 }) === [->];
   assert ([a -> 1, b -> 2] map: { P in P value + 1 }) === [a -> 2, b -> 3];
+end
+
+// -- Set
+implement mappable-collection for set;
+
+command set map: (Fun is (A -> B)) do
+  new set(foreign set.map(self.box, Fun));
+test
+  assert (#set from: [1, 2, 3] | map: (_ + 1))
+    === (#set from: [2, 3, 4]);
+
+  assert (#set from: [1, 2, 3] | map: { _ in 1 })
+    === (#set from: [1]);
+
+  assert (#set from: [] | map: (_ + 1))
+    === (#set from: []);
 end

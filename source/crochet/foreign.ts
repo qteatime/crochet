@@ -1,3 +1,5 @@
+import * as Collection from "../collection";
+import type { Set as ISet, Map as IMap, List as IList } from "../collection";
 import { XorShift } from "../utils/xorshift";
 import {
   CrochetModule,
@@ -21,6 +23,7 @@ import {
 } from "../vm";
 
 export type { Machine, CrochetValue };
+export type { ISet, IList, IMap };
 
 export class ForeignInterface {
   #universe: Universe;
@@ -244,6 +247,11 @@ export class ForeignInterface {
   action_fired<T extends Tag>(action: CrochetValue<T>, value: CrochetValue) {
     Values.assert_tag(Tag.ACTION, action);
     return action.payload.action.fired.has(value);
+  }
+
+  // == Collection features
+  get collection() {
+    return Collection;
   }
 
   // == Etc

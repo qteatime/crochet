@@ -91,7 +91,7 @@ And the traits:
 
 - **set algebra** (a collection that supports set operations)
   : set
-  - union:, intersect:, complement:
+  - union:, intersection:, complement:
 
 ### Iteration
 
@@ -99,7 +99,7 @@ And the traits:
   : list, linked-list, stream, range, set, map, record
   - map:
 - **chainable collection** (a collection that supports flatmap)
-  : list, linked-list, stream
+  : list, linked-list, stream, set
   - flat-map:
 - **foldable collection** (a collection that supports fold)
   : list, linked-list, stream, range, set, map, record

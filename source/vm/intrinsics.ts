@@ -5,6 +5,7 @@ import { Namespace, PassthroughNamespace } from "./namespaces";
 // Only imported so callbacks get the correct type here
 import type { Pattern } from "./logic/unification";
 import type { CrochetTrace } from "./tracing/trace";
+import { hash, isImmutable } from "immutable";
 
 export type Primitive = boolean | null | bigint | number;
 
@@ -68,6 +69,14 @@ export class CrochetValue<T extends Tag = Tag> {
     readonly type: CrochetType,
     readonly payload: PayloadType[T]
   ) {}
+
+  equals(that: CrochetValue<Tag>): boolean {
+    return equals(this, that);
+  }
+
+  hashCode() {
+    return 0; // FIXME: implement proper hash codes here
+  }
 }
 
 export class CrochetLambda {

@@ -1,0 +1,8 @@
+% crochet
+
+/// Constructs a new set from the values found in the given list.
+command #set from: (Items is list<Value>) =
+  new set(foreign set.make-from-list(Items));
+
+/// Returns all values that are part of this set.
+command set values = foreign set.values(self.box);
