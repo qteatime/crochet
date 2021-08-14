@@ -92,21 +92,20 @@ And the traits:
 
 ### Iteration
 
-- **iterable collection** (a collection that implements the iterator protocol)
-  - iterate
-    - next
-- **traversable collection** (a collection that can be iterated in order)
-  - traverse:
 - **transformable collection** (a collection that supports map)
-  : list, linked-list, stream, range, set, map
+  : list, linked-list, stream, range, set, map, record
   - map:
 - **chainable collection** (a collection that supports flatmap)
+  : list, linked-list, stream
   - flat-map:
 - **foldable collection** (a collection that supports fold)
+  : list, linked-list, stream, range, set, map, record
   - fold:with:, fold-right:with:
 - **zippable collection**
+  : list, linked-list, stream
   - zip:with:
 - **filterable collection**
+  : list, linked-list, stream, set, map, record
   - filter:
 
 Operations:

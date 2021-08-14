@@ -1,0 +1,15 @@
+% crochet
+
+// -- Lists
+implement zippable-collection for list;
+
+/// Pairs every element of [X] with the element of [That] at the same index
+/// and uses [Combine] to combine them into a single element.
+command list zip: (That is list) with: (Combine is ((A, B) -> C))
+requires same-size :: self count === That count
+  = foreign list.zip-with(self, That, Combine)
+test
+  assert ([1, 2, 3] zip: [4, 5, 6] with: (_ + _)) === [1 + 4, 2 + 5, 3 + 6];
+end
+
+

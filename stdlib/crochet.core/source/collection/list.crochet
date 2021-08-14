@@ -1,0 +1,70 @@
+% crochet
+
+// -- Constructors
+command #list empty = [];
+
+command list second = self at: 2;
+command list third = self at: 3;
+
+
+
+
+
+
+
+
+
+
+
+
+command list take-while: (Fun is function-1) do
+  let Go = { Xs in
+    condition
+      when Xs is-empty => [];
+      when Fun(Xs first) => [Xs first] ++ Go(Xs rest);
+      always => [];
+    end
+  };
+  Go(self);
+test
+  assert ([] take-while: (_ <= 2)) === [];
+  assert ([1, 2, 3, 4] take-while: (_ <= 2)) === [1, 2];
+  assert ([1, 2, 3, 2, 1] take-while: (_ <= 2)) === [1, 2];
+end
+
+
+command list drop-while: (Fun is function-1) do
+  let Go = { Xs in
+    condition
+      when Xs is-empty => [];
+      when Fun(Xs first) => Go(Xs rest);
+      always => Xs;
+    end
+  };
+  Go(self);
+test
+  assert ([] drop-while: (_ <= 2)) === [];
+  assert ([1, 2, 3, 4] drop-while: (_ <= 2)) === [3, 4];
+  assert ([1, 2, 3, 2, 1] drop-while: (_ <= 2)) === [3, 2, 1];
+end
+
+
+command list enumerate =
+  condition
+    when self is-empty => [];
+    always => (1 to: self count) zip: self with: { I, V in new indexed(I, V) };
+  end
+test
+  assert ([] enumerate) === [];
+  assert (["a", "b", "c"] enumerate)
+    === [new indexed(1, "a"), new indexed(2, "b"), new indexed(3, "c")];
+end
+
+
+
+// -- Other
+command (X is list) without-duplicates = foreign list.unique(X)
+test
+  assert ([] without-duplicates) === [];
+  assert ([1, 2, 1, 3, 1, 4] without-duplicates) === [1, 2, 3, 4];
+end

@@ -1,0 +1,27 @@
+% crochet
+
+command zip-pair first = self.first;
+command zip-pair second = self.second;
+
+command zip-pair === (That is zip-pair) =
+  (self first === That first) and (self second === That second);
+
+/// Combines every element of [X] with the elements of [That], then produces
+/// a new collection of these pairs.
+command (X has zippable-collection) zip: (That has zippable-collection) =
+  self zip: That with: { A, B in new zip-pair(A, B) }
+test
+  assert ([] zip: []) === [];
+  assert ([1] zip: [2]) === [
+    new zip-pair(1, 2),
+  ];
+  assert ([1, 2, 3] zip: [4, 5, 6]) === [
+    new zip-pair(1, 4),
+    new zip-pair(2, 5),
+    new zip-pair(3, 6),
+  ];
+  assert ([1, 2] zip: ["a", "b"]) === [
+    new zip-pair(1, "a"),
+    new zip-pair(2, "b"),
+  ];
+end

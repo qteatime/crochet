@@ -150,8 +150,6 @@ type thunk = foreign core.thunk;
 /// extensible by anyone.
 type record = foreign core.record;
 
-/// The type of fixed-length sequences.
-///
 /// A list is an ordered sequence of values, possibly of different types.
 /// This sequence is fixed---you cannot modify it to have more or less
 /// values. And although there are certain list operations that allow
@@ -162,13 +160,11 @@ type record = foreign core.record;
 /// to choose more efficient ways of storing and using it.
 type list = foreign core.list;
 
-/// The type of integer ranges.
-///
+
 /// Represents an inclusive integer range.
 type integer-range(start is integer, stop is integer, step is integer);
 
-/// The type of linked lists.
-///
+
 /// A linked list is an ordered sequence of values of the same type
 /// which can grow by having new values prepended to this sequence.
 /// Prepending elements and iterating elements in order is cheap,
@@ -185,6 +181,7 @@ abstract linked-list;
 singleton empty-list is linked-list;
 /// The at-least-one-value case of linked lists.
 type cons-list(value, rest is linked-list);
+
 
 /// The base type of enumerations.
 ///
@@ -251,7 +248,8 @@ singleton representation;
 singleton debug-representation;
 
 
-//-- Other types Other types
+//-- Other types
+type zip-pair(first, second);
 type indexed(index is integer, value);
 
 
@@ -630,4 +628,43 @@ trait foldable-collection with
   /// the collection as the initial value. The collection must have at least
   /// two items.
   command Collection fold-right-from: Computation;
+end
+
+/// A type has a [filterable-collection] if it's possible to produce a new
+/// collection of the same type that will not contain certain items, as
+/// described by a predicate.
+trait filterable-collection with
+  /// Produces a new collection that only contains items for which the
+  /// [Predicate] holds.
+  command Collection keep-if: Predicate;
+
+  /// (optional) Produces a new collection that does not contain any items for
+  /// which the [Predicate] holds.
+  command Collection remove-if: Predicate;
+end
+
+/// A type has a [mappable-collection] if it supports [_ map: _].
+trait mappable-collection with
+  /// Produces a new collection of the same type where all elements have been
+  /// transformed by the given [Transformation].
+  command Collection map: Transformation;
+end
+
+/// A type has a [chainable-collection] if it supports [_ flat-map: _].
+trait chainable-collection with
+  /// Produces a new collection of the same type by merging all of the
+  /// smaller collections produced by the [Transformation].
+  ///
+  /// In some types this would be the equivalent of
+  /// `X map: F | fold-from: [] with: (_ ++ _)`, but that's not an universal
+  /// translation.
+  command Collection flat-map: Transformation;
+end
+
+/// A type has a [zippable-collection] if it supports [_ zip: _ with: _].
+trait zippable-collection with
+  /// Produces a new collection of the same type where elements have been
+  /// paired with the ones from the [Other] collection and combined through
+  /// the [Combine] function.
+  command Collection zip: Other with: Combine;
 end

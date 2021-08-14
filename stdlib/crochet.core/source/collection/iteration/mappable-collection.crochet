@@ -2,6 +2,8 @@
 
 // -- List
 
+implement mappable-collection for list;
+
 /// Returns a list where all elements are transformed by [Fun].
 command list map: (Fun is function-1) do
   foreign list.map(self, Fun);
@@ -12,6 +14,8 @@ test
 end
 
 // -- Record
+
+implement mappable-collection for record;
 
 /// Returns a record where all values are transformed by [Fun]
 command record map: (Fun is (A -> B)) =

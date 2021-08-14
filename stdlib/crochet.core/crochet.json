@@ -28,8 +28,11 @@
     "source/collection/containers/modifiable-container.crochet",
     "source/collection/containers/modifiable-mapped-container.crochet",
 
+    "source/collection/iteration/chainable-collection.crochet",
+    "source/collection/iteration/filterable-collection.crochet",
     "source/collection/iteration/foldable-collection.crochet",
-    "source/collection/iteration/transformable-collection.crochet",
+    "source/collection/iteration/mappable-collection.crochet",
+    "source/collection/iteration/zippable-collection.crochet",
 
     "source/collection/sequences/appendable-sequence.crochet",
     "source/collection/sequences/finite-sequence.crochet",
@@ -42,7 +45,7 @@
 
     "source/collection/indexed-pair.crochet",
     "source/collection/record.crochet",
-    "source/collection/tuple.crochet",
+    "source/collection/list.crochet",
 
     "source/debugging/debug-representation.crochet",
 
@@ -82,7 +85,8 @@
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
     "source/traits/foldable-collection.crochet",
-    "source/traits/ordering.crochet"
+    "source/traits/ordering.crochet",
+    "source/traits/zippable-collection.crochet"
   ],
   "capabilities": {
     "requires": [],
