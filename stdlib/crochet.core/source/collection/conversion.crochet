@@ -1,0 +1,12 @@
+% crochet
+
+/// Converts a [linked-stream] to a [list]. Assumes that the [linked-stream]
+/// is finite, as otherwise the conversion will never finish.
+command linked-stream-empty as list = [];
+command linked-stream-cons as list = (self rest as list) prepend: self first;
+
+test "linked-stream as list" do
+  assert ((#stream from: [1, 2, 3]) as list) === [1, 2, 3];
+  assert (new linked-stream-cons(1, lazy linked-stream-empty) as list) === [1];
+  assert (new linked-stream-cons(1, lazy new linked-stream-cons(2, lazy linked-stream-empty)) as list) === [1, 2];
+end

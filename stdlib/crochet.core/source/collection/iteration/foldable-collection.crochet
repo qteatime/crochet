@@ -78,3 +78,16 @@ test
   assert ((#set from: []) fold-from: 0 with: (_ + _))
     === 0;
 end
+
+// -- Streams
+implement foldable-collection for linked-stream;
+
+/// Folds the stream.
+command linked-stream-empty fold-from: State with: (Combine is ((A, Value) -> A)) = State;
+command linked-stream-cons fold-from: State with: (Combine is ((A, Value) -> A)) =
+  self rest fold-from: Combine(State, self first) with: Combine;
+
+test "linked-stream fold-from: any with: function-2" do
+  assert (#linked-stream from: [] | fold-from: 6 with: (_ - _)) === 6;
+  assert (#linked-stream from: [1, 2, 3] | fold-from: 6 with: (_ - _)) === (((6 - 1) - 2) - 3);
+end

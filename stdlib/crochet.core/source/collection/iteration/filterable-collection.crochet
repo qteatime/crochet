@@ -58,3 +58,19 @@ test
   assert (#set from: [] | keep-if: (_ > 2))
     === (#set from: []);
 end
+
+// -- Streams
+implement filterable-collection for linked-stream;
+
+/// Returns a stream containing only items that pass the [Predicate].
+command linked-stream-empty keep-if: (Predicate is (A -> boolean)) = self;
+command linked-stream-cons keep-if: (Predicate is (A -> boolean)) =
+  condition
+    when Predicate(self first) => new linked-stream-cons(self first, lazy self rest keep-if: Predicate);
+    always => self rest keep-if: Predicate;
+  end;
+
+test "linked-stream keep-if: predicate" do
+  assert (#linked-stream from: [] |> _ keep-if: (_ > 1) |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ keep-if: (_ > 1) |> _ as list) === [2, 3];
+end

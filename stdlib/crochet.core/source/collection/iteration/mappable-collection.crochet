@@ -39,3 +39,16 @@ test
   assert (#set from: [] | map: (_ + 1))
     === (#set from: []);
 end
+
+// -- Stream
+implement mappable-collection for linked-stream;
+
+/// Transforms the stream with the given [Fun].
+command linked-stream-empty map: (Fun is (A -> B)) = self;
+command linked-stream-cons map: (Fun is (A -> B)) =
+  new linked-stream-cons(Fun(self first), lazy self rest map: Fun);
+
+test "linked-stream map: function-1" do
+  assert (#linked-stream from: [] |> _ map: (_ + 1) |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ map: (_ + 1) |> _ as list) === [2, 3, 4];
+end

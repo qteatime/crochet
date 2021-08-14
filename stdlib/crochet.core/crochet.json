@@ -46,12 +46,14 @@
     "source/collection/sequences/sortable-sequence.crochet",
 
     "source/collection/association.crochet",
+    "source/collection/conversion.crochet",
     "source/collection/equality.crochet",
     "source/collection/indexed-pair.crochet",
     "source/collection/list.crochet",
     "source/collection/record.crochet",
     "source/collection/set.crochet",
     "source/collection/set-algebra.crochet",
+    "source/collection/stream.crochet",
 
     "source/debugging/debug-representation.crochet",
 

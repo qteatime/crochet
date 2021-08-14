@@ -1,7 +1,6 @@
 % crochet
 
 // -- Lists
-
 implement appendable-sequence for list;
 
 /// Adds the given value at the end of the list.
@@ -33,3 +32,45 @@ end
 
 /// Returns the empty list.
 command list empty = [];
+
+
+// -- Streams
+implement appendable-sequence for linked-stream;
+
+/// Adds one item to the end of the stream.
+command linked-stream-empty append: Value =
+  new linked-stream-cons(Value, lazy linked-stream-empty);
+
+command linked-stream-cons append: Value =
+  new linked-stream-cons(self first, lazy self rest append: Value);
+
+/// Adds one item to the beginning of the stream.
+command linked-stream-empty prepend: Value =
+  new linked-stream-cons(Value, lazy linked-stream-empty);
+
+command linked-stream-cons prepend: Value =
+  new linked-stream-cons(Value, lazy self);
+
+/// Concatenates two streams.
+command linked-stream-empty ++ (That is linked-stream) =
+  That;
+
+command linked-stream-cons ++ (That is linked-stream) =
+  new linked-stream-cons(self first, lazy self rest ++ That);
+
+test "linked-stream prepend: any" do
+  assert (#linked-stream from: [] |> _ prepend: 1 |> _ as list) === [1];
+  assert (#linked-stream from: [1, 2, 3] |> _ prepend: 0 |> _ as list) === [0, 1, 2, 3];
+end
+
+test "linked-stream append: any" do
+  assert (#linked-stream from: [] |> _ append: 1 |> _ as list) === [1];
+  assert (#linked-stream from: [1, 2, 3] |> _ append: 4 |> _ as list) === [1, 2, 3, 4];
+end
+
+test "linked-stream ++ linked-stream" do
+  assert (((#linked-stream from: []) ++ (#linked-stream from: [])) as list) === [];
+  assert (((#linked-stream from: []) ++ (#linked-stream from: [1, 2, 3])) as list) === [1, 2, 3];
+  assert (((#linked-stream from: [1, 2, 3]) ++ (#linked-stream from: [])) as list) === [1, 2, 3];
+  assert (((#linked-stream from: [1, 2, 3]) ++ (#linked-stream from: [4, 5, 6])) as list) === [1, 2, 3, 4, 5, 6];
+end

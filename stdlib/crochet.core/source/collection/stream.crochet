@@ -1,0 +1,116 @@
+% crochet
+
+local singleton module;
+
+/// Constructs a stream from a sequence.
+command #stream from: Xs -> stream<A> =
+  #linked-stream from: Xs;
+
+/// Constructs an infinite stream by applying Computation to a state.
+command #stream from: Initial iterate: Computation =
+  #linked-stream from: Initial iterate: Computation;
+
+
+/// Constructs a linked-stream from a sequence.
+command #linked-stream from: (Xs has sequence, countable-container) -> linked-stream<A> do
+  condition
+    when Xs is-empty => linked-stream-empty;
+    always => new linked-stream-cons(Xs first, lazy #stream from: Xs rest);
+  end
+test
+  assert (#linked-stream from: [] |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ as list) === [1, 2, 3];
+end
+
+/// Constructs an infinite stream by repeatedly applying the given builder function to
+/// a state.
+command #linked-stream from: (Initial is A) iterate: (Computation is (A -> B)) -> stream<B> do
+  new linked-stream-cons(Initial, lazy #linked-stream from: Computation(Initial) iterate: Computation);
+test
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals take: 5 |> _ as list) === [0, 1, 2, 3, 4];
+end
+
+/// Constructs an infinite stream that just repeats the given value.
+command #linked-stream repeat: (Value is A) -> stream<A> =
+  new linked-stream-cons(Value, lazy #linked-stream repeat: Value)
+test
+  assert (#linked-stream repeat: 1 |> _ take: 5 |> _ as list) === [1, 1, 1, 1, 1];
+end
+
+/// Constructs an infinite stream by cycling through all elements of the given
+/// sequence over and over again.
+command #linked-stream cycle: (Xs has sequence, countable-container) do
+  condition
+    when Xs is-empty => linked-stream-empty;
+    always => module cycle: Xs current: Xs;
+  end
+test
+  let N = #linked-stream cycle: [1, 2];
+  assert (N take: 5 |> _ as list) === [1, 2, 1, 2, 1];
+end
+
+command module cycle: Xs current: Ys do
+  condition
+    when Ys is-empty => module cycle: Xs current: Xs;
+    always => new linked-stream-cons(Ys first, lazy module cycle: Xs current: Ys rest);
+  end
+end
+
+/// Takes N items from the stream
+command linked-stream-empty take: (N is integer) = self;
+command linked-stream-cons take: (N is integer) =
+  condition
+    when N === 0 => linked-stream-empty;
+    always => new linked-stream-cons(self first, lazy self rest take: (N - 1));
+  end;
+
+test "linked-stream take: integer" do
+  assert (#linked-stream from: [] |> _ take: 2 |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ take: 2 |> _ as list) === [1, 2];
+  assert (#linked-stream from: [1, 2, 3] |> _ take: 10 |> _ as list) === [1, 2, 3];
+  assert (#linked-stream from: [1, 2, 3] |> _ take: 0 |> _ as list) === [];
+end
+
+/// Drops N items from the stream
+command linked-stream-empty drop: (N is integer) = self;
+command linked-stream-cons drop: (N is integer) =
+  condition
+    when N === 0 => self;
+    always => self rest drop: (N - 1);
+  end;
+
+test "linked-stream drop: integer" do
+  assert (#linked-stream from: [] |> _ drop: 2 |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ drop: 2 |> _ as list) === [3];
+  assert (#linked-stream from: [1, 2, 3] |> _ drop: 10 |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ drop: 0 |> _ as list) === [1, 2, 3];
+end
+
+/// Returns a stream that contains elements from the first one up until the
+/// [Predicate] fails.
+command linked-stream-empty take-while: (Predicate is (A -> boolean)) = linked-stream-empty;
+command linked-stream-cons take-while: (Predicate is (A -> boolean)) do
+  condition
+    when Predicate(self first) => new linked-stream-cons(self first, lazy self rest take-while: Predicate);
+    always => linked-stream-empty;
+  end
+end
+
+test "linked-stream take-while: function-1" do
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals take-while: (_ < 5) |> _ as list) === [0, 1, 2, 3, 4];
+end
+
+/// Drops elements from the stream while the predicate holds.
+command linked-stream-empty drop-while: (Predicate is (A -> boolean)) = linked-stream-empty;
+command linked-stream-cons drop-while: (Predicate is (A -> boolean)) =
+  condition
+    when Predicate(self first) => self rest drop-while: Predicate;
+    always => self;
+  end;
+
+test "linked-stream drop-while: function-1" do
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals drop-while: (_ < 5) |> _ take: 5 |> _ as list) === [5, 6, 7, 8, 9];
+end

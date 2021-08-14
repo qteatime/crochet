@@ -1,5 +1,7 @@
 % crochet
 
+local singleton module;
+
 // -- Lists
 implement chainable-collection for list;
 
@@ -33,4 +35,25 @@ test
 
   assert (#set from: [] | flat-map: { X in (#set from: [X, X + 1]) })
     === (#set from: []);
+end
+
+// -- Stream
+implement chainable-collection for stream;
+
+/// Transforms a stream using the given [Fun]. The [Fun] should return a
+/// new stream.
+command linked-stream-empty flat-map: (Fun is (A -> stream<A>)) = self;
+command linked-stream-cons flat-map: (Fun is (A -> stream<A>)) =
+  module linked-stream-concat: Fun(self first) with: self using: Fun;
+
+command module linked-stream-concat: linked-stream-empty with: Xs using: F =
+  Xs rest flat-map: F;
+
+command module linked-stream-concat: (X is linked-stream-cons) with: Xs using: F =
+  new linked-stream-cons(X first, lazy module linked-stream-concat: X rest with: Xs using: F);
+
+test "linked-stream flat-map: F" do
+  let F = { A in #linked-stream from: [A, A + 0.5] };
+  assert (#linked-stream from: [] |> _ flat-map: F |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ flat-map: F |> _ as list) === [1, 1.5, 2, 2.5, 3, 3.5];
 end
