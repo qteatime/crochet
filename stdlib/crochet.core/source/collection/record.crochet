@@ -50,73 +50,9 @@ test
             ]) === [a -> 1, b -> 2];
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-command record fold-from: Initial with: (Fun is function-3) do
-  self pairs fold-from: Initial with: { A, P in Fun(A, P.key, P.value) };
-test
-  assert ([->] fold-from: [->] with: { A, K, V in A at: V put: K })
-    === [->];
-
-  assert ([a -> "b"] fold-from: [->] with: { A, K, V in A at: V put: K })
-    === [b -> "a"];
-
-  assert ([a -> "b", c -> "d"] fold-from: [->] with: { A, K, V in A at: V put: K })
-    === [b -> "a", d -> "c"];
-
-  assert ([a -> 1, b -> 2] fold-from: [->] with: { A, K, _ in A at: K put: 0 })
-    === [a -> 0, b -> 0];
-end
-
-
-
-
-/// Returns a record where all values are transformed by [Fun]
-command (X is record) map: (Fun is function-2) do
-  self fold-from: [->] with: { R, K, V in R at: K put: Fun(K, V) };
-test
-  assert ([a -> 1] map: { _, V in V + 1 }) === [a -> 2];
-  assert ([->] map: { _, V in V + 1 }) === [->];
-  assert ([a -> 1, b -> 2] map: { _, V in V + 1 }) === [a -> 2, b -> 3];
-end
-
-
-command (X is record) filter: (Fun is function-2) do
-  self fold-from: [->] with: { R, K, V in
-    condition
-      when Fun(K, V) => R at: K put: V;
-      always => R;
-    end
-  }
-test
-  assert ([->] filter: { _, V in V === 2 }) === [->];
-  assert ([a -> 1] filter: { _, V in V === 2 }) === [->];
-  assert ([a -> 1, b -> 2] filter: { _, V in V === 2 }) === [b -> 2];
-  assert ([a -> 2, b -> 2] filter: { _, V in V === 2 }) === [a -> 2, b -> 2];
-end
-
-
-command (X is record) with-only-keys: (Keys is list) do
-  self filter: { K, _ in Keys contains: K };
+/// Returns a record that only contains the provided keys.
+command record with-only-keys: (Keys has container) do
+  self keep-if: { P in Keys contains: P key };
 test
   assert ([->] with-only-keys: ["a", "b"]) === [->];
   assert ([a -> 1] with-only-keys: ["a", "b"]) === [a -> 1];
@@ -125,9 +61,9 @@ test
   assert ([a -> 1, b -> 2, c -> 3] with-only-keys: ["a", "b"]) === [a -> 1, b -> 2];
 end
 
-
-command (X is record) without-keys: (Keys is list) do
-  self filter: { K, _ in not (Keys contains: K) };
+/// Returns a record that does not contain the provided keys.
+command record without-keys: (Keys has container) do
+  self keep-if: { P in not (Keys contains: P key) };
 test
   assert ([->] without-keys: ["a", "b"]) === [->];
   assert ([a -> 1] without-keys: ["a", "b"]) === [->];
@@ -135,7 +71,3 @@ test
   assert ([a -> 1, b -> 2, c -> 3] without-keys: ["a"]) === [b -> 2, c -> 3];
   assert ([a -> 1, b -> 2, c -> 3] without-keys: ["a", "b"]) === [c -> 3];
 end
-
-
-command (X is record) ++ (Y is record)
-  = X merge: Y;

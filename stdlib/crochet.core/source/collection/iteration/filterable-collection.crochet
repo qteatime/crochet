@@ -1,7 +1,6 @@
 % crochet
 
 // -- Lists
-
 implement filterable-collection for list;
 
 /// Produces a new list that only contains items for which the given
@@ -22,4 +21,24 @@ test
   assert ([] remove-if: (_ > 2)) === [];
   assert ([1, 2, 3, 2, 1] remove-if: (_ > 2)) === [1, 2, 2, 1];
   assert ([1, 5, 3, 1, 6, 2] remove-if: (_ > 2)) === [1, 1, 2];
+end
+
+
+// -- Records
+implement filterable-collection for record;
+
+/// Produces a record without associations for which the [Predicate]
+/// does not hold.
+command (X is record) keep-if: (Predicate is (association<K, V> -> boolean)) do
+  self fold-from: [->] with: { R, P in
+    condition
+      when Predicate(P) => R at: P key put: P value;
+      always => R;
+    end
+  }
+test
+  assert ([->] keep-if: { P in P value === 2 }) === [->];
+  assert ([a -> 1] keep-if: { P in P value === 2 }) === [->];
+  assert ([a -> 1, b -> 2] keep-if: { P in P value === 2 }) === [b -> 2];
+  assert ([a -> 2, b -> 2] keep-if: { P in P value === 2 }) === [a -> 2, b -> 2];
 end

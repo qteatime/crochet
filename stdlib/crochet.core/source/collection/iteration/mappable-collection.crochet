@@ -18,10 +18,10 @@ end
 implement mappable-collection for record;
 
 /// Returns a record where all values are transformed by [Fun]
-command record map: (Fun is (A -> B)) =
-  self map: { K, V in Fun(V) }
+command record map: (Fun is (A -> B)) do
+  self fold-from: [->] with: { R, P in R at: P key put: Fun(P) };
 test
-  assert ([a -> 1] map: (_ + 1)) === [a -> 2];
-  assert ([->] map: (_ + 1)) === [->];
-  assert ([a -> 1, b -> 2] map: (_ + 1)) === [a -> 2, b -> 3];
+  assert ([a -> 1] map: { P in P value + 1 }) === [a -> 2];
+  assert ([->] map: { P in P value + 1 }) === [->];
+  assert ([a -> 1, b -> 2] map: { P in P value + 1 }) === [a -> 2, b -> 3];
 end
