@@ -14,10 +14,13 @@ end
 // -- List conversions
 /// Converts a [list] to a [stream].
 command list as stream do
-  condition
-    when self is-empty => linked-stream-empty;
-    always => new linked-stream-cons(self first, lazy self rest as stream);
-  end
+  let Go = { I in
+    condition
+      when I <= self count => new linked-stream-cons(self at: I, lazy Go(I + 1));
+      always => linked-stream-empty;
+    end
+  };
+  Go(1);
 test
   assert (([] as stream) as list) === [];
   assert (([1, 2, 3] as stream) as list) === [1, 2, 3];
