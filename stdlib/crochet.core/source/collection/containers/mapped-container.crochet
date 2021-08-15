@@ -48,18 +48,6 @@ test
   assert (#map empty | at: 1 put: 2 | at: 3 put: 4 | at: 3) === 4;
 end
 
-command map at: Key default: Default do
-  condition
-    when self contains-key: Key => self at: Key;
-    always => Default;
-  end
-test
-  assert (#map empty | at: 1 default: 0) === 0;
-  assert (#map empty | at: 1 put: 2 | at: 1 default: 0) === 2;
-  assert (#map empty | at: 1 put: 2 | at: 3 put: 4 | at: 3 default: 0) === 4;
-  assert (#map empty | at: 1 put: 2 | at: 3 put: 4 | at: 4 default: 0) === 0;
-end
-
 command map contains-key: Key -> boolean do
   foreign map.has(self.box, Key);
 test

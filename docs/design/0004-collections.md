@@ -39,22 +39,25 @@ And the traits:
 ### Containers
 
 - **container** (a collection of items)
-  - (list, linked-list, map, range, set, record)
+  : list, linked-list, map, range, set, record
   - contains:
 - **countable container** (a collection of items with a known finite amount)
-  - (list, linked-list, map, range, set, record)
-  - count, is-empty^
+  : list, linked-list, map, range, set, record
+  - count
+  - optional - is-empty
 - **modifiable container** (a collection of items that can be changed)
-  - (list, linked-list, set)
+  : list, linked-list, set
   - add:, remove:
 - **mapped container** (a collection of items identified by keys)
-  - (record, map)
-  - at:, at:default:, contains-key:
+  : record, map
+  - at:, contains-key:
+  - optional - at:default:
 - **modifiable mapped container** (a mapped container that can change)
-  - (record, map)
-  - at:put:, at:update:, remove-at:
+  : record, map
+  - at:put:, remove-at:
+  - optional - at:update:, at:default:update:
 - **mergeable mapped container**
-  - (record, map)
+  : record, map
   - merge:
 
 ### Sequences
@@ -109,6 +112,4 @@ And the traits:
   - zip:with:
 - **filterable collection**
   : list, linked-list, stream, set, map, record
-  - filter:
-
-## Available operations
+  - keep-if:

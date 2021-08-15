@@ -15,22 +15,6 @@ test
   assert (A at: "c" put: 3) === [a -> 1, b -> 2, c -> 3];
 end
 
-/// Returns a new record where the value identified by [Key] is transformed
-/// acording to the provided [Fun].
-command record at: (Key is text) update: (Fun is function-1) do
-  condition
-    when self contains-key: Key =>
-      self at: Key put: Fun(self.[Key]);
-    always =>
-      self;
-  end
-test
-  assert ([->] at: "a" update: (_ + 1)) === [->];
-  assert ([a -> 1] at: "a" update: (_ + 1)) === [a -> 2];
-  assert ([a -> 1, b -> 2] at: "a" update: (_ + 1)) === [a -> 2, b -> 2];
-  assert ([a -> 1, b -> 2] at: "c" update: (_ + 1)) === [a -> 1, b -> 2];
-end
-
 /// Returns a new record that no longer associates the given [Key] with any
 /// value.
 command record remove-at: (Key is text) =
@@ -54,16 +38,6 @@ test
       #association key: 2 value: 3,
     ]);
   assert (#map empty | at: 1 put: 2 | at: 1 put: 3 | at: 1) === 3;
-end
-
-command map at: Key update: (Transformation is (A -> B)) do
-  condition
-    when self contains-key: Key => self at: Key put: Transformation(self at: Key);
-    always => self;
-  end
-test
-  assert not (#map empty | at: 1 update: (_ + 1) | contains-key: 1);
-  assert (#map empty | at: 1 put: 2 | at: 1 update: (_ + 1) | at: 1) === 3;
 end
 
 command map remove-at: Key do
