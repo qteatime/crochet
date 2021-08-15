@@ -74,7 +74,7 @@ w.task("build-targets", ["build"], () => {
 
 w.task("build-browser", ["build"], () => {
   exec(
-    ` ./node_modules/.bin/browserify -e build/targets/browser.js -o www/crochet.js -s Crochet`
+    ` ./node_modules/.bin/browserify -e build/targets/browser/index.js -o www/crochet.js -s Crochet`
   );
 }).with_doc("Builds Crochet for the Browser target with browserify");
 
