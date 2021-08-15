@@ -10,3 +10,21 @@ test "linked-stream as list" do
   assert (new linked-stream-cons(1, lazy linked-stream-empty) as list) === [1];
   assert (new linked-stream-cons(1, lazy new linked-stream-cons(2, lazy linked-stream-empty)) as list) === [1, 2];
 end
+
+// -- List conversions
+/// Converts a [list] to a [stream].
+command list as stream do
+  condition
+    when self is-empty => linked-stream-empty;
+    always => new linked-stream-cons(self first, lazy self rest as stream);
+  end
+test
+  assert (([] as stream) as list) === [];
+  assert (([1, 2, 3] as stream) as list) === [1, 2, 3];
+end
+
+/// Converts a [list] to a [set].
+command list as set = #set from: self;
+
+/// Converts a [list] to a [map]
+command list as map = #map from: list;
