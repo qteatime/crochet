@@ -1,0 +1,35 @@
+% crochet
+
+/// A sequence that contains elements from the first one up until the [Predicate]
+/// stops holding.
+command (X has sequence, appendable-sequence, countable-container) take-while: (Predicate is (A -> boolean)) do
+  let Go = { Xs in
+    condition
+      when Xs is-empty => Xs;
+      when Predicate(Xs first) => Go(Xs rest) prepend: Xs first;
+      always => Xs empty;
+    end
+  };
+  Go(X);
+test
+  assert ([] take-while: (_ <= 2)) === [];
+  assert ([1, 2, 3, 4] take-while: (_ <= 2)) === [1, 2];
+  assert ([1, 2, 3, 2, 1] take-while: (_ <= 2)) === [1, 2];
+end
+
+/// A sequence that contains elements from when the [Predicate] starts holding
+/// up to the last element.
+command (X has sequence, countable-container) drop-while: (Predicate is (A -> boolean)) do
+  let Go = { Xs in
+    condition
+      when Xs is-empty => Xs;
+      when Predicate(Xs first) => Go(Xs rest);
+      always => Xs;
+    end
+  };
+  Go(X);
+test
+  assert ([] drop-while: (_ <= 2)) === [];
+  assert ([1, 2, 3, 4] drop-while: (_ <= 2)) === [3, 4];
+  assert ([1, 2, 3, 2, 1] drop-while: (_ <= 2)) === [3, 2, 1];
+end

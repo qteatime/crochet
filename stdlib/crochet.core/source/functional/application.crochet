@@ -1,0 +1,61 @@
+% crochet
+
+command function-0 apply: (Args is list)
+requires nullary :: Args count =:= 0
+do
+  self();
+end
+
+command function-1 apply: (Args is list)
+requires unary :: Args count =:= 1
+do
+  self(Args at: 1)
+end
+
+command function-2 apply: (Args is list)
+requires binary :: Args count =:= 2
+do
+  self(Args at: 1, Args at: 2)
+end
+
+command function-3 apply: (Args is list)
+requires ternary :: Args count =:= 3
+do
+  self(Args at: 1, Args at: 2, Args at: 3)
+end
+
+command function-4 apply: (Args is list)
+requires correct-arity :: Args count =:= 4
+do
+  self(Args at: 1, Args at: 2, Args at: 3, Args at: 4)
+end
+
+command function-5 apply: (Args is list)
+requires correct-arity :: Args count =:= 5
+do
+  self(Args at: 1, Args at: 2, Args at: 3, Args at: 4, Args at: 5)
+end
+
+command function-6 apply: (Args is list)
+requires correct-arity :: Args count =:= 6
+do
+  self(Args at: 1, Args at: 2, Args at: 3, Args at: 4, Args at: 5, Args at: 6)
+end
+
+command function-7 apply: (Args is list)
+requires correct-arity :: Args count =:= 7
+do
+  self(Args at: 1, Args at: 2, Args at: 3, Args at: 4, Args at: 5, Args at: 6, Args at: 7)
+end
+
+command function-8 apply: (Args is list)
+requires correct-arity :: Args count =:= 8
+do
+  self(Args at: 1, Args at: 2, Args at: 3, Args at: 4, Args at: 5, Args at: 6, Args at: 7, Args at: 8)
+end
+
+command function-9 apply: (Args is list)
+requires correct-arity :: Args count =:= 9
+do
+  self(Args at: 1, Args at: 2, Args at: 3, Args at: 4, Args at: 5, Args at: 6, Args at: 7, Args at: 8, Args at: 9)
+end

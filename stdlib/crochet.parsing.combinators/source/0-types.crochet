@@ -1,7 +1,7 @@
 % crochet
 
 // The stream we're parsing (this should support random indexing)
-type parser-stream(position is integer, stream is tuple);
+type parser-stream(position is integer, stream is list);
 
 
 // Parsers

@@ -5,6 +5,7 @@ import { Namespace, PassthroughNamespace } from "./namespaces";
 // Only imported so callbacks get the correct type here
 import type { Pattern } from "./logic/unification";
 import type { CrochetTrace } from "./tracing/trace";
+import { hash, isImmutable } from "immutable";
 
 export type Primitive = boolean | null | bigint | number;
 
@@ -17,7 +18,7 @@ export enum Tag {
   TRUE,
   FALSE,
   INTERPOLATION,
-  TUPLE,
+  LIST,
   RECORD,
   INSTANCE,
   LAMBDA,
@@ -38,7 +39,7 @@ export type PayloadType = {
   [Tag.TRUE]: null;
   [Tag.FALSE]: null;
   [Tag.INTERPOLATION]: (string | CrochetValue)[];
-  [Tag.TUPLE]: CrochetValue[];
+  [Tag.LIST]: CrochetValue[];
   [Tag.RECORD]: Map<string, CrochetValue>;
   [Tag.INSTANCE]: CrochetValue[];
   [Tag.PARTIAL]: CrochetPartial;
@@ -68,6 +69,14 @@ export class CrochetValue<T extends Tag = Tag> {
     readonly type: CrochetType,
     readonly payload: PayloadType[T]
   ) {}
+
+  equals(that: CrochetValue<Tag>): boolean {
+    return equals(this, that);
+  }
+
+  hashCode() {
+    return 0; // FIXME: implement proper hash codes here
+  }
 }
 
 export class CrochetLambda {
@@ -184,9 +193,9 @@ export function equals(left: CrochetValue, right: CrochetValue): boolean {
       return true;
     }
 
-    case Tag.TUPLE: {
-      const l = left as CrochetValue<Tag.TUPLE>;
-      const r = right as CrochetValue<Tag.TUPLE>;
+    case Tag.LIST: {
+      const l = left as CrochetValue<Tag.LIST>;
+      const r = right as CrochetValue<Tag.LIST>;
 
       if (l.payload.length !== r.payload.length) {
         return false;
@@ -827,7 +836,7 @@ export class Universe {
       Function: CrochetType[];
       Thunk: CrochetType;
       Record: CrochetType;
-      Tuple: CrochetType;
+      List: CrochetType;
       Enum: CrochetType;
       Type: CrochetType;
       Cell: CrochetType;
@@ -839,7 +848,7 @@ export class Universe {
         Name: CrochetType;
         Literal: CrochetType;
         Dynamic: CrochetType;
-        Tuple: CrochetType;
+        List: CrochetType;
         Interpolation: CrochetType;
       };
     }
@@ -890,7 +899,7 @@ class CMapEntry<V> {
 function cmap_is_slow(v: CrochetValue) {
   switch (v.tag) {
     case Tag.INTERPOLATION:
-    case Tag.TUPLE:
+    case Tag.LIST:
     case Tag.RECORD:
     case Tag.TEXT:
       return true;

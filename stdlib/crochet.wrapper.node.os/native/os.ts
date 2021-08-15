@@ -19,7 +19,7 @@ export default (ffi: ForeignInterface) => {
     const args0 = process.argv.slice(2);
     const split_index = args0.indexOf("--");
     const args = split_index < 0 ? [] : args0.slice(split_index + 1);
-    return ffi.tuple(args.map((x) => ffi.text(x)));
+    return ffi.list(args.map((x) => ffi.text(x)));
   });
 
   ffi.defun("os.chdir", (dir) => {

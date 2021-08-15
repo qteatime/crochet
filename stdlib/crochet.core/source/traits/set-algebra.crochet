@@ -1,0 +1,38 @@
+% crochet
+
+// Used for testing
+local type lset(x);
+command #lset from: Xs = new lset(#set from: Xs);
+implement countable-container for lset;
+command lset count = self.x count;
+implement set-algebra for lset;
+command lset union: A = self.x union: A.x;
+command lset intersection: A = self.x intersection: A.x;
+command lset complement: A = self.x complement: A.x;
+implement equality for lset;
+command lset === A = self.x === A.x;
+
+
+/// True if [B] includes all elements of [A].
+command (A has set-algebra, countable-container) is-subset: (B has set-algebra, countable-container) do
+  (A complement: B | is-empty)
+test
+  assert (#lset from: [1, 2, 3]) is-subset: (#lset from: [1, 2, 3]);
+  assert (#lset from: []) is-subset: (#lset from: [1, 2, 3]);
+  assert not ((#lset from: [1, 2, 3]) is-subset: (#lset from: []));
+  assert (#lset from: [1, 2, 3]) is-subset: (#lset from: [1, 2, 3, 4, 5]);
+  assert not ((#lset from: [1, 2, 3, 4, 5]) is-subset: (#lset from: [1, 2, 3]));
+  assert not ((#lset from: [1, 2, 3]) is-subset: (#lset from: [4, 5, 6]));
+end
+
+// True if [A] includes all elements of [B].
+command (A has set-algebra, countable-container) is-superset: (B has set-algebra, countable-container) do
+  (B complement: A | is-empty);
+test
+  assert (#lset from: [1, 2, 3]) is-superset: (#lset from: [1, 2, 3]);
+  assert not ((#lset from: []) is-superset: (#lset from: [1, 2, 3]));
+  assert (#lset from: [1, 2, 3]) is-superset: (#lset from: []);
+  assert not ((#lset from: [1, 2, 3]) is-superset: (#lset from: [1, 2, 3, 4, 5]));
+  assert (#lset from: [1, 2, 3, 4, 5]) is-superset: (#lset from: [1, 2, 3]);
+  assert not ((#lset from: [1, 2, 3]) is-superset: (#lset from: [4, 5, 6]));
+end

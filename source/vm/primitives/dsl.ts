@@ -16,7 +16,7 @@ import {
   make_static_text,
   make_text,
   make_thunk,
-  make_tuple,
+  make_list,
 } from "./values";
 
 export function reify_meta(
@@ -50,7 +50,7 @@ export function reify_dsl_node(
       }
       return instantiate(universe.types.Skeleton.Node, [
         make_static_text(universe, node.name),
-        make_tuple(universe, children),
+        make_list(universe, children),
         make_record_from_map(universe, attrs),
         reify_meta(universe, module, node),
       ]);
@@ -81,8 +81,8 @@ export function reify_dsl_node(
       const children = node.children.map((x) =>
         reify_dsl_node(universe, module, env, x)
       );
-      return instantiate(universe.types.Skeleton.Tuple, [
-        make_tuple(universe, children),
+      return instantiate(universe.types.Skeleton.List, [
+        make_list(universe, children),
         reify_meta(universe, module, node),
       ]);
     }
@@ -107,7 +107,7 @@ export function reify_dsl_node(
       });
 
       return instantiate(universe.types.Skeleton.Interpolation, [
-        make_tuple(universe, parts),
+        make_list(universe, parts),
         reify_meta(universe, module, node),
       ]);
     }

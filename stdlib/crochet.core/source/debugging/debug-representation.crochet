@@ -48,7 +48,7 @@ local abstract doc-like;
 command #doc empty = doc-empty;
 
 command #doc text: (X is text) = new doc-text(dbg size: X, X);
-command #doc flow: (Xs is tuple) = Xs fold-with: (_ ++ _);
+command #doc flow: (Xs is list) = Xs fold-with: (_ ++ _);
 
 command doc text: X =
   new doc-join(self, #doc text: X);
@@ -184,12 +184,12 @@ command debug-representation number: (X is numeric) =
   debug-representation text: (dbg text: X)
     | colour: cyan;
 
-command debug-representation list: (X is tuple) separator: (S is doc) do
+command debug-representation list: (X is list) separator: (S is doc) do
   condition
     when X is-empty => #doc empty;
     when X count === 1 => X first;
     always do
-      X but-first fold-from: X first with: { A, B in
+      X rest fold-from: X first with: { A, B in
         condition
           when B is doc-empty => A;
           always => A ++ S ++ B;
@@ -263,7 +263,7 @@ command debug-representation of: X =
   debug-representation text: (dbg type-name: X)
     | between: "<" and: ">";
 
-command debug-representation of: (X is tuple) do
+command debug-representation of: (X is list) do
   let Items = X map: (debug-representation of: _);
   debug-representation list: Items separator: (#doc text: "," | break)
     | block: 2
@@ -290,7 +290,7 @@ command debug-representation of: (X is doc-like) =
   X as doc;
 
 
-local type type-representation(name is text, fields is tuple) is doc-like;
+local type type-representation(name is text, fields is list) is doc-like;
 local type type-field(name is text, value) is doc-like;
 local type type-pos(value) is doc-like;
 

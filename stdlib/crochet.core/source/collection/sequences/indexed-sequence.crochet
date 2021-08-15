@@ -1,0 +1,15 @@
+% crochet
+
+// -- Lists
+
+implement indexed-sequence for list;
+
+/// Retrieves the element at the [Index] in the list.
+command list at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= self count)
+  = foreign list.at(self, Index)
+test
+  assert (["a", "b", "c"] at: 1) =:= "a";
+  assert (["a", "b", "c"] at: 2) =:= "b";
+  assert (["a", "b", "c"] at: 3) =:= "c";
+end

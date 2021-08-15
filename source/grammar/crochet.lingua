@@ -875,10 +875,10 @@ grammar Crochet : Program {
 
   // -- DSLs
   dslExpression =
-    | dsl_ t:typeApp with_ x:dslNodeList end_
+    | dsl_ t:typeApp with_ x:dslNodeSeq end_
       -> Expression.Dsl(meta, t, x)
 
-  dslNodeList =
+  dslNodeSeq =
     | xs:list0<dslNode, s<";">> -> xs
 
   dslNode =
@@ -891,11 +891,11 @@ grammar Crochet : Program {
     | x:interpolateText<dslNode>  -> DslAst.Interpolation(meta, x)
     | l:literal                   -> DslAst.Lit(meta, l)
     | x:dslCrochet                -> DslAst.Dynamic(meta, x)
-    | xs:dslNodeTuple             -> DslAst.List(meta, xs)
+    | xs:dslNodeList             -> DslAst.List(meta, xs)
     | s<"("> x:dslNode s<")">     -> x
 
-  dslNodeTuple =
-    | s<"["> xs:dslNodeList s<"]"> -> xs
+  dslNodeList =
+    | s<"["> xs:dslNodeSeq s<"]"> -> xs
 
   dslCrochet =
     | s<"@("> x:expression s<")"> -> x
@@ -1024,7 +1024,7 @@ grammar Crochet : Program {
   space += comment
 
   doc (a documentation comment) = xs:doc_line+ -> xs
-  doc_line (a documentation comment) = "///" hs? x:line nl -> x
+  doc_line (a documentation comment) = hs* "///" hs? x:line nl -> x
 
   semi = s<";">
 

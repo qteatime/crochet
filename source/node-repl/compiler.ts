@@ -46,7 +46,14 @@ export class ReplStatements extends ReplExpr {
     module: VM.CrochetModule,
     env: VM.Environment
   ): Promise<void> {
-    const value = await vm.system.run_block(this.block, env);
+    const new_env = VM.Environments.clone(env);
+    const value = await vm.system.run_block(this.block, new_env);
+    // Copy only non-generated bindings back to the top-level environment
+    for (const [k, v] of new_env.bindings.entries()) {
+      if (!/\$/.test(k)) {
+        env.define(k, v);
+      }
+    }
     console.log(vm.renderer.render_value(value));
   }
 }

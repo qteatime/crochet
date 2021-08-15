@@ -1,0 +1,35 @@
+% crochet
+
+// -- Records
+implement mergeable-mapped-container for record;
+
+/// Returns a new record where the associations of [That] record are carried
+/// over, possibly overriding the previous associations in the [self] record,
+/// if associations for the same key already existed.
+command record merge: (That is record) =
+  foreign record.concat(self, That)
+test
+  assert ([->] merge: [a -> 1, b -> 2]) === [a -> 1, b -> 2];
+  assert ([a -> 1, b -> 2] merge: [->]) === [a -> 1, b -> 2];
+  assert ([a -> 1] merge: [b -> 2]) === [a -> 1, b -> 2];
+  assert ([a -> 1, c -> 4] merge: [a -> 2, b -> 3]) === [a -> 2, c -> 4, b -> 3];
+end
+
+// -- Maps
+implement mergeable-mapped-container for map;
+
+command map merge: (That is map) do
+  new map(foreign map.merge(self.box, That.box));
+test
+  assert (#map empty merge: (#map from: [a -> 1, b -> 2]))
+    === (#map from: [a -> 1, b -> 2]);
+
+  assert (#map from: [a -> 1, b -> 2] | merge: #map empty)
+    === (#map from: [a -> 1, b -> 2]);
+
+  assert (#map from: [a -> 1, b -> 2] | merge: (#map from: [a -> 2, c -> 3]))
+    === (#map from: [a -> 2, b -> 2, c -> 3]);
+
+  assert (#map from: [a -> 1, b -> 2] | merge: (#map from: [c -> 3, d -> 4]))
+    === (#map from: [a -> 1, b -> 2, c -> 3, d -> 4]);
+end

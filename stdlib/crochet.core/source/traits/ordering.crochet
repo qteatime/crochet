@@ -1,7 +1,5 @@
 % crochet
 
-enum ordering = less-than, equal, greater-than;
-
 /// True if [X] is less than or equal to [Y].
 command (X has total-ordering) <= (Y has total-ordering) =
   (X === Y) or (X < Y)

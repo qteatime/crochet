@@ -119,8 +119,13 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.FLOAT_64, x);
       return x.payload.toString() + (Number.isInteger(x.payload) ? ".0" : "");
     }
-    case Tag.INSTANCE:
-      return `<${type_name(x.type)}>`;
+    case Tag.INSTANCE: {
+      assert_tag(Tag.INSTANCE, x);
+      const fields = x.payload.map(
+        (v, i) => `${x.type.fields[i]} -> ${simple_value(v)}`
+      );
+      return `<${type_name(x.type)}: ${fields.join(", ")}>`;
+    }
     case Tag.INTERPOLATION: {
       assert_tag(Tag.INTERPOLATION, x);
       return `i"${x.payload
@@ -156,8 +161,8 @@ export function simple_value(x: CrochetValue): string {
         return `<thunk>`;
       }
     }
-    case Tag.TUPLE: {
-      assert_tag(Tag.TUPLE, x);
+    case Tag.LIST: {
+      assert_tag(Tag.LIST, x);
       return `[${x.payload.map((x) => simple_value(x)).join(", ")}]`;
     }
     case Tag.TYPE: {

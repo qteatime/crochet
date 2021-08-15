@@ -1,6 +1,6 @@
 % crochet
 
-command novella show: (X is tuple) =
+command novella show: (X is list) =
   novella show: (novella flow: (X map: { E in E as element | block }));
 
 command novella show: X =
@@ -13,7 +13,7 @@ command novella wait-selection: Reference =
   perform novella.wait-selection(Reference);
 
 local type choice-ref;
-command novella choose-action: (Actions is tuple<action-choice>) do
+command novella choose-action: (Actions is list<action-choice>) do
   let Ref = new choice-ref;
   novella show: (novella action-choice-menu: Actions for: Ref);
   novella wait-selection: Ref;

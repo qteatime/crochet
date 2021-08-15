@@ -5,9 +5,9 @@ open crochet.text.parsing.lingua;
 
 // Type definitions
 abstract node;
-type csv(rows is tuple) is node;
+type csv(rows is list) is node;
 
-type row(cells is tuple) is node;
+type row(cells is list) is node;
 
 type cell(value is text) is node;
 

@@ -47,7 +47,7 @@ command form--integer location = self.pos annotated-source;
 command form--atom location = self.pos annotated-source;
 command form--unit location = self.pos annotated-source;
 
-command primitive apply: (Args is tuple) do
+command primitive apply: (Args is list) do
   let F = self.operation;
   let Arity = self.arity;
   condition
@@ -59,7 +59,7 @@ command primitive apply: (Args is tuple) do
   end
 end
 
-command variadic-primitive apply: (Args is tuple) do
+command variadic-primitive apply: (Args is list) do
   let F = self.operation;
   F(Args);
 end

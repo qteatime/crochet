@@ -1,0 +1,40 @@
+% crochet
+
+// -- Lists
+implement zippable-collection for list;
+
+/// Pairs every element of [X] with the element of [That] at the same index
+/// and uses [Combine] to combine them into a single element.
+command list zip: (That is list) with: (Combine is ((A, B) -> C))
+requires same-size :: self count === That count
+  = foreign list.zip-with(self, That, Combine)
+test
+  assert ([1, 2, 3] zip: [4, 5, 6] with: (_ + _)) === [1 + 4, 2 + 5, 3 + 6];
+end
+
+// -- Streams
+implement zippable-collection for linked-stream;
+
+/// Pairs every element of the first stream with an element of the second
+/// stream. The size of the resulting stream will be that of the shortest
+/// stream.
+command linked-stream-empty zip: linked-stream with: (Combine is ((A, B) -> C)) =
+  linked-stream-empty;
+
+command linked-stream zip: linked-stream-empty with: (Combine is ((A, B) -> C)) =
+  linked-stream-empty;
+
+command linked-stream-cons zip: (That is linked-stream-cons) with: (Combine is ((A, B) -> C)) =
+  new linked-stream-cons(Combine(self first, That first), lazy self rest zip: That rest with: Combine);
+
+test "linked-stream zip: linked-stream with: function-2" do
+  let S1 = #linked-stream from: [];
+  let S2 = #linked-stream from: [1, 2, 3];
+  assert (S1 zip: S2 with: (_ + _) |> _ as list) === [];
+  assert (S2 zip: S1 with: (_ + _) |> _ as list) === [];
+
+  let S3 = #linked-stream from: [1, 2, 3];
+  let S4 = #linked-stream from: [4, 5, 6, 7];
+  assert (S3 zip: S4 with: (_ - _) |> _ as list) === [1 - 4, 2 - 5, 3 - 6];
+  assert (S4 zip: S3 with: (_ - _) |> _ as list) === [4 - 1, 5 - 2, 6 - 3]
+end

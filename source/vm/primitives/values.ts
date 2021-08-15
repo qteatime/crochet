@@ -48,8 +48,8 @@ export function make_static_text(universe: Universe, x: string) {
   return new CrochetValue(Tag.TEXT, universe.types.StaticText, x);
 }
 
-export function make_tuple(universe: Universe, xs: CrochetValue[]) {
-  return new CrochetValue(Tag.TUPLE, universe.types.Tuple, xs);
+export function make_list(universe: Universe, xs: CrochetValue[]) {
+  return new CrochetValue(Tag.LIST, universe.types.List, xs);
 }
 
 export function make_interpolation(
@@ -270,7 +270,7 @@ export function make_boolean(universe: Universe, x: boolean) {
 }
 
 export function get_array(x: CrochetValue) {
-  assert_tag(Tag.TUPLE, x);
+  assert_tag(Tag.LIST, x);
   return x.payload;
 }
 
@@ -339,10 +339,10 @@ export function project(value: CrochetValue, key: string): CrochetValue {
       }
     }
 
-    case Tag.TUPLE: {
-      assert_tag(Tag.TUPLE, value);
+    case Tag.LIST: {
+      assert_tag(Tag.LIST, value);
       const results = value.payload.map((x) => project(x, key));
-      return new CrochetValue(Tag.TUPLE, value.type, results);
+      return new CrochetValue(Tag.LIST, value.type, results);
     }
 
     case Tag.ACTION: {
@@ -468,8 +468,8 @@ export function to_plain_object(x: CrochetValue): unknown {
     case Tag.FALSE:
       return false;
 
-    case Tag.TUPLE:
-      assert_tag(Tag.TUPLE, x);
+    case Tag.LIST:
+      assert_tag(Tag.LIST, x);
       return x.payload.map((x) => to_plain_object(x));
 
     case Tag.RECORD: {
@@ -504,7 +504,7 @@ export function from_plain_object(
   } else if (typeof x === "boolean") {
     return make_boolean(universe, x);
   } else if (Array.isArray(x)) {
-    return make_tuple(
+    return make_list(
       universe,
       x.map((x) => from_plain_object(universe, x))
     );

@@ -6,20 +6,68 @@
     "native/floats.js",
     "native/integer.js",
     "native/conversion.js",
-    "native/tuple.js",
+    "native/list.js",
     "native/record.js",
     "native/cell.js",
     "native/text.js",
     "native/etc.js",
-    "native/action.js"
+    "native/action.js",
+    "native/set.js",
+    "native/map.js"
   ],
   "sources": [
     "source/0-types.crochet",
+
+    "source/action/action.crochet",
+
+    "source/cell/cell.crochet",
+    "source/cell/read-only.crochet",
+
+    "source/collection/containers/container.crochet",
+    "source/collection/containers/countable-container.crochet",
+    "source/collection/containers/mapped-container.crochet",
+    "source/collection/containers/mergeable-mapped-container.crochet",
+    "source/collection/containers/modifiable-container.crochet",
+    "source/collection/containers/modifiable-mapped-container.crochet",
+
+    "source/collection/iteration/chainable-collection.crochet",
+    "source/collection/iteration/filterable-collection.crochet",
+    "source/collection/iteration/foldable-collection.crochet",
+    "source/collection/iteration/mappable-collection.crochet",
+    "source/collection/iteration/zippable-collection.crochet",
+
+    "source/collection/sequences/appendable-sequence.crochet",
+    "source/collection/sequences/finite-sequence.crochet",
+    "source/collection/sequences/growable-indexed-sequence.crochet",
+    "source/collection/sequences/indexed-sequence.crochet",
+    "source/collection/sequences/modifiable-indexed-sequence.crochet",
+    "source/collection/sequences/reversible-sequence.crochet",
+    "source/collection/sequences/sequence.crochet",
+    "source/collection/sequences/sliceable-sequence.crochet",
+    "source/collection/sequences/sortable-sequence.crochet",
+
+    "source/collection/association.crochet",
+    "source/collection/conversion.crochet",
+    "source/collection/equality.crochet",
+    "source/collection/indexed.crochet",
+    "source/collection/list.crochet",
+    "source/collection/map.crochet",
+    "source/collection/record.crochet",
+    "source/collection/set.crochet",
+    "source/collection/set-algebra.crochet",
+    "source/collection/stream.crochet",
+
+    "source/debugging/debug-representation.crochet",
 
     "source/enum/bounds.crochet",
     "source/enum/enumeration.crochet",
     "source/enum/equality.crochet",
     "source/enum/total-ordering.crochet",
+
+    "source/errors/panic.crochet",
+
+    "source/functional/application.crochet",
+    "source/functional/thunk.crochet",
 
     "source/logic/boolean-algebra.crochet",
     "source/logic/equality.crochet",
@@ -32,7 +80,10 @@
     "source/numeric/total-ordering.crochet",
 
     "source/result/equality.crochet",
+    "source/result/maybe.crochet",
     "source/result/result.crochet",
+
+    "source/skeleton/skeleton.crochet",
 
     "source/text/ascii.crochet",
     "source/text/basic.crochet",
@@ -41,27 +92,13 @@
     "source/text/views.crochet",
 
     "source/traits/conversion.crochet",
+    "source/traits/container.crochet",
     "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
+    "source/traits/iteration.crochet",
     "source/traits/ordering.crochet",
-
-    "source/action/action.crochet",
-
-    "source/cell/cell.crochet",
-    "source/cell/read-only.crochet",
-
-    "source/collection/indexed.crochet",
-    "source/collection/record.crochet",
-    "source/collection/tuple.crochet",
-
-    "source/debugging/debug-representation.crochet",
-
-    "source/errors/panic.crochet",
-
-    "source/functional/lambda.crochet",
-    "source/functional/thunk.crochet",
-
-    "source/skeleton/skeleton.crochet"
+    "source/traits/sequence.crochet",
+    "source/traits/set-algebra.crochet"
   ],
   "capabilities": {
     "requires": [],

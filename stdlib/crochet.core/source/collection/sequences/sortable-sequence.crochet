@@ -1,0 +1,37 @@
+% crochet
+
+// -- Lists
+
+implement sortable-sequence for list;
+
+/// Returns an ordered list where the order is defined by the given
+/// [Comparator] function. The ordering is stable, and items that
+/// compare equal will remain in the same relative order.
+command list sort-by: (Comparator is function-2)
+ensures same-size :: self count === return count do
+  let Compare = { A, B in
+    do
+      let C = Comparator(A, B);
+      condition
+        when C === less-than => -1;
+        when C === equal => 0;
+        when C === greater-than => 1;
+      end
+    end
+  };
+  foreign list.sort(self, Compare)
+test
+  assert ([] sort-by: (_ compare-to: _)) =:= [];
+  assert ([1] sort-by: (_ compare-to: _)) =:= [1];
+  assert ([-2, 1, 0, 3] sort-by: (_ compare-to: _)) =:= [-2, 0, 1, 3];
+end
+
+/// A convenience for sort-by which uses the intrinsic ordering of the elements.
+command list sort
+ensures same-size :: self count === return count
+  = self sort-by: (_ compare-to: _)
+test
+  assert ([] sort) =:= [];
+  assert ([1] sort) =:= [1];
+  assert ([-2, 1, 0, 3] sort) =:= [-2, 0, 1, 3];
+end

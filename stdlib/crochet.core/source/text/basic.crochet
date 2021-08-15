@@ -86,7 +86,7 @@ test
 end
 
 /// Joins a set of texts
-command #text join: (Parts is tuple) with: (Separator is text) do
+command #text join: (Parts is list) with: (Separator is text) do
   condition
     when Parts is-empty => "" as interpolation;
     when Parts count =:= 1 => Parts as interpolation;

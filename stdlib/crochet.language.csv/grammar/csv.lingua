@@ -1,5 +1,5 @@
-type csv(rows: tuple)
-type row(cells: tuple)
+type csv(rows: list)
+type row(cells: list)
 type cell(value: text)
 
 grammar Csv : csv {

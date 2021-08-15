@@ -1,0 +1,45 @@
+% crochet
+
+// -- Lists
+
+implement sliceable-sequence for list;
+
+/// Returns the sub-list that comprises elements at index [Start] up to
+/// (and including) element at index [End].
+command list slice-from: (Start is integer) to: (End is integer)
+requires
+  positive :: Start >= 1,
+  progressive :: Start <= End
+  = foreign list.slice(self, Start, End)
+test
+  assert ([] slice-from: 1 to: 4) =:= [];
+  assert ([0, 1, 2, 3] slice-from: 1 to: 4) =:= [0, 1, 2, 3];
+  assert ([0, 1, 2, 3] slice-from: 1 to: 1) =:= [0];
+  assert ([0, 1, 2, 3] slice-from: 4 to: 4) =:= [3];
+  assert ([0, 1, 2, 3] slice-from: 2 to: 3) =:= [1, 2];
+  assert ([0, 1, 2, 3] slice-from: 3 to: 5) =:= [2, 3];
+end
+
+/// Returns the sub-list that comprises elements at index [Start] up
+/// to (and including) the end.
+command list slice-from: Start =
+  self slice-from: Start to: (greater-of: Start and: self count)
+test
+  assert ([] slice-from: 1) === [];
+  assert ([1] slice-from: 1) === [1];
+  assert ([1, 2, 3] slice-from: 1) === [1, 2, 3];
+  assert ([1, 2, 3] slice-from: 2) === [2, 3];
+  assert ([1, 2, 3] slice-from: 3) === [3];
+end
+
+/// Returns the sub-list that comprises elements from (and including)
+/// the beginning of the list, up to (and including) element at index [End].
+command list slice-to: End =
+  self slice-from: 1 to: End
+test
+  assert ([] slice-to: 1) === [];
+  assert ([1] slice-to: 1) === [1];
+  assert ([1, 2, 3] slice-to: 1) === [1];
+  assert ([1, 2, 3] slice-to: 2) === [1, 2];
+  assert ([1, 2, 3] slice-to: 3) === [1, 2, 3];
+end

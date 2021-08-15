@@ -252,7 +252,7 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("html.element", (attrs0, children0) => {
     const attrs = ffi.record_to_map(attrs0);
-    const children = ffi.tuple_to_array(children0);
+    const children = ffi.list_to_array(children0);
     const element = document.createElement("span");
     for (const [k, v] of attrs.entries()) {
       element.setAttribute(k, ffi.text_to_string(v));

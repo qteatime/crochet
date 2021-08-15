@@ -1,0 +1,66 @@
+% crochet
+
+// -- List
+implement mappable-collection for list;
+
+/// Returns a list where all elements are transformed by [Fun].
+command list map: (Fun is function-1) do
+  foreign list.map(self, Fun);
+test
+  assert ([] map: (_ + 1)) === [];
+  assert ([1] map: (_ + 1)) === [2];
+  assert ([1, 2, 3, 4] map: (_ + 1)) === [2, 3, 4, 5];
+end
+
+// -- Record
+implement mappable-collection for record;
+
+/// Returns a record where all values are transformed by [Fun]
+command record map: (Fun is (A -> B)) do
+  self fold-from: [->] with: { R, P in R at: P key put: Fun(P) };
+test
+  assert ([a -> 1] map: { P in P value + 1 }) === [a -> 2];
+  assert ([->] map: { P in P value + 1 }) === [->];
+  assert ([a -> 1, b -> 2] map: { P in P value + 1 }) === [a -> 2, b -> 3];
+end
+
+// -- Set
+implement mappable-collection for set;
+
+command set map: (Fun is (A -> B)) do
+  new set(foreign set.map(self.box, Fun));
+test
+  assert (#set from: [1, 2, 3] | map: (_ + 1))
+    === (#set from: [2, 3, 4]);
+
+  assert (#set from: [1, 2, 3] | map: { _ in 1 })
+    === (#set from: [1]);
+
+  assert (#set from: [] | map: (_ + 1))
+    === (#set from: []);
+end
+
+// -- Stream
+implement mappable-collection for linked-stream;
+
+/// Transforms the stream with the given [Fun].
+command linked-stream-empty map: (Fun is (A -> B)) = self;
+command linked-stream-cons map: (Fun is (A -> B)) =
+  new linked-stream-cons(Fun(self first), lazy self rest map: Fun);
+
+test "linked-stream map: function-1" do
+  assert (#linked-stream from: [] |> _ map: (_ + 1) |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ map: (_ + 1) |> _ as list) === [2, 3, 4];
+end
+
+// -- Maps
+implement mappable-collection for map;
+
+command map map: (Fun is (association<K, V> -> association<K2, V2>)) do
+  new map(foreign map.map(self.box, { X in let R = Fun(new association(X at: 1, X at: 2));
+                                           [R key, R value] }));
+test
+  let F = { X in #association key: X key value: (X value + 1) };
+  assert (#map empty map: F) === #map empty;
+  assert (#map from: [a -> 1, b -> 2, c -> 3] | map: F) === (#map from: [a -> 2, b -> 3, c -> 4]);
+end

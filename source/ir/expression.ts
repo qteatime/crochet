@@ -16,7 +16,7 @@ export enum OpTag {
   PUSH_GLOBAL, // meta
   PUSH_LITERAL, // meta
   PUSH_RETURN, // meta
-  PUSH_TUPLE, // meta arity (value...)
+  PUSH_LIST, // meta arity (value...)
   PUSH_NEW, // meta type arity (value...)
   PUSH_STATIC_TYPE, // meta name
 
@@ -77,7 +77,7 @@ export type Op =
   | PushGlobal
   | PushLiteral
   | PushReturn
-  | PushTuple
+  | PushList
   | PushNew
   | PushStaticType
   | PushRecord
@@ -171,8 +171,8 @@ export class PushReturn extends BaseOp {
   }
 }
 
-export class PushTuple extends BaseOp {
-  readonly tag = OpTag.PUSH_TUPLE;
+export class PushList extends BaseOp {
+  readonly tag = OpTag.PUSH_LIST;
 
   constructor(readonly meta: Metadata, readonly arity: uint32) {
     super();

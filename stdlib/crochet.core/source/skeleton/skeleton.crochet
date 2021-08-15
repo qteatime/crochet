@@ -14,8 +14,8 @@ command skeleton-name meta = self.meta;
 command skeleton-dynamic expression = self.expression;
 command skeleton-dynamic meta = self.meta;
 
-command skeleton-tuple children = self.children;
-command skeleton-tuple meta = self.meta;
+command skeleton-list children = self.children;
+command skeleton-list meta = self.meta;
 
 command skeleton-interpolation parts = self.parts;
 command skeleton-interpolation meta = self.meta;
@@ -43,8 +43,8 @@ command debug-representation of: (X is skeleton-dynamic) =
     | value: X thunk
     | finish;
 
-command debug-representation of: (X is skeleton-tuple) =
-  debug-representation type: "skeleton-tuple"
+command debug-representation of: (X is skeleton-list) =
+  debug-representation type: "skeleton-list"
     | value: X children
     | finish;
 

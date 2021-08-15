@@ -1,0 +1,47 @@
+% crochet
+
+// -- List
+implement equality for list;
+
+/// True if two lists have equal elements in the same order.
+command list === (That is list) do
+  condition
+    when self count =/= That count => false;
+    always =>
+      self zip: That with: (_ === _) | all-true;
+  end
+end
+
+// -- Record
+implement equality for record;
+
+/// True if two records have equal pairs.
+command record === (That is record) do
+  self =:= That; // FIXME: implement this properly
+end
+
+// -- Sets
+implement equality for set;
+
+/// True if two sets have equal values.
+command set === (That is set) do
+  foreign set.equals(self.box, That.box);
+test
+  assert (#set from: [1, 2, 3]) === (#set from: [1, 2, 3]);
+  assert (#set from: [3, 2, 1]) === (#set from: [3, 2, 1]);
+  assert (#set from: [1, nothing, "a", 1]) === (#set from: [nothing, 1, "a"]);
+  assert (#set from: []) === (#set from: []);
+end
+
+// -- Maps
+implement equality for map;
+
+/// True if two maps have equal values.
+command map === (That is map) do
+  foreign map.equals(self.box, That.box);
+test
+  assert #map empty === #map empty;
+  assert (#map empty | at: 1 put: 2 | at: 3 put: 4) === (#map empty | at: 3 put: 4 | at: 1 put: 2);
+  assert not ((#map empty | at: 1 put: 2 | at: 3 put: 4) === (#map empty | at: 1 put: 2));
+  assert not ((#map empty | at: 1 put: 2) === (#map empty | at: 3 put: 4));
+end

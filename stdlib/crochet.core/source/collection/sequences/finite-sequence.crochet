@@ -1,0 +1,25 @@
+% crochet
+
+// -- Lists
+
+implement finite-sequence for list;
+
+/// The last element of the list.
+command list last = self at: self count
+test
+  assert [1] last =:= 1;
+  assert [1, 2, 3] last =:= 3;
+end
+
+/// Returns a list which contains all elements up to (but not including) the
+/// last one.
+command list without-last =
+  condition
+    when self count < 2 => [];
+    always => self slice-from: 1 to: (self count - 1);
+  end
+test
+  assert [] without-last =:= [];
+  assert [1] without-last =:= [];
+  assert [1, 2, 3] without-last =:= [1, 2];
+end

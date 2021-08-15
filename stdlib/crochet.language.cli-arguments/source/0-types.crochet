@@ -17,19 +17,19 @@ abstract cli-arg;
 type cli-app(
   name is text,
   description is text,
-  commands is tuple
+  commands is list
 ) is cli-arg;
 
 type cli-command(
   name is text,
   description is text,
   command-arg is cli-arg,
-  arguments is tuple
+  arguments is list
 ) is cli-arg;
 
 type cli-options(
   name is text,
-  options is tuple
+  options is list
 ) is cli-arg;
 
 abstract cli-arg-single is cli-arg;
@@ -67,6 +67,6 @@ singleton cli-trilean-false is cli-trilean;
 singleton cli-trilean-unknown  is cli-trilean;
 
 type cli-text(value is text) is cli-parser-result;
-type cli-tuple(values is tuple) is cli-parser-result;
+type cli-list(values is list) is cli-parser-result;
 type cli-record(value is record) is cli-parser-result;
 type cli-box(value) is cli-parser-result;

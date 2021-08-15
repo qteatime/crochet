@@ -1,0 +1,105 @@
+% crochet
+
+// -- Lists
+
+implement foldable-collection for list;
+
+/// Folds a list left-to-right.
+command list fold-from: Initial with: (Fun is function-2) =
+  foreign list.fold(self, Initial, Fun)
+test
+  assert ([1, 2, 3] fold-from: 0 with: (_ + _)) =:= (1 + 2 + 3 + 0);
+  assert ([] fold-from: 0 with: (_ + _)) =:= 0;
+  assert ([1] fold-from: 0 with: (_ + _)) =:= 1;
+  assert ([1, 2, 3] fold-from: 6 with: (_ - _)) =:= (((6 - 1) - 2) - 3);
+end
+
+/// Folds a list right-to-left.
+command list fold-right-from: Initial with: (Fun is function-2) =
+  foreign list.foldr(self, Initial, Fun)
+test
+  assert ([] fold-right-from: 0 with: (_ + _)) =:= 0;
+  assert ([1] fold-right-from: 0 with: (_ + _)) =:= 1;
+  assert ([1, 2, 3] fold-right-from: 6 with: (_ - _)) =:= (1 - (2 - (3 - 6)));
+end
+
+/// Folds a list using its first element as the initial state.
+command list fold-with: (Fun is function-2)
+requires non-empty :: not (self is-empty)
+do
+  self rest fold-from: self first with: Fun;
+test
+  assert ([1, 2, 3] fold-with: (_ + _)) =:= (1 + 2 + 3);
+  assert ([1] fold-with: (_ + _)) =:= 1;
+  assert ([1, 2, 3] fold-with: (_ - _)) =:= ((1 - 2) - 3);
+end
+
+/// Folds a list using its last element as the initial state.
+command list fold-right-with: (Fun is function-2)
+requires non-empty :: not (self is-empty)
+do
+  self without-last fold-right-from: self last with: Fun;
+test
+  assert ([1] fold-right-with: (_ + _)) =:= 1;
+  assert ([1, 2, 3] fold-right-with: (_ - _)) =:= (1 - (2 - 3));
+end
+
+
+// -- Record
+implement foldable-collection for record;
+
+/// Folds a record.
+command record fold-from: Initial with: (Fun is ((A, association<K, V>) -> A)) do
+  self pairs fold-from: Initial with: { A, P in Fun(A, P) };
+test
+  assert ([->] fold-from: [->] with: { A, P in A at: P value put: P key })
+    === [->];
+
+  assert ([a -> "b"] fold-from: [->] with: { A, P in A at: P value put: P key })
+    === [b -> "a"];
+
+  assert ([a -> "b", c -> "d"] fold-from: [->] with: { A, P in A at: P value put: P key })
+    === [b -> "a", d -> "c"];
+
+  assert ([a -> 1, b -> 2] fold-from: [->] with: { A, P in A at: P key put: 0 })
+    === [a -> 0, b -> 0];
+end
+
+// -- Sets
+implement foldable-collection for set;
+
+/// Folds a set.
+command set fold-from: Start with: (Combine is ((A, Value) -> A)) do
+  foreign set.fold(self.box, Start, Combine);
+test
+  assert ((#set from: [1, 2, 3]) fold-from: 0 with: (_ + _))
+    === (0 + 1 + 2 + 3);
+
+  assert ((#set from: []) fold-from: 0 with: (_ + _))
+    === 0;
+end
+
+// -- Streams
+implement foldable-collection for linked-stream;
+
+/// Folds the stream.
+command linked-stream-empty fold-from: State with: (Combine is ((A, Value) -> A)) = State;
+command linked-stream-cons fold-from: State with: (Combine is ((A, Value) -> A)) =
+  self rest fold-from: Combine(State, self first) with: Combine;
+
+test "linked-stream fold-from: any with: function-2" do
+  assert (#linked-stream from: [] | fold-from: 6 with: (_ - _)) === 6;
+  assert (#linked-stream from: [1, 2, 3] | fold-from: 6 with: (_ - _)) === (((6 - 1) - 2) - 3);
+end
+
+// -- Maps
+implement foldable-collection for map;
+
+command map fold-from: Initial with: (Combine is ((A, association<K, V>) -> A)) do
+  foreign map.fold(self.box, Initial, { A, X in Combine(A, new association(X at: 1, X at: 2)) });
+test
+  let F = { A, X in A + X value };
+  assert (#map empty fold-from: 0 with: F) === 0;
+  assert (#map from: [a -> 1] | fold-from: 0 with: F) === (0 + 1);
+  assert (#map from: [a -> 1, b -> 2, c -> 3] | fold-from: 0 with: F) === (0 + 1 + 2 + 3);
+end

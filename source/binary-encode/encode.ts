@@ -226,7 +226,7 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
-      case IR.OpTag.PUSH_TUPLE: {
+      case IR.OpTag.PUSH_LIST: {
         this.encode_meta_id(x.meta);
         this.uint32(x.arity);
         break;

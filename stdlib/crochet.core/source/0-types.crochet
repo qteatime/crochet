@@ -117,6 +117,15 @@ type function-5 = foreign core.function-5;
 /// Functions that take six arguments.
 type function-6 = foreign core.function-6;
 
+/// Functions that take seven arguments.
+type function-7 = foreign core.function-7;
+
+/// Functions that take eight arguments.
+type function-8 = foreign core.function-8;
+
+/// Functions that take nine arguments.
+type function-9 = foreign core.function-9;
+
 
 /// The type of lazy expressions.
 ///
@@ -141,17 +150,51 @@ type thunk = foreign core.thunk;
 /// extensible by anyone.
 type record = foreign core.record;
 
-/// The type of fixed-length sequences.
-///
-/// A tuple is an ordered sequence of values, possibly of different types.
+/// A list is an ordered sequence of values, possibly of different types.
 /// This sequence is fixed---you cannot modify it to have more or less
-/// values. And although there are certain tuple operations that allow
+/// values. And although there are certain list operations that allow
 /// you to construct new ones that have more or less elements, this is
 /// not optimised, and thus not expected to be a common occurrence.
 ///
-/// This limitation of tuples is also its strength: it allows the runtime
+/// This limitation of lists is also its strength: it allows the runtime
 /// to choose more efficient ways of storing and using it.
-type tuple = foreign core.tuple;
+type list = foreign core.list;
+
+/// A set is a collection of unordered elements that allows efficiently
+/// checking if an item is in the collection.
+type set(box);
+
+/// A map is a collection of key/value pairs where each key is associated
+/// with exactly one value.
+type map(box);
+
+/// A stream is a procedural sequence.
+abstract stream;
+abstract linked-stream is stream;
+singleton linked-stream-empty is linked-stream;
+type linked-stream-cons(value, rest is thunk<linked-stream<A>>) is linked-stream;
+
+/// Represents an inclusive integer range.
+type integer-range(start is integer, stop is integer, step is integer);
+
+
+/// A linked list is an ordered sequence of values of the same type
+/// which can grow by having new values prepended to this sequence.
+/// Prepending elements and iterating elements in order is cheap,
+/// but linked lists are not great for use cases where elements
+/// need to be accessed out of order, or where many insertions
+/// happen at the end of the list.
+///
+/// Linked lists are an inductive structure with two cases:
+/// it can be either the [empty-list], meaning there's nothing in it,
+/// or a [cons-list], meaning there's one value that's followed by
+/// possibly many others, as described by its `rest` field.
+abstract linked-list;
+/// The empty case of linked lists.
+singleton empty-list is linked-list;
+/// The at-least-one-value case of linked lists.
+type cons-list(value, rest is linked-list);
+
 
 /// The base type of enumerations.
 ///
@@ -164,7 +207,7 @@ type skeleton-ast = foreign core.skeleton-ast;
 type skeleton-node = foreign core.skeleton-node;
 type skeleton-name = foreign core.skeleton-name;
 type skeleton-literal = foreign core.skeleton-literal;
-type skeleton-tuple = foreign core.skeleton-tuple;
+type skeleton-list = foreign core.skeleton-list;
 type skeleton-interpolation = foreign core.skeleton-interpolation;
 type skeleton-dynamic = foreign core.skeleton-dynamic;
 
@@ -195,6 +238,13 @@ type ok(value) is result;
 type error(reason) is result;
 
 
+/// The type of computations that can fail, but without any interesting
+/// additional information.
+abstract maybe;
+type some(value) is maybe;
+singleton no-value is maybe;
+
+
 // -- The idea of state
 
 /// The type of mutable cells.
@@ -211,9 +261,21 @@ singleton representation;
 singleton debug-representation;
 
 
-//-- Other types Other types
+//-- Other types
+/// A pair constructed by zipping two elements together.
+type zip-pair(first, second);
+
+/// A pair constructed by partitioning a collection.
+type partition-pair(satisfying, not-satisfying);
+
+/// A value from an indexed sequence along with its index.
 type indexed(index is integer, value);
 
+/// An association pair in a mapped collection.
+type association(key, value);
+
+/// Possible ordering relations between two values.
+enum ordering = less-than, equal, greater-than;
 
 // -- Traits
 
@@ -366,4 +428,295 @@ trait rounding-strategies with
 
   /// Returns the nearest integer.
   command A round;
+end
+
+/// A type has a [container] if it's an arbitrary collection of items, for
+/// which one can test if an item exists within it.
+trait container with
+  /// True if the [Value] exists within [Container]
+  command Container contains: Value -> boolean;
+end
+
+/// A type has a [countable-container] if it has a [container] with a known,
+/// finite number of items.
+trait countable-container with
+  requires trait container;
+
+  /// The number of items that exist within the container.
+  command Container count -> integer;
+
+  /// (optional) True if the container contains no items.
+  command Container is-empty -> boolean;
+end
+
+/// A type has a [modifiable-container] if it has a [container] that allows
+/// items to be added or removed from it.
+trait modifiable-container with
+  requires trait container;
+
+  /// Adds [Value] to the [Container].
+  command Container add: Value;
+
+  /// Removes [Value] from the [Container].
+  command Container remove: Value;
+end
+
+/// A type has a [mapped-container] if each item it contains is identified
+/// by a key. In other words, a [mapped-container] "maps" (in the mathematical
+/// sense) some key to some value.
+///
+/// There are no restrictions on whether a key may map to multiple values, or
+/// whether a value may be identified by multiple keys; that's up to each
+/// specific container.
+trait mapped-container with
+  /// Retrieves the value identified by the given [Key]. The [Key] must already
+  /// be known by the container.
+  command Container at: Key;
+
+  /// Retrieves the value identified by the given [Key]. If the [Key] is not
+  /// known by the container yet, returns the [Default] value instead.
+  command Container at: Key default: Default;
+
+  /// True if the [Key] is known by the container.
+  command Container contains-key: Key -> boolean;
+end
+
+/// A type has a [modifiable-mapped-container] if it has a [mapped-container]
+/// that allows the mappings within it to be added, removed, or updated.
+trait modifiable-mapped-container with
+  requires trait mapped-container;
+
+  /// Associates the [Key] with the given [Value]. Will create a new
+  /// association if none exists, and may overwrite existing associations
+  /// in some types.
+  command Container at: Key put: Value;
+
+  /// Updates values associated with the given [Key] by applying the provided
+  /// [Transformation] to them.
+  command Container at: Key update: Transformation;
+
+  /// Removes any value associated with the given [Key] from the [Container].
+  command Container remove-at: Key;
+end
+
+/// A type has a [mergeable-mapped-container] if it has a [mapped-container]
+/// and allows one to merge the mappings of its container with the mappings
+/// of another container.
+///
+/// What exactly it means to merge the mappings is left to specific types,
+/// however it's expected that the resulting container will have the union
+/// of the keys of both containers.
+trait mergeable-mapped-container with
+  /// Merges the mappings of both containers.
+  command This merge: That
+    ensures all-keys :: (set: (This keys ++ That keys)) === (set: return keys);
+end
+
+/// A type has a [sequence] if it contains a series of ordered items.
+trait sequence with
+  /// The first element in the sequence.
+  command Sequence first;
+
+  /// The sequence that starts from the second element.
+  command Sequence rest;
+
+  /// A sequence of elements from the first one until the [Predicate] fails.
+  command Sequence take-while: Predicate;
+
+  /// (optional) A sequence of elements excluding the initial ones for which
+  /// the [Predicate] holds.
+  command Sequence drop-while: Predicate;
+end
+
+/// A type has an [appendable-sequence] if it has a [sequence] that allows
+/// elements to be added to the beginning or to the end.
+trait appendable-sequence with
+  requires trait sequence;
+
+  /// Adds a [Value] to the end of the sequence.
+  command Sequence append: Value;
+
+  /// Adds a [Value] to the beginning of the sequence.
+  command Sequence prepend: Value;
+
+  /// A sequence of the same type that contains no elements.
+  command Sequence empty;
+
+  /// Adds all elements of [That] sequence to the end of [This] sequence.
+  command This ++ That;
+end
+
+/// A type has a [finite-sequence] if it has a [sequence] with a known,
+/// finite number of elements, such that one may actually reach the end
+/// of it by following all of the elements in order.
+trait finite-sequence with
+  requires trait sequence;
+
+  /// The last element in the sequence.
+  command Sequence last;
+
+  /// The sequence from the first element until (but not including) the
+  /// last element.
+  command Sequence without-last;
+end
+
+/// A type has an [indexed-sequence] if it has a [sequence] where each
+/// ordered value can be given an index---its position in the sequence
+/// is known.
+///
+/// Indexes in Crochet start, conventionally, at 1. However what is an
+/// index is up to each specific type implementing this trait.
+trait indexed-sequence with
+  requires trait sequence;
+
+  /// Retrieves the element at the [Index] position.
+  command Sequence at: Index;
+end
+
+/// A type has a [modifiable-indexed-sequence] if it has an [indexed-sequence]
+/// that allows elements at particular indexes to change.
+trait modifiable-indexed-sequence with
+  requires trait indexed-sequence;
+
+  /// Replaces the item at [Index] with the given [Value], but does not change
+  /// the position of any elements.
+  command Sequence at: Index put: Value;
+end
+
+/// A type has a [growable-indexed-sequence] if it has an [indexed-sequence]
+/// where new elements can be inserted or removed, therefore may change the
+/// position of existing elements by shifting them around.
+trait growable-indexed-sequence with
+  requires trait indexed-sequence;
+
+  /// Removes the item at [Index].
+  command Sequence remove-at: Index;
+
+  /// Inserts an item immediately before the one at [Index]. The old item is
+  /// shifted one position forward, and the inserted item will lie at [Index].
+  command Sequence at: Index insert-before: Value;
+
+  /// Inserts an item immediately after the one at [Index]. The old item remains
+  /// in the same position, but all items that followed it are shifted one
+  /// position forward. The new item will be at [Index + 1].
+  command Sequence at: Index insert-after: Value;
+end
+
+/// A type has a [sortable-sequence] if it has a [sequence] that allows the
+/// ordering of the elements within it to be changed.
+trait sortable-sequence with
+  requires trait sequence;
+
+  /// Re-orders the elements in the sequence according to the given
+  /// comparison function. Items that are ordered lower according to
+  /// the comparison function will be at the beginnning of the sequence.
+  ///
+  /// Whether items that compare equal will have their relative ordering
+  /// preserved---whether the sorting is stable---is up to each specific
+  /// type implementing this trait.
+  command Sequence sort-by: Comparison;
+
+  /// (optional) A convenience operation that re-orders the elements
+  /// according to their own intrinsic idea of ordering. All elements in
+  /// the sequence must implement [total-ordering] and be of the same type.
+  command Sequence sort;
+end
+
+/// A type has a [reversible-sequence] if it has a [sequence] that allows
+/// the ordering to be inverted. This is a weaker form of [sortable-sequence],
+/// where the only allowed change is to invert the ordering.
+trait reversible-sequence with
+  requires trait sequence;
+
+  /// Returns a sequence where the ordering of the elements is inverted,
+  /// thus making its first element be the last one, and the last one be
+  /// the first.
+  command Sequence reverse;
+end
+
+/// A type has a [sliceable-sequence] if it has an [indexed-sequence] that
+/// allows one to take a "slice" of it by giving a starting and ending index.
+trait sliceable-sequence with
+  requires trait indexed-sequence;
+
+  /// Returns a sub-sequence that contains all elements starting from the
+  /// [Start] index, up to (and including) the [End] index.
+  command Sequence slice-from: Start to: End;
+end
+
+/// A type has a [foldable-collection] if it supports the fold operations.
+trait foldable-collection with
+  requires trait foldable-collection;
+
+  /// Computes a final value by visiting every item in a collection and
+  /// keeping some intermediary state while doing so. The order in which
+  /// these items are processed is unspecified, and up to each specific
+  /// type, however the initial value will be used as the state for the
+  /// first computation.
+  command Collection fold-from: Initial with: Computation;
+
+  /// Similar to [_ fold-from: _ with: _], but uses the [Initial] value
+  /// in the *final* computation.
+  command Collection fold-right-from: Initial with: Computation;
+
+  /// (optional) Similar to [_ fold-from: _ with: _], but uses another value of the
+  /// collection as the initial value. The collection must have at least
+  /// two items.
+  command Collection fold-with: Computation;
+
+  /// (optional) Similar to [_ fold-right-from: _ with: _], but uses another value of
+  /// the collection as the initial value. The collection must have at least
+  /// two items.
+  command Collection fold-right-from: Computation;
+end
+
+/// A type has a [filterable-collection] if it's possible to produce a new
+/// collection of the same type that will not contain certain items, as
+/// described by a predicate.
+trait filterable-collection with
+  /// Produces a new collection that only contains items for which the
+  /// [Predicate] holds.
+  command Collection keep-if: Predicate;
+
+  /// (optional) Produces a new collection that does not contain any items for
+  /// which the [Predicate] holds.
+  command Collection remove-if: Predicate;
+end
+
+/// A type has a [mappable-collection] if it supports [_ map: _].
+trait mappable-collection with
+  /// Produces a new collection of the same type where all elements have been
+  /// transformed by the given [Transformation].
+  command Collection map: Transformation;
+end
+
+/// A type has a [chainable-collection] if it supports [_ flat-map: _].
+trait chainable-collection with
+  /// Produces a new collection of the same type by merging all of the
+  /// smaller collections produced by the [Transformation].
+  ///
+  /// In some types this would be the equivalent of
+  /// `X map: F | fold-from: [] with: (_ ++ _)`, but that's not an universal
+  /// translation.
+  command Collection flat-map: Transformation;
+end
+
+/// A type has a [zippable-collection] if it supports [_ zip: _ with: _].
+trait zippable-collection with
+  /// Produces a new collection of the same type where elements have been
+  /// paired with the ones from the [Other] collection and combined through
+  /// the [Combine] function.
+  command Collection zip: Other with: Combine;
+end
+
+/// A type has a [set-algebra] if it supports the common set operations.
+trait set-algebra with
+  /// The union of two sets.
+  command A union: B;
+
+  /// The intersection of two sets.
+  command A intersection: B;
+
+  /// The complement of two sets.
+  command A complement: B;
 end

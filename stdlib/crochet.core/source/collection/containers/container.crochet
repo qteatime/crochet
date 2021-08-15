@@ -1,0 +1,44 @@
+% crochet
+
+// -- Lists
+implement container for list;
+
+/// True if the list contains the provided value.
+command list contains: Value =
+  foreign list.contains(self, Value)
+test
+  assert not ([] contains: 1);
+  assert ([1] contains: 1);
+  assert ([0, 1, 2] contains: 1);
+  assert not ([0, 1, 2] contains: 3);
+end
+
+
+// -- Sets
+implement container for set;
+
+/// True if the set contains the given value.
+command set contains: Value do
+  foreign set.contains(self.box, Value);
+test
+  assert (#set from: [1, 2, 3]) contains: 1;
+  assert not ((#set from: [1, 2, 3]) contains: 5);
+  assert (#set from: ["a", "b", "c"]) contains: "a";
+  assert (#set from: [nothing]) contains: nothing;
+  assert (#set from: [true, false]) contains: true;
+  let F = { 1 };
+  assert not ((#set from: [{ 1 }]) contains: F);
+  assert (#set from: [F]) contains: F;
+end
+
+// -- Map
+implement container for map;
+
+command map contains: Value do
+  #set from: self values
+    | contains: Value;
+test
+  assert not (#map from: [] | contains: "a");
+  assert (#map from: [#association key: 1 value: "a"] | contains: "a");
+  assert not (#map from: [#association key: "a" value: 1] | contains: "a");
+end

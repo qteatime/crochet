@@ -1,0 +1,17 @@
+% crochet
+
+// -- Lists
+
+implement reversible-sequence for list;
+
+/// Returns a list with the ordering of the elements reversed, such that the
+/// first element becomes the last one, the second becomes the second-last,
+/// and so on.
+command list reverse
+ensures same-size :: self count === return count
+  = foreign list.reverse(self)
+test
+  assert [] reverse =:= [];
+  assert [1] reverse =:= [1];
+  assert [1, 2, 3] reverse =:= [3, 2, 1];
+end

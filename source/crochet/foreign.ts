@@ -1,3 +1,5 @@
+import * as Collection from "../collection";
+import type { Set as ISet, Map as IMap, List as IList } from "../collection";
 import { XorShift } from "../utils/xorshift";
 import {
   CrochetModule,
@@ -21,6 +23,7 @@ import {
 } from "../vm";
 
 export type { Machine, CrochetValue };
+export type { ISet, IList, IMap };
 
 export class ForeignInterface {
   #universe: Universe;
@@ -76,8 +79,8 @@ export class ForeignInterface {
     return Values.make_static_text(this.#universe, x);
   }
 
-  tuple(x: CrochetValue[]) {
-    return Values.make_tuple(this.#universe, x);
+  list(x: CrochetValue[]) {
+    return Values.make_list(this.#universe, x);
   }
 
   record(x: Map<string, CrochetValue>) {
@@ -149,7 +152,7 @@ export class ForeignInterface {
     return Values.text_to_string(x);
   }
 
-  tuple_to_array(x: CrochetValue): CrochetValue[] {
+  list_to_array(x: CrochetValue): CrochetValue[] {
     return Values.get_array(x);
   }
 
@@ -203,8 +206,8 @@ export class ForeignInterface {
     return x.tag === Tag.INTERPOLATION;
   }
 
-  is_tuple(x: CrochetValue) {
-    return x.tag === Tag.TUPLE;
+  is_list(x: CrochetValue) {
+    return x.tag === Tag.LIST;
   }
 
   is_thunk_forced(x: CrochetValue) {
@@ -244,6 +247,11 @@ export class ForeignInterface {
   action_fired<T extends Tag>(action: CrochetValue<T>, value: CrochetValue) {
     Values.assert_tag(Tag.ACTION, action);
     return action.payload.action.fired.has(value);
+  }
+
+  // == Collection features
+  get collection() {
+    return Collection;
   }
 
   // == Etc

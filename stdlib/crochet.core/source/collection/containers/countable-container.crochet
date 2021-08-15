@@ -1,0 +1,64 @@
+% crochet
+
+// -- Lists
+implement countable-container for list;
+
+/// Returns the number of elements contained in the list.
+command (X is list) count =
+  foreign list.count(X)
+test
+  assert [] count =:= 0;
+  assert [1] count =:= 1;
+  assert [1, 2, 3] count =:= 3;
+end
+
+/// True if the list is empty.
+command (X is list) is-empty =
+  X count =:= 0
+test
+  assert [] is-empty;
+  assert not ([0] is-empty);
+end
+
+// -- Records
+implement countable-container for record;
+
+/// Returns the number of entries in the record.
+command record count
+  = foreign record.count(self)
+test
+  assert [->] count === 0;
+  assert [a -> 1] count === 1;
+  assert [a -> 1, b -> 2, c -> 3] count === 3;
+end
+
+/// True if there are no entries in the record.
+command record is-empty
+  = self count =:= 0
+test
+  assert [->] is-empty;
+  assert not ([a -> 1] is-empty);
+end
+
+// -- Sets
+implement countable-container for set;
+
+/// The number of elements in the set.
+command set count -> integer do
+  foreign set.count(self.box)
+test
+  assert (#set from: [1, 2, 3] | count) === 3;
+  assert (#set from: [1, 1, 1] | count) === 1;
+  assert (#set from: [] | count) === 0;
+end
+
+// -- Map
+implement countable-container for map;
+
+command map count do
+  foreign map.count(self.box);
+test
+  assert (#map from: [] | count) === 0;
+  assert (#map from: [#association key: 1 value: 1, #association key: 2 value: 2] | count) === 2;
+  assert (#map from: [#association key: 1 value: 1, #association key: 1 value: 2] | count) === 1;
+end

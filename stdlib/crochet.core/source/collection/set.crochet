@@ -1,0 +1,14 @@
+% crochet
+
+/// Constructs a new set from the values found in the given list.
+command #set from: (Items is list<Value>) =
+  new set(foreign set.make-from-list(Items));
+
+/// Returns all values that are part of this set.
+command set values do
+  foreign set.values(self.box)
+test
+  assert (#set from: [] | values) === [];
+  assert (#set from: [1, 2, 3] | values | sort) === [1, 2, 3];
+  assert (#set from: [1, 2, 1] | values | sort) === [1, 2];
+end

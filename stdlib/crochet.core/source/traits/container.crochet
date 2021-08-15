@@ -1,0 +1,43 @@
+% crochet
+
+/// True if the container has no elements.
+command (X has countable-container) is-empty = X count === 0;
+
+/// Returns the element at the given key, if it exists. Otherwise returns
+/// the default value.
+command (X has mapped-container) at: Key default: Default do
+  condition
+    when X contains-key: Key => X at: Key;
+    always => Default;
+  end
+test
+  assert (#map empty | at: 1 default: 0) === 0;
+  assert (#map empty | at: 1 put: 2 | at: 1 default: 0) === 2;
+  assert (#map empty | at: 1 put: 2 | at: 3 put: 4 | at: 3 default: 0) === 4;
+  assert (#map empty | at: 1 put: 2 | at: 3 put: 4 | at: 4 default: 0) === 0;
+end
+
+/// Updates the value associated with the key, if it exists.
+command (X has modifiable-mapped-container) at: Key update: (Update is (A -> A)) do
+  condition
+    when self contains-key: Key => self at: Key put: Update(self at: Key);
+    always => self;
+  end
+test
+  assert not (#map empty | at: 1 update: (_ + 1) | contains-key: 1);
+  assert (#map empty | at: 1 put: 2 | at: 1 update: (_ + 1) | at: 1) === 3;
+end
+
+/// Updates the value associated with the key, if one exists. Otherwise
+/// Associates the key with the default value.
+command (X has modifiable-mapped-container) at: Key default: Default update: (Update is (A -> A)) do
+  condition
+    when self contains-key: Key => self at: Key put: Update(self at: Key);
+    always => self at: Key put: Default;
+  end
+test
+  assert ([->] at: "a" default: 1 update: (_ + 1)) === [a -> 1];
+  assert ([a -> 1] at: "a" default: 1 update: (_ + 1)) === [a -> 2];
+  assert ([a -> 1, b -> 2] at: "a" default: 1 update: (_ + 1)) === [a -> 2, b -> 2];
+  assert ([a -> 1, b -> 2] at: "c" default: 1 update: (_ + 1)) === [a -> 1, b -> 2, c -> 1];
+end

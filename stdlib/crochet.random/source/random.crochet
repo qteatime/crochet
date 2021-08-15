@@ -70,7 +70,7 @@ test
   assert Result.random.seed =:= 1280857507;
 end
 
-command xor-shift choose: (Items is tuple)
+command xor-shift choose: (Items is list)
 requires non-empty :: not (Items is-empty)
 do
   let Result = self between: 1 and: Items count;
@@ -90,12 +90,12 @@ test
   assert Res3.value =:= 3;
 end
 
-command xor-shift choose-and-tear: (Items0 is tuple)
+command xor-shift choose-and-tear: (Items0 is list)
 requires non-empty :: not (Items0 is-empty)
 do
   let Result = self between: 1 and: Items0 count;
   let Choice = Items0 at: Result.value;
-  let Items = Items0 delete-at: Result.value;
+  let Items = Items0 remove-at: Result.value;
   new random-next(
     [
       choice -> Choice,
@@ -131,7 +131,7 @@ test
   ];
 end
 
-command xor-shift choose-weighted: (Items0 is tuple)
+command xor-shift choose-weighted: (Items0 is list)
 requires non-empty :: not (Items0 is-empty)
 do
   let Total = Items0.score sum;
@@ -143,7 +143,7 @@ do
     let Item = Items first;
     condition
       when Score <= Item.score => Item.value;
-      always => Go(Score - Item.score, Items but-first);
+      always => Go(Score - Item.score, Items rest);
     end
   end};
 
@@ -195,7 +195,7 @@ test
   assert (Random.random value).seed =:= 439257055;
 end
 
-command mutable-random choose: (Items is tuple) do
+command mutable-random choose: (Items is list) do
   let Result = self.random value choose: Items;
   self.random <- Result.random;
   Result.value;
@@ -208,7 +208,7 @@ test
   assert (Random choose: Items) =:= 3;
 end
 
-command mutable-random choose-and-tear: (Items is tuple) do
+command mutable-random choose-and-tear: (Items is list) do
   let Result = self.random value choose-and-tear: Items;
   self.random <- Result.random;
   Result.value;
@@ -241,7 +241,7 @@ test
   ];
 end
 
-command mutable-random choose-weighted: (Items is tuple) do
+command mutable-random choose-weighted: (Items is list) do
   let Result = self.random value choose-weighted: Items;
   self.random <- Result.random;
   Result.value;

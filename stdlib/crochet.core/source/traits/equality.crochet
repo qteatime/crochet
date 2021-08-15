@@ -3,21 +3,3 @@
 /// True if two values with an equality trait are not equal.
 command (Left has equality) =/= (Right has equality) =
   not (Left === Right);
-
-
-
-// # Tuple
-command tuple === (That is tuple) do
-  condition
-    when self count =/= That count => false;
-    always =>
-      self zip: That with: (_ === _) | all-true;
-  end
-end
-
-// # Record
-command record === (That is record) do
-  self =:= That; // FIXME: implement this properly
-end
-
-// # Result

@@ -1,0 +1,52 @@
+% crochet
+
+/// Constructs a new map from a sequence of associations.
+command #map from: (Pairs is list<association<Key, Value>>) =
+  new map(foreign map.make-from-list(Pairs map: { X in [X key, X value] }));
+
+/// Constructs a new map from a record.
+command #map from: (Record is record<V>) =
+  #map from: Record pairs
+test
+  assert (#map from: [a -> 1, b -> 2]) === (#map empty | at: "a" put: 1 | at: "b" put: 2);
+  assert (#map from: [->]) === #map empty;
+end
+
+/// Constructs an empty map
+command #map empty = new map(foreign map.empty());
+
+/// Returns all keys that are part of this map.
+command map keys do
+  foreign map.keys(self.box)
+test
+  assert (#map from: [] | keys | sort) === [];
+  assert (#map from: [#association key: 1 value: "a", #association key: 2 value: "b"] | keys | sort)
+    === [1, 2];
+end
+
+/// Returns all values that are part of this map.
+command map values do
+  foreign map.values(self.box)
+test
+  assert (#map from: [] | values | sort) === [];
+  assert (#map from: [#association key: "a" value: 1, #association key: "b" value: 2] | values | sort)
+    === [1, 2];
+end
+
+/// Returns all entries that are part of this map.
+command map entries do
+  let Entries = foreign map.entries(self.box);
+  Entries map: { X in #association key: (X at: 1) value: (X at: 2) };
+test
+  assert (#map from: [] | entries) === [];
+
+  let Entries = [
+    #association key: 2 value: "a",
+    #association key: 1 value: "b",
+  ];
+  assert (#map from: Entries | entries | sort-by: { A, B in A key compare-to: B key })
+    === [
+      #association key: 1 value: "b",
+      #association key: 2 value: "a",
+    ];
+end

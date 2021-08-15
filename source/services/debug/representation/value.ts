@@ -63,8 +63,8 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
       );
     }
 
-    case Tag.TUPLE: {
-      Values.assert_tag(Tag.TUPLE, x);
+    case Tag.LIST: {
+      Values.assert_tag(Tag.LIST, x);
       const seen1 = see(x, seen);
       return new RList(x.payload.map((a) => value_to_repr(a, seen1)));
     }

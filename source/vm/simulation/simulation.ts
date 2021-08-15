@@ -140,7 +140,7 @@ function* pick_action(
     return state.random.random_weighted_choice(choices);
   } else {
     const choices = sorted_actions.map((x) => make_action_choice(state, x));
-    const args = [Values.make_tuple(state.state.universe, choices), actor];
+    const args = [Values.make_list(state.state.universe, choices), actor];
     const choice0 = yield* trigger_signal(state, signal, args);
     if (choice0.tag === Tag.NOTHING) {
       return null;

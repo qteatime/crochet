@@ -1,0 +1,61 @@
+% crochet
+
+// -- Set
+implement set-algebra for set;
+
+/// The union of two sets.
+command set union: (That is set) do
+  new set(foreign set.union(self.box, That.box));
+test
+  assert ((#set from: [1, 2, 3]) union: (#set from: [4, 5, 6]))
+    === (#set from: [1, 2, 3, 4, 5, 6]);
+
+  assert ((#set from: []) union: (#set from: [4, 5, 6]))
+    === (#set from: [4, 5, 6]);
+
+  assert ((#set from: [1, 2, 3]) union: (#set from: []))
+    === (#set from: [1, 2, 3]);
+
+  assert ((#set from: [1, 5, 9]) union: (#set from: [4, 5, 6]))
+    === (#set from: [1, 4, 5, 6, 9]);
+end
+
+/// The intersection of two sets.
+command set intersection: (That is set) do
+  new set(foreign set.intersection(self.box, That.box));
+test
+  assert ((#set from: [1, 2, 3]) intersection: (#set from: [4, 5, 6]))
+    === (#set from: []);
+
+  assert ((#set from: [1, 2, 3]) intersection: (#set from: []))
+    === (#set from: []);
+  
+  assert ((#set from: []) intersection: (#set from: [4, 5, 6]))
+    === (#set from: []);
+    
+  assert ((#set from: [1, 2, 3]) intersection: (#set from: [1, 2, 3]))
+    === (#set from: [1, 2, 3]);
+    
+  assert ((#set from: [1, 2, 3]) intersection: (#set from: [2, 4, 6]))
+    === (#set from: [2]);
+end
+
+/// The complement of two sets.
+command set complement: (That is set) do
+  new set(foreign set.complement(self.box, That.box));
+test
+  assert ((#set from: [1, 2, 3]) complement: (#set from: [4, 5, 6]))
+    === (#set from: [1, 2, 3]);
+
+  assert ((#set from: [1, 2, 3]) complement: (#set from: []))
+    === (#set from: [1, 2, 3]);
+
+  assert ((#set from: []) complement: (#set from: [4, 5, 6]))
+    === (#set from: []);
+
+  assert ((#set from: [1, 2, 3]) complement: (#set from: [3, 2, 1]))
+    === (#set from: []);
+
+  assert ((#set from: [1, 2, 3]) complement: (#set from: [2, 4, 6]))
+    === (#set from: [1, 3]);
+end

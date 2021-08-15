@@ -1,0 +1,163 @@
+% crochet
+
+local singleton module;
+
+/// Constructs a stream from a sequence.
+command #stream from: Xs -> stream<A> =
+  #linked-stream from: Xs;
+
+/// Constructs an infinite stream by applying Computation to a state.
+command #stream from: Initial iterate: Computation =
+  #linked-stream from: Initial iterate: Computation;
+
+command #stream cycle: Xs = #linked-stream cycle: Xs;
+
+command #stream repeat: X = #linked-stream repeat: X;
+
+command #stream non-negative-integers = #stream from: 0 iterate: (_ + 1);
+command #stream positive-integers = #stream from: 1 iterate: (_ + 1);
+
+/// Constructs a linked-stream from a sequence.
+command #linked-stream from: (Xs has sequence, countable-container) -> linked-stream<A> do
+  condition
+    when Xs is-empty => linked-stream-empty;
+    always => new linked-stream-cons(Xs first, lazy #stream from: Xs rest);
+  end
+test
+  assert (#linked-stream from: [] |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ as list) === [1, 2, 3];
+end
+
+/// Constructs an infinite stream by repeatedly applying the given builder function to
+/// a state.
+command #linked-stream from: (Initial is A) iterate: (Computation is (A -> B)) -> stream<B> do
+  new linked-stream-cons(Initial, lazy #linked-stream from: Computation(Initial) iterate: Computation);
+test
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals take: 5 |> _ as list) === [0, 1, 2, 3, 4];
+end
+
+/// Constructs an infinite stream that just repeats the given value.
+command #linked-stream repeat: (Value is A) -> stream<A> =
+  new linked-stream-cons(Value, lazy #linked-stream repeat: Value)
+test
+  assert (#linked-stream repeat: 1 |> _ take: 5 |> _ as list) === [1, 1, 1, 1, 1];
+end
+
+/// Constructs an infinite stream by cycling through all elements of the given
+/// sequence over and over again.
+command #linked-stream cycle: (Xs has sequence, countable-container) do
+  condition
+    when Xs is-empty => linked-stream-empty;
+    always => module cycle: Xs current: Xs;
+  end
+test
+  let N = #linked-stream cycle: [1, 2];
+  assert (N take: 5 |> _ as list) === [1, 2, 1, 2, 1];
+end
+
+command module cycle: Xs current: Ys do
+  condition
+    when Ys is-empty => module cycle: Xs current: Xs;
+    always => new linked-stream-cons(Ys first, lazy module cycle: Xs current: Ys rest);
+  end
+end
+
+/// Takes N items from the stream
+command linked-stream-empty take: (N is integer) = self;
+command linked-stream-cons take: (N is integer) =
+  condition
+    when N === 0 => linked-stream-empty;
+    always => new linked-stream-cons(self first, lazy self rest take: (N - 1));
+  end;
+
+test "linked-stream take: integer" do
+  assert (#linked-stream from: [] |> _ take: 2 |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ take: 2 |> _ as list) === [1, 2];
+  assert (#linked-stream from: [1, 2, 3] |> _ take: 10 |> _ as list) === [1, 2, 3];
+  assert (#linked-stream from: [1, 2, 3] |> _ take: 0 |> _ as list) === [];
+end
+
+/// Drops N items from the stream
+command linked-stream-empty drop: (N is integer) = self;
+command linked-stream-cons drop: (N is integer) =
+  condition
+    when N === 0 => self;
+    always => self rest drop: (N - 1);
+  end;
+
+test "linked-stream drop: integer" do
+  assert (#linked-stream from: [] |> _ drop: 2 |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ drop: 2 |> _ as list) === [3];
+  assert (#linked-stream from: [1, 2, 3] |> _ drop: 10 |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ drop: 0 |> _ as list) === [1, 2, 3];
+end
+
+/// Returns a stream that contains elements from the first one up until the
+/// [Predicate] fails.
+command linked-stream-empty take-while: (Predicate is (A -> boolean)) = linked-stream-empty;
+command linked-stream-cons take-while: (Predicate is (A -> boolean)) do
+  condition
+    when Predicate(self first) => new linked-stream-cons(self first, lazy self rest take-while: Predicate);
+    always => linked-stream-empty;
+  end
+end
+
+test "linked-stream take-while: function-1" do
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals take-while: (_ < 5) |> _ as list) === [0, 1, 2, 3, 4];
+end
+
+/// Drops elements from the stream while the predicate holds.
+command linked-stream-empty drop-while: (Predicate is (A -> boolean)) = linked-stream-empty;
+command linked-stream-cons drop-while: (Predicate is (A -> boolean)) =
+  condition
+    when Predicate(self first) => self rest drop-while: Predicate;
+    always => self;
+  end;
+
+test "linked-stream drop-while: function-1" do
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals drop-while: (_ < 5) |> _ take: 5 |> _ as list) === [5, 6, 7, 8, 9];
+end
+
+/// Returns a stream of chunks of the specified [Size].
+command linked-stream-empty chunked-by-size: (Size is integer) = self;
+command linked-stream-cons chunked-by-size: (Size is integer) do
+  let Result = module chunk: self by-size: Size result: [];
+  new linked-stream-cons(Result.chunks, lazy Result.rest chunked-by-size: Size);
+end
+
+command module chunk: linked-stream-empty by-size: Size result: Result =
+  [chunks -> Result, rest -> linked-stream-empty];
+
+command module chunk: (Stream is linked-stream-cons) by-size: Size result: Result = 
+  condition
+    when Size === 0 => [chunks -> Result, rest -> Stream];
+    always => module chunk: Stream rest
+                     by-size: (Size - 1)
+                     result: (Result append: Stream first);
+  end;
+
+test "linked-stream chunked-by-size: integer" do
+  let Naturals = #linked-stream from: 0 iterate: (_ + 1);
+  assert (Naturals chunked-by-size: 2 |> _ take: 3 |> _ as list) === [[0, 1], [2, 3], [4, 5]];
+  assert (Naturals |> _ take: 5 |> _ chunked-by-size: 2 |> _ as list) === [[0, 1], [2, 3], [4]];
+  assert (Naturals |> _ take: 5 |> _ chunked-by-size: 10 |> _ as list) === [[0, 1, 2, 3, 4]];
+  assert (#linked-stream from: [] |> _ chunked-by-size: 5 |> _ as list) === [];
+end
+
+/// Pairs each element of the stream with an ordinal number describing its
+/// position.
+command linked-stream enumerate do
+  #stream positive-integers zip: self with: { A, B in new indexed(A, B) }
+test
+  assert (#linked-stream from: [] |> _ enumerate |> _ as list) === [];
+
+  assert (#linked-stream from: ["a", "b", "c"] |> _ enumerate |> _ as list)
+    === [
+          #indexed index: 1 value: "a",
+          #indexed index: 2 value: "b",
+          #indexed index: 3 value: "c",
+        ];
+end

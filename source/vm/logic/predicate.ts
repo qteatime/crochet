@@ -176,7 +176,7 @@ export function* run_search(
     const bound = Environments.bound_values_up_to(mark, e);
     result.push(Values.make_record_from_map(universe, bound));
   }
-  return Values.make_tuple(universe, result);
+  return Values.make_list(universe, result);
 }
 
 export function* run_match_case(
@@ -191,5 +191,5 @@ export function* run_match_case(
     const value = yield new NSEvaluate(new_env, block);
     result.push(value);
   }
-  return Values.make_tuple(universe, result);
+  return Values.make_list(universe, result);
 }

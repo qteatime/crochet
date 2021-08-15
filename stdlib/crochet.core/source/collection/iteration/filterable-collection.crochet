@@ -1,0 +1,89 @@
+% crochet
+
+// -- Lists
+implement filterable-collection for list;
+
+/// Produces a new list that only contains items for which the given
+/// [Predicate] holds.
+command list keep-if: (Predicate is (A -> boolean)) do
+  for X in self if Predicate(X) do X end
+test
+  assert ([] keep-if: (_ > 2)) === [];
+  assert ([1, 2, 3, 2, 1] keep-if: (_ > 2)) === [3];
+  assert ([1, 5, 3, 1, 6, 2] keep-if: (_ > 2)) === [5, 3, 6];
+end
+
+/// Produces a new list that does not contain items for which the given
+/// [Predicate] holds.
+command list remove-if: (Predicate is (A -> boolean)) do
+  for X in self if not Predicate(X) do X end;
+test
+  assert ([] remove-if: (_ > 2)) === [];
+  assert ([1, 2, 3, 2, 1] remove-if: (_ > 2)) === [1, 2, 2, 1];
+  assert ([1, 5, 3, 1, 6, 2] remove-if: (_ > 2)) === [1, 1, 2];
+end
+
+
+// -- Records
+implement filterable-collection for record;
+
+/// Produces a record without associations for which the [Predicate]
+/// does not hold.
+command (X is record) keep-if: (Predicate is (association<K, V> -> boolean)) do
+  self fold-from: [->] with: { R, P in
+    condition
+      when Predicate(P) => R at: P key put: P value;
+      always => R;
+    end
+  }
+test
+  assert ([->] keep-if: { P in P value === 2 }) === [->];
+  assert ([a -> 1] keep-if: { P in P value === 2 }) === [->];
+  assert ([a -> 1, b -> 2] keep-if: { P in P value === 2 }) === [b -> 2];
+  assert ([a -> 2, b -> 2] keep-if: { P in P value === 2 }) === [a -> 2, b -> 2];
+end
+
+
+// -- Sets
+implement filterable-collection for set;
+
+/// Returns a new set that does not contain the elements for which the
+/// given [Predicate] holds.
+command set keep-if: (Predicate is (A -> boolean)) do
+  new set(foreign set.filter(self.box, Predicate));
+test
+  assert (#set from: [1, 2, 3] | keep-if: (_ > 2))
+    === (#set from: [3]);
+
+  assert (#set from: [] | keep-if: (_ > 2))
+    === (#set from: []);
+end
+
+// -- Streams
+implement filterable-collection for linked-stream;
+
+/// Returns a stream containing only items that pass the [Predicate].
+command linked-stream-empty keep-if: (Predicate is (A -> boolean)) = self;
+command linked-stream-cons keep-if: (Predicate is (A -> boolean)) =
+  condition
+    when Predicate(self first) => new linked-stream-cons(self first, lazy self rest keep-if: Predicate);
+    always => self rest keep-if: Predicate;
+  end;
+
+test "linked-stream keep-if: predicate" do
+  assert (#linked-stream from: [] |> _ keep-if: (_ > 1) |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ keep-if: (_ > 1) |> _ as list) === [2, 3];
+end
+
+// -- Maps
+implement filterable-collection for map;
+
+command map keep-if: (Predicate is (association<K, V> -> boolean)) -> map<K, V> do
+  new map(foreign map.filter(self.box, { X in Predicate(new association(X at: 1, X at: 2)) }));
+test
+  assert (#map empty keep-if: { X in X key =/= "b" }) === #map empty;
+  assert (#map from: [a -> 1, b -> 2, c -> 3] | keep-if: { X in X key =/= "b" })
+    === (#map from: [a -> 1, c -> 3]);
+  assert (#map from: [a -> 1, b -> 2, c -> 3] | keep-if: { X in X key === "b" })
+    === (#map from: [b -> 2]);
+end

@@ -1,0 +1,15 @@
+% crochet
+
+// -- Lists
+
+implement modifiable-indexed-sequence for list;
+
+/// Updates the element at the given index with the provided value.
+command list at: (Index is integer) put: Value
+requires within-bounds :: (Index >= 1) and (Index <= self count)
+  = foreign list.at-put(self, Index, Value)
+test
+  assert (["a", "b", "c"] at: 1 put: "d") =:= ["d", "b", "c"];
+  assert (["a", "b", "c"] at: 2 put: "d") =:= ["a", "d", "c"];
+  assert (["a", "b", "c"] at: 3 put: "d") =:= ["a", "b", "d"];
+end

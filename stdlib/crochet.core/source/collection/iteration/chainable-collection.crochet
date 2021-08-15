@@ -1,0 +1,75 @@
+% crochet
+
+local singleton module;
+
+// -- Lists
+implement chainable-collection for list;
+
+/// Transforms every element of the list with the given function, concatenates
+/// all results returned by [Fun].
+command list flat-map: (Fun is function-1) do
+  foreign list.flatmap(self, Fun);
+test
+  assert ([] flat-map: { A in [A, A] }) === [];
+  assert ([1, 2, 3] flat-map: { A in [A, A] }) === [1, 1, 2, 2, 3, 3];
+end
+
+/// Turns a list of lists into a flatter list.
+command list flatten-once do
+  self flat-map: { X in X };
+test
+  assert ([] flatten-once) === [];
+  assert ([[1], [2, 3], [4, [5], 6]] flatten-once) === [1, 2, 3, 4, [5], 6];
+end
+
+// -- Sets
+implement chainable-collection for set;
+
+/// Transforms every element of the set with the given [Fun], which must
+/// return a new set.
+command set flat-map: (Fun is (A -> set<B>)) do
+  new set(foreign set.flatmap(self.box, { A in let R = Fun(A); assert R is set; R.box }));
+test
+  assert (#set from: [1, 2, 3] | flat-map: { X in (#set from: [X, X + 0.5])})
+    === (#set from: [1, 1.5, 2, 2.5, 3, 3.5]);
+
+  assert (#set from: [] | flat-map: { X in (#set from: [X, X + 1]) })
+    === (#set from: []);
+end
+
+// -- Stream
+implement chainable-collection for stream;
+
+/// Transforms a stream using the given [Fun]. The [Fun] should return a
+/// new stream.
+command linked-stream-empty flat-map: (Fun is (A -> stream<A>)) = self;
+command linked-stream-cons flat-map: (Fun is (A -> stream<A>)) =
+  module linked-stream-concat: Fun(self first) with: self using: Fun;
+
+command module linked-stream-concat: linked-stream-empty with: Xs using: F =
+  Xs rest flat-map: F;
+
+command module linked-stream-concat: (X is linked-stream-cons) with: Xs using: F =
+  new linked-stream-cons(X first, lazy module linked-stream-concat: X rest with: Xs using: F);
+
+test "linked-stream flat-map: F" do
+  let F = { A in #linked-stream from: [A, A + 0.5] };
+  assert (#linked-stream from: [] |> _ flat-map: F |> _ as list) === [];
+  assert (#linked-stream from: [1, 2, 3] |> _ flat-map: F |> _ as list) === [1, 1.5, 2, 2.5, 3, 3.5];
+end
+
+// -- Maps
+implement chainable-collection for map;
+
+command map flat-map: (Fun is (association<K1, V1> -> map<K2, V2>)) -> map<K2, V2> do
+  new map(foreign map.flatmap(self.box, { X in let R = Fun(new association(X at: 1, X at: 2));
+                                               assert R is map;
+                                               R.box }));
+test
+  let M = #map from: [a -> "x", b -> "y"];
+  let F = { X in #map empty | at: X key put: X value | at: (M at: X key) put: X value };
+  assert (#map from: [] | flat-map: F) === #map empty;
+
+  assert (#map from: [a -> 1, b -> 2] | flat-map: F)
+    === (#map from: [a -> 1, b -> 2, x -> 1, y -> 2]);
+end

@@ -1,0 +1,58 @@
+% crochet
+
+// -- Records
+
+implement mapped-container for record;
+
+/// Returns the value in the record identified by [Key], if it exists.
+command record at: (Key is text) =
+  self.[Key]
+test
+  assert ([a -> 1, b -> 2] at: "a") === 1;
+  assert (["a a" -> 1, b -> 2] at: "a a") === 1;
+  assert ([a -> 1, B -> 2] at: "B") === 2;
+end
+
+/// Returns the value in the record identified by [Key], if it exists.
+/// Otherwise returns the provided default value.
+command record at: (Key is text) default: Value =
+  foreign record.at-default(self, Key, Value)
+test
+  assert ([a -> 1, b -> 2] at: "a" default: 0) === 1;
+  assert (["a a" -> 1, b -> 2] at: "a a" default: 0) === 1;
+  assert ([a -> 1, B -> 2] at: "B" default: 0) === 2;
+  assert ([->] at: "a" default: 0) === 0;
+  assert ([a -> 1, b -> 2] at: "c" default: 0) === 0;
+end
+
+/// True if the record contains a value associated with the [Key].
+command record contains-key: (Key is text) =
+  foreign record.has-key(self, Key)
+test
+  assert [a -> 1, b -> 2] contains-key: "a";
+  assert ["a a" -> 1, b -> 2] contains-key: "a a";
+  assert [a -> 1, B -> 2] contains-key: "B";
+  assert not ([a -> 1, b -> 2] contains-key: "c");
+  assert not ([->] contains-key: "a");
+end
+
+// -- Map
+implement mapped-container for map;
+
+command map at: Key
+requires key-exists :: self contains-key: Key
+do
+  foreign map.at(self.box, Key);
+test
+  assert (#map empty | at: 1 put: 2 | at: 1) === 2;
+  assert (#map empty | at: 1 put: 2 | at: 3 put: 4 | at: 3) === 4;
+end
+
+command map contains-key: Key -> boolean do
+  foreign map.has(self.box, Key);
+test
+  assert not (#map empty | contains-key: 1);
+  assert (#map empty | at: 1 put: 2 | contains-key: 1);
+  assert (#map empty | at: 1 put: 2 | at: 3 put: 4 | contains-key: 3);
+  assert not (#map empty | at: 1 put: 2 | at: 3 put: 4 | contains-key: 5);
+end

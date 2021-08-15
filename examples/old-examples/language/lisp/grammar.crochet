@@ -5,10 +5,10 @@ open crochet.text.parsing.lingua;
 
 // Type definitions
 abstract node;
-type program(pos is interval, forms is tuple) is node;
+type program(pos is interval, forms is list) is node;
 
 abstract form is node;
-type form--apply(pos is interval, callee is form, arguments is tuple) is form;
+type form--apply(pos is interval, callee is form, arguments is list) is form;
 type form--integer(pos is interval, value is text) is form;
 type form--atom(pos is interval, name is text) is form;
 type form--unit(pos is interval) is form;

@@ -1,0 +1,52 @@
+% crochet
+
+// -- List
+implement sequence for list;
+
+/// The first element of the list.
+command list first = self at: 1
+test
+  assert [1] first =:= 1;
+  assert [1, 2, 3] first =:= 1;
+end
+
+/// Returns a list which contains all elements after the first one.
+command list rest =
+  condition
+    when self count < 2 => [];
+    always => self slice-from: 2 to: self count;
+  end
+test
+  assert [] rest =:= [];
+  assert [1] rest =:= [];
+  assert [1, 2, 3] rest =:= [2, 3];
+end
+
+
+// -- Stream
+implement sequence for linked-stream;
+
+/// The first element of the stream.
+command linked-stream-empty first
+requires never :: false
+  = nothing;
+
+command linked-stream-cons first
+  = self.value;
+
+/// All elements of the stream after the first one.
+command linked-stream-empty rest
+requires never :: false
+  = nothing;
+
+command linked-stream-cons rest
+  = force self.rest;
+
+test "linked-stream first" do
+  assert (#stream from: [1, 2, 3] | first) === 1;
+end
+
+test "linked-stream rest" do
+  assert (#stream from: [1, 2, 3] |> _ rest |> _ as list) === [2, 3];
+  assert (#stream from: [1] |> _ rest |> _ as list) === [];
+end
