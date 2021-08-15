@@ -47,6 +47,7 @@ interface Options {
     module?: string;
     package?: string;
   };
+  app_args: string[];
 }
 
 function parse_options(args0: string[]) {
@@ -62,8 +63,9 @@ function parse_options(args0: string[]) {
   options.packaging = {
     out_dir: "packages",
   };
+  options.app_args = [];
 
-  while (current < args0.length) {
+  loop: while (current < args0.length) {
     const x = args0[current];
 
     switch (x) {
@@ -108,6 +110,11 @@ function parse_options(args0: string[]) {
         options.disclose_debug = true;
         current++;
         continue;
+      }
+
+      case "--": {
+        options.app_args = args0.slice(current + 1);
+        break loop;
       }
 
       default:
@@ -186,7 +193,9 @@ async function run([file]: string[], options: Options) {
     true
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
-  const value = await crochet.run("main: _", [crochet.ffi.list([])]);
+  const value = await crochet.run("main: _", [
+    crochet.ffi.list(options.app_args.map((x) => crochet.ffi.text(x))),
+  ]);
   if (value.tag === Crochet.vm.Tag.NOTHING) {
     return;
   }
