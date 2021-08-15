@@ -202,3 +202,24 @@ test
   assert P satisfying === [1, 2];
   assert P not-satisfying === [3, 4, 5];
 end
+
+// -- Grouping and statistics
+command (X has foldable-collection) group-by: (Key-fun is (A -> K)) -> map<K, list<A>> do
+  X fold-from: #map empty
+    with: (module group-by: Key-fun state: _ value: _);
+test
+  let N = [1, 2, 3, 4, 5, 6];
+  let Classify = { X in condition
+                          when (X % 2) === 0 => "even";
+                          when (X % 2) =/= 0 => "odd";
+                        end };
+  assert ([] group-by: Classify) === #map empty;
+  assert ([1, 2, 3, 4, 5, 6] group-by: Classify) === (#map from: [even -> [2, 4, 6], odd -> [1, 3, 5]]);
+  assert ([1, 3, 5] group-by: Classify) === (#map from: [odd -> [1, 3, 5]]);
+end
+
+command module group-by: Key-fun state: State value: Value do
+  let Key = Key-fun(Value);
+  let Old-value = State at: Key default: [];
+  State at: Key put: (Old-value append: Value);
+end
