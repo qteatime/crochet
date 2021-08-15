@@ -51,3 +51,14 @@ test
   assert (#set from: [1, 1, 1] | count) === 1;
   assert (#set from: [] | count) === 0;
 end
+
+// -- Map
+implement countable-container for map;
+
+command map count do
+  foreign map.count(self.box);
+test
+  assert (#map from: [] | count) === 0;
+  assert (#map from: [#association key: 1 value: 1, #association key: 2 value: 2] | count) === 2;
+  assert (#map from: [#association key: 1 value: 1, #association key: 1 value: 2] | count) === 1;
+end

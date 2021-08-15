@@ -164,6 +164,10 @@ type list = foreign core.list;
 /// checking if an item is in the collection.
 type set(box);
 
+/// A map is a collection of key/value pairs where each key is associated
+/// with exactly one value.
+type map(box);
+
 /// A stream is a procedural sequence.
 abstract stream;
 abstract linked-stream is stream;

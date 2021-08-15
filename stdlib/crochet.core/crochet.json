@@ -12,7 +12,8 @@
     "native/text.js",
     "native/etc.js",
     "native/action.js",
-    "native/set.js"
+    "native/set.js",
+    "native/map.js"
   ],
   "sources": [
     "source/0-types.crochet",
@@ -50,6 +51,7 @@
     "source/collection/equality.crochet",
     "source/collection/indexed.crochet",
     "source/collection/list.crochet",
+    "source/collection/map.crochet",
     "source/collection/record.crochet",
     "source/collection/set.crochet",
     "source/collection/set-algebra.crochet",

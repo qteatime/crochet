@@ -91,3 +91,15 @@ test "linked-stream fold-from: any with: function-2" do
   assert (#linked-stream from: [] | fold-from: 6 with: (_ - _)) === 6;
   assert (#linked-stream from: [1, 2, 3] | fold-from: 6 with: (_ - _)) === (((6 - 1) - 2) - 3);
 end
+
+// -- Maps
+implement foldable-collection for map;
+
+command map fold-from: Initial with: (Combine is ((A, association<K, V>) -> A)) do
+  foreign map.fold(self.box, Initial, { A, X in Combine(A, new association(X at: 1, X at: 2)) });
+test
+  let F = { A, X in A + X value };
+  assert (#map empty fold-from: 0 with: F) === 0;
+  assert (#map from: [a -> 1] | fold-from: 0 with: F) === (0 + 1);
+  assert (#map from: [a -> 1, b -> 2, c -> 3] | fold-from: 0 with: F) === (0 + 1 + 2 + 3);
+end

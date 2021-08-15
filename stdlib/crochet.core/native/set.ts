@@ -7,7 +7,6 @@ import type {
 export default (ffi: ForeignInterface) => {
   const Set = ffi.collection.Set;
   const isSet = ffi.collection.isSet;
-  const equals = ffi.collection.is;
 
   function get_set(x0: CrochetValue) {
     const x = ffi.unbox(x0);

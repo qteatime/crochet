@@ -57,3 +57,19 @@ test "linked-stream flat-map: F" do
   assert (#linked-stream from: [] |> _ flat-map: F |> _ as list) === [];
   assert (#linked-stream from: [1, 2, 3] |> _ flat-map: F |> _ as list) === [1, 1.5, 2, 2.5, 3, 3.5];
 end
+
+// -- Maps
+implement chainable-collection for map;
+
+command map flat-map: (Fun is (association<K1, V1> -> map<K2, V2>)) -> map<K2, V2> do
+  new map(foreign map.flatmap(self.box, { X in let R = Fun(new association(X at: 1, X at: 2));
+                                               assert R is map;
+                                               R.box }));
+test
+  let M = #map from: [a -> "x", b -> "y"];
+  let F = { X in #map empty | at: X key put: X value | at: (M at: X key) put: X value };
+  assert (#map from: [] | flat-map: F) === #map empty;
+
+  assert (#map from: [a -> 1, b -> 2] | flat-map: F)
+    === (#map from: [a -> 1, b -> 2, x -> 1, y -> 2]);
+end

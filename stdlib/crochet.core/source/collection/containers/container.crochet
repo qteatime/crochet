@@ -30,3 +30,15 @@ test
   assert not ((#set from: [{ 1 }]) contains: F);
   assert (#set from: [F]) contains: F;
 end
+
+// -- Map
+implement container for map;
+
+command map contains: Value do
+  #set from: self values
+    | contains: Value;
+test
+  assert not (#map from: [] | contains: "a");
+  assert (#map from: [#association key: 1 value: "a"] | contains: "a");
+  assert not (#map from: [#association key: "a" value: 1] | contains: "a");
+end

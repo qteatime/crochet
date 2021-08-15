@@ -74,3 +74,16 @@ test "linked-stream keep-if: predicate" do
   assert (#linked-stream from: [] |> _ keep-if: (_ > 1) |> _ as list) === [];
   assert (#linked-stream from: [1, 2, 3] |> _ keep-if: (_ > 1) |> _ as list) === [2, 3];
 end
+
+// -- Maps
+implement filterable-collection for map;
+
+command map keep-if: (Predicate is (association<K, V> -> boolean)) -> map<K, V> do
+  new map(foreign map.filter(self.box, { X in Predicate(new association(X at: 1, X at: 2)) }));
+test
+  assert (#map empty keep-if: { X in X key =/= "b" }) === #map empty;
+  assert (#map from: [a -> 1, b -> 2, c -> 3] | keep-if: { X in X key =/= "b" })
+    === (#map from: [a -> 1, c -> 3]);
+  assert (#map from: [a -> 1, b -> 2, c -> 3] | keep-if: { X in X key === "b" })
+    === (#map from: [b -> 2]);
+end
