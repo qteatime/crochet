@@ -13,16 +13,6 @@ test
   assert ([1, 5, 3, 1, 6, 2] keep-if: (_ > 2)) === [5, 3, 6];
 end
 
-/// Produces a new list that does not contain items for which the given
-/// [Predicate] holds.
-command list remove-if: (Predicate is (A -> boolean)) do
-  for X in self if not Predicate(X) do X end;
-test
-  assert ([] remove-if: (_ > 2)) === [];
-  assert ([1, 2, 3, 2, 1] remove-if: (_ > 2)) === [1, 2, 2, 1];
-  assert ([1, 5, 3, 1, 6, 2] remove-if: (_ > 2)) === [1, 1, 2];
-end
-
 
 // -- Records
 implement filterable-collection for record;

@@ -193,6 +193,16 @@ end
 command partition-pair satisfying = self.satisfying;
 command partition-pair not-satisfying = self.not-satisfying;
 
+/// Yields a new collection containing only elements that don't satisfy
+/// the given [Predicate].
+command (X has filterable-collection) remove-if: (Predicate is (A -> boolean)) do
+  X keep-if: { X in not Predicate(X) };
+test
+  assert ([] remove-if: (_ > 2)) === [];
+  assert ([1, 2, 3, 2, 1] remove-if: (_ > 2)) === [1, 2, 2, 1];
+  assert ([1, 5, 3, 1, 6, 2] remove-if: (_ > 2)) === [1, 1, 2];
+end
+
 /// Partitions the collection into two: one containing elements that satisfy
 /// the [Predicate], and one containing elements that don't satisfy it.
 command (X has filterable-collection) partition-by: (Predicate is (A -> boolean)) do
