@@ -1,0 +1,120 @@
+// Lingua allows us to define a PEG-based grammar and its translation
+// to an AST form. So it's made out of two components: a set of type
+// definitions for what will become the AST, and a grammar with semantic
+// actions.
+//
+// Lingua compiles to Ohm, and uses it as a runtime. This means that
+// we also have full support for incremental parsing and left-recursion.
+// But left-recursion is not important in a Lisp grammar.
+type plisp_program(pos: interval, forms: list<plisp_form>)
+
+type plisp_form =
+  | procedure(pos: interval, name: text, parameters: list<text>, body: list<plisp_form>)
+  | define(pos: interval, name: text, value: plisp_form)
+  | if(pos: interval, expr: plisp_form, consequent: plisp_form, alternate: plisp_form)
+  | quote(pos: interval, expr: plisp_form)
+  | apply(pos: interval, callee: plisp_form, arguments: list<plisp_form>)
+  | variable(pos: interval, name: text)
+  | number(pos: interval, digits: text)
+  | string(pos: interval, contents: text)
+  | nil(pos: interval)
+  | true(pos: interval)
+  | false(pos: interval)
+
+
+grammar Pocket_Lisp : plisp_program {
+  // A Pocket Lisp program is a sequence of "forms". It can, in fact, have
+  // no forms at all---the empty program is valid. Space and comments are
+  // allowed between forms, but Lingua makes a distinction between Semantic
+  // and Lexical rules.
+  //
+  // A Semantic rule starts with an upper-case identifier, like "Program",
+  // and in these rules anything defined by the "space" rule (whitespace and
+  // comments for us) is skipped automatically.
+  //
+  // Conversely, Lexical rules start with a lower-case identifier, like "number",
+  // and whitespace needs to be skipped explicitly there.
+  //
+  // Where Lingua deviates from Ohm (its runtime) is in the addition of 
+  // semantic actions and variable bindings in the definition. Here,
+  // `Forms:Form*` means "match any number of forms, remember that in the variable
+  // `Forms`". And the `-> plisp-program(...)` expression means that, when
+  // constructing an AST for Pocket Lisp programs, we'll transform anything
+  // matched by this rule by wrapping the `Forms` in a `plisp-program` type.
+  //
+  // `meta` is a special value here that includes source position information
+  // about the match, such as what portions of the source code this match
+  // spans. We want to keep this source information in the AST so we can
+  // provide good error messages to users :)
+  Program =
+    | Forms:Form* -> plisp_program(meta, Forms)
+
+  // A form is any complete Pocket Lisp expression. Things that are defined
+  // as macros in some Lisp dialects are just special syntactical forms in
+  // Pocket Lisp. Thus `(define add [a b] ...)` is also covered as a special
+  // case in the forms below.
+  //
+  // The use of the parameterised `id<word>` rule is important here. It means
+  // that we'll match the piece of text `define`, but only if it's not
+  // immediately followed by more letters and symbols.
+  // This is important because, being a PEG-based grammar, Lingua would
+  // happily match `(define-all [a b c] (+ a b c))` as an instance of
+  // `plisp-procedure`, where the name of the procedure is `-all`. This is
+  // not what we want. We'd like such form to be parsed as a `plisp-apply`
+  // instead.
+  Form =
+    | "(" id<"define"> N:name "[" Args:name* "]" Body:Form* ")"   -> plisp_form.procedure(meta, N, Args, Body)
+    | "(" id<"define"> N:name V:Form ")"                          -> plisp_form.define(meta, N, V)
+    | "(" id<"if"> T:Form C:Form A:Form ")"                       -> plisp_form.if(meta, T, C, A)
+    | "(" id<"quote"> F:Form ")"                                  -> plisp_form.quote(meta, F)
+    | "(" App:Form Args:Form* ")"                                 -> plisp_form.apply(meta, App, Args)
+    | V:Value                                                     -> V
+    | N:name                                                      -> plisp_form.variable(meta, N)
+  
+  Value =
+    | X:number    -> plisp_form.number(meta, X)
+    | X:string    -> plisp_form.string(meta, X)
+    | X:boolean   -> X
+    | id<"nil">   -> plisp_form.nil(meta)
+
+  // Tokens are a special kind of Lexical rule where the entire matched
+  // portion is returned as a piece of text. It does, however, follow
+  // the same rules of PEG---if you have choices in it, we'll happilly
+  // pick the first one that matches, even if a different choice would
+  // have matched too!
+  token number =
+    | digit+
+
+  string =
+    | "\"" x:string_chars "\""  -> x
+
+  token string_chars =
+    | (~"\"" any)*
+
+  boolean =
+    | id<"true">  -> plisp_form.true(meta)
+    | id<"false"> -> plisp_form.false(meta)
+
+  token name =
+    | (letter | symbol) (letter | symbol | digit)*
+
+  // letter and digit are rules included by default in Lingua grammars, so
+  // the definition is only given here for completeness.
+  //
+  // token letter =
+  //   | "a" .. "z"
+  //   | "A" .. "Z"
+
+  token symbol =
+    | "!" | "%" | "*" | "-" | "_" | "+" | "=" | "^" | "?" | "/" | ">" | "<" | "|"
+
+  token comment =
+    | ";" (~newline any)*
+
+  token newline =
+    | "\n"
+    | "\r"
+
+  id<word> =
+    | X:word ~(letter | symbol | digit) -> X
+}

@@ -1,0 +1,50 @@
+% crochet
+  
+open crochet.wrapper.node.io;
+open crochet.wrapper.node.file-system;
+open crochet.language.cli-arguments;
+
+local singleton pl-cli;
+type pl-cli-run(file is path-obj) is pl-cli;
+singleton pl-cli-help is pl-cli;
+
+define plcli-filename = lazy
+  cli positional: "filename"
+    | description: "A pocket lisp source file";
+
+define plcli-run = lazy
+  cli command: "run" with: [force plcli-filename]
+    | description: "Evaluate a pocket lisp source file"
+    | map: { X in new pl-cli-run(#path from-text: X.filename) };
+
+define plcli-help = lazy
+  cli command: "help" with: []
+    | description: "Show usage documentation"
+    | map: { _ in pl-cli-help };
+
+define plcli-app = lazy
+  cli app: "pocket-lisp" with: [force plcli-run, force plcli-help]
+    | description: "A pocket lisp implementation in Crochet";
+
+
+command main: (Args is list) do
+  cli parse: (force plcli-app) with: Args
+    | run;
+  nothing;
+end
+
+command pl-cli-run run do
+  let Source = file-system file: self.file | read-text;
+  let Program = vm parse: Source;
+  vm with-panic-on-error: {
+    let Result = vm run: Program;
+    condition
+      when Result is p-nil => nothing;
+      always => terminal write-line: Result print-format;
+    end
+  };
+end
+
+command pl-cli-help run do
+  terminal write-line: (force plcli-app) usage;
+end

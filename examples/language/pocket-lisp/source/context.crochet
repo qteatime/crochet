@@ -1,0 +1,51 @@
+% crochet
+
+// Constructs an empty environment
+command #environment empty =
+  new environment(nothing, #cell with-value: #map empty);
+
+// Constructs a new environment that descends from the given one.
+command environment spawn =
+  new environment(self, #cell with-value: #map empty);
+
+// Binds a new value in the environment, mutating it.
+command environment at: (Key is text) put: (Value is value) do
+  let Bindings = self.bindings value;
+  condition
+    when not (Bindings contains-key: Key) do
+      self.bindings <- Bindings at: Key put: Value;
+      self;
+    end
+
+    always => vm raise-already-bound: Key value: Value;
+  end
+end
+
+// Retrieves a value bound to the given key, if one exists.
+command environment at: (Key is text) do
+  let Bindings = self.bindings value;
+  condition
+    when Bindings contains-key: Key => Bindings at: Key;
+    when self.parent is environment => self.parent at: Key;
+    always => vm raise-undefined-variable: Key;
+  end
+end
+
+// Defines a native procedure
+command environment define: (Key is text) native: (Fun is function) do
+  self at: Key put: new p-native-procedure(Key, Fun arity, { Args in Fun apply: Args });
+end
+
+// Defines a native variadic procedure
+command environment define: (Key is text) native-variadic: (Fun is function) do
+  self at: Key put: new p-native-procedure(Key, nothing, Fun);
+end
+
+
+command frame at: Key put: Value do
+  self.environment at: Key put: Value;
+  self;
+end
+
+command frame spawn-with-location: Location =
+  new frame(self, self.environment spawn, Location);

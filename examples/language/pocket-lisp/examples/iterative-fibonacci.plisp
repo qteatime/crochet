@@ -1,0 +1,11 @@
+(define iter-fib [n]
+  (define go-fib [x n m]
+    (if (= x 0)
+      n
+      (go-fib (- x 1) m (+ n m))))
+
+  (go-fib n 0 1))
+
+(display "(iter-fib 6) =>" (iter-fib 6))
+(display "(iter-fib 15) =>" (iter-fib 15))
+(display "(iter-fib 100) =>" (iter-fib 100))

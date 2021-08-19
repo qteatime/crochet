@@ -1,0 +1,28 @@
+{
+  "name": "crochet.examples.language.pocket-lisp",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "grammar/pocket-lisp.lingua",
+    "source/0-types.crochet",
+    "source/bootstrap.crochet",
+    "source/context.crochet",
+    "source/errors.crochet",
+    "source/evaluator.crochet",
+    "source/intrinsics.crochet",
+    "source/main.crochet",
+    "source/vm.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.parsing.lingua",
+    "crochet.debug",
+    "crochet.wrapper.node.io",
+    "crochet.wrapper.node.file-system",
+    "crochet.language.cli-arguments"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

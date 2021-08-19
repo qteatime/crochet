@@ -1,0 +1,32 @@
+% crochet
+
+open crochet.wrapper.node.io;
+
+command vm global-environment do
+  #environment empty
+    | define: "=" native: (_ === _)
+    | define: "not=" native: (_ =/= _)
+    | define: ">" native: (_ > _)
+    | define: ">=" native: (_ >= _)
+    | define: "<" native: (_ < _)
+    | define: "<=" native: (_ <= _)
+    
+    | define: "+" native: (_ + _)
+    | define: "-" native: (_ - _)
+    | define: "*" native: (_ * _)
+    | define: "/" native: (_ / _)
+    | define: "number?" native: (_ is-number)
+    
+    | define: "not" native: (not _)
+    | define: "and" native: (_ and _)
+    | define: "or" native: (_ or _)
+
+    | define: "first" native: (_ head)
+    | define: "rest" native: (_ tail)
+
+    | define: "display" native-variadic: { Xs in 
+        let Line = Xs fold-from: "" with: { A, B in "[A] [B print-format]" };
+        terminal write-line: Line;
+        p-nil;
+      }
+end

@@ -1,0 +1,29 @@
+% crochet
+
+command vm parse: (Source is text) do
+  let Tree = (force grammar) parse: Source rule: "Program";
+  condition
+    when Tree is error => panic: Tree reason tag: "syntax-error";
+    when Tree is ok do
+      let Ast = (force to-ast) transform: Tree value;
+      Ast;
+    end
+  end
+end
+
+command vm run: (Program is plisp-program) do
+  let Frame = new frame(nothing, vm global-environment, nothing);
+  Frame evaluate: Program;
+end
+
+command vm with-panic-on-error: (Block is (() -> A)) do
+  handle
+    Block();
+  with
+    on pocket-lisp.raw-raise(Error) =>
+      panic: (vm format-error: Error) tag: "runtime-error";
+    
+    on pocket-lisp.raise(Frame, Form, Error) =>
+      panic: (vm format-error: Error frame: Frame form: Form) tag: "runtime-error";
+  end
+end

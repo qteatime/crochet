@@ -1,0 +1,83 @@
+% crochet
+
+command frame evaluate-many: (Xs is list<plisp-form>) do
+  for X in Xs do self evaluate: X end;
+end
+
+command frame evaluate-many-return-last: (Xs is list<plisp-form>) =
+  Xs fold-from: p-nil with: { _, X in self evaluate: X };
+
+command frame evaluate: (X is plisp-program) =
+  self evaluate-many-return-last: X.forms;
+
+command frame evaluate: (X is plisp-form--procedure) do
+  self at: X.name put: (#p-procedure meta: X.pos
+                                     env: self.environment
+                                     name: X.name
+                                     parameters: X.parameters
+                                     body: X.body);
+  p-nil;
+end
+
+command frame evaluate: (X is plisp-form--define) do
+  self at: X.name put: (self evaluate: X.value);
+  p-nil;
+end
+
+command frame evaluate: (X is plisp-form--if) do
+  let Result = self trap: { (self evaluate: X.expr) as boolean } for: X.expr;
+  condition
+    when Result => self evaluate: X.consequent;
+    always => self evaluate: X.alternate;
+  end
+end
+
+command frame evaluate: (X is plisp-form--quote) do
+  assert "not implemented";
+end
+
+command frame evaluate: (X is plisp-form--apply) do
+  let Callee = self trap: { (self evaluate: X.callee) as procedure } for: X.callee;
+  let Args = (self evaluate-many: X.arguments);
+  self trap: { self apply: Callee to: Args } for: X;
+end
+
+command frame evaluate: (X is plisp-form--variable) do
+  self trap: { self.environment at: X.name } for: X;
+end
+
+command frame evaluate: (X is plisp-form--number) do
+  #p-integer make: X.digits;
+end
+
+command frame evaluate: (X is plisp-form--string) do
+  #p-string make: X.contents;
+end
+
+command frame evaluate: plisp-form--nil = p-nil;
+command frame evaluate: plisp-form--true = p-true;
+command frame evaluate: plisp-form--false = p-false;
+
+command frame apply: (X is p-native-procedure) to: (Args is list<value>) do
+  self check-arity: X arguments: Args;
+  X.handler(Args);
+end
+
+command frame apply: (X is p-procedure) to: (Args is list<value>) do
+  self check-arity: X arguments: Args;
+  
+  let Frame = self spawn-with-location: X;
+  for Pair in X.parameters zip: Args do
+    Frame.environment at: Pair first put: Pair second;
+  end
+
+  Frame evaluate-many-return-last: X.body;
+end
+
+command frame check-arity: (X is procedure) arguments: (Args is list<value>) do
+  condition
+    when X arity is nothing => nothing;
+    when X arity =/= Args count => vm raise-invalid-arity: Args expected: X arity in: X;
+    always => nothing;
+  end
+end

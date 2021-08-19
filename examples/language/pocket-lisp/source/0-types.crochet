@@ -1,0 +1,36 @@
+% crochet
+
+open crochet.text.parsing.lingua;
+
+abstract value;
+type environment(parent, bindings is cell<map<text, value>>);
+
+type p-integer(value is integer) is value;
+type p-string(value is text) is value;
+
+abstract p-boolean;
+singleton p-true is p-boolean;
+singleton p-false is p-boolean;
+
+abstract p-list is value;
+singleton p-nil is p-list;
+type p-cons(head is value, tail is p-list) is p-list;
+
+abstract procedure is value;
+type p-procedure(pos is interval, env is environment, name is text, parameters is list<text>, body is list<plisp-form>) is procedure;
+type p-native-procedure(name is text, arity, handler is (list<value> -> value)) is procedure;
+
+singleton vm;
+type frame(parent, environment, location);
+
+abstract plisp-error;
+type error-undefined-variable(name is text) is plisp-error;
+type error-already-bound(name is text, value is value) is plisp-error;
+type error-invalid-arity(expected is integer, arguments is list<value>, target is procedure) is plisp-error;
+type error-native(code is text, reason is text, data) is plisp-error;
+
+effect pocket-lisp with
+  // Raise an error
+  raise(frame is frame, form is plisp-form, error is plisp-error);
+  raw-raise(error is plisp-error);
+end
