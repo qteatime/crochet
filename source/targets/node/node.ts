@@ -284,9 +284,11 @@ export class CrochetForNode {
   private format_requirements(
     requirements: Map<string, Package.ResolvedPackage[]>
   ) {
-    return [...requirements.entries()].map(([cap, pkgs]) => {
-      return `  - ${cap} (from ${pkgs.map((x) => x.name).join(", ")})`;
-    });
+    return [...requirements.entries()]
+      .map(([cap, pkgs]) => {
+        return `  - ${cap} (from ${pkgs.map((x) => x.name).join(", ")})`;
+      })
+      .join("\n");
   }
 
   private async register_standard_library() {
