@@ -8,7 +8,7 @@ approach parsing, testing, organisation, and modularity in Crochet.
 
 You can run any example in the `examples/` folder as follows:
 
-    $ crochet run crochet.json -- examples/fibonacci.plisp
+    $ crochet run crochet.json -- run examples/fibonacci.plisp
 
 ## Tests
 
