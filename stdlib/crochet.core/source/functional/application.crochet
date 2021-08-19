@@ -59,3 +59,15 @@ requires correct-arity :: Args count =:= 9
 do
   self(Args at: 1, Args at: 2, Args at: 3, Args at: 4, Args at: 5, Args at: 6, Args at: 7, Args at: 8, Args at: 9)
 end
+
+
+command function-0 arity = 0;
+command function-1 arity = 1;
+command function-2 arity = 2;
+command function-3 arity = 3;
+command function-4 arity = 4;
+command function-5 arity = 5;
+command function-6 arity = 6;
+command function-7 arity = 7;
+command function-8 arity = 8;
+command function-9 arity = 9;
