@@ -70,3 +70,10 @@ command p-nil print-format = "nil";
 command p-cons print-format = "([self.head print-format] . [self.tail print-format])";
 command p-procedure print-format = "<procedure [self.name]>";
 command p-native-procedure print-format = "<native-procedure [self.name]>";
+
+command p-integer type-name = "integer";
+command p-string type-name = "string";
+command p-boolean type-name = "boolean";
+command p-list type-name = "list";
+command p-procedure type-name = "procedure";
+command p-native-procedure type-name = "native-procedure";

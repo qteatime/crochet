@@ -10,8 +10,9 @@
     "source/errors.crochet",
     "source/evaluator.crochet",
     "source/intrinsics.crochet",
-    "source/main.crochet",
-    "source/vm.crochet"
+    "source/repl.crochet",
+    "source/vm.crochet",
+    "source/main.crochet"
   ],
   "dependencies": [
     "crochet.core",

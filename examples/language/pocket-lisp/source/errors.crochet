@@ -31,8 +31,8 @@ command vm format-error: (X is error-already-bound) =
   "The variable [X.name] cannot be bound to [X.value print-format] because it is already bound.";
 
 command vm format-error: (X is error-invalid-arity) =
-  "The function [vm format-procedure: X.target] expects [X.expected] arguments,
-   but was provided with [X.arguments count] arguments.";
+  "The function [X.target print-format] expects [X.expected to-text] arguments,
+   but was provided with [X.arguments count to-text] arguments.";
 
 command vm format-error: (X is error-native) =
   "An error occurred while executing native code. [X.code]: [X.reason]";

@@ -1,18 +1,23 @@
 % crochet
 
+command vm try-parse: (Source is text) do
+  (force grammar) parse: Source rule: "Program"
+    | map: { Tree in (force to-ast) transform: Tree };
+end
+
 command vm parse: (Source is text) do
-  let Tree = (force grammar) parse: Source rule: "Program";
-  condition
-    when Tree is error => panic: Tree reason tag: "syntax-error";
-    when Tree is ok do
-      let Ast = (force to-ast) transform: Tree value;
-      Ast;
-    end
-  end
+  vm try-parse: Source
+    | recover: { Error in panic-without-trace: Error tag: "syntax-error" }
+    | value;
 end
 
 command vm run: (Program is plisp-program) do
   let Frame = new frame(nothing, vm global-environment, nothing);
+  Frame evaluate: Program;
+end
+
+command vm run: (Program is plisp-program) with-environment: (Env is environment) do
+  let Frame = new frame(nothing, Env, nothing);
   Frame evaluate: Program;
 end
 
