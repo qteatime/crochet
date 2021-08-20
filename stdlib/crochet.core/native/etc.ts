@@ -5,6 +5,13 @@ export default (ffi: ForeignInterface) => {
     throw ffi.panic(ffi.text_to_string(tag), ffi.text_to_string(message));
   });
 
+  ffi.defun("etc.panic-untraced", (tag, message) => {
+    throw ffi.panic_untraced(
+      ffi.text_to_string(tag),
+      ffi.text_to_string(message)
+    );
+  });
+
   ffi.defun("debug.any-to-text", (x) => {
     return ffi.text(ffi.to_debug_string(x));
   });
