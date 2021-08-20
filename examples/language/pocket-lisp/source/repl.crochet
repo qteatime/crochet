@@ -94,34 +94,44 @@ command module repl: Repl with-interactive-error-recovery: (Block is (() -> A)) 
     on pocket-lisp.raise(Frame, Form, Error) do
       terminal write-line: (vm format-error: Error);
       terminal write-line: "";
-      terminal write-line: "(Q)uit    -- Exit this interactive shell";
-      terminal write-line: "(A)bort   -- Stops the evaluation, continues with the previous state";
-      terminal write-line: "(R)ecover -- Provide a recover value and continue the evaluation";
-      terminal write-line: "";
-      let Choice = (terminal prompt: "Choice> ") trim;
+      let Choice = module read-interactive-choice;
       let Depth = perform repl.depth();
       condition
         when Choice =:= "Q" => perform repl.quit();
         when Choice =:= "A" => perform repl.abort();
         when Choice =:= "R" do
           handle
-            module repl: (new repl(vm global-environment spawn));
+            let Result = module repl: (new repl(vm global-environment spawn));
+            continue with Result;
           with
-            on repl.abort() => perform repl.abort();
-
-            on repl.depth() => continue with Depth + 1;
+            on repl-eval.success(_, Value) do
+              continue with Value;
+            end
 
             on repl-eval.syntax-error(_, Error) do
               module show-syntax-error: Error;
               module repl: Repl;
             end
 
-            on repl-eval.success(_, Value) do
-              continue with Value;
-            end
+            on repl.abort() => perform repl.abort();
+
+            on repl.depth() => continue with Depth + 1;
           end
         end  
       end
     end
+  end
+end
+
+command module read-interactive-choice do
+  terminal write-line: "(Q)uit    -- Exit this interactive shell";
+  terminal write-line: "(A)bort   -- Stops the evaluation, continues with the previous state";
+  terminal write-line: "(R)ecover -- Provide a recover value and continue the evaluation";
+  terminal write-line: "";
+  let Choice = (terminal prompt: "Choice> ") trim;
+  let Valid = #set from: ["Q", "A", "R"];
+  condition
+    when Valid contains: Choice => Choice;
+    always => module read-interactive-choice;
   end
 end
