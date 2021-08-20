@@ -193,6 +193,10 @@ export class ForeignInterface {
     return Values.equals(x, y);
   }
 
+  panic_untraced(tag: string, message: string) {
+    throw new ErrNativePanic(tag, message, false);
+  }
+
   panic(tag: string, message: string) {
     throw new ErrNativePanic(tag, message);
   }

@@ -9,7 +9,11 @@ export class ErrArbitrary extends CrochetError {
 }
 
 export class ErrNativePanic extends CrochetError {
-  constructor(readonly tag: string, readonly message: string) {
+  constructor(
+    readonly tag: string,
+    readonly message: string,
+    readonly include_trace = true
+  ) {
     super(`${tag}: ${message}`);
   }
 }
@@ -24,12 +28,13 @@ export class CrochetEvaluationError extends CrochetError {
       const trace = native_trace.replace(/^.*?\n\s*at /, "");
       native_trace = `\n\nArising from the native code:\n${trace}`;
     }
+    const include_trace =
+      source instanceof ErrNativePanic ? source.include_trace : true;
+    const suffix = include_trace
+      ? ["\n\n", "Arising from:\n", formatted_trace, "\n", native_trace]
+      : [];
 
-    super(
-      [source.message, "\n\n", "Arising from:\n", formatted_trace, "\n"].join(
-        ""
-      )
-    );
+    super([source.message, ...suffix].join(""));
     this.source = source;
     this.trace = trace;
   }
