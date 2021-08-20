@@ -162,7 +162,7 @@ command #novella-dsl run-expr: (X is n-apply) do
   let Env = #novella-env get;
   let Fun = Env lookup: X.name meta: X.meta;
   let Args = X.arguments map: (#novella-dsl run-expr: _);
-  let Attrs = X.attributes map: { _, V in #novella-dsl run-expr: V };
+  let Attrs = X.attributes map: { P in #novella-dsl run-expr: P value };
   Fun apply: ([Attrs] ++ Args);
 end
 
@@ -259,7 +259,7 @@ end
 command #novella-dsl compile-expr: (X is skeleton-node) do
   new n-apply( X
              , X name
-             , X attributes map: { _, V in #novella-dsl compile-expr: V }
+             , X attributes map: { P in #novella-dsl compile-expr: P value }
              , X children map: (#novella-dsl compile-expr: _));
 end
 
@@ -272,7 +272,7 @@ command #novella-dsl compile-expr: (X is skeleton-name) do
 end
 
 command #novella-dsl compile-expr: (X is skeleton-dynamic) do
-  new n-thunk(X, X expression);
+  new n-crochet(X, X expression);
 end
 
 command #novella-dsl compile-expr: (X is skeleton-list) do
