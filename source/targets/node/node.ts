@@ -39,9 +39,11 @@ export class CrochetForNode {
     if (entry instanceof TELog) {
       const message = entry.value;
       if (typeof message === "string") {
-        console.log(`[${entry.tag}] ${message}`);
+        console.log(`[${entry.log_tag}] ${message}`);
       } else {
-        console.log(`[${entry.tag}] ${this.renderer.render_value(message)}`);
+        console.log(
+          `[${entry.log_tag}] ${this.renderer.render_value(message)}`
+        );
       }
     }
   };

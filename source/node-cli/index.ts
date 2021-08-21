@@ -38,6 +38,7 @@ interface Options {
   disclose_debug: boolean;
   web: {
     port: number;
+    www_root: string;
   };
   packaging: {
     out_dir: string;
@@ -54,11 +55,13 @@ function parse_options(args0: string[]) {
   const options: Options = Object.create(null);
   const positional: string[] = [];
   let current = 0;
+  const repo_root = Path.resolve(__dirname, "../../");
 
   options.verbose = false;
   options.test = {};
   options.web = {
     port: 8000,
+    www_root: Path.join(repo_root, "www"),
   };
   options.packaging = {
     out_dir: "packages",
@@ -95,6 +98,12 @@ function parse_options(args0: string[]) {
 
       case "--port": {
         options.web.port = Number(args0[current + 1]) ?? options.web.port;
+        current += 2;
+        continue;
+      }
+
+      case "--www-root": {
+        options.web.www_root = args0[current + 1];
         current += 2;
         continue;
       }
@@ -240,7 +249,7 @@ async function repl([file0]: string[], options: Options) {
 }
 
 async function run_web([file]: string[], options: Options) {
-  await Server(file, options.web.port);
+  await Server(file, options.web.port, options.web.www_root);
 }
 
 async function package_app([file]: string[], options: Options) {
