@@ -6,7 +6,7 @@ import { CrochetForNode, build_file } from "../targets/node";
 
 const repo_root = Path.resolve(__dirname, "../../");
 
-export default async (root: string, port: number) => {
+export default async (root: string, port: number, www: string) => {
   console.log("Building all dependencies...");
   const crochet = new CrochetForNode(false, [], new Set([]), false);
   const pkg = crochet.read_package_from_file(root);
@@ -32,11 +32,22 @@ export default async (root: string, port: number) => {
     res.sendFile(Path.resolve(source.binary_image));
   });
 
+  app.get("/app/native/*", async (req, res) => {
+    const path = (req.params as any)[0];
+    const source = rpkg.native_sources.find(
+      (x) => x.relative_filename === "native/" + path
+    );
+    if (!source) {
+      throw new Error(`Unknown native source ${path}`);
+    }
+    res.sendFile(source.absolute_filename);
+  });
+
   app.get("/app/crochet.json", async (req, res) => {
     res.sendFile(Path.resolve(root));
   });
 
-  app.use("/", express.static(Path.join(repo_root, "www")));
+  app.use("/", express.static(www));
   app.use("/library", express.static(Path.join(repo_root, "stdlib")));
 
   app.listen(port, () => {

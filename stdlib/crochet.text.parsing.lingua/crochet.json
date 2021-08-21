@@ -3,7 +3,16 @@
   "target": "*",
   "stability": "experimental",
   "dependencies": ["crochet.core"],
-  "native_sources": ["native/lingua.js"],
+  "native_sources": [
+    {
+      "filename": "native/lingua-bundle.js",
+      "target": "browser"
+    },
+    {
+      "filename": "native/lingua.js",
+      "target": "node"
+    }
+  ],
   "sources": ["source/core.crochet"],
   "capabilities": {
     "requires": [],
