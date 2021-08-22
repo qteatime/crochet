@@ -1,6 +1,6 @@
 {
   "name": "@origamitower/crochet",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "bin": {
     "crochet": "crochet.js"
   },
