@@ -16,6 +16,7 @@ import {
   NSAwait,
   NSInvoke,
   NSTranscriptWrite,
+  run_native,
   run_native_sync,
   Tag,
   Universe,
@@ -131,6 +132,11 @@ export class ForeignInterface {
   run_synchronous(fn: () => Machine<CrochetValue>) {
     const env = new Environment(null, null, this.#module, null);
     return run_native_sync(this.#universe, env, this.#package, fn());
+  }
+
+  run_asynchronously(fn: () => Machine<CrochetValue>) {
+    const env = new Environment(null, null, this.#module, null);
+    return run_native(this.#universe, env, this.#package, fn());
   }
 
   // == Destructors
