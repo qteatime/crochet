@@ -134,32 +134,249 @@ abstract value;
 // 
 type environment(parent, bindings is cell<map<text, value>>);
 
+
+// ## Intrinsic types
+//
+// Intrinsic types are the kind of values that Pocket Lisp supports out of
+// the box. Well, really the only kind of values that Pocket Lisp supports,
+// since there are no features for users to define new types.
+//
+// Because we're hosting this runtime on top of Crochet, most of the types
+// here will be a very thin wrapper over Crochet's own intrinsic types.
+//
+// The intrinsic types for Pocket Lisp comprise:
+//
+//   - Arbitrary precision integers;
 type p-integer(value is integer) is value;
+
+//   - Opaque, unicode strings (with their length stored in the type);
 type p-string(value is text) is value;
 
+//   - Booleans;
 abstract p-boolean;
 singleton p-true is p-boolean;
 singleton p-false is p-boolean;
 
+//   - Single-linked lists;
 abstract p-list is value;
 singleton p-nil is p-list;
 type p-cons(head is value, tail is p-list) is p-list;
 
+//   - Procedures, which can be either user-defined ones, or "native"
+//     ones, defined in Crochet. Note that Pocket Lisp uses lexical
+//     scoping, so user-defined procedures need to capture the
+//     environment at the time they're created (so they can reuse
+//     that when invoked).
 abstract procedure is value;
 type p-procedure(pos is interval, env is environment, name is text, parameters is list<text>, body is list<plisp-form>) is procedure;
 type p-native-procedure(name is text, arity, handler is (list<value> -> value)) is procedure;
 
+// ## Procedures
+//
+// A few additional notes on procedures is in order. In order to implement
+// Pocket Lisp, there are several operations that are simply not possible
+// for user code to write without additional support from the runtime. The
+// internal data layout of structures like `string` isn't specified, and
+// there are no special forms in the Pocket Lisp virtual machine for
+// operating on strings---and doing such would get out of hand quite quickly!
+//
+// So on top of supporting user-defined procedures, we want a way of
+// "extending" the Pocket Lisp virtual machine with arbitrary operations.
+// And here we do this by adding another procedure type: the native procedure.
+//
+// A native procedure, as far as users of it are concerned, work exactly
+// like an user-defined procedure. But its implementation is given as
+// a Crochet function, rather than as a block of Pocket Lisp forms. This
+// allows these native procedures to perform arbitrarily powerful
+// computations without increasing the complexity of the virtual machine
+// definition itself.
+
+
+// ## The Virtual Machine (VM)
+//
+// The Pocket Lisp virtual machine is pretty simple. We don't really store
+// any data in the virtual machine itself, so the `vm` type is a singleton
+// type with no fields. It exists only so we can define methods for it.
 singleton vm;
+
+// The actual execution data for the virtual machine exists, rather, in
+// "stack" frames. These are commonly allocated on the stack in language
+// implementations for performance, but we don't do that here---these are
+// heap-allocated frames.
+//
+// A Frame contains information about the context of the code being
+// executed by the virtual machine. In this Pocket Lisp implementation
+// they serve rather to provide a "history" of the functions called
+// in the program execution---we keep the actual code being executed
+// in arguments to the evaluation function, as we'll see later.
+//
+// For example, consider the following code:
+//
+//     (define f [x] (g x))
+//     (define g [x] x)
+//     (f 1)
+//
+// This piece of code will call function `f`, which will call `g`,
+// which will just return `x`. And at that point the frame will
+// look like this:
+//
+//     frame( location -> g
+//          , parent -> frame( location -> f
+//                           , parent -> frame( location -> nothing
+//                                            , parent -> nothing
+//                                            )
+//                           )
+//          )
+//
+// So the `parent` field in the frame gives us this history of the
+// execution as a linked list. The `environment` field will hold
+// the current lexical environment that will be affected when
+// running a `define` form. And the `location` field will contain
+// the current procedure being executed---if any.
 type frame(parent, environment, location);
 
+
+// ## Errors
+//
+// Programs will contain errors. This Pocket Lisp implementation
+// tries to represent different kinds of errors precisely. There are
+// two primary reasons we want to do this:
+//
+//   - Precise modelling of errors allows us to provide better error
+//     diagnostics to users (which includes also the possibility of
+//     offering diagnostics in different languages and formats).
+//
+//   - Precise modelling allows us to provide contextual error
+//     recovery.
+//
+// For example, consider the following program:
+//
+//     (define ax 2)
+//     (+ 1 x)
+//
+// Here, we're trying to add `1` to `x`, but `x` hasn't been defined
+// yet. We could have a single error type that just said:
+//
+//     new error("Variable `x` is not defined.")
+//
+// But if send this through the VM the only thing we can do is display
+// this message exactly as is written. That's better than nothing, of
+// course, but then users are left to figure out by themselves how to 
+// deal with the error. It's not a good *user experience*.
+//
+// Now consider if we had an error type like this:
+//
+//     new undefined-variable-error("x", Current-frame)
+//
+// We pass this through the VM, and at the point where the VM decides
+// how to report the error we'd be able to do a lot more to help our
+// users.
+//
+// If an user is running the program in the command line, we could
+// show `The variable `x` is not defined in "(+ 1 x)". Did you mean "ax"?`.
+// But if they were running the program in the REPL we could even
+// offer them *interactive recovery*. Where we would show
+// "The variable `x` is not defined in "(+ 1 x)"`, and then present
+// the available variables in the current environment and ask the
+// user to choose one of them to plug in place of the `x` subexpression,
+// or ask them to provide a new value in order to continue executing
+// the program.
+//
+// In this Pocket Lisp implementation we really want to support
+// interactive recovery in the REPL and good error diagnostics
+// in all execution modes, so precise error modelling is essential.
+//
+//
+// ### The error hierarchy
+//
+// Error types here will include only information that describes the
+// error itself. That's not *enough* for error recovery, but we get
+// the additional information through a different channel, which we'll
+// cover later.
+//
+// All errors derive from `plist-error`, but `plist-error` is more of
+// a category of errors than an error in itself, so it's defined here
+// as an abstract type---we don't want the VM constructing any of these
+// directly.
 abstract plisp-error;
+
+// An `error-undefined-variable` error represents times where we tried
+// to look up the value of a variable and then didn't find any exact
+// matches in the chain of environments. The `name` is what we tried
+// looking up.
 type error-undefined-variable(name is text) is plisp-error;
+
+// An `error-already-bound` error represents times where we tried to
+// define a new procedure or variable, but the current environment
+// already had that name defined to mean something else. Pocket Lisp
+// doesn't really allow mutating variables, and it doesn't support
+// names meaning multiple things, so the definition never succeeds
+// in this case.
+//
+// In these cases we keep the `name` we tried to define and the
+// `value` we tried associating it with. We want to keep track
+// of the value so the error recovery code can decide if the
+// variable should mean the old value or the new one---but it
+// also provides a bit more of disambiguation context that
+// can help users understand where things are failing.
 type error-already-bound(name is text, value is value) is plisp-error;
+
+// An `error-invalid-arity` error represents times where we tried to
+// invoke a procedure, but we provided the wrong number of arguments
+// to it. Pocket Lisp is quite strict with the number of arguments
+// to a procedure, and they need to match exactly.
+//
+// Here we keep track of the `procedure` we tried to invoke and
+// the arguments we tried providing to it. This way the error
+// handling code can decide what the arguments should look like,
+// or even if the code was supposed to call a different procedure.
 type error-invalid-arity(expected is integer, arguments is list<value>, target is procedure) is plisp-error;
+
+// An `error-native` error represents times where native procedures
+// produce an error. Because we're hosting this in Crochet, these
+// native functions *do* participate in the same error recovery
+// that we've talked about so far---we can have users provide
+// correct values to native functions and happily go back to
+// continue executing them.
+//
+// But native errors might not always be expected, and thus they
+// might not always be categorised. In these cases, the `error-native`
+// gives us the "better than nothing" arbitrary error messages that
+// we mentioned previously.
+//
+// Because of how Crochet's types and subtyping works, however,
+// any native code can always provide their own type based on `plisp-error`
+// and participate more actively on error recovery and diagnostics.
 type error-native(code is text, reason is text, data) is plisp-error;
 
+
+// ## The evaluation effects
+//
+// We'll discuss error recovery in more details later, but for now it
+// suffices to say that they're based entirely on Crochet's support
+// for algebraic effects and handlers.
+//
+// And in order to support this later, we first need to define what
+// kind of "effects" the evaluation of a Pocket Lisp program may
+// produce. Think of "effects" here as an interface for the
+// interaction between the Pocket Lisp virtual machine and the
+// world external to it---e.g.: the user's interactions in the REPL.
+//
 effect pocket-lisp with
-  // Raise an error
+  // We may `raise` an error that we intend the tooling to provide better
+  // diagnostics or error recovery for. In order for this to work well we
+  // need to also provide a `frame`, which describes the historical context
+  // in which the error occurred; and the form we were trying to evaluate
+  // when the error occurred.
+  //
+  // Having the form here gives us enough information to include the relevant
+  // pieces of source code that caused the error, so the `frame` really
+  // is answering the question "how did we get here anyway?".
   raise(frame is frame, form is plisp-form, error is plisp-error);
+
+  // When the virtual machine raises an error, it might not always
+  // have all of the information to provide to `raise`. Therefore
+  // they can use a `raw-raise`. Somewhere higher in the virtual
+  // machine context this will be enriched into a `raise` effect.
   raw-raise(error is plisp-error);
 end
