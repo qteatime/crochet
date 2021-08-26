@@ -168,8 +168,16 @@ type p-cons(head is value, tail is p-list) is p-list;
 //     environment at the time they're created (so they can reuse
 //     that when invoked).
 abstract procedure is value;
-type p-procedure(pos is interval, env is environment, name is text, parameters is list<text>, body is list<plisp-form>) is procedure;
-type p-native-procedure(name is text, arity, handler is (list<value> -> value)) is procedure;
+type p-procedure( pos is interval
+                , env is environment
+                , name is text
+                , parameters is list<text>
+                , body is list<plisp-form>
+                ) is procedure;
+type p-native-procedure( name is text
+                       , arity // integer or nothing
+                       , handler is (list<value> -> value)
+                       ) is procedure;
 
 // ## Procedures
 //
@@ -330,7 +338,10 @@ type error-already-bound(name is text, value is value) is plisp-error;
 // the arguments we tried providing to it. This way the error
 // handling code can decide what the arguments should look like,
 // or even if the code was supposed to call a different procedure.
-type error-invalid-arity(expected is integer, arguments is list<value>, target is procedure) is plisp-error;
+type error-invalid-arity( expected is integer
+                        , arguments is list<value>
+                        , target is procedure
+                        ) is plisp-error;
 
 // An `error-native` error represents times where native procedures
 // produce an error. Because we're hosting this in Crochet, these
