@@ -22,7 +22,7 @@ command #repl spawn do
     terminal write-line: "Pocket Lisp interactive shell";
     terminal write-line: "Use `Ctrl + D` to exit.";
     terminal write-line: "";
-    module repl: new repl(vm global-environment spawn)
+    module repl: new repl(pocket-lisp global-environment spawn)
   with
     on repl.quit() => nothing;
     on repl.depth() => continue with 1;
@@ -49,7 +49,7 @@ command module repl: Repl do
     when Program is ok do
       handle
         module repl: Repl with-interactive-error-recovery: {
-          let Result = vm run: Program value with-environment: Repl.environment;
+          let Result = pocket-lisp run: Program value with-environment: Repl.environment;
           perform repl-eval.success(Repl, Result);
         };
       with
@@ -61,7 +61,7 @@ end
 
 command module read-program do
   let Line = terminal prompt: "[module depth to-text]> ";
-  let Tree = vm try-parse: Line;
+  let Tree = pocket-lisp try-parse: Line;
   condition
     when Tree is ok => Tree;
     when Tree is error => module read-program-with: Line;
@@ -71,7 +71,7 @@ end
 command module read-program-with: Previous do
   let Line = terminal prompt: ".. ";
   let Source = (Previous ++ "\n" ++ Line) flatten-into-plain-text;
-  let Tree = vm try-parse: Source;
+  let Tree = pocket-lisp try-parse: Source;
   condition
     when Line is-empty and (Tree is error) => Tree;
     when Tree is error => module read-program-with: Source;
@@ -92,7 +92,7 @@ command module repl: Repl with-interactive-error-recovery: (Block is (() -> A)) 
     Block();
   with
     on pocket-lisp.raise(Frame, Form, Error) do
-      terminal write-line: (vm format-error: Error);
+      terminal write-line: (pocket-lisp format-error: Error);
       terminal write-line: "";
       let Choice = module read-interactive-choice;
       let Depth = perform repl.depth();
@@ -101,7 +101,7 @@ command module repl: Repl with-interactive-error-recovery: (Block is (() -> A)) 
         when Choice =:= "A" => perform repl.abort();
         when Choice =:= "R" do
           handle
-            let Result = module repl: (new repl(vm global-environment spawn));
+            let Result = module repl: (new repl(pocket-lisp global-environment spawn));
             continue with Result;
           with
             on repl-eval.success(_, Value) do

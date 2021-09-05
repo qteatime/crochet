@@ -2,7 +2,7 @@
 
 open crochet.wrapper.node.io;
 
-command vm global-environment do
+command pocket-lisp global-environment do
   #environment empty
     | define: "=" native: (_ === _)
     | define: "not=" native: (_ =/= _)

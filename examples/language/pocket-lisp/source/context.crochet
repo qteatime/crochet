@@ -17,7 +17,7 @@ command environment at: (Key is text) put: (Value is value) do
       self;
     end
 
-    always => vm raise-already-bound: Key value: Value;
+    always => pocket-lisp raise-already-bound: Key value: Value;
   end
 end
 
@@ -27,7 +27,7 @@ command environment at: (Key is text) do
   condition
     when Bindings contains-key: Key => Bindings at: Key;
     when self.parent is environment => self.parent at: Key;
-    always => vm raise-undefined-variable: Key;
+    always => pocket-lisp raise-undefined-variable: Key;
   end
 end
 

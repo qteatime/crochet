@@ -77,7 +77,7 @@ end
 command frame check-arity: (X is procedure) arguments: (Args is list<value>) do
   condition
     when X arity is nothing => nothing;
-    when X arity =/= Args count => vm raise-invalid-arity: Args expected: X arity in: X;
+    when X arity =/= Args count => pocket-lisp raise-invalid-arity: Args expected: X arity in: X;
     always => nothing;
   end
 end

@@ -45,16 +45,16 @@ command (A is p-cons) head = A.head;
 command (A is p-cons) tail = A.tail;
 
 command (A is p-nil) head =
-  vm raise-native: "invalid-operation" reason: "`(head nil)` is not a valid operation";
+  pocket-lisp raise-native: "invalid-operation" reason: "`(head nil)` is not a valid operation";
 
 command (A is p-nil) tail = self;
 
 command p-true as boolean = true;
 command p-false as boolean = false;
-command value as boolean = vm raise-native: "invalid-type" reason: "Expected a boolean";
+command value as boolean = pocket-lisp raise-native: "invalid-type" reason: "Expected a boolean";
 
 command procedure as procedure = self;
-command value as procedure = vm raise-native: "invalid-type" reason: "Expected a procedure";
+command value as procedure = pocket-lisp raise-native: "invalid-type" reason: "Expected a procedure";
 
 command p-native-procedure arity = self.arity;
 command p-procedure arity = self.parameters count;

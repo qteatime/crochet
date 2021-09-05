@@ -200,12 +200,12 @@ type p-native-procedure( name is text
 // definition itself.
 
 
-// ## The Virtual Machine (VM)
+// ## The Pocket Lisp interface
 //
-// The Pocket Lisp virtual machine is pretty simple. We don't really store
-// any data in the virtual machine itself, so the `vm` type is a singleton
-// type with no fields. It exists only so we can define methods for it.
-singleton vm;
+// Methods in Crochet need some objects to hang on to, we use the
+// `pocket-lisp` type for all public API that we expect to be used
+// from outside.
+singleton pocket-lisp;
 
 // The actual execution data for the virtual machine exists, rather, in
 // "stack" frames. These are commonly allocated on the stack in language

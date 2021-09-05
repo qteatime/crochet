@@ -41,9 +41,9 @@ end
 
 command pl-cli-run run do
   let Source = file-system file: self.file | read-text;
-  let Program = vm parse: Source;
-  vm with-panic-on-error: {
-    let Result = vm run: Program;
+  let Program = pocket-lisp parse: Source;
+  pocket-lisp with-panic-on-error: {
+    let Result = pocket-lisp run: Program;
     condition
       when Result is p-nil => nothing;
       always => terminal write-line: Result print-format;
