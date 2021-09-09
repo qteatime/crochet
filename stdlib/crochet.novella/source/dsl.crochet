@@ -59,7 +59,7 @@ define root-env = lazy new novella-env(nothing, #cell with-value: [
 command novella-env lookup: (Name is text) meta: Meta =
   condition
     when self.bindings value contains-key: Name => (self.bindings value).[Name];
-    when not (self.parent is nothing) => self.parent lookup: Name meta: Meta;
+    when not self.parent is nothing => self.parent lookup: Name meta: Meta;
     always => panic: "[Name] is not defined, at [Meta position-message]" tag: "undefined-name";
   end;
 

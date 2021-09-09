@@ -71,7 +71,7 @@ test
 end
 
 command xor-shift choose: (Items is list)
-requires non-empty :: not (Items is-empty)
+requires non-empty :: not Items is-empty
 do
   let Result = self between: 1 and: Items count;
   let Choice = Items at: Result.value;
@@ -91,7 +91,7 @@ test
 end
 
 command xor-shift choose-and-tear: (Items0 is list)
-requires non-empty :: not (Items0 is-empty)
+requires non-empty :: not Items0 is-empty
 do
   let Result = self between: 1 and: Items0 count;
   let Choice = Items0 at: Result.value;
@@ -132,7 +132,7 @@ test
 end
 
 command xor-shift choose-weighted: (Items0 is list)
-requires non-empty :: not (Items0 is-empty)
+requires non-empty :: not Items0 is-empty
 do
   let Total = Items0.score sum;
   let Items = Items0 sort-by: { A, B in A.score compare-to: B.score };
