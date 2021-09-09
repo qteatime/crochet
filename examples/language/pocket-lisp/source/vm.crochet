@@ -1,15 +1,5 @@
 % crochet
 
-command pocket-lisp run: (Program is plisp-program) do
-  let Frame = new frame(nothing, pocket-lisp global-environment, nothing);
-  Frame evaluate: Program;
-end
-
-command pocket-lisp run: (Program is plisp-program) with-environment: (Env is environment) do
-  let Frame = new frame(nothing, Env, nothing);
-  Frame evaluate: Program;
-end
-
 command pocket-lisp with-panic-on-error: (Block is (() -> A)) do
   handle
     Block();
