@@ -37,7 +37,7 @@ command #random xor-shift -> xor-shift do
   new xor-shift(State.seed, State.inc);
 end
 
-command #random global -> random do
+command #random shared-instance -> random do
   perform random.get-random();
 end
 
