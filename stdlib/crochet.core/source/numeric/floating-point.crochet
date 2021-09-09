@@ -4,14 +4,14 @@
 command (X is float) is-nan = foreign float.is-nan(X)
 test
   assert #float nan is-nan;
-  assert not (1.0 is-nan);
+  assert not 1.0 is-nan;
 end
 
 /// True if a floating point value represents a real number.
 command (X is float) is-finite = foreign float.is-finite(X)
 test
-  assert not (#float positive-infinity is-finite);
-  assert not (#float negative-infinity is-finite);
+  assert not #float positive-infinity is-finite;
+  assert not #float negative-infinity is-finite;
   assert 1.0 is-finite;
 end
 

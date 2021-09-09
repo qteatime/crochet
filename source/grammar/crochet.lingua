@@ -720,11 +720,11 @@ grammar Crochet : Program {
 
   invokePrePost =
     | invokePrefix
-    | invokePostfix
 
   invokePrefix =
-    | n:not p:applyExpression
+    | n:not p:invokePostfix
       -> Expression.Invoke(meta, Signature.Unary(meta, p, n))
+    | invokePostfix
 
   invokePostfix =
     | s:invokePostfix n:atom

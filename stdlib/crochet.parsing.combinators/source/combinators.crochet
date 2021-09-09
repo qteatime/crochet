@@ -1,13 +1,13 @@
 % crochet
 
 command #parser any-of: (Parsers is list)
-requires non-empty :: not (Parsers is-empty)
+requires non-empty :: not Parsers is-empty
 do
   Parsers rest fold-from: Parsers first with: (_ or _);
 end
 
 command #parser sequence: (Parsers is list)
-requires non-empty :: not (Parsers is-empty)
+requires non-empty :: not Parsers is-empty
 do
   Parsers rest fold-from: Parsers first with: (_ and _)
     | collect;

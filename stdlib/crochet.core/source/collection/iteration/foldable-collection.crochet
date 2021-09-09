@@ -25,7 +25,7 @@ end
 
 /// Folds a list using its first element as the initial state.
 command list fold-with: (Fun is function-2)
-requires non-empty :: not (self is-empty)
+requires non-empty :: not self is-empty
 do
   self rest fold-from: self first with: Fun;
 test
@@ -36,7 +36,7 @@ end
 
 /// Folds a list using its last element as the initial state.
 command list fold-right-with: (Fun is function-2)
-requires non-empty :: not (self is-empty)
+requires non-empty :: not self is-empty
 do
   self without-last fold-right-from: self last with: Fun;
 test

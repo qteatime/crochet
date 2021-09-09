@@ -6,9 +6,9 @@ test
   let T1 = lazy 1;
   let T2 = lazy 2;
 
-  assert not (T1 is-forced);
-  assert not (T2 is-forced);
+  assert not T1 is-forced;
+  assert not T2 is-forced;
   force T1;
   assert T1 is-forced;
-  assert not (T2 is-forced);
+  assert not T2 is-forced;
 end

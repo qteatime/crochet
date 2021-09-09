@@ -14,8 +14,8 @@ command text is-ascii
   = foreign text.is-ascii(self)
 test
   assert "abc" is-ascii;
-  assert not ("á" is-ascii);
-  assert not ("🌷" is-ascii);
+  assert not "á" is-ascii;
+  assert not "🌷" is-ascii;
 end
 
 command ascii-view to-lower-case
