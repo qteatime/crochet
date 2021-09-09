@@ -6,7 +6,7 @@
     "grammar/pocket-lisp.lingua",
     "source/0-types.crochet",
     "source/parsing.crochet",
-    "source/bootstrap.crochet",
+    "source/execution.crochet",
     "source/context.crochet",
     "source/errors.crochet",
     "source/evaluator.crochet",

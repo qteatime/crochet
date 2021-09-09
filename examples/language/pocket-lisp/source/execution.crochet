@@ -1,5 +1,9 @@
 % crochet
 
+// # Execution
+//
+// Once we have an AST, we can run these programs through 
+
 open crochet.wrapper.node.io;
 
 command pocket-lisp global-environment do
