@@ -80,7 +80,6 @@
     "source/numeric/total-ordering.crochet",
 
     "source/result/equality.crochet",
-    "source/result/maybe.crochet",
     "source/result/result.crochet",
 
     "source/skeleton/skeleton.crochet",

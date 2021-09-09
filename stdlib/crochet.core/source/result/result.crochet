@@ -8,12 +8,6 @@ command #result ok: Value = new ok(Value);
 /// along with the reason for its failure.
 command #result error: Reason = new error(Reason);
 
-/// Retrieves the value associated with a successful [result].
-command ok value = self.value;
-
-/// Retrieves the reason associated with a failed [result].
-command error reason = self.reason;
-
 
 // -- Transformations
 

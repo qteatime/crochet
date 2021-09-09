@@ -1,8 +1,5 @@
 % crochet
 
-command indexed index = self.index;
-command indexed value = self.value;
-
 command indexed === (That is indexed) =
   (self index === That index) and
   (self value === That value);
