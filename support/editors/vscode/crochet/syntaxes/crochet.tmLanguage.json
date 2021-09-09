@@ -4,7 +4,7 @@
   "patterns": [
     {
       "name": "keyword.control.crochet",
-      "match": "(?<![a-zA-Z0-9\\-\\.\\^'])(relation|predicate|when|do|command|action|type|enum|define|singleton|goto|call|let|return|fact|forget|new|search|if|simulate|true|false|not|and|or|is|self|as|event|quiescence|for|until|in|foreign|on|always|match|then|else|condition|end|with|prelude|rank|tags|abstract|lazy|force|context|sample|of|open|local|test|assert|requires|ensures|nothing|handle|effect|continue|perform|dsl|has|trait|implement)(?![a-zA-Z0-9\\-:])"
+      "match": "(?<![a-zA-Z0-9\\-\\.\\^'])(relation|predicate|when|do|command|action|type|enum|define|singleton|goto|call|let|return|fact|forget|new|search|if|simulate|true|false|not|and|or|is|self|as|event|quiescence|for|until|in|foreign|on|always|match|then|else|condition|end|with|prelude|rank|tags|abstract|lazy|force|context|sample|of|open|local|test|assert|requires|ensures|nothing|handle|effect|continue|perform|dsl|has|trait|implement|public)(?![a-zA-Z0-9\\-:])"
     },
     {
       "name": "constant.language.crochet",

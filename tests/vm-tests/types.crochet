@@ -81,3 +81,15 @@ test "Local types are usable" do
 end
 
 // FIXME: check that local types can't be accessible in the global registry
+
+// Types that have public fields
+type g-point(global x is integer, global y is integer);
+
+command #g-point x: X y: Y = new g-point(X, Y);
+
+test "Public fields create accessor methods" do
+  let P = #g-point x: 1 y: 2;
+
+  assert P x =:= 1;
+  assert P y =:= 2;
+end

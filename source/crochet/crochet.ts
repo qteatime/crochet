@@ -189,7 +189,10 @@ export class BootedCrochet {
     return module;
   }
 
-  async run_tests(filter: (_: VM.CrochetTest) => boolean) {
+  async run_tests(
+    filter: (_: VM.CrochetTest) => boolean,
+    verbose: boolean = false
+  ) {
     const tests0 = VM.Tests.grouped_tests(this.universe);
     const {
       total,
@@ -198,22 +201,43 @@ export class BootedCrochet {
     } = VM.Tests.filter_grouped_tests(tests0, filter);
     const failures = [];
     const start = new Date().getTime();
+    let current = "";
+    let sub_current = "";
 
     for (const [group, modules] of tests1) {
-      console.log("");
-      console.log(group);
-      console.log("=".repeat(72));
+      sub_current = "";
+      const group_header = `\n${group}\n${"=".repeat(72)}\n`;
+      if (verbose) {
+        console.log(group_header);
+      } else {
+        current = group_header;
+      }
 
       for (const [module, tests] of modules) {
-        console.log("");
-        console.log(module);
-        console.log("-".repeat(72));
+        const module_header = `\n${module}\n${"-".repeat(72)}\n`;
+        if (verbose) {
+          console.log(module_header);
+        } else {
+          sub_current = module_header;
+        }
 
         for (const test of tests) {
           try {
             await VM.run_test(this.universe, test);
-            console.log(`[OK]    ${test.title}`);
-          } catch (error) {
+            if (verbose) {
+              console.log(`[OK]    ${test.title}`);
+            }
+          } catch (error: any) {
+            if (!verbose) {
+              if (current) {
+                console.log(current);
+                current = "";
+              }
+              if (sub_current) {
+                console.log(sub_current);
+                sub_current = "";
+              }
+            }
             console.log("-".repeat(3));
             console.log(`[ERROR] ${test.title}`);
             console.log(error.stack ?? error);

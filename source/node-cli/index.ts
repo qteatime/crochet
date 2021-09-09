@@ -220,7 +220,10 @@ async function test([file]: string[], options: Options) {
     true
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
-  const failures = await crochet.run_tests(compile_test_filter(options.test));
+  const failures = await crochet.run_tests(
+    compile_test_filter(options.test),
+    options.verbose
+  );
   process.exitCode = failures.length;
 }
 
@@ -460,7 +463,7 @@ void (async function main() {
         help();
         process.exit(1);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(error.stack);
     process.exit(1);
   }
