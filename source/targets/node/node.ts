@@ -103,8 +103,11 @@ export class CrochetForNode {
     return await this.system.run(entry, args);
   }
 
-  async run_tests(filter: (_: CrochetTest) => boolean) {
-    return await this.system.run_tests(filter);
+  async run_tests(
+    filter: (_: CrochetTest) => boolean,
+    verbose: boolean = false
+  ) {
+    return await this.system.run_tests(filter, verbose);
   }
 
   async build(file: string) {

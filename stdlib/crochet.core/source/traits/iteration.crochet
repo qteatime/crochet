@@ -162,9 +162,6 @@ end
 
 
 // -- Zipping
-command zip-pair first = self.first;
-command zip-pair second = self.second;
-
 command zip-pair === (That is zip-pair) =
   (self first === That first) and (self second === That second);
 
@@ -189,9 +186,6 @@ test
 end
 
 // -- Filtering
-
-command partition-pair satisfying = self.satisfying;
-command partition-pair not-satisfying = self.not-satisfying;
 
 /// Yields a new collection containing only elements that don't satisfy
 /// the given [Predicate].

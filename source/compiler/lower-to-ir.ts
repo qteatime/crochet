@@ -377,6 +377,25 @@ export class LowerToIR {
     };
   }
 
+  typeFields(fields: Ast.TypeField[]) {
+    const { types, parameters } = this.parameters(
+      fields.map((x) => x.parameter)
+    );
+    const globals = fields
+      .filter((x) =>
+        x.visibility.match({
+          Global: () => true,
+          Local: () => false,
+        })
+      )
+      .map((x) => this.parameter(x.parameter).parameter);
+    return {
+      globals,
+      types,
+      parameters,
+    };
+  }
+
   interpolation_part<T>(x: Ast.InterpolationPart<T>) {
     return x.match<InterpolationPart<T>>({
       Escape: (_, code) => {
@@ -1626,7 +1645,11 @@ export class LowerToIR {
 
       Type: (pos, cmeta, type, fields0) => {
         const id = this.context.register(pos);
-        const { types, parameters } = this.parameters(fields0);
+        const { globals, types, parameters } = this.typeFields(fields0);
+        const constraint = new IR.TypeConstraintType(
+          id,
+          new IR.LocalType(id, type.name.name)
+        );
 
         return [
           new IR.DType(
@@ -1638,6 +1661,20 @@ export class LowerToIR {
             parameters,
             types
           ),
+          ...globals.map((x) => {
+            return new IR.DCommand(
+              id,
+              `Projects ${x}`,
+              `_ ${x}`,
+              ["_"],
+              [constraint],
+              new IR.BasicBlock([
+                new IR.PushSelf(id),
+                new IR.ProjectStatic(id, x),
+                new IR.Return(id),
+              ])
+            );
+          }),
         ];
       },
 

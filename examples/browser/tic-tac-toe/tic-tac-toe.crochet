@@ -134,7 +134,7 @@ command (P is player) choose-action: Actions do
       end
 
       always do
-        #random global choose: Actions;
+        #random shared-instance choose: Actions;
       end
     end;
   
