@@ -1,10 +1,10 @@
 # [#0004] - Collections
 
-|                  |                 |
-| ---------------- | --------------- |
-| **Authors**      | Q.              |
-| **Last updated** | 8th August 2021 |
-| **Status**       | Draft           |
+|                  |                  |
+| ---------------- | ---------------- |
+| **Authors**      | Q.               |
+| **Last updated** | 15th August 2021 |
+| **Status**       | Draft            |
 
 ## Summary
 
