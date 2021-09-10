@@ -1,0 +1,397 @@
+% crochet
+  
+singleton regex;
+local singleton module;
+
+abstract regex-error;
+singleton regex-matched-nothing;
+
+local type regex-match(box);
+
+local type regex-flags(
+  ignore-case is boolean,
+  multiline is boolean,
+  dot-all is boolean,
+);
+local type compiled-regex(code is text, flags is regex-flags);
+
+local type regex-id(name is text);
+abstract regex-node;
+local type regex-raw(code is text) is regex-node;
+local singleton regex-anything is regex-node;
+local type regex-pin-start(expr is regex-node) is regex-node;
+local type regex-pin-end(expr is regex-node) is regex-node;
+local singleton regex-word-boundary is regex-node;
+local singleton regex-not-word-boundary is regex-node;
+local type regex-lookahead(peek is regex-node, consume is regex-node) is regex-node;
+local type regex-not-lookahead(peek is regex-node, consume is regex-node) is regex-node;
+local type regex-lookbehind(peek is regex-node, consume is regex-node) is regex-node;
+local type regex-not-lookbehind(peek is regex-node, consume is regex-node) is regex-node;
+local type regex-or(left is regex-node, right is regex-node) is regex-node;
+local type regex-range(start is text, stop is text) is regex-node;
+local type regex-charset(chars is text) is regex-node;
+local type regex-not-charset(chars is text) is regex-node;
+local type regex-not-range(start is text, stop is text) is regex-node;
+local type regex-capture(expr is regex-node) is regex-node;
+local type regex-capture-named(expr is regex-node, name is regex-id) is regex-node;
+local type regex-backreference(index is integer) is regex-node;
+local type regex-backreference-named(name is regex-id) is regex-node;
+local type regex-parens(expr is regex-node) is regex-node;
+local type regex-many(expr is regex-node) is regex-node;
+local type regex-many1(expr is regex-node) is regex-node;
+local type regex-optional(expr is regex-node) is regex-node;
+local type regex-repeat(expr is regex-node, times is integer) is regex-node;
+local type regex-repeat-at-least(expr is regex-node, times is integer) is regex-node;
+local type regex-repeat-between(expr is regex-node, times-min is integer, times-max is integer) is regex-node;
+local type regex-exact(text is text) is regex-node;
+local type regex-seq(items is list<regex-node>) is regex-node;
+
+
+// Compilation
+command regex-raw compile-in: module =
+  self.code;
+
+command regex-anything compile-in: module =
+  ".";
+
+command regex-pin-start compile-in: module =
+  "^(?:[self.expr compile-in: module])";
+
+command regex-pin-end compile-in: module =
+  "(?:[self.expr compile-in: module])$";
+
+command regex-word-boundary compile-in: module =
+  "\\b";
+
+command regex-not-word-boundary compile-in: module =
+  "\\B";
+
+command regex-lookahead compile-in: module =
+  "(?:[self.consume compile-in: module])(?=[self.peek compile-in: module])";
+
+command regex-not-lookahead compile-in: module =
+  "(?:[self.consume compile-in: module])(?![self.peek compile-in: module])";
+
+command regex-lookbehind compile-in: module =
+  "(?<=[self.peek compile-in: module])(?:[self.consume compile-in: module])";
+
+command regex-not-lookbehind compile-in: module =
+  "(?<![self.peek compile-in: module])(?:[self.consume compile-in: module])";
+
+command regex-or compile-in: module = 
+  "(?:(?:[self.left compile-in: module])|(?:[self.right compile-in: module]))";
+
+command regex-range compile-in: module =
+  "\[[foreign re.escape(self.start)]-[foreign re.escape(self.stop)]\]";
+
+command regex-charset compile-in: module =
+  "\[[foreign re.escape(self.chars)]\]";
+
+command regex-not-charset compile-in: module =
+  "\[^[foreign re.escape(self.chars)]\]";
+
+command regex-not-range compile-in: module =
+  "\[^[foreign re.escape(self.start)]-[foreign re.escape(self.stop)]\]";
+
+command regex-capture compile-in: module =
+  "([self.expr compile-in: module])";
+
+command regex-capture-named compile-in: module =
+  "(?<[self.name compile-in: module]>[self.expr compile-in: module])";
+
+command regex-backreference compile-in: module =
+  "\\[self.index to-text]";
+
+command regex-backreference-named compile-in: module =
+  "\\k<[self.name compile-in: module]>";
+
+command regex-parens compile-in: module =
+  "(?:[self.expr compile-in: module])";
+
+command regex-many compile-in: module =
+  "(?:[self.expr compile-in: module])*";
+
+command regex-many1 compile-in: module =
+  "(?:[self.expr compile-in: module])+";
+
+command regex-optional compile-in: module =
+  "(?:[self.expr compile-in: module])?";
+
+command regex-repeat compile-in: module =
+  "(?:[self.expr compile-in: module]){[self.times to-text]}";
+
+command regex-repeat-at-least compile-in: module =
+  "(?:[self.expr compile-in: module]){[self.times to-text],}";
+
+command regex-repeat-between compile-in: module =
+  "(?:[self.expr compile-in: module]){[self.times-min to-text], [self.times-max to-text]}";
+
+command regex-exact compile-in: module =
+  foreign re.escape(self.text);
+
+command regex-seq compile-in: module =
+  (self.items map: (_ compile-in: module)) as interpolation;  
+
+
+command regex-id compile-in: module =
+  self.name;
+
+
+command regex-node compile =
+  new compiled-regex(self compile-in: module | flatten-into-plain-text, #regex-flags empty);
+
+
+// Ids
+command #regex-id from-text: (Text is text)
+requires valid :: foreign re.valid-id(Text)
+  = new regex-id(Text);
+
+
+// Flags
+command #regex-flags empty =
+  new regex-flags(false, false, false);
+
+command regex-flags compile-in: module do
+  [
+    module flag: "i" if-set: self.ignore-case,
+    module flag: "m" if-set: self.multiline,
+    module flag: "s" if-set: self.dot-all,
+  ] as interpolation
+  | flatten-into-plain-text;
+end
+
+command module flag: Text if-set: true = Text;
+command module flag: Text if-set: false = "";
+
+command regex-flags case-insensitive =
+  new regex-flags(true, self.multiline, self.dot-all);
+
+command regex-flags case-sensitive =
+  new regex-flags(false, self.multiline, self.dot-all);
+
+command regex-flags pin-at-line-endings =
+  new regex-flags(self.ignore-case, true, self.dot-all);
+
+command regex-flags pin-at-text-endings =
+  new regex-flags(self.ignore-case, false, self.dot-all);
+
+command regex-flags anything-matches-newline =
+  new regex-flags(self.ignore-case, self.multiline, true);
+
+command regex-flags anything-does-not-match-newline =
+  new regex-flags(self.ignore-case, self.multiline, false);
+
+// Constructing
+command regex from-text: (Text is static-text)
+requires valid-regex :: foreign re.valid(Text)
+do
+  new regex-raw(Text);
+end
+
+command regex exactly: (Text is text) =
+  new regex-exact(Text);
+
+command regex anything =
+  regex-anything;
+
+command regex word-boundary =
+  regex-word-boundary;
+
+command regex not-word-boundary =
+  regex-not-word-boundary;
+
+command regex any-of: (Characters is text) =
+  new regex-charset(Characters);
+
+command regex not-any-of: (Characters is text) =
+  new regex-charset(Characters);
+
+command regex sequence: (Nodes is list<regex-node>) =
+  new regex-seq(Nodes);
+
+command regex backreference: (Index is integer)
+requires positive :: Index >= 1
+  = new regex-backreference(Index);
+
+command regex named-backreference: (Name is text)
+  = new regex-backreference-named(#regex-id from-text: Name);
+
+// TODO: parse characters here
+command regex character-between: (Start is text) and: (End is text)
+do
+  new regex-range(Start, End);
+end
+
+command regex character-not-between: (Start is text) and: (End is text)
+do
+  new regex-not-range(Start, End);
+end
+
+
+command regex-node pin-start = new regex-pin-start(self);
+
+command regex-node pin-end = new regex-pin-end(self);
+
+command regex-node if-followed-by: (Peek is regex-node) = new regex-lookahead(Peek, self);
+
+command regex-node if-not-followed-by: (Peek is regex-node) = new regex-not-lookahead(Peek, self);
+
+command regex-node if-preceded-by: (Peek is regex-node) = new regex-lookbehind(Peek, self);
+
+command regex-node if-not-preceded-by: (Peek is regex-node) = new regex-not-lookbehind(Peek, self);
+
+command regex-node or (That is regex-node) = new regex-or(self, That);
+
+command regex-node capture = new regex-capture(self);
+
+command regex-node capture-with-name: (Name is text) = new regex-capture-named(self, #regex-id from-text: Name);
+
+command regex-node zero-or-more = new regex-many(self);
+
+command regex-node one-or-more = new regex-many1(self);
+
+command regex-node optional = new regex-optional(self);
+
+command regex-node repeat-exactly: (Times is integer)
+requires positive :: Times >= 1
+  = new regex-repeat(self, Times);
+
+command regex-node repeat-at-least: (Times is integer)
+requires positive :: Times >= 1
+  = new regex-repeat-at-least(self, Times);
+
+command regex-node repeat-at-least: (Min is integer) at-most: (Max is integer)
+requires positive-min :: Min >= 1,
+         ordered :: Min <= Max
+  = new regex-repeat-between(self, Min, Max);
+
+command regex-node followed-by: (That is regex-node) =
+  regex sequence: [self, That];
+
+command regex-node preceded-by: (That is regex-node) =
+  regex sequence: [That, self];
+
+command regex-node between: (Prefix is regex-node) and: (Suffix is regex-node) =
+  regex sequence: [Prefix, self, That];
+
+// Modifying
+command compiled-regex case-insensitive =
+  new compiled-regex(self.code, self.flags case-insensitive);
+
+command compiled-regex case-sensitive =
+  new compiled-regex(self.code, self.flags case-sensitive);
+
+command compiled-regex pin-at-line-endings =
+  new compiled-regex(self.code, self.flags pin-at-line-endings);
+
+command compiled-regex pin-at-text-endings =
+  new compiled-regex(self.code, self.flags pin-at-text-endings);
+
+command compiled-regex anything-matches-newline =
+  new compiled-regex(self.code, self.flags anything-matches-newline);
+
+command compiled-regex anything-does-not-match-newline =
+  new compiled-regex(self.code, self.flags anything-does-not-match-newline);
+
+
+// Application
+command compiled-regex can-match: (Text is text) =
+  foreign re.test(self.code, self.flags compile-in: module, Text)
+test
+  assert (regex from-text: "ca." | compile | can-match: "cat");
+  assert not (regex from-text: "ca." | compile | can-match: "bat");
+end
+
+command compiled-regex search-first: (Text is text) do
+  let Result = foreign re.search(self.code, self.flags compile-in: module, Text);
+  condition
+    when Result is nothing => #result error: regex-matched-nothing;
+    always => #result ok: new regex-match(Result);
+  end
+test
+  let R1 = regex from-text: "ca(.)"
+            | compile
+            | search-first: "a fluffy cat here, a bat there"
+            | value;
+
+  assert R1 matched-text === "cat";
+  assert R1 indexed-groups === ["t"];
+  assert R1 named-groups === [->];
+
+  let R2 = regex from-text: "(?<first>.)a(.)"
+            | compile
+            | search-first: "a fluffy cat here, a bat there"
+            | value;
+  
+  assert R2 matched-text === "cat";
+  assert R2 indexed-groups === ["c", "t"];
+  assert R2 named-groups === [first -> "c"];
+end
+
+command compiled-regex search-all: (Text is text) do
+  let Result = foreign re.search-all(self.code, self.flags compile-in: module, Text);
+  Result map: { X in new regex-match(X) };
+test
+  let R1 = regex from-text: "ca(.)"
+            | compile
+            | search-all: "a fluffy cat here, a bat there";
+
+  assert R1 count === 1;
+  assert R1 first matched-text === "cat";
+  assert R1 first indexed-groups === ["t"];
+  assert R1 first named-groups === [->];
+
+  let R2 = regex from-text: "(?<first>\[cb\])a(.)"
+            | compile
+            | search-all: "a fluffy cat here, a bat there";
+
+  assert R2 count === 2;
+
+  assert R2 first matched-text === "cat";
+  assert R2 first indexed-groups === ["c", "t"];
+  assert R2 first named-groups === [first -> "c"];
+
+  assert (R2 at: 2 | matched-text) === "bat";
+  assert (R2 at: 2 | indexed-groups) === ["b", "t"];
+  assert (R2 at: 2 | named-groups) === [first -> "b"];
+end
+
+command compiled-regex substitute: (Text is text) in: (Corpus is text) do
+  foreign re.replace(self.code, self.flags compile-in: module, Text, Corpus)
+test
+  let R1 = regex from-text: "(.)at" | compile;
+  assert (R1 substitute: "rat" in: "a fluffy cat here, a bat there")
+    === "a fluffy rat here, a bat there";
+
+  assert (R1 substitute: "rat" in: "a fluffy dog here")
+    === "a fluffy dog here";
+end
+
+command compiled-regex substitute-all: (Text is text) in: (Corpus is text) do
+  foreign re.replace-all(self.code, self.flags compile-in: module, Text, Corpus);
+test
+  let R1 = regex from-text: "(.)at" | compile;
+  assert (R1 substitute-all: "rat" in: "a fluffy cat here, a bat there")
+    === "a fluffy rat here, a rat there";
+
+  assert (R1 substitute-all: "rat" in: "a fluffy dog here")
+    === "a fluffy dog here";
+end
+
+// Dealing with matches
+command regex-match matched-text =
+  foreign re.matched-text(self.box);
+
+command regex-match at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= self indexed-groups count)
+  = foreign re.matched-index(self.box, Index);
+
+command regex-match named: (Name is text)
+requires group-defined :: self.named-groups contains-key: Name
+  = foreign re.matched-name(self.box, Name);
+
+command regex-match indexed-groups =
+  foreign re.matched-groups(self.box);
+
+command regex-match named-groups =
+  foreign re.matched-named-groups(self.box);

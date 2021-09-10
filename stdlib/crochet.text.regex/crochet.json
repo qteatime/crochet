@@ -1,0 +1,11 @@
+{
+  "name": "crochet.text.regex",
+  "target": "*",
+  "native_sources": ["native/native.js"],
+  "sources": ["source/main.crochet"],
+  "dependencies": ["crochet.core", "crochet.debug"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

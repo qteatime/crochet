@@ -13,6 +13,7 @@
     "crochet.random",
     "crochet.text.parsing.lingua",
     "crochet.time",
+    "crochet.text.regex",
     {
       "name": "crochet.time.wall-clock",
       "target": "node",
