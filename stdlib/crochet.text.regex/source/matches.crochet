@@ -1,0 +1,27 @@
+% crochet
+
+// Matches wrap the underlying match object in JavaScript more or less
+// directly, but here we don't really expose the `index` of the match
+// because Crochet's text is supposed to be entirely opaque.
+
+/// The entire matched text.
+command regex-match matched-text =
+  foreign re.matched-text(self.box);
+
+/// The indexed capture at the given index.
+command regex-match at: (Index is integer)
+requires within-bounds :: (Index >= 1) and (Index <= self indexed-groups count)
+  = foreign re.matched-index(self.box, Index);
+
+/// The named group capture with the given name.
+command regex-match named: (Name is text)
+requires group-defined :: self.named-groups contains-key: Name
+  = foreign re.matched-name(self.box, Name);
+
+/// All captures in the match.
+command regex-match captures =
+  foreign re.matched-groups(self.box);
+
+/// All named captures in the match.
+command regex-match named-captures =
+  foreign re.matched-named-groups(self.box);

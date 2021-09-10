@@ -1,0 +1,57 @@
+% crochet
+
+// Modules
+singleton regex;
+
+// Errors
+abstract regex-error;
+singleton regex-matched-nothing;
+
+// Objects
+/// Wraps an underlying JS regex match
+type regex-match(box);
+
+/// Represents a set of flags
+type regex-flags(
+  ignore-case is boolean,
+  multiline is boolean,
+  dot-all is boolean,
+);
+
+/// Represents a partially compiled regex (we'll re-compile when reifying
+/// to JavaScript to redo the flags in some methods)
+type compiled-regex(code is text, flags is regex-flags);
+
+// Regex AST
+/// Represents a restricted ID in a regex (used for named captures)
+type regex-id(name is text);
+
+abstract regex-node;
+type regex-raw(code is text) is regex-node;
+singleton regex-anything is regex-node;
+type regex-pin-start(expr is regex-node) is regex-node;
+type regex-pin-end(expr is regex-node) is regex-node;
+singleton regex-word-boundary is regex-node;
+singleton regex-not-word-boundary is regex-node;
+type regex-lookahead(peek is regex-node, consume is regex-node) is regex-node;
+type regex-not-lookahead(peek is regex-node, consume is regex-node) is regex-node;
+type regex-lookbehind(peek is regex-node, consume is regex-node) is regex-node;
+type regex-not-lookbehind(peek is regex-node, consume is regex-node) is regex-node;
+type regex-or(left is regex-node, right is regex-node) is regex-node;
+type regex-range(start is text, stop is text) is regex-node;
+type regex-charset(chars is text) is regex-node;
+type regex-not-charset(chars is text) is regex-node;
+type regex-not-range(start is text, stop is text) is regex-node;
+type regex-capture(expr is regex-node) is regex-node;
+type regex-capture-named(expr is regex-node, name is regex-id) is regex-node;
+type regex-backreference(index is integer) is regex-node;
+type regex-backreference-named(name is regex-id) is regex-node;
+type regex-parens(expr is regex-node) is regex-node;
+type regex-many(expr is regex-node) is regex-node;
+type regex-many1(expr is regex-node) is regex-node;
+type regex-optional(expr is regex-node) is regex-node;
+type regex-repeat(expr is regex-node, times is integer) is regex-node;
+type regex-repeat-at-least(expr is regex-node, times is integer) is regex-node;
+type regex-repeat-between(expr is regex-node, times-min is integer, times-max is integer) is regex-node;
+type regex-exact(text is text) is regex-node;
+type regex-seq(items is list<regex-node>) is regex-node;

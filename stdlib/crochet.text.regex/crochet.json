@@ -2,7 +2,15 @@
   "name": "crochet.text.regex",
   "target": "*",
   "native_sources": ["native/native.js"],
-  "sources": ["source/main.crochet"],
+  "sources": [
+    "source/0-types.crochet",
+    "source/compilation.crochet",
+    "source/constructors.crochet",
+    "source/flags.crochet",
+    "source/ids.crochet",
+    "source/matches.crochet",
+    "source/operations.crochet"
+  ],
   "dependencies": ["crochet.core", "crochet.debug"],
   "capabilities": {
     "requires": [],

@@ -1,0 +1,125 @@
+% crochet
+
+local singleton module;
+
+// Here we take care of translating our regex AST into the textual form
+// JS uses, so the JS runtime can take care of everything else. The entry-point
+// is the `compile` method, but we define local helpers for each node in the
+// AST as well.
+//
+// Compiled regexes get no flags set by default.
+command regex-node compile do
+  let Code = module code-to-text: (self compile-in: module);
+  new compiled-regex(Code, #regex-flags empty);
+end
+
+command module code-to-text: (X is interpolation) = X flatten-into-plain-text;
+command module code-to-text: (X is text) = X;
+
+// Flag compilation just picks all letter flags that are set and
+// packs that together into a string.
+command regex-flags to-text do
+  [
+    module flag: "i" if-set: self.ignore-case,
+    module flag: "m" if-set: self.multiline,
+    module flag: "s" if-set: self.dot-all,
+  ] as interpolation
+  | flatten-into-plain-text;
+end
+
+command module flag: Text if-set: true = Text;
+command module flag: Text if-set: false = "";
+
+
+// AST node compilation conservatively wraps a lot of stuff into non-capturing
+// groups just so we can make sure that when they're combined their meaning
+// doesn't change. We expect the JS runtime compiler to get rid of it, but
+// it might make parsing a bit more expensive.
+command regex-raw compile-in: module =
+  self.code;
+
+command regex-anything compile-in: module =
+  ".";
+
+command regex-pin-start compile-in: module =
+  "^(?:[self.expr compile-in: module])";
+
+command regex-pin-end compile-in: module =
+  "(?:[self.expr compile-in: module])$";
+
+command regex-word-boundary compile-in: module =
+  "\\b";
+
+command regex-not-word-boundary compile-in: module =
+  "\\B";
+
+command regex-lookahead compile-in: module =
+  "(?:[self.consume compile-in: module])(?=[self.peek compile-in: module])";
+
+command regex-not-lookahead compile-in: module =
+  "(?:[self.consume compile-in: module])(?![self.peek compile-in: module])";
+
+command regex-lookbehind compile-in: module =
+  "(?<=[self.peek compile-in: module])(?:[self.consume compile-in: module])";
+
+command regex-not-lookbehind compile-in: module =
+  "(?<![self.peek compile-in: module])(?:[self.consume compile-in: module])";
+
+command regex-or compile-in: module = 
+  "(?:(?:[self.left compile-in: module])|(?:[self.right compile-in: module]))";
+
+command regex-range compile-in: module =
+  "\[[foreign re.escape(self.start)]-[foreign re.escape(self.stop)]\]";
+
+command regex-charset compile-in: module =
+  "\[[foreign re.escape(self.chars)]\]";
+
+command regex-not-charset compile-in: module =
+  "\[^[foreign re.escape(self.chars)]\]";
+
+command regex-not-range compile-in: module =
+  "\[^[foreign re.escape(self.start)]-[foreign re.escape(self.stop)]\]";
+
+command regex-capture compile-in: module =
+  "([self.expr compile-in: module])";
+
+command regex-capture-named compile-in: module =
+  "(?<[self.name compile-in: module]>[self.expr compile-in: module])";
+
+command regex-backreference compile-in: module =
+  "\\[self.index to-text]";
+
+command regex-backreference-named compile-in: module =
+  "\\k<[self.name compile-in: module]>";
+
+command regex-parens compile-in: module =
+  "(?:[self.expr compile-in: module])";
+
+command regex-many compile-in: module =
+  "(?:[self.expr compile-in: module])*";
+
+command regex-many1 compile-in: module =
+  "(?:[self.expr compile-in: module])+";
+
+command regex-optional compile-in: module =
+  "(?:[self.expr compile-in: module])?";
+
+command regex-repeat compile-in: module =
+  "(?:[self.expr compile-in: module]){[self.times to-text]}";
+
+command regex-repeat-at-least compile-in: module =
+  "(?:[self.expr compile-in: module]){[self.times to-text],}";
+
+command regex-repeat-between compile-in: module =
+  "(?:[self.expr compile-in: module]){[self.times-min to-text], [self.times-max to-text]}";
+
+command regex-exact compile-in: module =
+  foreign re.escape(self.text);
+
+command regex-seq compile-in: module =
+  (self.items map: (_ compile-in: module)) as interpolation;  
+
+command regex-id compile-in: module =
+  self.name;
+
+

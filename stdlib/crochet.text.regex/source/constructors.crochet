@@ -1,0 +1,105 @@
+% crochet
+
+// There are two primary ways of constructing regexes here:
+//
+//   - By providing a literal string to `from-text:`. This only works
+//     with literal strings because we do not want people to bring unknown
+//     pieces of text into this. We'll still parse it to check it's well-formed.
+//
+//   - By using the combinators directly.
+//
+// Future support for dynamic text might be added in the future.
+
+command regex from-text: (Text is static-text)
+requires valid-regex :: foreign re.valid(Text)
+do
+  new regex-raw(Text);
+end
+
+// Top-level combinator constructors
+command regex exactly: (Text is text) =
+  new regex-exact(Text);
+
+command regex anything =
+  regex-anything;
+
+command regex word-boundary =
+  regex-word-boundary;
+
+command regex not-word-boundary =
+  regex-not-word-boundary;
+
+command regex any-of: (Characters is text) =
+  new regex-charset(Characters);
+
+command regex not-any-of: (Characters is text) =
+  new regex-charset(Characters);
+
+command regex sequence: (Nodes is list<regex-node>) =
+  new regex-seq(Nodes);
+
+command regex backreference: (Index is integer)
+requires positive :: Index >= 1
+  = new regex-backreference(Index);
+
+command regex named-backreference: (Name is text)
+  = new regex-backreference-named(#regex-id from-text: Name);
+
+// TODO: parse characters here
+command regex character-between: (Start is text) and: (End is text)
+do
+  new regex-range(Start, End);
+end
+
+command regex character-not-between: (Start is text) and: (End is text)
+do
+  new regex-not-range(Start, End);
+end
+
+
+// Combinator transformations
+command regex-node pin-start = new regex-pin-start(self);
+
+command regex-node pin-end = new regex-pin-end(self);
+
+command regex-node if-followed-by: (Peek is regex-node) = new regex-lookahead(Peek, self);
+
+command regex-node if-not-followed-by: (Peek is regex-node) = new regex-not-lookahead(Peek, self);
+
+command regex-node if-preceded-by: (Peek is regex-node) = new regex-lookbehind(Peek, self);
+
+command regex-node if-not-preceded-by: (Peek is regex-node) = new regex-not-lookbehind(Peek, self);
+
+command regex-node or (That is regex-node) = new regex-or(self, That);
+
+command regex-node capture = new regex-capture(self);
+
+command regex-node capture-with-name: (Name is text) = new regex-capture-named(self, #regex-id from-text: Name);
+
+command regex-node zero-or-more = new regex-many(self);
+
+command regex-node one-or-more = new regex-many1(self);
+
+command regex-node optional = new regex-optional(self);
+
+command regex-node repeat-exactly: (Times is integer)
+requires positive :: Times >= 1
+  = new regex-repeat(self, Times);
+
+command regex-node repeat-at-least: (Times is integer)
+requires positive :: Times >= 1
+  = new regex-repeat-at-least(self, Times);
+
+command regex-node repeat-at-least: (Min is integer) at-most: (Max is integer)
+requires positive-min :: Min >= 1,
+         ordered :: Min <= Max
+  = new regex-repeat-between(self, Min, Max);
+
+command regex-node followed-by: (That is regex-node) =
+  regex sequence: [self, That];
+
+command regex-node preceded-by: (That is regex-node) =
+  regex sequence: [That, self];
+
+command regex-node between: (Prefix is regex-node) and: (Suffix is regex-node) =
+  regex sequence: [Prefix, self, That];
