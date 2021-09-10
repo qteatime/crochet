@@ -47,6 +47,7 @@ interface Options {
     title?: string;
     module?: string;
     package?: string;
+    show_success: boolean;
   };
   app_args: string[];
 }
@@ -58,7 +59,9 @@ function parse_options(args0: string[]) {
   const repo_root = Path.resolve(__dirname, "../../");
 
   options.verbose = false;
-  options.test = {};
+  options.test = {
+    show_success: false,
+  };
   options.web = {
     port: 8000,
     www_root: Path.join(repo_root, "www"),
@@ -93,6 +96,12 @@ function parse_options(args0: string[]) {
       case "--test-package": {
         options.test.package = args0[current + 1] ?? "";
         current += 2;
+        continue;
+      }
+
+      case "--test-show-ok": {
+        options.test.show_success = true;
+        current += 1;
         continue;
       }
 
@@ -222,7 +231,7 @@ async function test([file]: string[], options: Options) {
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const failures = await crochet.run_tests(
     compile_test_filter(options.test),
-    options.verbose
+    options.test.show_success
   );
   process.exitCode = failures.length;
 }

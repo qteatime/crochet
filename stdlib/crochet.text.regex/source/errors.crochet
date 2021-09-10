@@ -1,0 +1,5 @@
+% crochet
+
+implement equality for regex-error;
+
+command regex-error === (That is regex-error) = self =:= That;
