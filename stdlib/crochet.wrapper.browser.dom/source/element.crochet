@@ -1,0 +1,95 @@
+% crochet
+
+// Reflection
+command element tag-name = foreign dom.tag-name(self.box);
+
+command element children =
+  foreign dom.children(self.box);
+
+command element attribute-at: (Name is text) put: (Value is text) =
+  foreign dom.attribute-at-put(self.box, Name, Value);
+
+command element attribute-at: (Name is text) =
+  foreign dom.attribute-at(self.box, Name);
+
+command element contains-attribute-at: (Name is text) =
+  foreign dom.has-attribute(self.box, Name);
+
+command element remove-attribute-at: (Name is text) =
+  foreign dom.remove-attribute(self.box, Name);
+
+command element client-boundaries do
+  let Dimensions = foreign dom.client-dimensions(self.box);
+  #rectangle left: Dimensions.left
+             top: Dimensions.top
+             width: Dimensions.width
+             height: Dimensions.height;
+end
+
+command element offset-boundaries do
+  let Dimensions = foreign dom.offset-dimensions(self.box);
+  #rectangle left: Dimensions.left
+             top: Dimensions.top
+             width: Dimensions.width
+             height: Dimensions.height;  
+end
+
+command element scroll-boundaries do
+  let Dimensions = foreign dom.scroll-dimensions(self.box);
+  #rectangle left: Dimensions.left
+             top: Dimensions.top
+             width: Dimensions.width
+             height: Dimensions.height;
+end
+
+// Querying
+command element query-one: (Selector is css-selector) do
+  foreign dom.query-selector(self.box, Selector compile-to-text);
+end
+
+command element query-all: (Selector is css-selector) do
+  foreign dom.query-selector-all(self.box, Selector compile-to-text);
+end
+
+// Tree manipulation
+command element append: (Child is dom-element) do
+  foreign dom.append(self.box, Child.box);
+end
+
+command element prepend: (Child is dom-element) do
+  foreign dom.prepend(self.box, Child.box);
+end
+
+command element after: (Child is dom-element) insert: (New is dom-element) do
+  foreign dom.insert-after(self.box, Child.box, New.box);
+end
+
+command element before: (Child is dom-element) insert: (New is dom-element) do
+  foreign dom.insert-before(self.box, Child.box, New.box);
+end
+
+command element detach do
+  foreign dom.detach(self.box);
+end
+
+command element replace-with: (Other is dom-element) do
+  foreign dom.replace(self.box, Other.box);
+end
+
+// Scrolling
+command element scroll-into-view do
+  foreign dom.scroll-into-view(self.box);
+end
+
+command element scroll-to-top: (Top is integer) left: (Left is integer) do
+  foreign dom.scroll-to(self.box, Top, Left)
+end
+
+// Events
+command element on: (Event is text) do: (Listener is function-1) do
+  foreign dom.add-event(self.box, Event, Listener);
+end
+
+command element on: (Event is text) stop-doing: (Listener is function-1) do
+  foreign dom.remove-event(self.box, Event, Listener);
+end

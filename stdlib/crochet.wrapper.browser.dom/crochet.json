@@ -1,0 +1,15 @@
+{
+  "name": "crochet.wrapper.browser.dom",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet"
+  ],
+  "dependencies": [
+    "crochet.core"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}
