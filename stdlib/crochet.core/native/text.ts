@@ -146,4 +146,20 @@ export default (ffi: ForeignInterface) => {
     }
     return ffi.text(result);
   });
+
+  ffi.defun("text.pad-start", (text, count, char) => {
+    const text1 = ffi.text_to_string(text);
+    const count1 = Number(ffi.integer_to_bigint(count));
+    const char1 = ffi.text_to_string(char);
+    const text2 = text1.padStart(count1, char1);
+    return ffi.text(text2);
+  });
+
+  ffi.defun("text.pad-end", (text, count, char) => {
+    const text1 = ffi.text_to_string(text);
+    const count1 = Number(ffi.integer_to_bigint(count));
+    const char1 = ffi.text_to_string(char);
+    const text2 = text1.padEnd(count1, char1);
+    return ffi.text(text2);
+  });
 };
