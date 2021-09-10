@@ -41,7 +41,9 @@ command node exists
   = foreign fs.exists(self.path to-text);
 
 command node real-path
-  = foreign fs.real-path(self.path to-text);
+  = #path from-text: (foreign fs.real-path(self.path to-text));
+
+command node path = self.path;
 
 command node move-to: (Path is path-obj) do
   foreign fs.rename(self.path to-text, Path to-text);
