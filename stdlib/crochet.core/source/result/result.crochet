@@ -77,20 +77,6 @@ test "result recover: Fun" do
 end
 
 
-/// Swaps the state of the [result] while keeping its value. That
-/// is, turns successes into failures, and failures into
-/// successes.
-command ok swap -> result<R, V> =
-  #result error: self value;
-command error swap -> result<R, V> =
-  #result ok: self reason;
-
-test "result swap" do
-  assert (#result ok: 1 | swap) === (#result error: 1);
-  assert (#result error: 1 | swap) === (#result ok: 1);
-end
-
-
 // -- Retrieving parts of the value
 
 /// Retrieves the value of a successful [result]. If the [result]
