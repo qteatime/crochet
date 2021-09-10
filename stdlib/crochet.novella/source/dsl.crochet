@@ -60,7 +60,7 @@ command novella-env lookup: (Name is text) meta: Meta =
   condition
     when self.bindings value contains-key: Name => (self.bindings value).[Name];
     when not self.parent is nothing => self.parent lookup: Name meta: Meta;
-    always => panic: "[Name] is not defined, at [Meta position-message]" tag: "undefined-name";
+    always => panic message: "[Name] is not defined, at [Meta position-message]" tag: "undefined-name";
   end;
 
 command novella-env set: (Name is text) to: Value do
@@ -80,7 +80,7 @@ command #novella-dsl evaluate-name: (X is skeleton-name) do
 end
 
 command #novella-dsl evaluate-name: X do
-  panic: "Expected a name at [X position-message]";
+  panic message: "Expected a name at [X position-message]";
 end
 
 // # Evaluation
@@ -234,7 +234,7 @@ command #novella-dsl compile: (X is skeleton-node) do
     end
 
     always do
-      panic: "Unknown statement [X name] at [X position-message]";
+      panic message: "Unknown statement [X name] at [X position-message]";
     end
   end
 end
@@ -252,7 +252,7 @@ command #novella-dsl compile: (X is skeleton-list) do
 end
 
 command #novella-dsl compile: X do
-  panic: "Invalid top-level Novella syntax at [X position-message]";
+  panic message: "Invalid top-level Novella syntax at [X position-message]";
 end
 
 
@@ -291,7 +291,7 @@ command #novella-dsl compile-choice: (X is skeleton-node) do
 end
 
 command #novella-dsl compile-choice: X do
-  panic: "Invalid choice syntax at [X position-message]";
+  panic message: "Invalid choice syntax at [X position-message]";
 end
 
 // == Handlers

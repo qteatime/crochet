@@ -5,7 +5,7 @@ local type csv-with-header(header is row, rows is list);
 command #csv parse: (Source is text) -> csv do
   let Tree = (force grammar) parse: Source rule: "file";
   condition
-    when Tree is error => panic: Tree reason tag: "syntax-error";
+    when Tree is error => panic message: Tree reason tag: "syntax-error";
     when Tree is ok do
       let Ast = (force to-ast) transform: Tree value;
       Ast;

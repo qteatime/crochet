@@ -244,6 +244,8 @@ abstract maybe;
 type some(global value) is maybe;
 singleton no-value is maybe;
 
+/// Grants the capability of interrupting the program with a panic message.
+singleton panic;
 
 // -- The idea of state
 
