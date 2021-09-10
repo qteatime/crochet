@@ -5,7 +5,7 @@ singleton regex;
 
 // Errors
 abstract regex-error;
-singleton regex-matched-nothing;
+singleton regex-matched-nothing is regex-error;
 
 // Objects
 /// Wraps an underlying JS regex match

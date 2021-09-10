@@ -16,7 +16,11 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("re.search", (code, flags, text) => {
     const re = new RegExp(ffi.text_to_string(code), ffi.text_to_string(flags));
     const result = ffi.text_to_string(text).match(re);
-    return ffi.box(result);
+    if (result == null) {
+      return ffi.nothing;
+    } else {
+      return ffi.box(result);
+    }
   });
 
   ffi.defun("re.search-all", (code, flags, text) => {

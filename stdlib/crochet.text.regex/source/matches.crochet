@@ -10,12 +10,12 @@ command regex-match matched-text =
 
 /// The indexed capture at the given index.
 command regex-match at: (Index is integer)
-requires within-bounds :: (Index >= 1) and (Index <= self indexed-groups count)
+requires within-bounds :: (Index >= 1) and (Index <= self captures count)
   = foreign re.matched-index(self.box, Index);
 
 /// The named group capture with the given name.
 command regex-match named: (Name is text)
-requires group-defined :: self.named-groups contains-key: Name
+requires group-defined :: self named-captures contains-key: Name
   = foreign re.matched-name(self.box, Name);
 
 /// All captures in the match.

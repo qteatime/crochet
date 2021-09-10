@@ -6,6 +6,7 @@
     "source/0-types.crochet",
     "source/compilation.crochet",
     "source/constructors.crochet",
+    "source/errors.crochet",
     "source/flags.crochet",
     "source/ids.crochet",
     "source/matches.crochet",

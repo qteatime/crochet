@@ -33,6 +33,12 @@ test
   assert R2 matched-text === "cat";
   assert R2 captures === ["c", "t"];
   assert R2 named-captures === [first -> "c"];
+
+  let R3 = regex from-text: "bat"
+            | compile
+            | search-first: "a fluffy cat here";
+
+  assert R3 === (#result error: regex-matched-nothing);
 end
 
 /// Returns all non-overlapping matches in the text.
