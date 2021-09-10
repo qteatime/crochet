@@ -63,6 +63,10 @@ command frame apply: (X is p-native-procedure) to: (Args is list<value>) do
   X.handler(Args);
 end
 
+command frame apply: (X is p-native-variadic-procedure) to: (Args is list<value>) do
+  X.handler(Args);
+end
+
 command frame apply: (X is p-procedure) to: (Args is list<value>) do
   self check-arity: X arguments: Args;
   
@@ -76,7 +80,6 @@ end
 
 command frame check-arity: (X is procedure) arguments: (Args is list<value>) do
   condition
-    when X arity is nothing => nothing;
     when X arity =/= Args count => pocket-lisp raise-invalid-arity: Args expected: X arity in: X;
     always => nothing;
   end

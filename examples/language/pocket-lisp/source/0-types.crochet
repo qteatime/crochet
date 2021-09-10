@@ -174,8 +174,9 @@ type p-procedure( pos is interval
                 , parameters is list<text>
                 , body is list<plisp-form>
                 ) is procedure;
+type p-native-variadic-procedure(name is text, handler is (list<value> -> value)) is procedure;
 type p-native-procedure( name is text
-                       , arity // integer or nothing
+                       , arity is integer
                        , handler is (list<value> -> value)
                        ) is procedure;
 
@@ -198,7 +199,11 @@ type p-native-procedure( name is text
 // allows these native procedures to perform arbitrarily powerful
 // computations without increasing the complexity of the virtual machine
 // definition itself.
-
+//
+// Native procedures can be either fixed-arity (the number of arguments is
+// strictly fixed, so something like `+` takes exactly two arguments), or
+// variadic (the number of arguments varies, so something like `display`
+// can take any number of arguments).
 
 // ## The Pocket Lisp interface
 //

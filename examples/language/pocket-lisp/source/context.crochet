@@ -154,7 +154,7 @@ command environment define: (Key is text) native: (Fun is function) do
 end
 
 command environment define: (Key is text) native-variadic: (Fun is function) do
-  self at: Key put: new p-native-procedure(Key, nothing, Fun);
+  self at: Key put: new p-native-variadic-procedure(Key, Fun);
 end
 
 
