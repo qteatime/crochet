@@ -1,0 +1,80 @@
+% crochet
+
+command w-container render =
+  new vdom-node("div", [->], ["agata-container"], [], self.children map: (_ render);
+
+command w-text render =
+  new vdom-text(self.contents);
+
+command w-with-style render =
+  self.widget render add-class: self.name;
+
+command w-button render =
+  new vdom-node("button", [->], ["agata-button"], [new vdom-event("click", self.on-click)], self.children map: (_ render));
+
+command w-handler render =
+  new vdom-handler(self.handler, self.children map: (_ render));
+
+
+command vdom-node add-class: (Class is text) =
+  new vdom-node(self.tag, self.attributes, self.classes append: Class, self.events, self.children);
+
+
+local singleton agata-dom-renderer;
+
+command agata-dom-renderer empty-context =
+  new vdom-context([]);
+
+command agata-dom at: Root install: (Widget is widget) do
+  handle
+    let Dom = Widget render;
+    let RenderRoot = agata-dom-renderer render: Dom at: Root context: (agata-dom-renderer empty-context);
+    foreign dom.clear(Root);
+    foreign dom.append(Root, RenderRoot);
+  with
+
+  end
+end
+
+command agata-dom-renderer render: (X is vdom-node) at: Root context: Context do
+  let NewNode = foreign dom.make-element(X.tag, X.attributes, X.classes);
+  for Child of self.children do
+    let ChildNode = agata-dom-renderer render: Child at: NewNode context: Context;
+    foreign dom.append(NewNode, ChildNode);
+  end
+  for Event of self.events do
+    foreign dom.listen(NewNode, Event.name, { DomEvent in
+      Event.handler(new dom-event(DomEvent));
+    });
+  end
+  NewNode;
+end
+
+command agata-dom-renderer render: (X is vdom-text) at: Root context: Context do
+  let NewNode = foreign dom.make-text(X.contents);
+  NewNode;
+end
+
+command agata-dom-renderer render: (X is vdom-handler) at: Root context: Context do
+  handle
+    let NewNode = foreign dom.make-element("div", [->], ["agata-handler"]);
+    let ChildNode = agata-dom-renderer render: X.child at: NewNode context: Context;
+    foreign dom.append(NewNode, ChildNode);
+    NewNode;
+  with
+    on agata-tree.replace(Widget) do
+      let WidgetVdom = Widget render;
+      let Node = agata-dom-renderer render: WidgetVdom at: Root context: Context;
+      foreign dom.clear(NewNode);
+      foreign dom.append(NewNode, Node);
+    end
+
+    on agata-tree.trigger(Event) do
+      let Result = X.handler(Event, { V in continue with V });
+      condition
+        when Result is unhandled-trigger => unhandled;
+        always => nothing;
+      end
+    end
+  end
+end

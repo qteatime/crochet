@@ -7,10 +7,7 @@ component welcome:
   window [
     main-menu;
     top-bar [
-      panel --side "left" [
-        main-menu-button;
-        search-panel;
-      ]
+      panel [ main-menu-button ]
     ]
     contents [
       hero-header [
@@ -19,16 +16,9 @@ component welcome:
         subtitle "Create or import a project to start working.";
       ]
 
-      button-list [
-        button --icon "create" --on-click create-project [
-          "Create"
-        ]
-      ]
-
       action-list [
-        button --icon "import" --on-click import-project [
-          "Import a project"
-        ]
+        action --icon "add" --on-click create-project ["Create a new project"],
+        action --icon "import" --on-click import-project ["Import an existing project"]
       ]
     ]
   ]

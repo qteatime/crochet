@@ -1,0 +1,21 @@
+% crochet
+
+command agata-widget container =
+  new w-container([]);
+
+command agata-widget text: (Contents is text) =
+  new w-text(Contents);
+
+
+command widget style: (Style is text) =
+  new w-with-style(Style, [self]);
+
+
+command w-container append: (Child is widget) =
+  new w-container(self.children append: Child);
+
+command w-container prepend: (Child is widget) =
+  new w-container(self.children prepend: Child);
+
+command widget handle: (Handler is ((any, continuation) -> nothing)) =
+  new w-handler(Handler, [self]);

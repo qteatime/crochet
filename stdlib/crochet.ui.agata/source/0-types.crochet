@@ -1,5 +1,9 @@
 % crochet
 
+singleton agata;
+singleton agata-widget;
+singleton agata-dom;
+
 // Foundational types
 type point2d(global x is numeric, global y is numeric);
 
@@ -20,4 +24,25 @@ type colour( global red is integer
 abstract widget;
 type w-container(children);
 type w-text(contents);
-type w-with-style(name, children);
+type w-with-style(name, widget);
+type w-button(on-click, children);
+type w-handler(handler, children);
+
+
+abstract vdom;
+type vdom-node(tag, attributes, classes, events, children);
+type vdom-text(contents);
+type vdom-handler(handler, child);
+
+type vdom-event(name, handler);
+
+type dom-render(box);
+type dom-event(box);
+type vdom-context(handlers);
+
+singleton unhandled-trigger;
+
+effect agata-tree with
+  replace(new-widget);
+  trigger(event-data);
+end

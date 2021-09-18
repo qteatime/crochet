@@ -25,6 +25,7 @@ body {
 
 .agata-default-theme {
   --active-accent: #039be5;
+  --active-bg: #e1f5fe;
   --divider: #546e7a;
   --border: #cfd8dc;
 }
@@ -37,6 +38,8 @@ body {
   justify-content: space-between;
   margin-bottom: 2em;
   padding: 0 1em;
+  background: white;
+  border-bottom: 1px solid #ececea;
 }
 
 .agata-contents {
@@ -93,12 +96,13 @@ body {
   line-height: 36px;
   font-size: 18px;
   padding: 0 0.5em;
-  width: 250px;
+  max-width: 300px;
+  width: 100%;
 }
 
 .agata-search-input:focus {
   border-bottom-color: var(--active-accent);
-  width: 60%;
+  max-width: 600px;
 }
 
 .agata-search-container {
@@ -200,7 +204,5 @@ body {
 }
 
 .agata-action:hover {
-  border-color: var(--active-accent);
-  color: var(--active-accent);
-  border: 1px solid var(--active-accent);
+  background: var(--active-bg);
 }
