@@ -1,0 +1,37 @@
+% crochet
+
+type rectangle( global left is numeric
+              , global right is numeric
+              , global width is numeric
+              , global height is numeric
+              );
+
+command #rectangle left: (X is numeric)
+                   top: (Y is numeric)
+                   width: (Width is numeric)
+                   height: (Height is numeric)
+requires positive-dimensions :: (Width >= 0) and (Height >= 0)
+do
+  new rectangle(X, Y, Width, Height);
+end
+
+command #rectangle left: (X is numeric)
+                   top: (Y is numeric)
+                   right: (X1 is numeric)
+                   bottom: (Y1 is numeric)
+requires positive :: (X1 >= X) and (Y1 >= Y)
+do
+  new rectangle(X, Y, X1 - X, Y1 - Y);
+end
+
+command #rectangle left: (X is numeric) top: (Y is numeric) do
+  new rectangle(X, Y, 0, 0);
+end
+
+
+command rectangle right = self left + self width;
+command rectangle bottom = self top + self height;
+
+command rectangle center = new point-2d( self left + (self width / 2)
+                                       , self top + (self height / 2));
+

@@ -1,0 +1,39 @@
+% crochet
+
+command screen welcome =
+  g window: (g breadcrumbs empty) with: [
+    g hero-header: [
+      g sticker: (g assets image: "no-project"),
+      g title: "You don't have a project yet",
+      g subtitle: "Create or import a project to start working",
+    ],
+
+    g card-choice-grid columns: 3
+      | contents: [
+          g card-choice: [
+            g icon: (g assets icon: "add")
+          ]
+          | on-click: (g trigger-action: new-project)
+        ]
+      | centered,
+  
+    g action-list: [
+      g action-button
+        | icon: (g assets icon: "import")
+        | text: "Import a project",
+    ],
+  ];
+
+
+//
+//  <div class="agata-window">
+//    <div class="agata-centered">
+//      <div class="agata-title">
+//        <span class="agata-text">Welcome to Purr!</span>
+//      </div>
+//      <div class="agata-subtitle">
+//        <span class="agata-text">You don't have any project yet. Get started by creating one.</span>
+//      </div>
+//    </div>
+//  </div>
+//

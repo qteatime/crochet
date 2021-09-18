@@ -1,0 +1,23 @@
+% crochet
+
+// Foundational types
+type point2d(global x is numeric, global y is numeric);
+
+type rectangle( global left is numeric
+              , global top is numeric
+              , global width is numeric
+              , global height is numeric
+              );
+
+type colour( global red is integer
+           , global green is integer
+           , global blue is integer
+           , global alpha is float
+           );
+
+
+// Widgets
+abstract widget;
+type w-container(children);
+type w-text(contents);
+type w-with-style(name, children);

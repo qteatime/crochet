@@ -1,0 +1,15 @@
+% crochet
+
+type project(
+  title is text,
+  root is directory
+);
+
+type page(
+  title is text,
+  id is uuid,
+);
+
+type block(
+  t
+)

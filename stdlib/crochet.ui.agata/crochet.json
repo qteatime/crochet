@@ -1,0 +1,15 @@
+{
+  "name": "crochet.ui.agata",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet"
+  ],
+  "dependencies": [
+    "crochet.core"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

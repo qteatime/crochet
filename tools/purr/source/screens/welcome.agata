@@ -1,0 +1,35 @@
+% agata
+
+action create-project;
+action import-project;
+
+component welcome:
+  window [
+    main-menu;
+    top-bar [
+      panel --side "left" [
+        main-menu-button;
+        search-panel;
+      ]
+    ]
+    contents [
+      hero-header [
+        sticker "no-projects.png";
+        title "Hmm, you don't have a project yet.";
+        subtitle "Create or import a project to start working.";
+      ]
+
+      button-list [
+        button --icon "create" --on-click create-project [
+          "Create"
+        ]
+      ]
+
+      action-list [
+        button --icon "import" --on-click import-project [
+          "Import a project"
+        ]
+      ]
+    ]
+  ]
+end
