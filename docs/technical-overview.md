@@ -30,6 +30,8 @@ on the idea of language-based programming (where languages are DSLs):
 - Novella (a language for describing interactive fiction UI)
 - Esqueleto (a language for describing tree-based content)
 - Finé (a language for safely describing interactions between language boundaries)
+- Ágata (a language for describing UIs)
+- Neve (a closed world, typed language for describing low level computations)
 - Surface Crochet (the main Crochet language exposed to users)
 - Core Crochet (the language executed by the Crochet VM)
 
