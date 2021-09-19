@@ -1,0 +1,79 @@
+% neve
+
+foreign type random;
+
+foreign command #random xor-shift: (Seed is integer) =
+  make-random(Seed);
+
+foreign command random integer-between: (Min is integer) and: (Max is integer) =
+  random-between(self, Min, Max);
+
+define max-y = 500;
+define max-x = 500;
+
+type ball( mutable x is integer
+         , mutable y is integer
+         , mutable x-speed is integer
+         , mutable y-speed is integer
+         );
+
+command #ball make: (Random is random) do
+  new ball( x -> Random integer-between: 0 and: max-y
+          , y -> Random integer-between: 0 and: max-x
+          , x-speed -> Random integer-between: -150 and: 150
+          , y-speed -> Random integer-between: -150 and: 150
+          );
+end
+
+command ball update do
+  self.x <- self.x + self.x-speed;
+  self.y <- self.y + self.y-speed;
+
+  let mutable Bounced = false;
+
+  if self.x < 0 then
+    self.x = 0;
+    self.x-speed = self.x-speed absolute;
+    Bounced = true;
+  end
+
+  if self.x > max-x then
+    self.x = max-x;
+    self.x-speed = -(self.x-speed absolute);
+    Bounced = true;
+  end
+
+  if self.y < 0 then
+    self.y = 0;
+    self.y-speed = self.y-speed absolute;
+    Bounced = true;
+  end
+
+  if self.y > max-y then
+    self.y = max-y;
+    self.y-speed = -(self.y-speed absolute);
+    Bounced = true;
+  end
+
+  Bounced;
+end
+
+@expose("run")
+command run: (Seed is integer) do
+  let Random = #random xor-shift: Seed;
+  let Balls = #array count: 100 | map: { #ball make: Random };
+  let mutable Bounces = 0;
+
+  for I in 0 until: 50 do
+    for Ball in Balls do
+      Bounces <- Bounces + 1;
+    end
+  end
+
+  Bounces;
+end
+
+@expose("verify")
+command verify: (Result is integer) do
+  assert Result === 1328;
+end
