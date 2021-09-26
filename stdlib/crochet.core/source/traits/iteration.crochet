@@ -3,6 +3,10 @@
 local singleton module;
 
 // -- Folding
+local abstract maybe;
+local type some(global value) is maybe;
+local singleton no-value is maybe;
+
 local singleton foldable with
   command combine: no-value and: X with: F = new some(X);
   command combine: (X is some) and: Y with: F = new some(F(X value, Y));

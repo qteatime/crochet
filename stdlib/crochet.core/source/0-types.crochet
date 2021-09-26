@@ -237,12 +237,8 @@ type ok(global value) is result;
 /// Represents failed evaluations.
 type error(global reason) is result;
 
-
-/// The type of computations that can fail, but without any interesting
-/// additional information.
-abstract maybe;
-type some(global value) is maybe;
-singleton no-value is maybe;
+/// The common error representing values that are missing.
+singleton not-found;
 
 /// Grants the capability of interrupting the program with a panic message.
 singleton panic;
