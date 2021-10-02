@@ -72,6 +72,11 @@ export class CrochetForNode {
       "crochet.text.parsing.lingua",
       "crochet.text.regex",
       "crochet.time",
+      "crochet.wrapper.node.file-system",
+      "crochet.wrapper.node.http",
+      "crochet.wrapper.node.io",
+      "crochet.wrapper.node.os",
+      "crochet.wrapper.node.shell",
     ]);
   }
 

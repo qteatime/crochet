@@ -1,6 +1,9 @@
 % crochet
 
+capability shell;
 singleton shell;
+protect type shell with shell;
+protect global shell with shell;
 
 command shell run: (File is text) arguments: (Args is list) options: (Options is record)
   = foreign shell.exec-file(File, Args, Options);
