@@ -1,6 +1,7 @@
 {
   "title": "Maze generation",
   "versions": {
+    "0.12.0": "v7.crochet",
     "0.8.0": "v6.crochet",
     "0.7.0": "v5.crochet",
     "0.6.0": "v4.crochet",
