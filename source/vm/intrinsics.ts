@@ -157,6 +157,15 @@ export class CrochetCapability {
     readonly documentation: string,
     readonly meta: IR.Metadata | null
   ) {}
+
+  get full_name() {
+    const pkg = this.module?.pkg;
+    if (!pkg) {
+      return this.name;
+    } else {
+      return `${pkg.name}/${this.name}`;
+    }
+  }
 }
 //#endregion
 

@@ -143,7 +143,7 @@ export function assert_capabilities(
   for (const r of required) {
     if (granted.has(r)) return;
   }
-  const caps = [...required].map((x) => x.name);
+  const caps = [...required].map((x) => x.full_name);
   throw new ErrArbitrary(
     "lacking-capability",
     `${operation} ${name} cannot be done in ${Location.module_location(
