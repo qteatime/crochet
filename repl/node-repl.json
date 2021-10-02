@@ -29,7 +29,9 @@
       "crochet.wrapper.node.os/process",
       "crochet.wrapper.node.http/http",
       "crochet.wrapper.node.shell/shell",
-      "crochet.time/wall-clock"
+      "crochet.time/wall-clock",
+      "crochet.random/update-shared-instance",
+      "crochet.random/read-shared-instance"
     ],
     "provides": []
   }
