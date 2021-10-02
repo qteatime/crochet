@@ -283,7 +283,7 @@ export class CrochetForNode {
         previous.map((x) => `  - ${x}\n`).join(""),
         "\n",
         `It now also requires the following capabilities:\n`,
-        this.format_requirements(requirements),
+        this.format_requirements(missing),
         `\n\n`,
         `Type 'yes' to update the capabilities and run the application. `,
         `Your choice will be recorded.`,
