@@ -3,18 +3,18 @@ import type { TraceEntry } from "./primitives/stack-trace";
 export class CrochetError extends Error {}
 
 export class ErrArbitrary extends CrochetError {
-  constructor(readonly tag: string, readonly message: string) {
-    super(`${tag}: ${message}`);
+  constructor(readonly tag: string, readonly original_message: string) {
+    super(`${tag}: ${original_message}`);
   }
 }
 
 export class ErrNativePanic extends CrochetError {
   constructor(
     readonly tag: string,
-    readonly message: string,
+    readonly original_message: string,
     readonly include_trace = true
   ) {
-    super(`${tag}: ${message}`);
+    super(`${tag}: ${original_message}`);
   }
 }
 

@@ -7,6 +7,6 @@
   "native_sources": ["native/http.js"],
   "capabilities": {
     "requires": [],
-    "provides": ["network"]
+    "provides": []
   }
 }

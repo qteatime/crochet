@@ -55,16 +55,10 @@ export default (ffi: ForeignInterface) => {
     const d = get_date(x);
     const t = `${d.getFullYear()}-${(d.getMonth() + 1)
       .toString()
-      .padStart(2, "0")}-${d
-      .getDate()
-      .toString()
-      .padStart(2, "0")}T${d
+      .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}T${d
       .getHours()
       .toString()
-      .padStart(2, "0")}:${d
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}:${d
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
       .getSeconds()
       .toString()
       .padStart(2, "0")}.${d.getMilliseconds().toString()}`;
@@ -102,5 +96,9 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("date.milliseconds", (x) => {
     return ffi.integer(BigInt(get_date(x).getUTCMilliseconds()));
+  });
+
+  ffi.defun("clock.now", () => {
+    return ffi.integer(BigInt(new Date().getTime()));
   });
 };

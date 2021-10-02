@@ -168,6 +168,21 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.DeclarationTag.CAPABILITY: {
+        this.encode_meta_id(x.meta);
+        this.string(x.documentation);
+        this.string(x.name);
+        break;
+      }
+
+      case IR.DeclarationTag.PROTECT: {
+        this.encode_meta_id(x.meta);
+        this.string(x.capability);
+        this.encode_enum_tag(x.type);
+        this.string(x.entity);
+        break;
+      }
+
       default:
         throw unreachable(x, `Declaration`);
     }

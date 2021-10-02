@@ -28,7 +28,27 @@ export class CrochetForBrowser {
   }
 
   get trusted_core() {
-    return new Set(["crochet.core", "crochet.debug"]);
+    // TODO: restrict TCB (needs safer native modules support)
+    return new Set([
+      "crochet.codec.basic",
+      "crochet.core",
+      "crochet.debug",
+      "crochet.language.cli-arguments",
+      "crochet.language.csv",
+      "crochet.language.json",
+      "crochet.mathematics",
+      "crochet.novella",
+      "crochet.parsing.combinators",
+      "crochet.random",
+      "crochet.text.parsing.lingua",
+      "crochet.text.regex",
+      "crochet.time",
+      "crochet.wrapper.node.file-system",
+      "crochet.wrapper.node.http",
+      "crochet.wrapper.node.io",
+      "crochet.wrapper.node.os",
+      "crochet.wrapper.node.shell",
+    ]);
   }
 
   get system() {
@@ -141,11 +161,8 @@ export class CrochetForBrowser {
       graph: Package.PackageGraph,
       root: Package.Package
     ) => {
-      const requirements = new Set(graph.capability_requirements.keys());
-      return (
-        Package.missing_capabilities(this.capabilities, requirements).size === 0
-      );
       // TODO: implement capability granting
+      return this.capabilities;
     },
 
     booted: async () => {},

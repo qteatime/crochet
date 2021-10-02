@@ -1,3 +1,4 @@
+import { CrochetCapability, CrochetProtectedValue } from "..";
 import * as IR from "../../ir";
 import { clone_map, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
@@ -550,6 +551,30 @@ export function to_number(x: CrochetValue) {
 
 export function is_nothing(x: CrochetValue) {
   return x.tag === Tag.NOTHING;
+}
+
+export function protect(
+  universe: Universe,
+  x: CrochetValue,
+  capability: CrochetCapability
+) {
+  switch (x.tag) {
+    case Tag.PROTECTED: {
+      assert_tag(Tag.PROTECTED, x);
+      x.payload.protected_by.add(capability);
+      return x;
+    }
+
+    default: {
+      const x1 = new CrochetValue(
+        Tag.PROTECTED,
+        universe.types.Protected,
+        new CrochetProtectedValue(x)
+      );
+      x1.payload.protected_by.add(capability);
+      return x1;
+    }
+  }
 }
 
 export { equals };

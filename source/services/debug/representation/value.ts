@@ -207,6 +207,16 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
       );
     }
 
+    case Tag.PROTECTED: {
+      Values.assert_tag(Tag.PROTECTED, x);
+      const seen1 = see(x, seen);
+      const caps = [...x.payload.protected_by].map((x) => x.full_name);
+      return new RTagged(
+        `Protected (${caps.join(", ")})`,
+        new RSecret(value_to_repr(x.payload.value, seen1))
+      );
+    }
+
     default:
       throw unreachable(x.tag, "Value");
   }

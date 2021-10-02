@@ -1,9 +1,13 @@
 % crochet
 
+capability http;
+
 type response(status is integer, headers is record, body is text);
 type request-error(reason is text);
 
 singleton http;
+protect type http with http;
+protect global http with http;
 
 command http request: (Url is text) data: (Data is text) options: (Options is record) do
   let Result = foreign http.request(Url, Data, Options);

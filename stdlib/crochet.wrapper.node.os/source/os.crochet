@@ -1,6 +1,10 @@
 % crochet
 
+capability os;
+
 singleton os;
+protect type os with os;
+protect global os with os;
 
 command os processor-architecture =
   foreign os.arch();
@@ -9,7 +13,10 @@ command os platform =
   foreign os.platform();
 
 
+capability process;
 singleton process;
+protect type process with process;
+protect global process with process;
 
 command process abort =
   foreign os.abort();

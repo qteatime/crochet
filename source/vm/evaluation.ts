@@ -41,6 +41,8 @@ import {
   StackTrace,
   Effects,
   DSL,
+  Capability,
+  Modules,
 } from "./primitives";
 import { Contexts } from "./simulation";
 import { run_simulation } from "./simulation/simulation";
@@ -221,7 +223,7 @@ export class Thread {
             throw unreachable(signal, `Signal`);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       const trace = StackTrace.collect_trace(this.state.activation);
       const formatted_trace = StackTrace.format_entries(trace);
       throw new CrochetEvaluationError(error, trace, formatted_trace);
@@ -484,11 +486,12 @@ export class Thread {
 
       case t.PUSH_NEW: {
         const values = this.pop_many(activation, op.arity);
-        const type = Types.materialise_type(
+        const type0 = Types.materialise_type(
           this.state.universe,
           this.module,
           op.type
         );
+        const type = Capability.free_type(this.module, type0);
         const value = Values.instantiate(type, values);
         this.push(activation, value);
         activation.next();
@@ -496,11 +499,12 @@ export class Thread {
       }
 
       case t.PUSH_STATIC_TYPE: {
-        const type = Types.materialise_type(
+        const type0 = Types.materialise_type(
           this.universe,
           this.module,
           op.type
         );
+        const type = Capability.free_type(this.module, type0);
         const static_type = Types.get_static_type(this.universe, type);
         const value = Values.make_static_type(this.universe, static_type);
         this.push(activation, value);
@@ -875,12 +879,12 @@ export class Thread {
 
       case t.PERFORM: {
         const args = this.pop_many(activation, op.arity);
-        const type = Effects.materialise_effect(
+        const type0 = Effects.materialise_effect(
           this.module,
           op.effect,
           op.variant
         );
-        Effects.assert_can_perform(this.module, type);
+        const type = Capability.free_effect(this.module, type0);
         const value = Values.instantiate(type, args);
         const { handler, stack } = Effects.find_handler(
           activation.handlers,
@@ -1003,17 +1007,8 @@ export class Thread {
   }
 
   lookup_global(name: string, meta: IR.Metadata | null) {
-    const value = this.module.definitions.try_lookup(name);
-    if (value == null) {
-      throw new ErrArbitrary(
-        "undefined",
-        `The definition ${name} is not accessible from ${Location.module_location(
-          this.module
-        )}`
-      );
-    } else {
-      return value;
-    }
+    const value = Modules.get_global(this.module, name);
+    return Capability.free_definition(this.module, name, value);
   }
 
   define(name: string, value: CrochetValue, meta: IR.Metadata | null) {

@@ -2,7 +2,7 @@ import * as Path from "path";
 
 import { Capability, file, File, Package, Target } from "./ir";
 import { logger } from "../utils/logger";
-import { union } from "../utils/collections";
+import { intersect, union } from "../utils/collections";
 import {
   describe_target,
   missing_capabilities,
@@ -24,7 +24,7 @@ export class PackageGraph {
   get capability_requirements() {
     const capabilities = new Map<string, ResolvedPackage[]>();
     for (const pkg of this.packages.values()) {
-      for (const cap of pkg.capabilities) {
+      for (const cap of pkg.required_capabilities) {
         const xs = capabilities.get(cap) ?? [];
         xs.push(pkg);
         capabilities.set(cap, xs);
@@ -108,7 +108,9 @@ export class PackageGraph {
       const name = pkg.name;
 
       // check missing capabilities
-      const missing = [...missing_capabilities(capabilities, pkg.capabilities)];
+      const missing = [
+        ...missing_capabilities(capabilities, pkg.required_capabilities),
+      ];
       if (missing.length !== 0) {
         throw new Error(
           [
@@ -125,7 +127,7 @@ export class PackageGraph {
       // check native capabilities
       if (
         pkg.native_sources.length !== 0 &&
-        native_allowed(pkg, capabilities)
+        !native_allowed(pkg, capabilities)
       ) {
         throw new Error(
           [
@@ -137,13 +139,19 @@ export class PackageGraph {
         );
       }
 
+      // commit required capabilities
+      pkg.granted_capabilities.clear();
+      for (const x of pkg.required_capabilities) {
+        pkg.granted_capabilities.add(x);
+      }
+
       // check dependencies recursively
       for (const x of pkg.dependencies) {
         const dep = self.get_package(x.name);
         if (!visited.includes(dep)) {
           const new_capabilities = restrict_capabilities(
             capabilities,
-            dep.capabilities
+            dep.required_capabilities
           );
 
           check([dep, ...visited], name, dep, new_capabilities);
@@ -169,6 +177,25 @@ export class PackageGraph {
   check(root: ResolvedPackage, capabilities: Set<Capability>) {
     this.check_target(root);
     this.check_capabilities(root, capabilities);
+  }
+
+  commit_capabilities(root: ResolvedPackage, capabilities: Set<Capability>) {
+    const self = this;
+
+    function commit(pkg: ResolvedPackage, capabilities: Set<Capability>) {
+      const granted = intersect(capabilities, pkg.required_capabilities);
+      for (const cap of granted) {
+        pkg.granted_capabilities.add(cap);
+      }
+
+      for (const dep of pkg.dependencies) {
+        const dep_grants = intersect(capabilities, dep.capabilities);
+        const dep_pkg = self.get_package(dep.name);
+        commit(dep_pkg, dep_grants);
+      }
+    }
+
+    commit(root, capabilities);
   }
 
   *serialise(root: ResolvedPackage) {
@@ -253,6 +280,8 @@ export class ResolvedFile {
 }
 
 export class ResolvedPackage {
+  readonly granted_capabilities = new Set<Capability>();
+
   constructor(readonly pkg: Package, readonly target: Target) {}
 
   get name() {
@@ -294,11 +323,8 @@ export class ResolvedPackage {
   }
 
   get provided_capabilities() {
-    return this.pkg.meta.capabilities.provides;
-  }
-
-  get capabilities() {
-    return union(this.required_capabilities, this.provided_capabilities);
+    const provided = [...this.pkg.meta.capabilities.provides];
+    return new Set(provided.map((x) => `${this.name}/${x.name}`));
   }
 }
 

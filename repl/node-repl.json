@@ -14,40 +14,25 @@
     "crochet.text.parsing.lingua",
     "crochet.time",
     "crochet.text.regex",
-    {
-      "name": "crochet.time.wall-clock",
-      "target": "node",
-      "capabilities": ["wall-clock"]
-    },
-    {
-      "name": "crochet.wrapper.node.file-system",
-      "target": "node",
-      "capabilities": ["file-system"]
-    },
-    {
-      "name": "crochet.wrapper.node.http",
-      "target": "node",
-      "capabilities": ["network"]
-    },
-    {
-      "name": "crochet.wrapper.node.io",
-      "target": "node",
-      "capabilities": ["io"]
-    },
-    {
-      "name": "crochet.wrapper.node.os",
-      "target": "node",
-      "capabilities": ["os"]
-    },
-    {
-      "name": "crochet.wrapper.node.shell",
-      "target": "node",
-      "capabilities": ["shell"]
-    }
+    "crochet.wrapper.node.file-system",
+    "crochet.wrapper.node.http",
+    "crochet.wrapper.node.io",
+    "crochet.wrapper.node.os",
+    "crochet.wrapper.node.shell"
   ],
   "sources": [],
   "capabilities": {
-    "requires": ["io", "file-system", "os", "network", "shell", "wall-clock"],
+    "requires": [
+      "crochet.wrapper.node.io/terminal",
+      "crochet.wrapper.node.file-system/file-system",
+      "crochet.wrapper.node.os/os",
+      "crochet.wrapper.node.os/process",
+      "crochet.wrapper.node.http/http",
+      "crochet.wrapper.node.shell/shell",
+      "crochet.time/wall-clock",
+      "crochet.random/update-shared-instance",
+      "crochet.random/read-shared-instance"
+    ],
     "provides": []
   }
 }

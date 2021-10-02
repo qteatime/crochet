@@ -6,18 +6,32 @@ local type mutable-random(random is cell) is random;
 
 local type random-next(value, random is random);
 
+capability read-shared-instance;
+capability update-shared-instance;
+
+singleton scoped-random;
+singleton shared-random;
+
 // Effects
 effect random with
   get-random();
 end
 
-command #random with-source: (Instance0 is random) do: (Block is function-0) do
+protect global scoped-random with update-shared-instance;
+protect effect random with update-shared-instance;
+protect global shared-random with read-shared-instance;
+
+command scoped-random with-source: (Instance0 is random) do: (Block is function-0) do
   let Instance = Instance0 mutable;
   handle
     Block();
   with
     on random.get-random() => continue with Instance;
   end
+end
+
+command shared-random instance -> random do
+  perform random.get-random();
 end
 
 
@@ -35,10 +49,6 @@ requires unsigned-small-integer :: (Seed >= 0) and (Seed < (2 ** 32))
 command #random xor-shift -> xor-shift do
   let State = foreign xorshift.random-seed();
   new xor-shift(State.seed, State.inc);
-end
-
-command #random shared-instance -> random do
-  perform random.get-random();
 end
 
 command random mutable = new mutable-random(#cell with-value: self);

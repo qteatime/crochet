@@ -91,7 +91,7 @@ end
 type ref;
 
 command main-html: Root do
-  #random with-source: #random with-random-seed do: {
+  scoped-random with-source: #random with-random-seed do: {
     novella with-root: Root do: {
       novella show: (
         novella header: [
@@ -134,7 +134,7 @@ command (P is player) choose-action: Actions do
       end
 
       always do
-        #random shared-instance choose: Actions;
+        shared-random instance choose: Actions;
       end
     end;
   

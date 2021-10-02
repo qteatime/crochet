@@ -20,6 +20,8 @@ export enum DeclarationTag {
   EFFECT,
   TRAIT,
   IMPLEMENT_TRAIT,
+  CAPABILITY,
+  PROTECT,
 }
 
 export enum Visibility {
@@ -42,7 +44,9 @@ export type Declaration =
   | DForeignType
   | DEffect
   | DTrait
-  | DImplementTrait;
+  | DImplementTrait
+  | DCapability
+  | DProtect;
 
 abstract class BaseDeclaration {
   abstract tag: DeclarationTag;
@@ -257,4 +261,36 @@ export class DImplementTrait extends BaseDeclaration {
   ) {
     super();
   }
+}
+
+export class DCapability extends BaseDeclaration {
+  readonly tag = DeclarationTag.CAPABILITY;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+
+export class DProtect extends BaseDeclaration {
+  readonly tag = DeclarationTag.PROTECT;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly capability: string,
+    readonly type: ProtectEntityTag,
+    readonly entity: string
+  ) {
+    super();
+  }
+}
+
+export enum ProtectEntityTag {
+  TYPE,
+  TRAIT,
+  EFFECT,
+  DEFINE,
 }

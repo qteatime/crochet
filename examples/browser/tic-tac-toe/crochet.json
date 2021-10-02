@@ -7,5 +7,12 @@
     "crochet.novella",
     "crochet.random",
     "crochet.debug"
-  ]
+  ],
+  "capabilities": {
+    "provides": [],
+    "requires": [
+      "crochet.random/read-shared-instance",
+      "crochet.random/update-shared-instance"
+    ]
+  }
 }
