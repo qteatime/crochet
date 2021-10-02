@@ -615,7 +615,6 @@ export function load_declaration(
         declaration.meta
       );
       Capability.define_capability(module, capability);
-      console.log("==> defined capability", declaration.name);
       break;
     }
 
@@ -652,13 +651,6 @@ export function load_declaration(
           throw unreachable(entity_type, "Entity type");
         }
       }
-      console.log(
-        "==> protected",
-        et[declaration.type],
-        declaration.entity,
-        "with",
-        declaration.capability
-      );
       break;
     }
 
