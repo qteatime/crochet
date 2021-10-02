@@ -2,6 +2,7 @@ import {
   capabilities,
   capability,
   Capability,
+  ProvideCapability,
   dependency,
   file,
   Package,
@@ -21,6 +22,7 @@ import {
   string,
 } from "../utils/spec";
 import * as Spec from "../utils/spec";
+import { provide_capability } from ".";
 
 function set<T>(x: AnySpec<T>) {
   return map_spec(array(x), (xs) => new Set(xs));
@@ -45,10 +47,23 @@ export const file_spec = anyOf([
 
 export const capability_spec = map_spec(string, capability);
 
+export const capability_provide_spec = anyOf([
+  spec(
+    {
+      name: string,
+      description: string,
+    },
+    (x) => provide_capability(x)
+  ),
+  map_spec(string, (name) =>
+    provide_capability({ name, description: "(no description)" })
+  ),
+]);
+
 export const capabilities_spec = spec(
   {
     requires: set(capability_spec),
-    provides: set(capability_spec),
+    provides: set(capability_provide_spec),
   },
   (x) => capabilities(x)
 );
@@ -82,7 +97,7 @@ export const package_spec = spec(
       capabilities_spec,
       capabilities({
         requires: new Set<Capability>(),
-        provides: new Set<Capability>(),
+        provides: new Set<ProvideCapability>(),
       })
     ),
   },

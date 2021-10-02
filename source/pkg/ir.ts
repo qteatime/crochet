@@ -42,7 +42,12 @@ export type File = {
 
 export type Capabilities = {
   readonly requires: Set<Capability>;
-  readonly provides: Set<Capability>;
+  readonly provides: Set<ProvideCapability>;
+};
+
+export type ProvideCapability = {
+  name: string;
+  description: string;
 };
 
 export type Capability = string;
@@ -70,6 +75,10 @@ export function dependency(x: Dependency): Dependency {
 }
 
 export function capability(x: Capability): Capability {
+  return x;
+}
+
+export function provide_capability(x: ProvideCapability): ProvideCapability {
   return x;
 }
 

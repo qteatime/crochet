@@ -24,7 +24,7 @@ export class PackageGraph {
   get capability_requirements() {
     const capabilities = new Map<string, ResolvedPackage[]>();
     for (const pkg of this.packages.values()) {
-      for (const cap of pkg.capabilities) {
+      for (const cap of pkg.required_capabilities) {
         const xs = capabilities.get(cap) ?? [];
         xs.push(pkg);
         capabilities.set(cap, xs);
@@ -108,7 +108,9 @@ export class PackageGraph {
       const name = pkg.name;
 
       // check missing capabilities
-      const missing = [...missing_capabilities(capabilities, pkg.capabilities)];
+      const missing = [
+        ...missing_capabilities(capabilities, pkg.required_capabilities),
+      ];
       if (missing.length !== 0) {
         throw new Error(
           [
@@ -143,7 +145,7 @@ export class PackageGraph {
         if (!visited.includes(dep)) {
           const new_capabilities = restrict_capabilities(
             capabilities,
-            dep.capabilities
+            dep.required_capabilities
           );
 
           check([dep, ...visited], name, dep, new_capabilities);
@@ -294,11 +296,8 @@ export class ResolvedPackage {
   }
 
   get provided_capabilities() {
-    return this.pkg.meta.capabilities.provides;
-  }
-
-  get capabilities() {
-    return union(this.required_capabilities, this.provided_capabilities);
+    const provided = [...this.pkg.meta.capabilities.provides];
+    return new Set(provided.map((x) => `${this.name}/${x.name}`));
   }
 }
 
