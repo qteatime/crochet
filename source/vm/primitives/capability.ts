@@ -77,8 +77,9 @@ export function protect_definition(
   name: string,
   capability: CrochetCapability
 ) {
-  const global = Modules.get_global(module, name);
-  Values.protect(universe, global, capability);
+  const global = Modules.get_specific_global(module, name);
+  const protected_value = Values.protect(universe, global, capability);
+  Modules.replace_global(module, name, global, protected_value);
   capability.protecting.add(global);
 }
 
