@@ -49,7 +49,7 @@ command cell-at: (P is point) do
   let Cells = cells-at: P;
   condition
     when Cells is-empty => false;
-    always => Cells first;
+    otherwise => Cells first;
   end
 end
 
@@ -59,7 +59,7 @@ command cell set-state: (State is cell-state) do
       forget state: S cell: self;
     end
 
-    always do end
+    otherwise do end
   end;
 
   fact state: State cell: self;
@@ -74,7 +74,7 @@ command cell cut do
       Cell set-state: cs-exposed;
     end
 
-    always do end
+    otherwise do end
   end
 end
 
@@ -121,7 +121,7 @@ do
       Cell cut;
     end
 
-    always do
+    otherwise do
       Cell set-state: cs-wall;
     end
   end

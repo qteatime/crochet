@@ -21,7 +21,7 @@ command #stream positive-integers = #stream from: 1 iterate: (_ + 1);
 command #linked-stream from: (Xs has sequence, countable-container) -> linked-stream<A> do
   condition
     when Xs is-empty => linked-stream-empty;
-    always => new linked-stream-cons(Xs first, lazy #stream from: Xs rest);
+    otherwise => new linked-stream-cons(Xs first, lazy #stream from: Xs rest);
   end
 test
   assert (#linked-stream from: [] |> _ as list) === [];
@@ -49,7 +49,7 @@ end
 command #linked-stream cycle: (Xs has sequence, countable-container) do
   condition
     when Xs is-empty => linked-stream-empty;
-    always => module cycle: Xs current: Xs;
+    otherwise => module cycle: Xs current: Xs;
   end
 test
   let N = #linked-stream cycle: [1, 2];
@@ -59,7 +59,7 @@ end
 command module cycle: Xs current: Ys do
   condition
     when Ys is-empty => module cycle: Xs current: Xs;
-    always => new linked-stream-cons(Ys first, lazy module cycle: Xs current: Ys rest);
+    otherwise => new linked-stream-cons(Ys first, lazy module cycle: Xs current: Ys rest);
   end
 end
 
@@ -68,7 +68,7 @@ command linked-stream-empty take: (N is integer) = self;
 command linked-stream-cons take: (N is integer) =
   condition
     when N === 0 => linked-stream-empty;
-    always => new linked-stream-cons(self first, lazy self rest take: (N - 1));
+    otherwise => new linked-stream-cons(self first, lazy self rest take: (N - 1));
   end;
 
 test "linked-stream take: integer" do
@@ -83,7 +83,7 @@ command linked-stream-empty drop: (N is integer) = self;
 command linked-stream-cons drop: (N is integer) =
   condition
     when N === 0 => self;
-    always => self rest drop: (N - 1);
+    otherwise => self rest drop: (N - 1);
   end;
 
 test "linked-stream drop: integer" do
@@ -99,7 +99,7 @@ command linked-stream-empty take-while: (Predicate is (A -> boolean)) = linked-s
 command linked-stream-cons take-while: (Predicate is (A -> boolean)) do
   condition
     when Predicate(self first) => new linked-stream-cons(self first, lazy self rest take-while: Predicate);
-    always => linked-stream-empty;
+    otherwise => linked-stream-empty;
   end
 end
 
@@ -113,7 +113,7 @@ command linked-stream-empty drop-while: (Predicate is (A -> boolean)) = linked-s
 command linked-stream-cons drop-while: (Predicate is (A -> boolean)) =
   condition
     when Predicate(self first) => self rest drop-while: Predicate;
-    always => self;
+    otherwise => self;
   end;
 
 test "linked-stream drop-while: function-1" do
@@ -134,9 +134,9 @@ command module chunk: linked-stream-empty by-size: Size result: Result =
 command module chunk: (Stream is linked-stream-cons) by-size: Size result: Result = 
   condition
     when Size === 0 => [chunks -> Result, rest -> Stream];
-    always => module chunk: Stream rest
-                     by-size: (Size - 1)
-                     result: (Result append: Stream first);
+    otherwise => module chunk: Stream rest
+                        by-size: (Size - 1)
+                        result: (Result append: Stream first);
   end;
 
 test "linked-stream chunked-by-size: integer" do

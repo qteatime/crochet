@@ -13,7 +13,7 @@ command compiled-regex search-first: (Text is text) -> result<regex-match, regex
   let Result = foreign re.search(self.code, self.flags to-text, Text);
   condition
     when Result is nothing => #result error: regex-matched-nothing;
-    always => #result ok: new regex-match(Result);
+    otherwise => #result ok: new regex-match(Result);
   end
 test
   let R1 = regex from-text: "ca(.)"

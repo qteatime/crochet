@@ -80,7 +80,7 @@ command parser-eq parse: (Stream is parser-stream) do
   Stream consume | then: { S in 
     condition
       when S value === self.value => S;
-      always => Stream error: new parser-error-expected(self.value);
+      otherwise => Stream error: new parser-error-expected(self.value);
     end
   }
 end
@@ -111,7 +111,7 @@ command parser-predicate parse: (Stream is parser-stream) do
   Stream consume | then: { S in
     condition
       when self.pred(S value) => S;
-      always => Stream error: new parser-error-not-satisfied(self);
+      otherwise => Stream error: new parser-error-not-satisfied(self);
     end
   }
 end

@@ -17,7 +17,7 @@ command http request: (Url is text) data: (Data is text) options: (Options is re
       new response(Res.status-code, Res.headers, Res.body);
     end
 
-    always =>
+    otherwise =>
       new request-error(Result.message);
   end
 end

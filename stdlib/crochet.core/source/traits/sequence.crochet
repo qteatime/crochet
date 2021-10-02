@@ -7,7 +7,7 @@ command (X has sequence, appendable-sequence, countable-container) take-while: (
     condition
       when Xs is-empty => Xs;
       when Predicate(Xs first) => Go(Xs rest) prepend: Xs first;
-      always => Xs empty;
+      otherwise => Xs empty;
     end
   };
   Go(X);
@@ -24,7 +24,7 @@ command (X has sequence, countable-container) drop-while: (Predicate is (A -> bo
     condition
       when Xs is-empty => Xs;
       when Predicate(Xs first) => Go(Xs rest);
-      always => Xs;
+      otherwise => Xs;
     end
   };
   Go(X);

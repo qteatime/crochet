@@ -23,7 +23,7 @@ command (X is record) keep-if: (Predicate is (association<K, V> -> boolean)) do
   self fold-from: [->] with: { R, P in
     condition
       when Predicate(P) => R at: P key put: P value;
-      always => R;
+      otherwise => R;
     end
   }
 test
@@ -57,7 +57,7 @@ command linked-stream-empty keep-if: (Predicate is (A -> boolean)) = self;
 command linked-stream-cons keep-if: (Predicate is (A -> boolean)) =
   condition
     when Predicate(self first) => new linked-stream-cons(self first, lazy self rest keep-if: Predicate);
-    always => self rest keep-if: Predicate;
+    otherwise => self rest keep-if: Predicate;
   end;
 
 test "linked-stream keep-if: predicate" do

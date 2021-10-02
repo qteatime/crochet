@@ -60,7 +60,7 @@ command novella-env lookup: (Name is text) meta: Meta =
   condition
     when self.bindings value contains-key: Name => (self.bindings value).[Name];
     when not self.parent is nothing => self.parent lookup: Name meta: Meta;
-    always => panic message: "[Name] is not defined, at [Meta position-message]" tag: "undefined-name";
+    otherwise => panic message: "[Name] is not defined, at [Meta position-message]" tag: "undefined-name";
   end;
 
 command novella-env set: (Name is text) to: Value do
@@ -93,7 +93,7 @@ command #novella-dsl run: (State is novella-state) do
     when State.block is-empty =>
       #novella-dsl run: State.continuation;
 
-    always do
+    otherwise do
       let Result = #novella-dsl run-statement: State.block first;
       #novella-dsl handle: Result state: State;
     end
@@ -233,7 +233,7 @@ command #novella-dsl compile: (X is skeleton-node) do
       new n-show(X, new n-apply(X, X name, [->], [Arg]));
     end
 
-    always do
+    otherwise do
       panic message: "Unknown statement [X name] at [X position-message]";
     end
   end

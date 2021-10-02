@@ -220,7 +220,7 @@ do
       fact won state;
     end
 
-    always do
+    otherwise do
       dsl novella-dsl with
         paragraph
           "The message has been carelessly trampled, making it difficult

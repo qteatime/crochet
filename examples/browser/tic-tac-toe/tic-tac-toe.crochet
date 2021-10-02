@@ -81,7 +81,7 @@ command player won do
            l2 at: c2 mark: self,
            l3 at: c1 mark: self => true;
 
-      always => false;
+      otherwise => false;
     end;
   
   Result first;
@@ -133,7 +133,7 @@ command (P is player) choose-action: Actions do
         novella choose-action: Actions;
       end
 
-      always do
+      otherwise do
         shared-random instance choose: Actions;
       end
     end;

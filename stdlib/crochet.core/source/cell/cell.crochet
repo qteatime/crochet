@@ -46,7 +46,7 @@ command (X is cell) <- Value -> cell do
   let Set = X compare: Old and-set: Value;
   condition
     when Set => X;
-    always => X <- Value;
+    otherwise => X <- Value;
   end
 test
   let C = #cell with-value: 1;

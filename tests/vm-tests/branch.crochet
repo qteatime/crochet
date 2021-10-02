@@ -5,7 +5,7 @@ test "Conditions" do
     condition
       when 1 =:= 2 => "no";
       when 1 =:= 1 do "ok" end
-      always => "impossible";
+      otherwise => "impossible";
     end;
   
   assert Res =:= "ok";
@@ -20,7 +20,7 @@ test "Match" do
   let Res =
     match
       when Who branch-at: foyer do "[Who] at foyer" end
-      always => "Nah";
+      otherwise => "Nah";
     end;
 
   assert Res =:= ["[lielle] at foyer"];

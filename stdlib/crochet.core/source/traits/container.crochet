@@ -8,7 +8,7 @@ command (X has countable-container) is-empty = X count === 0;
 command (X has mapped-container) at: Key default: Default do
   condition
     when X contains-key: Key => X at: Key;
-    always => Default;
+    otherwise => Default;
   end
 test
   assert (#map empty | at: 1 default: 0) === 0;
@@ -21,7 +21,7 @@ end
 command (X has modifiable-mapped-container) at: Key update: (Update is (A -> A)) do
   condition
     when self contains-key: Key => self at: Key put: Update(self at: Key);
-    always => self;
+    otherwise => self;
   end
 test
   assert not (#map empty | at: 1 update: (_ + 1) | contains-key: 1);
@@ -33,7 +33,7 @@ end
 command (X has modifiable-mapped-container) at: Key default: Default update: (Update is (A -> A)) do
   condition
     when self contains-key: Key => self at: Key put: Update(self at: Key);
-    always => self at: Key put: Default;
+    otherwise => self at: Key put: Default;
   end
 test
   assert ([->] at: "a" default: 1 update: (_ + 1)) === [a -> 1];

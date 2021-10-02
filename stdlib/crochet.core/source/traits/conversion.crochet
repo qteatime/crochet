@@ -43,7 +43,7 @@ command #integer try-parse: (X is text) -> result do
   let Result = foreign integer.parse(X);
   condition
     when Result =:= nothing => (#result error: new error-parsing-integer(X));
-    always => #result ok: Result;
+    otherwise => #result ok: Result;
   end
 test
   assert (#integer try-parse: "123").value =:= 123;
@@ -56,7 +56,7 @@ command #float try-parse: (X is text) -> result do
   let Result = foreign float.parse(X);
   condition
     when Result =:= nothing => (#result error: new error-parsing-float(X));
-    always => #result ok: Result;
+    otherwise => #result ok: Result;
   end
 test
   assert (#float try-parse: "123").value =:= 123.0;

@@ -32,7 +32,7 @@ do
       new parser-result-ok(Slice, new parser-stream(End, self.stream));
     end
 
-    always => self error: parser-error-end-of-stream;
+    otherwise => self error: parser-error-end-of-stream;
   end;
 end
 

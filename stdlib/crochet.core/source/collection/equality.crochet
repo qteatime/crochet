@@ -7,7 +7,7 @@ implement equality for list;
 command list === (That is list) do
   condition
     when self count =/= That count => false;
-    always =>
+    otherwise =>
       self zip: That with: (_ === _) | all-true;
   end
 end

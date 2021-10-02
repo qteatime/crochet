@@ -188,11 +188,11 @@ command debug-representation list: (X is list) separator: (S is doc) do
   condition
     when X is-empty => #doc empty;
     when X count === 1 => X first;
-    always do
+    otherwise do
       X rest fold-from: X first with: { A, B in
         condition
           when B is doc-empty => A;
-          always => A ++ S ++ B;
+          otherwise => A ++ S ++ B;
         end
       };
     end
@@ -251,7 +251,7 @@ command debug-representation of: (T is thunk) =
       debug-representation of: (force T)
         | prepend: (debug-representation keyword: "thunk ")
         | between: "<" and: ">";
-    always =>
+    otherwise =>
       debug-representation keyword: "thunk"
         | between: "<" and: ">";
   end;
@@ -273,7 +273,7 @@ end
 command debug-representation of: (X is record) do
   condition
     when X is-empty => #doc text: "->" | between: "\[" and: "\]";
-    always do
+    otherwise do
       let Pairs = X pairs map: { P in
         #doc text: P.key
           | append: " -> "

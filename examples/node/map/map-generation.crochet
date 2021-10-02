@@ -68,7 +68,7 @@ command dungeon-gen draw do
       for IX in 1 to: Size do
         let Chars = match
                       when IX y: IY char: Char => Char;
-                      always => " ";
+                      otherwise => " ";
                     end;
         Chars first;
       end;
@@ -91,7 +91,7 @@ command room draw-at: Point do
       Room draw-at: (P1 move: Direction);
     end
 
-    always do
+    otherwise do
 
     end
   end

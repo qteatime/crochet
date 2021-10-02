@@ -800,7 +800,7 @@ grammar Crochet : Program {
   conditionCase =
     | when_ e:expression b:eblock
       -> ConditionCase(meta, e, b)
-    | always_ b:eblock
+    | otherwise_ b:eblock
       -> ConditionCase(meta, Expression.Lit(Literal.True(meta)), b)
 
   matchSearchExpression =
@@ -810,7 +810,7 @@ grammar Crochet : Program {
   matchSearchCase =
     | when_ p:predicate b:eblock
       -> MatchSearchCase(meta, p, b)
-    | always_ b:eblock
+    | otherwise_ b:eblock
       -> MatchSearchCase(meta, Predicate.Always(meta), b)
 
   forExpression =
@@ -1197,6 +1197,7 @@ grammar Crochet : Program {
   global_ = kw<"global">
   capability_ = kw<"capability">
   protect_ = kw<"protect">
+  otherwise_ = kw<"otherwise">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | action_
@@ -1208,5 +1209,5 @@ grammar Crochet : Program {
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
     | effect_ | handle_ | continue_ | perform_ | dsl_ | trait_ | implement_ | has_
-    | global_ | capability_ | protect_
+    | global_ | capability_ | protect_ | otherwise_
 }

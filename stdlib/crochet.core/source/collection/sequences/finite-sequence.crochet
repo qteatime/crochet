@@ -16,7 +16,7 @@ end
 command list without-last =
   condition
     when self count < 2 => [];
-    always => self slice-from: 1 to: (self count - 1);
+    otherwise => self slice-from: 1 to: (self count - 1);
   end
 test
   assert [] without-last =:= [];

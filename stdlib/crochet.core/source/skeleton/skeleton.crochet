@@ -58,6 +58,6 @@ command skeleton-ast position-message do
   let Meta = self meta;
   condition
     when Meta is nothing => "(unknown position)";
-    always => "line [Meta.line to-text], column [Meta.column to-text]";
+    otherwise => "line [Meta.line to-text], column [Meta.column to-text]";
   end
 end

@@ -100,14 +100,14 @@ command cli-positional usage do
       ";
     end
 
-    always => "";
+    otherwise => "";
   end;
 end
 
 command cli-option usage do
   let Default = condition
     when self default is nothing => "";
-    always => " = [self default]";
+    otherwise => " = [self default]";
   end;
 
   "  [self.key][Default]

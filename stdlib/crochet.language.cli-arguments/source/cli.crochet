@@ -11,7 +11,7 @@ command cli parse: (Arg is cli-arg) with: Arguments do
   let Result = cli try-parse: Arg with: Arguments;
   condition
     when Result is parser-result-ok => Result value;
-    always => panic-without-trace: ("\n[Arg usage]" flatten-into-plain-text);
+    otherwise => panic-without-trace: ("\n[Arg usage]" flatten-into-plain-text);
   end
 end
 

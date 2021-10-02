@@ -43,7 +43,7 @@ scene main do
   transcript inspect:
     match
       when lielle at: garden do "Umpossible!" end
-      always do "A fallback" end
+      otherwise do "A fallback" end
     end;
 
   let Person = lielle;

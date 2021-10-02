@@ -53,7 +53,7 @@ command primitive apply: (Args is list) do
   condition
     when Arity =:= 1 => F(Args at: 1);
     when Arity =:= 2 => F(Args at: 1, Args at: 2);
-    always do
+    otherwise do
       assert not "unsupported arity";
     end
   end
