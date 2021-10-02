@@ -29,6 +29,7 @@ export enum Tag {
   ACTION,
   ACTION_CHOICE,
   UNKNOWN,
+  PROTECTED,
 }
 
 export type PayloadType = {
@@ -50,6 +51,7 @@ export type PayloadType = {
   [Tag.ACTION]: BoundAction;
   [Tag.ACTION_CHOICE]: ActionChoice;
   [Tag.UNKNOWN]: unknown;
+  [Tag.PROTECTED]: CrochetProtectedValue;
 };
 
 export interface ActionChoice {
@@ -104,8 +106,14 @@ export class CrochetThunk {
   constructor(readonly env: Environment, readonly body: IR.BasicBlock) {}
 }
 
+export class CrochetProtectedValue {
+  public protected_by = new Set<CrochetCapability>();
+  constructor(readonly value: CrochetValue) {}
+}
+
 export class CrochetTrait {
   readonly implemented_by = new Set<CrochetType>();
+  readonly protected_by = new Set<CrochetCapability>();
 
   constructor(
     readonly module: CrochetModule | null,
@@ -120,6 +128,7 @@ export class CrochetType {
   readonly layout: Map<string, number>;
   readonly sub_types: CrochetType[] = [];
   readonly traits = new Set<CrochetTrait>();
+  readonly protected_by = new Set<CrochetCapability>();
 
   constructor(
     readonly module: CrochetModule | null,
@@ -137,6 +146,17 @@ export class CrochetType {
 
 export class CrochetTypeConstraint {
   constructor(readonly type: CrochetType, readonly traits: CrochetTrait[]) {}
+}
+
+export class CrochetCapability {
+  readonly protecting = new Set<any>();
+
+  constructor(
+    readonly module: CrochetModule | null,
+    readonly name: string,
+    readonly documentation: string,
+    readonly meta: IR.Metadata | null
+  ) {}
 }
 //#endregion
 
@@ -311,6 +331,7 @@ export class CrochetWorld {
   readonly native_functions = new Namespace<NativeFunction>(null, null);
   readonly actions = new Namespace<Action>(null, null);
   readonly contexts = new Namespace<CrochetContext>(null, null);
+  readonly capabilities = new Namespace<CrochetCapability>(null, null);
   readonly global_context = new GlobalContext();
   readonly prelude: CrochetPrelude[] = [];
   readonly tests: CrochetTest[] = [];
@@ -325,7 +346,9 @@ export class CrochetPackage {
   readonly native_functions: Namespace<NativeFunction>;
   readonly actions: PassthroughNamespace<Action>;
   readonly contexts: PassthroughNamespace<CrochetContext>;
+  readonly capabilities: PassthroughNamespace<CrochetCapability>;
   readonly dependencies = new Set<string>();
+  readonly granted_capabilities = new Set<CrochetCapability>();
 
   constructor(
     readonly world: CrochetWorld,
@@ -339,6 +362,7 @@ export class CrochetPackage {
     this.relations = new PassthroughNamespace(world.relations, name);
     this.actions = new PassthroughNamespace(world.actions, name);
     this.contexts = new PassthroughNamespace(world.contexts, name);
+    this.capabilities = new PassthroughNamespace(world.capabilities, name);
   }
 }
 
@@ -825,6 +849,7 @@ export class Universe {
     readonly types: {
       Any: CrochetType;
       Unknown: CrochetType;
+      Protected: CrochetType;
       Nothing: CrochetType;
       True: CrochetType;
       False: CrochetType;

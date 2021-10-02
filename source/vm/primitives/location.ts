@@ -184,6 +184,10 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.ACTION_CHOICE, x);
       return `<action choice ${x.payload.action.name} - ${x.payload.score}>`;
     }
+    case Tag.PROTECTED: {
+      assert_tag(Tag.PROTECTED, x);
+      return `<protected ${simple_value(x.payload.value)}>`;
+    }
     default:
       throw unreachable(x.tag, `Value ${x}`);
   }

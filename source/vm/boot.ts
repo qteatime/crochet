@@ -1,3 +1,4 @@
+import { CrochetCapability } from ".";
 import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
 import { XorShift } from "../utils/xorshift";
@@ -20,7 +21,15 @@ import {
   CrochetTypeConstraint,
 } from "./intrinsics";
 import { Tree, Relation } from "./logic";
-import { Commands, Effects, Modules, Tests, Types, World } from "./primitives";
+import {
+  Commands,
+  Effects,
+  Modules,
+  Tests,
+  Types,
+  World,
+  Capability,
+} from "./primitives";
 import { Contexts } from "./simulation";
 import { CrochetTrace } from "./tracing";
 
@@ -32,6 +41,16 @@ export function make_universe() {
   const Unknown = new CrochetType(
     null,
     "unknown",
+    "",
+    Any,
+    [],
+    [],
+    false,
+    null
+  );
+  const Protected = new CrochetType(
+    null,
+    "protected",
     "",
     Any,
     [],
@@ -268,6 +287,7 @@ export function make_universe() {
   );
 
   world.native_types.define("crochet.core/core.any", Any);
+  world.native_types.define("crochet.core/core.protected", Protected);
   world.native_types.define("crochet.core/core.unknown", Unknown);
   world.native_types.define("crochet.core/core.nothing", Nothing);
   world.native_types.define("crochet.core/core.boolean", Boolean);
@@ -308,6 +328,7 @@ export function make_universe() {
   return new Universe(new CrochetTrace(), world, XorShift.new_random(), {
     Any,
     Unknown,
+    Protected,
     Nothing,
     True,
     False,
@@ -583,6 +604,53 @@ export function load_declaration(
 
       type.traits.add(trait);
       trait.implemented_by.add(type);
+      break;
+    }
+
+    case t.CAPABILITY: {
+      const capability = new CrochetCapability(
+        module,
+        declaration.name,
+        declaration.documentation,
+        declaration.meta
+      );
+      Capability.define_capability(module, capability);
+      break;
+    }
+
+    case t.PROTECT: {
+      const et = IR.ProtectEntityTag;
+      const entity = declaration.entity;
+      const entity_type = declaration.type;
+      const capability = Capability.get_capability(
+        module,
+        declaration.capability
+      );
+      switch (entity_type) {
+        case et.TYPE: {
+          Capability.protect_type(universe, module, entity, capability);
+          break;
+        }
+
+        case et.EFFECT: {
+          Capability.protect_effect(universe, module, entity, capability);
+          break;
+        }
+
+        case et.TRAIT: {
+          Capability.protect_trait(universe, module, entity, capability);
+          break;
+        }
+
+        case et.DEFINE: {
+          Capability.protect_definition(universe, module, entity, capability);
+          break;
+        }
+
+        default: {
+          throw unreachable(entity_type, "Entity type");
+        }
+      }
       break;
     }
 

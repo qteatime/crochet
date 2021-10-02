@@ -57,3 +57,14 @@ export function get_type_namespace(
 export function get_trait_namespace(module: CrochetModule) {
   return module.pkg.traits;
 }
+
+export function get_global(module: CrochetModule, name: string) {
+  const value = module.definitions.try_lookup(name);
+  if (value == null) {
+    throw new ErrArbitrary(
+      "undefined",
+      `The definition ${name} is not accessible from ${module_location(module)}`
+    );
+  }
+  return value;
+}
