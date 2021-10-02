@@ -201,6 +201,23 @@ class CrochetIRDecoder extends BinaryReader {
         );
       }
 
+      case t.CAPABILITY: {
+        return new IR.DCapability(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case t.PROTECT: {
+        return new IR.DProtect(
+          this.decode_meta_id(),
+          this.string(),
+          this.decode_enum_tag(IR.ProtectEntityTag, "entity type"),
+          this.string()
+        );
+      }
+
       default:
         throw unreachable(tag, "Declaration");
     }

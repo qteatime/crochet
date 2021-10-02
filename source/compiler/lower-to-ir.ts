@@ -1930,6 +1930,34 @@ export class LowerToIR {
         const id = this.context.register(pos);
         return [new IR.DImplementTrait(id, this.trait(trait), this.type(type))];
       },
+
+      Capability: (pos, cmeta, name) => {
+        const id = this.context.register(pos);
+        return [new IR.DCapability(id, this.documentation(cmeta), name.name)];
+      },
+
+      Protect: (pos, capability, entity) => {
+        const id = this.context.register(pos);
+        const [type, entity_name] = entity.match({
+          Definition: (_, name) => {
+            return [IR.ProtectEntityTag.DEFINE, name.name];
+          },
+
+          Effect: (_, name) => {
+            return [IR.ProtectEntityTag.EFFECT, name.name];
+          },
+
+          Type: (_, name) => {
+            return [IR.ProtectEntityTag.TYPE, name.name];
+          },
+
+          Trait: (_, name) => {
+            return [IR.ProtectEntityTag.TRAIT, name.name];
+          },
+        });
+
+        return [new IR.DProtect(id, capability.name, type, entity_name)];
+      },
     });
   }
 

@@ -29,6 +29,14 @@ type Declaration =
   | Local(pos: Meta, decl: Declaration)
   | Test(pos: Meta, title: String, body: Statement[])
   | Effect(pos: Meta, cmeta: Metadata, name: Name, cases: EffectCase[])
+  | Capability(pos: Meta, cmeta: Metadata, name: Name)
+  | Protect(pos: Meta, capability: Name, entity: ProtectEntity)
+
+type ProtectEntity =
+  | Type(pos: Meta, name: Name)
+  | Trait(pos: Meta, name: Name)
+  | Effect(pos: Meta, name: Name)
+  | Definition(pos: Meta, name: Name)
 
 type EffectCase(pos: Meta, cmeta: Metadata, name: Name, params: Parameter[])
 
@@ -266,6 +274,22 @@ grammar Crochet : Program {
     | effectDeclaration
     | traitDeclaration
     | traitImplementDeclaration
+    | capabilityDeclaration
+    | protectDeclaration
+
+  capabilityDeclaration =
+    | m:declarationMeta capability_ n:atom s<";">
+      -> Declaration.Capability(meta, m, n)
+
+  protectDeclaration =
+    | protect_ e:protectEntity with_ c:atom s<";">
+      -> Declaration.Protect(meta, c, e)
+
+  protectEntity =
+    | type_ n:atom    -> ProtectEntity.Type(meta, n)
+    | effect_ n:atom  -> ProtectEntity.Effect(meta, n)
+    | define_ n:atom  -> ProtectEntity.Definition(meta, n)
+    | trait_ n:atom   -> ProtectEntity.Trait(meta, n)
 
   traitDeclaration =
     | m:declarationMeta trait_ n:atom with_ cs:traitInstruction+ end_
@@ -1171,6 +1195,8 @@ grammar Crochet : Program {
   implement_ = kw<"implement">
   has_ = kw<"has">
   global_ = kw<"global">
+  capability_ = kw<"capability">
+  protect_ = kw<"protect">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | action_
@@ -1182,5 +1208,5 @@ grammar Crochet : Program {
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
     | effect_ | handle_ | continue_ | perform_ | dsl_ | trait_ | implement_ | has_
-    | global_
+    | global_ | capability_ | protect_
 }
