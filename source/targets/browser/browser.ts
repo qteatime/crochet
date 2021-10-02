@@ -141,11 +141,8 @@ export class CrochetForBrowser {
       graph: Package.PackageGraph,
       root: Package.Package
     ) => {
-      const requirements = new Set(graph.capability_requirements.keys());
-      return (
-        Package.missing_capabilities(this.capabilities, requirements).size === 0
-      );
       // TODO: implement capability granting
+      return this.capabilities;
     },
 
     booted: async () => {},

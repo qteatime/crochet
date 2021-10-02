@@ -2,7 +2,7 @@ import * as Path from "path";
 
 import { Capability, file, File, Package, Target } from "./ir";
 import { logger } from "../utils/logger";
-import { union } from "../utils/collections";
+import { intersect, union } from "../utils/collections";
 import {
   describe_target,
   missing_capabilities,
@@ -127,7 +127,7 @@ export class PackageGraph {
       // check native capabilities
       if (
         pkg.native_sources.length !== 0 &&
-        native_allowed(pkg, capabilities)
+        !native_allowed(pkg, capabilities)
       ) {
         throw new Error(
           [
@@ -137,6 +137,12 @@ export class PackageGraph {
             [...capabilities].join(", "),
           ].join("")
         );
+      }
+
+      // commit required capabilities
+      pkg.granted_capabilities.clear();
+      for (const x of pkg.required_capabilities) {
+        pkg.granted_capabilities.add(x);
       }
 
       // check dependencies recursively
@@ -171,6 +177,25 @@ export class PackageGraph {
   check(root: ResolvedPackage, capabilities: Set<Capability>) {
     this.check_target(root);
     this.check_capabilities(root, capabilities);
+  }
+
+  commit_capabilities(root: ResolvedPackage, capabilities: Set<Capability>) {
+    const self = this;
+
+    function commit(pkg: ResolvedPackage, capabilities: Set<Capability>) {
+      const granted = intersect(capabilities, pkg.required_capabilities);
+      for (const cap of granted) {
+        pkg.granted_capabilities.add(cap);
+      }
+
+      for (const dep of pkg.dependencies) {
+        const dep_grants = intersect(capabilities, dep.capabilities);
+        const dep_pkg = self.get_package(dep.name);
+        commit(dep_pkg, dep_grants);
+      }
+    }
+
+    commit(root, capabilities);
   }
 
   *serialise(root: ResolvedPackage) {
@@ -255,6 +280,8 @@ export class ResolvedFile {
 }
 
 export class ResolvedPackage {
+  readonly granted_capabilities = new Set<Capability>();
+
   constructor(readonly pkg: Package, readonly target: Target) {}
 
   get name() {

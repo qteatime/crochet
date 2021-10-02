@@ -57,7 +57,22 @@ export class CrochetForNode {
   }
 
   get trusted_core() {
-    return new Set(["crochet.core", "crochet.debug"]);
+    // TODO: restrict TCB (needs safer native modules support)
+    return new Set([
+      "crochet.codec.basic",
+      "crochet.core",
+      "crochet.debug",
+      "crochet.language.cli-arguments",
+      "crochet.language.csv",
+      "crochet.language.json",
+      "crochet.mathematics",
+      "crochet.novella",
+      "crochet.parsing.combinators",
+      "crochet.random",
+      "crochet.text.parsing.lingua",
+      "crochet.text.regex",
+      "crochet.time",
+    ]);
   }
 
   get system() {
@@ -186,15 +201,13 @@ export class CrochetForNode {
       );
 
       if (!this.interactive) {
-        return (
-          Package.missing_capabilities(this.capabilities, required).size === 0
-        );
+        return this.capabilities;
       } else {
         const config = StorageConfig.load();
         const previous = config.grants(root.meta.name)?.capabilities ?? null;
 
         if (required.size === 0) {
-          return true;
+          return this.capabilities;
         } else if (previous == null) {
           return this.request_new_capabilities(config, requirements, root);
         } else {
@@ -209,7 +222,7 @@ export class CrochetForNode {
               root
             );
           } else {
-            return true;
+            return caps;
           }
         }
       }
@@ -236,14 +249,13 @@ export class CrochetForNode {
       ].join("")
     );
     if (!(await question("[yes/no]> "))) {
-      console.log(`Aborting due to lack of capabilities.`);
-      return false;
+      return this.capabilities;
     } else {
       config.update_grants(root.meta.name, [...requirements.keys()]);
       for (const cap of requirements.keys()) {
         this.capabilities.add(cap);
       }
-      return true;
+      return this.capabilities;
     }
   }
 
@@ -273,14 +285,13 @@ export class CrochetForNode {
       ].join("")
     );
     if (!(await question("[yes/no]> "))) {
-      console.log(`Aborting due to lack of capabilities.`);
-      return false;
+      return this.capabilities;
     } else {
       config.update_grants(root.meta.name, [...requirements.keys()]);
       for (const cap of requirements.keys()) {
         this.capabilities.add(cap);
       }
-      return true;
+      return this.capabilities;
     }
   }
 
@@ -289,7 +300,7 @@ export class CrochetForNode {
   ) {
     return [...requirements.entries()]
       .map(([cap, pkgs]) => {
-        return `  - ${cap} (from ${pkgs.map((x) => x.name).join(", ")})`;
+        return `  - ${cap} (required by ${pkgs.map((x) => x.name).join(", ")})`;
       })
       .join("\n");
   }

@@ -5,7 +5,7 @@ import * as VM from "../vm";
 import * as Binary from "../binary";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
-import { CrochetValue, Environment, CrochetTrace } from "../vm";
+import { CrochetValue, Environment, CrochetTrace, ErrArbitrary } from "../vm";
 
 export interface IFileSystem {
   read_package(name: string): Promise<Package.Package>;
@@ -24,7 +24,7 @@ export interface ISignal {
   request_capabilities(
     graph: Package.PackageGraph,
     root: Package.Package
-  ): Promise<boolean>;
+  ): Promise<Set<Package.Capability>>;
 
   booted(vm: BootedCrochet): Promise<void>;
 }
@@ -43,12 +43,10 @@ export class Crochet {
       this.trusted,
       this.resolver
     );
-    if (await this.signal.request_capabilities(graph, pkg)) {
-    } else {
-      throw new Error(
-        `Aborting boot because the system denied the required capabilities.`
-      );
-    }
+    const capabilities = await this.signal.request_capabilities(graph, pkg);
+    const root_pkg = graph.get_package(root);
+    graph.check(root_pkg, capabilities);
+    graph.commit_capabilities(root_pkg, capabilities);
 
     const vm = new BootedCrochet(this, graph);
     await this.signal.booted(vm);
@@ -119,6 +117,9 @@ export class BootedCrochet {
     for (const x of this.graph.serialise(pkg)) {
       await this.load_package(x);
     }
+    for (const x of this.graph.serialise(pkg)) {
+      this.reify_capability_grants(x);
+    }
 
     await VM.run_prelude(this.universe);
   }
@@ -145,6 +146,23 @@ export class BootedCrochet {
 
     for (const x of pkg.sources) {
       await this.load_source(x, pkg, cpkg);
+    }
+  }
+
+  private reify_capability_grants(pkg: Package.ResolvedPackage) {
+    const cpkg = this.universe.world.packages.get(pkg.name);
+    if (cpkg == null) {
+      throw new Error(`The package ${pkg.name} is not loaded.`);
+    }
+    for (const x of pkg.granted_capabilities) {
+      const capability = this.universe.world.capabilities.try_lookup(x);
+      if (capability == null) {
+        throw new ErrArbitrary(
+          "invalid-capability",
+          `Could not load package ${pkg.name}. It requires a capability ${x} that either does not exist or has not been loaded yet.`
+        );
+      }
+      cpkg.granted_capabilities.add(capability);
     }
   }
 
