@@ -136,6 +136,8 @@ export function assert_capabilities(
   operation: string,
   name: string
 ) {
+  if (required.size === 0) return;
+
   const granted = module.pkg.granted_capabilities;
   for (const r of required) {
     if (granted.has(r)) return;
