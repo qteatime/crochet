@@ -9,3 +9,9 @@ type duration(
 );
 type instant(x); // x :: box<Date>
 type plain-date-time(instant is instant);
+
+
+capability wall-clock;
+singleton wall-clock;
+protect type wall-clock with wall-clock;
+protect global wall-clock with wall-clock;

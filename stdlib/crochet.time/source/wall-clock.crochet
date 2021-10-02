@@ -1,8 +1,4 @@
 % crochet
 
-open crochet.time;
-
-singleton wall-clock;
-
 command wall-clock now =
   #instant from-milliseconds: (foreign clock.now());
