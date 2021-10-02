@@ -288,7 +288,7 @@ grammar Crochet : Program {
   protectEntity =
     | type_ n:atom    -> ProtectEntity.Type(meta, n)
     | effect_ n:atom  -> ProtectEntity.Effect(meta, n)
-    | define_ n:atom  -> ProtectEntity.Definition(meta, n)
+    | global_ n:atom  -> ProtectEntity.Definition(meta, n)
     | trait_ n:atom   -> ProtectEntity.Trait(meta, n)
 
   traitDeclaration =
