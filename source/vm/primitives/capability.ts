@@ -153,3 +153,56 @@ export function assert_capabilities(
     )}`
   );
 }
+
+export function assert_projection_capability(
+  module: CrochetModule,
+  value: CrochetValue,
+  name: string
+) {
+  const type_pkg = value.type.module?.pkg;
+  if (!type_pkg) {
+    throw new ErrArbitrary(
+      "lacking-capability",
+      `Projecting ${name} from ${Location.type_name(
+        value.type
+      )} is not possible, as it's an intrinsic type. Intrinsic types can only be managed by the Crochet runtime for security.`
+    );
+  }
+
+  if (module.pkg !== type_pkg) {
+    throw new ErrArbitrary(
+      "lacking-capability",
+      `Projecting ${name} from ${Location.type_name(
+        value.type
+      )} is not possible in ${Location.module_location(
+        module
+      )}. Projecting values is only allowed inside of its declaring package---the package must expose commands if it wants fields to be accessible externally.`
+    );
+  }
+}
+
+export function assert_construct_capability(
+  module: CrochetModule,
+  type: CrochetType
+) {
+  const type_pkg = type.module?.pkg;
+  if (!type_pkg) {
+    throw new ErrArbitrary(
+      "lacking-capability",
+      `Constructing ${Location.type_name(
+        type
+      )} is not possible, as it's an intrinsic type. Intrinsic types can only be constructed by the Crochet runtime for security.`
+    );
+  }
+
+  if (module.pkg !== type_pkg) {
+    throw new ErrArbitrary(
+      "lacking-capability",
+      `Constructing ${Location.type_name(
+        type
+      )} is not possible in ${Location.module_location(
+        module
+      )}. Constructing types directly is only allowed inside of its declaring package---the package must expose commands if it wants the type to be constructed externally.`
+    );
+  }
+}

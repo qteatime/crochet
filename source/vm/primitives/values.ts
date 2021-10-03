@@ -299,7 +299,11 @@ export function text_to_string(x: CrochetValue) {
   return x.payload;
 }
 
-export function project(value: CrochetValue, key: string): CrochetValue {
+export function project(
+  value: CrochetValue,
+  key: string,
+  assert_capability: (value: CrochetValue) => void
+): CrochetValue {
   switch (value.tag) {
     case Tag.RECORD: {
       assert_tag(Tag.RECORD, value);
@@ -318,6 +322,7 @@ export function project(value: CrochetValue, key: string): CrochetValue {
 
     case Tag.INSTANCE: {
       assert_tag(Tag.INSTANCE, value);
+      assert_capability(value);
       const index = value.type.layout.get(key);
       if (index == null) {
         throw new ErrArbitrary(
@@ -342,7 +347,9 @@ export function project(value: CrochetValue, key: string): CrochetValue {
 
     case Tag.LIST: {
       assert_tag(Tag.LIST, value);
-      const results = value.payload.map((x) => project(x, key));
+      const results = value.payload.map((x) =>
+        project(x, key, assert_capability)
+      );
       return new CrochetValue(Tag.LIST, value.type, results);
     }
 
