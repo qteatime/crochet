@@ -161,16 +161,20 @@ export function assert_projection_capability(
   name: string
 ) {
   const type_pkg = value.type.module?.pkg;
-  if (!type_pkg && !universe.trusted_base.has(module.pkg)) {
-    throw new ErrArbitrary(
-      "lacking-capability",
-      `Projecting ${name} from ${Location.type_name(
-        value.type
-      )} is not possible, as it's an intrinsic type. Intrinsic types can only be managed by the Crochet runtime for security.`
-    );
+  if (!type_pkg) {
+    if (!universe.trusted_base.has(module.pkg)) {
+      throw new ErrArbitrary(
+        "lacking-capability",
+        `Projecting ${name} from ${Location.type_name(
+          value.type
+        )} is not possible, as it's an intrinsic type. Intrinsic types can only be managed by the Crochet runtime for security.`
+      );
+    } else {
+      return;
+    }
   }
 
-  if (module.pkg !== type_pkg && !universe.trusted_base.has(module.pkg)) {
+  if (module.pkg !== type_pkg) {
     throw new ErrArbitrary(
       "lacking-capability",
       `Projecting ${name} from ${Location.type_name(
@@ -188,16 +192,20 @@ export function assert_construct_capability(
   type: CrochetType
 ) {
   const type_pkg = type.module?.pkg;
-  if (!type_pkg && !universe.trusted_base.has(module.pkg)) {
-    throw new ErrArbitrary(
-      "lacking-capability",
-      `Constructing ${Location.type_name(
-        type
-      )} is not possible, as it's an intrinsic type. Intrinsic types can only be constructed by the Crochet runtime for security.`
-    );
+  if (!type_pkg) {
+    if (!universe.trusted_base.has(module.pkg)) {
+      throw new ErrArbitrary(
+        "lacking-capability",
+        `Constructing ${Location.type_name(
+          type
+        )} is not possible, as it's an intrinsic type. Intrinsic types can only be constructed by the Crochet runtime for security.`
+      );
+    } else {
+      return;
+    }
   }
 
-  if (module.pkg !== type_pkg && !universe.trusted_base.has(module.pkg)) {
+  if (module.pkg !== type_pkg) {
     throw new ErrArbitrary(
       "lacking-capability",
       `Constructing ${Location.type_name(
