@@ -155,12 +155,13 @@ export function assert_capabilities(
 }
 
 export function assert_projection_capability(
+  universe: Universe,
   module: CrochetModule,
   value: CrochetValue,
   name: string
 ) {
   const type_pkg = value.type.module?.pkg;
-  if (!type_pkg) {
+  if (!type_pkg && !universe.trusted_base.has(module.pkg)) {
     throw new ErrArbitrary(
       "lacking-capability",
       `Projecting ${name} from ${Location.type_name(
@@ -169,7 +170,7 @@ export function assert_projection_capability(
     );
   }
 
-  if (module.pkg !== type_pkg) {
+  if (module.pkg !== type_pkg && !universe.trusted_base.has(module.pkg)) {
     throw new ErrArbitrary(
       "lacking-capability",
       `Projecting ${name} from ${Location.type_name(
@@ -182,11 +183,12 @@ export function assert_projection_capability(
 }
 
 export function assert_construct_capability(
+  universe: Universe,
   module: CrochetModule,
   type: CrochetType
 ) {
   const type_pkg = type.module?.pkg;
-  if (!type_pkg) {
+  if (!type_pkg && !universe.trusted_base.has(module.pkg)) {
     throw new ErrArbitrary(
       "lacking-capability",
       `Constructing ${Location.type_name(
@@ -195,7 +197,7 @@ export function assert_construct_capability(
     );
   }
 
-  if (module.pkg !== type_pkg) {
+  if (module.pkg !== type_pkg && !universe.trusted_base.has(module.pkg)) {
     throw new ErrArbitrary(
       "lacking-capability",
       `Constructing ${Location.type_name(
