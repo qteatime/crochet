@@ -164,6 +164,9 @@ export class BootedCrochet {
       }
       cpkg.granted_capabilities.add(capability);
     }
+    if (this.graph.trusted.has(pkg.pkg)) {
+      this.universe.trusted_base.add(cpkg);
+    }
   }
 
   private async load_native(

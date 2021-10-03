@@ -492,6 +492,11 @@ export class Thread {
           op.type
         );
         const type = Capability.free_type(this.module, type0);
+        Capability.assert_construct_capability(
+          this.universe,
+          this.module,
+          type
+        );
         const value = Values.instantiate(type, values);
         this.push(activation, value);
         activation.next();
@@ -754,7 +759,14 @@ export class Thread {
       case t.PROJECT: {
         const [key0, value0] = this.pop_many(activation, 2);
         const key = Values.text_to_string(key0);
-        const result = Values.project(value0, key);
+        const result = Values.project(value0, key, (value) =>
+          Capability.assert_projection_capability(
+            this.universe,
+            this.module,
+            value,
+            key
+          )
+        );
         this.push(activation, result);
         activation.next();
         return _continue;
@@ -762,7 +774,14 @@ export class Thread {
 
       case t.PROJECT_STATIC: {
         const value = this.pop(activation);
-        const result = Values.project(value, op.key);
+        const result = Values.project(value, op.key, (value) =>
+          Capability.assert_projection_capability(
+            this.universe,
+            this.module,
+            value,
+            op.key
+          )
+        );
         this.push(activation, result);
         activation.next();
         return _continue;

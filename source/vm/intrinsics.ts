@@ -850,6 +850,7 @@ export class Universe {
   readonly false: CrochetValue;
   readonly integer_cache: CrochetValue[];
   readonly float_cache: CrochetValue[];
+  readonly trusted_base = new Set<CrochetPackage>();
 
   constructor(
     readonly trace: CrochetTrace,
