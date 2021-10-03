@@ -492,6 +492,7 @@ export class Thread {
           op.type
         );
         const type = Capability.free_type(this.module, type0);
+        Capability.assert_construct_capability(this.module, type);
         const value = Values.instantiate(type, values);
         this.push(activation, value);
         activation.next();
