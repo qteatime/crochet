@@ -26,12 +26,6 @@ command agata-widget title: (Title is text) =
 command agata-widget subtitle: (Subtitle is text) =
   new w-container("h3", "agata-subtitle", [new w-text(Subtitle)]);
 
-command agata-widget flex-row: (Children is list<widget>) =
-  new w-container("div", "agata-flex-row", Children);
-
-command agata-widget flex-column: (Children is list<widget>) =
-  new w-container("div", "agata-flex-column", Children);
-
 command agata-widget card: (Children is list<widget>) =
   new w-container("div", "agata-card", Children);
 
@@ -43,6 +37,33 @@ command agata-widget card-title: (Title is text) =
 
 command agata-widget card-description: (Description is text) =
   new w-container("div", "agata-card-description", [new w-text(Description)]);
+
+command agata-widget paragraph: (Children is list<widget>) =
+  new w-container("p", "agata-paragraph", Children);
+
+command agata-widget group: (Children is list<widget>) =
+  new w-container("div", "agata-group", Children);
+
+command agata-widget group-heading: (Children is list<widget>) =
+  new w-container("div", "agata-group-heading", Children);
+
+command agata-widget group-subheading: (Children is list<widget>) =
+  new w-container("div", "agata-group-subheading", Children);
+
+command agata-widget group-meta: (Children is list<widget>) =
+  new w-container("div", "agata-group-meta", Children);
+
+command agata-widget divider =
+  new w-container("div", "agata-divider", []);
+
+command agata-widget vertical-divider =
+  new w-container("div", "agata-vertical-divider", []);
+
+command agata-widget space =
+  new w-container("div", "agata-space", []);
+
+command agata-widget double-space =
+  new w-container("div", "agata-double-space", []);
 
 command w-container with: (Children is list<widget>) =
   new w-container(self.tag, self.class, Children);
@@ -96,7 +117,7 @@ command agata-widget action-list: (Children is list<widget>) =
   new w-container("div", "agata-action-list", Children);
 
 command agata-widget action-button =
-  new w-action-button("", "", "", {});
+  new w-action-button("", "", "", {_ in nothing});
 
 command w-action-button icon: (Name is text) =
   new w-action-button(Name, self.title, self.description, self.on-click);
@@ -121,3 +142,51 @@ command wn-tab with: (Children is list<widget>) =
   new wn-tab(self.title, Children);
 
 
+command agata-widget flex-row: (Children is list<widget>) =
+  new w-flex-row(Children);
+
+command agata-widget flex-column: (Children is list<widget>) =
+  new w-flex-column(Children);
+
+command agata-widget flex-column =
+  new w-flex-column([]);
+
+command agata-widget flex-row =
+  new w-flex-row([]);
+
+command w-flex-column with: (Children is list<widget>) =
+  new w-flex-column(self.gap, Children);
+
+command w-flex-row with: (Children is list<widget>) =
+  new w-flex-row(self.gap, Children);
+
+
+command widget layout =
+  new w-layout(#layout empty, self);
+
+command w-layout layout =
+  self;
+
+command w-layout gap: (X is measure) =
+  new w-layout(
+    self.layout at: "gap" put: new gap(X, X),
+    self.child
+  );
+
+command w-layout gap-horizontal: (X is measure) vertical: (Y is measure) =
+  new w-layout(self.layout at: "gap" put: new gap(X, Y), self.child);
+
+command w-layout width: (X is measure) =
+  new w-layout(self.layout at: "width" put: X, self.child);
+
+command w-layout flex-grow =
+  new w-layout(self.layout at: "flex-grow" put: "1", self.child);
+
+command #layout empty =
+  new layout([->]);
+
+command layout at: Key put: Value =
+  new layout(self.properties at: Key put: Value);
+
+command layout pairs =
+  self.properties pairs;

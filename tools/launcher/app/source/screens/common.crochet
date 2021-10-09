@@ -1,6 +1,6 @@
 % crochet
 
-define w = agata-widget;
+local define w = agata-widget;
 
 command purr-common-widgets window: (Top is list<widget>) with: (Children is list<widget>) do
   w window: ([
@@ -14,12 +14,12 @@ command purr-common-widgets window: (Top is list<widget>) with: (Children is lis
 end
 
 command purr-common-widgets project-menu: (Project is purr-project) do
-  w list: [
+  w flex-column: [
     w action-button
       | icon: "home"
       | title: "Summary"
       | description: "Basic information about the project"
-      | on-click: { _ in perform purr.open-project(Project) },
+      | on-click: { _ in purr project-summary: Project },
 
     w action-button
       | icon: "play"
@@ -40,5 +40,6 @@ command purr-common-widgets project-menu: (Project is purr-project) do
       | icon: "gamepad"
       | title: "Playground"
       | description: "Interactively experiment with the project",
-  ];
+  ]
+  | layout | gap: 0 pixels;
 end

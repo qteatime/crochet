@@ -1,5 +1,7 @@
 % crochet
 
+local singleton module;
+
 command purr-project name =
   self.metadata.name;
 
@@ -11,3 +13,42 @@ command purr-project description =
   self.metadata
     | at: "description" default: "(no description)";
 
+command purr-project stability =
+  self.metadata
+    | at: "stability" default: "(not defined)";
+
+command purr-project target =
+  self.metadata
+    | at: "target" default: "*";
+
+command purr-project capabilities do
+  let Cap = self.metadata at: "capabilities" default: [->];
+  let Required = Cap at: "requires" default: [];
+  let Provided = Cap at: "provides" default: [];
+
+  new purr-package-capabilities(
+    Required map: { X in new purr-capability(X) },
+    Provided map: { X in new purr-capability(X) }
+  );
+end
+
+command purr-project dependencies do
+  let Deps = self.metadata at: "dependencies" default: [->];
+  for Dep in Deps do module parse-dependency: Dep end;
+end
+
+command module parse-dependency: (X is text) do
+  new purr-dependency(X, "*", []);
+end
+
+command module parse-dependency: (X is record) do
+  new purr-dependency(
+    X.name,
+    X at: "target" default: "*",
+    module parse-capabilities: (X at: "capabilities" default: [])
+  )
+end
+
+command module parse-capabilities: Xs do
+  for C in Xs do new purr-capability(C) end
+end

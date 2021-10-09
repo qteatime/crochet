@@ -150,11 +150,16 @@ export class BootedCrochet {
   }
 
   private reify_capability_grants(pkg: Package.ResolvedPackage) {
+    const intrinsics = new Set(["native"]);
     const cpkg = this.universe.world.packages.get(pkg.name);
     if (cpkg == null) {
       throw new Error(`The package ${pkg.name} is not loaded.`);
     }
     for (const x of pkg.granted_capabilities) {
+      if (intrinsics.has(x)) {
+        continue;
+      }
+
       const capability = this.universe.world.capabilities.try_lookup(x);
       if (capability == null) {
         throw new ErrArbitrary(

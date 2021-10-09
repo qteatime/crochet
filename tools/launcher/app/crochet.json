@@ -4,6 +4,7 @@
   "sources": [
     "source/0-types.crochet",
     "source/ui/0-types.crochet",
+    "source/ui/measure.crochet",
     "source/ui/widget.crochet",
     "source/ui/render.crochet",
     "source/ui/api.crochet",

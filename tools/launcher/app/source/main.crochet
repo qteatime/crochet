@@ -2,18 +2,14 @@
 
 command main-html: Root do
   agata with-root: Root do: {
-    purr with-default-handlers: {
-      agata show: ps-welcome;
-    }
+    agata show: ps-welcome render;
   };
 end
 
-command purr with-default-handlers: (Block is (() -> any)) do
-  handle
-    Block();
-  with
-    on purr.open-project(Project) do
-      agata show: new ps-summary(Project);
-    end
-  end
+command purr project-summary: (Project is purr-project) do
+  agata show: new ps-summary(Project) render;
+end
+
+command purr home do
+  agata show: ps-welcome render;
 end

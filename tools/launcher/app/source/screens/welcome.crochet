@@ -1,9 +1,10 @@
 % crochet
 
-define w = agata-widget;
+local define w = agata-widget;
+local define cw = purr-common-widgets;
 
 command ps-welcome render do
-  w window: [] with: [
+  cw window: [] with: [
     w tabbed-panel: [
       w tab: "My projects"
         | with: [self my-projects],
@@ -25,13 +26,13 @@ command ps-welcome my-projects do
         | icon: "plus"
         | title: "New project"
         | description: "Create a new project based on a template"
-        | on-click: { _ in perform purr.new-project() },
+        | on-click: { _ in purr new-project },
 
       w action-button
         | icon: "file-import"
         | title: "Import a project"
         | description: "Add an existing project to the launcher"
-        | on-click: { _ in perform purr.import-project() }
+        | on-click: { _ in purr import-project }
     ]
   ]
 end
@@ -53,7 +54,7 @@ command ps-welcome project: (Project is purr-project) do
   w card: [    
     w button
       | title: "Open [Project name]" flatten-into-plain-text
-      | on-click: { _ in perform purr.open-project(Project) }
+      | on-click: { _ in purr project-summary: Project }
       | with: [
           w card-image: [self project-icon: Project],
           w card-title: Project title,

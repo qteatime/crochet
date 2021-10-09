@@ -71,6 +71,41 @@ command dom-renderer render: (X is wn-tab) do
   [X.title, Children];
 end
 
+command dom-renderer render: (X is w-flex-column) do
+  self render: new w-container("div", "agata-flex-column", X.children);
+end
+
+command dom-renderer render: (X is w-flex-row) do
+  self render: new w-container("div", "agata-flex-row", X.children);
+end
+
+command dom-renderer render: (X is w-layout) do
+  let Node = self render: X.child;
+  let Box = Node.box;
+  for Property in X.layout pairs do
+    let Value = self to-css: Property value;
+    foreign dom.set-style(Property key, Value, Box);
+  end
+  Node
+end
+
+command dom-renderer to-css: (P is gap) =
+  "[self to-css: P.horizontal] [self to-css: P.vertical]" flatten-into-plain-text;
+
+command dom-renderer to-css: (M is pixels) =
+  "[M.value to-text]px" flatten-into-plain-text;
+
+command dom-renderer to-css: (M is percent) =
+  "[M.value to-text]%" flatten-into-plain-text;
+
+command dom-renderer to-css: (M is em) =
+  "[M.value to-text]em" flatten-into-plain-text;
+
+command dom-renderer to-css: (X is text) =
+  X;
+
+command dom-renderer to-css: (X is numeric) =
+  X to-text;
 
 command dom-canvas render: (X is widget) do
   let Node = dom-renderer render: X;

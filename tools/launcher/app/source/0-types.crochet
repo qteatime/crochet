@@ -9,6 +9,21 @@ type purr-project(
   metadata
 );
 
+type purr-package-capabilities(
+  global required is list<purr-capability>,
+  global provided is list<purr-capability>
+);
+
+type purr-capability(
+  global name is text
+);
+
+type purr-dependency(
+  global name is text,
+  global target is text,
+  global capabilities is list<purr-capability>
+);
+
 // type purr-project(
 //   name is text,
 //   description is text,

@@ -1,10 +1,98 @@
 % crochet
 
-define w = agata-widget;
-define cw = purr-common-widgets;
+local define w = agata-widget;
+local define cw = purr-common-widgets;
 
 command ps-summary render do
-  w window: [w title: self.project title] with: [
-    cw project-menu: self.project
+  cw window: [w title: self.project title] with: [
+    w flex-row: [
+      cw project-menu: self.project
+        | layout 
+        | width: 30 percent,
+
+      w contents: [
+        w title: self.project title,
+        w paragraph: [
+          w text: self.project description
+        ],
+
+        w tabbed-panel: [
+          w tab: "Metadata"
+            | with: [w space, self metadata],
+          
+          w tab: "Capabilities"
+            | with: [w space, self capabilities],
+
+          w tab: "Dependencies"
+            | with: [w space, self dependencies],
+        ]
+      ]
+      | layout
+      | flex-grow
+    ]
   ]
+end
+
+command ps-summary metadata do
+  w flex-column: [
+    self group: "Package name"
+         with: [w text: self.project name],
+
+    self group: "Stability"
+         with: [w text: self.project stability],
+
+    self group: "Target platforms"
+         with: [w text: self.project target]
+  ]
+end
+
+command ps-summary capabilities do
+  w flex-column: [
+    w subtitle: "Required capabilities",
+    self capability-list: self.project capabilities required,
+
+    w double-space,
+    w subtitle: "Provided capabilities",
+    self capability-list: self.project capabilities provided,
+  ]
+end
+
+command ps-summary capability-list: List do
+  w flex-column: (
+    for C in List do self capability: C end
+  )
+end
+
+command ps-summary capability: C do
+  w container: [w text: C name]
+end
+
+command ps-summary dependencies do
+  w flex-column: (
+    for Dep in self.project dependencies do
+      self dependency: Dep
+    end
+  )
+end
+
+command ps-summary dependency: Dep do
+  w group: [
+    w flex-row: [
+      w group-heading: [w text: Dep name],
+      w group-meta: [w text: Dep target],
+    ],
+
+    w flex-column: (
+      for C in Dep capabilities do
+        w container: [w text: C]
+      end
+    )
+  ]
+end
+
+command ps-summary group: Title with: Children do
+  w group: [
+    w group-heading: [w text: Title],
+    w container: Children
+  ];
 end

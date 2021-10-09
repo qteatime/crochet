@@ -130,4 +130,12 @@ export default (ffi: ForeignInterface) => {
 
     return ffi.box(panel);
   });
+
+  ffi.defun("dom.set-style", (name0, value0, node0) => {
+    const name = ffi.text_to_string(name0);
+    const value = ffi.text_to_string(value0);
+    const node = get_element(node0);
+    node.style[name as any] = value;
+    return ffi.nothing;
+  });
 };

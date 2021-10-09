@@ -110,12 +110,23 @@ export class CrochetForBrowser {
     return `${this.library_base}/${name}/crochet.json`;
   }
 
+  private is_trusted(pkg: Package.Package) {
+    return (
+      this.trusted_core.has(pkg.meta.name) &&
+      pkg.filename.startsWith("/library")
+    );
+  }
+
   fs: IFileSystem = {
     read_package: async (name: string) => {
       const filename = this.package_url(name);
       const response = await fetch(filename);
       const data = await response.json();
-      return Package.parse(data, filename);
+      const pkg = Package.parse(data, filename);
+      if (this.is_trusted(pkg)) {
+        this.crochet.trust(pkg);
+      }
+      return pkg;
     },
 
     read_file: async (file: string) => {

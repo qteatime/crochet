@@ -35,11 +35,15 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
   padding: 0 1em;
   background: white;
   border-bottom: 1px solid #ececea;
   row-gap: 0.5em;
+}
+
+.agata-top-bar .agata-title {
+  font-size: 28px;
+  padding-top: 6px;
 }
 
 .agata-contents {
@@ -177,6 +181,8 @@ body {
   flex-direction: row;
   padding: 0.3em 0.5em;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .agata-action-button .agata-action-icon {
@@ -297,4 +303,51 @@ body {
 .agata-card:hover {
   border-color: var(--active-accent);
   background: var(--active-bg);
+}
+
+.agata-paragraph {
+  margin-bottom: 1.5em;
+}
+
+.agata-group {
+  padding: 0.5em 0;
+  border-bottom: 1px solid #ececea;
+}
+
+.agata-group-heading {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 0.3em;
+}
+
+.agata-group-subheading {
+  font-weight: bold;
+  margin-bottom: 0.2em;
+  color: #777;
+}
+
+.agata-group-meta {
+  font-size: 0.9em;
+  color: #777;
+}
+
+.agata-divider {
+  background: #ececea;
+  height: 1px;
+}
+
+.agata-vertical-divider {
+  background: #ececea;
+  width: 1px;
+  height: 100%;
+}
+
+.agata-space {
+  width: 1em;
+  height: 1em;
+}
+
+.agata-double-space {
+  width: 2em;
+  height: 2em;
 }

@@ -30,8 +30,13 @@ export async function setup_server(port: number) {
     if (!source) {
       throw new Error(`Unknown image ${path}`);
     }
-    await build_file(source, rpkg);
-    res.sendFile(Path.resolve(source.binary_image));
+    try {
+      await build_file(source, rpkg);
+      res.sendFile(Path.resolve(source.binary_image));
+    } catch (e: any) {
+      console.error(e);
+      res.status(500).send(e.stack ?? e);
+    }
   });
 
   app.get("/app/native/*", async (req, res) => {
@@ -40,9 +45,11 @@ export async function setup_server(port: number) {
       (x) => x.relative_filename === "native/" + path
     );
     if (!source) {
-      throw new Error(`Unknown native source ${path}`);
+      console.error(`Unknown native source ${path}`);
+      res.status(404).send(`Unknown native source ${path}`);
+    } else {
+      res.sendFile(source.absolute_filename);
     }
-    res.sendFile(source.absolute_filename);
   });
 
   app.get("/app/crochet.json", async (req, res) => {

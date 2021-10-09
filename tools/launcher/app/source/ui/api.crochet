@@ -1,30 +1,30 @@
 % crochet
 
 command agata with-root: Root do: (Block is (() -> any)) do
-  let State = #cell with: new agata-state([], nothing);
+  let State = #cell with-value: new agata-state([], nothing);
   let Canvas = new dom-canvas(Root);
   handle
     Block();
   with
-    on agata-presentation.show(Page) do
-      Canvas render: Page render;
-      State <- State push: Page;
+    on agata-presentation.show(Widget) do
+      Canvas render: Widget;
+      State <- State value push: Widget;
       continue with nothing;
     end
   end
 end
 
-command agata show: Page = perform agata-presentation.show(Page);
+command agata show: Widget = perform agata-presentation.show(Widget);
 
 
-command agata-state push: Page do
+command agata-state push: Widget do
   condition
     when self.current is nothing do
-      new agata-state(self.history, Page);
+      new agata-state(self.history, Widget);
     end
 
     otherwise do
-      new agata-state(self.history append: self.current, Page);
+      new agata-state(self.history append: self.current, Widget);
     end
   end
 end
