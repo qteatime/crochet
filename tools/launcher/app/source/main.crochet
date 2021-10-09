@@ -1,0 +1,20 @@
+% crochet
+
+command main-html: Root do
+  handle
+    let Canvas = agata canvas: Root;
+    Canvas render: (purr-screen-welcome render);
+  with
+    on purr.home() do
+      Canvas render: (agata-widget text: "HOME!");
+    end
+
+    on purr.new-project() do
+      Canvas render: (agata-widget text: "New project!");
+    end
+
+    on purr.import-project() do
+      Canvas render: (agata-widget text: "Import!!!");
+    end
+  end
+end

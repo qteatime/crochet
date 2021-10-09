@@ -1,0 +1,79 @@
+% crochet
+
+command dom-renderer render: (X is w-container) do
+  let Children = for N in X.children do (self render: N).box end;
+  new dom-node(foreign dom.container(X.tag, X.class, Children));
+end
+
+command dom-renderer render: (X is w-style) do
+  self render: new w-container("div", X.class, X.children);
+end
+
+command dom-renderer render: (X is w-icon) do
+  new dom-node(foreign dom.icon(X.name));
+end
+
+command dom-renderer render: (X is w-text) do
+  new dom-node(foreign dom.text(X.contents));
+end
+
+command dom-renderer render: (X is w-button) do
+  let Handler = { Ev in X.on-click(new dom-event(Ev)) };
+  let Children = for N in X.children do (self render: N).box end;
+  new dom-node(foreign dom.button(X.title, Handler, Children));
+end
+
+command dom-renderer render: (X is w-action-button) do
+  self render: new w-style(
+    "agata-action-button",
+    [
+      new w-button(
+        X.title,
+        X.on-click,
+        [
+          new w-icon(X.icon),
+          new w-container("div", "agata-action-text", [
+            new w-container("div", "agata-action-text-title", [
+              new w-text(X.title)
+            ]),
+            new w-container("div", "agata-action-text-description", [
+              new w-text(X.description)
+            ])
+          ])
+        ]
+      )
+    ]
+  );
+end
+
+command dom-renderer render: (X is w-icon-button) do
+  self render: new w-style(
+    "agata-icon-button",
+    [
+      new w-button(
+        X.title,
+        X.on-click,
+        [
+          new w-icon(X.icon)
+        ]
+      )
+    ]
+  );
+end
+
+command dom-renderer render: (X is w-tabbed-panel) do
+  let Children = for N in X.tabs do self render: N end;
+  new dom-node(foreign dom.tabbed-panel(Children));
+end
+
+command dom-renderer render: (X is wn-tab) do
+  let Children = for N in X.contents do (self render: N).box end;
+  [X.title, Children];
+end
+
+
+command dom-canvas render: (X is widget) do
+  let Node = dom-renderer render: X;
+  foreign dom.render(self.box, Node.box);
+  self;
+end

@@ -1,0 +1,19 @@
+{
+  "name": "crochet.tools.launcher",
+  "target": "browser",
+  "sources": [
+    "source/0-types.crochet",
+    "source/ui/0-types.crochet",
+    "source/ui/widget.crochet",
+    "source/ui/render.crochet",
+    "source/ui/api.crochet",
+    "source/screens/welcome.crochet",
+    "source/main.crochet"
+  ],
+  "native_sources": ["native/dom.js"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": ["native"],
+    "provides": []
+  }
+}

@@ -1,0 +1,50 @@
+% crochet
+
+define w = agata-widget;
+
+command purr-screen-welcome render do
+  w window: [
+    w top-bar: [
+      w top-bar-panel: [
+        w icon-button: "home"
+          | on-click: { _ in perform purr.home() },
+      ]
+    ],
+
+    w tabbed-panel: [
+      w tab: "My projects"
+        | with: [self my-projects],
+      w tab: "Examples"
+        | with: [self examples],
+    ]
+  ]
+end
+
+command purr-screen-welcome my-projects do
+  w contents: [
+    w hero: [
+      w title: "You don't have any projects yet.",
+      w subtitle: "Create or import a project to start working",
+    ],
+
+    w action-list: [
+      w action-button
+        | icon: "plus"
+        | title: "New project"
+        | description: "Create a new project based on a template"
+        | on-click: { _ in perform purr.new-project() },
+
+      w action-button
+        | icon: "file-import"
+        | title: "Import a project"
+        | description: "Add an existing project to the launcher"
+        | on-click: { _ in perform purr.import-project() }
+    ]
+  ]
+end
+
+command purr-screen-welcome examples do
+  w contents: [
+    w text: "things will go here eventually!"
+  ]
+end

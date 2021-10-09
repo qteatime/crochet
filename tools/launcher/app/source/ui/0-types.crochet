@@ -1,0 +1,23 @@
+% crochet
+
+singleton agata;
+singleton agata-widget;
+
+abstract widget;
+type w-container(tag is text, class is text, children is list<widget>) is widget;
+type w-style(class is text, children is list<widget>) is widget;
+type w-icon(name is text) is widget;
+type w-text(contents is text) is widget;
+type w-button(title is text, on-click, children is list<widget>) is widget;
+type w-action-button(icon is text, title is text, description is text, on-click) is widget;
+type w-icon-button(icon is text, title is text, on-click) is widget;
+type w-tabbed-panel(tabs is list<wn-tab>) is widget;
+
+type wn-tab(title, contents);
+
+
+singleton dom-renderer;
+type dom-canvas(box);
+type dom-node(box);
+type dom-event(box);
+

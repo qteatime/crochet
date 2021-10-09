@@ -1,0 +1,5 @@
+% crochet
+
+command agata canvas: Root =
+  new dom-canvas(Root);
+

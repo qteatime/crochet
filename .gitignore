@@ -13,4 +13,6 @@ versions/current.js
 .binary/
 *.croc
 stdlib/**/*.js
+tools/**/native/*.js
 _build
+tools/launcher/www/crochet.js

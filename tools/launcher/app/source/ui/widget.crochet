@@ -1,0 +1,105 @@
+% crochet
+
+local singleton module;
+
+command agata-widget container: (Children is list<widget>) =
+  new w-container("div", "agata-container", Children);
+
+command agata-widget window: (Children is list<widget>) =
+  new w-container("div", "agata-window", Children);
+
+command agata-widget top-bar: (Children is list<widget>) =
+  new w-container("div", "agata-top-bar", Children);
+
+command agata-widget top-bar-panel: (Children is list<widget>) =
+  new w-container("div", "agata-top-bar-panel", Children);
+
+command agata-widget contents: (Children is list<widget>) =
+  new w-container("div", "agata-contents", Children);
+
+command agata-widget hero: (Children is list<widget>) =
+  new w-container("div", "agata-hero-header", Children);
+
+command agata-widget title: (Title is text) =
+  new w-container("h2", "agata-title", [new w-text(Title)]);
+
+command agata-widget subtitle: (Subtitle is text) =
+  new w-container("h3", "agata-subtitle", [new w-text(Subtitle)]);
+
+command w-container with: (Children is list<widget>) =
+  new w-container(self.tag, self.class, Children);
+
+
+command agata-widget style: (Name is text) with: (Children is list<widget>) =
+  new w-style(Name, Children);
+
+command w-style with: (Children is list<widget>) =
+  new w-style(self.class, Children);
+
+
+command agata-widget icon: (Name is text) =
+  new w-icon(Name);
+
+
+command agata-widget text: (X is text) =
+  new w-text(X);
+
+command agata-widget text: (X is interpolation) =
+  new w-text(X flatten-into-plain-text);
+
+
+command agata-widget button =
+  new w-button("", {_ in nothing}, []);
+
+command w-button title: (Title is text) =
+  new w-button(Title, self.on-click, self.children);
+
+command w-button on-click: (Handler is (Ev -> nothing)) =
+  new w-button(self.title, Handler, self.children);
+
+command w-button with: (Children is list<widget>) =
+  new w-button(self.title, self.on-click, Children);
+
+
+command agata-widget icon-button: (Icon is text) =
+  new w-icon-button(Icon, "", {_ in nothing});
+
+command w-icon-button icon: (Icon is text) =
+  new w-icon-button(Icon, self.title, self.on-click);
+
+command w-icon-button on-click: (Handler is (Ev -> nothing)) =
+  new w-icon-button(self.icon, self.title, Handler);
+
+command w-icon-button title: (Title is text) =
+  new w-icon-button(self.icon, Title, self.on-click);
+
+
+command agata-widget action-list: (Children is list<widget>) =
+  new w-container("div", "agata-action-list", Children);
+
+command agata-widget action-button =
+  new w-action-button("", "", "", {});
+
+command w-action-button icon: (Name is text) =
+  new w-action-button(Name, self.title, self.description, self.on-click);
+
+command w-action-button title: (Title is text) =
+  new w-action-button(self.icon, Title, self.description, self.on-click);
+
+command w-action-button description: (Description is text) =
+  new w-action-button(self.icon, self.title, Description, self.on-click);
+
+command w-action-button on-click: (Handler is (Ev -> nothing)) =
+  new w-action-button(self.icon, self.title, self.description, Handler);
+
+
+command agata-widget tabbed-panel: (Children is list<wn-tab>) =
+  new w-tabbed-panel(Children);
+
+command agata-widget tab: (Name is text) =
+  new wn-tab(Name, []);
+
+command wn-tab with: (Children is list<widget>) =
+  new wn-tab(self.title, Children);
+
+

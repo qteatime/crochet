@@ -1,0 +1,26 @@
+% crochet
+
+singleton purr;
+
+// Managing projects
+type purr-project(
+  name is text,
+  root // is directory
+);
+
+// The launcher state
+abstract purr-state;
+singleton purr-state-bare is purr-state;
+type purr-state-project(
+  current-project is purr-project
+) is purr-state;
+
+// The launcher screens
+abstract purr-screen;
+singleton purr-screen-welcome is purr-screen;
+
+effect purr with
+  home();
+  new-project();
+  import-project();
+end

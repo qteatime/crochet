@@ -36,10 +36,10 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2em;
   padding: 0 1em;
   background: white;
   border-bottom: 1px solid #ececea;
+  row-gap: 0.5em;
 }
 
 .agata-contents {
@@ -168,15 +168,18 @@ body {
   row-gap: 1em;
 }
 
-.agata-action {
+.agata-action-button {
+  border-left: 3px solid transparent;
+}
+
+.agata-action-button .agata-button {
   display: flex;
   flex-direction: row;
   padding: 0.3em 0.5em;
   align-items: center;
-  border: 1px solid transparent;
 }
 
-.agata-action .agata-action-icon {
+.agata-action-button .agata-action-icon {
   flex-grow: 0;
   width: 48px;
   height: 48px;
@@ -184,7 +187,7 @@ body {
   font-size: 24px;
 }
 
-.agata-action .agata-action-text {
+.agata-action-button .agata-action-text {
   flex-grow: 1;
   margin-left: 1em;
   text-align: left;
@@ -192,17 +195,45 @@ body {
   flex-direction: column;
 }
 
-.agata-action .agata-action-text-title {
+.agata-action-button .agata-action-text-title {
   font-weight: 500;
   margin-bottom: 0.2em;
   font-size: 1.1em;
 }
 
-.agata-action .agata-action-text-description {
+.agata-action-button .agata-action-text-description {
   font-size: 0.95em;
   color: #777;
 }
 
-.agata-action:hover {
+.agata-action-button:hover {
   background: var(--active-bg);
+  border-left: 3px solid var(--active-accent);
+}
+
+/* */
+.agata-tabbed-panel-header {
+  height: 48px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: white;
+  border-bottom: 1px solid #ececea;
+}
+
+.agata-tabbed-panel-button {
+  line-height: 48px;
+  padding: 0 1em;
+  cursor: pointer;
+}
+
+.agata-tabbed-panel-button.selected {
+  font-weight: bold;
+  color: var(--active-accent);
+  border-bottom: 3px solid var(--active-accent);
+}
+
+.agata-tabbed-panel-contents:not(.selected) {
+  display: none;
 }
