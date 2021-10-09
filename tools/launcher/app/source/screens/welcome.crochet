@@ -6,7 +6,7 @@ command purr-screen-welcome render do
   w window: [
     w top-bar: [
       w top-bar-panel: [
-        w icon-button: "home"
+        w icon-button: "bars"
           | on-click: { _ in perform purr.home() },
       ]
     ],
