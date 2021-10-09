@@ -2,25 +2,24 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Agata</title>
-    <link rel="stylesheet" href="/media/fa-solid.css" />
-    <link rel="stylesheet" href="/media/fontawesome.min.css" />
-    <link rel="stylesheet" href="/media/crochet.css" />
-    <link rel="stylesheet" href="/media/agata.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <title>Crochet</title>
+    <link rel="stylesheet" href="crochet.css" />
+    <link rel="stylesheet" href="debugger.css" />
+    <link rel="stylesheet" href="./fa-solid.css" />
+    <link rel="stylesheet" href="./fontawesome.min.css" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body class="agata-default-theme">
+  <body>
     <div id="crochet-container">
       <div id="crochet" class="crochet-loading">
         <div class="crochet-loading-screen">Loading...</div>
       </div>
     </div>
-
+    <div id="crochet-tools"></div>
     <script src="crochet.js"></script>
     <script>
       void (async function () {
@@ -28,7 +27,7 @@
         try {
           const crochet = new Crochet.CrochetForBrowser(
             document.location.pathname + "library",
-            new Set(["native"]),
+            new Set([]),
             false
           );
           await crochet.boot_from_file(
@@ -40,7 +39,7 @@
             child.remove();
           }
           const tools = document.querySelector("#crochet-tools");
-          // crochet.debug_ui.render(crochet, tools);
+          crochet.debug_ui.render(crochet, tools);
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
         } catch (error) {
           console.error(error);
