@@ -1,9 +1,0 @@
-% crochet
-
-singleton dom;
-
-abstract dom-node;
-type dom-element(box) is dom-node;
-
-abstract css-selector;
-type css-selector-raw(css is text) is css-selector;

@@ -1,7 +1,0 @@
-% crochet
-
-type point-2d(global x is numeric, global y is numeric);
-
-command #point-2d x: (X is numeric) y: (Y is numeric) =
-  new point-2d(X, Y);
-
