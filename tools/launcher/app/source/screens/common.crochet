@@ -1,0 +1,44 @@
+% crochet
+
+define w = agata-widget;
+
+command purr-common-widgets window: (Top is list<widget>) with: (Children is list<widget>) do
+  w window: ([
+    w top-bar: ([
+      w top-bar-panel: [
+        w icon-button: "bars"
+          | on-click: { _ in perform purr.home() }
+      ]
+    ] ++ Top),
+  ] ++ Children)
+end
+
+command purr-common-widgets project-menu: (Project is purr-project) do
+  w list: [
+    w action-button
+      | icon: "home"
+      | title: "Summary"
+      | description: "Basic information about the project"
+      | on-click: { _ in perform purr.open-project(Project) },
+
+    w action-button
+      | icon: "play"
+      | title: "Run"
+      | description: "Build and run the project",
+
+    w action-button
+      | icon: "vial"
+      | title: "Test"
+      | description: "Run all tests for the project",
+
+    w action-button
+      | icon: "archive"
+      | title: "Package"
+      | description: "Build a distributable package for the project",
+
+    w action-button
+      | icon: "gamepad"
+      | title: "Playground"
+      | description: "Interactively experiment with the project",
+  ];
+end

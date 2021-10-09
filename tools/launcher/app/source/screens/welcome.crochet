@@ -2,15 +2,8 @@
 
 define w = agata-widget;
 
-command purr-screen-welcome render do
-  w window: [
-    w top-bar: [
-      w top-bar-panel: [
-        w icon-button: "bars"
-          | on-click: { _ in perform purr.home() },
-      ]
-    ],
-
+command ps-welcome render do
+  w window: [] with: [
     w tabbed-panel: [
       w tab: "My projects"
         | with: [self my-projects],
@@ -20,7 +13,7 @@ command purr-screen-welcome render do
   ]
 end
 
-command purr-screen-welcome my-projects do
+command ps-welcome my-projects do
   w contents: [
     w hero: [
       w title: "You don't have any projects yet.",
@@ -43,20 +36,20 @@ command purr-screen-welcome my-projects do
   ]
 end
 
-command purr-screen-welcome examples do
+command ps-welcome examples do
   let Projects = purr-api examples;
   w contents: [
     self projects: Projects
   ];
 end
 
-command purr-screen-welcome projects: (Projects is list<purr-project>) do
+command ps-welcome projects: (Projects is list<purr-project>) do
   w flex-row: (
     for X in Projects do self project: X end
   );
 end
 
-command purr-screen-welcome project: (Project is purr-project) do
+command ps-welcome project: (Project is purr-project) do
   w card: [    
     w button
       | title: "Open [Project name]" flatten-into-plain-text
@@ -69,6 +62,6 @@ command purr-screen-welcome project: (Project is purr-project) do
   ];
 end
 
-command purr-screen-welcome project-icon: (Project is purr-project) do
+command ps-welcome project-icon: (Project is purr-project) do
   w icon: "box-open"
 end

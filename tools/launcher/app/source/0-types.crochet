@@ -24,7 +24,10 @@ type purr-state-project(
 
 // The launcher screens
 abstract purr-screen;
-singleton purr-screen-welcome is purr-screen;
+singleton ps-welcome is purr-screen;
+type ps-summary(project is purr-project) is purr-screen;
+
+singleton purr-common-widgets;
 
 effect purr with
   home();

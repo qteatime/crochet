@@ -1,20 +1,19 @@
 % crochet
 
 command main-html: Root do
+  agata with-root: Root do: {
+    purr with-default-handlers: {
+      agata show: ps-welcome;
+    }
+  };
+end
+
+command purr with-default-handlers: (Block is (() -> any)) do
   handle
-    let Canvas = agata canvas: Root;
-    Canvas render: (purr-screen-welcome render);
+    Block();
   with
-    on purr.home() do
-      Canvas render: (agata-widget text: "HOME!");
-    end
-
-    on purr.new-project() do
-      Canvas render: (agata-widget text: "New project!");
-    end
-
-    on purr.import-project() do
-      Canvas render: (agata-widget text: "Import!!!");
+    on purr.open-project(Project) do
+      agata show: new ps-summary(Project);
     end
   end
 end

@@ -1,0 +1,10 @@
+% crochet
+
+define w = agata-widget;
+define cw = purr-common-widgets;
+
+command ps-summary render do
+  w window: [w title: self.project title] with: [
+    cw project-menu: self.project
+  ]
+end

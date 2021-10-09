@@ -1,8 +1,17 @@
 % crochet
 
 singleton agata;
-singleton agata-widget;
 
+type agata-state(
+  history is list,
+  current
+);
+
+effect agata-presentation with
+  show(page);
+end
+
+singleton agata-widget;
 abstract widget;
 type w-container(tag is text, class is text, children is list<widget>) is widget;
 type w-style(class is text, children is list<widget>) is widget;
@@ -15,9 +24,7 @@ type w-tabbed-panel(tabs is list<wn-tab>) is widget;
 
 type wn-tab(title, contents);
 
-
 singleton dom-renderer;
 type dom-canvas(box);
 type dom-node(box);
 type dom-event(box);
-
