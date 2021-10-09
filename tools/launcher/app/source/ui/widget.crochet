@@ -26,6 +26,24 @@ command agata-widget title: (Title is text) =
 command agata-widget subtitle: (Subtitle is text) =
   new w-container("h3", "agata-subtitle", [new w-text(Subtitle)]);
 
+command agata-widget flex-row: (Children is list<widget>) =
+  new w-container("div", "agata-flex-row", Children);
+
+command agata-widget flex-column: (Children is list<widget>) =
+  new w-container("div", "agata-flex-column", Children);
+
+command agata-widget card: (Children is list<widget>) =
+  new w-container("div", "agata-card", Children);
+
+command agata-widget card-image: (Children is list<widget>) =
+  new w-container("div", "agata-card-image", Children);
+
+command agata-widget card-title: (Title is text) =
+  new w-container("div", "agata-card-title", [new w-text(Title)]);
+
+command agata-widget card-description: (Description is text) =
+  new w-container("div", "agata-card-description", [new w-text(Description)]);
+
 command w-container with: (Children is list<widget>) =
   new w-container(self.tag, self.class, Children);
 

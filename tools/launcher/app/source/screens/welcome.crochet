@@ -45,6 +45,53 @@ end
 
 command purr-screen-welcome examples do
   w contents: [
-    w text: "things will go here eventually!"
+    self projects: [
+      new purr-project(
+        "Cloak of Darkness",
+        "A simple interactive fiction example.",
+        nothing
+      ),
+
+      new purr-project(
+        "Tic-Tac-Toe",
+        "Text-based tic-tac-toe example.",
+        nothing
+      ),
+
+      new purr-project(
+        "Maze",
+        "Procedurally generating mazes.",
+        nothing
+      ),
+
+      new purr-project(
+        "Map",
+        "Procedurally generating grid-based maps.",
+        nothing
+      )
+    ]
   ]
+end
+
+command purr-screen-welcome projects: (Projects is list<purr-project>) do
+  w flex-row: (
+    for X in Projects do self project: X end
+  );
+end
+
+command purr-screen-welcome project: (Project is purr-project) do
+  w card: [    
+    w button
+      | title: "Open [Project.name]" flatten-into-plain-text
+      | on-click: { _ in perform purr.open-project(Project) }
+      | with: [
+          w card-image: [self project-icon: Project],
+          w card-title: Project.name,
+          w card-description: Project.description
+        ]
+  ];
+end
+
+command purr-screen-welcome project-icon: (Project is purr-project) do
+  w icon: "box-open"
 end

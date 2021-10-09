@@ -237,3 +237,64 @@ body {
 .agata-tabbed-panel-contents:not(.selected) {
   display: none;
 }
+
+.agata-tabbed-panel-button:hover {
+  background: var(--active-bg);
+}
+
+/* */
+.agata-flex-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1em 2em;
+  flex-wrap: wrap;
+}
+
+.agata-flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1em 2em;
+  flex-wrap: wrap;
+}
+
+.agata-card {
+  border: 1px solid #ececea;
+  padding: 1em;
+  width: 300px;
+  box-sizing: border-box;
+}
+
+.agata-card .agata-button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.agata-card-image .agata-icon {
+  width: 128px;
+  height: 128px;
+  font-size: 92px;
+  line-height: 128px;
+}
+
+.agata-card-title {
+  font-weight: bold;
+  text-align: left;
+  margin: 1em 0 0.3em 0;
+  font-size: 1.1em;
+}
+
+.agata-card-description {
+  text-align: left;
+  color: #525252;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agata-card:hover {
+  border-color: var(--active-accent);
+  background: var(--active-bg);
+}
