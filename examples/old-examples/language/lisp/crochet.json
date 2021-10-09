@@ -1,5 +1,7 @@
 {
   "name": "crochet.examples.language.lisp",
+  "title": "Lisp",
+  "description": "An interpreter for a small Lisp dialect",
   "sources": ["grammar.crochet", "evaluator.crochet", "main.crochet"],
   "dependencies": [
     "crochet.core",

@@ -1,0 +1,13 @@
+% crochet
+
+command purr-project name =
+  self.metadata.name;
+
+command purr-project title =
+  self.metadata
+    | at: "title" default: self name;
+
+command purr-project description =
+  self.metadata
+    | at: "description" default: "(no description)";
+

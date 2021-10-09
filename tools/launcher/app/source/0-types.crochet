@@ -1,13 +1,19 @@
 % crochet
 
 singleton purr;
+singleton purr-api;
 
 // Managing projects
 type purr-project(
-  name is text,
-  description is text,
-  root // is directory
+  filename,
+  metadata
 );
+
+// type purr-project(
+//   name is text,
+//   description is text,
+//   root // is directory
+// );
 
 // The launcher state
 abstract purr-state;

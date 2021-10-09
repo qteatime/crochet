@@ -1,0 +1,10 @@
+% crochet
+
+open crochet.language.json;
+
+command purr-api examples do
+  let Examples = #json parse: (foreign api.examples());
+  for X in Examples do
+    new purr-project(X.filename, X.meta);
+  end
+end
