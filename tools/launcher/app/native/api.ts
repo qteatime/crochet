@@ -10,4 +10,8 @@ export default (ffi: ForeignInterface) => {
   ffi.defmachine("api.examples", function* () {
     return yield ffi.await(get_text("/api/examples"));
   });
+
+  ffi.defmachine("api.libraries", function* () {
+    return yield ffi.await(get_text("/api/libraries"));
+  });
 };

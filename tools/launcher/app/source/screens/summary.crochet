@@ -64,7 +64,8 @@ command ps-summary capability-list: List do
 end
 
 command ps-summary capability: C do
-  w container: [w text: C name]
+  self group: C name
+       with: [w text: C description]
 end
 
 command ps-summary dependencies do

@@ -16,4 +16,12 @@ export class API {
     });
     return pkgs_json.map((x) => ({ filename: x, meta: read_pkg(x) }));
   }
+
+  libraries() {
+    const pkgs_json = Glob.sync("**/crochet.json", {
+      cwd: Path.join(this.root, "stdlib"),
+      absolute: true,
+    });
+    return pkgs_json.map((x) => ({ filename: x, meta: read_pkg(x) }));
+  }
 }

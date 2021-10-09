@@ -60,6 +60,10 @@ export async function setup_server(port: number) {
     res.send(api.examples());
   });
 
+  app.get("/api/libraries", async (req, res) => {
+    res.send(api.libraries());
+  });
+
   app.use("/", Express.static(www));
   app.use("/library", Express.static(Path.join(repo_root, "stdlib")));
 

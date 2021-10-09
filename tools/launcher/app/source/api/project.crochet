@@ -27,13 +27,13 @@ command purr-project capabilities do
   let Provided = Cap at: "provides" default: [];
 
   new purr-package-capabilities(
-    Required map: { X in new purr-capability(X) },
-    Provided map: { X in new purr-capability(X) }
+    Required map: { X in module parse-capability: X },
+    Provided map: { X in module parse-capability: X }
   );
 end
 
 command purr-project dependencies do
-  let Deps = self.metadata at: "dependencies" default: [->];
+  let Deps = self.metadata at: "dependencies" default: [];
   for Dep in Deps do module parse-dependency: Dep end;
 end
 
@@ -50,5 +50,16 @@ command module parse-dependency: (X is record) do
 end
 
 command module parse-capabilities: Xs do
-  for C in Xs do new purr-capability(C) end
+  for C in Xs do module parse-capability: C end
+end
+
+command module parse-capability: (X is text) do
+  new purr-capability(X, "(no description)");
+end
+
+command module parse-capability: (X is record) do
+  new purr-capability(
+    X.name,
+    X at: "description" default: "(no description)"
+  );
 end

@@ -6,8 +6,8 @@ command purr-common-widgets window: (Top is list<widget>) with: (Children is lis
   w window: ([
     w top-bar: ([
       w top-bar-panel: [
-        w icon-button: "bars"
-          | on-click: { _ in perform purr.home() }
+        w icon-button: "home"
+          | on-click: { _ in purr home }
       ]
     ] ++ Top),
   ] ++ Children)
@@ -16,7 +16,7 @@ end
 command purr-common-widgets project-menu: (Project is purr-project) do
   w flex-column: [
     w action-button
-      | icon: "home"
+      | icon: "book"
       | title: "Summary"
       | description: "Basic information about the project"
       | on-click: { _ in purr project-summary: Project },

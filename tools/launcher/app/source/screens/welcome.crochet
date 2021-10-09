@@ -10,6 +10,8 @@ command ps-welcome render do
         | with: [self my-projects],
       w tab: "Examples"
         | with: [self examples],
+      w tab: "Libraries"
+        | with: [self libraries],
     ]
   ]
 end
@@ -39,6 +41,13 @@ end
 
 command ps-welcome examples do
   let Projects = purr-api examples;
+  w contents: [
+    self projects: Projects
+  ];
+end
+
+command ps-welcome libraries do
+  let Projects = purr-api libraries;
   w contents: [
     self projects: Projects
   ];

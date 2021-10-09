@@ -15,7 +15,8 @@ type purr-package-capabilities(
 );
 
 type purr-capability(
-  global name is text
+  global name is text,
+  global description is text,
 );
 
 type purr-dependency(
