@@ -1,3 +1,4 @@
+import { CrochetCapturedContext, CrochetNativeLambda, Tag } from ".";
 import * as IR from "../ir";
 import { AssertType } from "../ir";
 import { logger } from "../utils/logger";
@@ -386,6 +387,21 @@ export class Thread {
             new TELog("transcript.write", value.tag_name, loc, value.message)
           );
           return this.step_native(activation, this.universe.nothing);
+        }
+
+        case NativeSignalTag.MAKE_CLOSURE: {
+          return this.step_native(
+            activation,
+            new CrochetValue(
+              Tag.NATIVE_LAMBDA,
+              this.universe.types.NativeFunctions[value.arity],
+              new CrochetNativeLambda(
+                value.arity,
+                activation.handlers,
+                value.fn
+              )
+            )
+          );
         }
 
         default:

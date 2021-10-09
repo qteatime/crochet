@@ -15,6 +15,7 @@ import {
   NSApply,
   NSAwait,
   NSInvoke,
+  NSMakeClosure,
   NSTranscriptWrite,
   run_native,
   run_native_sync,
@@ -115,6 +116,13 @@ export class ForeignInterface {
 
   get false() {
     return Values.get_false(this.#universe);
+  }
+
+  make_closure(
+    arity: number,
+    fn: (...args: CrochetValue[]) => Machine<CrochetValue>
+  ) {
+    return new NSMakeClosure(arity, fn);
   }
 
   invoke(name: string, args: CrochetValue[]) {

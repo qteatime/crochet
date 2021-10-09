@@ -22,6 +22,7 @@ export enum Tag {
   RECORD,
   INSTANCE,
   LAMBDA,
+  NATIVE_LAMBDA,
   PARTIAL,
   THUNK,
   CELL,
@@ -45,6 +46,7 @@ export type PayloadType = {
   [Tag.INSTANCE]: CrochetValue[];
   [Tag.PARTIAL]: CrochetPartial;
   [Tag.LAMBDA]: CrochetLambda;
+  [Tag.NATIVE_LAMBDA]: CrochetNativeLambda;
   [Tag.THUNK]: CrochetThunk;
   [Tag.CELL]: CrochetCell;
   [Tag.TYPE]: CrochetType;
@@ -89,6 +91,14 @@ export class CrochetLambda {
   ) {}
 }
 
+export class CrochetNativeLambda {
+  constructor(
+    readonly arity: number,
+    readonly handlers: HandlerStack,
+    readonly fn: (...args: CrochetValue[]) => Machine<CrochetValue>
+  ) {}
+}
+
 export class CrochetPartial {
   constructor(
     readonly module: CrochetModule,
@@ -99,6 +109,10 @@ export class CrochetPartial {
 
 export class CrochetCell {
   constructor(public value: CrochetValue) {}
+}
+
+export class CrochetCapturedContext {
+  constructor(readonly state: State) {}
 }
 
 export class CrochetThunk {
@@ -764,6 +778,7 @@ export enum NativeSignalTag {
   EVALUATE,
   JUMP,
   TRANSCRIPT_WRITE,
+  MAKE_CLOSURE,
 }
 
 export type NativeSignal =
@@ -772,7 +787,8 @@ export type NativeSignal =
   | NSAwait
   | NSEvaluate
   | NSJump
-  | NSTranscriptWrite;
+  | NSTranscriptWrite
+  | NSMakeClosure;
 
 export abstract class NSBase {}
 
@@ -788,6 +804,17 @@ export class NSApply extends NSBase {
   readonly tag = NativeSignalTag.APPLY;
 
   constructor(readonly fn: CrochetValue, readonly args: CrochetValue[]) {
+    super();
+  }
+}
+
+export class NSMakeClosure extends NSBase {
+  readonly tag = NativeSignalTag.MAKE_CLOSURE;
+
+  constructor(
+    readonly arity: number,
+    readonly fn: (...args: CrochetValue[]) => Machine<CrochetValue>
+  ) {
     super();
   }
 }
@@ -869,6 +896,7 @@ export class Universe {
       StaticText: CrochetType;
       Interpolation: CrochetType;
       Function: CrochetType[];
+      NativeFunctions: CrochetType[];
       Thunk: CrochetType;
       Record: CrochetType;
       List: CrochetType;

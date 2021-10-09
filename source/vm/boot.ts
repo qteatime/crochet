@@ -175,10 +175,30 @@ export function make_universe() {
     null
   );
   const functions: CrochetType[] = [];
+  const native_lambdas: CrochetType[] = [];
   for (let i = 0; i < 10; ++i) {
-    functions.push(
-      new CrochetType(null, `function-${i}`, "", Function, [], [], false, null)
+    const lambda = new CrochetType(
+      null,
+      `function-${i}`,
+      "",
+      Function,
+      [],
+      [],
+      false,
+      null
     );
+    functions.push(lambda);
+    const native_lambda = new CrochetType(
+      null,
+      `native-function-${i}`,
+      "",
+      lambda,
+      [],
+      [],
+      false,
+      null
+    );
+    native_lambdas.push(native_lambda);
   }
 
   const Thunk = new CrochetType(null, "thunk", "", Any, [], [], false, null);
@@ -338,6 +358,7 @@ export function make_universe() {
     StaticText,
     Interpolation,
     Function: functions,
+    NativeFunctions: native_lambdas,
     Thunk,
     Record,
     List: List,

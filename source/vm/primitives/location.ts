@@ -136,6 +136,10 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.LAMBDA, x);
       return `function(${x.payload.parameters.join(", ")})`;
     }
+    case Tag.NATIVE_LAMBDA: {
+      assert_tag(Tag.NATIVE_LAMBDA, x);
+      return `<native-function-${x.payload.arity}>`;
+    }
     case Tag.PARTIAL: {
       assert_tag(Tag.PARTIAL, x);
       return `<partial ${x.payload.name}>`;
