@@ -43,7 +43,18 @@ export async function setup_app_server(port: number, state: AppState) {
     }
   });
 
-  app.use("/:id/", Express.static(www));
+  app.get("/:id/ipc", (req, res) => {
+    res.sendFile(Path.resolve(launcher_root, "www/ipc.html"));
+  });
+
+  app.get("/:id/crochet.js", (req, res) => {
+    res.sendFile(Path.resolve(launcher_root, "www/crochet.js"));
+  });
+
+  app.get("/:id/crochet-ipc.js", (req, res) => {
+    res.sendFile(Path.resolve(launcher_root, "www/crochet-ipc.js"));
+  });
+
   app.use("/:id/library", Express.static(Path.join(repo_root, "stdlib")));
 
   app.listen(port, () => {

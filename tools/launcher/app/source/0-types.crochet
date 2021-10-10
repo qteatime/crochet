@@ -47,6 +47,7 @@ type purr-state-project(
 abstract purr-screen;
 singleton ps-welcome is purr-screen;
 type ps-summary(project is purr-project) is purr-screen;
+type ps-test(project is purr-project) is purr-screen;
 
 singleton purr-common-widgets;
 

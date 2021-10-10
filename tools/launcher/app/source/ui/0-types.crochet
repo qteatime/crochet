@@ -12,6 +12,13 @@ effect agata-presentation with
 end
 
 
+singleton dom-renderer;
+type dom-canvas(box);
+type dom-node(box);
+type dom-event(box);
+type dom-window(box);
+
+
 abstract measure;
 type pixels(value is integer) is measure;
 type percent(value is float) is measure;
@@ -34,10 +41,6 @@ type w-tabbed-panel(tabs is list<wn-tab>) is widget;
 type w-flex-column(children is list<widget>) is widget;
 type w-flex-row(children is list<widget>) is widget;
 type w-layout(layout is layout, child is widget) is widget;
+type w-frame(window is dom-window) is widget;
 
 type wn-tab(title, contents);
-
-singleton dom-renderer;
-type dom-canvas(box);
-type dom-node(box);
-type dom-event(box);

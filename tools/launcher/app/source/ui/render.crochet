@@ -89,6 +89,12 @@ command dom-renderer render: (X is w-layout) do
   Node
 end
 
+command dom-renderer render: (X is w-frame) do
+  new dom-node(foreign dom.container("div", "agata-frame", [
+    X.window.box
+  ]));
+end
+
 command dom-renderer to-css: (P is gap) =
   "[self to-css: P.horizontal] [self to-css: P.vertical]" flatten-into-plain-text;
 

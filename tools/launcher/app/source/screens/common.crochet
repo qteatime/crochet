@@ -45,3 +45,15 @@ command purr-common-widgets project-menu: (Project is purr-project) do
   | gap: 0 pixels
   | width: 400 pixels;
 end
+
+command purr-common-widgets project-window: (Project is purr-project) with: (Children is list<widget>) do
+  self window: [w title: Project meta title] with: [
+    w flex-row: [
+      self project-menu: Project,
+
+      w contents: Children
+        | layout
+        | flex-grow
+    ]
+  ];
+end

@@ -190,3 +190,7 @@ command layout at: Key put: Value =
 
 command layout pairs =
   self.properties pairs;
+
+
+command agata-widget frame: (Window is dom-window) =
+  new w-frame(Window);

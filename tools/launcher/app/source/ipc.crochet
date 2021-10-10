@@ -7,14 +7,14 @@ local singleton module;
 command #purr-ipc setup: (Block is (() -> nothing)) do
   let IPC-cell = #cell with-value: new purr-ipc([->]);
   handle
-    module setup-listener: IPC-cell value;
+    module setup-listener: IPC-cell;
     Block();
   with
-    on purr-ipc.add-client(Id, Frame) do
+    on purr-ipc.add-client(Id, Client) do
       let IPC = IPC-cell value;
-      IPC-cell <- new purr-ipc(IPC.clients at: Id put: Frame);
-      let Client = new purr-ipc-client(Id, Frame);
-      continue with Client;
+      IPC-cell <- new purr-ipc(IPC.clients at: Id put: Client);
+      foreign dom.install-hidden-frame(Client.frame.box);
+      continue with nothing;
     end
 
     on purr-ipc.get-instance() do
@@ -26,8 +26,11 @@ end
 command #purr-ipc shared-instance =
   perform purr-ipc.get-instance();
 
-command purr-ipc add-client: (Project is purr-project) frame: (Frame is dom-node) =
-  perform purr-ipc.add-client(Project.id, Frame);
+command purr-ipc add-client: (Project is purr-project) frame: (Frame is dom-window) do
+  let Client = new purr-ipc-client(Project.id, Frame);
+  perform purr-ipc.add-client(Project.id, Client);
+  Client;
+end
 
 command module setup-listener: IPC-cell do
   foreign dom.on-message({ Msg0 in 
@@ -78,3 +81,13 @@ command purr-ipc-client spawn-tests =
 
 command purr-ipc-client run-tests =
   self dispatch: imo-run-tests;
+
+// IPC handlers
+command purr-ipc-client dispatch: im-ready =
+  nothing;
+
+command purr-ipc-client dispatch: im-ready-for-testing =
+  nothing;
+
+command purr-ipc-client dispatch: im-testing-started =
+  nothing;

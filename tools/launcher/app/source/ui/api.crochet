@@ -16,6 +16,8 @@ end
 
 command agata show: Widget = perform agata-presentation.show(Widget);
 
+command agata window: (Url is text) =
+  new dom-window(foreign dom.make-frame(Url));
 
 command agata-state push: Widget do
   condition

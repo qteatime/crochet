@@ -1,15 +1,20 @@
 % crochet
 
 command main-html: Root do
-  agata with-root: Root do: {
-    purr setup-ipc-listener;
-    agata show: ps-welcome render;
+  #purr-ipc setup: {
+    agata with-root: Root do: {
+      agata show: ps-welcome render;
+    }
   };
 end
 
 command purr open-project: (Project is purr-project-meta) do
   let Id = purr-api spawn: Project;
   let Spawned = new purr-project(Id, Project);
+  let Origin = foreign dom.encode("http://localhost:8000");
+  let Url = "http://localhost:8001/[Id]/ipc?id=[Id]&origin=[Origin]" flatten-into-plain-text;
+  let Frame = agata window: Url;
+  #purr-ipc shared-instance add-client: Spawned frame: Frame;
   self project-summary: Spawned;
 end
 

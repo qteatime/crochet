@@ -4,31 +4,23 @@ local define w = agata-widget;
 local define cw = purr-common-widgets;
 
 command ps-summary render do
-  cw window: [w title: self.project meta title] with: [
-    w flex-row: [
-      cw project-menu: self.project,
+  cw project-window: self.project with: [
+    w title: self.project meta title,
+    w paragraph: [
+      w text: self.project meta description
+    ],
 
-      w contents: [
-        w title: self.project meta title,
-        w paragraph: [
-          w text: self.project meta description
-        ],
+    w tabbed-panel: [
+      w tab: "Metadata"
+        | with: [w space, self metadata],
+      
+      w tab: "Capabilities"
+        | with: [w space, self capabilities],
 
-        w tabbed-panel: [
-          w tab: "Metadata"
-            | with: [w space, self metadata],
-          
-          w tab: "Capabilities"
-            | with: [w space, self capabilities],
-
-          w tab: "Dependencies"
-            | with: [w space, self dependencies],
-        ]
-      ]
-      | layout
-      | flex-grow
+      w tab: "Dependencies"
+        | with: [w space, self dependencies],
     ]
-  ]
+  ];
 end
 
 command ps-summary metadata do

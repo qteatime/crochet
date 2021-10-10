@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p .",
     "build-app": "tsc -p app/native",
+    "build-ipc": "npm run build && browserify -e build/client/client.js -o www/crochet-ipc.js",
     "start": "node build/launcher.js"
   },
   "devDependencies": {
@@ -13,6 +14,7 @@
     "@types/glob": "^7.1.4",
     "@types/node": "^16.10.3",
     "@types/uuid": "^8.3.1",
+    "browserify": "^17.0.0",
     "typescript": "^4.4.3"
   },
   "dependencies": {

@@ -12,7 +12,9 @@
     "source/api/project.crochet",
     "source/screens/common.crochet",
     "source/screens/welcome.crochet",
+    "source/screens/test.crochet",
     "source/screens/summary.crochet",
+    "source/ipc.crochet",
     "source/main.crochet"
   ],
   "native_sources": ["native/dom.js", "native/api.js"],

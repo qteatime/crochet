@@ -174,6 +174,8 @@ export default (ffi: ForeignInterface) => {
           return ffi.nothing;
         }
 
+        debugger;
+
         const msg = ffi.text(JSON.stringify(ev.data));
         const result = yield ffi.apply(callback, [msg]);
         return ffi.nothing;
@@ -188,5 +190,26 @@ export default (ffi: ForeignInterface) => {
     const msg = to_json(ffi.to_plain_native(msg0));
     frame.contentWindow?.postMessage(msg, "http://localhost:8001");
     return ffi.nothing;
+  });
+
+  ffi.defun("dom.make-frame", (url0) => {
+    const url = ffi.text_to_string(url0);
+    const frame = document.createElement("iframe");
+    frame.referrerPolicy = "no-referrer";
+    frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
+    frame.src = url;
+    return ffi.box(frame);
+  });
+
+  ffi.defun("dom.install-hidden-frame", (frame0) => {
+    const frame = get_element(frame0);
+    frame.style.display = "none";
+    document.body.appendChild(frame);
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.encode", (url0) => {
+    const url = ffi.text_to_string(url0);
+    return ffi.text(encodeURIComponent(url));
   });
 };

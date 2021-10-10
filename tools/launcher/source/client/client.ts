@@ -35,7 +35,6 @@ export class Client {
 
   constructor(
     readonly id: string,
-    readonly root: string,
     readonly capabilities: Set<string>,
     readonly origin: string
   ) {
@@ -78,14 +77,19 @@ export class Client {
   }
 }
 
-const query = parse_query(document.location.search);
-const capabilities = (query.get("capabilities") || "").split(",");
-const client = new Client(
-  query.get("id")!,
-  query.get("root")!,
-  new Set(capabilities),
-  query.get("origin")!
-);
+async function main() {
+  const query = parse_query(document.location.search);
+  const capabilities = (query.get("capabilities") || "").split(",");
+  const client = new Client(
+    query.get("id")!,
+    new Set(capabilities),
+    query.get("origin")!
+  );
 
-client.listen();
-client.post_message("ready", {});
+  client.listen();
+  client.post_message("ready", {});
+}
+
+main().catch((e) => {
+  console.log(e);
+});

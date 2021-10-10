@@ -1,0 +1,11 @@
+% crochet
+
+local define w = agata-widget;
+local define cw = purr-common-widgets;
+
+command ps-test render do
+  cw project-window: self.project with: [
+    w title: "Test",
+    w divider,
+  ];
+end
