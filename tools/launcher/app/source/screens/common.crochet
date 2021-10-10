@@ -41,5 +41,7 @@ command purr-common-widgets project-menu: (Project is purr-project) do
       | title: "Playground"
       | description: "Interactively experiment with the project",
   ]
-  | layout | gap: 0 pixels;
+  | layout
+  | gap: 0 pixels
+  | width: 400 pixels;
 end

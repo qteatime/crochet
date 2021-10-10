@@ -1,28 +1,29 @@
+import * as FS from "fs";
 import * as Path from "path";
 import * as Express from "express";
 import * as Package from "../../../build/pkg";
 import { CrochetForNode, build_file } from "../../../build/targets/node";
 import { API } from "./api";
+import { setup_app_server } from "./server";
+import { App, AppState } from "./app";
+import * as UUID from "uuid";
+import { trap } from "./helpers";
 
 const launcher_root = Path.resolve(__dirname, "..");
 const repo_root = Path.resolve(launcher_root, "../../");
 const www = Path.resolve(launcher_root, "www");
 const root = Path.resolve(launcher_root, "app/crochet.json");
+const state = new AppState();
 
-export async function setup_server(port: number) {
+export async function setup_launcher_server(port: number) {
   const app = Express();
+  const lapp = App.from_file(root);
   const api = new API(repo_root);
 
-  console.log("Building all dependencies...");
-  const crochet = new CrochetForNode(false, [], new Set([]), false);
-  const pkg = crochet.read_package_from_file(root);
-  await crochet.build(root);
-  for (const dep of pkg.meta.dependencies) {
-    const dep_pkg = await crochet.fs.read_package(dep.name);
-    await crochet.build(dep_pkg.filename);
-  }
+  await lapp.build();
+  const rpkg = lapp.resolved_package;
 
-  const rpkg = new Package.ResolvedPackage(pkg, Package.target_web());
+  app.use("/api", Express.json());
 
   app.get("/app/.binary/*", async (req, res) => {
     const path = (req.params as any)[0];
@@ -64,12 +65,24 @@ export async function setup_server(port: number) {
     res.send(api.libraries());
   });
 
+  app.post("/api/spawn", async (req, res) => {
+    const id = UUID.v4();
+    const pkg = req.body.package;
+    await trap(res, async () => {
+      const capp = App.from_file(Path.resolve(pkg));
+      await capp.build();
+      state.define(id, capp);
+      res.send({ id });
+    });
+  });
+
   app.use("/", Express.static(www));
   app.use("/library", Express.static(Path.join(repo_root, "stdlib")));
 
   app.listen(port, () => {
-    console.log(`Server started at http://localhost:${port}`);
+    console.log(`Launcher server started at http://localhost:${port}`);
   });
 }
 
-setup_server(8000);
+setup_launcher_server(8000);
+setup_app_server(8001, state);

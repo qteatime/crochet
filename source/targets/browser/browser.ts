@@ -111,10 +111,7 @@ export class CrochetForBrowser {
   }
 
   private is_trusted(pkg: Package.Package) {
-    return (
-      this.trusted_core.has(pkg.meta.name) &&
-      pkg.filename.startsWith("/library")
-    );
+    return this.trusted_core.has(pkg.meta.name);
   }
 
   fs: IFileSystem = {

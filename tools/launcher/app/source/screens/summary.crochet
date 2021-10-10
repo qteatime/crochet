@@ -6,9 +6,7 @@ local define cw = purr-common-widgets;
 command ps-summary render do
   cw window: [w title: self.project title] with: [
     w flex-row: [
-      cw project-menu: self.project
-        | layout 
-        | width: 30 percent,
+      cw project-menu: self.project,
 
       w contents: [
         w title: self.project title,
