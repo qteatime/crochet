@@ -53,17 +53,17 @@ command ps-welcome libraries do
   ];
 end
 
-command ps-welcome projects: (Projects is list<purr-project>) do
+command ps-welcome projects: (Projects is list<purr-project-meta>) do
   w flex-row: (
     for X in Projects do self project: X end
   );
 end
 
-command ps-welcome project: (Project is purr-project) do
+command ps-welcome project: (Project is purr-project-meta) do
   w card: [    
     w button
       | title: "Open [Project name]" flatten-into-plain-text
-      | on-click: { _ in purr project-summary: Project }
+      | on-click: { _ in purr open-project: Project }
       | with: [
           w card-image: [self project-icon: Project],
           w card-title: Project title,
@@ -72,6 +72,6 @@ command ps-welcome project: (Project is purr-project) do
   ];
 end
 
-command ps-welcome project-icon: (Project is purr-project) do
+command ps-welcome project-icon: (Project is purr-project-meta) do
   w icon: "box-open"
 end

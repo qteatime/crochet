@@ -19,6 +19,29 @@ export default (ffi: ForeignInterface) => {
     }
   }
 
+  function get_frame(x0: CrochetValue): HTMLIFrameElement {
+    const x = ffi.unbox(x0);
+    if (x instanceof HTMLIFrameElement) {
+      return x;
+    } else {
+      throw ffi.panic("invalid-type", "Expected an HTMLIFrameElement");
+    }
+  }
+
+  function to_json(x: any): any {
+    if (x instanceof Map) {
+      const result = Object.create(null);
+      for (const [k, v] of x.entries()) {
+        result[k] = to_json(v);
+      }
+      return result;
+    } else if (x instanceof Array) {
+      return x.map((a) => to_json(a));
+    } else {
+      return x;
+    }
+  }
+
   ffi.defun("dom.render", (canvas0, widget0) => {
     const canvas = get_element(canvas0);
     const widget = get_node(widget0);
@@ -136,6 +159,34 @@ export default (ffi: ForeignInterface) => {
     const value = ffi.text_to_string(value0);
     const node = get_element(node0);
     node.style[name as any] = value;
+    return ffi.nothing;
+  });
+
+  ffi.defmachine("dom.on-message", function* (handler) {
+    const callback = yield ffi.make_closure(1, function* (msg) {
+      const result = yield ffi.apply(handler, [msg]);
+      return result;
+    });
+
+    window.addEventListener("message", (ev) => {
+      ffi.run_asynchronously(function* () {
+        if (ev.origin !== "http://localhost:8001") {
+          return ffi.nothing;
+        }
+
+        const msg = ffi.text(JSON.stringify(ev.data));
+        const result = yield ffi.apply(callback, [msg]);
+        return ffi.nothing;
+      });
+    });
+
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.post-message", (frame0, msg0) => {
+    const frame = get_frame(frame0);
+    const msg = to_json(ffi.to_plain_native(msg0));
+    frame.contentWindow?.postMessage(msg, "http://localhost:8001");
     return ffi.nothing;
   });
 };

@@ -2,8 +2,15 @@
 
 command main-html: Root do
   agata with-root: Root do: {
+    purr setup-ipc-listener;
     agata show: ps-welcome render;
   };
+end
+
+command purr open-project: (Project is purr-project-meta) do
+  let Id = purr-api spawn: Project;
+  let Spawned = new purr-project(Id, Project);
+  self project-summary: Spawned;
 end
 
 command purr project-summary: (Project is purr-project) do

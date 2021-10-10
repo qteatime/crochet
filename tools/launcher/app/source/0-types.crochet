@@ -4,9 +4,14 @@ singleton purr;
 singleton purr-api;
 
 // Managing projects
-type purr-project(
+type purr-project-meta(
   filename,
   metadata
+);
+
+type purr-project(
+  id,
+  global meta is purr-project-meta
 );
 
 type purr-package-capabilities(
@@ -50,4 +55,24 @@ effect purr with
   new-project();
   import-project();
   open-project(project is purr-project);
+end
+
+type purr-ipc(clients);
+type purr-ipc-client(id, frame);
+
+abstract ipc-message;
+// Outgoing
+abstract ipc-outgoing is ipc-message;
+singleton imo-spawn-testing is ipc-outgoing;
+singleton imo-run-tests is ipc-outgoing;
+
+// Incoming
+abstract ipc-incoming is ipc-message;
+singleton im-ready is ipc-incoming;
+singleton im-ready-for-testing is ipc-incoming;
+singleton im-testing-started is ipc-incoming;
+
+effect purr-ipc with
+  get-instance();
+  add-client(id, frame);
 end

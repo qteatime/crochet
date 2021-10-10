@@ -1,0 +1,80 @@
+% crochet
+
+open crochet.language.json;
+local singleton module;
+
+// IPC machinery
+command #purr-ipc setup: (Block is (() -> nothing)) do
+  let IPC-cell = #cell with-value: new purr-ipc([->]);
+  handle
+    module setup-listener: IPC-cell value;
+    Block();
+  with
+    on purr-ipc.add-client(Id, Frame) do
+      let IPC = IPC-cell value;
+      IPC-cell <- new purr-ipc(IPC.clients at: Id put: Frame);
+      let Client = new purr-ipc-client(Id, Frame);
+      continue with Client;
+    end
+
+    on purr-ipc.get-instance() do
+      continue with IPC-cell value;
+    end
+  end
+end
+
+command #purr-ipc shared-instance =
+  perform purr-ipc.get-instance();
+
+command purr-ipc add-client: (Project is purr-project) frame: (Frame is dom-node) =
+  perform purr-ipc.add-client(Project.id, Frame);
+
+command module setup-listener: IPC-cell do
+  foreign dom.on-message({ Msg0 in 
+    let Msg = #json parse: Msg0;
+    let Id = Msg.id;
+    let IPC = IPC-cell value;
+    let Client = IPC client-for-id: Id;
+    Client dispatch: (IPC parse-message: Msg);
+  });  
+end
+
+command purr-ipc client-for-id: Id =
+  self.clients at: Id;
+
+command purr-ipc parse-message: (Message is record) do
+  let Method = Message.method;
+  let Data = Message.data;
+  condition
+    when Method === "ready" => im-ready;
+    when Method === "ready-for-testing" => im-ready-for-testing;
+    when Method === "testing-started" => im-testing-started;
+  end
+end
+
+command purr-ipc-client serialise-message: imo-spawn-testing =
+  [ 
+    method -> "spawn-testing",
+    id -> self.id,
+    data -> [->],
+  ];
+
+command purr-ipc serialise-message: imo-run-tests =
+  [
+    method -> "run-tests",
+    id -> self.id,
+    data -> [->]
+  ];
+
+command purr-ipc-client dispatch: (X is ipc-outgoing) do
+  let Message = self serialise-message: X;
+  foreign dom.post-message(self.frame, Message);
+  self;
+end
+
+// IPC messages
+command purr-ipc-client spawn-tests =
+  self dispatch: imo-spawn-testing;
+
+command purr-ipc-client run-tests =
+  self dispatch: imo-run-tests;

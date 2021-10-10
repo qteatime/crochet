@@ -5,13 +5,18 @@ open crochet.language.json;
 command purr-api examples do
   let Examples = #json parse: (foreign api.examples());
   for X in Examples do
-    new purr-project(X.filename, X.meta);
+    new purr-project-meta(X.filename, X.meta);
   end
 end
 
 command purr-api libraries do
   let Libraries = #json parse: (foreign api.libraries());
   for X in Libraries do
-    new purr-project(X.filename, X.meta);
+    new purr-project-meta(X.filename, X.meta);
   end
+end
+
+command purr-api spawn: (Project is purr-project-meta) do
+  let Id = foreign api.spawn(Project.filename);
+  Id;
 end

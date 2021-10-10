@@ -2,26 +2,29 @@
 
 local singleton module;
 
-command purr-project name =
+command purr-project id =
+  self.id;
+
+command purr-project-meta name =
   self.metadata.name;
 
-command purr-project title =
+command purr-project-meta title =
   self.metadata
     | at: "title" default: self name;
 
-command purr-project description =
+command purr-project-meta description =
   self.metadata
     | at: "description" default: "(no description)";
 
-command purr-project stability =
+command purr-project-meta stability =
   self.metadata
     | at: "stability" default: "(not defined)";
 
-command purr-project target =
+command purr-project-meta target =
   self.metadata
     | at: "target" default: "*";
 
-command purr-project capabilities do
+command purr-project-meta capabilities do
   let Cap = self.metadata at: "capabilities" default: [->];
   let Required = Cap at: "requires" default: [];
   let Provided = Cap at: "provides" default: [];
@@ -32,7 +35,7 @@ command purr-project capabilities do
   );
 end
 
-command purr-project dependencies do
+command purr-project-meta dependencies do
   let Deps = self.metadata at: "dependencies" default: [];
   for Dep in Deps do module parse-dependency: Dep end;
 end

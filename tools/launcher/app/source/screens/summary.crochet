@@ -4,14 +4,14 @@ local define w = agata-widget;
 local define cw = purr-common-widgets;
 
 command ps-summary render do
-  cw window: [w title: self.project title] with: [
+  cw window: [w title: self.project meta title] with: [
     w flex-row: [
       cw project-menu: self.project,
 
       w contents: [
-        w title: self.project title,
+        w title: self.project meta title,
         w paragraph: [
-          w text: self.project description
+          w text: self.project meta description
         ],
 
         w tabbed-panel: [
@@ -34,24 +34,24 @@ end
 command ps-summary metadata do
   w flex-column: [
     self group: "Package name"
-         with: [w text: self.project name],
+         with: [w text: self.project meta name],
 
     self group: "Stability"
-         with: [w text: self.project stability],
+         with: [w text: self.project meta stability],
 
     self group: "Target platforms"
-         with: [w text: self.project target]
+         with: [w text: self.project meta target]
   ]
 end
 
 command ps-summary capabilities do
   w flex-column: [
     w subtitle: "Required capabilities",
-    self capability-list: self.project capabilities required,
+    self capability-list: self.project meta capabilities required,
 
     w double-space,
     w subtitle: "Provided capabilities",
-    self capability-list: self.project capabilities provided,
+    self capability-list: self.project meta capabilities provided,
   ]
 end
 
@@ -68,7 +68,7 @@ end
 
 command ps-summary dependencies do
   w flex-column: (
-    for Dep in self.project dependencies do
+    for Dep in self.project meta dependencies do
       self dependency: Dep
     end
   )
