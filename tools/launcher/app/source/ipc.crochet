@@ -28,7 +28,8 @@ command #purr-ipc shared-instance =
 
 command purr-ipc add-client: (Project is purr-project) frame: (Frame is dom-window) do
   let Client = new purr-ipc-client(Project.id, Frame);
-  perform purr-ipc.add-client(Project.id, Client);
+  let Actor = new actor-ipc(#cell with-value: [], Client, actor-ipc-loading, false);
+  perform purr-ipc.add-client(Project.id, Actor);
   Client;
 end
 
@@ -83,11 +84,65 @@ command purr-ipc-client run-tests =
   self dispatch: imo-run-tests;
 
 // IPC handlers
-command purr-ipc-client dispatch: im-ready =
-  nothing;
+command actor-ipc dispatch: (Message is ipc-incoming) do
+  self store-message: Message;
+  condition
+    when not self.busy value do
+      self dispatch-next;
+    end
 
-command purr-ipc-client dispatch: im-ready-for-testing =
-  nothing;
+    otherwise do nothing end
+  end
+end
 
-command purr-ipc-client dispatch: im-testing-started =
-  nothing;
+command actor-ipc store-mesage: Message do
+  self.message-box <- self.message-box value append: Message;
+end
+
+command actor-ipc select-message do
+  let State = self.state value;
+  let Message-box = self.message-box value;
+  let Message = Mesage-box find: (State accepts: _);
+  self.message-box <- Message-box without: { X in X =:= Message };
+  Message;
+end
+
+command actor-ipc dispatch-next do
+  let Message = self select-message;
+  condition
+    when Message is ipc-incoming do
+      self.busy <- true;
+      self handle: Message;
+      self.busy <- false;
+      self dispatch-next;
+    end
+
+    otherwise do nothing end
+  end
+end
+
+command actor-ipc handle: Message do
+  let Result = self.state value handle: Message;
+  self handle-result: Result;
+end
+
+command actor-ipc handle-result: mhr-done do nothing end;
+
+command actor-ipc handle-result: (S is mhr-transition) do
+  self.state <- S.new-state;
+end
+
+command actor-ipc-state accepts: _ = false;
+
+command actor-ipc-loading accepts: im-ready = true;
+command actor-ipc-loading handle: im-ready =
+  new mhr-transition(actor-ipc-ready);
+
+command actor-ipc-waiting-for-test accepts: im-ready-for-testing = true;
+command actor-ipc-waiting-for-test handle: im-ready-for-testing =
+  new mhr-transition(actor-ipc-ready-for-test);
+
+command actor-ipc-testing accepts: im-test-result = true;
+command actor-ipc-testing handle: (X is im-test-result) do
+  self.results <- self.results value append: X.result;
+end

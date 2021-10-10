@@ -72,8 +72,28 @@ abstract ipc-incoming is ipc-message;
 singleton im-ready is ipc-incoming;
 singleton im-ready-for-testing is ipc-incoming;
 singleton im-testing-started is ipc-incoming;
+type im-test-result(result) is ipc-incoming;
 
 effect purr-ipc with
   get-instance();
   add-client(id, frame);
 end
+
+type actor-ipc(
+  message-box is cell<list<ipc-incoming>>,
+  client is purr-ipc-client,
+  state is cell<actor-ipc-state>,
+  busy is cell<boolean>
+);
+
+abstract actor-ipc-state;
+singleton actor-ipc-loading is actor-ipc-state;
+singleton actor-ipc-ready is actor-ipc-state;
+singleton actor-ipc-waiting-test is actor-ipc-state;
+singleton actor-ipc-ready-for-test is actor-ipc-state;
+type actor-ipc-testing(results is cell<list<test-result>>) is actor-ipc-state;
+type actor-ipc-done-testing(results is cell<list<test-result>>) is actor-ipc-state;
+
+abstract message-handle-result;
+singleton mhr-done is message-handle-result;
+singleton mhr-transition(new-state is actor-ipc-state) is message-handle-result;
