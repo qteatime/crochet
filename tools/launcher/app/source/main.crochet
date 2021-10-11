@@ -1,14 +1,15 @@
 % crochet
 
 command main-html: Root do
-  #purr-ipc setup: {
-    agata with-root: Root do: {
+  agata with-root: Root do: {
+    #purr-ipc setup: {
       agata show: ps-welcome render;
     }
   };
 end
 
 command purr open-project: (Project is purr-project-meta) do
+  foreign dom.debugger();
   let Id = purr-api spawn: Project;
   let Spawned = new purr-project(Id, Project);
   let Origin = foreign dom.encode("http://localhost:8000");

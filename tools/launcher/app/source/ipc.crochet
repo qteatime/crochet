@@ -10,10 +10,10 @@ command #purr-ipc setup: (Block is (() -> nothing)) do
     module setup-listener: IPC-cell;
     Block();
   with
-    on purr-ipc.add-client(Id, Client) do
+    on purr-ipc.add-client(Id, Actor) do
       let IPC = IPC-cell value;
-      IPC-cell <- new purr-ipc(IPC.clients at: Id put: Client);
-      foreign dom.install-hidden-frame(Client.frame.box);
+      IPC-cell <- new purr-ipc(IPC.clients at: Id put: Actor);
+      foreign dom.install-hidden-frame(Actor.client.frame.box);
       continue with nothing;
     end
 
@@ -27,10 +27,13 @@ command #purr-ipc shared-instance =
   perform purr-ipc.get-instance();
 
 command purr-ipc add-client: (Project is purr-project) frame: (Frame is dom-window) do
-  let Client = new purr-ipc-client(Project.id, Frame);
-  let Actor = new actor-ipc(#cell with-value: [], Client, actor-ipc-loading, false);
+  let Client = new purr-ipc-client(Project.id, Frame, Project);
+  let Mailbox = #cell with-value: [];
+  let State = #cell with-value: actor-ipc-loading;
+  let Busy = #cell with-value: false;
+  let Actor = new actor-ipc(Mailbox, Client, State, Busy);
   perform purr-ipc.add-client(Project.id, Actor);
-  Client;
+  Actor;
 end
 
 command module setup-listener: IPC-cell do
@@ -51,7 +54,7 @@ command purr-ipc parse-message: (Message is record) do
   let Data = Message.data;
   condition
     when Method === "ready" => im-ready;
-    when Method === "ready-for-testing" => im-ready-for-testing;
+    when Method === "failed-to-start" => new im-failed-to-start(Data.message);
     when Method === "testing-started" => im-testing-started;
   end
 end
@@ -95,42 +98,53 @@ command actor-ipc dispatch: (Message is ipc-incoming) do
   end
 end
 
-command actor-ipc store-mesage: Message do
-  self.message-box <- self.message-box value append: Message;
+command actor-ipc store-message: Message do
+  self.mailbox <- self.mailbox value append: Message;
 end
 
 command actor-ipc select-message do
   let State = self.state value;
-  let Message-box = self.message-box value;
-  let Message = Mesage-box find: (State accepts: _);
-  self.message-box <- Message-box without: { X in X =:= Message };
+  let Mailbox = self.mailbox value;
+  let Message = Mailbox find: (State accepts: _);
   Message;
 end
 
 command actor-ipc dispatch-next do
-  let Message = self select-message;
+  self.busy <- true;
+  let MessageR = self select-message;
   condition
-    when Message is ipc-incoming do
-      self.busy <- true;
+    when MessageR is ok do
+      let Message = MessageR value;
+      let Mailbox = self.mailbox value;
+      self.mailbox <- Mailbox remove-if: { X in X =:= Message };
       self handle: Message;
-      self.busy <- false;
       self dispatch-next;
     end
 
-    otherwise do nothing end
+    otherwise do
+      self.busy <- false;
+    end
   end
 end
 
 command actor-ipc handle: Message do
-  let Result = self.state value handle: Message;
-  self handle-result: Result;
+  handle
+    let Result = self.state value handle: Message;
+    self handle-result: Result;
+  with
+    on actor-ipc.get-client() => continue with self.client;
+  end
 end
 
-command actor-ipc handle-result: mhr-done do nothing end;
+command actor-ipc handle-result: mhr-done do
+  nothing
+end
 
 command actor-ipc handle-result: (S is mhr-transition) do
   self.state <- S.new-state;
 end
+
+command actor-ipc-state client = perform actor-ipc.get-client();
 
 command actor-ipc-state accepts: _ = false;
 
@@ -138,11 +152,20 @@ command actor-ipc-loading accepts: im-ready = true;
 command actor-ipc-loading handle: im-ready =
   new mhr-transition(actor-ipc-ready);
 
-command actor-ipc-waiting-for-test accepts: im-ready-for-testing = true;
-command actor-ipc-waiting-for-test handle: im-ready-for-testing =
-  new mhr-transition(actor-ipc-ready-for-test);
+command actor-ipc-loading accepts: im-failed-to-start = true;
+command actor-ipc-loading handle: (M is im-failed-to-start) do
+  let Project = self client project;
+  agata message-box: (
+    "Failed to start [Project meta title].
+    
+     [M.message]"
+    flatten-into-plain-text
+  );
+  mhr-done;
+end
 
 command actor-ipc-testing accepts: im-test-result = true;
 command actor-ipc-testing handle: (X is im-test-result) do
   self.results <- self.results value append: X.result;
+  mhr-done;
 end

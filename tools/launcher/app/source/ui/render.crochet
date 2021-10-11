@@ -113,8 +113,7 @@ command dom-renderer to-css: (X is text) =
 command dom-renderer to-css: (X is numeric) =
   X to-text;
 
-command dom-canvas render: (X is widget) do
-  let Node = dom-renderer render: X;
+command dom-canvas render: (Node is dom-node) do
   foreign dom.render(self.box, Node.box);
   self;
 end

@@ -9,6 +9,7 @@ type agata-state(
 
 effect agata-presentation with
   show(page);
+  alert(message);
 end
 
 

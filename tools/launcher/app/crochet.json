@@ -3,6 +3,7 @@
   "target": "browser",
   "sources": [
     "source/0-types.crochet",
+    "source/extensions.crochet",
     "source/ui/0-types.crochet",
     "source/ui/measure.crochet",
     "source/ui/widget.crochet",

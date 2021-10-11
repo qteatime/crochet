@@ -9,21 +9,24 @@ class Client {
         this.capabilities = capabilities;
         this.origin = origin;
         this.methods = new Map();
-        this._test = null;
-        this.methods.set("spawn-testing", this.spawn_testing.bind(this));
+        this._instance = null;
         this.methods.set("run-tests", this.run_tests.bind(this));
     }
-    async test() {
-        if (this._test != null) {
-            return this._test;
+    get instance() {
+        if (this._instance != null) {
+            return this._instance;
         }
-        this._test = await this.instantiate();
-        return this._test;
+        else {
+            throw new Error(`Not yet instantiated.`);
+        }
     }
-    async instantiate() {
+    async initialise() {
+        if (this._instance != null) {
+            throw new Error(`Already initialised`);
+        }
         const crochet = new Crochet.CrochetForBrowser(`/${this.id}/library`, new Set(this.capabilities), false);
         await crochet.boot_from_file(`/${this.id}/app/crochet.json`, Crochet.Package.target_web());
-        return crochet;
+        this._instance = crochet;
     }
     post_message(method, data) {
         window.parent.postMessage({ method, id: this.id, data }, this.origin);
@@ -46,12 +49,7 @@ class Client {
             this.dispatch(ev.data);
         });
     }
-    async spawn_testing(_) {
-        await this.test();
-        this.post_message("ready-for-testing", {});
-    }
     async run_tests(_) {
-        const test = await this.test();
         this.post_message("testing-started", {});
     }
 }
@@ -61,7 +59,15 @@ async function main() {
     const capabilities = (query.get("capabilities") || "").split(",");
     const client = new Client(query.get("id"), new Set(capabilities), query.get("origin"));
     client.listen();
-    client.post_message("ready", {});
+    try {
+        await client.initialise();
+        client.post_message("ready", {});
+    }
+    catch (e) {
+        client.post_message("failed-to-start", {
+            message: String(e),
+        });
+    }
 }
 main().catch((e) => {
     console.log(e);

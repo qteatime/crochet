@@ -10,17 +10,21 @@ declare var Crochet: {
 
 export class Client {
   private methods: Map<string, (...args: any[]) => Promise<any>> = new Map();
-  private _test: CrochetForBrowser | null = null;
+  private _instance: CrochetForBrowser | null = null;
 
-  async test() {
-    if (this._test != null) {
-      return this._test;
+  get instance() {
+    if (this._instance != null) {
+      return this._instance;
+    } else {
+      throw new Error(`Not yet instantiated.`);
     }
-    this._test = await this.instantiate();
-    return this._test;
   }
 
-  private async instantiate() {
+  async initialise() {
+    if (this._instance != null) {
+      throw new Error(`Already initialised`);
+    }
+
     const crochet = new Crochet.CrochetForBrowser(
       `/${this.id}/library`,
       new Set(this.capabilities),
@@ -30,7 +34,7 @@ export class Client {
       `/${this.id}/app/crochet.json`,
       Crochet.Package.target_web()
     );
-    return crochet;
+    this._instance = crochet;
   }
 
   constructor(
@@ -38,7 +42,6 @@ export class Client {
     readonly capabilities: Set<string>,
     readonly origin: string
   ) {
-    this.methods.set("spawn-testing", this.spawn_testing.bind(this));
     this.methods.set("run-tests", this.run_tests.bind(this));
   }
 
@@ -66,13 +69,7 @@ export class Client {
     });
   }
 
-  async spawn_testing(_: {}) {
-    await this.test();
-    this.post_message("ready-for-testing", {});
-  }
-
   async run_tests(_: {}) {
-    const test = await this.test();
     this.post_message("testing-started", {});
   }
 }
@@ -87,7 +84,14 @@ async function main() {
   );
 
   client.listen();
-  client.post_message("ready", {});
+  try {
+    await client.initialise();
+    client.post_message("ready", {});
+  } catch (e) {
+    client.post_message("failed-to-start", {
+      message: String(e),
+    });
+  }
 }
 
 main().catch((e) => {

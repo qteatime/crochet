@@ -212,4 +212,15 @@ export default (ffi: ForeignInterface) => {
     const url = ffi.text_to_string(url0);
     return ffi.text(encodeURIComponent(url));
   });
+
+  ffi.defmachine("dom.alert", function* (msg0) {
+    const msg = ffi.text_to_string(msg0);
+    alert(msg);
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.debugger", () => {
+    debugger;
+    return ffi.nothing;
+  });
 };
