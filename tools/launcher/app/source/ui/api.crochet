@@ -17,7 +17,7 @@ command agata with-root: Root do: (Block is (() -> any)) do
   end
 end
 
-command agata show: Widget do
+command agata show: (Widget is widget) do
   let Node = dom-renderer render: Widget;
   perform agata-presentation.show(Node);
 end
@@ -27,3 +27,18 @@ command agata window: (Url is text) =
 
 command agata message-box: (Message is text) =
   perform agata-presentation.alert(Message);
+
+command dom-dynamic-canvas render: (Widget is widget) do
+  let Node = dom-renderer render: Widget;
+  perform agata-canvas.replace(Node);
+end
+
+command dom-dynamic-canvas append: (Widget is widget) do
+  let Node = dom-renderer render: Widget;
+  perform agata-canvas.append(Node);
+end
+
+command dom-dynamic-canvas prepend: (Widget is widget) do
+  let Node = dom-renderer render: Widget;
+  perform agata-canvas.prepend(Node);
+end

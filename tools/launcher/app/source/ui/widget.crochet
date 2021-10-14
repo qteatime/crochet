@@ -194,3 +194,17 @@ command layout pairs =
 
 command agata-widget frame: (Window is dom-window) =
   new w-frame(Window);
+
+
+command agata-widget dynamic: (Handler is (dom-dynamic-canvas -> nothing)) =
+  new w-dynamic(Handler);
+
+
+command agata-widget switch: (Observable is observable) =
+  new w-switch(Observable, []);
+
+command w-switch when: (Guard is (A -> boolean)) then: (Handler is (A -> widget)) =
+  new w-switch(self.observable, self.cases append: new wn-switch-case(Guard, Handler));
+
+command w-switch otherwise: (Handler is (A -> widget)) =
+  new w-switch(self.observable, self.cases append: new wn-switch-case({_ in true}, Handler));

@@ -174,8 +174,6 @@ export default (ffi: ForeignInterface) => {
           return ffi.nothing;
         }
 
-        debugger;
-
         const msg = ffi.text(JSON.stringify(ev.data));
         const result = yield ffi.apply(callback, [msg]);
         return ffi.nothing;
@@ -221,6 +219,21 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("dom.debugger", () => {
     debugger;
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.append", (box, node) => {
+    get_node(box).appendChild(get_node(node));
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.prepend", (box0, node) => {
+    const box = get_node(box0);
+    if (box.firstChild) {
+      box.insertBefore(get_node(node), box.firstChild);
+    } else {
+      box.appendChild(get_node(node));
+    }
     return ffi.nothing;
   });
 };

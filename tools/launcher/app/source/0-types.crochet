@@ -100,3 +100,4 @@ type actor-ipc-done-testing(results is cell<list<test-result>>) is actor-ipc-sta
 abstract message-handle-result;
 singleton mhr-done is message-handle-result;
 type mhr-transition(new-state is actor-ipc-state) is message-handle-result;
+

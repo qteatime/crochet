@@ -9,7 +9,6 @@ command main-html: Root do
 end
 
 command purr open-project: (Project is purr-project-meta) do
-  foreign dom.debugger();
   let Id = purr-api spawn: Project;
   let Spawned = new purr-project(Id, Project);
   let Origin = foreign dom.encode("http://localhost:8000");
@@ -21,6 +20,10 @@ end
 
 command purr project-summary: (Project is purr-project) do
   agata show: new ps-summary(Project) render;
+end
+
+command purr open-test: (Project is purr-project) do
+  agata show: new ps-test(Project) render;
 end
 
 command purr home do

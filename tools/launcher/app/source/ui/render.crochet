@@ -95,6 +95,42 @@ command dom-renderer render: (X is w-frame) do
   ]));
 end
 
+command dom-renderer render: (X is w-dynamic) do
+  let Node = foreign dom.container("div", "agata-dynamic", []);
+  let Canvas = new dom-dynamic-canvas(X);
+  handle
+    X.renderer(Canvas);
+  with
+    on agata-canvas.replace(Contents) do
+      foreign dom.render(Node, Contents.box);
+      continue with nothing;
+    end
+
+    on agata-canvas.append(Contents) do
+      foreign dom.append(Node, Contents.box);
+      continue with nothing;
+    end
+
+    on agata-canvas.prepend(Contents) do
+      foreign dom.prepend(Node, Contents.box);
+      continue with nothing;
+    end
+  end
+  new dom-node(Node);
+end
+
+command dom-renderer render: (X is w-switch) do
+  let Node = new w-dynamic({ Canvas in
+    X.observable subscribe: { Value in
+      let Case = X.cases find: { C in C.guard(Value) }
+                   | value-or-panic: "No suitable cases";
+      let Widget = Case.handler(Value);
+      Canvas render: Widget;
+    }
+  });
+  self render: Node;
+end
+
 command dom-renderer to-css: (P is gap) =
   "[self to-css: P.horizontal] [self to-css: P.vertical]" flatten-into-plain-text;
 

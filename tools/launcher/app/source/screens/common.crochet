@@ -29,7 +29,8 @@ command purr-common-widgets project-menu: (Project is purr-project) do
     w action-button
       | icon: "vial"
       | title: "Test"
-      | description: "Run all tests for the project",
+      | description: "Run all tests for the project"
+      | on-click: { _ in purr open-test: Project },
 
     w action-button
       | icon: "archive"

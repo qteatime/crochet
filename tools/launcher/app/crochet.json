@@ -5,6 +5,7 @@
     "source/0-types.crochet",
     "source/extensions.crochet",
     "source/ui/0-types.crochet",
+    "source/ui/observable.crochet",
     "source/ui/measure.crochet",
     "source/ui/widget.crochet",
     "source/ui/render.crochet",

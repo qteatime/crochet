@@ -3,9 +3,30 @@
 local define w = agata-widget;
 local define cw = purr-common-widgets;
 
+local abstract state;
+local singleton not-started is state;
+local singleton running is state;
+
 command ps-test render do
+  let State = #observable with-value: not-started;
+
   cw project-window: self.project with: [
     w title: "Test",
     w divider,
+
+    w switch: State
+      | when: {X in X is not-started} then: {_ in self not-started: State}
+      | when: {X in X is running} then: {_ in self running: State},
   ];
+end
+
+command ps-test not-started: State do
+  w button
+    | title: "Run tests"
+    | with: [w text: "Run tests"]
+    | on-click: {_ in State <- running};
+end
+
+command ps-test running: State do
+  w text: "Tests are a-running!";
 end

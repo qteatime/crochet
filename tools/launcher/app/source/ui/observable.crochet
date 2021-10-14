@@ -1,0 +1,27 @@
+% crochet
+
+command #observable with-value: Initial-value do
+  let Subscribers = #cell with-value: [];
+  let State = #cell with-value: Initial-value;
+  new observable(State, Subscribers);
+end
+
+command observable subscribe: (Handler is (any -> nothing)) do
+  self.subscribers <- self.subscribers value append: Handler;
+  Handler(self value);
+end
+
+command observable unsubscribe: (Handler is (any -> nothing)) do
+  self.subscribers <- self.subscribers value remove-if: { X in X =:= Handler };
+end
+
+command observable <- Value do
+  self.state <- Value;
+  for Handler in self.subscribers value do
+    Handler(Value);
+  end
+end
+
+command observable value do
+  self.state value;
+end
