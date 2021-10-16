@@ -7,8 +7,10 @@ command #observable with-value: Initial-value do
 end
 
 command observable subscribe: (Handler is (any -> nothing)) do
-  self.subscribers <- self.subscribers value append: Handler;
+  let Captured = Handler capture;
+  self.subscribers <- self.subscribers value append: Captured;
   Handler(self value);
+  Captured;
 end
 
 command observable unsubscribe: (Handler is (any -> nothing)) do

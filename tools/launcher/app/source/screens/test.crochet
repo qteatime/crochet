@@ -50,7 +50,6 @@ command ps-test test-results: (State is running) do
   w container: [
     w dynamic: { Canvas in
       let Handler = State.process.events subscribe: { Event in
-        foreign dom.debugger();
         self handle-event: Event in: Canvas;
       }
     }
@@ -95,13 +94,14 @@ command ps-test handle-event: (X is te-finished) in: Canvas do
   Canvas append: (w flex-column: [
     w divider,
     w flex-row: [
-      w text: "Passed: [Summary.passed to-text]",
-      w text: "Failed: [Summary.failed to-text]",
-      w text: "Skipped: [Summary.skipped to-text]",
-      w text: "Total: [Summary.total to-text]",
+      w text: "Passed: [Summary.passed to-text] / ",
+      w text: "Failed: [Summary.failed to-text] / ",
+      w text: "Skipped: [Summary.skipped to-text] / ",
+      w text: "Total: [Summary.total to-text] / ",
       w text: "Duration: [Summary.duration milliseconds to-text]ms"
     ]
-  ])
+  ]);
+  
 end
 
 command ps-test run-tests: State do

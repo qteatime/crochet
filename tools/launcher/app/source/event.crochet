@@ -8,7 +8,7 @@ command #event-stream empty =
   new event-stream(#cell with-value: []);
 
 command event-stream subscribe: (Handler is (A -> nothing)) do
-  let Subscriber = new subscriber(Handler);
+  let Subscriber = new subscriber(Handler capture);
   self.subscribers <- self.subscribers value append: Subscriber;
   Subscriber;
 end
