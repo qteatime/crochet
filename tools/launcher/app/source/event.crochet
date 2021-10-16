@@ -1,0 +1,26 @@
+% crochet
+
+implement equality for subscriber;
+command subscriber === (That is subscriber) =
+  self =:= That;
+
+command #event-stream empty =
+  new event-stream(#cell with-value: []);
+
+command event-stream subscribe: (Handler is (A -> nothing)) do
+  let Subscriber = new subscriber(Handler);
+  self.subscribers <- self.subscribers value append: Subscriber;
+  Subscriber;
+end
+
+command event-stream unsubscribe: (Subscriber is subscriber) do
+  self.subscribers <- self.subscribers value remove-if: { X in X === Subscriber };
+  self;
+end
+
+command event-stream publish: Value do
+  for Subscriber in self.subscribers value do
+    Subscriber.handler(Value);
+  end
+  self;
+end

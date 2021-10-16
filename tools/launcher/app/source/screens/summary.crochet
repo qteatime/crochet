@@ -4,7 +4,7 @@ local define w = agata-widget;
 local define cw = purr-common-widgets;
 
 command ps-summary render do
-  cw project-window: self.project with: [
+  cw project-window: self.project at: "summary" with: [
     w title: self.project meta title,
     w paragraph: [
       w text: self.project meta description

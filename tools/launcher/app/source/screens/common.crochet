@@ -13,7 +13,7 @@ command purr-common-widgets window: (Top is list<widget>) with: (Children is lis
   ] ++ Children)
 end
 
-command purr-common-widgets project-menu: (Project is purr-project) do
+command purr-common-widgets project-menu: (Project is purr-project) at: (Section is text) do
   w flex-column: [
     w action-button
       | icon: "book"
@@ -47,10 +47,10 @@ command purr-common-widgets project-menu: (Project is purr-project) do
   | width: 400 pixels;
 end
 
-command purr-common-widgets project-window: (Project is purr-project) with: (Children is list<widget>) do
+command purr-common-widgets project-window: (Project is purr-project) at: Section with: (Children is list<widget>) do
   self window: [w title: Project meta title] with: [
     w flex-row: [
-      self project-menu: Project,
+      self project-menu: Project at: Section,
 
       w contents: Children
         | layout

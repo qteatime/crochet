@@ -23,6 +23,7 @@ import {
   Universe,
   Values,
 } from "../vm";
+import * as UUID from "uuid";
 
 export type { Machine, CrochetValue };
 export type { ISet, IList, IMap };
@@ -283,5 +284,9 @@ export class ForeignInterface {
 
   push_transcript(tag: string, x: CrochetValue | string) {
     return new NSTranscriptWrite(tag, x);
+  }
+
+  uuid4() {
+    return UUID.v4();
   }
 }

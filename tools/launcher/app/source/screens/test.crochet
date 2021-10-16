@@ -5,13 +5,13 @@ local define cw = purr-common-widgets;
 
 local abstract state;
 local singleton not-started is state;
-local singleton running is state;
+local type running(process is pp-test, results is cell<record>) is state;
 
 command ps-test render do
   let State = #observable with-value: not-started;
 
-  cw project-window: self.project with: [
-    w title: "Test",
+  cw project-window: self.project at: "test" with: [
+    w title: "Testing",
     w divider,
 
     w switch: State
@@ -21,12 +21,103 @@ command ps-test render do
 end
 
 command ps-test not-started: State do
-  w button
-    | title: "Run tests"
-    | with: [w text: "Run tests"]
-    | on-click: {_ in State <- running};
+  w container: [
+    w toolbar: [
+      w icon-button: "play"
+        | title: "Run tests"
+        | on-click: { _ in self run-tests: State }
+    ],
+
+    self test-results: State value
+  ]
 end
 
 command ps-test running: State do
-  w text: "Tests are a-running!";
+  w container: [
+    w toolbar: [
+      w icon: "spinner"
+    ],
+
+    self test-results: State value
+  ]
+end
+
+command ps-test test-results: not-started do
+  w container: [];
+end
+
+command ps-test test-results: (State is running) do
+  w container: [
+    w dynamic: { Canvas in
+      let Handler = State.process.events subscribe: { Event in
+        foreign dom.debugger();
+        self handle-event: Event in: Canvas;
+      }
+    }
+  ];
+end
+
+command ps-test handle-event: (X is te-started) in: Canvas do
+  Canvas append: (w flex-column: [
+    w flex-row: [
+      w text: X.result.package-name,
+      w text: " : ",
+      w text: X.result.module-name,
+    ],
+    w text: X.result.title
+  ]);
+end
+
+command ps-test handle-event: (X is te-skipped) in: Canvas do
+  Canvas append: (w flex-column: [
+    w text: "(Skipped)",
+    w divider,
+  ])
+end
+
+command ps-test handle-event: (X is te-failed) in: Canvas do
+  Canvas append: (w flex-column: [
+    w text: "(Failed)",
+    w text: X.message,
+    w divider,
+  ])
+end
+
+command ps-test handle-event: (X is te-passed) in: Canvas do
+  Canvas append: (w flex-column: [
+    w text: "(Passed)",
+    w divider,
+  ])
+end
+
+command ps-test handle-event: (X is te-finished) in: Canvas do
+  let Summary = X.summary;
+  Canvas append: (w flex-column: [
+    w divider,
+    w flex-row: [
+      w text: "Passed: [Summary.passed to-text]",
+      w text: "Failed: [Summary.failed to-text]",
+      w text: "Skipped: [Summary.skipped to-text]",
+      w text: "Total: [Summary.total to-text]",
+      w text: "Duration: [Summary.duration milliseconds to-text]ms"
+    ]
+  ])
+end
+
+command ps-test run-tests: State do
+  let Process = purr run-tests: self.project;
+  State <- new running(Process, #cell with-value: [->]);
+end
+
+command running add-result: (Test is test-result) status: (Status is test-status) do
+  let Results0 = self.results value;
+  let Package0 = Results at: Test.package-name default: [->];
+  let Module0 = Package at: Test.module-name default: [->];
+  let Module1 = Module0 at: Test.test-id put: [
+    title -> Test.title,
+    status -> Status
+  ];
+  let Package1 = Packages0 at: Test.module-name put: Module1;
+  let Results1 = Results0 at: Test.package-name put: Package1;
+  self.results <- Results1;
 end

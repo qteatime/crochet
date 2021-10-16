@@ -16,11 +16,12 @@
     "source/screens/welcome.crochet",
     "source/screens/test.crochet",
     "source/screens/summary.crochet",
+    "source/event.crochet",
     "source/ipc.crochet",
     "source/main.crochet"
   ],
-  "native_sources": ["native/dom.js", "native/api.js"],
-  "dependencies": ["crochet.core", "crochet.language.json"],
+  "native_sources": ["native/dom.js", "native/api.js", "native/ipc.js"],
+  "dependencies": ["crochet.core", "crochet.language.json", "crochet.time"],
   "capabilities": {
     "requires": ["native"],
     "provides": []

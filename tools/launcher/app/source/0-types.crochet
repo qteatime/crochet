@@ -1,7 +1,15 @@
 % crochet
 
+open crochet.time;
+
 singleton purr;
 singleton purr-api;
+singleton purr-ipc-api;
+
+type event-stream(
+  subscribers is cell<list<subscriber>>
+);
+type subscriber(handler is (A -> nothing));
 
 // Managing projects
 type purr-project-meta(
@@ -61,18 +69,38 @@ end
 type purr-ipc(clients);
 type purr-ipc-client(id, frame, global project);
 
+type i-test-details(
+  package-name is text,
+  module-name is text,
+  title is text
+);
+
+type test-summary(
+  passed is integer,
+  failed is integer,
+  skipped is integer,
+  total is integer,
+  duration is duration
+);
+
 abstract ipc-message;
 // Outgoing
 abstract ipc-outgoing is ipc-message;
-singleton imo-spawn-testing is ipc-outgoing;
-singleton imo-run-tests is ipc-outgoing;
+type imo-run-tests(id is text) is ipc-outgoing;
 
 // Incoming
 abstract ipc-incoming is ipc-message;
 singleton im-ready is ipc-incoming;
-type im-failed-to-start(message is text) is ipc-incoming;
-singleton im-testing-started is ipc-incoming;
-type im-test-result(result) is ipc-incoming;
+type im-testing-started(id is text) is ipc-incoming;
+type im-test-started(id is text, test-id is text, details is i-test-details) is ipc-incoming;
+type im-test-skipped(id is text, test-id is text) is ipc-incoming;
+type im-test-passed(id is text, test-id is text) is ipc-incoming;
+type im-test-failed(id is text, test-id is text, message is text) is ipc-incoming;
+type im-testing-finished(
+  id is text,
+  summary is test-summary
+) is ipc-incoming;
+
 
 effect purr-ipc with
   get-instance();
@@ -92,12 +120,39 @@ type actor-ipc(
 
 abstract actor-ipc-state;
 singleton actor-ipc-loading is actor-ipc-state;
-singleton actor-ipc-ready is actor-ipc-state;
-type actor-ipc-failed-to-start(message is text) is actor-ipc-state;
-type actor-ipc-testing(results is cell<list<test-result>>) is actor-ipc-state;
-type actor-ipc-done-testing(results is cell<list<test-result>>) is actor-ipc-state;
+type actor-ipc-started(
+  processes is cell<list<purr-process>>
+) is actor-ipc-state;
 
 abstract message-handle-result;
 singleton mhr-done is message-handle-result;
 type mhr-transition(new-state is actor-ipc-state) is message-handle-result;
 
+abstract purr-process;
+type pp-test(
+  id is text,
+  state is cell<test-process-status>,
+  tests is cell<record<test-result>>,
+  statuses is cell<record<test-status>>,
+  events is event-stream<test-event>
+) is purr-process;
+
+type test-result(
+  test-id is text,
+  package-name is text,
+  module-name is text,
+  title is text,
+);
+
+abstract test-event;
+type te-started(result is test-result);
+type te-skipped(result is test-result);
+type te-failed(result is test-result, message is text);
+type te-passed(result is test-result);
+type te-finished(summary is test-summary);
+
+abstract test-process-status;
+singleton tps-started;
+type tps-finished(summary is test-summary);
+
+enum test-status = ts-started, ts-passed, ts-skipped, ts-failed;

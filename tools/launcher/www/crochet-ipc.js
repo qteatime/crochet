@@ -9,24 +9,12 @@ class Client {
         this.capabilities = capabilities;
         this.origin = origin;
         this.methods = new Map();
-        this._instance = null;
         this.methods.set("run-tests", this.run_tests.bind(this));
     }
-    get instance() {
-        if (this._instance != null) {
-            return this._instance;
-        }
-        else {
-            throw new Error(`Not yet instantiated.`);
-        }
-    }
-    async initialise() {
-        if (this._instance != null) {
-            throw new Error(`Already initialised`);
-        }
+    async instantiate() {
         const crochet = new Crochet.CrochetForBrowser(`/${this.id}/library`, new Set(this.capabilities), false);
         await crochet.boot_from_file(`/${this.id}/app/crochet.json`, Crochet.Package.target_web());
-        this._instance = crochet;
+        return crochet;
     }
     post_message(method, data) {
         window.parent.postMessage({ method, id: this.id, data }, this.origin);
@@ -49,25 +37,74 @@ class Client {
             this.dispatch(ev.data);
         });
     }
-    async run_tests(_) {
-        this.post_message("testing-started", {});
+    async run_tests({ id }) {
+        this.post_message("testing-started", { id });
+        // TODO: handle errors here
+        const instance = await this.instantiate();
+        const handler = instance.test_report.subscribe((message) => {
+            if (message.id !== id) {
+                return;
+            }
+            switch (message.tag) {
+                case "started": {
+                    break;
+                }
+                case "test-started": {
+                    this.post_message("test-started", {
+                        id: message.id,
+                        "test-id": message.test_id,
+                        package: message.pkg,
+                        module: message.module,
+                        title: message.name,
+                    });
+                    break;
+                }
+                case "test-skipped": {
+                    this.post_message("test-skipped", {
+                        id: message.id,
+                        "test-id": message.test_id,
+                    });
+                    break;
+                }
+                case "test-passed": {
+                    this.post_message("test-passed", {
+                        id: message.id,
+                        "test-id": message.test_id,
+                    });
+                    break;
+                }
+                case "test-failed": {
+                    this.post_message("test-failed", {
+                        id: message.id,
+                        "test-id": message.test_id,
+                        message: message.message,
+                    });
+                    break;
+                }
+                case "finished": {
+                    break;
+                }
+            }
+        });
+        const result = await instance.run_tests(id, () => true);
+        instance.test_report.unsubscribe(handler);
+        this.post_message("testing-finished", {
+            id,
+            passed: result.passed,
+            failed: result.failed,
+            skipped: result.skipped,
+            total: result.total,
+            duration: result.finished - result.started,
+        });
     }
 }
 exports.Client = Client;
 async function main() {
     const query = (0, helpers_1.parse_query)(document.location.search);
-    const capabilities = (query.get("capabilities") || "").split(",");
+    const capabilities = (query.get("capabilities") || "native").split(",");
     const client = new Client(query.get("id"), new Set(capabilities), query.get("origin"));
     client.listen();
-    try {
-        await client.initialise();
-        client.post_message("ready", {});
-    }
-    catch (e) {
-        client.post_message("failed-to-start", {
-            message: String(e),
-        });
-    }
+    client.post_message("ready", {});
 }
 main().catch((e) => {
     console.log(e);
@@ -76,7 +113,7 @@ main().catch((e) => {
 },{"./helpers":2}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parse_query = void 0;
+exports.defer = exports.parse_query = void 0;
 function parse_query(query) {
     const pairs = query.replace(/^\?/, "").split("&");
     const result = new Map();
@@ -87,5 +124,14 @@ function parse_query(query) {
     return result;
 }
 exports.parse_query = parse_query;
+function defer() {
+    const deferred = Object.create(null);
+    deferred.promise = new Promise((resolve, reject) => {
+        deferred.resolve = resolve;
+        deferred.reject = reject;
+    });
+    return deferred;
+}
+exports.defer = defer;
 
 },{}]},{},[1]);

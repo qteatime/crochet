@@ -6,6 +6,62 @@ import * as Binary from "../binary";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
 import { CrochetValue, Environment, CrochetTrace, ErrArbitrary } from "../vm";
+import * as UUID from "uuid";
+
+export type TestReportMessage =
+  | TRM_Started
+  | TRM_Test_Started
+  | TRM_Test_Passed
+  | TRM_Test_Failed
+  | TRM_Test_Skipped
+  | TRM_Finished;
+export abstract class TestReportMessageBase {}
+export class TRM_Started extends TestReportMessageBase {
+  readonly tag = "started";
+  constructor(readonly id: string) {
+    super();
+  }
+}
+export class TRM_Test_Started extends TestReportMessageBase {
+  readonly tag = "test-started";
+  constructor(
+    readonly id: string,
+    readonly test_id: string,
+    readonly pkg: string,
+    readonly module: string,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+export class TRM_Test_Passed extends TestReportMessageBase {
+  readonly tag = "test-passed";
+  constructor(readonly id: string, readonly test_id: string) {
+    super();
+  }
+}
+export class TRM_Test_Failed extends TestReportMessageBase {
+  readonly tag = "test-failed";
+  constructor(
+    readonly id: string,
+    readonly test_id: string,
+    readonly message: string
+  ) {
+    super();
+  }
+}
+export class TRM_Test_Skipped extends TestReportMessageBase {
+  readonly tag = "test-skipped";
+  constructor(readonly id: string, readonly test_id: string) {
+    super();
+  }
+}
+export class TRM_Finished extends TestReportMessageBase {
+  readonly tag = "finished";
+  constructor(readonly id: string) {
+    super();
+  }
+}
 
 export interface IFileSystem {
   read_package(name: string): Promise<Package.Package>;
@@ -27,6 +83,8 @@ export interface ISignal {
   ): Promise<Set<Package.Capability>>;
 
   booted(vm: BootedCrochet): Promise<void>;
+
+  report_test(message: TestReportMessage): Promise<void>;
 }
 
 export class Crochet {
@@ -216,73 +274,40 @@ export class BootedCrochet {
   }
 
   async run_tests(
+    run_id: string,
     filter: (_: VM.CrochetTest) => boolean,
     verbose: boolean = false
   ) {
-    const tests0 = VM.Tests.grouped_tests(this.universe);
-    const {
-      total,
-      skipped,
-      tests: tests1,
-    } = VM.Tests.filter_grouped_tests(tests0, filter);
-    const failures = [];
-    const start = new Date().getTime();
-    let current = "";
-    let sub_current = "";
-
-    for (const [group, modules] of tests1) {
-      sub_current = "";
-      const group_header = `\n${group}\n${"=".repeat(72)}\n`;
-      if (verbose) {
-        console.log(group_header);
-      } else {
-        current = group_header;
-      }
-
+    const tests = VM.Tests.grouped_tests(this.universe);
+    await this.crochet.signal.report_test(new TRM_Started(run_id));
+    for (const [group, modules] of tests) {
       for (const [module, tests] of modules) {
-        const module_header = `\n${module}\n${"-".repeat(72)}\n`;
-        if (verbose) {
-          console.log(module_header);
-        } else {
-          sub_current = module_header;
-        }
-
         for (const test of tests) {
+          const test_id = UUID.v4();
+          await this.crochet.signal.report_test(
+            new TRM_Test_Started(run_id, test_id, group, module, test.title)
+          );
+          if (!filter(test)) {
+            await this.crochet.signal.report_test(
+              new TRM_Test_Skipped(run_id, test_id)
+            );
+            continue;
+          }
+
           try {
             await VM.run_test(this.universe, test);
-            if (verbose) {
-              console.log(`[OK]    ${test.title}`);
-            }
+            await this.crochet.signal.report_test(
+              new TRM_Test_Passed(run_id, test_id)
+            );
           } catch (error: any) {
-            if (!verbose) {
-              if (current) {
-                console.log(current);
-                current = "";
-              }
-              if (sub_current) {
-                console.log(sub_current);
-                sub_current = "";
-              }
-            }
-            console.log("-".repeat(3));
-            console.log(`[ERROR] ${test.title}`);
-            console.log(error.stack ?? error);
-            console.log("-".repeat(3));
-            failures.push(error);
+            await this.crochet.signal.report_test(
+              new TRM_Test_Failed(run_id, test_id, error.stack ?? error)
+            );
           }
         }
       }
     }
-
-    const end = new Date().getTime();
-    const diff = end - start;
-    console.log("");
-    console.log("-".repeat(72));
-    console.log(
-      `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failed`
-    );
-
-    return failures;
+    await this.crochet.signal.report_test(new TRM_Finished(run_id));
   }
 
   async load_declaration(x: IR.Declaration, module: VM.CrochetModule) {

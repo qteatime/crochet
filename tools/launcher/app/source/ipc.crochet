@@ -1,6 +1,7 @@
 % crochet
 
 open crochet.language.json;
+open crochet.time;
 local singleton module;
 
 // IPC machinery
@@ -41,8 +42,8 @@ command module setup-listener: IPC-cell do
     let Msg = #json parse: Msg0;
     let Id = Msg.id;
     let IPC = IPC-cell value;
-    let Client = IPC client-for-id: Id;
-    Client dispatch: (IPC parse-message: Msg);
+    let Actor = IPC client-for-id: Id;
+    Actor dispatch: (IPC parse-message: Msg);
   });  
 end
 
@@ -53,38 +54,102 @@ command purr-ipc parse-message: (Message is record) do
   let Method = Message.method;
   let Data = Message.data;
   condition
-    when Method === "ready" => im-ready;
-    when Method === "failed-to-start" => new im-failed-to-start(Data.message);
-    when Method === "testing-started" => im-testing-started;
+    when Method === "ready" =>
+      im-ready;
+
+    when Method === "failed-to-start" =>
+      new im-failed-to-start(Data.message);
+
+    when Method === "testing-started" =>
+      new im-testing-started(Data.id);
+
+    when Method === "test-started" =>
+      new im-test-started(
+        Data.id,
+        Data.test-id,
+        new i-test-details(
+          Data.package,
+          Data.module,
+          Data.title,
+        )
+      );
+
+    when Method === "test-skipped" =>
+      new im-test-skipped(Data.id, Data.test-id);
+
+    when Method === "test-passed" =>
+      new im-test-passed(Data.id, Data.test-id);
+
+    when Method === "test-failed" =>
+      new im-test-failed(Data.id, Data.test-id, Data.message);
+
+    when Method === "testing-finished" =>
+      new im-testing-finished(
+        Data.id,
+        new test-summary(
+          Data.passed as integer,
+          Data.failed as integer,
+          Data.skipped as integer,
+          Data.total as integer,
+          #duration milliseconds: (Data.duration as integer)
+        )
+      );
   end
 end
 
-command purr-ipc-client serialise-message: imo-spawn-testing =
-  [ 
-    method -> "spawn-testing",
-    id -> self.id,
-    data -> [->],
-  ];
-
-command purr-ipc serialise-message: imo-run-tests =
+command purr-ipc-client serialise-message: (X is imo-run-tests) =
   [
     method -> "run-tests",
     id -> self.id,
-    data -> [->]
+    data -> [id -> X.id]
   ];
 
 command purr-ipc-client dispatch: (X is ipc-outgoing) do
   let Message = self serialise-message: X;
-  foreign dom.post-message(self.frame, Message);
+  foreign dom.post-message(self.frame.box, Message);
   self;
 end
 
 // IPC messages
-command purr-ipc-client spawn-tests =
-  self dispatch: imo-spawn-testing;
+command actor-ipc run-tests
+requires ready :: self.state value is actor-ipc-started
+do
+  let State = self.state value;
+  let Id = foreign ipc.uuid();
+  let Process-status = #cell with-value: tps-started;
+  let Tests = #cell with-value: [->];
+  let Statuses = #cell with-value: [->];
+  let Events = #event-stream empty;
+  let Process = new pp-test(Id, Process-status, Tests, Statuses, Events);
+  State attach-process: Process;
+  self.client dispatch: new imo-run-tests(Id);
+  Process;
+end
 
-command purr-ipc-client run-tests =
-  self dispatch: imo-run-tests;
+command actor-ipc-started attach-process: (Process is purr-process) do
+  self.processes <- self.processes value append: Process;
+end
+
+command actor-ipc-started process-from-id: (Id is text) do
+  let Processes = self.processes value;
+  Processes find: { P in P.id === Id }
+    | value-or-panic: "No process [Id]";
+end
+
+command purr-process details-from-id: (Id is text) do
+  self.tests value at: Id;
+end
+
+command purr-process add-test: (Id is text) details: Details do
+  let Test = new test-result(Id, Details.package-name, Details.module-name, Details.title);
+  self.tests <- self.tests value at: Id put: Test;
+end
+
+command purr-process set-test: (Id is text) state: (State is test-status) do
+  self.statuses <- self.statuses value at: Id put: State;
+  let Details = self details-from-id: Id;
+end
+
 
 // IPC handlers
 command actor-ipc dispatch: (Message is ipc-incoming) do
@@ -150,22 +215,57 @@ command actor-ipc-state accepts: _ = false;
 
 command actor-ipc-loading accepts: im-ready = true;
 command actor-ipc-loading handle: im-ready =
-  new mhr-transition(actor-ipc-ready);
+  new mhr-transition(new actor-ipc-started(#cell with-value: []));
 
-command actor-ipc-loading accepts: im-failed-to-start = true;
-command actor-ipc-loading handle: (M is im-failed-to-start) do
-  let Project = self client project;
-  agata message-box: (
-    "Failed to start [Project meta title].
-    
-     [M.message]"
-    flatten-into-plain-text
-  );
+
+command actor-ipc-started accepts: im-testing-started = true;
+command actor-ipc-started handle: (X is im-testing-started) do
+  let Process = self process-from-id: X.id;
+  Process.state <- tps-started;
   mhr-done;
 end
 
-command actor-ipc-testing accepts: im-test-result = true;
-command actor-ipc-testing handle: (X is im-test-result) do
-  self.results <- self.results value append: X.result;
+command actor-ipc-started accepts: im-test-started = true;
+command actor-ipc-started handle: (X is im-test-started) do
+  let Process = self process-from-id: X.id;
+  Process add-test: X.test-id details: X.details;
+  Process set-test: X.test-id state: ts-started;
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-started(Details);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-test-skipped = true;
+command actor-ipc-started handle: (X is im-test-skipped) do
+  let Process = self process-from-id: X.id;
+  Process set-test: X.test-id state: ts-skipped;
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-skipped(Details);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-test-passed = true;
+command actor-ipc-started handle: (X is im-test-passed) do
+  let Process = self process-from-id: X.id;
+  Process set-test: X.test-id state: ts-passed;
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-passed(Details);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-test-failed = true;
+command actor-ipc-started handle: (X is im-test-failed) do
+  let Process = self process-from-id: X.id;
+  Process set-test: X.test-id state: ts-failed;
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-failed(Details, X.message);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-testing-finished = true;
+command actor-ipc-started handle: (X is im-testing-finished) do
+  let Process = self process-from-id: X.id;
+  Process.state <- new tps-finished(X.summary);
+  Process.events publish: new te-finished(X.summary);
   mhr-done;
 end

@@ -26,6 +26,11 @@ command purr open-test: (Project is purr-project) do
   agata show: new ps-test(Project) render;
 end
 
+command purr run-tests: (Project is purr-project) do
+  let Actor = #purr-ipc shared-instance client-for-id: Project.id;
+  Actor run-tests;
+end
+
 command purr home do
   agata show: ps-welcome render;
 end
