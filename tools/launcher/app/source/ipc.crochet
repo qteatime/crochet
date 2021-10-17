@@ -256,7 +256,7 @@ end
 command actor-ipc-started accepts: im-test-failed = true;
 command actor-ipc-started handle: (X is im-test-failed) do
   let Process = self process-from-id: X.id;
-  Process set-test: X.test-id state: ts-failed;
+  Process set-test: X.test-id state: new ts-failed(X.message);
   let Details = Process details-from-id: X.test-id;
   Process.events publish: new te-failed(Details, X.message);
   mhr-done;

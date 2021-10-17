@@ -155,4 +155,8 @@ abstract test-process-status;
 singleton tps-started;
 type tps-finished(summary is test-summary);
 
-enum test-status = ts-started, ts-passed, ts-skipped, ts-failed;
+abstract test-status;
+singleton ts-started is test-status;
+singleton ts-passed is test-status;
+singleton ts-skipped is test-status;
+type ts-failed(message is text) is test-status;
