@@ -379,3 +379,7 @@ body {
   background: var(--active-bg);
   border-bottom: 2px solid var(--active-accent);
 }
+
+.agata-pre-formatted {
+  white-space: pre-line;
+}

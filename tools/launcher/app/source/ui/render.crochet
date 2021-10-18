@@ -131,6 +131,18 @@ command dom-renderer render: (X is w-switch) do
   self render: Node;
 end
 
+command dom-renderer render: (X has to-widget) do
+  self render: (X as widget);
+end
+
+command dom-renderer render: (X is w-observable) do
+  let Node = new w-dynamic({ Canvas in
+               Canvas render: (X.observable value);
+               X.observable subscribe: (Canvas render: _);
+             });
+  self render: Node;
+end
+
 command dom-renderer to-css: (P is gap) =
   "[self to-css: P.horizontal] [self to-css: P.vertical]" flatten-into-plain-text;
 

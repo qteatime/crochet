@@ -53,7 +53,12 @@ type w-layout(layout is layout, child is widget) is widget;
 type w-frame(window is dom-window) is widget;
 type w-dynamic(renderer is (dom-dynamic-canvas -> nothing)) is widget;
 type w-switch(observable is observable, cases is list<wn-switch-case>) is widget;
+type w-observable(observable is observable<W has to-widget>) is widget;
 
 type wn-switch-case(guard, handler is (any -> widget));
 
 type wn-tab(title, contents);
+
+trait to-widget with
+  command Self as widget;
+end

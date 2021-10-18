@@ -14,6 +14,12 @@ command ps-test render do
     w title: "Testing",
     w divider,
 
+    w toolbar: [
+      w icon-button: "play"
+        | title: "Run tests"
+        | on-click: { _ in self run-tests: State }
+    ],
+
     w switch: State
       | when: {X in X is not-started} then: {_ in self not-started: State}
       | when: {X in X is running} then: {_ in self running: State},
@@ -21,25 +27,11 @@ command ps-test render do
 end
 
 command ps-test not-started: State do
-  w container: [
-    w toolbar: [
-      w icon-button: "play"
-        | title: "Run tests"
-        | on-click: { _ in self run-tests: State }
-    ],
-
-    self test-results: State value
-  ]
+  self test-results: State value
 end
 
 command ps-test running: State do
-  w container: [
-    w toolbar: [
-      w icon: "spinner"
-    ],
-
-    self test-results: State value
-  ]
+  self test-results: State value
 end
 
 command ps-test test-results: not-started do
@@ -68,7 +60,7 @@ command ps-test handle-event: (X is te-failed) in: Canvas state: State do
   Canvas append: (w flex-column: [
     w text: "[X.result.package-name] / [X.result.module-name]",
     w subtitle: X.result.title,
-    w text: X.message,
+    w pre-formatted: [X.message],
     w divider,
   ])
 end
@@ -152,7 +144,7 @@ command ps-test test-result-errors: Results do
         w flex-column: [
           w text: "[Result.package-name] / [Result.module-name]",
           w subtitle: Result.title,
-          w text: Test.status.message,
+          w pre-formatted: [Test.status.message],
           w divider
         ];
       end
