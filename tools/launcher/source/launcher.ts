@@ -2,6 +2,8 @@ import * as FS from "fs";
 import * as Path from "path";
 import * as Express from "express";
 import * as Package from "../../../build/pkg";
+import * as Packager from "../../../build/node-cli/package";
+import * as Spec from "../../../build/utils/spec";
 import { CrochetForNode, build_file } from "../../../build/targets/node";
 import { API } from "./api";
 import { setup_app_server } from "./server";
@@ -73,6 +75,17 @@ export async function setup_launcher_server(port: number) {
       await capp.build();
       state.define(id, capp);
       res.send({ id });
+    });
+  });
+
+  app.post("/api/package", async (req, res) => {
+    const id = UUID.v4();
+    await trap(res, async () => {
+      const pkg = req.body.package;
+      const target = Spec.parse(req.body.target, Package.target_spec);
+      const out_dir = Path.join(Path.dirname(pkg), ".packages", id);
+      await Packager.package_app(pkg, target, out_dir);
+      res.send({ output: out_dir });
     });
   });
 

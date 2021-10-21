@@ -39,4 +39,27 @@ export default (ffi: ForeignInterface) => {
     const json = JSON.parse(ffi.text_to_string(text));
     return ffi.text(json.id);
   });
+
+  ffi.defmachine("api.package", function* (file0, target0) {
+    const file = ffi.text_to_string(file0);
+    const target = ffi.text_to_string(target0);
+    const response = post("/api/package", { package: file, target });
+    try {
+      const text = yield ffi.await(get_text(response));
+      const json = JSON.parse(ffi.text_to_string(text));
+      return ffi.record(
+        new Map([
+          ["success", ffi.boolean(true)],
+          ["output", ffi.text(json.output)],
+        ])
+      );
+    } catch (e) {
+      return ffi.record(
+        new Map([
+          ["success", ffi.boolean(false)],
+          ["message", ffi.text(String(e))],
+        ])
+      );
+    }
+  });
 };
