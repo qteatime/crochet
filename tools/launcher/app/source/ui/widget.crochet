@@ -20,12 +20,6 @@ command agata-widget contents: (Children is list<widget>) =
 command agata-widget hero: (Children is list<widget>) =
   new w-container("div", "agata-hero-header", Children);
 
-command agata-widget title: (Title is text) =
-  new w-container("h2", "agata-title", [new w-text(Title)]);
-
-command agata-widget subtitle: (Subtitle is text) =
-  new w-container("h3", "agata-subtitle", [new w-text(Subtitle)]);
-
 command agata-widget card: (Children is list<widget>) =
   new w-container("div", "agata-card", Children);
 
@@ -37,9 +31,6 @@ command agata-widget card-title: (Title is text) =
 
 command agata-widget card-description: (Description is text) =
   new w-container("div", "agata-card-description", [new w-text(Description)]);
-
-command agata-widget paragraph: (Children is list<widget>) =
-  new w-container("p", "agata-paragraph", Children);
 
 command agata-widget group: (Children is list<widget>) =
   new w-container("div", "agata-group", Children);

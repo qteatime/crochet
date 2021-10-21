@@ -28,6 +28,13 @@ body {
   --active-bg: #e1f5fe;
   --divider: #546e7a;
   --border: #cfd8dc;
+  --primary-text: #2f2f2f;
+  --secondary-text: #7a7a7a;
+  --tertiary-text: #9b9b9b;
+  --success-text: #00796b;
+  --error-text: #d32f2f;
+  --info-text: #455a64;
+  --warning-text: #f57c00;
 }
 
 .agata-top-bar {
@@ -50,15 +57,6 @@ body {
   padding: 2em;
 }
 
-.agata-hero-header {
-  margin: 2em auto;
-  margin-bottom: 3em;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 .agata-sticker {
   text-align: center;
   margin-bottom: 1em;
@@ -67,17 +65,6 @@ body {
 .agata-sticker img {
   width: 350px;
   height: auto;
-}
-
-.agata-title {
-  font-size: 2.5em;
-  font-weight: 500;
-  margin-bottom: 0.3em;
-}
-
-.agata-subtitle {
-  font-size: 1.8em;
-  color: #777;
 }
 
 .agata-icon-button {
@@ -382,4 +369,105 @@ body {
 
 .agata-pre-formatted {
   white-space: pre-line;
+}
+
+/* Typography */
+.agata-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  letter-spacing: -0.01em;
+}
+
+.agata-subtitle {
+  font-size: 1.4em;
+  color: var(--secondary-text);
+}
+
+.agata-primary-text {
+  color: var(--primary-text);
+}
+
+.agata-secondary-text {
+  color: var(--secondary-text);
+}
+
+.agata-tertiary-text {
+  color: var(--tertiary-text);
+  font-size: 0.9em;
+  text-transform: uppercase;
+}
+
+.agata-error-text {
+  color: var(--error-text);
+}
+
+.agata-success-text {
+  color: var(--success-text);
+}
+
+.agata-warning-text {
+  color: var(--warning-text);
+}
+
+.agata-info-text {
+  color: var(--info-text);
+}
+
+.agata-quote {
+  margin: 0 0 1.5em 2em;
+  position: relative;
+  color: var(--secondary-text);
+  font-family: Lora, serif;
+}
+
+.agata-quote::before {
+  position: absolute;
+  top: 0px;
+  left: -2em;
+  font-size: 2em;
+  color: var(--tertiary-text);
+  content: "“";
+}
+
+.agata-quote-attribution {
+  margin-top: 1em;
+  text-align: right;
+  color: var(--tertiary-text);
+  font-style: italic;
+}
+
+.agata-quote-attribution::before {
+  content: "—";
+}
+
+.agata-typewriter-text {
+  white-space: pre-wrap;
+  font-family: "Source Code Pro", monospace;
+  color: var(--secondary-text);
+}
+
+.agata-preformatted-text {
+  white-space: pre-wrap;
+}
+
+.agata-header {
+}
+
+.agata-highlight-header {
+  margin: 2em auto;
+  margin-bottom: 3em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.agata-highlight-header .agata-title {
+  font-size: 2.5em;
+  font-weight: 500;
+  margin-bottom: 0.3em;
+}
+
+.agata-highlight-header .agata-subtitle {
+  font-size: 1.8em;
 }

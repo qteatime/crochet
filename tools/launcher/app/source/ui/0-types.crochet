@@ -18,7 +18,10 @@ effect agata-canvas with
   prepend(new-contents);
 end
 
-type observable(state is cell<A>, subscribers is cell<list<(A -> nothing)>>);
+abstract observable;
+type observable-cell(state is cell<A>, subscribers is cell<list<(A -> nothing)>>) is observable;
+type mapped-observable(state is cell<B>, mapping is (A -> B), source is observable<A>, subscribers is cell<list<(B -> nothing)>>) is observable;
+type filtered-observable(state is cell<A>, filter is (A -> boolean), source is observable<A>, subscribers is cell<list<(A -> nothing)>>) is observable;
 
 singleton dom-renderer;
 type dom-canvas(box);

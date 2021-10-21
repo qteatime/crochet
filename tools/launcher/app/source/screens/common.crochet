@@ -49,12 +49,14 @@ end
 
 command purr-common-widgets project-window: (Project is purr-project) at: Section with: (Children is list<widget>) do
   self window: [w title: Project meta title] with: [
-    w flex-row: [
-      self project-menu: Project at: Section,
+    w section: [
+      w flex-row: [
+        self project-menu: Project at: Section,
 
-      w contents: Children
-        | layout
-        | flex-grow
+        w contents: Children
+          | layout
+          | flex-grow
+      ]
     ]
   ];
 end

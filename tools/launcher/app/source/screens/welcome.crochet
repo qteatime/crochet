@@ -18,9 +18,9 @@ end
 
 command ps-welcome my-projects do
   w contents: [
-    w hero: [
-      w title: "You don't have any projects yet.",
-      w subtitle: "Create or import a project to start working",
+    w highlight-header: [
+      w title: ["You don't have any projects yet."],
+      w subtitle: ["Create or import a project to start working"],
     ],
 
     w action-list: [

@@ -10,15 +10,17 @@ command ps-summary render do
       w text: self.project meta description
     ],
 
-    w tabbed-panel: [
-      w tab: "Metadata"
-        | with: [w space, self metadata],
-      
-      w tab: "Capabilities"
-        | with: [w space, self capabilities],
+    w section: [
+      w tabbed-panel: [
+        w tab: "Metadata"
+          | with: [w space, self metadata],
+        
+        w tab: "Capabilities"
+          | with: [w space, self capabilities],
 
-      w tab: "Dependencies"
-        | with: [w space, self dependencies],
+        w tab: "Dependencies"
+          | with: [w space, self dependencies],
+      ]
     ]
   ];
 end
@@ -38,11 +40,11 @@ end
 
 command ps-summary capabilities do
   w flex-column: [
-    w subtitle: "Required capabilities",
+    w title: ["Required capabilities"],
     self capability-list: self.project meta capabilities required,
 
     w double-space,
-    w subtitle: "Provided capabilities",
+    w title: ["Provided capabilities"],
     self capability-list: self.project meta capabilities provided,
   ]
 end
