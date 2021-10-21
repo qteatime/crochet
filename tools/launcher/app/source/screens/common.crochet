@@ -35,7 +35,8 @@ command purr-common-widgets project-menu: (Project is purr-project) at: (Section
     w action-button
       | icon: "archive"
       | title: "Package"
-      | description: "Build a distributable package for the project",
+      | description: "Build a distributable package for the project"
+      | on-click: { _ in purr project-packaging: Project },
 
     w action-button
       | icon: "gamepad"
@@ -57,6 +58,8 @@ command purr-common-widgets project-window: (Project is purr-project) at: Sectio
           | layout
           | flex-grow
       ]
+      | layout
+      | flex-no-wrap
     ]
   ];
 end

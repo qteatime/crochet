@@ -31,6 +31,10 @@ command purr run-tests: (Project is purr-project) do
   Actor run-tests;
 end
 
+command purr project-packaging: (Project is purr-project) do
+  agata show: new ps-package(Project) render;
+end
+
 command purr home do
   agata show: ps-welcome render;
 end

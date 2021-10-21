@@ -11,7 +11,7 @@ command (X is integer) + (Y is integer) =
 test
   assert (0 + 1) =:= 1;
   assert (0 + 1) =:= 1;
-  assert (1 + 0) =:= -1;
+  assert (1 + 0) =:= 1;
   assert (-3 + 1) =:= -2;
   assert (5 + 3) =:= 8;
   assert (1234567890123456789 + 1234567890123456789) =:= 2469135780246913578;

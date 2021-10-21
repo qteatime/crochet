@@ -80,6 +80,7 @@ body {
   height: 48px;
   font-size: 24px;
   line-height: 48px;
+  text-align: center;
 }
 
 .agata-search-input {
@@ -443,7 +444,6 @@ body {
 .agata-typewriter-text {
   white-space: pre-wrap;
   font-family: "Source Code Pro", monospace;
-  color: var(--secondary-text);
 }
 
 .agata-preformatted-text {

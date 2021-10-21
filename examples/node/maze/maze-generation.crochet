@@ -175,3 +175,8 @@ command main: _ do
   benchmark block: { Maze draw } tag: "Draw";
   nothing;
 end
+
+test "Generate" do
+  let Maze = benchmark block: { maze generate-width: 20 height: 20 } tag: "Generate";
+  benchmark block: { Maze draw } tag: "Draw";
+end

@@ -1,0 +1,49 @@
+% crochet
+
+command agata-widget button =
+  new w-button("", {_ in nothing}, []);
+
+command w-button title: (Title is text) =
+  new w-button(Title, self.on-click, self.children);
+
+command w-button on-click: (Handler is (Ev -> nothing)) =
+  new w-button(self.title, Handler, self.children);
+
+command w-button with: (Children is list<widget>) =
+  new w-button(self.title, self.on-click, Children);
+
+
+command agata-widget text-button: Title =
+  new w-button(Title, {_ in nothing}, [Title]);
+
+
+command agata-widget icon-button: (Icon is text) =
+  new w-icon-button(Icon, "", {_ in nothing});
+
+command w-icon-button icon: (Icon is text) =
+  new w-icon-button(Icon, self.title, self.on-click);
+
+command w-icon-button on-click: (Handler is (Ev -> nothing)) =
+  new w-icon-button(self.icon, self.title, Handler);
+
+command w-icon-button title: (Title is text) =
+  new w-icon-button(self.icon, Title, self.on-click);
+
+
+command agata-widget action-list: (Children is list<widget>) =
+  new w-container("div", "agata-action-list", Children);
+
+command agata-widget action-button =
+  new w-action-button("", "", "", {_ in nothing});
+
+command w-action-button icon: (Name is text) =
+  new w-action-button(Name, self.title, self.description, self.on-click);
+
+command w-action-button title: (Title is text) =
+  new w-action-button(self.icon, Title, self.description, self.on-click);
+
+command w-action-button description: (Description is text) =
+  new w-action-button(self.icon, self.title, Description, self.on-click);
+
+command w-action-button on-click: (Handler is (Ev -> nothing)) =
+  new w-action-button(self.icon, self.title, self.description, Handler);

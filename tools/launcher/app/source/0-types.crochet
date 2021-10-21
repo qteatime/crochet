@@ -22,6 +22,10 @@ type purr-project(
   global meta is purr-project-meta
 );
 
+abstract purr-target;
+singleton pt-node is purr-target;
+singleton pt-browser is purr-target;
+
 type purr-package-capabilities(
   global required is list<purr-capability>,
   global provided is list<purr-capability>
@@ -56,6 +60,7 @@ abstract purr-screen;
 singleton ps-welcome is purr-screen;
 type ps-summary(project is purr-project) is purr-screen;
 type ps-test(project is purr-project) is purr-screen;
+type ps-package(project is purr-project) is purr-screen;
 
 singleton purr-common-widgets;
 
@@ -137,6 +142,11 @@ type pp-test(
   events is event-stream<test-event>
 ) is purr-process;
 
+type pp-packaging(
+  id is text,
+  events is event-stream<packaging-event>
+) is purr-process;
+
 type test-result(
   test-id is text,
   package-name is text,
@@ -150,6 +160,9 @@ type te-skipped(result is test-result);
 type te-failed(result is test-result, message is text);
 type te-passed(result is test-result);
 type te-finished(summary is test-summary);
+
+abstract packaging-event;
+type pe-log(message is text) is packaging-event;
 
 abstract test-process-status;
 singleton tps-started;

@@ -40,6 +40,15 @@ command purr-project-meta dependencies do
   for Dep in Deps do module parse-dependency: Dep end;
 end
 
+command purr-project-meta packaging-targets do
+  let Target = self.metadata at: "target" default: "*";
+  condition
+    when Target === "node" => [pt-node];
+    when Target === "browser" => [pt-browser];
+    when Target === "*" => [pt-node, pt-browser];
+  end
+end
+
 command module parse-dependency: (X is text) do
   new purr-dependency(X, "*", []);
 end

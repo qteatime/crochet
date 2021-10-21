@@ -12,7 +12,7 @@ command ps-test render do
 
   cw project-window: self.project at: "test" with: [
     w title: "Testing",
-    w divider,
+    w space,
 
     w toolbar: [
       w icon-button: "play"
@@ -58,9 +58,9 @@ end
 command ps-test handle-event: (X is te-failed) in: Canvas state: State do
   State add-result: X.result status: new ts-failed(X.message);
   Canvas append: (w flex-column: [
-    w text: "[X.result.package-name] / [X.result.module-name]",
-    w subtitle: X.result.title,
-    w pre-formatted: [X.message],
+    w secondary-text: ["(in package [X.result.package-name], at [X.result.module-name])"],
+    w title: X.result.title,
+    w error-text: [w typewriter-text: [X.message]],
     w divider,
   ])
 end
@@ -142,10 +142,10 @@ command ps-test test-result-errors: Results do
       do
         let Result = Test.result;
         w flex-column: [
-          w text: "[Result.package-name] / [Result.module-name]",
-          w subtitle: Result.title,
-          w pre-formatted: [Test.status.message],
-          w divider
+          w secondary-text: ["(in package [Result.package-name], at [Result.module-name])"],
+          w title: Result.title,
+          w error-text: [w typewriter-text: [Test.status.message]],
+          w divider,
         ];
       end
     )
@@ -153,21 +153,37 @@ command ps-test test-result-errors: Results do
 end
 
 command ps-test test-result-entry: Result do
-  w flex-row: [
-    self test-result-status: Result.status,
-    w text: Result.result.title,
+  w flex-column: [
+    self test-result-status: Result.status title: Result.result.title,
     w divider
   ]
 end
 
-command ps-test test-result-status: ts-started =
-  w icon: "spinner";
-command ps-test test-result-status: ts-passed =
-  w icon: "check-circle";
-command ps-test test-result-status: ts-skipped =
-  w icon: "circle";
-command ps-test test-result-status: ts-failed =
-  w icon: "times-circle";
+command ps-test test-result-status: ts-started title: Title =
+  w flex-row: [
+    w icon: "spinner",
+    Title
+  ];
+command ps-test test-result-status: ts-passed title: Title =
+  w success-text: [
+    w flex-row: [
+      w icon: "check-circle",
+      Title
+    ]
+  ];
+command ps-test test-result-status: ts-skipped title: Title =
+  w flex-row: [
+    w icon: "circle",
+    Title
+  ];
+command ps-test test-result-status: (S is ts-failed) title: Title =
+  w error-text: [
+    w flex-row: [
+      w icon: "times-circle",
+      Title,
+    ],
+    w typewriter-text: [S.message]
+  ];
 
 command ps-test run-tests: State do
   let Process = purr run-tests: self.project;
