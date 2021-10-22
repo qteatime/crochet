@@ -3,7 +3,7 @@ import type {
   Package,
 } from "../../../../build/targets/browser";
 import * as UUID from "uuid";
-import { defer, parse_query } from "./helpers";
+import { defer } from "./helpers";
 declare var Crochet: {
   CrochetForBrowser: typeof CrochetForBrowser;
   Package: typeof Package;
@@ -126,7 +126,7 @@ export class Client {
 }
 
 async function main() {
-  const query = parse_query(document.location.search);
+  const query = new URL(document.location.href).searchParams;
   const capabilities = (query.get("capabilities") || "native").split(",");
   const client = new Client(
     query.get("id")!,

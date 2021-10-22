@@ -2,7 +2,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
-const helpers_1 = require("./helpers");
 class Client {
     constructor(id, capabilities, origin) {
         this.id = id;
@@ -100,7 +99,7 @@ class Client {
 }
 exports.Client = Client;
 async function main() {
-    const query = (0, helpers_1.parse_query)(document.location.search);
+    const query = new URL(document.location.href).searchParams;
     const capabilities = (query.get("capabilities") || "native").split(",");
     const client = new Client(query.get("id"), new Set(capabilities), query.get("origin"));
     client.listen();
@@ -109,29 +108,5 @@ async function main() {
 main().catch((e) => {
     console.log(e);
 });
-
-},{"./helpers":2}],2:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.defer = exports.parse_query = void 0;
-function parse_query(query) {
-    const pairs = query.replace(/^\?/, "").split("&");
-    const result = new Map();
-    for (const pair of pairs) {
-        const [key, value] = pair.split("=");
-        result.set(decodeURIComponent(key), decodeURIComponent(value));
-    }
-    return result;
-}
-exports.parse_query = parse_query;
-function defer() {
-    const deferred = Object.create(null);
-    deferred.promise = new Promise((resolve, reject) => {
-        deferred.resolve = resolve;
-        deferred.reject = reject;
-    });
-    return deferred;
-}
-exports.defer = defer;
 
 },{}]},{},[1]);

@@ -18,6 +18,7 @@
     "source/screens/common.crochet",
     "source/screens/welcome.crochet",
     "source/screens/test.crochet",
+    "source/screens/run.crochet",
     "source/screens/package.crochet",
     "source/screens/summary.crochet",
     "source/event.crochet",

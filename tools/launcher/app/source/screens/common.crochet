@@ -24,7 +24,8 @@ command purr-common-widgets project-menu: (Project is purr-project) at: (Section
     w action-button
       | icon: "play"
       | title: "Run"
-      | description: "Build and run the project",
+      | description: "Build and run the project"
+      | on-click: { _ in purr project-run: Project },
 
     w action-button
       | icon: "vial"

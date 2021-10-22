@@ -35,6 +35,10 @@ command purr project-packaging: (Project is purr-project) do
   agata show: new ps-package(Project) render;
 end
 
+command purr project-run: (Project is purr-project) do
+  agata show: new ps-run(Project) render;
+end
+
 command purr home do
   agata show: ps-welcome render;
 end
