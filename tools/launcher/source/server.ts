@@ -1,6 +1,7 @@
 import * as Path from "path";
 import * as Express from "express";
 import { AppState } from "./app";
+import { trap } from "./helpers";
 
 const launcher_root = Path.resolve(__dirname, "..");
 const repo_root = Path.resolve(launcher_root, "../../");
@@ -67,8 +68,13 @@ export async function setup_app_server(port: number, state: AppState) {
     res.sendFile(Path.resolve(launcher_root, "www/ipc.html"));
   });
 
-  app.get("/:id/run/", (req, res) => {
-    res.sendFile(Path.resolve(www, "index.html"));
+  app.get("/:id/run/", async (req, res) => {
+    const id = req.params.id;
+    await trap(res, async () => {
+      const capp = state.app(id);
+      await capp.build();
+      res.sendFile(Path.resolve(www, "index.html"));
+    });
   });
 
   app.get("/:id/run/app/.binary/*", async (req, res) => {
