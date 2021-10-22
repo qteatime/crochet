@@ -49,3 +49,12 @@
   padding: 1em;
   color: var(--error-text);
 }
+
+.launcher-playground-entry-log-entry {
+  margin-bottom: 1.5em;
+  border-bottom: 1px solid var(--border);
+}
+
+.launcher-playground-entry-log-entry::before {
+  content: "• ";
+}

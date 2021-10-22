@@ -13,6 +13,7 @@ type subscriber(handler is (A -> nothing));
 
 abstract value-lens;
 type vl-raw(global code is text) is value-lens;
+singleton vl-nothing is value-lens;
 
 // Managing projects
 type purr-project-meta(

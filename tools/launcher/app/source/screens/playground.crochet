@@ -83,7 +83,7 @@ command running as widget do
     w commit: Entries;
   with
     on playground-repl.add-entry() do
-      Entries publish: ps-idle;
+      Entries publish: new entry(#observable with-value: ps-idle);
       continue with nothing;
     end
   end
