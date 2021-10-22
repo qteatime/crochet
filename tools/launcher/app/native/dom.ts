@@ -255,13 +255,16 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
-  ffi.defun("dom.code-editor", (readonly0, code0) => {
+  ffi.defmachine("dom.code-editor", function* (readonly0, code0, on_commit0) {
     function resize() {
       editor.style.height = "auto";
       const size = Math.max(100, editor.scrollHeight);
       editor.style.height = `${size}px`;
     }
 
+    const on_commit = yield ffi.make_closure(0, function* () {
+      return yield ffi.apply(on_commit0, []);
+    });
     const readonly = ffi.to_js_boolean(readonly0);
     const code = ffi.text_to_string(code0);
     const editor = document.createElement("textarea");
@@ -270,7 +273,15 @@ export default (ffi: ForeignInterface) => {
     editor.value = code;
 
     editor.addEventListener("keydown", resize);
-    editor.addEventListener("keyup", resize);
+    editor.addEventListener("keyup", (ev) => {
+      if (ev.ctrlKey && ev.key === "Enter") {
+        ffi.run_asynchronously(function* () {
+          yield ffi.apply(on_commit, []);
+          return ffi.nothing;
+        });
+      }
+      resize();
+    });
     editor.addEventListener("paste", resize);
     editor.addEventListener("change", resize);
 
@@ -288,5 +299,19 @@ export default (ffi: ForeignInterface) => {
       fragment.appendChild(get_node(child));
     }
     return ffi.box(fragment);
+  });
+
+  ffi.defun("dom.setup-focus", (box) => {
+    const node = get_element(box);
+    function try_focus() {
+      if (node.isConnected) {
+        node.scrollIntoView();
+        node.focus();
+      } else {
+        setTimeout(try_focus, 100);
+      }
+    }
+    setTimeout(try_focus, 0);
+    return ffi.nothing;
   });
 };

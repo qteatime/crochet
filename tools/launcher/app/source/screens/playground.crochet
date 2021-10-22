@@ -116,7 +116,9 @@ command ps-idle as widget do
 
   w style: "launcher-playground-entry" with: [
     w code-editor
-      | reference: Editor,
+      | on-commit: { perform playground-entry.run(Editor materialisation current-value) }
+      | reference: Editor
+      | focus,
 
     w icon-button: "play"
       | title: "Run this code snippet"
@@ -168,7 +170,9 @@ command ps-error as widget do
   w style: "launcher-playground-entry" with: [
     w code-editor
       | code: self.code
-      | reference: Editor,
+      | on-commit: { perform playground-entry.run(Editor materialisation current-value) }
+      | reference: Editor
+      | focus,
 
     w icon-button: "play"
       | title: "Run this code snippet"

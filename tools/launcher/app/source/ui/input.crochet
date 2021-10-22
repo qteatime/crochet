@@ -50,16 +50,19 @@ command w-action-button on-click: (Handler is (Ev -> nothing)) =
 
 
 command agata-widget code-editor =
-  new w-code-editor(false, "");
+  new w-code-editor(false, "", {});
 
 command w-code-editor read-only =
-  new w-code-editor(true, self.code);
+  new w-code-editor(true, self.code, {});
 
 command w-code-editor writable =
-  new w-code-editor(false, self.code);
+  new w-code-editor(false, self.code, {});
 
 command w-code-editor code: (Code is text) =
-  new w-code-editor(self.read-only, Code);
+  new w-code-editor(self.read-only, Code, {});
+
+command w-code-editor on-commit: (Handler is (() -> nothing)) =
+  new w-code-editor(self.read-only, self.code, Handler);
 
 command dom-node-code-editor current-value =
   foreign dom.get-value(self.box);

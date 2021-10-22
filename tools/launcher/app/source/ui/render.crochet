@@ -153,7 +153,7 @@ command dom-renderer render: (X is w-observable-stream) do
 end
 
 command dom-renderer render: (X is w-code-editor) do
-  new dom-node-code-editor(foreign dom.code-editor(X.read-only, X.code));
+  new dom-node-code-editor(foreign dom.code-editor(X.read-only, X.code, X.on-commit));
 end
 
 command dom-renderer render: (X is w-reference) do
@@ -170,6 +170,12 @@ end
 
 command dom-renderer render: (X is w-committed) =
   X.render;
+
+command dom-renderer render: (X is w-focus) do
+  let Node = self render: X.widget;
+  foreign dom.setup-focus(Node.box);
+  Node;
+end
 
 command dom-renderer to-css: (P is gap) =
   "[self to-css: P.horizontal] [self to-css: P.vertical]" flatten-into-plain-text;

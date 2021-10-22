@@ -245,3 +245,6 @@ command widget reference: (Ref is agata-reference) =
 
 command agata-widget commit: (W has to-widget) =
   new w-committed(dom-renderer render: W);
+
+command widget focus =
+  new w-focus(self);

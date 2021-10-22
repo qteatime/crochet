@@ -68,10 +68,11 @@ type w-dynamic(renderer is (dom-dynamic-canvas -> nothing)) is widget;
 type w-switch(observable is observable, cases is list<wn-switch-case>) is widget;
 type w-observable(observable is observable<W has to-widget>) is widget;
 type w-observable-stream(observable is observable-stream<W has to-widget>) is widget;
-type w-code-editor(read-only is boolean, code is text) is widget;
+type w-code-editor(read-only is boolean, code is text, on-commit is (() -> nothing)) is widget;
 type w-reference(reference is agata-reference, child is widget) is widget;
 type w-fragment(children is list<W has to-widget>) is widget;
 type w-committed(render is dom-node) is widget;
+type w-focus(widget is widget) is widget;
 
 type wn-switch-case(guard, handler is (any -> widget));
 

@@ -43,7 +43,7 @@
             child.remove();
           }
           const tools = document.querySelector("#crochet-tools");
-          crochet.debug_ui.render(crochet, tools);
+          // crochet.debug_ui.render(crochet, tools);
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
         } catch (error) {
           console.error(error);
