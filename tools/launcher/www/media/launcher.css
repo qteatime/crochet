@@ -25,3 +25,27 @@
   color: #fafafa;
   text-indent: 3px;
 }
+
+.launcher-playground-entry {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2em;
+}
+
+.launcher-playground-entry-results {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: #fafafa;
+  border-top: none;
+  border-bottom-width: 2px;
+}
+
+.launcher-playground-entry-errors {
+  border: 1px solid var(--border);
+  background: #fafafa;
+  border-top: none;
+  border-bottom-width: 2px;
+  padding: 1em;
+  color: var(--error-text);
+}

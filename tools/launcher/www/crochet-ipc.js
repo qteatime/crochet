@@ -10348,6 +10348,12 @@ class Thread {
                 case intrinsics_1.NativeSignalTag.MAKE_CLOSURE: {
                     return this.step_native(activation, new intrinsics_1.CrochetValue(_1.Tag.NATIVE_LAMBDA, this.universe.types.NativeFunctions[value.arity], new _1.CrochetNativeLambda(value.arity, activation.handlers, value.fn)));
                 }
+                case intrinsics_1.NativeSignalTag.CURRENT_ACTIVATION: {
+                    return this.step_native(activation, primitives_1.Values.box(this.universe, activation));
+                }
+                case intrinsics_1.NativeSignalTag.CURRENT_UNIVERSE: {
+                    return this.step_native(activation, primitives_1.Values.box(this.universe, this.universe));
+                }
                 default:
                     throw utils_1.unreachable(value, `Native Signal`);
             }
@@ -10803,7 +10809,7 @@ __exportStar(require("./run"), exports);
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Handler = exports.HandlerStack = exports.State = exports.Environment = exports.SimulationState = exports.SimulationSignal = exports.CrochetContext = exports.GlobalContext = exports.ContextTag = exports.When = exports.Action = exports.tree_end = exports.TreeEnd = exports.TreeMany = exports.TreeOne = exports.TreeBase = exports.type_end = exports.TTEnd = exports.TTMany = exports.TTOne = exports.TreeTag = exports.Pair = exports.ProceduralRelation = exports.ConcreteRelation = exports.CrochetRelation = exports.RelationTag = exports.CrochetModule = exports.CrochetPackage = exports.CrochetWorld = exports.CrochetPrelude = exports.CrochetTest = exports.Metadata = exports.NativeFunction = exports.NativeTag = exports.CrochetCommandBranch = exports.CrochetCommand = exports.equals = exports.CrochetCapability = exports.CrochetTypeConstraint = exports.CrochetType = exports.CrochetTrait = exports.CrochetProtectedValue = exports.CrochetThunk = exports.CrochetCapturedContext = exports.CrochetCell = exports.CrochetPartial = exports.CrochetNativeLambda = exports.CrochetLambda = exports.CrochetValue = exports.Tag = void 0;
-exports.CMap = exports.Universe = exports.NativeActivation = exports.NSTranscriptWrite = exports.NSJump = exports.NSEvaluate = exports.NSAwait = exports.NSMakeClosure = exports.NSApply = exports.NSInvoke = exports.NSBase = exports.NativeSignalTag = exports.CrochetActivation = exports.ActivationTag = exports._return = exports._done = exports.ContinuationTap = exports.ContinuationDone = exports.ContinuationReturn = exports.ContinuationTag = void 0;
+exports.CMap = exports.Universe = exports.NativeActivation = exports.NSTranscriptWrite = exports.NSJump = exports.NSEvaluate = exports.NSAwait = exports.NSCurrentUniverse = exports.NSCurrentActivation = exports.NSMakeClosure = exports.NSApply = exports.NSInvoke = exports.NSBase = exports.NativeSignalTag = exports.CrochetActivation = exports.ActivationTag = exports._return = exports._done = exports.ContinuationTap = exports.ContinuationDone = exports.ContinuationReturn = exports.ContinuationTag = void 0;
 const utils_1 = require("../utils/utils");
 const namespaces_1 = require("./namespaces");
 //#region Base values
@@ -11468,6 +11474,8 @@ var NativeSignalTag;
     NativeSignalTag[NativeSignalTag["JUMP"] = 4] = "JUMP";
     NativeSignalTag[NativeSignalTag["TRANSCRIPT_WRITE"] = 5] = "TRANSCRIPT_WRITE";
     NativeSignalTag[NativeSignalTag["MAKE_CLOSURE"] = 6] = "MAKE_CLOSURE";
+    NativeSignalTag[NativeSignalTag["CURRENT_ACTIVATION"] = 7] = "CURRENT_ACTIVATION";
+    NativeSignalTag[NativeSignalTag["CURRENT_UNIVERSE"] = 8] = "CURRENT_UNIVERSE";
 })(NativeSignalTag = exports.NativeSignalTag || (exports.NativeSignalTag = {}));
 class NSBase {
 }
@@ -11499,6 +11507,20 @@ class NSMakeClosure extends NSBase {
     }
 }
 exports.NSMakeClosure = NSMakeClosure;
+class NSCurrentActivation extends NSBase {
+    constructor() {
+        super(...arguments);
+        this.tag = NativeSignalTag.CURRENT_ACTIVATION;
+    }
+}
+exports.NSCurrentActivation = NSCurrentActivation;
+class NSCurrentUniverse extends NSBase {
+    constructor() {
+        super(...arguments);
+        this.tag = NativeSignalTag.CURRENT_UNIVERSE;
+    }
+}
+exports.NSCurrentUniverse = NSCurrentUniverse;
 class NSAwait extends NSBase {
     constructor(promise) {
         super();
@@ -13088,7 +13110,7 @@ exports.materialise_literal = materialise_literal;
 },{"../../ir":9,"../../utils/utils":18,"./values":47}],39:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.format_position_suffix = exports.simple_activation = exports.simple_op = exports.simple_value = exports.trait_name = exports.type_name = exports.type_constraint_name = exports.type_or_constraint_name = exports.thunk_location = exports.command_signature = exports.from_suffix_newline = exports.from_suffix = exports.branch_name_location = exports.branch_location = exports.branch_name = exports.module_location = void 0;
+exports.handler_stack = exports.activation_location = exports.op_block = exports.format_position_suffix = exports.simple_activation = exports.simple_op = exports.simple_value = exports.trait_name = exports.type_name = exports.type_constraint_name = exports.type_or_constraint_name = exports.thunk_location = exports.command_signature = exports.from_suffix_newline = exports.from_suffix = exports.branch_name_location = exports.branch_location = exports.branch_name = exports.module_location = void 0;
 const util_1 = require("util");
 const IR = require("../../ir");
 const utils_1 = require("../../utils/utils");
@@ -13340,6 +13362,51 @@ function format_position_suffix(id, meta) {
     }
 }
 exports.format_position_suffix = format_position_suffix;
+function op_block(xs, padding) {
+    return xs
+        .map((x, i) => simple_op(x, i))
+        .join("\n")
+        .split(/\r\n|\r|\n/)
+        .map((x) => " ".repeat(padding) + x)
+        .join("\n");
+}
+exports.op_block = op_block;
+function activation_location(x) {
+    if (x == null) {
+        return "(root)";
+    }
+    else if (x instanceof intrinsics_1.CrochetLambda) {
+        return `function/${x.parameters.length} from ${x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"}`;
+    }
+    else if (x instanceof intrinsics_1.CrochetCommandBranch) {
+        return branch_location(x);
+    }
+    else if (x instanceof intrinsics_1.CrochetThunk) {
+        return `thunk from ${x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"}`;
+    }
+    else if (x instanceof intrinsics_1.CrochetPrelude) {
+        return `prelude from ${module_location(x.env.raw_module)}`;
+    }
+    else if (x instanceof intrinsics_1.NativeFunction) {
+        return `native function ${x.name} from ${x.pkg.name}`;
+    }
+    else if (x instanceof intrinsics_1.SimulationSignal) {
+        return `simulation signal ${x.name} from ${module_location(x.module)}`;
+    }
+    else {
+        return "unknown";
+    }
+}
+exports.activation_location = activation_location;
+function handler_stack(x) {
+    const entries = x.handlers.map((x) => [`  on ${type_name(x.guard)}\n`, `${op_block(x.body.ops, 4)}\n`].join(""));
+    return [
+        x.activation ? `at ${activation_location(x.activation?.location)}\n` : "",
+        ...entries,
+        ...(x.parent ? ["\n---\n", handler_stack(x.parent)] : []),
+    ].join("");
+}
+exports.handler_stack = handler_stack;
 
 },{"../../ir":9,"../../utils/utils":18,"../intrinsics":24,"./meta":40,"./values":47,"util":124}],40:[function(require,module,exports){
 "use strict";
@@ -21385,6 +21452,7 @@ class Client {
         this.instances = new Map();
         this.methods.set("run-tests", this.run_tests.bind(this));
         this.methods.set("spawn-playground", this.spawn_playground.bind(this));
+        this.methods.set("run-snippet", this.run_snippet.bind(this));
     }
     async instantiate() {
         const crochet = new Crochet.CrochetForBrowser(`/${this.id}/library`, new Set(this.capabilities), false);
@@ -21491,7 +21559,7 @@ class Client {
             id,
             sid,
             post_message: (method, data) => {
-                this.post_message(method, { ...data, sid });
+                this.post_message(method, { ...data, id, sid });
             },
         };
         try {

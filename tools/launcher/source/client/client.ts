@@ -41,6 +41,7 @@ export class Client {
   ) {
     this.methods.set("run-tests", this.run_tests.bind(this));
     this.methods.set("spawn-playground", this.spawn_playground.bind(this));
+    this.methods.set("run-snippet", this.run_snippet.bind(this));
   }
 
   post_message(method: string, data: any) {
@@ -162,7 +163,7 @@ export class Client {
       id,
       sid,
       post_message: (method: string, data: any) => {
-        this.post_message(method, { ...data, sid });
+        this.post_message(method, { ...data, id, sid });
       },
     };
     try {
