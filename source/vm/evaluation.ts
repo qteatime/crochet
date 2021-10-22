@@ -404,6 +404,20 @@ export class Thread {
           );
         }
 
+        case NativeSignalTag.CURRENT_ACTIVATION: {
+          return this.step_native(
+            activation,
+            Values.box(this.universe, activation)
+          );
+        }
+
+        case NativeSignalTag.CURRENT_UNIVERSE: {
+          return this.step_native(
+            activation,
+            Values.box(this.universe, this.universe)
+          );
+        }
+
         default:
           throw unreachable(value, `Native Signal`);
       }

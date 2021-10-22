@@ -11,6 +11,9 @@ type event-stream(
 );
 type subscriber(handler is (A -> nothing));
 
+abstract value-lens;
+type vl-raw(global code is text) is value-lens;
+
 // Managing projects
 type purr-project-meta(
   filename,
@@ -95,7 +98,7 @@ abstract ipc-message;
 abstract ipc-outgoing is ipc-message;
 type imo-run-tests(id is text) is ipc-outgoing;
 type imo-spawn-playground(id is text) is ipc-outgoing;
-type imo-run-snippet(id is text, code is text) is ipc-outgoing;
+type imo-run-snippet(id is text, sid is text, code is text) is ipc-outgoing;
 
 // Incoming
 abstract ipc-incoming is ipc-message;
@@ -112,6 +115,9 @@ type im-testing-finished(
 ) is ipc-incoming;
 
 type im-playground-ready(id is text) is ipc-incoming;
+type im-playground-declaration-loaded(id is text, sid is text, message is text) is ipc-incoming;
+type im-playground-success(id is text, sid is text, lens is value-lens) is ipc-incoming;
+type im-playground-error(id is text, sid is text, message is text) is ipc-incoming;
 
 effect purr-ipc with
   get-instance();
@@ -174,6 +180,10 @@ type te-finished(summary is test-summary);
 
 abstract playground-event;
 singleton pge-ready is playground-event;
+type pge-success(id is text, result is value-lens) is playground-event;
+type pge-error(id is text, message is text) is playground-event;
+type pge-declaration-loaded(id is text, message is text) is playground-event;
+
 
 abstract packaging-event;
 type pe-log(message is text) is packaging-event;

@@ -24,3 +24,9 @@ command event-stream publish: Value do
   end
   self;
 end
+
+command event-stream as observable-stream do
+  let Stream = #observable-stream empty;
+  self subscribe: (Stream publish: _);
+  Stream;
+end

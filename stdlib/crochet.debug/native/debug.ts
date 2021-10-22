@@ -36,11 +36,13 @@ export default (ffi: ForeignInterface) => {
   }
 
   ffi.defmachine("debug.write", function* (text) {
+    console.log(ffi.text_to_string(text));
     yield ffi.push_transcript("debug", ffi.text_to_string(text));
     return ffi.nothing;
   });
 
   ffi.defmachine("debug.write-inspect", function* (value) {
+    console.debug("[INSPECT]", value);
     yield ffi.push_transcript("inspect", value);
     return ffi.nothing;
   });

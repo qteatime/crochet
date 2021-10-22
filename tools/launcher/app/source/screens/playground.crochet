@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.debug;
+
 local define w = agata-widget;
 local define cw = purr-common-widgets;
 
@@ -7,39 +9,141 @@ local abstract state;
 local singleton loading is state;
 local type running(process is pp-playground) is state;
 
+effect playground with
+  set-state(state is state);
+  get-state();
+  get-project();
+end
+
+local type entry(state is observable<pstate>);
+
+local abstract pstate;
+local singleton ps-idle is pstate;
+local type ps-running(sid is text, code is text) is pstate;
+
+effect playground-entry with
+  set-state(state is pstate);
+end
+
+
 
 command ps-playground render do
   let State = #observable with-value: loading;
 
-  cw project-window: self.project at: "playground" with: [
-    w title: "Crochet Playground",
-    w space,
+  handle
+    w commit: (
+      cw project-window: self.project at: "playground" with: [
+        w title: "Crochet Playground",
+        w space,
 
-    w section: [
-      w switch: State
-        | when: { X in X is loading } then: { _ in self loading: State }
-        | when: { X in X is running } then: { _ in self playground: State }
-    ]
-  ];
+        w section: [State]
+      ]
+    );
+  with
+    on playground.get-project() do
+      continue with self.project;
+    end
+
+    on playground.get-state() do
+      continue with State value;
+    end
+
+    on playground.set-state(New-state) do
+      State <- New-state;
+      continue with nothing;
+    end
+  end
 end
 
-command ps-playground loading: State do
+implement to-widget for state;
+command loading as widget do
+  transcript write: "Loading to-widget tap";
+  transcript inspect: (runtime-debugger current-activation handlers to-text);
+
   purr defer: {
-    let Process = purr spawn-playground: self.project;
-    State <- new running(Process);
+    let Project = perform playground.get-project();
+    let Process = purr spawn-playground: Project;
+    perform playground.set-state(new running(Process));
   };
 
   "Loading...";
 end
 
-command ps-playground playground: Root-state do
-  w dynamic: { Canvas in
-    Canvas append: self playground-entry;
-  };
+command running as widget do
+  let Entry = new entry(#observable with-value: ps-idle);
+  let Entries = #observable-stream with-values: [Entry];
+
+  Entries;
 end
 
-command ps-playground playground-entry do
-  let State = #observable with-value: nothing;
-
-  w code-editor;
+implement to-widget for entry;
+command entry as widget do
+  handle
+    w commit: self.state
+  with
+    on playground-entry.set-state(New-state) do
+      self.state <- New-state;
+      continue with nothing;
+    end
+  end
 end
+
+
+implement to-widget for pstate;
+command ps-idle as widget do
+  let Editor = agata reference: "editor";
+
+  w style: "launcher-playground-entry" with: [
+    w code-editor
+      | reference: Editor,
+
+    w icon-button: "play"
+      | title: "Run this code snippet"
+      | on-click: { _ in
+          let Value = Editor materialisation current-value;
+          let State = perform playground.get-state();
+          let Project = perform playground.get-project();
+          let Sid = purr project: Project
+                         run-snippet: Value
+                         in: State.process;
+          perform playground-entry.set-state(new ps-running(Sid, Value));
+        }
+  ];
+end
+
+command ps-running as widget do 
+  let State = perform playground.get-state();
+  let Logs = State.process.events as observable-stream
+               | filter: { X in X is-log-event and (X.id === self.sid) };
+  let Values = State.process.events as observable-stream
+                 | filter: { X in X is pge-success };
+  
+
+  w container: [
+    w code-editor
+      | read-only
+      | code: self.code,
+
+    w style: "launcher-playground-entry-logs" with: [Logs],
+    w style: "launcher-playground-entry-values" with: [Values],
+  ];
+end
+
+command playground-event is-log-event = false;
+command pge-declaration-loaded is-log-event = true;
+
+implement to-widget for pge-declaration-loaded;
+command pge-declaration-loaded as widget do
+  w style: "launcher-playground-entry-log-entry" with: [
+    X.message
+  ]
+end
+
+implement to-widget for pge-success;
+command pge-success as widget do
+  w style: "launcher-playground-entry-value" with: [
+    X.result
+  ]
+end
+
+

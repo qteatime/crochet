@@ -222,6 +222,11 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("dom.log", (msg) => {
+    console.log(ffi.to_debug_string(msg), msg);
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.append", (box, node) => {
     get_node(box).appendChild(get_node(node));
     return ffi.nothing;
@@ -270,5 +275,18 @@ export default (ffi: ForeignInterface) => {
     editor.addEventListener("change", resize);
 
     return ffi.box(editor);
+  });
+
+  ffi.defun("dom.get-value", (box) => {
+    const node = get_element(box) as HTMLTextAreaElement;
+    return ffi.text(node.value);
+  });
+
+  ffi.defun("dom.fragment", (children) => {
+    const fragment = document.createDocumentFragment();
+    for (const child of ffi.list_to_array(children)) {
+      fragment.appendChild(get_node(child));
+    }
+    return ffi.box(fragment);
   });
 };

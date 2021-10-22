@@ -2,6 +2,9 @@
 
 local singleton module;
 
+command agata-widget fragment: (Children is list<W has to-widget>) =
+  new w-fragment(Children);
+
 command agata-widget container: (Children is list<widget>) =
   new w-container("div", "agata-container", Children);
 
@@ -200,6 +203,9 @@ command agata-widget dynamic: (Handler is (dom-dynamic-canvas -> nothing)) =
 command agata-widget from-observable: (Observable is observable<W has to-widget>) =
   new w-observable(Observable);
 
+command agata-widget from-observable-stream: (Observable is observable-stream<W has to-widget>) =
+  new w-observable-stream(Observable);
+
 
 command agata-widget switch: (Observable is observable) =
   new w-switch(Observable, []);
@@ -227,5 +233,15 @@ command interpolation as widget = agata-widget container: (self parts map: (_ as
 implement to-widget for observable;
 command observable as widget = agata-widget from-observable: self;
 
+implement to-widget for observable-stream;
+command observable-stream as widget = agata-widget from-observable-stream: self;
+
 implement to-widget for widget;
 command widget as widget = self;
+
+
+command widget reference: (Ref is agata-reference) =
+  new w-reference(Ref, self);
+
+command agata-widget commit: (W has to-widget) =
+  new w-committed(dom-renderer render: W);

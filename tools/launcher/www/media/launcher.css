@@ -3,3 +3,25 @@
   width: 100%;
   border: none;
 }
+
+.launcher-playground-entry {
+  position: relative;
+}
+
+.launcher-playground-entry .agata-code-editor {
+  padding-bottom: 2em;
+}
+
+.launcher-playground-entry .agata-icon-button {
+  position: absolute;
+  bottom: -12px;
+  right: -12px;
+  background: var(--active-accent);
+  border-radius: 100%;
+  border: 2px solid --active-accent;
+}
+
+.launcher-playground-entry .agata-icon-button .agata-icon {
+  color: #fafafa;
+  text-indent: 3px;
+}

@@ -14,6 +14,8 @@ import {
   NativeTag,
   NSApply,
   NSAwait,
+  NSCurrentActivation,
+  NSCurrentUniverse,
   NSInvoke,
   NSMakeClosure,
   NSTranscriptWrite,
@@ -288,5 +290,18 @@ export class ForeignInterface {
 
   uuid4() {
     return UUID.v4();
+  }
+
+  // == Dangerous introspection that needs more thought
+  current_activation() {
+    return new NSCurrentActivation();
+  }
+
+  current_universe() {
+    return new NSCurrentUniverse();
+  }
+
+  get formatter() {
+    return Location;
   }
 }

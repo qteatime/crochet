@@ -779,6 +779,8 @@ export enum NativeSignalTag {
   JUMP,
   TRANSCRIPT_WRITE,
   MAKE_CLOSURE,
+  CURRENT_ACTIVATION,
+  CURRENT_UNIVERSE,
 }
 
 export type NativeSignal =
@@ -788,7 +790,9 @@ export type NativeSignal =
   | NSEvaluate
   | NSJump
   | NSTranscriptWrite
-  | NSMakeClosure;
+  | NSMakeClosure
+  | NSCurrentActivation
+  | NSCurrentUniverse;
 
 export abstract class NSBase {}
 
@@ -817,6 +821,14 @@ export class NSMakeClosure extends NSBase {
   ) {
     super();
   }
+}
+
+export class NSCurrentActivation extends NSBase {
+  readonly tag = NativeSignalTag.CURRENT_ACTIVATION;
+}
+
+export class NSCurrentUniverse extends NSBase {
+  readonly tag = NativeSignalTag.CURRENT_UNIVERSE;
 }
 
 export class NSAwait extends NSBase {

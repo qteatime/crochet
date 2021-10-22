@@ -98,6 +98,26 @@ command purr-ipc parse-message: (Message is record) do
     when Method === "playground-ready" =>
       new im-playground-ready(Data.id);
 
+    when Method === "playground/declaration-loaded" =>
+      new im-playground-declaration-loaded(
+        Data.id,
+        Data.sid,
+        Data.message,
+      );
+
+    when Method === "playground/success" =>
+      new im-playground-success(
+        Data.id,
+        Data.sid,
+        #value-lens parse-plain: Data.value
+      );
+
+    when Method === "playground/error" =>
+      new im-playground-error(
+        Data.id,
+        Data.sid,
+        Data.message
+      );
   end
 end
 
@@ -119,7 +139,7 @@ command purr-ipc-client serialise-message: (X is imo-run-snippet) =
   [
     method -> "run-snippet",
     id -> self.id,
-    data -> [id -> X.id, code -> X.code]
+    data -> [id -> X.id, sid -> X.sid, code -> X.code]
   ];
 
 command purr-ipc-client dispatch: (X is ipc-outgoing) do
@@ -154,6 +174,14 @@ do
   State attach-process: Process;
   self.client dispatch: new imo-spawn-playground(Id);
   Process;
+end
+
+command actor-ipc run-snippet: (Snippet is text) in: (Process is pp-playground)
+requires ready :: self.state value is actor-ipc-started
+do
+  let Id = foreign ipc.uuid();
+  self.client dispatch: new imo-run-snippet(Process.id, Id, Snippet);
+  Id;
 end
 
 command actor-ipc-started attach-process: (Process is purr-process) do
@@ -304,5 +332,26 @@ command actor-ipc-started accepts: im-playground-ready = true;
 command actor-ipc-started handle: (X is im-playground-ready) do
   let Process = self process-from-id: X.id;
   Process.events publish: pge-ready;
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-declaration-loaded = true;
+command actor-ipc-started handle: (X is im-playground-declaration-loaded) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: new pge-declaration-loaded(X.sid, X.message);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-success = true;
+command actor-ipc-started handle: (X is im-playground-success) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: new pge-success(X.sid, X.lens);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-error = true;
+command actor-ipc-started handle: (X is im-playground-error) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: new pge-error(X.sid, X.message);
   mhr-done;
 end

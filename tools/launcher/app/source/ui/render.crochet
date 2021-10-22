@@ -95,6 +95,8 @@ command dom-renderer render: (X is w-frame) do
   ]));
 end
 
+open crochet.debug;
+
 command dom-renderer render: (X is w-dynamic) do
   let Node = foreign dom.container("div", "agata-dynamic", []);
   let Canvas = new dom-dynamic-canvas(X);
@@ -126,7 +128,7 @@ command dom-renderer render: (X is w-switch) do
                    | value-or-panic: "No suitable cases";
       let Widget = Case.handler(Value);
       Canvas render: Widget;
-    }
+    } capture;
   });
   self render: Node;
 end
@@ -137,15 +139,37 @@ end
 
 command dom-renderer render: (X is w-observable) do
   let Node = new w-dynamic({ Canvas in
-               Canvas render: (X.observable value);
-               X.observable subscribe: (Canvas render: _);
-             });
+    Canvas render: (X.observable value);
+    X.observable subscribe: { V in Canvas render: V } capture;
+  });
+  self render: Node;
+end
+
+command dom-renderer render: (X is w-observable-stream) do
+  let Node = new w-dynamic({ Canvas in
+    X.observable subscribe: { V in Canvas append: V } capture;
+  });
   self render: Node;
 end
 
 command dom-renderer render: (X is w-code-editor) do
-  new dom-node(foreign dom.code-editor(X.read-only, X.code));
+  new dom-node-code-editor(foreign dom.code-editor(X.read-only, X.code));
 end
+
+command dom-renderer render: (X is w-reference) do
+  let Node = self render: X.child;
+  perform agata-presentation.register-reference(X.reference, Node);
+  Node;
+end
+
+command dom-renderer render: (X is w-fragment) do
+  let Children = for N in X.children do (self render: N).box end;
+  let Node = foreign dom.fragment(Children);
+  new dom-node(Node);
+end
+
+command dom-renderer render: (X is w-committed) =
+  X.render;
 
 command dom-renderer to-css: (P is gap) =
   "[self to-css: P.horizontal] [self to-css: P.vertical]" flatten-into-plain-text;
@@ -167,5 +191,20 @@ command dom-renderer to-css: (X is numeric) =
 
 command dom-canvas render: (Node is dom-node) do
   foreign dom.render(self.box, Node.box);
+  self;
+end
+
+
+command reference-env at: Key do
+  let Mapping = self.mapping value;
+  condition
+    when Mapping contains-key: Key => #result ok: (Mapping at: Key);
+    when not (self.parent is nothing) => self.parent at: Key;
+    otherwise => #result error: not-found;
+  end
+end
+
+command reference-env at: Key put: Value do
+  self.mapping <- self.mapping value at: Key put: Value;
   self;
 end

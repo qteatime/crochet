@@ -36,6 +36,11 @@ command purr spawn-playground: (Project is purr-project) do
   Actor spawn-playground;
 end
 
+command purr project: (Project is purr-project) run-snippet: (Snippet is text) in: (Process is pp-playground) do
+  let Actor = #purr-ipc shared-instance client-for-id: Project.id;
+  Actor run-snippet: Snippet in: Process;
+end
+
 command purr project-packaging: (Project is purr-project) do
   agata show: new ps-package(Project) render;
 end

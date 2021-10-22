@@ -60,3 +60,6 @@ command w-code-editor writable =
 
 command w-code-editor code: (Code is text) =
   new w-code-editor(self.read-only, Code);
+
+command dom-node-code-editor current-value =
+  foreign dom.get-value(self.box);

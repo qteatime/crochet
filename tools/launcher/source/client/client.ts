@@ -1,17 +1,25 @@
+import * as VM from "../../../../build/vm";
 import type {
   CrochetForBrowser,
   Package,
 } from "../../../../build/targets/browser";
 import * as UUID from "uuid";
 import { defer } from "./helpers";
+import { compile } from "./repl";
 declare var Crochet: {
   CrochetForBrowser: typeof CrochetForBrowser;
   Package: typeof Package;
 };
 
+export interface PlaygroundProcess {
+  vm: CrochetForBrowser;
+  module: VM.CrochetModule;
+  environment: VM.Environment;
+}
+
 export class Client {
   private methods: Map<string, (...args: any[]) => Promise<any>> = new Map();
-  private instances: Map<string, CrochetForBrowser> = new Map();
+  private instances: Map<string, PlaygroundProcess> = new Map();
 
   async instantiate() {
     const crochet = new Crochet.CrochetForBrowser(
@@ -128,9 +136,51 @@ export class Client {
 
   async spawn_playground({ id }: { id: string }) {
     const instance = await this.instantiate();
-    this.instances.set(id, instance);
+    const pkg = instance.system.graph.get_package(instance.root.meta.name);
+    const cpkg = instance.system.universe.world.packages.get(pkg.name)!;
+    const module = new VM.CrochetModule(cpkg, "(playground)", null);
+    const environment = new VM.Environment(null, null, module, null);
+    this.instances.set(id, {
+      vm: instance,
+      module: module,
+      environment: environment,
+    });
     this.post_message("playground-ready", { id });
   }
+
+  async run_snippet({
+    id,
+    sid,
+    code,
+  }: {
+    id: string;
+    sid: string;
+    code: string;
+  }) {
+    const instance = this.instances.get(id)!;
+    const client = {
+      id,
+      sid,
+      post_message: (method: string, data: any) => {
+        this.post_message(method, { ...data, sid });
+      },
+    };
+    try {
+      const ast = compile(code);
+      await ast.evaluate(client, instance);
+    } catch (error) {
+      console.error(error);
+      client.post_message("playground/error", {
+        message: String(error),
+      });
+    }
+  }
+}
+
+export interface SnippetClient {
+  readonly id: string;
+  readonly sid: string;
+  post_message(method: string, data: any): void;
 }
 
 async function main() {

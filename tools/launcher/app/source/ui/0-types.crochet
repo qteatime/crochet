@@ -10,6 +10,8 @@ type agata-state(
 effect agata-presentation with
   show(page);
   alert(message);
+  get-reference(reference);
+  register-reference(reference, node);
 end
 
 effect agata-canvas with
@@ -23,13 +25,21 @@ type observable-cell(state is cell<A>, subscribers is cell<list<(A -> nothing)>>
 type mapped-observable(state is cell<B>, mapping is (A -> B), source is observable<A>, subscribers is cell<list<(B -> nothing)>>) is observable;
 type filtered-observable(state is cell<A>, filter is (A -> boolean), source is observable<A>, subscribers is cell<list<(A -> nothing)>>) is observable;
 
+abstract observable-stream;
+type observable-stream-cell(state is cell<list<A>>, subscribers is cell<list<(A -> nothing)>>) is observable-stream;
+type mapped-observable-stream(state is cell<list<A>>, mapping is (A -> B), source is observable-stream<A>, subscribers is cell<list<(B -> nothing)>>) is observable-stream;
+type filtered-observable-stream(state is cell<list<A>>, filter is (A -> boolean), source is observable-stream<A>, subscribers is cell<list<(A -> nothing)>>) is observable-stream;
+
 singleton dom-renderer;
 type dom-canvas(box);
 type dom-dynamic-canvas(box);
 type dom-node(box);
+type dom-node-code-editor(box) is dom-node;
 type dom-event(box);
 type dom-window(box);
 
+type agata-reference(name is text);
+type reference-env(parent, mapping is cell<map<agata-reference, dom-node>>);
 
 abstract measure;
 type pixels(value is integer) is measure;
@@ -57,7 +67,11 @@ type w-frame(window is dom-window) is widget;
 type w-dynamic(renderer is (dom-dynamic-canvas -> nothing)) is widget;
 type w-switch(observable is observable, cases is list<wn-switch-case>) is widget;
 type w-observable(observable is observable<W has to-widget>) is widget;
+type w-observable-stream(observable is observable-stream<W has to-widget>) is widget;
 type w-code-editor(read-only is boolean, code is text) is widget;
+type w-reference(reference is agata-reference, child is widget) is widget;
+type w-fragment(children is list<W has to-widget>) is widget;
+type w-committed(render is dom-node) is widget;
 
 type wn-switch-case(guard, handler is (any -> widget));
 

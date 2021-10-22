@@ -22,14 +22,20 @@
     "source/screens/package.crochet",
     "source/screens/playground.crochet",
     "source/screens/summary.crochet",
+    "source/lens.crochet",
     "source/event.crochet",
     "source/ipc.crochet",
     "source/main.crochet"
   ],
   "native_sources": ["native/dom.js", "native/api.js", "native/ipc.js"],
-  "dependencies": ["crochet.core", "crochet.language.json", "crochet.time"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.language.json",
+    "crochet.time",
+    "crochet.debug"
+  ],
   "capabilities": {
-    "requires": ["native"],
+    "requires": ["native", "crochet.debug/runtime-introspection"],
     "provides": []
   }
 }
