@@ -47,7 +47,8 @@ command purr-common-widgets project-menu: (Project is purr-project) at: (Section
   ]
   | layout
   | gap: 0 pixels
-  | width: 400 pixels;
+  | width: 400 pixels
+  | flex-fixed-size;
 end
 
 command purr-common-widgets project-window: (Project is purr-project) at: Section with: (Children is list<widget>) do

@@ -132,8 +132,22 @@ command w-layout gap: (X is measure) =
 command w-layout gap-horizontal: (X is measure) vertical: (Y is measure) =
   new w-layout(self.layout at: "gap" put: new gap(X, Y), self.child);
 
+command w-layout flex-shrink =
+  new w-layout(self.layout at: "flex-shrink" put: "1", self.child);
+
 command w-layout flex-grow =
   new w-layout(self.layout at: "flex-grow" put: "1", self.child);
+
+command w-layout flex-dont-grow =
+  new w-layout(self.layout at: "flex-grow" put: "0", self.child);
+
+command w-layout flex-dont-shrink =
+  new w-layout(self.layout at: "flex-shrink" put: "0", self.child);
+
+command w-layout flex-fixed-size =
+  self 
+    | flex-dont-grow
+    | flex-dont-shrink;
 
 command w-layout flex-wrap =
   new w-layout(self.layout at: "flex-wrap" put: "wrap", self.child);
