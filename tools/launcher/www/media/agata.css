@@ -450,9 +450,6 @@ body {
   white-space: pre-wrap;
 }
 
-.agata-header {
-}
-
 .agata-highlight-header {
   margin: 2em auto;
   margin-bottom: 3em;
@@ -470,4 +467,18 @@ body {
 
 .agata-highlight-header .agata-subtitle {
   font-size: 1.8em;
+}
+
+/* Code editor */
+.agata-code-editor {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100px;
+  padding: 1em;
+  font-family: monospace;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  resize: none;
+  background: white;
+  overflow: hidden;
 }

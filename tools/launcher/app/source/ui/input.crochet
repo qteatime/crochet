@@ -47,3 +47,16 @@ command w-action-button description: (Description is text) =
 
 command w-action-button on-click: (Handler is (Ev -> nothing)) =
   new w-action-button(self.icon, self.title, self.description, Handler);
+
+
+command agata-widget code-editor =
+  new w-code-editor(false, "");
+
+command w-code-editor read-only =
+  new w-code-editor(true, self.code);
+
+command w-code-editor writable =
+  new w-code-editor(false, self.code);
+
+command w-code-editor code: (Code is text) =
+  new w-code-editor(self.read-only, Code);

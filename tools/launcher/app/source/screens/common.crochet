@@ -42,7 +42,8 @@ command purr-common-widgets project-menu: (Project is purr-project) at: (Section
     w action-button
       | icon: "gamepad"
       | title: "Playground"
-      | description: "Interactively experiment with the project",
+      | description: "Interactively experiment with the project"
+      | on-click: { _ in purr project-playground: Project },
   ]
   | layout
   | gap: 0 pixels

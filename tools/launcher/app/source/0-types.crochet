@@ -62,6 +62,7 @@ type ps-summary(project is purr-project) is purr-screen;
 type ps-test(project is purr-project) is purr-screen;
 type ps-package(project is purr-project) is purr-screen;
 type ps-run(project is purr-project) is purr-screen;
+type ps-playground(project is purr-project) is purr-screen;
 
 singleton purr-common-widgets;
 
@@ -93,10 +94,13 @@ abstract ipc-message;
 // Outgoing
 abstract ipc-outgoing is ipc-message;
 type imo-run-tests(id is text) is ipc-outgoing;
+type imo-spawn-playground(id is text) is ipc-outgoing;
+type imo-run-snippet(id is text, code is text) is ipc-outgoing;
 
 // Incoming
 abstract ipc-incoming is ipc-message;
 singleton im-ready is ipc-incoming;
+
 type im-testing-started(id is text) is ipc-incoming;
 type im-test-started(id is text, test-id is text, details is i-test-details) is ipc-incoming;
 type im-test-skipped(id is text, test-id is text) is ipc-incoming;
@@ -107,6 +111,7 @@ type im-testing-finished(
   summary is test-summary
 ) is ipc-incoming;
 
+type im-playground-ready(id is text) is ipc-incoming;
 
 effect purr-ipc with
   get-instance();
@@ -148,6 +153,11 @@ type pp-packaging(
   events is event-stream<packaging-event>
 ) is purr-process;
 
+type pp-playground(
+  id is text,
+  events is event-stream<playground-event>
+) is purr-process;
+
 type test-result(
   test-id is text,
   package-name is text,
@@ -161,6 +171,9 @@ type te-skipped(result is test-result);
 type te-failed(result is test-result, message is text);
 type te-passed(result is test-result);
 type te-finished(summary is test-summary);
+
+abstract playground-event;
+singleton pge-ready is playground-event;
 
 abstract packaging-event;
 type pe-log(message is text) is packaging-event;

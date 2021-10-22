@@ -70,11 +70,13 @@ export async function setup_app_server(port: number, state: AppState) {
 
   app.get("/:id/run/", async (req, res) => {
     const id = req.params.id;
-    await trap(res, async () => {
+    try {
       const capp = state.app(id);
       await capp.build();
       res.sendFile(Path.resolve(www, "index.html"));
-    });
+    } catch (e) {
+      res.status(500).send(`<pre>${String(e).replace(/</g, "&lt;")}</pre>`);
+    }
   });
 
   app.get("/:id/run/app/.binary/*", async (req, res) => {

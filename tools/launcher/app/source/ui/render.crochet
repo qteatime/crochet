@@ -143,6 +143,10 @@ command dom-renderer render: (X is w-observable) do
   self render: Node;
 end
 
+command dom-renderer render: (X is w-code-editor) do
+  new dom-node(foreign dom.code-editor(X.read-only, X.code));
+end
+
 command dom-renderer to-css: (P is gap) =
   "[self to-css: P.horizontal] [self to-css: P.vertical]" flatten-into-plain-text;
 

@@ -31,6 +31,11 @@ command purr run-tests: (Project is purr-project) do
   Actor run-tests;
 end
 
+command purr spawn-playground: (Project is purr-project) do
+  let Actor = #purr-ipc shared-instance client-for-id: Project.id;
+  Actor spawn-playground;
+end
+
 command purr project-packaging: (Project is purr-project) do
   agata show: new ps-package(Project) render;
 end
@@ -39,6 +44,15 @@ command purr project-run: (Project is purr-project) do
   agata show: new ps-run(Project) render;
 end
 
+command purr project-playground: (Project is purr-project) do
+  agata show: new ps-playground(Project) render;
+end
+
 command purr home do
   agata show: ps-welcome render;
+end
+
+
+command purr defer: (Block is (() -> nothing)) do
+  foreign dom.defer(Block);
 end

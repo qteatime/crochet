@@ -57,6 +57,7 @@ type w-frame(window is dom-window) is widget;
 type w-dynamic(renderer is (dom-dynamic-canvas -> nothing)) is widget;
 type w-switch(observable is observable, cases is list<wn-switch-case>) is widget;
 type w-observable(observable is observable<W has to-widget>) is widget;
+type w-code-editor(read-only is boolean, code is text) is widget;
 
 type wn-switch-case(guard, handler is (any -> widget));
 

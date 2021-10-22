@@ -236,4 +236,39 @@ export default (ffi: ForeignInterface) => {
     }
     return ffi.nothing;
   });
+
+  ffi.defmachine("dom.defer", function* (block0) {
+    const block = yield ffi.make_closure(0, function* () {
+      return yield ffi.apply(block0, []);
+    });
+    setTimeout(async () => {
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(block, []);
+        return ffi.nothing;
+      });
+    });
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.code-editor", (readonly0, code0) => {
+    function resize() {
+      editor.style.height = "auto";
+      const size = Math.max(100, editor.scrollHeight);
+      editor.style.height = `${size}px`;
+    }
+
+    const readonly = ffi.to_js_boolean(readonly0);
+    const code = ffi.text_to_string(code0);
+    const editor = document.createElement("textarea");
+    editor.className = "agata-code-editor";
+    editor.readOnly = readonly;
+    editor.value = code;
+
+    editor.addEventListener("keydown", resize);
+    editor.addEventListener("keyup", resize);
+    editor.addEventListener("paste", resize);
+    editor.addEventListener("change", resize);
+
+    return ffi.box(editor);
+  });
 };

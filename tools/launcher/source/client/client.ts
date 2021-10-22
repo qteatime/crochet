@@ -11,6 +11,7 @@ declare var Crochet: {
 
 export class Client {
   private methods: Map<string, (...args: any[]) => Promise<any>> = new Map();
+  private instances: Map<string, CrochetForBrowser> = new Map();
 
   async instantiate() {
     const crochet = new Crochet.CrochetForBrowser(
@@ -31,6 +32,7 @@ export class Client {
     readonly origin: string
   ) {
     this.methods.set("run-tests", this.run_tests.bind(this));
+    this.methods.set("spawn-playground", this.spawn_playground.bind(this));
   }
 
   post_message(method: string, data: any) {
@@ -122,6 +124,12 @@ export class Client {
       total: result.total,
       duration: result.finished - result.started,
     });
+  }
+
+  async spawn_playground({ id }: { id: string }) {
+    const instance = await this.instantiate();
+    this.instances.set(id, instance);
+    this.post_message("playground-ready", { id });
   }
 }
 

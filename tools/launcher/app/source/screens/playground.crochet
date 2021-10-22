@@ -1,0 +1,45 @@
+% crochet
+
+local define w = agata-widget;
+local define cw = purr-common-widgets;
+
+local abstract state;
+local singleton loading is state;
+local type running(process is pp-playground) is state;
+
+
+command ps-playground render do
+  let State = #observable with-value: loading;
+
+  cw project-window: self.project at: "playground" with: [
+    w title: "Crochet Playground",
+    w space,
+
+    w section: [
+      w switch: State
+        | when: { X in X is loading } then: { _ in self loading: State }
+        | when: { X in X is running } then: { _ in self playground: State }
+    ]
+  ];
+end
+
+command ps-playground loading: State do
+  purr defer: {
+    let Process = purr spawn-playground: self.project;
+    State <- new running(Process);
+  };
+
+  "Loading...";
+end
+
+command ps-playground playground: Root-state do
+  w dynamic: { Canvas in
+    Canvas append: self playground-entry;
+  };
+end
+
+command ps-playground playground-entry do
+  let State = #observable with-value: nothing;
+
+  w code-editor;
+end

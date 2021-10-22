@@ -94,6 +94,10 @@ command purr-ipc parse-message: (Message is record) do
           #duration milliseconds: (Data.duration as integer)
         )
       );
+
+    when Method === "playground-ready" =>
+      new im-playground-ready(Data.id);
+
   end
 end
 
@@ -102,6 +106,20 @@ command purr-ipc-client serialise-message: (X is imo-run-tests) =
     method -> "run-tests",
     id -> self.id,
     data -> [id -> X.id]
+  ];
+
+command purr-ipc-client serialise-message: (X is imo-spawn-playground) =
+  [
+    method -> "spawn-playground",
+    id -> self.id,
+    data -> [id -> X.id]
+  ];
+
+command purr-ipc-client serialise-message: (X is imo-run-snippet) =
+  [
+    method -> "run-snippet",
+    id -> self.id,
+    data -> [id -> X.id, code -> X.code]
   ];
 
 command purr-ipc-client dispatch: (X is ipc-outgoing) do
@@ -123,6 +141,18 @@ do
   let Process = new pp-test(Id, Process-status, Tests, Statuses, Events);
   State attach-process: Process;
   self.client dispatch: new imo-run-tests(Id);
+  Process;
+end
+
+command actor-ipc spawn-playground
+requires ready :: self.state value is actor-ipc-started
+do
+  let State = self.state value;
+  let Id = foreign ipc.uuid();
+  let Events = #event-stream empty;
+  let Process = new pp-playground(Id, Events);
+  State attach-process: Process;
+  self.client dispatch: new imo-spawn-playground(Id);
   Process;
 end
 
@@ -267,5 +297,12 @@ command actor-ipc-started handle: (X is im-testing-finished) do
   let Process = self process-from-id: X.id;
   Process.state <- new tps-finished(X.summary);
   Process.events publish: new te-finished(X.summary);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-ready = true;
+command actor-ipc-started handle: (X is im-playground-ready) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: pge-ready;
   mhr-done;
 end

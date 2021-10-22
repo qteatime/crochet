@@ -8,7 +8,9 @@ class Client {
         this.capabilities = capabilities;
         this.origin = origin;
         this.methods = new Map();
+        this.instances = new Map();
         this.methods.set("run-tests", this.run_tests.bind(this));
+        this.methods.set("spawn-playground", this.spawn_playground.bind(this));
     }
     async instantiate() {
         const crochet = new Crochet.CrochetForBrowser(`/${this.id}/library`, new Set(this.capabilities), false);
@@ -95,6 +97,11 @@ class Client {
             total: result.total,
             duration: result.finished - result.started,
         });
+    }
+    async spawn_playground({ id }) {
+        const instance = await this.instantiate();
+        this.instances.set(id, instance);
+        this.post_message("playground-ready", { id });
     }
 }
 exports.Client = Client;
