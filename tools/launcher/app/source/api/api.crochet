@@ -21,10 +21,18 @@ command purr-api spawn: (Project is purr-project-meta) do
   Id;
 end
 
-command purr-api package: (Project is purr-project-meta) target: (Target is purr-target) do
-  let Result = foreign api.package(Project.filename, Target code);
+command purr-api package: (Project is purr-project) target: (Target is purr-target) do
+  let Result = foreign api.package(Project.id, Target code);
   condition
     when Result.success => #result ok: Result.output;
     otherwise => #result error: Result.message;
   end
+end
+
+command purr-api launch-directory: (Project is purr-project) do
+  foreign api.launch-directory(Project.id);
+end
+
+command purr-api launch-code-editor: (Project is purr-project) do
+  foreign api.launch-code-editor(Project.id);
 end

@@ -44,6 +44,18 @@ command purr-common-widgets project-menu: (Project is purr-project) at: (Section
       | title: "Playground"
       | description: "Interactively experiment with the project"
       | on-click: { _ in purr project-playground: Project },
+
+    w action-button
+      | icon: "folder-open"
+      | title: "Open directory"
+      | description: "Open the project directory in your OS"
+      | on-click: { _ in purr-api launch-directory: Project },
+
+    w action-button
+      | icon: "laptop-code"
+      | title: "Open in editor"
+      | description: "Open the project in an external code editor"
+      | on-click: { _ in purr-api launch-code-editor: Project },
   ]
   | layout
   | gap: 0 pixels

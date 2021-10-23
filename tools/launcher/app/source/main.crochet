@@ -57,7 +57,6 @@ command purr home do
   agata show: ps-welcome render;
 end
 
-
 command purr defer: (Block is (() -> nothing)) do
   foreign dom.defer(Block);
 end

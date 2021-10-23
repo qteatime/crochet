@@ -40,10 +40,10 @@ export default (ffi: ForeignInterface) => {
     return ffi.text(json.id);
   });
 
-  ffi.defmachine("api.package", function* (file0, target0) {
-    const file = ffi.text_to_string(file0);
+  ffi.defmachine("api.package", function* (id0, target0) {
+    const id = ffi.text_to_string(id0);
     const target = ffi.text_to_string(target0);
-    const response = post("/api/package", { package: file, target });
+    const response = post("/api/package", { id, target });
     try {
       const text = yield ffi.await(get_text(response));
       const json = JSON.parse(ffi.text_to_string(text));
@@ -60,6 +60,28 @@ export default (ffi: ForeignInterface) => {
           ["message", ffi.text(String(e))],
         ])
       );
+    }
+  });
+
+  ffi.defmachine("api.launch-directory", function* (id0) {
+    const id = ffi.text_to_string(id0);
+    const response = post("/api/launch-directory", { id });
+    try {
+      yield ffi.await(get_text(response));
+      return ffi.nothing;
+    } catch (e) {
+      throw ffi.panic("api-failure", String(e));
+    }
+  });
+
+  ffi.defmachine("api.launch-code-editor", function* (id0) {
+    const id = ffi.text_to_string(id0);
+    const response = post("/api/launch-code-editor", { id });
+    try {
+      yield ffi.await(get_text(response));
+      return ffi.nothing;
+    } catch (e) {
+      throw ffi.panic("api-failure", String(e));
     }
   });
 };

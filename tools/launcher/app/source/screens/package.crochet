@@ -40,7 +40,7 @@ command ps-package target: Target not-started: State do
   w text-button: "Build package"
     | on-click: { _ in
         State <- running;
-        let Result = purr-api package: self.project meta target: Target;
+        let Result = purr-api package: self.project target: Target;
         State <- new finished(Result);
       };
 end

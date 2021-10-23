@@ -9,7 +9,7 @@ import { API } from "./api";
 import { setup_app_server } from "./server";
 import { App, AppState } from "./app";
 import * as UUID from "uuid";
-import { trap } from "./helpers";
+import { launch_code_editor, open_directory, trap } from "./helpers";
 
 const launcher_root = Path.resolve(__dirname, "..");
 const repo_root = Path.resolve(launcher_root, "../../");
@@ -79,13 +79,35 @@ export async function setup_launcher_server(port: number) {
   });
 
   app.post("/api/package", async (req, res) => {
-    const id = UUID.v4();
+    const build_id = UUID.v4();
     await trap(res, async () => {
-      const pkg = req.body.package;
+      const id = req.body.id;
+      const capp = state.app(id);
+      const pkg = capp.package_file;
       const target = Spec.parse(req.body.target, Package.target_spec);
-      const out_dir = Path.join(Path.dirname(pkg), ".packages", id);
+      const out_dir = Path.join(Path.dirname(pkg), ".packages", build_id);
       await Packager.package_app(pkg, target, out_dir);
       res.send({ output: out_dir });
+    });
+  });
+
+  app.post("/api/launch-directory", async (req, res) => {
+    await trap(res, async () => {
+      const id = req.body.id;
+      const capp = state.app(id);
+      const path = Path.dirname(capp.package_file);
+      open_directory(path);
+      res.send({});
+    });
+  });
+
+  app.post("/api/launch-code-editor", async (req, res) => {
+    await trap(res, async () => {
+      const id = req.body.id;
+      const capp = state.app(id);
+      const path = Path.dirname(capp.package_file);
+      launch_code_editor(path);
+      res.send({});
     });
   });
 
