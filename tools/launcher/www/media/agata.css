@@ -13,6 +13,9 @@ button,
 input {
   font-family: "Roboto", sans-serif;
   background: none;
+}
+
+button {
   cursor: pointer;
 }
 
@@ -481,4 +484,30 @@ body {
   resize: none;
   background: white;
   overflow: hidden;
+}
+
+.agata-labelled {
+  margin-bottom: 1.5em;
+  display: block;
+}
+
+.agata-label-text {
+  font-weight: bold;
+}
+
+.agata-labelled-input {
+  padding: 0.2em 0;
+}
+
+.agata-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.agata-input-text {
+  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--active-accent);
+  padding: 0.5em;
+  background: white;
 }

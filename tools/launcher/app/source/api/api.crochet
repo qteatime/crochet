@@ -16,8 +16,29 @@ command purr-api libraries do
   end
 end
 
+command purr-api my-projects do
+  let Libraries = #json parse: (foreign api.my-projects());
+  for X in Libraries do
+    new purr-project-meta(X.filename, X.meta);
+  end
+end
+
 command purr-api spawn: (Project is purr-project-meta) do
   let Id = foreign api.spawn(Project.filename);
+  Id;
+end
+
+command purr-api read-project: Id do
+  let Pkg = #json parse: (foreign api.read-project(Id));
+  new purr-project-meta(Pkg.filename, Pkg.meta);
+end
+
+command purr-api create-project: (Project is purr-new-project) do
+  let Id = foreign api.create-project(
+    Project.name,
+    Project.title,
+    "*"
+  );
   Id;
 end
 

@@ -156,6 +156,15 @@ command dom-renderer render: (X is w-code-editor) do
   new dom-node-code-editor(foreign dom.code-editor(X.read-only, X.code, X.on-commit));
 end
 
+command dom-renderer render: (X is w-text-input) do
+  new dom-node-input(foreign dom.input("text", X.read-only, X.value, X.placeholder));
+end
+
+command dom-renderer render: (X is w-label) do
+  let Input = self render: X.input;
+  new dom-node(foreign dom.label(X.label, Input.box));
+end
+
 command dom-renderer render: (X is w-reference) do
   let Node = self render: X.child;
   perform agata-presentation.register-reference(X.reference, Node);

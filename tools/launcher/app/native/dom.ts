@@ -288,8 +288,13 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(editor);
   });
 
-  ffi.defun("dom.get-value", (box) => {
+  ffi.defun("dom.get-code-editor-value", (box) => {
     const node = get_element(box) as HTMLTextAreaElement;
+    return ffi.text(node.value);
+  });
+
+  ffi.defun("dom.get-input-value", (box) => {
+    const node = get_element(box) as HTMLInputElement;
     return ffi.text(node.value);
   });
 
@@ -313,5 +318,37 @@ export default (ffi: ForeignInterface) => {
     }
     setTimeout(try_focus, 0);
     return ffi.nothing;
+  });
+
+  ffi.defun("dom.input", (type0, readonly0, value0, placeholder0) => {
+    const type = ffi.text_to_string(type0);
+    const readonly = ffi.to_js_boolean(readonly0);
+    const value = ffi.text_to_string(value0);
+    const placeholder = ffi.text_to_string(placeholder0);
+
+    const node = document.createElement("input");
+    node.className = `agata-input agata-input-${type}`;
+    node.type = type;
+    node.readOnly = readonly;
+    node.value = value;
+    node.placeholder = placeholder;
+
+    return ffi.box(node);
+  });
+
+  ffi.defun("dom.label", (label0, input0) => {
+    const label = ffi.text_to_string(label0);
+    const input = get_node(input0);
+    const node = document.createElement("label");
+    node.className = "agata-labelled";
+    const clabel = document.createElement("div");
+    clabel.className = "agata-label-text";
+    clabel.appendChild(document.createTextNode(label));
+    node.appendChild(clabel);
+    const cinput = document.createElement("div");
+    cinput.className = "agata-labelled-input";
+    cinput.appendChild(input);
+    node.appendChild(cinput);
+    return ffi.box(node);
   });
 };

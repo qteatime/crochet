@@ -32,6 +32,27 @@ export default (ffi: ForeignInterface) => {
     return yield ffi.await(get_text(fetch("/api/libraries")));
   });
 
+  ffi.defmachine("api.my-projects", function* () {
+    return yield ffi.await(get_text(fetch("/api/my-projects")));
+  });
+
+  ffi.defmachine("api.read-project", function* (id0) {
+    const id = ffi.text_to_string(id0);
+    return yield ffi.await(
+      get_text(fetch(`/api/read/${encodeURIComponent(id)}`))
+    );
+  });
+
+  ffi.defmachine("api.create-project", function* (name0, title0, target0) {
+    const name = ffi.text_to_string(name0);
+    const title = ffi.text_to_string(title0);
+    const target = ffi.text_to_string(target0);
+    const response = post("/api/create-project", { name, title, target });
+    const text = yield ffi.await(get_text(response));
+    const json = JSON.parse(ffi.text_to_string(text));
+    return ffi.text(json.id);
+  });
+
   ffi.defmachine("api.spawn", function* (file0) {
     const file = ffi.text_to_string(file0);
     const response = post("/api/spawn", { package: file });
@@ -66,22 +87,14 @@ export default (ffi: ForeignInterface) => {
   ffi.defmachine("api.launch-directory", function* (id0) {
     const id = ffi.text_to_string(id0);
     const response = post("/api/launch-directory", { id });
-    try {
-      yield ffi.await(get_text(response));
-      return ffi.nothing;
-    } catch (e) {
-      throw ffi.panic("api-failure", String(e));
-    }
+    yield ffi.await(get_text(response));
+    return ffi.nothing;
   });
 
   ffi.defmachine("api.launch-code-editor", function* (id0) {
     const id = ffi.text_to_string(id0);
     const response = post("/api/launch-code-editor", { id });
-    try {
-      yield ffi.await(get_text(response));
-      return ffi.nothing;
-    } catch (e) {
-      throw ffi.panic("api-failure", String(e));
-    }
+    yield ffi.await(get_text(response));
+    return ffi.nothing;
   });
 };

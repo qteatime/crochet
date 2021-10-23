@@ -17,25 +17,94 @@ command ps-welcome render do
 end
 
 command ps-welcome my-projects do
+  let State = #observable with-value: welcome;
+
+  handle
+    w commit: State;
+  with
+    on welcome.set-state(New-state) do
+      State <- New-state;
+      continue with nothing;
+    end
+  end
+end
+
+local abstract state;
+local singleton welcome is state;
+local singleton new-project is state;
+
+effect welcome with
+  set-state(new-state is state);
+end
+
+implement to-widget for state;
+command welcome as widget do
+  let Projects = purr-api my-projects;
+
+  condition
+    when Projects is-empty => self no-projects;
+    otherwise => 
+      w contents: [
+        ps-welcome projects: Projects,
+        w double-space,
+        w divider,
+        w space,
+        self actions,
+      ];
+  end
+end
+
+command welcome no-projects do
   w contents: [
     w highlight-header: [
       w title: ["You don't have any projects yet."],
       w subtitle: ["Create or import a project to start working"],
     ],
+    self actions,
+  ]
+end
 
-    w action-list: [
-      w action-button
-        | icon: "plus"
-        | title: "New project"
-        | description: "Create a new project based on a template"
-        | on-click: { _ in purr new-project },
+command welcome actions do
+  w action-list: [
+    w action-button
+      | icon: "plus"
+      | title: "New project"
+      | description: "Create a new project based on a template"
+      | on-click: { _ in perform welcome.set-state(new-project) },
+  ]
+end
 
-      w action-button
-        | icon: "file-import"
-        | title: "Import a project"
-        | description: "Add an existing project to the launcher"
-        | on-click: { _ in purr import-project }
-    ]
+command new-project as widget do
+  let RName = agata reference: "name";
+  let RTitle = agata reference: "title";
+
+  w contents: [
+    w title: "Create a new project",
+    w double-space,
+
+    w label: "Name" for: (
+      w text-input
+        | placeholder: "com.domain.project-name"
+        | reference: RName
+    ),
+
+    w label: "Title" for: (
+      w text-input
+        | placeholder: "Project Name"
+        | reference: RTitle
+    ),
+
+    w space,
+    w divider,
+    w action-button
+      | icon: "check"
+      | title: "Create"
+      | description: "Create and load the project"
+      | on-click: { _ in
+          let Name = RName materialisation current-value;
+          let Title = RTitle materialisation current-value;
+          purr create-project: new purr-new-project(Name, Title);
+        }
   ]
 end
 

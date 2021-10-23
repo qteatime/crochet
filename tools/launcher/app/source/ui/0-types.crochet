@@ -35,6 +35,7 @@ type dom-canvas(box);
 type dom-dynamic-canvas(box);
 type dom-node(box);
 type dom-node-code-editor(box) is dom-node;
+type dom-node-input(box) is dom-node;
 type dom-event(box);
 type dom-window(box);
 
@@ -73,6 +74,8 @@ type w-reference(reference is agata-reference, child is widget) is widget;
 type w-fragment(children is list<W has to-widget>) is widget;
 type w-committed(render is dom-node) is widget;
 type w-focus(widget is widget) is widget;
+type w-text-input(read-only is boolean, value is text, placeholder is text) is widget;
+type w-label(label is text, input is widget) is widget;
 
 type wn-switch-case(guard, handler is (any -> widget));
 

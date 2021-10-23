@@ -21,6 +21,7 @@ export async function setup_launcher_server(port: number) {
   const app = Express();
   const lapp = App.from_file(root);
   const api = new API(repo_root);
+  api.ensure_projects_directory();
 
   await lapp.build();
   const rpkg = lapp.resolved_package;
@@ -65,6 +66,48 @@ export async function setup_launcher_server(port: number) {
 
   app.get("/api/libraries", async (req, res) => {
     res.send(api.libraries());
+  });
+
+  app.get("/api/my-projects", async (req, res) => {
+    res.send(api.my_projects());
+  });
+
+  app.get("/api/read/:id", async (req, res) => {
+    const id = req.params.id;
+    await trap(res, async () => {
+      const capp = state.app(id);
+      const file = FS.readFileSync(capp.pkg.filename, "utf-8");
+      res.send({
+        filename: capp.pkg.filename,
+        meta: JSON.parse(file),
+      });
+    });
+  });
+
+  app.post("/api/create-project", async (req, res) => {
+    const id = UUID.v4();
+    const name = req.body.name;
+    const title = req.body.title;
+    const target = req.body.target;
+    await trap(res, async () => {
+      const pkg = {
+        name: name,
+        title: title,
+        target: target,
+        sources: ["source/main.crochet"],
+        native_sources: [],
+        dependencies: [],
+        capabilities: {
+          requires: [],
+          provides: [],
+        },
+      };
+      const file = api.create_project(pkg);
+      const capp = App.from_file(file);
+      await capp.build();
+      state.define(id, capp);
+      res.send({ id });
+    });
   });
 
   app.post("/api/spawn", async (req, res) => {

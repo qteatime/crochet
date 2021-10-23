@@ -26,6 +26,11 @@ type purr-project(
   global meta is purr-project-meta
 );
 
+type purr-new-project(
+  name is text,
+  title is text
+);
+
 abstract purr-target;
 singleton pt-node is purr-target;
 singleton pt-browser is purr-target;

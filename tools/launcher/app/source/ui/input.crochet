@@ -65,4 +65,27 @@ command w-code-editor on-commit: (Handler is (() -> nothing)) =
   new w-code-editor(self.read-only, self.code, Handler);
 
 command dom-node-code-editor current-value =
-  foreign dom.get-value(self.box);
+  foreign dom.get-code-editor-value(self.box);
+
+
+command agata-widget text-input =
+  new w-text-input(false, "", "");
+
+command w-text-input read-only =
+  new w-text-input(true, self.value, "");
+
+command w-text-input writable =
+  new w-text-input(false, self.value, "");
+
+command w-text-input value: (Value is text) =
+  new w-text-input(self.read-only, Value, "");
+
+command w-text-input placeholder: (Placeholder is text) =
+  new w-text-input(self.read-only, self.value, Placeholder);
+
+command dom-node-input current-value =
+  foreign dom.get-input-value(self.box);
+
+
+command agata-widget label: (Label is text) for: (Child has to-widget) =
+  new w-label(Label, Child);
