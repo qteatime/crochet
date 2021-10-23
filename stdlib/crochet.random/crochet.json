@@ -8,6 +8,6 @@
   "sources": ["source/random.crochet"],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": ["read-shared-instance", "update-shared-instance"]
   }
 }

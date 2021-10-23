@@ -1,0 +1,75 @@
+% crochet
+
+local singleton module;
+
+command main-html: Root do
+  agata with-root: Root do: {
+    #purr-ipc setup: {
+      agata show: ps-welcome render;
+    }
+  };
+end
+
+command purr open-project: (Project is purr-project-meta) do
+  let Id = purr-api spawn: Project;
+  let Spawned = new purr-project(Id, Project);
+  module spawn: Id project: Spawned;
+end
+
+command module spawn: Id project: Spawned do
+  let Origin = foreign dom.encode("http://localhost:8000");
+  let Url = "http://localhost:8001/[Id]/ipc?id=[Id]&origin=[Origin]" flatten-into-plain-text;
+  let Frame = agata window: Url;
+  #purr-ipc shared-instance add-client: Spawned frame: Frame;
+  purr project-summary: Spawned;
+end
+
+command purr create-project: (Req is purr-new-project)  do
+  let Id = purr-api create-project: Req;
+  let Project-meta = purr-api read-project: Id;
+  let Spawned = new purr-project(Id, Project-meta);
+  module spawn: Id project: Spawned;
+end
+
+command purr project-summary: (Project is purr-project) do
+  agata show: new ps-summary(Project) render;
+end
+
+command purr open-test: (Project is purr-project) do
+  agata show: new ps-test(Project) render;
+end
+
+command purr run-tests: (Project is purr-project) do
+  let Actor = #purr-ipc shared-instance client-for-id: Project.id;
+  Actor run-tests;
+end
+
+command purr spawn-playground: (Project is purr-project) do
+  let Actor = #purr-ipc shared-instance client-for-id: Project.id;
+  Actor spawn-playground;
+end
+
+command purr project: (Project is purr-project) run-snippet: (Snippet is text) in: (Process is pp-playground) do
+  let Actor = #purr-ipc shared-instance client-for-id: Project.id;
+  Actor run-snippet: Snippet in: Process;
+end
+
+command purr project-packaging: (Project is purr-project) do
+  agata show: new ps-package(Project) render;
+end
+
+command purr project-run: (Project is purr-project) do
+  agata show: new ps-run(Project) render;
+end
+
+command purr project-playground: (Project is purr-project) do
+  agata show: new ps-playground(Project) render;
+end
+
+command purr home do
+  agata show: ps-welcome render;
+end
+
+command purr defer: (Block is (() -> nothing)) do
+  foreign dom.defer(Block);
+end

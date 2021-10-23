@@ -7,6 +7,6 @@
   "native_sources": ["native/shell.js"],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": ["shell"]
   }
 }

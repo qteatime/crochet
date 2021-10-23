@@ -112,6 +112,11 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
       return new RStatic(`<function-${x.payload.parameters.length}>`);
     }
 
+    case Tag.NATIVE_LAMBDA: {
+      Values.assert_tag(Tag.NATIVE_LAMBDA, x);
+      return new RStatic(`<native-function-${x.payload.arity}>`);
+    }
+
     case Tag.PARTIAL: {
       Values.assert_tag(Tag.PARTIAL, x);
       return new RFlow([

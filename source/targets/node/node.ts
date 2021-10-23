@@ -1,6 +1,7 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../../pkg";
+import * as VM from "../../vm";
 import { StorageConfig } from "../../storage";
 import {
   BootedCrochet,
@@ -127,7 +128,71 @@ export class CrochetForNode {
     filter: (_: CrochetTest) => boolean,
     verbose: boolean = false
   ) {
-    return await this.system.run_tests(filter, verbose);
+    const universe = this._booted_system!.universe;
+    const tests0 = VM.Tests.grouped_tests(universe);
+    const {
+      total,
+      skipped,
+      tests: tests1,
+    } = VM.Tests.filter_grouped_tests(tests0, filter);
+    const failures = [];
+    const start = new Date().getTime();
+    let current = "";
+    let sub_current = "";
+
+    for (const [group, modules] of tests1) {
+      sub_current = "";
+      const group_header = `\n${group}\n${"=".repeat(72)}\n`;
+      if (verbose) {
+        console.log(group_header);
+      } else {
+        current = group_header;
+      }
+
+      for (const [module, tests] of modules) {
+        const module_header = `\n${module}\n${"-".repeat(72)}\n`;
+        if (verbose) {
+          console.log(module_header);
+        } else {
+          sub_current = module_header;
+        }
+
+        for (const test of tests) {
+          try {
+            await VM.run_test(universe, test);
+            if (verbose) {
+              console.log(`[OK]    ${test.title}`);
+            }
+          } catch (error: any) {
+            if (!verbose) {
+              if (current) {
+                console.log(current);
+                current = "";
+              }
+              if (sub_current) {
+                console.log(sub_current);
+                sub_current = "";
+              }
+            }
+            console.log("-".repeat(3));
+            console.log(`[ERROR] ${test.title}`);
+            console.log(error.stack ?? error);
+            console.log("-".repeat(3));
+            failures.push(error);
+          }
+        }
+      }
+    }
+
+    const end = new Date().getTime();
+    const diff = end - start;
+    console.log("");
+    console.log("-".repeat(72));
+    console.log(
+      `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failed`
+    );
+
+    return failures;
   }
 
   async build(file: string) {
@@ -236,6 +301,8 @@ export class CrochetForNode {
     booted: async (vm: BootedCrochet) => {
       vm.universe.trace.subscribe(this.render_entry);
     },
+
+    async report_test(message) {},
   };
 
   private async request_new_capabilities(

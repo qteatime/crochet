@@ -1,5 +1,7 @@
 {
   "name": "crochet.examples.browser.tic-tac-toe",
+  "title": "Tic-Tac-Toe",
+  "description": "Text-based tic-tac-toe AI example.",
   "target": "browser",
   "sources": ["tic-tac-toe.crochet"],
   "dependencies": [

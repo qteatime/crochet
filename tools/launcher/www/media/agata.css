@@ -1,0 +1,513 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 100%;
+}
+
+button,
+input {
+  font-family: "Roboto", sans-serif;
+  background: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+body {
+  font-family: Roboto, sans-serif;
+  font-size: 16px;
+  color: #2f2f2f;
+  background: #fafafa;
+}
+
+.agata-default-theme {
+  --active-accent: #039be5;
+  --active-bg: #e1f5fe;
+  --divider: #546e7a;
+  --border: #cfd8dc;
+  --primary-text: #2f2f2f;
+  --secondary-text: #7a7a7a;
+  --tertiary-text: #9b9b9b;
+  --success-text: #00796b;
+  --error-text: #d32f2f;
+  --info-text: #455a64;
+  --warning-text: #f57c00;
+}
+
+.agata-top-bar {
+  height: 64px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 1em;
+  background: white;
+  border-bottom: 1px solid #ececea;
+  row-gap: 0.5em;
+}
+
+.agata-top-bar .agata-title {
+  font-size: 28px;
+  padding-top: 6px;
+}
+
+.agata-contents {
+  padding: 2em;
+}
+
+.agata-sticker {
+  text-align: center;
+  margin-bottom: 1em;
+}
+
+.agata-sticker img {
+  width: 350px;
+  height: auto;
+}
+
+.agata-icon-button {
+  cursor: pointer;
+}
+
+.agata-icon-button:hover {
+  color: var(--active-accent);
+}
+
+.agata-icon {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  line-height: 48px;
+  text-align: center;
+}
+
+.agata-search-input {
+  border-bottom: 1px solid var(--divider);
+  line-height: 36px;
+  font-size: 18px;
+  padding: 0 0.5em;
+  max-width: 300px;
+  width: 100%;
+}
+
+.agata-search-input:focus {
+  border-bottom-color: var(--active-accent);
+  max-width: 600px;
+}
+
+.agata-search-container {
+  text-align: right;
+}
+
+.agata-top-bar-panel {
+  flex-grow: 0;
+}
+
+.agata-grow-panel {
+  flex-grow: 1;
+}
+
+.agata-card-choice-grid {
+  display: flex;
+  flex-direction: row;
+  max-width: 700px;
+  margin: 1em auto;
+  justify-content: center;
+  column-gap: 10%;
+}
+
+.agata-card-choice-icon {
+  width: 30%;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  align-items: stretch;
+  cursor: pointer;
+}
+
+.agata-card-choice-icon:hover {
+  border: 1px solid var(--active-accent);
+  color: var(--active-accent);
+}
+
+.agata-card-choice-icon-new {
+  border-style: dashed;
+}
+
+.agata-card-choice-icon .agata-card-icon {
+  width: 100%;
+  height: 128px;
+  font-size: 72px;
+  line-height: 128px;
+}
+
+.agata-card-choice-icon .agata-card-title {
+  padding: 0.5em 1em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.agata-action-list {
+  max-width: 550px;
+  margin: 2em auto;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1em;
+}
+
+.agata-action-button {
+  border-left: 3px solid transparent;
+}
+
+.agata-action-button .agata-button {
+  display: flex;
+  flex-direction: row;
+  padding: 0.3em 0.5em;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.agata-action-button .agata-action-icon {
+  flex-grow: 0;
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
+  font-size: 24px;
+}
+
+.agata-action-button .agata-action-text {
+  flex-grow: 1;
+  margin-left: 1em;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.agata-action-button .agata-action-text-title {
+  font-weight: 500;
+  margin-bottom: 0.2em;
+  font-size: 1.1em;
+}
+
+.agata-action-button .agata-action-text-description {
+  font-size: 0.95em;
+  color: #777;
+}
+
+.agata-action-button:hover {
+  background: var(--active-bg);
+  border-left: 3px solid var(--active-accent);
+}
+
+/* */
+.agata-tabbed-panel-header {
+  height: 48px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: white;
+  border-bottom: 1px solid #ececea;
+}
+
+.agata-tabbed-panel-button {
+  line-height: 48px;
+  padding: 0 1em;
+  cursor: pointer;
+}
+
+.agata-tabbed-panel-button.selected {
+  font-weight: bold;
+  color: var(--active-accent);
+  border-bottom: 3px solid var(--active-accent);
+}
+
+.agata-tabbed-panel-contents:not(.selected) {
+  display: none;
+}
+
+.agata-tabbed-panel-button:hover {
+  background: var(--active-bg);
+}
+
+/* */
+.agata-flex-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1em 2em;
+  flex-wrap: wrap;
+}
+
+.agata-flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1em 2em;
+  flex-wrap: wrap;
+}
+
+.agata-card {
+  border: 1px solid #ececea;
+  padding: 1em;
+  width: 300px;
+  box-sizing: border-box;
+}
+
+.agata-card .agata-button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.agata-card-image .agata-icon {
+  width: 128px;
+  height: 128px;
+  font-size: 92px;
+  line-height: 128px;
+}
+
+.agata-card-title {
+  font-weight: bold;
+  text-align: left;
+  margin: 1em 0 0.3em 0;
+  font-size: 1.1em;
+}
+
+.agata-card-description {
+  text-align: left;
+  color: #525252;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agata-card:hover {
+  border-color: var(--active-accent);
+  background: var(--active-bg);
+}
+
+.agata-paragraph {
+  margin-bottom: 1.5em;
+}
+
+.agata-group {
+  padding: 0.5em 0;
+  border-bottom: 1px solid #ececea;
+}
+
+.agata-group-heading {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 0.3em;
+}
+
+.agata-group-subheading {
+  font-weight: bold;
+  margin-bottom: 0.2em;
+  color: #777;
+}
+
+.agata-group-meta {
+  font-size: 0.9em;
+  color: #777;
+}
+
+.agata-divider {
+  background: #ececea;
+  height: 1px;
+}
+
+.agata-vertical-divider {
+  background: #ececea;
+  width: 1px;
+  height: 100%;
+}
+
+.agata-space {
+  width: 1em;
+  height: 1em;
+}
+
+.agata-double-space {
+  width: 2em;
+  height: 2em;
+}
+
+.agata-toolbar {
+  height: 64px;
+  display: flex;
+  flex-direction: row;
+  background: white;
+  border-bottom: 1px solid #ececea;
+  align-items: center;
+}
+
+/**/
+.agata-toolbar .agata-icon-button .agata-icon {
+  height: 64px;
+  width: 64px;
+  font-size: 24px;
+  line-height: 64px;
+  text-align: center;
+}
+
+.agata-toolbar .agata-icon-button .agata-icon {
+  border-bottom: 2px solid transparent;
+  box-sizing: border-box;
+}
+
+.agata-toolbar .agata-icon-button .agata-icon:hover {
+  background: var(--active-bg);
+  border-bottom: 2px solid var(--active-accent);
+}
+
+.agata-pre-formatted {
+  white-space: pre-line;
+}
+
+/* Typography */
+.agata-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  letter-spacing: -0.01em;
+}
+
+.agata-subtitle {
+  font-size: 1.4em;
+  color: var(--secondary-text);
+}
+
+.agata-primary-text {
+  color: var(--primary-text);
+}
+
+.agata-secondary-text {
+  color: var(--secondary-text);
+}
+
+.agata-tertiary-text {
+  color: var(--tertiary-text);
+  font-size: 0.9em;
+  text-transform: uppercase;
+}
+
+.agata-error-text {
+  color: var(--error-text);
+}
+
+.agata-success-text {
+  color: var(--success-text);
+}
+
+.agata-warning-text {
+  color: var(--warning-text);
+}
+
+.agata-info-text {
+  color: var(--info-text);
+}
+
+.agata-quote {
+  margin: 0 0 1.5em 2em;
+  position: relative;
+  color: var(--secondary-text);
+  font-family: Lora, serif;
+}
+
+.agata-quote::before {
+  position: absolute;
+  top: 0px;
+  left: -2em;
+  font-size: 2em;
+  color: var(--tertiary-text);
+  content: "“";
+}
+
+.agata-quote-attribution {
+  margin-top: 1em;
+  text-align: right;
+  color: var(--tertiary-text);
+  font-style: italic;
+}
+
+.agata-quote-attribution::before {
+  content: "—";
+}
+
+.agata-typewriter-text {
+  white-space: pre-wrap;
+  font-family: "Source Code Pro", monospace;
+}
+
+.agata-preformatted-text {
+  white-space: pre-wrap;
+}
+
+.agata-highlight-header {
+  margin: 2em auto;
+  margin-bottom: 3em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.agata-highlight-header .agata-title {
+  font-size: 2.5em;
+  font-weight: 500;
+  margin-bottom: 0.3em;
+}
+
+.agata-highlight-header .agata-subtitle {
+  font-size: 1.8em;
+}
+
+/* Code editor */
+.agata-code-editor {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100px;
+  padding: 1em;
+  font-family: monospace;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  resize: none;
+  background: white;
+  overflow: hidden;
+}
+
+.agata-labelled {
+  margin-bottom: 1.5em;
+  display: block;
+}
+
+.agata-label-text {
+  font-weight: bold;
+}
+
+.agata-labelled-input {
+  padding: 0.2em 0;
+}
+
+.agata-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.agata-input-text {
+  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--active-accent);
+  padding: 0.5em;
+  background: white;
+}

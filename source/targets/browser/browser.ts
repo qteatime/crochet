@@ -5,11 +5,21 @@ import {
   ForeignInterface,
   IFileSystem,
   ISignal,
+  TestReportMessage,
+  TRM_Finished,
+  TRM_Started,
+  TRM_Test_Failed,
+  TRM_Test_Passed,
+  TRM_Test_Skipped,
+  TRM_Test_Started,
 } from "../../crochet";
 import { CrochetValue, CrochetTest } from "../../vm";
 import { Transcript } from "../../services/transcript";
 import { html } from "../../services/debug/representation/html-renderer";
 import { DebugUI } from "../../services/debug/app";
+import { EventStream } from "../../utils/event";
+import * as UUID from "uuid";
+import { defer, unreachable } from "../../utils/utils";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
@@ -17,6 +27,7 @@ export class CrochetForBrowser {
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
   private _ffi: ForeignInterface | null = null;
+  readonly test_report = new EventStream<TestReportMessage>();
 
   constructor(
     readonly library_base: string,
@@ -102,12 +113,57 @@ export class CrochetForBrowser {
     return await this.system.run(entry, args);
   }
 
-  async run_tests(filter: (_: CrochetTest) => boolean) {
-    return await this.system.run_tests(filter);
+  async run_tests(run_id: string, filter: (_: CrochetTest) => boolean) {
+    const result = defer<{
+      failed: number;
+      passed: number;
+      skipped: number;
+      total: number;
+      started: number;
+      finished: number;
+    }>();
+    let failed = 0;
+    let skipped = 0;
+    let passed = 0;
+    let total = 0;
+    let started: number = new Date().getTime();
+    const handler = this.test_report.subscribe((message) => {
+      if (message.id !== run_id) {
+        return;
+      }
+
+      if (message instanceof TRM_Started) {
+        started = new Date().getTime();
+      } else if (message instanceof TRM_Finished) {
+        this.test_report.unsubscribe(handler);
+        result.resolve({
+          failed,
+          skipped,
+          passed,
+          total,
+          started: started,
+          finished: new Date().getTime(),
+        });
+      } else if (message instanceof TRM_Test_Started) {
+        total += 1;
+      } else if (message instanceof TRM_Test_Passed) {
+        passed += 1;
+      } else if (message instanceof TRM_Test_Failed) {
+        failed += 1;
+      } else if (message instanceof TRM_Test_Skipped) {
+        skipped += 1;
+      }
+    });
+    this.system.run_tests(run_id, filter);
+    return result.promise;
   }
 
   private package_url(name: string) {
     return `${this.library_base}/${name}/crochet.json`;
+  }
+
+  private is_trusted(pkg: Package.Package) {
+    return this.trusted_core.has(pkg.meta.name);
   }
 
   fs: IFileSystem = {
@@ -115,7 +171,11 @@ export class CrochetForBrowser {
       const filename = this.package_url(name);
       const response = await fetch(filename);
       const data = await response.json();
-      return Package.parse(data, filename);
+      const pkg = Package.parse(data, filename);
+      if (this.is_trusted(pkg)) {
+        this.crochet.trust(pkg);
+      }
+      return pkg;
     },
 
     read_file: async (file: string) => {
@@ -166,5 +226,9 @@ export class CrochetForBrowser {
     },
 
     booted: async () => {},
+
+    report_test: async (message) => {
+      this.test_report.publish(message);
+    },
   };
 }

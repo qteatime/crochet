@@ -1,5 +1,7 @@
 {
   "name": "crochet.examples.cli-examples.maze",
+  "title": "Maze",
+  "description": "Procedurally generating mazes",
   "target": "node",
   "sources": ["maze-generation.crochet"],
   "dependencies": ["crochet.core", "crochet.mathematics", "crochet.debug"],

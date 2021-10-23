@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "rootDir": "source",
+    "outDir": "build",
+    "module": "commonjs",
+    "target": "ES2020",
+    "lib": ["ESNext", "DOM", "ESNext.Intl"],
+    "experimentalDecorators": true,
+    "declaration": true,
+    "incremental": true,
+    "sourceMap": true,
+    "jsx": "react"
+  },
+  "include": ["./source"]
+}

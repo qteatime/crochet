@@ -1,0 +1,357 @@
+% crochet
+
+open crochet.language.json;
+open crochet.time;
+local singleton module;
+
+// IPC machinery
+command #purr-ipc setup: (Block is (() -> nothing)) do
+  let IPC-cell = #cell with-value: new purr-ipc([->]);
+  handle
+    module setup-listener: IPC-cell;
+    Block();
+  with
+    on purr-ipc.add-client(Id, Actor) do
+      let IPC = IPC-cell value;
+      IPC-cell <- new purr-ipc(IPC.clients at: Id put: Actor);
+      foreign dom.install-hidden-frame(Actor.client.frame.box);
+      continue with nothing;
+    end
+
+    on purr-ipc.get-instance() do
+      continue with IPC-cell value;
+    end
+  end
+end
+
+command #purr-ipc shared-instance =
+  perform purr-ipc.get-instance();
+
+command purr-ipc add-client: (Project is purr-project) frame: (Frame is dom-window) do
+  let Client = new purr-ipc-client(Project.id, Frame, Project);
+  let Mailbox = #cell with-value: [];
+  let State = #cell with-value: actor-ipc-loading;
+  let Busy = #cell with-value: false;
+  let Actor = new actor-ipc(Mailbox, Client, State, Busy);
+  perform purr-ipc.add-client(Project.id, Actor);
+  Actor;
+end
+
+command module setup-listener: IPC-cell do
+  foreign dom.on-message({ Msg0 in 
+    let Msg = #json parse: Msg0;
+    let Id = Msg.id;
+    let IPC = IPC-cell value;
+    let Actor = IPC client-for-id: Id;
+    Actor dispatch: (IPC parse-message: Msg);
+  });  
+end
+
+command purr-ipc client-for-id: Id =
+  self.clients at: Id;
+
+command purr-ipc parse-message: (Message is record) do
+  let Method = Message.method;
+  let Data = Message.data;
+  condition
+    when Method === "ready" =>
+      im-ready;
+
+    when Method === "failed-to-start" =>
+      new im-failed-to-start(Data.message);
+
+    when Method === "testing-started" =>
+      new im-testing-started(Data.id);
+
+    when Method === "test-started" =>
+      new im-test-started(
+        Data.id,
+        Data.test-id,
+        new i-test-details(
+          Data.package,
+          Data.module,
+          Data.title,
+        )
+      );
+
+    when Method === "test-skipped" =>
+      new im-test-skipped(Data.id, Data.test-id);
+
+    when Method === "test-passed" =>
+      new im-test-passed(Data.id, Data.test-id);
+
+    when Method === "test-failed" =>
+      new im-test-failed(Data.id, Data.test-id, Data.message);
+
+    when Method === "testing-finished" =>
+      new im-testing-finished(
+        Data.id,
+        new test-summary(
+          Data.passed as integer,
+          Data.failed as integer,
+          Data.skipped as integer,
+          Data.total as integer,
+          #duration milliseconds: (Data.duration as integer)
+        )
+      );
+
+    when Method === "playground-ready" =>
+      new im-playground-ready(Data.id);
+
+    when Method === "playground/declaration-loaded" =>
+      new im-playground-declaration-loaded(
+        Data.id,
+        Data.sid,
+        Data.message,
+      );
+
+    when Method === "playground/success" =>
+      new im-playground-success(
+        Data.id,
+        Data.sid,
+        #value-lens parse-plain: Data.value
+      );
+
+    when Method === "playground/error" =>
+      new im-playground-error(
+        Data.id,
+        Data.sid,
+        Data.message
+      );
+  end
+end
+
+command purr-ipc-client serialise-message: (X is imo-run-tests) =
+  [
+    method -> "run-tests",
+    id -> self.id,
+    data -> [id -> X.id]
+  ];
+
+command purr-ipc-client serialise-message: (X is imo-spawn-playground) =
+  [
+    method -> "spawn-playground",
+    id -> self.id,
+    data -> [id -> X.id]
+  ];
+
+command purr-ipc-client serialise-message: (X is imo-run-snippet) =
+  [
+    method -> "run-snippet",
+    id -> self.id,
+    data -> [id -> X.id, sid -> X.sid, code -> X.code]
+  ];
+
+command purr-ipc-client dispatch: (X is ipc-outgoing) do
+  let Message = self serialise-message: X;
+  foreign dom.post-message(self.frame.box, Message);
+  self;
+end
+
+// IPC messages
+command actor-ipc run-tests
+requires ready :: self.state value is actor-ipc-started
+do
+  let State = self.state value;
+  let Id = foreign ipc.uuid();
+  let Process-status = #cell with-value: tps-started;
+  let Tests = #cell with-value: [->];
+  let Statuses = #cell with-value: [->];
+  let Events = #event-stream empty;
+  let Process = new pp-test(Id, Process-status, Tests, Statuses, Events);
+  State attach-process: Process;
+  self.client dispatch: new imo-run-tests(Id);
+  Process;
+end
+
+command actor-ipc spawn-playground
+requires ready :: self.state value is actor-ipc-started
+do
+  let State = self.state value;
+  let Id = foreign ipc.uuid();
+  let Events = #event-stream empty;
+  let Process = new pp-playground(Id, Events);
+  State attach-process: Process;
+  self.client dispatch: new imo-spawn-playground(Id);
+  Process;
+end
+
+command actor-ipc run-snippet: (Snippet is text) in: (Process is pp-playground)
+requires ready :: self.state value is actor-ipc-started
+do
+  let Id = foreign ipc.uuid();
+  self.client dispatch: new imo-run-snippet(Process.id, Id, Snippet);
+  Id;
+end
+
+command actor-ipc-started attach-process: (Process is purr-process) do
+  self.processes <- self.processes value append: Process;
+end
+
+command actor-ipc-started process-from-id: (Id is text) do
+  let Processes = self.processes value;
+  Processes find: { P in P.id === Id }
+    | value-or-panic: "No process [Id]";
+end
+
+command purr-process details-from-id: (Id is text) do
+  self.tests value at: Id;
+end
+
+command purr-process add-test: (Id is text) details: Details do
+  let Test = new test-result(Id, Details.package-name, Details.module-name, Details.title);
+  self.tests <- self.tests value at: Id put: Test;
+end
+
+command purr-process set-test: (Id is text) state: (State is test-status) do
+  self.statuses <- self.statuses value at: Id put: State;
+  let Details = self details-from-id: Id;
+end
+
+
+// IPC handlers
+command actor-ipc dispatch: (Message is ipc-incoming) do
+  self store-message: Message;
+  condition
+    when not self.busy value do
+      self dispatch-next;
+    end
+
+    otherwise do nothing end
+  end
+end
+
+command actor-ipc store-message: Message do
+  self.mailbox <- self.mailbox value append: Message;
+end
+
+command actor-ipc select-message do
+  let State = self.state value;
+  let Mailbox = self.mailbox value;
+  let Message = Mailbox find: (State accepts: _);
+  Message;
+end
+
+command actor-ipc dispatch-next do
+  self.busy <- true;
+  let MessageR = self select-message;
+  condition
+    when MessageR is ok do
+      let Message = MessageR value;
+      let Mailbox = self.mailbox value;
+      self.mailbox <- Mailbox remove-if: { X in X =:= Message };
+      self handle: Message;
+      self dispatch-next;
+    end
+
+    otherwise do
+      self.busy <- false;
+    end
+  end
+end
+
+command actor-ipc handle: Message do
+  handle
+    let Result = self.state value handle: Message;
+    self handle-result: Result;
+  with
+    on actor-ipc.get-client() => continue with self.client;
+  end
+end
+
+command actor-ipc handle-result: mhr-done do
+  nothing
+end
+
+command actor-ipc handle-result: (S is mhr-transition) do
+  self.state <- S.new-state;
+end
+
+command actor-ipc-state client = perform actor-ipc.get-client();
+
+command actor-ipc-state accepts: _ = false;
+
+command actor-ipc-loading accepts: im-ready = true;
+command actor-ipc-loading handle: im-ready =
+  new mhr-transition(new actor-ipc-started(#cell with-value: []));
+
+
+command actor-ipc-started accepts: im-testing-started = true;
+command actor-ipc-started handle: (X is im-testing-started) do
+  let Process = self process-from-id: X.id;
+  Process.state <- tps-started;
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-test-started = true;
+command actor-ipc-started handle: (X is im-test-started) do
+  let Process = self process-from-id: X.id;
+  Process add-test: X.test-id details: X.details;
+  Process set-test: X.test-id state: ts-started;
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-started(Details);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-test-skipped = true;
+command actor-ipc-started handle: (X is im-test-skipped) do
+  let Process = self process-from-id: X.id;
+  Process set-test: X.test-id state: ts-skipped;
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-skipped(Details);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-test-passed = true;
+command actor-ipc-started handle: (X is im-test-passed) do
+  let Process = self process-from-id: X.id;
+  Process set-test: X.test-id state: ts-passed;
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-passed(Details);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-test-failed = true;
+command actor-ipc-started handle: (X is im-test-failed) do
+  let Process = self process-from-id: X.id;
+  Process set-test: X.test-id state: new ts-failed(X.message);
+  let Details = Process details-from-id: X.test-id;
+  Process.events publish: new te-failed(Details, X.message);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-testing-finished = true;
+command actor-ipc-started handle: (X is im-testing-finished) do
+  let Process = self process-from-id: X.id;
+  Process.state <- new tps-finished(X.summary);
+  Process.events publish: new te-finished(X.summary);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-ready = true;
+command actor-ipc-started handle: (X is im-playground-ready) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: pge-ready;
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-declaration-loaded = true;
+command actor-ipc-started handle: (X is im-playground-declaration-loaded) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: new pge-declaration-loaded(X.sid, X.message);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-success = true;
+command actor-ipc-started handle: (X is im-playground-success) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: new pge-success(X.sid, X.lens);
+  mhr-done;
+end
+
+command actor-ipc-started accepts: im-playground-error = true;
+command actor-ipc-started handle: (X is im-playground-error) do
+  let Process = self process-from-id: X.id;
+  Process.events publish: new pge-error(X.sid, X.message);
+  mhr-done;
+end

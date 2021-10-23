@@ -1,0 +1,264 @@
+% crochet
+
+local singleton module;
+
+command agata-widget fragment: (Children is list<W has to-widget>) =
+  new w-fragment(Children);
+
+command agata-widget container: (Children is list<widget>) =
+  new w-container("div", "agata-container", Children);
+
+command agata-widget window: (Children is list<widget>) =
+  new w-container("div", "agata-window", Children);
+
+command agata-widget top-bar: (Children is list<widget>) =
+  new w-container("div", "agata-top-bar", Children);
+
+command agata-widget top-bar-panel: (Children is list<widget>) =
+  new w-container("div", "agata-top-bar-panel", Children);
+
+command agata-widget contents: (Children is list<widget>) =
+  new w-container("div", "agata-contents", Children);
+
+command agata-widget hero: (Children is list<widget>) =
+  new w-container("div", "agata-hero-header", Children);
+
+command agata-widget card: (Children is list<widget>) =
+  new w-container("div", "agata-card", Children);
+
+command agata-widget card-image: (Children is list<widget>) =
+  new w-container("div", "agata-card-image", Children);
+
+command agata-widget card-title: (Title is text) =
+  new w-container("div", "agata-card-title", [new w-text(Title)]);
+
+command agata-widget card-description: (Description is text) =
+  new w-container("div", "agata-card-description", [new w-text(Description)]);
+
+command agata-widget group: (Children is list<widget>) =
+  new w-container("div", "agata-group", Children);
+
+command agata-widget group-heading: (Children is list<widget>) =
+  new w-container("div", "agata-group-heading", Children);
+
+command agata-widget group-subheading: (Children is list<widget>) =
+  new w-container("div", "agata-group-subheading", Children);
+
+command agata-widget group-meta: (Children is list<widget>) =
+  new w-container("div", "agata-group-meta", Children);
+
+command agata-widget divider =
+  new w-container("div", "agata-divider", []);
+
+command agata-widget vertical-divider =
+  new w-container("div", "agata-vertical-divider", []);
+
+command agata-widget space =
+  new w-container("div", "agata-space", []);
+
+command agata-widget double-space =
+  new w-container("div", "agata-double-space", []);
+
+command agata-widget toolbar: (Children is list<widget>) =
+  new w-container("div", "agata-toolbar", Children);
+
+command agata-widget pre-formatted: (Children is list<widget>) =
+  new w-container("div", "agata-pre-formatted", Children);
+
+command w-container with: (Children is list<widget>) =
+  new w-container(self.tag, self.class, Children);
+
+
+command agata-widget style: (Name is text) with: (Children is list<widget>) =
+  new w-style(Name, Children);
+
+command w-style with: (Children is list<widget>) =
+  new w-style(self.class, Children);
+
+
+command agata-widget icon: (Name is text) =
+  new w-icon(Name);
+
+
+command agata-widget text: (X is text) =
+  new w-text(X);
+
+command agata-widget text: (X is interpolation) =
+  new w-text(X flatten-into-plain-text);
+
+
+command agata-widget tabbed-panel: (Children is list<wn-tab>) =
+  new w-tabbed-panel(Children);
+
+command agata-widget tab: (Name is text) =
+  new wn-tab(Name, []);
+
+command wn-tab with: (Children is list<widget>) =
+  new wn-tab(self.title, Children);
+
+
+command agata-widget flex-row: (Children is list<widget>) =
+  new w-flex-row(Children);
+
+command agata-widget flex-column: (Children is list<widget>) =
+  new w-flex-column(Children);
+
+command agata-widget flex-column =
+  new w-flex-column([]);
+
+command agata-widget flex-row =
+  new w-flex-row([]);
+
+command w-flex-column with: (Children is list<widget>) =
+  new w-flex-column(self.gap, Children);
+
+command w-flex-row with: (Children is list<widget>) =
+  new w-flex-row(self.gap, Children);
+
+
+command widget layout =
+  new w-layout(#layout empty, self);
+
+command w-layout layout =
+  self;
+
+// flex box
+command w-layout gap: (X is measure) =
+  new w-layout(
+    self.layout at: "gap" put: new gap(X, X),
+    self.child
+  );
+
+command w-layout gap-horizontal: (X is measure) vertical: (Y is measure) =
+  new w-layout(self.layout at: "gap" put: new gap(X, Y), self.child);
+
+command w-layout flex-shrink =
+  new w-layout(self.layout at: "flex-shrink" put: "1", self.child);
+
+command w-layout flex-grow =
+  new w-layout(self.layout at: "flex-grow" put: "1", self.child);
+
+command w-layout flex-dont-grow =
+  new w-layout(self.layout at: "flex-grow" put: "0", self.child);
+
+command w-layout flex-dont-shrink =
+  new w-layout(self.layout at: "flex-shrink" put: "0", self.child);
+
+command w-layout flex-fixed-size =
+  self 
+    | flex-dont-grow
+    | flex-dont-shrink;
+
+command w-layout flex-wrap =
+  new w-layout(self.layout at: "flex-wrap" put: "wrap", self.child);
+
+command w-layout flex-no-wrap =
+  new w-layout(self.layout at: "flex-wrap" put: "nowrap", self.child);
+
+
+// dimensions
+command w-layout width: (X is measure) =
+  new w-layout(self.layout at: "width" put: X, self.child);
+
+command w-layout max-width: (X is measure) =
+  new w-layout(self.layout at: "max-width" put: X, self.child);
+
+command w-layout height: (X is measure) =
+  new w-layout(self.layout at: "height" put: X, self.child);
+
+command w-layout max-height: (X is measure) =
+  new w-layout(self.layout at: "max-height" put: X, self.child);
+
+
+command w-layout padding-top: (X is measure) =
+  new w-layout(self.layout at: "padding-top" put: X, self.child);
+
+command w-layout padding-left: (X is measure) =
+  new w-layout(self.layout at: "padding-left" put: X, self.child);
+
+command w-layout padding-bottom: (X is measure) =
+  new w-layout(self.layout at: "padding-bottom" put: X, self.child);
+
+command w-layout padding-right: (X is measure) =
+  new w-layout(self.layout at: "padding-right" put: X, self.child);
+
+
+command w-layout margin-top: (X is measure) =
+  new w-layout(self.layout at: "margin-top" put: X, self.child);
+
+command w-layout margin-right: (X is measure) =
+  new w-layout(self.layout at: "margin-right" put: X, self.child);
+
+command w-layout margin-bottom: (X is measure) =
+  new w-layout(self.layout at: "margin-bottom" put: X, self.child);
+
+command w-layout margin-left: (X is measure) =
+  new w-layout(self.layout at: "margin-left" put: X, self.child);
+
+
+
+command #layout empty =
+  new layout([->]);
+
+command layout at: Key put: Value =
+  new layout(self.properties at: Key put: Value);
+
+command layout pairs =
+  self.properties pairs;
+
+
+command agata-widget frame: (Window is dom-window) =
+  new w-frame(Window);
+
+
+command agata-widget dynamic: (Handler is (dom-dynamic-canvas -> nothing)) =
+  new w-dynamic(Handler);
+
+command agata-widget from-observable: (Observable is observable<W has to-widget>) =
+  new w-observable(Observable);
+
+command agata-widget from-observable-stream: (Observable is observable-stream<W has to-widget>) =
+  new w-observable-stream(Observable);
+
+
+command agata-widget switch: (Observable is observable) =
+  new w-switch(Observable, []);
+
+command w-switch when: (Guard is (A -> boolean)) then: (Handler is (A -> widget)) =
+  new w-switch(self.observable, self.cases append: new wn-switch-case(Guard, Handler));
+
+command w-switch otherwise: (Handler is (A -> widget)) =
+  new w-switch(self.observable, self.cases append: new wn-switch-case({_ in true}, Handler));
+
+
+
+implement to-widget for integer;
+command integer as widget = agata-widget text: self to-text;
+
+implement to-widget for float;
+command float as widget = agata-widget text: self to-text;
+
+implement to-widget for text;
+command text as widget = agata-widget text: self;
+
+implement to-widget for interpolation;
+command interpolation as widget = agata-widget container: (self parts map: (_ as widget));
+
+implement to-widget for observable;
+command observable as widget = agata-widget from-observable: self;
+
+implement to-widget for observable-stream;
+command observable-stream as widget = agata-widget from-observable-stream: self;
+
+implement to-widget for widget;
+command widget as widget = self;
+
+
+command widget reference: (Ref is agata-reference) =
+  new w-reference(Ref, self);
+
+command agata-widget commit: (W has to-widget) =
+  new w-committed(dom-renderer render: W);
+
+command widget focus =
+  new w-focus(self);

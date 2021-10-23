@@ -1,5 +1,7 @@
 {
   "name": "crochet.examples.cli-examples.map",
+  "title": "Map",
+  "description": "Procedurally generating grid-based maps.",
   "target": "node",
   "sources": ["map-generation.crochet"],
   "dependencies": ["crochet.core", "crochet.debug"],

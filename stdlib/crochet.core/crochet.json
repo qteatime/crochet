@@ -13,7 +13,8 @@
     "native/etc.js",
     "native/action.js",
     "native/set.js",
-    "native/map.js"
+    "native/map.js",
+    "native/fun.js"
   ],
   "sources": [
     "source/0-types.crochet",
@@ -67,6 +68,7 @@
     "source/errors/panic.crochet",
 
     "source/functional/application.crochet",
+    "source/functional/capture.crochet",
     "source/functional/thunk.crochet",
 
     "source/logic/boolean-algebra.crochet",

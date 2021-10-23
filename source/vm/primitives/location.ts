@@ -4,6 +4,12 @@ import { unreachable } from "../../utils/utils";
 import {
   Activation,
   ActivationTag,
+  CrochetLambda,
+  CrochetPrelude,
+  SimulationSignal,
+  HandlerStack,
+  NativeFunction,
+  ActivationLocation,
   CrochetCommand,
   CrochetCommandBranch,
   CrochetModule,
@@ -135,6 +141,10 @@ export function simple_value(x: CrochetValue): string {
     case Tag.LAMBDA: {
       assert_tag(Tag.LAMBDA, x);
       return `function(${x.payload.parameters.join(", ")})`;
+    }
+    case Tag.NATIVE_LAMBDA: {
+      assert_tag(Tag.NATIVE_LAMBDA, x);
+      return `<native-function-${x.payload.arity}>`;
     }
     case Tag.PARTIAL: {
       assert_tag(Tag.PARTIAL, x);
@@ -268,4 +278,48 @@ export function format_position_suffix(id: number, meta: Metadata | null) {
       return ` at line ${pos.line}`;
     }
   }
+}
+
+export function op_block(xs: IR.Op[], padding: number) {
+  return xs
+    .map((x, i) => simple_op(x, i))
+    .join("\n")
+    .split(/\r\n|\r|\n/)
+    .map((x) => " ".repeat(padding) + x)
+    .join("\n");
+}
+
+export function activation_location(x: ActivationLocation): string {
+  if (x == null) {
+    return "(root)";
+  } else if (x instanceof CrochetLambda) {
+    return `function/${x.parameters.length} from ${
+      x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"
+    }`;
+  } else if (x instanceof CrochetCommandBranch) {
+    return branch_location(x);
+  } else if (x instanceof CrochetThunk) {
+    return `thunk from ${
+      x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"
+    }`;
+  } else if (x instanceof CrochetPrelude) {
+    return `prelude from ${module_location(x.env.raw_module!)}`;
+  } else if (x instanceof NativeFunction) {
+    return `native function ${x.name} from ${x.pkg.name}`;
+  } else if (x instanceof SimulationSignal) {
+    return `simulation signal ${x.name} from ${module_location(x.module)}`;
+  } else {
+    return "unknown";
+  }
+}
+
+export function handler_stack(x: HandlerStack): string {
+  const entries = x.handlers.map((x) =>
+    [`  on ${type_name(x.guard)}\n`, `${op_block(x.body.ops, 4)}\n`].join("")
+  );
+  return [
+    x.activation ? `at ${activation_location(x.activation?.location)}\n` : "",
+    ...entries,
+    ...(x.parent ? ["\n---\n", handler_stack(x.parent)] : []),
+  ].join("");
 }

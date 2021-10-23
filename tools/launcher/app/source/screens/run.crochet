@@ -1,0 +1,15 @@
+% crochet
+
+local define w = agata-widget;
+local define cw = purr-common-widgets;
+
+command ps-run render do
+  let Url = "http://localhost:8001/[self.project.id]/run/" flatten-into-plain-text;
+  let Window = agata window: Url;
+
+  cw project-window: self.project at: "run" with: [
+    w style: "launcher-run-frame" with: [
+      w frame: Window
+    ]
+  ]
+end

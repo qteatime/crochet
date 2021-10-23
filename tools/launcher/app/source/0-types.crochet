@@ -1,0 +1,205 @@
+% crochet
+
+open crochet.time;
+
+singleton purr;
+singleton purr-api;
+singleton purr-ipc-api;
+
+type event-stream(
+  subscribers is cell<list<subscriber>>
+);
+type subscriber(handler is (A -> nothing));
+
+abstract value-lens;
+type vl-raw(global code is text) is value-lens;
+singleton vl-nothing is value-lens;
+
+// Managing projects
+type purr-project-meta(
+  filename,
+  metadata
+);
+
+type purr-project(
+  id,
+  global meta is purr-project-meta
+);
+
+type purr-new-project(
+  name is text,
+  title is text
+);
+
+abstract purr-target;
+singleton pt-node is purr-target;
+singleton pt-browser is purr-target;
+
+type purr-package-capabilities(
+  global required is list<purr-capability>,
+  global provided is list<purr-capability>
+);
+
+type purr-capability(
+  global name is text,
+  global description is text,
+);
+
+type purr-dependency(
+  global name is text,
+  global target is text,
+  global capabilities is list<purr-capability>
+);
+
+// type purr-project(
+//   name is text,
+//   description is text,
+//   root // is directory
+// );
+
+// The launcher state
+abstract purr-state;
+singleton purr-state-bare is purr-state;
+type purr-state-project(
+  current-project is purr-project
+) is purr-state;
+
+// The launcher screens
+abstract purr-screen;
+singleton ps-welcome is purr-screen;
+type ps-summary(project is purr-project) is purr-screen;
+type ps-test(project is purr-project) is purr-screen;
+type ps-package(project is purr-project) is purr-screen;
+type ps-run(project is purr-project) is purr-screen;
+type ps-playground(project is purr-project) is purr-screen;
+
+singleton purr-common-widgets;
+
+effect purr with
+  home();
+  new-project();
+  import-project();
+  open-project(project is purr-project);
+end
+
+type purr-ipc(clients);
+type purr-ipc-client(id, frame, global project);
+
+type i-test-details(
+  package-name is text,
+  module-name is text,
+  title is text
+);
+
+type test-summary(
+  passed is integer,
+  failed is integer,
+  skipped is integer,
+  total is integer,
+  duration is duration
+);
+
+abstract ipc-message;
+// Outgoing
+abstract ipc-outgoing is ipc-message;
+type imo-run-tests(id is text) is ipc-outgoing;
+type imo-spawn-playground(id is text) is ipc-outgoing;
+type imo-run-snippet(id is text, sid is text, code is text) is ipc-outgoing;
+
+// Incoming
+abstract ipc-incoming is ipc-message;
+singleton im-ready is ipc-incoming;
+
+type im-testing-started(id is text) is ipc-incoming;
+type im-test-started(id is text, test-id is text, details is i-test-details) is ipc-incoming;
+type im-test-skipped(id is text, test-id is text) is ipc-incoming;
+type im-test-passed(id is text, test-id is text) is ipc-incoming;
+type im-test-failed(id is text, test-id is text, message is text) is ipc-incoming;
+type im-testing-finished(
+  id is text,
+  summary is test-summary
+) is ipc-incoming;
+
+type im-playground-ready(id is text) is ipc-incoming;
+type im-playground-declaration-loaded(id is text, sid is text, message is text) is ipc-incoming;
+type im-playground-success(id is text, sid is text, lens is value-lens) is ipc-incoming;
+type im-playground-error(id is text, sid is text, message is text) is ipc-incoming;
+
+effect purr-ipc with
+  get-instance();
+  add-client(id, client);
+end
+
+effect actor-ipc with
+  get-client();
+end
+
+type actor-ipc(
+  mailbox is cell<list<ipc-incoming>>,
+  client is purr-ipc-client,
+  state is cell<actor-ipc-state>,
+  busy is cell<boolean>
+);
+
+abstract actor-ipc-state;
+singleton actor-ipc-loading is actor-ipc-state;
+type actor-ipc-started(
+  processes is cell<list<purr-process>>
+) is actor-ipc-state;
+
+abstract message-handle-result;
+singleton mhr-done is message-handle-result;
+type mhr-transition(new-state is actor-ipc-state) is message-handle-result;
+
+abstract purr-process;
+type pp-test(
+  id is text,
+  state is cell<test-process-status>,
+  tests is cell<record<test-result>>,
+  statuses is cell<record<test-status>>,
+  events is event-stream<test-event>
+) is purr-process;
+
+type pp-packaging(
+  id is text,
+  events is event-stream<packaging-event>
+) is purr-process;
+
+type pp-playground(
+  id is text,
+  events is event-stream<playground-event>
+) is purr-process;
+
+type test-result(
+  test-id is text,
+  package-name is text,
+  module-name is text,
+  title is text,
+);
+
+abstract test-event;
+type te-started(result is test-result);
+type te-skipped(result is test-result);
+type te-failed(result is test-result, message is text);
+type te-passed(result is test-result);
+type te-finished(summary is test-summary);
+
+abstract playground-event;
+singleton pge-ready is playground-event;
+type pge-success(id is text, result is value-lens) is playground-event;
+type pge-error(id is text, message is text) is playground-event;
+type pge-declaration-loaded(id is text, message is text) is playground-event;
+
+
+abstract packaging-event;
+type pe-log(message is text) is packaging-event;
+
+abstract test-process-status;
+singleton tps-started;
+type tps-finished(summary is test-summary);
+
+abstract test-status;
+singleton ts-started is test-status;
+singleton ts-passed is test-status;
+singleton ts-skipped is test-status;
+type ts-failed(message is text) is test-status;
