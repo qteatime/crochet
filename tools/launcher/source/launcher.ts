@@ -9,7 +9,7 @@ import { API } from "./api";
 import { setup_app_server } from "./server";
 import { App, AppState } from "./app";
 import * as UUID from "uuid";
-import { launch_code_editor, open_directory, trap } from "./helpers";
+import { defer, launch_code_editor, open_directory, trap } from "./helpers";
 
 const launcher_root = Path.resolve(__dirname, "..");
 const repo_root = Path.resolve(launcher_root, "../../");
@@ -29,8 +29,10 @@ export async function setup_launcher_server(port: number) {
   app.use("/api", Express.json());
 
   app.get("/app/.binary/*", async (req, res) => {
-    const path = (req.params as any)[0];
-    const source = rpkg.sources.find((x) => x.binary_image.includes(path));
+    const path = Path.normalize((req.params as any)[0]);
+    const source = rpkg.sources.find((x) =>
+      Path.normalize(x.binary_image).includes(path)
+    );
     if (!source) {
       throw new Error(`Unknown image ${path}`);
     }
@@ -44,9 +46,10 @@ export async function setup_launcher_server(port: number) {
   });
 
   app.get("/app/native/*", async (req, res) => {
-    const path = (req.params as any)[0];
+    const path = Path.normalize((req.params as any)[0]);
     const source = rpkg.native_sources.find(
-      (x) => x.relative_filename === "native/" + path
+      (x) =>
+        Path.normalize(x.relative_filename) === Path.normalize("native/" + path)
     );
     if (!source) {
       console.error(`Unknown native source ${path}`);
@@ -157,10 +160,18 @@ export async function setup_launcher_server(port: number) {
   app.use("/", Express.static(www));
   app.use("/library", Express.static(Path.join(repo_root, "stdlib")));
 
+  const result = defer<void>();
   app.listen(port, () => {
     console.log(`Launcher server started at http://localhost:${port}`);
+    result.resolve();
   });
+
+  return result.promise;
 }
 
-setup_launcher_server(8000);
-setup_app_server(8001, state);
+export async function start_servers(port: number) {
+  await Promise.all([
+    setup_launcher_server(port),
+    setup_app_server(port + 1, state),
+  ]);
+}

@@ -6,10 +6,11 @@
   },
   "scripts": {
     "build": "node make.js build",
-    "build-ts": "node make.js build-ts",
-    "build-stdlib": "node make.js build-stdlib",
+    "build-ts": "tsc -p .",
+    "build-targets": "webpack",
+    "build-stdlib": "tsc -p stdlib",
     "build-grammar": "node make.js build-grammar",
-    "build-browser": "node make.js build-browser",
+    "build-browser": "browserify -e build/targets/browser/index.js -o www/crochet.js -s Crochet",
     "test": "node make.js run-tests",
     "benchmark": "node make.js benchmark"
   },

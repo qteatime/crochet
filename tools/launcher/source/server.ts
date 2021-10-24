@@ -1,7 +1,7 @@
 import * as Path from "path";
 import * as Express from "express";
 import { AppState } from "./app";
-import { trap } from "./helpers";
+import { defer, trap } from "./helpers";
 
 const launcher_root = Path.resolve(__dirname, "..");
 const repo_root = Path.resolve(launcher_root, "../../");
@@ -109,7 +109,11 @@ export async function setup_app_server(port: number, state: AppState) {
 
   app.use("/:id/library", Express.static(Path.join(repo_root, "stdlib")));
 
+  const result = defer<void>();
   app.listen(port, () => {
     console.log(`App server started at http://localhost:${port}`);
+    result.resolve();
   });
+
+  return result.promise;
 }
