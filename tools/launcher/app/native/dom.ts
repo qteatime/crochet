@@ -1,6 +1,137 @@
 import type { ForeignInterface, CrochetValue } from "../../../../build/crochet";
+import type * as Monaco from "monaco-editor";
+
+declare var monaco: typeof Monaco;
 
 export default (ffi: ForeignInterface) => {
+  monaco.languages.register({ id: "crochet" });
+  monaco.languages.setMonarchTokensProvider("crochet", {
+    defaultToken: "invalid",
+
+    keywords: [
+      "relation",
+      "predicate",
+      "when",
+      "do",
+      "command",
+      "action",
+      "type",
+      "enum",
+      "define",
+      "singleton",
+      "goto",
+      "call",
+      "let",
+      "return",
+      "fact",
+      "forget",
+      "new",
+      "search",
+      "if",
+      "simulate",
+      "true",
+      "false",
+      "not",
+      "and",
+      "or",
+      "is",
+      "self",
+      "as",
+      "event",
+      "quiescence",
+      "for",
+      "until",
+      "in",
+      "foreign",
+      "on",
+      "always",
+      "match",
+      "then",
+      "else",
+      "condition",
+      "end",
+      "with",
+      "prelude",
+      "rank",
+      "tags",
+      "abstract",
+      "lazy",
+      "force",
+      "context",
+      "sample",
+      "of",
+      "open",
+      "local",
+      "test",
+      "assert",
+      "requires",
+      "ensures",
+      "handle",
+      "effect",
+      "continue",
+      "perform",
+      "dsl",
+      "has",
+      "trait",
+      "implement",
+      "public",
+      "capability",
+      "protect",
+      "global",
+      "otherwise",
+      "true",
+      "false",
+      "nothing",
+    ],
+
+    tokenizer: {
+      root: [
+        [/^%[ \t]*crochet/, "comment.line.heading.crochet"],
+        { include: "common" },
+      ],
+
+      common: [
+        [
+          /(?<![a-zA-Z0-9\-\.\^])[a-z\-][a-zA-Z\-]*(?![\.\^:])/,
+          {
+            cases: {
+              "@keywords": "keyword.control.crochet",
+              "@default": "identifier.language.crochet",
+            },
+          },
+        ],
+        [
+          /(?<![a-zA-Z0-9\-])[\-\+]?[0-9][0-9_]*/,
+          "constant.numeric.integer.crochet",
+        ],
+        [
+          /(?<![a-zA-Z0-9\-])[\-\+]?[0-9][0-9_]*(\.[0-9][0-9_]*)?([eE][\-\+]?[0-9][0-9_]*)?/,
+          "constant.numeric.decimal.crochet",
+        ],
+        [/(?<![a-zA-Z0-9\-])[A-Z][a-zA-Z0-9\-]*|_/, "variable.name.crochet"],
+        [
+          /(?<![a-zA-Z0-9\-])[a-z\-][a-zA-Z0-9\-]*:/,
+          "entity.name.method.crochet",
+        ],
+        [/\/\/.*/, "comment.line"],
+        [/"/, "string.double", "@string_double"],
+      ],
+
+      string_double: [
+        [/[^\\"]*/, "string"],
+        [/\[/, "meta.string.interpolation", "@string_interpolation"],
+        [/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/, "string.escape"],
+        [/\\./, "string.escape.invalid"],
+        [/"/, "string", "@pop"],
+      ],
+
+      string_interpolation: [
+        [/\]/, "string", "@string_double"],
+        { include: "common" },
+      ],
+    },
+  });
+
   function get_node(x0: CrochetValue): Node {
     const x = ffi.unbox(x0);
     if (x instanceof Node) {
@@ -256,41 +387,70 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defmachine("dom.code-editor", function* (readonly0, code0, on_commit0) {
-    function resize() {
-      editor.style.height = "auto";
-      const size = Math.max(100, editor.scrollHeight);
-      editor.style.height = `${size}px`;
-    }
-
     const on_commit = yield ffi.make_closure(0, function* () {
       return yield ffi.apply(on_commit0, []);
     });
     const readonly = ffi.to_js_boolean(readonly0);
     const code = ffi.text_to_string(code0);
-    const editor = document.createElement("textarea");
-    editor.className = "agata-code-editor";
-    editor.readOnly = readonly;
-    editor.value = code;
 
-    editor.addEventListener("keydown", resize);
-    editor.addEventListener("keyup", (ev) => {
-      if (ev.ctrlKey && ev.key === "Enter") {
+    const container = document.createElement("div");
+    container.className = "agata-code-editor-container";
+    const editor = monaco.editor.create(container, {
+      value: code,
+      readOnly: readonly,
+      detectIndentation: false,
+      language: "crochet",
+      minimap: {
+        enabled: false,
+      },
+      padding: {
+        top: 10,
+        bottom: 10,
+      },
+      scrollbar: {
+        horizontal: "hidden",
+        vertical: "hidden",
+        verticalScrollbarSize: 0,
+      },
+      scrollBeyondLastLine: false,
+      tabSize: 2,
+      wordWrap: "on",
+      wrappingStrategy: "advanced",
+    });
+
+    editor.onDidContentSizeChange((event) => {
+      const contentHeight = Math.max(100, editor.getContentHeight());
+      container.style.height = `${contentHeight}px`;
+      editor.layout({
+        height: contentHeight,
+        width: container.clientWidth - 2,
+      });
+    });
+
+    editor.addAction({
+      id: "purr.actions.run",
+      label: "Run",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+      run: (_) => {
         ffi.run_asynchronously(function* () {
           yield ffi.apply(on_commit, []);
           return ffi.nothing;
         });
-      }
-      resize();
+      },
     });
-    editor.addEventListener("paste", resize);
-    editor.addEventListener("change", resize);
 
-    return ffi.box(editor);
+    return ffi.record(
+      new Map([
+        ["node", ffi.box(container)],
+        ["monaco", ffi.box(editor)],
+      ])
+    );
   });
 
   ffi.defun("dom.get-code-editor-value", (box) => {
-    const node = get_element(box) as HTMLTextAreaElement;
-    return ffi.text(node.value);
+    const node = ffi.unbox(box) as Monaco.editor.IStandaloneCodeEditor;
+    const value = node.getModel()!.getValue();
+    return ffi.text(value);
   });
 
   ffi.defun("dom.get-input-value", (box) => {
@@ -312,6 +472,21 @@ export default (ffi: ForeignInterface) => {
       if (node.isConnected) {
         node.scrollIntoView();
         node.focus();
+      } else {
+        setTimeout(try_focus, 100);
+      }
+    }
+    setTimeout(try_focus, 0);
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.setup-monaco-focus", (box, monaco) => {
+    const node = get_element(box);
+    const editor = ffi.unbox(monaco) as Monaco.editor.IStandaloneCodeEditor;
+    function try_focus() {
+      if (node.isConnected) {
+        node.scrollIntoView();
+        editor.focus();
       } else {
         setTimeout(try_focus, 100);
       }

@@ -34,7 +34,7 @@ singleton dom-renderer;
 type dom-canvas(box);
 type dom-dynamic-canvas(box);
 type dom-node(box);
-type dom-node-code-editor(box) is dom-node;
+type dom-node-code-editor(box, monaco) is dom-node;
 type dom-node-input(box) is dom-node;
 type dom-event(box);
 type dom-window(box);

@@ -4,9 +4,12 @@
   "description": "A small tool for managing Crochet projects",
   "author": "Q.",
   "scripts": {
-    "build": "tsc -p .",
+    "build": "npm run build-server && npm run build-app && npm run build-ipc && npm run build-monaco",
+    "build-server": "tsc -p .",
     "build-app": "tsc -p app/native",
-    "build-ipc": "npm run build && browserify -e build/client/client.js -o www/crochet-ipc.js",
+    "build-ipc": "npm run build-server && browserify -e build/client/client.js -o www/crochet-ipc.js",
+    "build-monaco": "cp -R node_modules/monaco-editor/dev www/monaco",
+    "build-and-start": "npm run build && node build/launcher.js",
     "start": "node build/launcher.js"
   },
   "devDependencies": {
@@ -20,6 +23,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "glob": "^7.2.0",
+    "monaco-editor": "^0.29.1",
     "uuid": "^8.3.2"
   }
 }

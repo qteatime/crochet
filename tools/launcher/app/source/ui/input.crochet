@@ -65,7 +65,7 @@ command w-code-editor on-commit: (Handler is (() -> nothing)) =
   new w-code-editor(self.read-only, self.code, Handler);
 
 command dom-node-code-editor current-value =
-  foreign dom.get-code-editor-value(self.box);
+  foreign dom.get-code-editor-value(self.monaco);
 
 
 command agata-widget text-input =

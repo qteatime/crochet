@@ -473,17 +473,9 @@ body {
 }
 
 /* Code editor */
-.agata-code-editor {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 100px;
-  padding: 1em;
-  font-family: monospace;
+.agata-code-editor-container {
   border: 1px solid var(--border);
   border-left-width: 3px;
-  resize: none;
-  background: white;
-  overflow: hidden;
 }
 
 .agata-labelled {

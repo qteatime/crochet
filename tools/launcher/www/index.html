@@ -25,8 +25,10 @@
     <div id="crochet-tools"></div>
 
     <script src="crochet.js"></script>
+    <script src="monaco/vs/loader.js"></script>
     <script>
-      void (async function () {
+      require.config({ paths: { vs: "monaco/vs" } });
+      require(["vs/editor/editor.main"], async function () {
         const root = document.querySelector("#crochet");
         try {
           const crochet = new Crochet.CrochetForBrowser(
@@ -52,7 +54,7 @@
           element.appendChild(document.createTextNode(error.message));
           root.appendChild(element);
         }
-      })();
+      });
     </script>
   </body>
 </html>

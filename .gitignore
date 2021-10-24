@@ -17,3 +17,4 @@ tools/**/native/*.js
 _build
 tools/launcher/www/crochet.js
 tools/launcher/www/crochet-ipc.js
+tools/launcher/www/monaco/
