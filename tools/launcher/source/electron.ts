@@ -4,8 +4,8 @@ import * as Path from "path";
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 768,
   });
 
   mainWindow.removeMenu();
