@@ -392,6 +392,7 @@ export default (ffi: ForeignInterface) => {
     });
     const readonly = ffi.to_js_boolean(readonly0);
     const code = ffi.text_to_string(code0);
+    const MIN_HEIGHT = 120;
 
     const container = document.createElement("div");
     container.className = "agata-code-editor-container";
@@ -419,7 +420,7 @@ export default (ffi: ForeignInterface) => {
     });
 
     editor.onDidContentSizeChange((event) => {
-      const contentHeight = Math.max(100, editor.getContentHeight());
+      const contentHeight = Math.max(MIN_HEIGHT, editor.getContentHeight());
       container.style.height = `${contentHeight}px`;
       editor.layout({
         height: contentHeight,
