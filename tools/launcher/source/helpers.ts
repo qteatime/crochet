@@ -1,5 +1,6 @@
 import * as Express from "express";
 import * as ChildProcess from "child_process";
+import * as FS from "fs";
 import * as Path from "path";
 import * as OS from "os";
 
@@ -14,7 +15,13 @@ export async function trap<T>(res: Express.Response, x: () => Promise<T>) {
 export function open_directory(path: string) {
   if (is_windows()) {
     const real_path = Path.win32.resolve(path).replace(/^\\mnt\\c\\/, "C:\\");
-    ChildProcess.execFileSync("explorer.exe", [real_path]);
+    if (FS.existsSync(real_path)) {
+      try {
+        ChildProcess.execFileSync("explorer.exe", [real_path]);
+      } catch (e) {}
+    } else {
+      throw new Error(`Invalid path ${real_path}`);
+    }
   } else if (is_osx()) {
     ChildProcess.execFileSync("open", [path]);
   } else {
@@ -31,5 +38,24 @@ function is_osx() {
 }
 
 export function launch_code_editor(path: string) {
-  ChildProcess.execFileSync("code", [path]);
+  if (is_windows()) {
+    ChildProcess.execFileSync("code.cmd", [path]);
+  } else {
+    ChildProcess.execFileSync("code", [path]);
+  }
+}
+
+export type Deferred<T> = {
+  resolve: (value: T) => void;
+  reject: (reason: any) => void;
+  promise: Promise<T>;
+};
+
+export function defer<T>() {
+  const deferred: Deferred<T> = Object.create(null);
+  deferred.promise = new Promise((resolve, reject) => {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+  return deferred;
 }

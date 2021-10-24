@@ -30,7 +30,7 @@ export class App {
 
   async binary(path: string) {
     const source = this.resolved_package.sources.find((x) =>
-      x.binary_image.includes(path)
+      Path.normalize(x.binary_image).includes(Path.normalize(path))
     );
     if (!source) {
       throw new Error(`Unknown binary path ${path}`);
@@ -41,7 +41,8 @@ export class App {
 
   async native(path: string) {
     const source = this.resolved_package.native_sources.find(
-      (x) => x.relative_filename === "native/" + path
+      (x) =>
+        Path.normalize(x.relative_filename) === Path.normalize("native/" + path)
     );
     if (!source) {
       throw new Error(`Unknown native source ${path}`);
