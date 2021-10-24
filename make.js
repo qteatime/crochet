@@ -3,9 +3,9 @@ const FS = require("fs");
 const Path = require("path");
 const execSync = require("child_process").execSync;
 const glob = require("glob").sync;
-const CrochetForNode = require("./build/targets/node").CrochetForNode;
 
 async function build_crochet_package(file) {
+  const CrochetForNode = require("./build/targets/node").CrochetForNode;
   const pkg = JSON.parse(FS.readFileSync(file, "utf-8"));
   console.log(`-> Building ${pkg.name}`);
   const crochet = new CrochetForNode(false, [], new Set([]), false);
