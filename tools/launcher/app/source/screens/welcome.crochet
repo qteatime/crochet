@@ -94,17 +94,15 @@ command new-project as widget do
         | reference: RTitle
     ),
 
-    w space,
-    w divider,
-    w action-button
-      | icon: "check"
-      | title: "Create"
-      | description: "Create and load the project"
-      | on-click: { _ in
-          let Name = RName materialisation current-value;
-          let Title = RTitle materialisation current-value;
-          purr create-project: new purr-new-project(Name, Title);
-        }
+    w action-buttons: [
+      w text-button: "Create"
+        | accessible-title: "Create and load the project"
+        | on-click: { _ in
+            let Name = RName materialisation current-value;
+            let Title = RTitle materialisation current-value;
+            purr create-project: new purr-new-project(Name, Title);
+          }
+    ]
   ]
 end
 

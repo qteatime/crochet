@@ -535,3 +535,30 @@ body {
 .agata-modal-progress.agata-modal-visible > .agata-modal-progress-label {
   display: flex;
 }
+
+.agata-action-buttons {
+  margin-top: 2em;
+  border-top: 1px solid var(--border);
+  padding-top: 1em;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 0 1em;
+}
+
+.agata-text-button button {
+  background: var(--active-accent);
+  padding: 1em 2em;
+  border: 2px solid var(--active-accent);
+}
+
+.agata-text-button button:hover {
+  border-color: var(--active-bg);
+}
+
+.agata-text-button-label {
+  color: #fafafa;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9em;
+}

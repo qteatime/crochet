@@ -13,10 +13,6 @@ command w-button with: (Children is list<widget>) =
   new w-button(self.title, self.on-click, Children);
 
 
-command agata-widget text-button: Title =
-  new w-button(Title, {_ in nothing}, [Title]);
-
-
 command agata-widget icon-button: (Icon is text) =
   new w-icon-button(Icon, "", {_ in nothing});
 
@@ -28,6 +24,19 @@ command w-icon-button on-click: (Handler is (Ev -> nothing)) =
 
 command w-icon-button title: (Title is text) =
   new w-icon-button(self.icon, Title, self.on-click);
+
+
+command agata-widget text-button: (Text is text) =
+  new w-text-button(Text, Text, {_ in nothing});
+
+command w-text-button label: (Text is text) =
+  new w-text-button(Text, self.title, self.on-click);
+
+command w-text-button accessible-title: (Title is text) =
+  new w-text-button(self.label, Title, self.on-click);
+
+command w-text-button on-click: (Handler is (Ev -> nothing)) =
+  new w-text-button(self.label, self.title, Handler);
 
 
 command agata-widget action-list: (Children is list<widget>) =

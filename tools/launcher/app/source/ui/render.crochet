@@ -63,6 +63,21 @@ command dom-renderer render: (X is w-icon-button) do
   );
 end
 
+command dom-renderer render: (X is w-text-button) do
+  self render: new w-style(
+    "agata-text-button",
+    [
+      new w-button(
+        X.title,
+        X.on-click,
+        [
+          new w-style("agata-text-button-label", [X.label])
+        ]
+      )
+    ]
+  )
+end
+
 command dom-renderer render: (X is w-tabbed-panel) do
   let Children = for N in X.tabs do self render: N end;
   new dom-node(foreign dom.tabbed-panel(Children));

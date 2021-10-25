@@ -65,6 +65,9 @@ command agata-widget toolbar: (Children is list<widget>) =
 command agata-widget pre-formatted: (Children is list<widget>) =
   new w-container("div", "agata-pre-formatted", Children);
 
+command agata-widget action-buttons: (Children is list<widget>) =
+  new w-container("div", "agata-action-buttons", Children);
+
 command agata-widget blank =
   new w-fragment([]);
 

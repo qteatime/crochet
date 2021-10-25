@@ -38,6 +38,7 @@ end
 
 command ps-package target: Target not-started: State do
   w text-button: "Build package"
+    | accessible-title: ("Build the project and produce a [Target title] distributable file" flatten-into-plain-text)
     | on-click: { _ in
         State <- running;
         let Result = purr-api package: self.project target: Target;
