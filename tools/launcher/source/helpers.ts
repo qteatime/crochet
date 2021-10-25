@@ -13,15 +13,13 @@ export async function trap<T>(res: Express.Response, x: () => Promise<T>) {
 }
 
 export function open_directory(path: string) {
-  if (is_windows()) {
-    const real_path = Path.win32.resolve(path).replace(/^\\mnt\\c\\/, "C:\\");
-    if (FS.existsSync(real_path)) {
-      try {
-        ChildProcess.execFileSync("explorer.exe", [real_path]);
-      } catch (e) {}
-    } else {
-      throw new Error(`Invalid path ${real_path}`);
-    }
+  if (is_windows() || is_wsl()) {
+    const real_path = translate_wsl_path(path);
+    ChildProcess.execFileSync("powershell.exe", [
+      "start",
+      "explorer.exe",
+      real_path,
+    ]);
   } else if (is_osx()) {
     ChildProcess.execFileSync("open", [path]);
   } else {
@@ -30,11 +28,27 @@ export function open_directory(path: string) {
 }
 
 function is_windows() {
-  return OS.platform() === "win32" || /-microsoft-/.test(OS.release());
+  return OS.platform() === "win32";
+}
+
+function is_wsl() {
+  return OS.platform() === "linux" && /-microsoft-/.test(OS.release());
 }
 
 function is_osx() {
   return OS.platform() === "darwin";
+}
+
+function translate_wsl_path(path: string) {
+  if (is_wsl()) {
+    const real_path = ChildProcess.execFileSync("wslpath", [
+      "-w",
+      path,
+    ]).toString("utf-8");
+    return real_path.trim();
+  } else {
+    return path;
+  }
 }
 
 export function launch_code_editor(path: string) {
