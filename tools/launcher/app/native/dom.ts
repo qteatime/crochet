@@ -428,6 +428,18 @@ export default (ffi: ForeignInterface) => {
       });
     });
 
+    window.addEventListener("resize", (event) => {
+      const contentHeight = Math.max(MIN_HEIGHT, editor.getContentHeight());
+      editor.layout({
+        height: contentHeight,
+        width: 1,
+      });
+      editor.layout({
+        height: contentHeight,
+        width: container.clientWidth - 2,
+      });
+    });
+
     editor.addAction({
       id: "purr.actions.run",
       label: "Run",
