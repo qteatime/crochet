@@ -1,0 +1,175 @@
+% crochet
+
+// # Execution contexts
+//
+// In order to execute Pocket Lisp programs we need to keep some state
+// as we go. These are referred to as "execution contexts". Here we have
+// two main pieces of state:
+//
+//   - **Environments**, keep track of which values each variable name
+//     refers to.
+//
+//   - **Frames**, keeps a breadcrumb of which functions we've executed
+//     before reaching the current one.
+//
+// Our frames here don't really keep track of where we need to return to
+// once we finish executing a function, like they do in other implementations.
+// The actual execution stack---which tells the Pocket Lisp interpreter where
+// to return values to, and what to do once we finish executing a function---is
+// implicitly kept in the Crochet's own stack frames.
+//
+// So, instead, frames in Pocket Lisp only really exist to be able to provide
+// a stack trace to the user when things fail. So we can tell them in which
+// function it failed, and which functions led there.
+
+// ## Environments
+//
+// An environment in Crochet is a collection of bindings with a parent
+// link, which may point to an environment we inherit bindings from.
+// Again, the reason we do this is because bindings are essentially
+// mutable, and we want to make sure that if we have a nested environment
+// (because we can define functions inside of other functions, and Pocket Lisp
+// has lexical scoping), our environment can see any changes that happen
+// to the parent environments as well. The easier way of doing this is
+// by making it late-bound---only resolving which value a name maps to
+// at the point people request Pocket Lisp to dereference a variable.
+//
+// ### Constructing environments
+//
+// So one of the things we can do with environments is construct them.
+// If we don't already have an environment, we can construct an empty
+// one---an environment with no bindings, which inherits from nothing.
+//
+// The static `#environment empty` method takes care of this. Note how
+// the bindings map is put inside of a cell, so we can later on change
+// its value---maps are immutable and persistent in Crochet, `cell`
+// is the only way we have of constructing things whose value can change.
+command #environment empty =
+  new environment(nothing, #cell with-value: #map empty);
+
+// If we already have an environment, we can create a new one that
+// has the same bindings our current environment has, but allows people
+// to define new bindings in it as well. The `environment spawn` method
+// creates a new environment that with an empty bindings map for itself,
+// but which inherits all of the bindings from the given environment.
+command environment spawn =
+  new environment(self, #cell with-value: #map empty);
+
+// ### Manipulating bindings
+//
+// Once we do have an environment, we access any bindings accessible
+// from it, but we can only manipulate the environment's own bindings.
+//
+// Manipulating the bindings is straight-forward: we take the current
+// map that keeps the association between names and values, and we
+// add the provided association to it.
+//
+// Or rather: it would be straight-forward if that was all. But we can
+// only add a new association if it wouldn't conflict with an existing
+// one (in the same environment). So, let's say we have:
+//
+//     #environment empty
+//       | at: "a" put: (#p-integer make: 1)
+//       | at: "a" put: (#p-integer make: 2)
+//
+// Here we create an environment that has no bindings, then we add
+// the association `a = 1` to it, but we follow that with adding the
+// association `a = 2`. The second command will fail.
+//
+// Failure is the non-straight-forward part. Remember that we have
+// previously defined some "evaluation effects" (in `0-types.crochet`).
+// Here we're using the `pocket-lisp raise-already-bound: _ value: _`
+// method, which will ultimately result in a `raw-raise` effect with
+// the appropriate error object. And that's how we allow things like
+// the REPL to allow recovering even from these errors that happen
+// deeply into the runtime, despite not having any reference to the
+// VM, forms, or frames at this point.
+command environment at: (Key is text) put: (Value is value) do
+  let Bindings = self.bindings value;
+  condition
+    when not (Bindings contains-key: Key) do
+      self.bindings <- Bindings at: Key put: Value;
+      self;
+    end
+
+    always => pocket-lisp raise-already-bound: Key value: Value;
+  end
+end
+
+// Besides adding new associations, we can also look up existing
+// associations. This is even more complicated than the previous
+// method, however. And that's because here we need to care about
+// those parent links we've mentioned once in a full moon somewhere.
+//
+// So to lookup a binding in an environment, we start by checking
+// if the current environment's map has it, and if it does we can
+// return a value right away.
+//
+// If it doesn't, but it has a parent, we try to do the same in
+// the context of the parent environment---we look at its map,
+// or in its parent's map, or its parent's parent's map, and so
+// on.
+//
+// Ultimately, if we've walked through all of these parent links
+// and still haven't found an association, we must fail the
+// request. The failure here is similar to the one we've seen
+// above: `pocket-lisp raise-undefined-variable: _` will ultimately
+// result in the `raw-raise` effect. And once again, the reason
+// we want an effect here is to give the REPL (and other tools)
+// a chance to decide how to deal with it.
+command environment at: (Key is text) do
+  let Bindings = self.bindings value;
+  condition
+    when Bindings contains-key: Key => Bindings at: Key;
+    when self.parent is environment => self.parent at: Key;
+    always => pocket-lisp raise-undefined-variable: Key;
+  end
+end
+
+// ### Native functions (the Foreign Function layer)
+//
+// Not all functions can be defined in Pocket Lisp alone---the semantics
+// of the language just don't allow that. Hence we need to supplement the
+// primitive operations in the VM with arbitrary functions. Crochet functions
+// in this case.
+//
+// For this implementation, these primitives live in the environment just
+// like regular Pocket Lisp functions defined by the user, but they're
+// tagged with the `p-native-procedure` type so we can handle them specially
+// when users try to invoke them.
+//
+// Now, we don't really *need* special methods to support this, because
+// the tagging is already done by the type, but we provide here both
+// `environment define: _ native: _` and `environment define: _ native-variadic: _`
+// methods just so it's more pleasant to define native functions in an
+// environment, which we will do a lot when bootstrapping.
+//
+// A key thing to pay attention here is the arity. By default, Pocket Lisp
+// is pretty strict with the arity of the functions. Some of the Pocket Lisp
+// functions, like `display`, accept any number of arguments however. So
+// that's why we have two different methods (and two different types) here.
+
+command environment define: (Key is text) native: (Fun is function) do
+  self at: Key put: new p-native-procedure(Key, Fun arity, { Args in Fun apply: Args });
+end
+
+command environment define: (Key is text) native-variadic: (Fun is function) do
+  self at: Key put: new p-native-variadic-procedure(Key, Fun);
+end
+
+
+// ## Frames
+//
+// We use frames to keep track of the current *execution* state, and also
+// to keep track of how we got to the current state. So a frame will have
+// an environment, a location (which function are we in?), and a pointer
+// to its parent---which lets us compute a stack trace.
+
+// TODO:
+command frame at: Key put: Value do
+  self.environment at: Key put: Value;
+  self;
+end
+
+command frame spawn-with-location: Location =
+  new frame(self, self.environment spawn, Location);

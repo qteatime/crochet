@@ -1,0 +1,50 @@
+% crochet
+
+command frame trap: (Block is (() -> A)) for: Form do
+  handle
+    Block()
+  with
+    on pocket-lisp.raw-raise(Error) => perform pocket-lisp.raise(self, Form, Error);
+  end
+end
+
+command pocket-lisp raise-undefined-variable: Name =
+  perform pocket-lisp.raw-raise(new error-undefined-variable(Name));
+
+command pocket-lisp raise-already-bound: Name value: Value =
+  perform pocket-lisp.raw-raise(new error-already-bound(Name, Value));
+
+command pocket-lisp raise-native: Code reason: Reason data: Data =
+  perform pocket-lisp.raw-raise(new error-native(Code, Reason, Data));
+
+command pocket-lisp raise-native: Code reason: Reason =
+  pocket-lisp raise-native: Code reason: Reason data: #map empty;
+
+command pocket-lisp raise-invalid-arity: Arguments expected: Arity in: Target =
+  perform pocket-lisp.raw-raise(new error-invalid-arity(Arity, Arguments, Target));
+
+
+command pocket-lisp format-error: (X is error-undefined-variable) =
+  "The variable [X.name] is not defined.";
+
+command pocket-lisp format-error: (X is error-already-bound) =
+  "The variable [X.name] cannot be bound to [X.value print-format] because it is already bound.";
+
+command pocket-lisp format-error: (X is error-invalid-arity) =
+  "The function [X.target print-format] expects [X.expected to-text] arguments,
+   but was provided with [X.arguments count to-text] arguments.";
+
+command pocket-lisp format-error: (X is error-native) =
+  "An error occurred while executing native code. [X.code]: [X.reason]";
+
+command pocket-lisp format-error: (X is plisp-error) frame: Frame form: Form =
+  "[pocket-lisp format-error: X]
+  
+   The error happened while evaluating:
+  
+   [pocket-lisp format-form-location: Form]
+  ";
+
+command pocket-lisp format-form-location: (X is plisp-form) =
+  X.pos annotated-source;
+

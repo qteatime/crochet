@@ -1,0 +1,82 @@
+% crochet
+
+open crochet.text.parsing.lingua;
+
+command #p-integer make: (Value is integer) =
+  new p-integer(Value);
+
+command #p-integer make: (Value is text) =
+  #p-integer make: (#integer try-parse: Value | value-or-panic: "Invalid integer");
+
+command #p-string make: (Value is text) =
+  new p-string(Value);
+
+command #p-cons head: (Head is value) tail: (Tail is p-list) =
+  new p-cons(Head, Tail);
+
+command #p-procedure meta: (Meta is interval) env: (Env is environment) name: (Name is text) parameters: (Parameters is list<text>) body: (Body is list<plisp-form>) =
+  new p-procedure(Meta, Env, Name, Parameters, Body);
+
+implement equality for value;
+command (A is value) === (B is value) = (A =:= B) as p-boolean;
+command (A is p-integer) === (B is p-integer) = (A.value === B.value) as p-boolean;
+command (A is p-string) === (B is p-string) = (A.value === B.value) as p-boolean;
+command (A is p-cons) === (B is p-cons) = (A.head === B.head) and (A.tail === B.tail);
+
+command (A is p-integer) < (B is p-integer) = (A.value < B.value) as p-boolean;
+command (A is p-integer) > (B is p-integer) = (A.value > B.value) as p-boolean;
+command (A is p-integer) <= (B is p-integer) = (A.value <= B.value) as p-boolean;
+command (A is p-integer) >= (B is p-integer) = (A.value >= B.value) as p-boolean;
+
+command (A is p-integer) + (B is p-integer) = new p-integer(A.value + B.value);
+command (A is p-integer) - (B is p-integer) = new p-integer(A.value - B.value);
+command (A is p-integer) / (B is p-integer) = new p-integer(A.value divided-by: B.value);
+command (A is p-integer) * (B is p-integer) = new p-integer(A.value * B.value);
+command (A is p-integer) ** (B is p-integer) = new p-integer(A.value ** B.value);
+command (A is p-integer) % (B is p-integer) = new p-integer(A.value % B.value);
+
+command (A is p-string) ++ (B is p-string) = new p-string((A.value ++ B.value) flatten-into-plain-text);
+
+command (A is p-boolean) and (B is p-boolean) = new p-boolean(A.value and B.value);
+command (A is p-boolean) or (B is p-boolean) = new p-boolean(A.value or B.value);
+command not (A is p-boolean) = new p-boolean(not A.value);
+
+command (A is p-cons) head = A.head;
+command (A is p-cons) tail = A.tail;
+
+command (A is p-nil) head =
+  pocket-lisp raise-native: "invalid-operation" reason: "`(head nil)` is not a valid operation";
+
+command (A is p-nil) tail = self;
+
+command p-true as boolean = true;
+command p-false as boolean = false;
+command value as boolean = pocket-lisp raise-native: "invalid-type" reason: "Expected a boolean";
+
+command procedure as procedure = self;
+command value as procedure = pocket-lisp raise-native: "invalid-type" reason: "Expected a procedure";
+
+command p-native-procedure arity = self.arity;
+command p-native-variadic-procedure arity = nothing;
+command p-procedure arity = self.parameters count;
+
+command true as p-boolean = p-true;
+command false as p-boolean = p-false;
+
+command p-integer print-format = self.value to-text;
+command p-string print-format = self.value;
+command p-true print-format = "true";
+command p-false print-format = "false";
+command p-nil print-format = "nil";
+command p-cons print-format = "([self.head print-format] . [self.tail print-format])";
+command p-procedure print-format = "<procedure [self.name]>";
+command p-native-procedure print-format = "<native-procedure [self.name]>";
+command p-native-variadic-procedure print-format = "<native-procedure [self.name]>";
+
+command p-integer type-name = "integer";
+command p-string type-name = "string";
+command p-boolean type-name = "boolean";
+command p-list type-name = "list";
+command p-procedure type-name = "procedure";
+command p-native-procedure type-name = "native-procedure";
+command p-native-variadic-procedure type-name = "native-procedure";
