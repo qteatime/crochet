@@ -1,5 +1,14 @@
+.launcher-run-frame {
+  height: calc(100vh - 65px); /* top bar is 65px */
+  overflow-y: auto;
+}
+
+.launcher-run-frame .agata-frame {
+  height: 100%;
+}
+
 .launcher-run-frame iframe {
-  height: 100vh;
+  height: 100%;
   width: 100%;
   border: none;
 }
