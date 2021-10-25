@@ -25,6 +25,8 @@ local type ps-error(code is text, message is text) is pstate;
 effect playground-entry with
   set-state(state is pstate);
   run(code is text);
+  commit(code is text);
+  rollback();
 end
 
 effect playground-repl with
@@ -91,22 +93,35 @@ end
 
 implement to-widget for entry;
 command entry as widget do
-  handle
-    w commit: self.state
-  with
-    on playground-entry.set-state(New-state) do
-      self.state <- New-state;
-      continue with nothing;
-    end
+  w with-progress-root: { Progress in 
+    handle
+      w commit: self.state
+    with
+      on playground-entry.set-state(New-state) do
+        self.state <- New-state;
+        continue with nothing;
+      end
 
-    on playground-entry.run(Code) do
-      let State = perform playground.get-state();
-      let Project = perform playground.get-project();
-      let Sid = purr project: Project run-snippet: Code in: State.process;
-      self.state <- new ps-running(Sid, Code);
-      continue with nothing;
+      on playground-entry.run(Code) do
+        Progress show: "Running...";
+        let State = perform playground.get-state();
+        let Project = perform playground.get-project();
+        let Sid = purr project: Project run-snippet: Code in: State.process;
+        self.state <- new ps-running(Sid, Code);
+        continue with nothing;
+      end
+
+      on playground-entry.commit(Code) do
+        Progress hide;
+        continue with nothing;
+      end
+
+      on playground-entry.rollback() do
+        Progress hide;
+        continue with nothing;
+      end
     end
-  end
+  }
 end
 
 
@@ -137,11 +152,15 @@ command ps-running as widget do
   
   State.process.events subscribe: { X in
     condition
-      when (X.id === self.sid) and (X is pge-success) =>
+      when (X.id === self.sid) and (X is pge-success) do
+        perform playground-entry.commit(self.code);
         perform playground-repl.add-entry();
+      end
 
-      when (X.id === self.sid) and (X is pge-error) =>
+      when (X.id === self.sid) and (X is pge-error) do
+        perform playground-entry.rollback();
         perform playground-entry.set-state(new ps-error(self.code, X.message));
+      end
 
       otherwise do nothing end
     end

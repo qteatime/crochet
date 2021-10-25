@@ -7,31 +7,62 @@ local abstract state;
 local singleton not-started is state;
 local type running(process is pp-test, results is cell<record>) is state;
 
+effect test-screen with
+  get-state();
+  set-state(new-state);
+  show-progress(label);
+  hide-progress();
+end
+
 command ps-test render do
   let State = #observable with-value: not-started;
 
-  cw project-window: self.project at: "test" with: [
-    w title: "Testing",
-    w space,
+  w with-progress-root: { Progress in
+    handle
+      w commit: (
+        cw project-window: self.project at: "test" with: [
+          w title: "Testing",
+          w space,
 
-    w toolbar: [
-      w icon-button: "play"
-        | title: "Run tests"
-        | on-click: { _ in self run-tests: State }
-    ],
+          w toolbar: [
+            w icon-button: "play"
+              | title: "Run tests"
+              | on-click: { _ in self run-tests }
+          ],
 
-    w switch: State
-      | when: {X in X is not-started} then: {_ in self not-started: State}
-      | when: {X in X is running} then: {_ in self running: State},
-  ];
+          w switch: State
+            | when: {X in X is not-started} then: {_ in self not-started }
+            | when: {X in X is running} then: {_ in self running },
+        ]
+      )
+    with
+      on test-screen.get-state() =>
+        continue with State value;
+
+      on test-screen.set-state(New-state) do
+        State <- New-state;
+        continue with nothing;
+      end
+
+      on test-screen.show-progress(Label) do
+        Progress show: Label;
+        continue with nothing;
+      end
+
+      on test-screen.hide-progress() do
+        Progress hide;
+        continue with nothing;
+      end
+    end
+  }
 end
 
-command ps-test not-started: State do
-  self test-results: State value
+command ps-test not-started do
+  self test-results: (perform test-screen.get-state());
 end
 
-command ps-test running: State do
-  self test-results: State value
+command ps-test running do
+  self test-results: (perform test-screen.get-state());
 end
 
 command ps-test test-results: not-started do
@@ -71,7 +102,7 @@ end
 
 command ps-test handle-event: (X is te-finished) in: Canvas state: State do
   Canvas render: (self test-results: X.summary in: Canvas state: State);
-
+  perform test-screen.hide-progress();
 end
 
 command ps-test test-results: Summary in: Canvas state: State do
@@ -185,9 +216,11 @@ command ps-test test-result-status: (S is ts-failed) title: Title =
     w typewriter-text: [S.message]
   ];
 
-command ps-test run-tests: State do
+command ps-test run-tests do
   let Process = purr run-tests: self.project;
-  State <- new running(Process, #cell with-value: [->]);
+  let New-state = new running(Process, #cell with-value: [->]);
+  perform test-screen.set-state(New-state);
+  perform test-screen.show-progress("Running tests...");
 end
 
 command running add-result: (Test is test-result) status: (Status is test-status) do

@@ -9,6 +9,7 @@
     "source/ui/measure.crochet",
     "source/ui/widget.crochet",
     "source/ui/typography.crochet",
+    "source/ui/progress.crochet",
     "source/ui/input.crochet",
     "source/ui/render.crochet",
     "source/ui/api.crochet",

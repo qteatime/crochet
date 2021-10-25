@@ -5,6 +5,38 @@ declare var monaco: typeof Monaco;
 
 export default (ffi: ForeignInterface) => {
   monaco.languages.register({ id: "crochet" });
+  monaco.editor.defineTheme("purr", {
+    base: "vs",
+    inherit: true,
+    rules: [
+      {
+        token: "keyword",
+        foreground: "2f2f2f",
+        fontStyle: "bold",
+      },
+      {
+        token: "comment",
+        foreground: "757575",
+        fontStyle: "italic",
+      },
+      {
+        token: "string",
+        foreground: "388E3C",
+      },
+      {
+        token: "constant.numeric",
+        foreground: "0288D1",
+      },
+      {
+        token: "variable",
+        foreground: "EC407A",
+      },
+      {
+        token: "punctuation",
+        foreground: "607D8B",
+      },
+    ],
+  } as any);
   monaco.languages.setMonarchTokensProvider("crochet", {
     defaultToken: "invalid",
 
@@ -91,8 +123,9 @@ export default (ffi: ForeignInterface) => {
       ],
 
       common: [
+        [/(?<![a-zA-Z0-9\-])[A-Z][a-zA-Z0-9\-]*|_/, "variable.name.crochet"],
         [
-          /(?<![a-zA-Z0-9\-\.\^])[a-z\-][a-zA-Z\-]*(?![\.\^:])/,
+          /(?<![a-zA-Z0-9\-\.\^])[a-zA-Z\-]+(?!:)/,
           {
             cases: {
               "@keywords": "keyword.control.crochet",
@@ -100,6 +133,9 @@ export default (ffi: ForeignInterface) => {
             },
           },
         ],
+        [/\/\/.*/, "comment.line"],
+        [/[\(\)\[\]\{\};,]/, "delimiter"],
+        [/[\+\*\=\-\%\/\|<>#':\.]/, "operator"],
         [
           /(?<![a-zA-Z0-9\-])[\-\+]?[0-9][0-9_]*/,
           "constant.numeric.integer.crochet",
@@ -108,25 +144,23 @@ export default (ffi: ForeignInterface) => {
           /(?<![a-zA-Z0-9\-])[\-\+]?[0-9][0-9_]*(\.[0-9][0-9_]*)?([eE][\-\+]?[0-9][0-9_]*)?/,
           "constant.numeric.decimal.crochet",
         ],
-        [/(?<![a-zA-Z0-9\-])[A-Z][a-zA-Z0-9\-]*|_/, "variable.name.crochet"],
         [
           /(?<![a-zA-Z0-9\-])[a-z\-][a-zA-Z0-9\-]*:/,
           "entity.name.method.crochet",
         ],
-        [/\/\/.*/, "comment.line"],
         [/"/, "string.double", "@string_double"],
       ],
 
       string_double: [
-        [/[^\\"]*/, "string"],
+        [/[^\\"\[]+/, "string"],
         [/\[/, "meta.string.interpolation", "@string_interpolation"],
         [/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/, "string.escape"],
         [/\\./, "string.escape.invalid"],
-        [/"/, "string", "@pop"],
+        [/"/, "string", "@popall"],
       ],
 
       string_interpolation: [
-        [/\]/, "string", "@string_double"],
+        [/\]/, "meta.string.interpolation", "@string_double"],
         { include: "common" },
       ],
     },
@@ -401,6 +435,7 @@ export default (ffi: ForeignInterface) => {
       readOnly: readonly,
       detectIndentation: false,
       language: "crochet",
+      theme: "purr",
       minimap: {
         enabled: false,
       },
@@ -412,7 +447,10 @@ export default (ffi: ForeignInterface) => {
         horizontal: "hidden",
         vertical: "hidden",
         verticalScrollbarSize: 0,
+        handleMouseWheel: false,
       },
+      fontSize: 16,
+      fontFamily: "Source Code Pro",
       scrollBeyondLastLine: false,
       tabSize: 2,
       wordWrap: "on",
@@ -538,5 +576,34 @@ export default (ffi: ForeignInterface) => {
     cinput.appendChild(input);
     node.appendChild(cinput);
     return ffi.box(node);
+  });
+
+  ffi.defun("dom.modal-container", (klass0) => {
+    const klass = ffi.text_to_string(klass0);
+    const node = document.createElement("div");
+    node.className = klass;
+    const container = document.createElement("div");
+    container.className = `${klass}-content`;
+    node.appendChild(container);
+    const label = document.createElement("div");
+    label.className = `${klass}-label`;
+    node.appendChild(label);
+    return ffi.record(
+      new Map([
+        ["root", ffi.box(node)],
+        ["container", ffi.box(container)],
+        ["label", ffi.box(label)],
+      ])
+    );
+  });
+
+  ffi.defun("dom.show-modal", (box) => {
+    get_element(box).classList.add("agata-modal-visible");
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.hide-modal", (box) => {
+    get_element(box).classList.remove("agata-modal-visible");
+    return ffi.nothing;
   });
 };
