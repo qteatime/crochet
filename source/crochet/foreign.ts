@@ -14,13 +14,18 @@ import {
   NativeTag,
   NSApply,
   NSAwait,
+  NSCurrentActivation,
+  NSCurrentUniverse,
   NSInvoke,
+  NSMakeClosure,
   NSTranscriptWrite,
+  run_native,
   run_native_sync,
   Tag,
   Universe,
   Values,
 } from "../vm";
+import * as UUID from "uuid";
 
 export type { Machine, CrochetValue };
 export type { ISet, IList, IMap };
@@ -116,6 +121,13 @@ export class ForeignInterface {
     return Values.get_false(this.#universe);
   }
 
+  make_closure(
+    arity: number,
+    fn: (...args: CrochetValue[]) => Machine<CrochetValue>
+  ) {
+    return new NSMakeClosure(arity, fn);
+  }
+
   invoke(name: string, args: CrochetValue[]) {
     return new NSInvoke(name, args);
   }
@@ -131,6 +143,11 @@ export class ForeignInterface {
   run_synchronous(fn: () => Machine<CrochetValue>) {
     const env = new Environment(null, null, this.#module, null);
     return run_native_sync(this.#universe, env, this.#package, fn());
+  }
+
+  run_asynchronously(fn: () => Machine<CrochetValue>) {
+    const env = new Environment(null, null, this.#module, null);
+    return run_native(this.#universe, env, this.#package, fn());
   }
 
   // == Destructors
@@ -269,5 +286,22 @@ export class ForeignInterface {
 
   push_transcript(tag: string, x: CrochetValue | string) {
     return new NSTranscriptWrite(tag, x);
+  }
+
+  uuid4() {
+    return UUID.v4();
+  }
+
+  // == Dangerous introspection that needs more thought
+  current_activation() {
+    return new NSCurrentActivation();
+  }
+
+  current_universe() {
+    return new NSCurrentUniverse();
+  }
+
+  get formatter() {
+    return Location;
   }
 }

@@ -1,0 +1,59 @@
+% crochet
+
+local singleton module;
+
+// Here we handle the set of regular expression flags that JS uses.
+// We keep a smaller set of flags because some of these are decided
+// by methods instead (e.g.: `search-all` vs `search` instead of
+// setting a weird "global" flag).
+//
+// Methods are provided to manipulate these flags and also give them
+// an easier to understand name. So we always start with no flags
+// defined.
+command #regex-flags empty =
+  new regex-flags(false, false, false);
+
+
+command regex-flags case-insensitive =
+  new regex-flags(true, self.multiline, self.dot-all);
+
+command regex-flags case-sensitive =
+  new regex-flags(false, self.multiline, self.dot-all);
+
+command regex-flags pin-at-line-endings =
+  new regex-flags(self.ignore-case, true, self.dot-all);
+
+command regex-flags pin-at-text-endings =
+  new regex-flags(self.ignore-case, false, self.dot-all);
+
+command regex-flags anything-matches-newline =
+  new regex-flags(self.ignore-case, self.multiline, true);
+
+command regex-flags anything-does-not-match-newline =
+  new regex-flags(self.ignore-case, self.multiline, false);
+
+
+// For convenience it's possible to call the same methods directly
+// on a compiled regex instance.
+command compiled-regex case-insensitive =
+  new compiled-regex(self.code, self.flags case-insensitive);
+
+command compiled-regex case-sensitive =
+  new compiled-regex(self.code, self.flags case-sensitive);
+
+command compiled-regex pin-at-line-endings =
+  new compiled-regex(self.code, self.flags pin-at-line-endings);
+
+command compiled-regex pin-at-text-endings =
+  new compiled-regex(self.code, self.flags pin-at-text-endings);
+
+command compiled-regex anything-matches-newline =
+  new compiled-regex(self.code, self.flags anything-matches-newline);
+
+command compiled-regex anything-does-not-match-newline =
+  new compiled-regex(self.code, self.flags anything-does-not-match-newline);
+
+
+// We can also replace all flags at once.
+command compiled-regex with-flags: (Flags is regex-flags) =
+  new compiled-regex(self.code, Flags);

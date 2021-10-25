@@ -1,0 +1,89 @@
+% crochet
+
+singleton agata;
+
+type agata-state(
+  history is list,
+  current
+);
+
+effect agata-presentation with
+  show(page);
+  alert(message);
+  get-reference(reference);
+  register-reference(reference, node);
+end
+
+effect agata-canvas with
+  replace(new-contents);
+  append(new-contents);
+  prepend(new-contents);
+end
+
+abstract observable;
+type observable-cell(state is cell<A>, subscribers is cell<list<(A -> nothing)>>) is observable;
+type mapped-observable(state is cell<B>, mapping is (A -> B), source is observable<A>, subscribers is cell<list<(B -> nothing)>>) is observable;
+type filtered-observable(state is cell<A>, filter is (A -> boolean), source is observable<A>, subscribers is cell<list<(A -> nothing)>>) is observable;
+
+abstract observable-stream;
+type observable-stream-cell(state is cell<list<A>>, subscribers is cell<list<(A -> nothing)>>) is observable-stream;
+type mapped-observable-stream(state is cell<list<A>>, mapping is (A -> B), source is observable-stream<A>, subscribers is cell<list<(B -> nothing)>>) is observable-stream;
+type filtered-observable-stream(state is cell<list<A>>, filter is (A -> boolean), source is observable-stream<A>, subscribers is cell<list<(A -> nothing)>>) is observable-stream;
+
+singleton dom-renderer;
+type dom-canvas(box);
+type dom-dynamic-canvas(box);
+type dom-modal-progress(root-box, label-box);
+type dom-node(box);
+type dom-node-code-editor(box, monaco) is dom-node;
+type dom-node-input(box) is dom-node;
+type dom-event(box);
+type dom-window(box);
+
+type agata-reference(name is text);
+type reference-env(parent, mapping is cell<map<agata-reference, dom-node>>);
+
+abstract measure;
+type pixels(value is integer) is measure;
+type percent(value is float) is measure;
+type em(value is float) is measure;
+
+type gap(horizontal is measure, vertical is measure);
+
+type layout(properties is record);
+
+singleton agata-widget;
+abstract widget;
+type w-container(tag is text, class is text, children is list<widget>) is widget;
+type w-style(class is text, children is list<widget>) is widget;
+type w-icon(name is text) is widget;
+type w-text(contents is text) is widget;
+type w-button(title is text, on-click, children is list<widget>) is widget;
+type w-action-button(icon is text, title is text, description is text, on-click is (Ev -> nothing)) is widget;
+type w-text-button(label is text, title is text, on-click is (Ev -> nothing)) is widget;
+type w-icon-button(icon is text, title is text, on-click is (Ev -> nothing)) is widget;
+type w-tabbed-panel(tabs is list<wn-tab>) is widget;
+type w-flex-column(children is list<widget>) is widget;
+type w-flex-row(children is list<widget>) is widget;
+type w-layout(layout is layout, child is widget) is widget;
+type w-frame(window is dom-window) is widget;
+type w-dynamic(renderer is (dom-dynamic-canvas -> nothing)) is widget;
+type w-switch(observable is observable, cases is list<wn-switch-case>) is widget;
+type w-observable(observable is observable<W has to-widget>) is widget;
+type w-observable-stream(observable is observable-stream<W has to-widget>) is widget;
+type w-code-editor(read-only is boolean, code is text, on-commit is (() -> nothing)) is widget;
+type w-reference(reference is agata-reference, child is widget) is widget;
+type w-fragment(children is list<W has to-widget>) is widget;
+type w-committed(render is dom-node) is widget;
+type w-focus(widget is widget) is widget;
+type w-text-input(read-only is boolean, value is text, placeholder is text) is widget;
+type w-label(label is text, input is widget) is widget;
+type w-modal-progress(label is widget, child-builder is (dom-modal-progress -> widget)) is widget;
+
+type wn-switch-case(guard, handler is (any -> widget));
+
+type wn-tab(title, contents);
+
+trait to-widget with
+  command Self as widget;
+end

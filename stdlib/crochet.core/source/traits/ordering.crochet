@@ -20,7 +20,7 @@ end
 command greater-of: (X has total-ordering) and: (Y has total-ordering) =
   condition
     when X >= Y => X;
-    always => Y;
+    otherwise => Y;
   end
 test
   assert (greater-of: 1 and: 2) =:= 2;
@@ -33,7 +33,7 @@ end
 command lesser-of: (X has total-ordering) and: (Y has total-ordering) =
   condition
     when X <= Y => X;
-    always => Y;
+    otherwise => Y;
   end
 test
   assert (lesser-of: 1 and: 2) =:= 1;
@@ -63,7 +63,7 @@ command (X has total-ordering) clamp-between: (Min has total-ordering) and: (Max
   condition
     when X < Min => Min;
     when X > Max => Max;
-    always => X;
+    otherwise => X;
   end
 test
   assert (-1 clamp-between: 0 and: 2) =:= 0;

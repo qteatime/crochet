@@ -232,18 +232,16 @@ type action-choice = foreign core.action-choice;
 abstract result;
 
 /// Represents successful evaluations.
-type ok(value) is result;
+type ok(global value) is result;
 
 /// Represents failed evaluations.
-type error(reason) is result;
+type error(global reason) is result;
 
+/// The common error representing values that are missing.
+singleton not-found;
 
-/// The type of computations that can fail, but without any interesting
-/// additional information.
-abstract maybe;
-type some(value) is maybe;
-singleton no-value is maybe;
-
+/// Grants the capability of interrupting the program with a panic message.
+singleton panic;
 
 // -- The idea of state
 
@@ -263,16 +261,16 @@ singleton debug-representation;
 
 //-- Other types
 /// A pair constructed by zipping two elements together.
-type zip-pair(first, second);
+type zip-pair(global first, global second);
 
 /// A pair constructed by partitioning a collection.
-type partition-pair(satisfying, not-satisfying);
+type partition-pair(global satisfying, global not-satisfying);
 
 /// A value from an indexed sequence along with its index.
-type indexed(index is integer, value);
+type indexed(global index is integer, global value);
 
 /// An association pair in a mapped collection.
-type association(key, value);
+type association(global key, global value);
 
 /// Possible ordering relations between two values.
 enum ordering = less-than, equal, greater-than;

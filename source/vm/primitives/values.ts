@@ -1,3 +1,4 @@
+import { CrochetCapability, CrochetProtectedValue } from "..";
 import * as IR from "../../ir";
 import { clone_map, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
@@ -298,7 +299,11 @@ export function text_to_string(x: CrochetValue) {
   return x.payload;
 }
 
-export function project(value: CrochetValue, key: string): CrochetValue {
+export function project(
+  value: CrochetValue,
+  key: string,
+  assert_capability: (value: CrochetValue) => void
+): CrochetValue {
   switch (value.tag) {
     case Tag.RECORD: {
       assert_tag(Tag.RECORD, value);
@@ -317,6 +322,7 @@ export function project(value: CrochetValue, key: string): CrochetValue {
 
     case Tag.INSTANCE: {
       assert_tag(Tag.INSTANCE, value);
+      assert_capability(value);
       const index = value.type.layout.get(key);
       if (index == null) {
         throw new ErrArbitrary(
@@ -341,7 +347,9 @@ export function project(value: CrochetValue, key: string): CrochetValue {
 
     case Tag.LIST: {
       assert_tag(Tag.LIST, value);
-      const results = value.payload.map((x) => project(x, key));
+      const results = value.payload.map((x) =>
+        project(x, key, assert_capability)
+      );
       return new CrochetValue(Tag.LIST, value.type, results);
     }
 
@@ -550,6 +558,30 @@ export function to_number(x: CrochetValue) {
 
 export function is_nothing(x: CrochetValue) {
   return x.tag === Tag.NOTHING;
+}
+
+export function protect(
+  universe: Universe,
+  x: CrochetValue,
+  capability: CrochetCapability
+) {
+  switch (x.tag) {
+    case Tag.PROTECTED: {
+      assert_tag(Tag.PROTECTED, x);
+      x.payload.protected_by.add(capability);
+      return x;
+    }
+
+    default: {
+      const x1 = new CrochetValue(
+        Tag.PROTECTED,
+        universe.types.Protected,
+        new CrochetProtectedValue(x)
+      );
+      x1.payload.protected_by.add(capability);
+      return x1;
+    }
+  }
 }
 
 export { equals };

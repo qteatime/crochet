@@ -1,0 +1,71 @@
+% crochet
+// This file is derived from the SOM benchmarks from the AWFY suite
+// See https://github.com/smarr/are-we-fast-yet/tree/master/benchmarks/SOM
+
+open crochet.random;
+open crochet.debug;
+
+type ball(x, y, x-speed, y-speed);
+
+define max-y = 500;
+define max-x = 500;
+
+command main: Seed do
+  #random with-source: (#random with-seed: Seed) do: {
+    let Balls = for I in 1 to: 100 do #ball make end;
+    
+    let Bounces = #cell with-value: 0;
+    for _ in 1 to: 50 do
+      for Ball in Balls do
+        let Bounced = Ball update;
+        condition
+          when Bounced => Bounces <- (Bounces value + 1);
+          otherwise => nothing;
+        end
+      end
+    end
+
+    Bounces value;
+  }
+end
+
+command verify: Result do
+  assert Result =:= 1328;
+end
+
+command #ball make do
+  let Random = #random global;
+  let X = #cell with-value: (Random between: 0 and: max-x);
+  let Y = #cell with-value: (Random between: 0 and: max-y);
+  let XS = #cell with-value: (Random between: -150 and: 150);
+  let YS = #cell with-value: (Random between: -150 and: 150);
+  new ball(X, Y, XS, YS);
+end
+
+command ball update do
+  self.x <- (self.x value + self.x-speed value);
+  self.y <- (self.y value + self.y-speed value);
+  let Bounced = #cell with-value: false;
+
+  condition
+    when (self.x value < 0) or (self.x value > max-x) do
+      self.x <- (self.x value clamp-between: 0 and: max-x);
+      self.x-speed <- (self.x-speed value * -1);
+      Bounced <- true;
+    end
+
+    otherwise => nothing;
+  end
+
+  condition
+    when (self.y value < 0) or (self.y value > max-y) do
+      self.y <- (self.y value clamp-between: 0 and: max-y);
+      self.y-speed <- (self.y-speed value * -1);
+      Bounced <- true;
+    end
+
+    otherwise => nothing;
+  end
+
+  Bounced value;
+end

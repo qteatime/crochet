@@ -1,0 +1,147 @@
+% crochet
+
+local define w = agata-widget;
+local define cw = purr-common-widgets;
+
+command ps-welcome render do
+  cw window: [] with: [
+    w tabbed-panel: [
+      w tab: "My projects"
+        | with: [self my-projects],
+      w tab: "Examples"
+        | with: [self examples],
+      w tab: "Libraries"
+        | with: [self libraries],
+    ]
+  ]
+end
+
+command ps-welcome my-projects do
+  let State = #observable with-value: welcome;
+
+  handle
+    w commit: State;
+  with
+    on welcome.set-state(New-state) do
+      State <- New-state;
+      continue with nothing;
+    end
+  end
+end
+
+local abstract state;
+local singleton welcome is state;
+local singleton new-project is state;
+
+effect welcome with
+  set-state(new-state is state);
+end
+
+implement to-widget for state;
+command welcome as widget do
+  let Projects = purr-api my-projects;
+
+  condition
+    when Projects is-empty => self no-projects;
+    otherwise => 
+      w contents: [
+        ps-welcome projects: Projects,
+        w double-space,
+        w divider,
+        w space,
+        self actions,
+      ];
+  end
+end
+
+command welcome no-projects do
+  w contents: [
+    w highlight-header: [
+      w title: ["You don't have any projects yet."],
+      w subtitle: ["Create or import a project to start working"],
+    ],
+    self actions,
+  ]
+end
+
+command welcome actions do
+  w action-list: [
+    w action-button
+      | icon: "plus"
+      | title: "New project"
+      | description: "Create a new project based on a template"
+      | on-click: { _ in perform welcome.set-state(new-project) },
+  ]
+end
+
+command new-project as widget do
+  let RName = agata reference: "name";
+  let RTitle = agata reference: "title";
+
+  w with-progress-root: { Progress in 
+    w contents: [
+      w title: "Create a new project",
+      w double-space,
+
+      w label: "Name" for: (
+        w text-input
+          | placeholder: "com.domain.project-name"
+          | reference: RName
+      ),
+
+      w label: "Title" for: (
+        w text-input
+          | placeholder: "Project Name"
+          | reference: RTitle
+      ),
+
+      w action-buttons: [
+        w text-button: "Create"
+          | accessible-title: "Create and load the project"
+          | on-click: { _ in
+              let Name = RName materialisation current-value;
+              let Title = RTitle materialisation current-value;
+              Progress show: "Creating and initialising [Title]...";
+              purr create-project: new purr-new-project(Name, Title);
+            }
+      ]
+    ]
+  }
+end
+
+command ps-welcome examples do
+  let Projects = purr-api examples;
+  w contents: [
+    self projects: Projects
+  ];
+end
+
+command ps-welcome libraries do
+  let Projects = purr-api libraries;
+  w contents: [
+    self projects: Projects
+  ];
+end
+
+command ps-welcome projects: (Projects is list<purr-project-meta>) do
+  w flex-row: (
+    for X in Projects do self project: X end
+  );
+end
+
+command ps-welcome project: (Project is purr-project-meta) do
+  w card: [    
+    w button
+      | title: "Open [Project name]" flatten-into-plain-text
+      | on-click: { _ in purr open-project: Project }
+      | with: [
+          w card-image: [self project-icon: Project],
+          w card-title: Project title,
+          w card-description: Project description
+        ]
+  ];
+end
+
+command ps-welcome project-icon: (Project is purr-project-meta) do
+  w icon: "box-open"
+end

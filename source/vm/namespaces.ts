@@ -30,12 +30,20 @@ export class Namespace<V> {
     return true;
   }
 
+  overwrite(name: string, value: V) {
+    this.bindings.set(this.prefixed(name), value);
+  }
+
   has_own(name: string) {
     return this.bindings.has(this.prefixed(name));
   }
 
   has(name: string) {
     return this.try_lookup(name) != null;
+  }
+
+  try_lookup_local(name: string) {
+    return this.bindings.get(this.make_namespace(this.prefix, name)) ?? null;
   }
 
   try_lookup(name: string) {

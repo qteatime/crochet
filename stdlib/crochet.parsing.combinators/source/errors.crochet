@@ -37,7 +37,7 @@ command error-mod join: (Errors0 is list) separator: (Sep is text) do
   condition
     when Errors1 count === 0 => "[""]";
     when Errors1 count === 1 => "[Errors1 first]";
-    always =>
+    otherwise =>
       Errors1 rest fold-from: Errors1 first with: { A, B in "[A][Sep][B]" };
   end
 

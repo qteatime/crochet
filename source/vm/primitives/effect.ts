@@ -15,6 +15,7 @@ import {
 import { module_location, simple_value } from "./location";
 import { assert_tag, has_type } from "./values";
 import * as Environments from "./environments";
+import * as Capability from "./capability";
 
 export function effect_name(x: string) {
   return `effect ${x}`;
@@ -126,7 +127,8 @@ export function make_handle(
   const env = Environments.clone(env0);
   const handlers: Handler[] = [];
   for (const h of cases) {
-    const type = materialise_effect(module, h.effect, h.variant);
+    const type0 = materialise_effect(module, h.effect, h.variant);
+    const type = Capability.free_effect(module, type0);
     handlers.push(new Handler(type, h.parameters, env, h.block));
   }
 

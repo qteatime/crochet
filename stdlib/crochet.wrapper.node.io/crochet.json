@@ -7,6 +7,6 @@
   "native_sources": ["native/terminal.js"],
   "capabilities": {
     "requires": [],
-    "provides": ["io"]
+    "provides": ["terminal"]
   }
 }

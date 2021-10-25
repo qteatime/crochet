@@ -1,0 +1,25 @@
+% crochet
+
+local define w = agata-widget;
+
+command #value-lens parse-plain: (Lens is record) do
+  condition
+    when Lens.tag === "RAW" =>
+      new vl-raw(Lens.code);
+  end
+end
+
+command #value-lens parse-plain: (Lens is nothing) do
+  vl-nothing;
+end
+
+implement to-widget for value-lens;
+command vl-raw as widget do
+  w typewriter-text: [
+    self.code
+  ];
+end
+
+command vl-nothing as widget do
+  w fragment: [];
+end

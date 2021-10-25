@@ -1,0 +1,25 @@
+% crochet
+
+local define w = agata-widget;
+local define cw = purr-common-widgets;
+
+command ps-run render do
+  let Url = "http://localhost:8001/[self.project.id]/run/" flatten-into-plain-text;
+  let Window = agata window: Url;
+
+  cw window: [w title: self.project meta title] with: [
+    w section: [
+      w flex-row: [
+        cw project-menu: self.project at: "run",
+
+        w style: "launcher-run-frame" with: [     
+          w frame: Window
+        ] 
+        | layout
+        | flex-grow
+      ]
+      | layout
+      | flex-no-wrap
+    ]
+  ]
+end

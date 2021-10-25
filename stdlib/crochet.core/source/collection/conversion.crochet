@@ -17,7 +17,7 @@ command list as stream do
   let Go = { I in
     condition
       when I <= self count => new linked-stream-cons(self at: I, lazy Go(I + 1));
-      always => linked-stream-empty;
+      otherwise => linked-stream-empty;
     end
   };
   Go(1);

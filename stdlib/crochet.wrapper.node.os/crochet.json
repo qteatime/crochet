@@ -7,6 +7,6 @@
   "native_sources": ["native/os.js"],
   "capabilities": {
     "requires": [],
-    "provides": ["os"]
+    "provides": ["os", "process"]
   }
 }

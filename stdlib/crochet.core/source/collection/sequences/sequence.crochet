@@ -14,7 +14,7 @@ end
 command list rest =
   condition
     when self count < 2 => [];
-    always => self slice-from: 2 to: self count;
+    otherwise => self slice-from: 2 to: self count;
   end
 test
   assert [] rest =:= [];

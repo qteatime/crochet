@@ -1,0 +1,58 @@
+% crochet
+
+command agata-widget title: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-title", Children);
+
+command agata-widget subtitle: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-subtitle", Children);
+
+command agata-widget title: (Title is text) =
+  self title: [Title];
+
+command agata-widget subtitle: (Subtitle is text) =
+  self subtitle: [Subtitle];
+
+command agata-widget paragraph: (Children is list<widget>) =
+  new w-container("p", "agata-paragraph", Children);
+
+command agata-widget primary-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-primary-text", Children);
+
+command agata-widget secondary-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-secondary-text", Children);
+
+command agata-widget tertiary-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-tertiary-text", Children);
+
+command agata-widget error-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-error-text", Children);
+
+command agata-widget success-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-success-text", Children);
+
+command agata-widget warning-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-warning-text", Children);
+
+command agata-widget info-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-info-text", Children);
+
+command agata-widget quote: (Children is list<W has to-widget>) =
+  new w-container("blockquote", "agata-quote", Children);
+
+command agata-widget quote-attribution: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-quote-attribution", Children);
+
+command agata-widget typewriter-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-typewriter-text", Children);
+
+command agata-widget preformatted-text: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-preformatted-text", Children);
+
+command agata-widget header: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-header", Children);
+
+command agata-widget highlight-header: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-highlight-header", Children);
+
+command agata-widget section: (Children is list<W has to-widget>) =
+  new w-container("div", "agata-section", Children);

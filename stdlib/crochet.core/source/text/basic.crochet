@@ -2,7 +2,7 @@
 
 command text ends-with: (Text is text)
 requires
-  non-empty :: not (Text is-empty)
+  non-empty :: not Text is-empty
 do
   foreign text.ends-with(self, Text)
 test
@@ -14,7 +14,7 @@ end
 
 command text starts-with: (Text is text)
 requires
-  non-empty :: not (Text is-empty)
+  non-empty :: not Text is-empty
 do
   foreign text.starts-with(self, Text)
 test
@@ -26,7 +26,7 @@ end
 
 command text contains: (Text is text)
 requires
-  non-empty :: not (Text is-empty)
+  non-empty :: not Text is-empty
 do
   foreign text.contains(self, Text)
 test
@@ -81,8 +81,8 @@ command text is-empty =
   self =:= ""
 test
   assert "" is-empty;
-  assert not ("abc" is-empty);
-  assert not ("​" is-empty); // zero-width space (u200B)
+  assert not "abc" is-empty;
+  assert not "​" is-empty; // zero-width space (u200B)
 end
 
 /// Joins a set of texts
@@ -90,7 +90,7 @@ command #text join: (Parts is list) with: (Separator is text) do
   condition
     when Parts is-empty => "" as interpolation;
     when Parts count =:= 1 => Parts as interpolation;
-    always => Parts fold-with: { A, B in "[A][Separator][B]" };
+    otherwise => Parts fold-with: { A, B in "[A][Separator][B]" };
   end
 test
   assert (#text join: ["a", "b", "c"] with: ", " | flatten-into-plain-text)

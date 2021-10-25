@@ -112,6 +112,11 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
       return new RStatic(`<function-${x.payload.parameters.length}>`);
     }
 
+    case Tag.NATIVE_LAMBDA: {
+      Values.assert_tag(Tag.NATIVE_LAMBDA, x);
+      return new RStatic(`<native-function-${x.payload.arity}>`);
+    }
+
     case Tag.PARTIAL: {
       Values.assert_tag(Tag.PARTIAL, x);
       return new RFlow([
@@ -204,6 +209,16 @@ export function value_to_repr(x: CrochetValue, seen: Set<CrochetValue>): Repr {
       return new RTagged(
         "Unknown value",
         new RSecret(new RStatic(inspect(x.payload, false, 5, false)))
+      );
+    }
+
+    case Tag.PROTECTED: {
+      Values.assert_tag(Tag.PROTECTED, x);
+      const seen1 = see(x, seen);
+      const caps = [...x.payload.protected_by].map((x) => x.full_name);
+      return new RTagged(
+        `Protected (${caps.join(", ")})`,
+        new RSecret(value_to_repr(x.payload.value, seen1))
       );
     }
 

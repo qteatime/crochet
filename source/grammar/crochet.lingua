@@ -11,7 +11,7 @@ type Declaration =
   | AbstractType(pos: Meta, cmeta: Metadata, typ: TypeDef)
   | EnumType(pos: Meta, cmeta: Metadata, name: Name, variants: Name[])
   | SingletonType(pos: Meta, cmeta: Metadata, typ: TypeDef, init: TypeInit[])
-  | Type(pos: Meta, cmeta: Metadata, typ: TypeDef, fields: Parameter[])
+  | Type(pos: Meta, cmeta: Metadata, typ: TypeDef, fields: TypeField[])
   | Trait(pos: Meta, cmeta: Metadata, name: Name)
   | ImplementTrait(pos: Meta, typ: TypeApp, trait: Trait)
   | Action( pos: Meta
@@ -29,6 +29,14 @@ type Declaration =
   | Local(pos: Meta, decl: Declaration)
   | Test(pos: Meta, title: String, body: Statement[])
   | Effect(pos: Meta, cmeta: Metadata, name: Name, cases: EffectCase[])
+  | Capability(pos: Meta, cmeta: Metadata, name: Name)
+  | Protect(pos: Meta, capability: Name, entity: ProtectEntity)
+
+type ProtectEntity =
+  | Type(pos: Meta, name: Name)
+  | Trait(pos: Meta, name: Name)
+  | Effect(pos: Meta, name: Name)
+  | Definition(pos: Meta, name: Name)
 
 type EffectCase(pos: Meta, cmeta: Metadata, name: Name, params: Parameter[])
 
@@ -41,6 +49,12 @@ type ContractCondition(pos: Meta, name: Name, expr: Expression)
 
 type TypeDef(parent: TypeConstraint?, name: Name)
 type FFI(pos: Meta, name: Namespace, args: Name[])
+
+type TypeField(pos: Meta, visibility: FieldVisibility, parameter: Parameter)
+
+type FieldVisibility =
+  | Local()
+  | Global()
 
 type Rank =
   | Expr(expr: Expression)
@@ -260,6 +274,22 @@ grammar Crochet : Program {
     | effectDeclaration
     | traitDeclaration
     | traitImplementDeclaration
+    | capabilityDeclaration
+    | protectDeclaration
+
+  capabilityDeclaration =
+    | m:declarationMeta capability_ n:atom s<";">
+      -> Declaration.Capability(meta, m, n)
+
+  protectDeclaration =
+    | protect_ e:protectEntity with_ c:atom s<";">
+      -> Declaration.Protect(meta, c, e)
+
+  protectEntity =
+    | type_ n:atom    -> ProtectEntity.Type(meta, n)
+    | effect_ n:atom  -> ProtectEntity.Effect(meta, n)
+    | global_ n:atom  -> ProtectEntity.Definition(meta, n)
+    | trait_ n:atom   -> ProtectEntity.Trait(meta, n)
 
   traitDeclaration =
     | m:declarationMeta trait_ n:atom with_ cs:traitInstruction+ end_
@@ -289,11 +319,11 @@ grammar Crochet : Program {
       -> Declaration.Effect(meta, m, n, cs)
 
   effectCase =
-    | m:declarationMeta s:atom xs:typeParams s<";">
+    | m:declarationMeta s:atom xs:effectCaseParams s<";">
       -> EffectCase(meta, m, s, xs)
 
-  typeParams =
-    | s<"("> xs:list0<typeField, s<",">> s<")"> -> xs
+  effectCaseParams =
+    | s<"("> xs:list0<typeParameter, s<",">> s<")"> -> xs
 
   testDeclaration =
     | test_ s:string do_ b:statements end_
@@ -447,8 +477,15 @@ grammar Crochet : Program {
     |                                            -> []
 
   typeField =
+    | v:fieldVisibility p:typeParameter -> TypeField(meta, v, p)
+    
+  typeParameter =
     | n:typeFieldName is_ t:typeConstraint                -> Parameter.Typed(meta, n, t)
     | n:typeFieldName                                     -> Parameter.Untyped(meta, n)
+
+  fieldVisibility =
+    | global_ -> FieldVisibility.Global()
+    |         -> FieldVisibility.Local()
 
   typeFieldName = name | atom
 
@@ -707,11 +744,11 @@ grammar Crochet : Program {
 
   invokePrePost =
     | invokePrefix
-    | invokePostfix
 
   invokePrefix =
-    | n:not p:applyExpression
+    | n:not p:invokePostfix
       -> Expression.Invoke(meta, Signature.Unary(meta, p, n))
+    | invokePostfix
 
   invokePostfix =
     | s:invokePostfix n:atom
@@ -763,7 +800,7 @@ grammar Crochet : Program {
   conditionCase =
     | when_ e:expression b:eblock
       -> ConditionCase(meta, e, b)
-    | always_ b:eblock
+    | otherwise_ b:eblock
       -> ConditionCase(meta, Expression.Lit(Literal.True(meta)), b)
 
   matchSearchExpression =
@@ -773,7 +810,7 @@ grammar Crochet : Program {
   matchSearchCase =
     | when_ p:predicate b:eblock
       -> MatchSearchCase(meta, p, b)
-    | always_ b:eblock
+    | otherwise_ b:eblock
       -> MatchSearchCase(meta, Predicate.Always(meta), b)
 
   forExpression =
@@ -1157,6 +1194,10 @@ grammar Crochet : Program {
   trait_ = kw<"trait">
   implement_ = kw<"implement">
   has_ = kw<"has">
+  global_ = kw<"global">
+  capability_ = kw<"capability">
+  protect_ = kw<"protect">
+  otherwise_ = kw<"otherwise">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | action_
@@ -1168,4 +1209,5 @@ grammar Crochet : Program {
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
     | effect_ | handle_ | continue_ | perform_ | dsl_ | trait_ | implement_ | has_
+    | global_ | capability_ | protect_ | otherwise_
 }

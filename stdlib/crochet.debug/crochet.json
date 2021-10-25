@@ -2,11 +2,16 @@
   "name": "crochet.debug",
   "target": "*",
   "stability": "experimental",
-  "sources": ["transcript.crochet", "time.crochet"],
-  "native_sources": ["native/debug.js"],
+  "sources": ["transcript.crochet", "time.crochet", "vm.crochet"],
+  "native_sources": ["native/debug.js", "native/vm.js"],
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": [
+      {
+        "name": "runtime-introspection",
+        "description": "A very dangerous capability which allows to view and modify all Crochet internals. Useful for debugging your own programs, but should never be used in other situations!"
+      }
+    ]
   }
 }

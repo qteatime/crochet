@@ -20,7 +20,7 @@ towards this before the public release), but you can read:
 
 - [An overview of Crochet](./docs/README.md)
 - [A technical overview of Crochet (for professional programmers)](./docs/technical-overview.md)
-- [The (tentative) project roadmap](./docs/ROADMAP.md)
+- [The (tentative) project roadmap](https://crochet.qteati.me/roadmap/)
 
 ## Running
 

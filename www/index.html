@@ -24,10 +24,15 @@
     <script>
       void (async function () {
         const root = document.querySelector("#crochet");
+        const query = new URL(document.location.href).searchParams;
+        const capabilities = (query.get("capabilities") || "")
+          .split(",")
+          .map((x) => x.trim())
+          .filter((x) => x !== "");
         try {
           const crochet = new Crochet.CrochetForBrowser(
             document.location.pathname + "library",
-            new Set([]),
+            new Set(capabilities),
             false
           );
           await crochet.boot_from_file(

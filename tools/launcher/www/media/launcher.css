@@ -1,0 +1,69 @@
+.launcher-run-frame {
+  height: calc(100vh - 65px); /* top bar is 65px */
+  overflow-y: auto;
+}
+
+.launcher-run-frame .agata-frame {
+  height: 100%;
+}
+
+.launcher-run-frame iframe {
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+
+.launcher-playground-entry {
+  position: relative;
+}
+
+.launcher-playground-entry .agata-code-editor {
+  padding-bottom: 2em;
+}
+
+.launcher-playground-entry .agata-icon-button {
+  position: absolute;
+  bottom: -12px;
+  right: -12px;
+  background: var(--active-accent);
+  border-radius: 100%;
+  border: 2px solid --active-accent;
+}
+
+.launcher-playground-entry .agata-icon-button .agata-icon {
+  color: #fafafa;
+  text-indent: 3px;
+}
+
+.launcher-playground-entry {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2em;
+}
+
+.launcher-playground-entry-results {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: #fafafa;
+  border-top: none;
+  border-bottom-width: 2px;
+}
+
+.launcher-playground-entry-errors {
+  border: 1px solid var(--border);
+  background: #fafafa;
+  border-top: none;
+  border-bottom-width: 2px;
+  padding: 1em;
+  color: var(--error-text);
+}
+
+.launcher-playground-entry-log-entry {
+  margin-bottom: 1.5em;
+  border-bottom: 1px solid var(--border);
+}
+
+.launcher-playground-entry-log-entry::before {
+  content: "• ";
+}

@@ -7,11 +7,17 @@
     "source/0-types.crochet",
     "source/duration.crochet",
     "source/instant.crochet",
-    "source/date-time.crochet"
+    "source/date-time.crochet",
+    "source/wall-clock.crochet"
   ],
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": [
+      {
+        "name": "wall-clock",
+        "description": "Access to the system's wall-clock."
+      }
+    ]
   }
 }

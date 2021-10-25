@@ -57,3 +57,44 @@ export function get_type_namespace(
 export function get_trait_namespace(module: CrochetModule) {
   return module.pkg.traits;
 }
+
+export function get_global(module: CrochetModule, name: string) {
+  const value = module.definitions.try_lookup(name);
+  if (value == null) {
+    throw new ErrArbitrary(
+      "undefined",
+      `The definition ${name} is not accessible from ${module_location(module)}`
+    );
+  }
+  return value;
+}
+
+export function get_specific_global(module: CrochetModule, name: string) {
+  const global_name = module.pkg.definitions.prefixed(name);
+  const value = module.pkg.world.definitions.try_lookup_local(global_name);
+  if (value == null) {
+    throw new ErrArbitrary(
+      "undefined",
+      `The definition ${name} is not accessible from package ${module.pkg.name}`
+    );
+  }
+  return value;
+}
+
+export function replace_global(
+  module: CrochetModule,
+  name: string,
+  old: CrochetValue,
+  value: CrochetValue
+) {
+  const global_name = module.pkg.definitions.prefixed(name);
+  const actual = module.pkg.world.definitions.try_lookup_local(global_name);
+  if (old === actual) {
+    module.pkg.world.definitions.overwrite(global_name, value);
+  } else {
+    throw new ErrArbitrary(
+      "replace-not-allowed",
+      `Replacing ${name} in ${module.pkg.name} is not allowed; the provided capability is not correct`
+    );
+  }
+}

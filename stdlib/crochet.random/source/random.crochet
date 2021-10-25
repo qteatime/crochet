@@ -6,18 +6,32 @@ local type mutable-random(random is cell) is random;
 
 local type random-next(value, random is random);
 
+capability read-shared-instance;
+capability update-shared-instance;
+
+singleton scoped-random;
+singleton shared-random;
+
 // Effects
 effect random with
   get-random();
 end
 
-command #random with-source: (Instance0 is random) do: (Block is function-0) do
+protect global scoped-random with update-shared-instance;
+protect effect random with update-shared-instance;
+protect global shared-random with read-shared-instance;
+
+command scoped-random with-source: (Instance0 is random) do: (Block is function-0) do
   let Instance = Instance0 mutable;
   handle
     Block();
   with
     on random.get-random() => continue with Instance;
   end
+end
+
+command shared-random instance -> random do
+  perform random.get-random();
 end
 
 
@@ -35,10 +49,6 @@ requires unsigned-small-integer :: (Seed >= 0) and (Seed < (2 ** 32))
 command #random xor-shift -> xor-shift do
   let State = foreign xorshift.random-seed();
   new xor-shift(State.seed, State.inc);
-end
-
-command #random global -> random do
-  perform random.get-random();
 end
 
 command random mutable = new mutable-random(#cell with-value: self);
@@ -71,7 +81,7 @@ test
 end
 
 command xor-shift choose: (Items is list)
-requires non-empty :: not (Items is-empty)
+requires non-empty :: not Items is-empty
 do
   let Result = self between: 1 and: Items count;
   let Choice = Items at: Result.value;
@@ -91,7 +101,7 @@ test
 end
 
 command xor-shift choose-and-tear: (Items0 is list)
-requires non-empty :: not (Items0 is-empty)
+requires non-empty :: not Items0 is-empty
 do
   let Result = self between: 1 and: Items0 count;
   let Choice = Items0 at: Result.value;
@@ -132,7 +142,7 @@ test
 end
 
 command xor-shift choose-weighted: (Items0 is list)
-requires non-empty :: not (Items0 is-empty)
+requires non-empty :: not Items0 is-empty
 do
   let Total = Items0.score sum;
   let Items = Items0 sort-by: { A, B in A.score compare-to: B.score };
@@ -143,7 +153,7 @@ do
     let Item = Items first;
     condition
       when Score <= Item.score => Item.value;
-      always => Go(Score - Item.score, Items rest);
+      otherwise => Go(Score - Item.score, Items rest);
     end
   end};
 

@@ -49,6 +49,6 @@ command cli-box realise = self.value;
 command #cli-parser-result merge: (Xs is list) do
   condition
     when Xs count < 2 => Xs;
-    always => Xs rest fold-from: Xs first with: (_ merge: _);
+    otherwise => Xs rest fold-from: Xs first with: (_ merge: _);
   end
 end

@@ -1,0 +1,61 @@
+% crochet
+
+command agata with-root: Root do: (Block is (() -> any)) do
+  let Canvas = new dom-canvas(Root);
+  // TODO: this needs to be a weak map
+  let Mapping = #cell with-value: #map empty;
+  handle
+    Block();
+  with
+    on agata-presentation.show(Node) do
+      Canvas render: Node;
+      continue with nothing;
+    end
+
+    on agata-presentation.alert(Message) do
+      foreign dom.alert(Message);
+      continue with nothing;
+    end
+
+    on agata-presentation.get-reference(Reference) do
+      continue with Mapping value at: Reference;
+    end
+
+    on agata-presentation.register-reference(Reference, Node) do
+      Mapping <- Mapping value at: Reference put: Node;
+      continue with nothing;
+    end
+  end
+end
+
+command agata show: Widget do
+  let Node = dom-renderer render: Widget;
+  perform agata-presentation.show(Node);
+end
+
+command agata window: (Url is text) =
+  new dom-window(foreign dom.make-frame(Url));
+
+command agata message-box: (Message is text) =
+  perform agata-presentation.alert(Message);
+
+command dom-dynamic-canvas render: Widget do
+  let Node = dom-renderer render: Widget;
+  perform agata-canvas.replace(Node);
+end
+
+command dom-dynamic-canvas append: Widget do
+  let Node = dom-renderer render: Widget;
+  perform agata-canvas.append(Node);
+end
+
+command dom-dynamic-canvas prepend: Widget do
+  let Node = dom-renderer render: Widget;
+  perform agata-canvas.prepend(Node);
+end
+
+command agata reference: (Name is text) =
+  new agata-reference(Name);
+
+command agata-reference materialisation =
+  perform agata-presentation.get-reference(self);

@@ -1,6 +1,10 @@
 % crochet
 
+capability terminal;
 singleton terminal;
+protect type terminal with terminal;
+protect global terminal with terminal;
+
 
 command terminal clear do
   foreign terminal.clear();

@@ -59,7 +59,7 @@ command (Min is integer) until: (Max is integer) by: (Step is integer)
 do
   condition
     when Min =:= Max => [];
-    always => Min to: (Max - 1) by: Step;
+    otherwise => Min to: (Max - 1) by: Step;
   end
 test
   assert (1 until: 3 by: 1) =:= [1, 2];

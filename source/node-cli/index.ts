@@ -8,6 +8,7 @@ import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
 import Server from "./server";
 import * as Packaging from "./package";
+import * as ChildProcess from "child_process";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -47,6 +48,7 @@ interface Options {
     title?: string;
     module?: string;
     package?: string;
+    show_success: boolean;
   };
   app_args: string[];
 }
@@ -58,7 +60,9 @@ function parse_options(args0: string[]) {
   const repo_root = Path.resolve(__dirname, "../../");
 
   options.verbose = false;
-  options.test = {};
+  options.test = {
+    show_success: false,
+  };
   options.web = {
     port: 8000,
     www_root: Path.join(repo_root, "www"),
@@ -93,6 +97,12 @@ function parse_options(args0: string[]) {
       case "--test-package": {
         options.test.package = args0[current + 1] ?? "";
         current += 2;
+        continue;
+      }
+
+      case "--test-show-ok": {
+        options.test.show_success = true;
+        current += 1;
         continue;
       }
 
@@ -220,7 +230,10 @@ async function test([file]: string[], options: Options) {
     true
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
-  const failures = await crochet.run_tests(compile_test_filter(options.test));
+  const failures = await crochet.run_tests(
+    compile_test_filter(options.test),
+    options.test.show_success
+  );
   process.exitCode = failures.length;
 }
 
@@ -387,6 +400,7 @@ function help(command?: string) {
           "  crochet repl <crochet.json> [options]\n",
           "  crochet test <crochet.json> [options]\n",
           "  crochet build <crochet.json> [options]\n",
+          "  crochet launcher:server <crochet.json> [options]\n",
           "  crochet show-ir <file.crochet> [options]\n",
           "  crochet show-ast <file.crochet> [options]\n",
           "  crochet new <name> [options]\n",
@@ -447,6 +461,11 @@ void (async function main() {
         return await repl(args, options);
       case "new":
         return await new_package(args, options);
+      case "launcher:server": {
+        const server = require("../../tools/launcher/build/launcher");
+        await server.start_servers(8000);
+        break;
+      }
       case "version": {
         const version = require("../../package.json").version;
         console.log(`Crochet version ${version}`);
@@ -460,7 +479,7 @@ void (async function main() {
         help();
         process.exit(1);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(error.stack);
     process.exit(1);
   }

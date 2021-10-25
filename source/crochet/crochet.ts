@@ -5,7 +5,63 @@ import * as VM from "../vm";
 import * as Binary from "../binary";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
-import { CrochetValue, Environment, CrochetTrace } from "../vm";
+import { CrochetValue, Environment, CrochetTrace, ErrArbitrary } from "../vm";
+import * as UUID from "uuid";
+
+export type TestReportMessage =
+  | TRM_Started
+  | TRM_Test_Started
+  | TRM_Test_Passed
+  | TRM_Test_Failed
+  | TRM_Test_Skipped
+  | TRM_Finished;
+export abstract class TestReportMessageBase {}
+export class TRM_Started extends TestReportMessageBase {
+  readonly tag = "started";
+  constructor(readonly id: string) {
+    super();
+  }
+}
+export class TRM_Test_Started extends TestReportMessageBase {
+  readonly tag = "test-started";
+  constructor(
+    readonly id: string,
+    readonly test_id: string,
+    readonly pkg: string,
+    readonly module: string,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+export class TRM_Test_Passed extends TestReportMessageBase {
+  readonly tag = "test-passed";
+  constructor(readonly id: string, readonly test_id: string) {
+    super();
+  }
+}
+export class TRM_Test_Failed extends TestReportMessageBase {
+  readonly tag = "test-failed";
+  constructor(
+    readonly id: string,
+    readonly test_id: string,
+    readonly message: string
+  ) {
+    super();
+  }
+}
+export class TRM_Test_Skipped extends TestReportMessageBase {
+  readonly tag = "test-skipped";
+  constructor(readonly id: string, readonly test_id: string) {
+    super();
+  }
+}
+export class TRM_Finished extends TestReportMessageBase {
+  readonly tag = "finished";
+  constructor(readonly id: string) {
+    super();
+  }
+}
 
 export interface IFileSystem {
   read_package(name: string): Promise<Package.Package>;
@@ -24,9 +80,11 @@ export interface ISignal {
   request_capabilities(
     graph: Package.PackageGraph,
     root: Package.Package
-  ): Promise<boolean>;
+  ): Promise<Set<Package.Capability>>;
 
   booted(vm: BootedCrochet): Promise<void>;
+
+  report_test(message: TestReportMessage): Promise<void>;
 }
 
 export class Crochet {
@@ -43,12 +101,10 @@ export class Crochet {
       this.trusted,
       this.resolver
     );
-    if (await this.signal.request_capabilities(graph, pkg)) {
-    } else {
-      throw new Error(
-        `Aborting boot because the system denied the required capabilities.`
-      );
-    }
+    const capabilities = await this.signal.request_capabilities(graph, pkg);
+    const root_pkg = graph.get_package(root);
+    graph.check(root_pkg, capabilities);
+    graph.commit_capabilities(root_pkg, capabilities);
 
     const vm = new BootedCrochet(this, graph);
     await this.signal.booted(vm);
@@ -119,6 +175,9 @@ export class BootedCrochet {
     for (const x of this.graph.serialise(pkg)) {
       await this.load_package(x);
     }
+    for (const x of this.graph.serialise(pkg)) {
+      this.reify_capability_grants(x);
+    }
 
     await VM.run_prelude(this.universe);
   }
@@ -145,6 +204,31 @@ export class BootedCrochet {
 
     for (const x of pkg.sources) {
       await this.load_source(x, pkg, cpkg);
+    }
+  }
+
+  private reify_capability_grants(pkg: Package.ResolvedPackage) {
+    const intrinsics = new Set(["native"]);
+    const cpkg = this.universe.world.packages.get(pkg.name);
+    if (cpkg == null) {
+      throw new Error(`The package ${pkg.name} is not loaded.`);
+    }
+    for (const x of pkg.granted_capabilities) {
+      if (intrinsics.has(x)) {
+        continue;
+      }
+
+      const capability = this.universe.world.capabilities.try_lookup(x);
+      if (capability == null) {
+        throw new ErrArbitrary(
+          "invalid-capability",
+          `Could not load package ${pkg.name}. It requires a capability ${x} that either does not exist or has not been loaded yet.`
+        );
+      }
+      cpkg.granted_capabilities.add(capability);
+    }
+    if (this.graph.trusted.has(pkg.pkg)) {
+      this.universe.trusted_base.add(cpkg);
     }
   }
 
@@ -189,50 +273,41 @@ export class BootedCrochet {
     return module;
   }
 
-  async run_tests(filter: (_: VM.CrochetTest) => boolean) {
-    const tests0 = VM.Tests.grouped_tests(this.universe);
-    const {
-      total,
-      skipped,
-      tests: tests1,
-    } = VM.Tests.filter_grouped_tests(tests0, filter);
-    const failures = [];
-    const start = new Date().getTime();
-
-    for (const [group, modules] of tests1) {
-      console.log("");
-      console.log(group);
-      console.log("=".repeat(72));
-
+  async run_tests(
+    run_id: string,
+    filter: (_: VM.CrochetTest) => boolean,
+    verbose: boolean = false
+  ) {
+    const tests = VM.Tests.grouped_tests(this.universe);
+    await this.crochet.signal.report_test(new TRM_Started(run_id));
+    for (const [group, modules] of tests) {
       for (const [module, tests] of modules) {
-        console.log("");
-        console.log(module);
-        console.log("-".repeat(72));
-
         for (const test of tests) {
+          const test_id = UUID.v4();
+          await this.crochet.signal.report_test(
+            new TRM_Test_Started(run_id, test_id, group, module, test.title)
+          );
+          if (!filter(test)) {
+            await this.crochet.signal.report_test(
+              new TRM_Test_Skipped(run_id, test_id)
+            );
+            continue;
+          }
+
           try {
             await VM.run_test(this.universe, test);
-            console.log(`[OK]    ${test.title}`);
-          } catch (error) {
-            console.log("-".repeat(3));
-            console.log(`[ERROR] ${test.title}`);
-            console.log(error.stack ?? error);
-            console.log("-".repeat(3));
-            failures.push(error);
+            await this.crochet.signal.report_test(
+              new TRM_Test_Passed(run_id, test_id)
+            );
+          } catch (error: any) {
+            await this.crochet.signal.report_test(
+              new TRM_Test_Failed(run_id, test_id, error.stack ?? error)
+            );
           }
         }
       }
     }
-
-    const end = new Date().getTime();
-    const diff = end - start;
-    console.log("");
-    console.log("-".repeat(72));
-    console.log(
-      `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failed`
-    );
-
-    return failures;
+    await this.crochet.signal.report_test(new TRM_Finished(run_id));
   }
 
   async load_declaration(x: IR.Declaration, module: VM.CrochetModule) {

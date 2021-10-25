@@ -1,6 +1,7 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../../pkg";
+import * as VM from "../../vm";
 import { StorageConfig } from "../../storage";
 import {
   BootedCrochet,
@@ -57,7 +58,27 @@ export class CrochetForNode {
   }
 
   get trusted_core() {
-    return new Set(["crochet.core", "crochet.debug"]);
+    // TODO: restrict TCB (needs safer native modules support)
+    return new Set([
+      "crochet.codec.basic",
+      "crochet.core",
+      "crochet.debug",
+      "crochet.language.cli-arguments",
+      "crochet.language.csv",
+      "crochet.language.json",
+      "crochet.mathematics",
+      "crochet.novella",
+      "crochet.parsing.combinators",
+      "crochet.random",
+      "crochet.text.parsing.lingua",
+      "crochet.text.regex",
+      "crochet.time",
+      "crochet.wrapper.node.file-system",
+      "crochet.wrapper.node.http",
+      "crochet.wrapper.node.io",
+      "crochet.wrapper.node.os",
+      "crochet.wrapper.node.shell",
+    ]);
   }
 
   get system() {
@@ -103,8 +124,75 @@ export class CrochetForNode {
     return await this.system.run(entry, args);
   }
 
-  async run_tests(filter: (_: CrochetTest) => boolean) {
-    return await this.system.run_tests(filter);
+  async run_tests(
+    filter: (_: CrochetTest) => boolean,
+    verbose: boolean = false
+  ) {
+    const universe = this._booted_system!.universe;
+    const tests0 = VM.Tests.grouped_tests(universe);
+    const {
+      total,
+      skipped,
+      tests: tests1,
+    } = VM.Tests.filter_grouped_tests(tests0, filter);
+    const failures = [];
+    const start = new Date().getTime();
+    let current = "";
+    let sub_current = "";
+
+    for (const [group, modules] of tests1) {
+      sub_current = "";
+      const group_header = `\n${group}\n${"=".repeat(72)}\n`;
+      if (verbose) {
+        console.log(group_header);
+      } else {
+        current = group_header;
+      }
+
+      for (const [module, tests] of modules) {
+        const module_header = `\n${module}\n${"-".repeat(72)}\n`;
+        if (verbose) {
+          console.log(module_header);
+        } else {
+          sub_current = module_header;
+        }
+
+        for (const test of tests) {
+          try {
+            await VM.run_test(universe, test);
+            if (verbose) {
+              console.log(`[OK]    ${test.title}`);
+            }
+          } catch (error: any) {
+            if (!verbose) {
+              if (current) {
+                console.log(current);
+                current = "";
+              }
+              if (sub_current) {
+                console.log(sub_current);
+                sub_current = "";
+              }
+            }
+            console.log("-".repeat(3));
+            console.log(`[ERROR] ${test.title}`);
+            console.log(error.stack ?? error);
+            console.log("-".repeat(3));
+            failures.push(error);
+          }
+        }
+      }
+    }
+
+    const end = new Date().getTime();
+    const diff = end - start;
+    console.log("");
+    console.log("-".repeat(72));
+    console.log(
+      `${total} tests in ${diff}ms  |  ${skipped} skipped  |  ${failures.length} failed`
+    );
+
+    return failures;
   }
 
   async build(file: string) {
@@ -183,15 +271,13 @@ export class CrochetForNode {
       );
 
       if (!this.interactive) {
-        return (
-          Package.missing_capabilities(this.capabilities, required).size === 0
-        );
+        return this.capabilities;
       } else {
         const config = StorageConfig.load();
         const previous = config.grants(root.meta.name)?.capabilities ?? null;
 
         if (required.size === 0) {
-          return true;
+          return this.capabilities;
         } else if (previous == null) {
           return this.request_new_capabilities(config, requirements, root);
         } else {
@@ -206,7 +292,7 @@ export class CrochetForNode {
               root
             );
           } else {
-            return true;
+            return caps;
           }
         }
       }
@@ -215,6 +301,8 @@ export class CrochetForNode {
     booted: async (vm: BootedCrochet) => {
       vm.universe.trace.subscribe(this.render_entry);
     },
+
+    async report_test(message) {},
   };
 
   private async request_new_capabilities(
@@ -233,14 +321,13 @@ export class CrochetForNode {
       ].join("")
     );
     if (!(await question("[yes/no]> "))) {
-      console.log(`Aborting due to lack of capabilities.`);
-      return false;
+      return this.capabilities;
     } else {
       config.update_grants(root.meta.name, [...requirements.keys()]);
       for (const cap of requirements.keys()) {
         this.capabilities.add(cap);
       }
-      return true;
+      return this.capabilities;
     }
   }
 
@@ -263,21 +350,20 @@ export class CrochetForNode {
         previous.map((x) => `  - ${x}\n`).join(""),
         "\n",
         `It now also requires the following capabilities:\n`,
-        this.format_requirements(requirements),
+        this.format_requirements(missing),
         `\n\n`,
         `Type 'yes' to update the capabilities and run the application. `,
         `Your choice will be recorded.`,
       ].join("")
     );
     if (!(await question("[yes/no]> "))) {
-      console.log(`Aborting due to lack of capabilities.`);
-      return false;
+      return this.capabilities;
     } else {
       config.update_grants(root.meta.name, [...requirements.keys()]);
       for (const cap of requirements.keys()) {
         this.capabilities.add(cap);
       }
-      return true;
+      return this.capabilities;
     }
   }
 
@@ -286,7 +372,7 @@ export class CrochetForNode {
   ) {
     return [...requirements.entries()]
       .map(([cap, pkgs]) => {
-        return `  - ${cap} (from ${pkgs.map((x) => x.name).join(", ")})`;
+        return `  - ${cap} (required by ${pkgs.map((x) => x.name).join(", ")})`;
       })
       .join("\n");
   }

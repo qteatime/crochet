@@ -1,0 +1,69 @@
+% crochet
+
+local define w = agata-widget;
+local define cw = purr-common-widgets;
+
+local abstract state;
+local singleton not-started is state;
+local singleton running is state;
+local type finished(result) is state;
+
+command ps-package render do
+  cw project-window: self.project at: "package" with: [
+    w title: "Packaging",
+    w space,
+
+    w section: [
+      w container: (
+        for Target in self.project meta packaging-targets do
+          self target-card: Target
+        end
+      )
+    ]
+  ]
+end
+
+command ps-package target-card: Target do
+  let State = #observable with-value: not-started;
+
+  w group: [
+    w group-heading: [Target title],
+
+    w switch: State
+      | when: { X in X is not-started } then: { _ in self target: Target not-started: State }
+      | when: { X in X is running } then: { _ in self target: Target running: State }
+      | when: { X in X is finished } then: { _ in self target: Target finished: State }
+  ]
+end
+
+command ps-package target: Target not-started: State do
+  w text-button: "Build package"
+    | accessible-title: ("Build the project and produce a [Target title] distributable file" flatten-into-plain-text)
+    | on-click: { _ in
+        State <- running;
+        let Result = purr-api package: self.project target: Target;
+        State <- new finished(Result);
+      };
+end
+
+command ps-package target: Target running: State do
+  "Packaging [Target title]...";
+end
+
+command ps-package target: Target finished: State do
+  let Result = (State value).result;
+  condition
+    when Result is ok =>
+      w group: [
+        w group-heading: ["Output"],
+        w typewriter-text: [Result value]
+      ];
+
+    when Result is error =>
+      w error-text: [
+        w typewriter-text: [
+          Result reason
+        ]
+      ];
+  end
+end

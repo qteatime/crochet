@@ -1,10 +1,15 @@
 % crochet
 
+capability file-system;
+
 singleton file-system;
 local abstract node;
 local type inode(path is path-obj) is node;
 local type file(path is path-obj) is node;
 local type directory(path is path-obj) is node;
+
+protect type file-system with file-system;
+protect global file-system with file-system;
 
 command file-system at: (Path is path-obj)
   = new inode(Path);
@@ -41,7 +46,9 @@ command node exists
   = foreign fs.exists(self.path to-text);
 
 command node real-path
-  = foreign fs.real-path(self.path to-text);
+  = #path from-text: (foreign fs.real-path(self.path to-text));
+
+command node path = self.path;
 
 command node move-to: (Path is path-obj) do
   foreign fs.rename(self.path to-text, Path to-text);

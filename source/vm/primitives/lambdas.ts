@@ -14,6 +14,7 @@ import {
 } from "../intrinsics";
 import { ErrArbitrary } from "../errors";
 import { type_name } from "./location";
+import { NativeActivation } from "..";
 
 export function prepare_activation(
   universe: Universe,
@@ -40,6 +41,21 @@ export function prepare_activation(
         _return,
         parent_activation.handlers,
         p.body
+      );
+      return activation;
+    }
+
+    case Tag.NATIVE_LAMBDA: {
+      Values.assert_tag(Tag.NATIVE_LAMBDA, lambda);
+      const p = lambda.payload;
+      assert_arity(lambda, p.arity, values.length);
+      const activation = new NativeActivation(
+        parent_activation,
+        null,
+        new Environment(null, values[0] ?? null, null, null),
+        p.fn(...values),
+        p.handlers,
+        _return
       );
       return activation;
     }

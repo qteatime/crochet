@@ -15,7 +15,7 @@ command grammar parse: (Source is text) rule: (Rule is text) do
   let Succeeded = foreign lingua.succeeded(Parse-tree);
   condition
     when Succeeded => (#result ok: new parse-tree(Parse-tree));
-    always do
+    otherwise do
       #result error: (foreign lingua.error-message(Parse-tree));
     end
   end

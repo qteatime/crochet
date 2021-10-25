@@ -67,7 +67,7 @@ test "Search" do
   let Match = 
     (match
       when lielle search-at: garden do "Umpossible!" end
-      always do "A fallback" end
+      otherwise do "A fallback" end
     end);
   assert Match === [
     "A fallback"
@@ -76,7 +76,7 @@ test "Search" do
   let Match2 =
     (match
       when A search-at: B do [A, B] end
-      always do "A fallback" end
+      otherwise do "A fallback" end
     end);
   assert Match2 === [
     [lielle, foyer],

@@ -1,0 +1,237 @@
+% crochet
+
+local define w = agata-widget;
+local define cw = purr-common-widgets;
+
+local abstract state;
+local singleton not-started is state;
+local type running(process is pp-test, results is cell<record>) is state;
+
+effect test-screen with
+  get-state();
+  set-state(new-state);
+  show-progress(label);
+  hide-progress();
+end
+
+command ps-test render do
+  let State = #observable with-value: not-started;
+
+  w with-progress-root: { Progress in
+    handle
+      w commit: (
+        cw project-window: self.project at: "test" with: [
+          w title: "Testing",
+          w space,
+
+          w toolbar: [
+            w icon-button: "play"
+              | title: "Run tests"
+              | on-click: { _ in self run-tests }
+          ],
+
+          w switch: State
+            | when: {X in X is not-started} then: {_ in self not-started }
+            | when: {X in X is running} then: {_ in self running },
+        ]
+      )
+    with
+      on test-screen.get-state() =>
+        continue with State value;
+
+      on test-screen.set-state(New-state) do
+        State <- New-state;
+        continue with nothing;
+      end
+
+      on test-screen.show-progress(Label) do
+        Progress show: Label;
+        continue with nothing;
+      end
+
+      on test-screen.hide-progress() do
+        Progress hide;
+        continue with nothing;
+      end
+    end
+  }
+end
+
+command ps-test not-started do
+  self test-results: (perform test-screen.get-state());
+end
+
+command ps-test running do
+  self test-results: (perform test-screen.get-state());
+end
+
+command ps-test test-results: not-started do
+  w container: [];
+end
+
+command ps-test test-results: (State is running) do
+  w container: [
+    w dynamic: { Canvas in
+      let Handler = State.process.events subscribe: { Event in
+        self handle-event: Event in: Canvas state: State;
+      }
+    }
+  ];
+end
+
+command ps-test handle-event: (X is te-started) in: Canvas state: State do
+end
+
+command ps-test handle-event: (X is te-skipped) in: Canvas state: State do
+  State add-result: X.result status: ts-skipped;
+end
+
+command ps-test handle-event: (X is te-failed) in: Canvas state: State do
+  State add-result: X.result status: new ts-failed(X.message);
+  Canvas append: (w flex-column: [
+    w secondary-text: ["(in package [X.result.package-name], at [X.result.module-name])"],
+    w title: X.result.title,
+    w error-text: [w typewriter-text: [X.message]],
+    w divider,
+  ])
+end
+
+command ps-test handle-event: (X is te-passed) in: Canvas state: State do
+  State add-result: X.result status: ts-passed;
+end
+
+command ps-test handle-event: (X is te-finished) in: Canvas state: State do
+  Canvas render: (self test-results: X.summary in: Canvas state: State);
+  perform test-screen.hide-progress();
+end
+
+command ps-test test-results: Summary in: Canvas state: State do
+  w tabbed-panel: [
+    w tab: "Summary"
+      | with: [self test-result-summary: Summary],
+
+    w tab: "Report"
+      | with: [self test-result-report: State.results value],
+
+    w tab: "Errors"
+      | with: [self test-result-errors: State.results value],
+  ]
+end
+
+command ps-test test-result-summary: Summary do
+  w contents: [
+    w flex-column: [
+      w divider,
+      w flex-row: [
+        w text: "Passed: [Summary.passed to-text] / ",
+        w text: "Failed: [Summary.failed to-text] / ",
+        w text: "Skipped: [Summary.skipped to-text] / ",
+        w text: "Total: [Summary.total to-text] / ",
+        w text: "Duration: [Summary.duration milliseconds to-text]ms"
+      ]
+    ]
+  ];
+end
+
+command ps-test test-result-report: Results do
+  w contents: [
+    w flex-column: (
+      for Package-pair in Results pairs do
+        let Package-name = Package-pair key;
+        let Modules = Package-pair value;
+        w flex-column: [
+          w title: Package-name,
+          w container: (
+            for Module-pair in Modules pairs do
+              let Module-name = Module-pair key;
+              let Tests = Module-pair value;
+              w flex-column: [
+                w subtitle: Module-name,
+                w container: (
+                  for Test in Tests values do
+                    self test-result-entry: Test
+                  end
+                ),
+                w divider,
+              ]
+            end
+          ),
+          w double-space,
+        ]
+      end
+    )
+  ];
+end
+
+command ps-test test-result-errors: Results do
+  w contents: [
+    w flex-column: (
+      for
+        Modules in Results values,
+        Tests in Modules values,
+        Test in Tests values if Test.status is ts-failed
+      do
+        let Result = Test.result;
+        w flex-column: [
+          w secondary-text: ["(in package [Result.package-name], at [Result.module-name])"],
+          w title: Result.title,
+          w error-text: [w typewriter-text: [Test.status.message]],
+          w divider,
+        ];
+      end
+    )
+  ]
+end
+
+command ps-test test-result-entry: Result do
+  w flex-column: [
+    self test-result-status: Result.status title: Result.result.title,
+    w divider
+  ]
+end
+
+command ps-test test-result-status: ts-started title: Title =
+  w flex-row: [
+    w icon: "spinner",
+    Title
+  ];
+command ps-test test-result-status: ts-passed title: Title =
+  w success-text: [
+    w flex-row: [
+      w icon: "check-circle",
+      Title
+    ]
+  ];
+command ps-test test-result-status: ts-skipped title: Title =
+  w flex-row: [
+    w icon: "circle",
+    Title
+  ];
+command ps-test test-result-status: (S is ts-failed) title: Title =
+  w error-text: [
+    w flex-row: [
+      w icon: "times-circle",
+      Title,
+    ],
+    w typewriter-text: [S.message]
+  ];
+
+command ps-test run-tests do
+  let Process = purr run-tests: self.project;
+  let New-state = new running(Process, #cell with-value: [->]);
+  perform test-screen.set-state(New-state);
+  perform test-screen.show-progress("Running tests...");
+end
+
+command running add-result: (Test is test-result) status: (Status is test-status) do
+  let Results0 = self.results value;
+  let Package0 = Results0 at: Test.package-name default: [->];
+  let Module0 = Package0 at: Test.module-name default: [->];
+  let Module1 = Module0 at: Test.test-id put: [
+    result -> Test,
+    status -> Status
+  ];
+  let Package1 = Package0 at: Test.module-name put: Module1;
+  let Results1 = Results0 at: Test.package-name put: Package1;
+  self.results <- Results1;
+end

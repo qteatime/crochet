@@ -1,0 +1,31 @@
+% crochet
+
+command function-0 capture =
+  foreign fun.capture(0, self);
+
+command function-1 capture =
+  foreign fun.capture(1, self);
+
+command function-2 capture =
+  foreign fun.capture(2, self);
+
+command function-3 capture =
+  foreign fun.capture(3, self);
+
+command function-4 capture =
+  foreign fun.capture(4, self);
+
+command function-5 capture =
+  foreign fun.capture(5, self);
+
+command function-6 capture =
+  foreign fun.capture(6, self);
+
+command function-7 capture =
+  foreign fun.capture(7, self);
+
+command function-8 capture =
+  foreign fun.capture(8, self);
+
+command function-9 capture =
+  foreign fun.capture(9, self);

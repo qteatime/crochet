@@ -81,7 +81,7 @@ command player won do
            l2 at: c2 mark: self,
            l3 at: c1 mark: self => true;
 
-      always => false;
+      otherwise => false;
     end;
   
   Result first;
@@ -91,7 +91,7 @@ end
 type ref;
 
 command main-html: Root do
-  #random with-source: #random with-random-seed do: {
+  scoped-random with-source: #random with-random-seed do: {
     novella with-root: Root do: {
       novella show: (
         novella header: [
@@ -133,8 +133,8 @@ command (P is player) choose-action: Actions do
         novella choose-action: Actions;
       end
 
-      always do
-        #random global choose: Actions;
+      otherwise do
+        shared-random instance choose: Actions;
       end
     end;
   

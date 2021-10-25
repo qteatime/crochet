@@ -3,6 +3,10 @@
 local singleton module;
 
 // -- Folding
+local abstract maybe;
+local type some(global value) is maybe;
+local singleton no-value is maybe;
+
 local singleton foldable with
   command combine: no-value and: X with: F = new some(X);
   command combine: (X is some) and: Y with: F = new some(F(X value, Y));
@@ -108,7 +112,7 @@ end
 /// The average of all items in the collection. Every item must implement
 /// [arithmetic].
 command (X has foldable-collection, countable-container) average -> float
-requires non-empty :: not (X is-empty)
+requires non-empty :: not X is-empty
 do
   X sum / X count;
 test
@@ -119,7 +123,7 @@ end
 
 /// The highest value in the collection. All values must have a [total-ordering].
 command (X has foldable-collection) maximum
-requires non-empty :: not (X is-empty)
+requires non-empty :: not X is-empty
 do
   X fold-with: (greater-of: _ and: _)
 test
@@ -130,7 +134,7 @@ end
 
 /// The lowest value in the collection. All values must have a [total-ordering].
 command (X has foldable-collection) minimum
-requires non-empty :: not (X is-empty)
+requires non-empty :: not X is-empty
 do
   X fold-with: (lesser-of: _ and: _)
 test
@@ -162,9 +166,6 @@ end
 
 
 // -- Zipping
-command zip-pair first = self.first;
-command zip-pair second = self.second;
-
 command zip-pair === (That is zip-pair) =
   (self first === That first) and (self second === That second);
 
@@ -189,9 +190,6 @@ test
 end
 
 // -- Filtering
-
-command partition-pair satisfying = self.satisfying;
-command partition-pair not-satisfying = self.not-satisfying;
 
 /// Yields a new collection containing only elements that don't satisfy
 /// the given [Predicate].
