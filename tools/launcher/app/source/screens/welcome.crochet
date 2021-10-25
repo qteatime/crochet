@@ -78,32 +78,35 @@ command new-project as widget do
   let RName = agata reference: "name";
   let RTitle = agata reference: "title";
 
-  w contents: [
-    w title: "Create a new project",
-    w double-space,
+  w with-progress-root: { Progress in 
+    w contents: [
+      w title: "Create a new project",
+      w double-space,
 
-    w label: "Name" for: (
-      w text-input
-        | placeholder: "com.domain.project-name"
-        | reference: RName
-    ),
+      w label: "Name" for: (
+        w text-input
+          | placeholder: "com.domain.project-name"
+          | reference: RName
+      ),
 
-    w label: "Title" for: (
-      w text-input
-        | placeholder: "Project Name"
-        | reference: RTitle
-    ),
+      w label: "Title" for: (
+        w text-input
+          | placeholder: "Project Name"
+          | reference: RTitle
+      ),
 
-    w action-buttons: [
-      w text-button: "Create"
-        | accessible-title: "Create and load the project"
-        | on-click: { _ in
-            let Name = RName materialisation current-value;
-            let Title = RTitle materialisation current-value;
-            purr create-project: new purr-new-project(Name, Title);
-          }
+      w action-buttons: [
+        w text-button: "Create"
+          | accessible-title: "Create and load the project"
+          | on-click: { _ in
+              let Name = RName materialisation current-value;
+              let Title = RTitle materialisation current-value;
+              Progress show: "Creating and initialising [Title]...";
+              purr create-project: new purr-new-project(Name, Title);
+            }
+      ]
     ]
-  ]
+  }
 end
 
 command ps-welcome examples do
