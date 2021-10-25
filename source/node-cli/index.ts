@@ -8,6 +8,7 @@ import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
 import Server from "./server";
 import * as Packaging from "./package";
+import * as ChildProcess from "child_process";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -399,6 +400,7 @@ function help(command?: string) {
           "  crochet repl <crochet.json> [options]\n",
           "  crochet test <crochet.json> [options]\n",
           "  crochet build <crochet.json> [options]\n",
+          "  crochet launcher:server <crochet.json> [options]\n",
           "  crochet show-ir <file.crochet> [options]\n",
           "  crochet show-ast <file.crochet> [options]\n",
           "  crochet new <name> [options]\n",
@@ -459,6 +461,11 @@ void (async function main() {
         return await repl(args, options);
       case "new":
         return await new_package(args, options);
+      case "launcher:server": {
+        const server = require("../../tools/launcher/build/launcher");
+        await server.start_servers(8000);
+        break;
+      }
       case "version": {
         const version = require("../../package.json").version;
         console.log(`Crochet version ${version}`);
