@@ -2,7 +2,7 @@ type csv(rows: list)
 type row(cells: list)
 type cell(value: text)
 
-grammar Csv : csv {
+grammar csv_grammar : csv {
   file =
     | Rs:listOf<row, newline> newline? end    -> csv(Rs)
 
