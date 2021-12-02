@@ -6,3 +6,4 @@
 /support
 .binary
 tsconfig.tsbuildinfo
+node_modules
