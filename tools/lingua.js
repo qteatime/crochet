@@ -20630,6 +20630,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "genRuleVisitor": () => (/* binding */ genRuleVisitor),
 /* harmony export */   "genVisitor": () => (/* binding */ genVisitor),
 /* harmony export */   "generateVisitors": () => (/* binding */ generateVisitors),
+/* harmony export */   "topRule": () => (/* binding */ topRule),
 /* harmony export */   "generate": () => (/* binding */ generate)
 /* harmony export */ });
 /* harmony import */ var _fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9);
@@ -20637,6 +20638,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(29);
 /* harmony import */ var _OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(30);
 /* harmony import */ var _fable_fable_library_3_1_5_Types_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6);
+/* harmony import */ var _fable_fable_library_3_1_5_Array_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(24);
+
 
 
 
@@ -20676,7 +20679,7 @@ function genTypeApp(t_mut) {
                 return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("%P()--%P()", [genTypeApp(t.fields[0]), typeName(t.fields[1])]));
             }
             case 3: {
-                return "tuple";
+                return "list";
             }
             case 4: {
                 return "any";
@@ -20878,8 +20881,13 @@ function generateVisitors(g) {
     return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.join)("\n", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_1__.map)((rule) => genVisitor(rule), g.Rules));
 }
 
+function topRule(g) {
+    let matchValue;
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("\"%P()\"", [(matchValue = (0,_fable_fable_library_3_1_5_Array_js__WEBPACK_IMPORTED_MODULE_5__.head)(g.Rules), (matchValue.tag === 1) ? matchValue.fields[1] : ((matchValue.tag === 2) ? matchValue.fields[1] : matchValue.fields[1]))]));
+}
+
 function generate(g) {
-    return "% crochet" + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("\r\n// This file is generated from Lingua\r\n\r\nopen crochet.text.parsing.lingua;\r\n\r\n// Type definitions\r\nabstract node;\r\n%P()\r\n\r\n// Grammar definition\r\ndefine grammar = lazy (#lingua grammar: %P());\r\n\r\ndefine to-ast = lazy ((force grammar) semantics: [\r\n%P()\r\n]);\r\n  ", [generateTypes(g.Types), JSON.stringify((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.generateGrammar)(g)), generateVisitors(g)]));
+    return "% crochet" + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("\r\n// This file is generated from Lingua\r\n\r\nopen crochet.text.parsing.lingua;\r\n\r\n// Type definitions\r\nabstract node;\r\n%P()\r\n\r\nsingleton %P();\r\n\r\n// Grammar definition\r\nlocal define grammar =\r\n  lazy (#lingua grammar: %P());\r\n\r\nlocal define to-ast =\r\n  lazy ((force grammar) semantics: [\r\n    %P()\r\n  ]);\r\n\r\ncommand %P() grammar = force grammar;\r\n\r\ncommand %P() to-ast = force to-ast;\r\n\r\ncommand %P() parse: (Input is text) -\u003e result\u003c%P(), string\u003e do\r\n  let Tree = self grammar parse: Input rule: %P();\r\n  Tree map: { X in self to-ast transform: X };\r\nend\r\n  ", [generateTypes(g.Types), typeName(g.Name), JSON.stringify((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.generateGrammar)(g)), generateVisitors(g), typeName(g.Name), typeName(g.Name), typeName(g.Name), genTypeApp(g.Top), topRule(g)]));
 }
 
 //# sourceMappingURL=CrochetCodegen.js.map
