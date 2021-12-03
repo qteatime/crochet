@@ -20704,7 +20704,7 @@ function generateType(t) {
     if (t.tag === 1) {
         const n_1 = t.fields[0];
         const variants = (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_1__.map)((arg10$0040) => genVariant(n_1, arg10$0040), t.fields[2]);
-        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("abstract %P() is node;%P()%P()", [typeName(n_1), "\n", (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.join)("\n", variants)]));
+        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("abstract %P() is ast-node;%P()%P()", [typeName(n_1), "\n", (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.join)("\n", variants)]));
     }
     else {
         return genRecord(t.fields[0], t.fields[2]);
@@ -20712,11 +20712,23 @@ function generateType(t) {
 }
 
 function genRecord(n, fs) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P()(%P()) is node;", [typeName(n), genFields(fs)]));
+    if (fs.length === 0) {
+        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("singleton %P() is ast-node;", [typeName(n)]));
+    }
+    else {
+        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P()(%P()) is ast-node;", [typeName(n), genFields(fs)]));
+    }
 }
 
 function genVariant(p, _arg1) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P()--%P()(%P()) is %P();", [typeName(p), typeName(_arg1.fields[0]), genFields(_arg1.fields[1]), typeName(p)]));
+    const n = _arg1.fields[0];
+    const fs = _arg1.fields[1];
+    if (fs.length === 0) {
+        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("singleton %P()--%P() is %P();", [typeName(p), typeName(n), typeName(p)]));
+    }
+    else {
+        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("type %P()--%P()(%P()) is %P();", [typeName(p), typeName(n), genFields(fs), typeName(p)]));
+    }
 }
 
 function generateTypes(ts) {
@@ -20814,7 +20826,14 @@ function genTypeName(e) {
 function genExpr(e) {
     switch (e.tag) {
         case 1: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("(new %P()(%P())) ", [genTypeName(e.fields[0]), (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.join)(", ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_1__.map)((e_1) => genExpr(e_1), e.fields[1]))]));
+            const c = e.fields[0];
+            const args = e.fields[1];
+            if (args.length === 0) {
+                return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("%P()", [genTypeName(c)]));
+            }
+            else {
+                return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("(new %P()(%P())) ", [genTypeName(c), (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.join)(", ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_1__.map)((e_1) => genExpr(e_1), args))]));
+            }
         }
         case 2: {
             return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("((%P()).%P())", [genExpr(e.fields[0]), typeName(e.fields[1])]));
@@ -20887,7 +20906,7 @@ function topRule(g) {
 }
 
 function generate(g) {
-    return "% crochet" + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("\r\n// This file is generated from Lingua\r\n\r\nopen crochet.text.parsing.lingua;\r\n\r\n// Type definitions\r\nabstract node;\r\n%P()\r\n\r\nsingleton %P();\r\n\r\n// Grammar definition\r\nlocal define grammar =\r\n  lazy (#lingua grammar: %P());\r\n\r\nlocal define to-ast =\r\n  lazy ((force grammar) semantics: [\r\n    %P()\r\n  ]);\r\n\r\ncommand %P() grammar = force grammar;\r\n\r\ncommand %P() to-ast = force to-ast;\r\n\r\ncommand %P() parse: (Input is text) -\u003e result\u003c%P(), string\u003e do\r\n  let Tree = self grammar parse: Input rule: %P();\r\n  Tree map: { X in self to-ast transform: X };\r\nend\r\n  ", [generateTypes(g.Types), typeName(g.Name), JSON.stringify((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.generateGrammar)(g)), generateVisitors(g), typeName(g.Name), typeName(g.Name), typeName(g.Name), genTypeApp(g.Top), topRule(g)]));
+    return "% crochet" + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("\r\n// This file is generated from Lingua\r\n\r\nopen crochet.text.parsing.lingua;\r\n\r\n// Type definitions\r\nlocal abstract ast-node is node;\r\n%P()\r\n\r\nsingleton %P();\r\n\r\n// Grammar definition\r\nlocal define grammar =\r\n  lazy (#lingua grammar: %P());\r\n\r\nlocal define to-ast =\r\n  lazy ((force grammar) semantics: [\r\n    %P()\r\n  ]);\r\n\r\ncommand %P() grammar = force grammar;\r\n\r\ncommand %P() to-ast = force to-ast;\r\n\r\ncommand %P() parse: (Input is text) -\u003e result\u003c%P(), string\u003e do\r\n  let Tree = self grammar parse: Input rule: %P();\r\n  Tree map: { X in self to-ast transform: X };\r\nend\r\n  ", [generateTypes(g.Types), typeName(g.Name), JSON.stringify((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.generateGrammar)(g)), generateVisitors(g), typeName(g.Name), typeName(g.Name), typeName(g.Name), genTypeApp(g.Top), topRule(g)]));
 }
 
 //# sourceMappingURL=CrochetCodegen.js.map

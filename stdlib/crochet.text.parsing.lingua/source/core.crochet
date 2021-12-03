@@ -5,6 +5,7 @@ type grammar(ohm-grammar);
 type semantics(ohm-semantics);
 type interval(ohm-interval);
 type parse-tree(ohm-parse-tree);
+abstract node;
 
 
 command #lingua grammar: (Source is text)
