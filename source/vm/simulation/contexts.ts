@@ -68,7 +68,7 @@ export function add_event(context: Context, event: When) {
 export function* available_actions(
   context: Context,
   state: State,
-  env0: Environment,
+  env_root: Environment,
   module: CrochetModule,
   random: XorShift,
   relations: Namespace<CrochetRelation>,
@@ -80,6 +80,8 @@ export function* available_actions(
     if (!Types.fulfills_constraint(action.actor_type, actor.type)) {
       continue;
     }
+
+    const env0 = new Environment(null, null, action.module, null);
     const action_value = Values.make_action(action, env0);
     const env = Environments.clone_with_receiver(env0, action_value);
     env.define(action.self_parameter, actor);
@@ -115,7 +117,7 @@ export interface EventChoice {
 export function* available_events(
   context: Context,
   state: State,
-  env: Environment,
+  env_root: Environment,
   module: CrochetModule,
   random: XorShift,
   relations: Namespace<CrochetRelation>
@@ -123,6 +125,7 @@ export function* available_events(
   const result: EventChoice[] = [];
 
   for (const event of context.events) {
+    const env = new Environment(null, null, event.module, null);
     const envs = yield* search(
       state,
       env,
