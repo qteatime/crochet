@@ -17,7 +17,12 @@ const www = Path.resolve(launcher_root, "www");
 const root = Path.resolve(launcher_root, "app/crochet.json");
 const state = new AppState();
 
-export async function setup_launcher_server(port: number) {
+type Options = {
+  port: number;
+  project_directory?: string | null;
+};
+
+export async function setup_launcher_server(options: Options) {
   const app = Express();
   const lapp = App.from_file(root);
   const api = new API(repo_root);
@@ -72,7 +77,7 @@ export async function setup_launcher_server(port: number) {
   });
 
   app.get("/api/my-projects", async (req, res) => {
-    res.send(api.my_projects());
+    res.send(api.my_projects(options.project_directory));
   });
 
   app.get("/api/read/:id", async (req, res) => {
@@ -161,17 +166,17 @@ export async function setup_launcher_server(port: number) {
   app.use("/library", Express.static(Path.join(repo_root, "stdlib")));
 
   const result = defer<void>();
-  app.listen(port, () => {
-    console.log(`Launcher server started at http://localhost:${port}`);
+  app.listen(options.port, () => {
+    console.log(`Launcher server started at http://localhost:${options.port}`);
     result.resolve();
   });
 
   return result.promise;
 }
 
-export async function start_servers(port: number) {
+export async function start_servers(options: Options) {
   await Promise.all([
-    setup_launcher_server(port),
-    setup_app_server(port + 1, state),
+    setup_launcher_server(options),
+    setup_app_server(options.port + 1, state),
   ]);
 }

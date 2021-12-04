@@ -14,7 +14,7 @@ function createWindow() {
 
 async function main() {
   await app.whenReady();
-  await Launcher.start_servers(8000);
+  await Launcher.start_servers({ port: 8000 });
   createWindow();
 }
 

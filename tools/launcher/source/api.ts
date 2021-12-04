@@ -39,9 +39,9 @@ export class API {
     return pkgs_json.map((x) => ({ filename: x, meta: read_pkg(x) }));
   }
 
-  my_projects() {
+  my_projects(project_directory: string | undefined | null) {
     const pkgs_json = Glob.sync("**/crochet.json", {
-      cwd: Path.resolve(this.projects_directory()),
+      cwd: Path.resolve(project_directory ?? this.projects_directory()),
       absolute: true,
     });
     return pkgs_json.map((x) => ({ filename: x, meta: read_pkg(x) }));

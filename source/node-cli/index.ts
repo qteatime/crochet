@@ -50,6 +50,9 @@ interface Options {
     package?: string;
     show_success: boolean;
   };
+  launcher: {
+    project_directory: string | null;
+  };
   app_args: string[];
 }
 
@@ -69,6 +72,9 @@ function parse_options(args0: string[]) {
   };
   options.packaging = {
     out_dir: "packages",
+  };
+  options.launcher = {
+    project_directory: null,
   };
   options.app_args = [];
 
@@ -128,6 +134,12 @@ function parse_options(args0: string[]) {
       case "--disclose-debug": {
         options.disclose_debug = true;
         current++;
+        continue;
+      }
+
+      case "--project-directory": {
+        options.launcher.project_directory = args0[current + 1] ?? null;
+        current += 2;
         continue;
       }
 
@@ -463,7 +475,7 @@ void (async function main() {
         return await new_package(args, options);
       case "launcher:server": {
         const server = require("../../tools/launcher/build/launcher");
-        await server.start_servers(8000);
+        await server.start_servers({ ...options.launcher, port: 8080 });
         break;
       }
       case "version": {
