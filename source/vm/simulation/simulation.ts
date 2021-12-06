@@ -84,6 +84,7 @@ function* run_turn(
       state,
       actions_fired,
       events_fired,
+      relations,
       next_turn == null
     );
     logger.debug(`Checked goal ${ended}`);
@@ -183,6 +184,7 @@ function* check_goal(
   state: SimulationState,
   actions: number,
   events: number,
+  relations: Namespace<CrochetRelation>,
   round_ended: boolean
 ) {
   const goal = state.goal;
@@ -203,7 +205,7 @@ function* check_goal(
         env,
         state.module,
         state.random,
-        state.module.relations,
+        relations,
         goal.predicate
       );
       return results.length !== 0;
