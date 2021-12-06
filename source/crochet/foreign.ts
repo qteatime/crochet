@@ -270,6 +270,10 @@ export class ForeignInterface {
     return Values.from_plain_object(this.#universe, x, trusted);
   }
 
+  from_json(x: unknown): CrochetValue {
+    return Values.from_json(this.#universe, x);
+  }
+
   // == Reflection
   type_name(x: CrochetValue) {
     return Location.type_name(x.type);
@@ -351,5 +355,9 @@ export class ForeignInterface {
 
   get formatter() {
     return Location;
+  }
+
+  get universe() {
+    return this.#universe;
   }
 }

@@ -542,6 +542,43 @@ export function to_plain_json_object(x: CrochetValue): unknown {
   }
 }
 
+export function from_json(universe: Universe, x: unknown): CrochetValue {
+  if (x == null) {
+    return universe.nothing;
+  } else if (typeof x === "string") {
+    return make_dynamic_text(universe, x);
+  } else if (typeof x === "bigint") {
+    return make_integer(universe, x);
+  } else if (typeof x === "number") {
+    return make_float(universe, x);
+  } else if (typeof x === "boolean") {
+    return make_boolean(universe, x);
+  } else if (Array.isArray(x)) {
+    return make_list(
+      universe,
+      x.map((x) => from_json(universe, x))
+    );
+  } else if (x instanceof Map) {
+    const result = new Map<string, CrochetValue>();
+    for (const [k, v] of x.entries()) {
+      if (typeof k !== "string") {
+        throw new ErrArbitrary(
+          "invalid-type",
+          `Cannot convert native map because it has non-text keys`
+        );
+      }
+      result.set(k, from_json(universe, v));
+    }
+    return make_record_from_map(universe, result);
+  } else {
+    const result = new Map<string, CrochetValue>();
+    for (const key in x as any) {
+      result.set(key, from_json(universe, (x as any)[key]));
+    }
+    return make_record_from_map(universe, result);
+  }
+}
+
 export function from_plain_object(
   universe: Universe,
   x: unknown,

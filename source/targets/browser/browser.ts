@@ -59,6 +59,7 @@ export class CrochetForBrowser {
       "crochet.wrapper.node.io",
       "crochet.wrapper.node.os",
       "crochet.wrapper.node.shell",
+      "crochet.vm.reflection",
     ]);
   }
 

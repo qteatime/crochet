@@ -1,0 +1,112 @@
+% crochet
+
+// -- VM
+command vm universe =
+  new vm-universe(foreign vm.universe());
+
+// -- Universe
+command vm-universe world =
+  new vm-world(foreign universe.world(self.internal-universe));
+
+// -- World
+command vm-world packages do
+  let Packages = foreign world.packages(self.internal-world);
+  Packages map: { X in new vm-package(X) };
+end
+
+command vm-world commands do
+  let Commands = foreign world.commands(self.internal-world);
+  Commands map: { X in new vm-command(X) };
+end
+
+// -- Packages
+implement equality for vm-package;
+command vm-package === (That is vm-package) =
+  self.internal-package =:= That.internal-package;
+
+command vm-package name =
+  foreign pkg.name(self.internal-package);
+
+command vm-package file =
+  new vm-file(foreign pkg.file(self.internal-package));
+
+command vm-package dependencies do
+  let World = internal package-world: self;
+  let Packages = World packages
+                   | fold-from: [->] with: { R, P in R at: P name put: P };
+  let Dependencies = foreign pkg.dependencies(self.internal-package);
+  Dependencies map: (Packages at: _);
+end
+
+command vm-package types do
+  let Types = foreign pkg.types(self.internal-package);
+  Types map: { T in new vm-type(T) };
+end
+
+command internal package-world: (Pkg is vm-package) =
+  new vm-world(foreign pkg.world(Pkg.internal-package));
+
+// -- Modules
+command vm-module package =
+  new vm-package(foreign module.pkg(self.internal-module));
+
+// -- Types
+command vm-type sealed =
+  foreign typ.sealed(self.internal-type);
+
+command vm-type name =
+  foreign typ.name(self.internal-type);
+
+command vm-type documentation =
+  foreign typ.documentation(self.internal-type);
+
+command vm-type parent do
+  let Result = foreign typ.parent(self.internal-type);
+  condition
+    when Result is nothing => #result error: not-found;
+    otherwise => #result ok: new vm-type(Result);
+  end
+end
+
+command vm-type is-static =
+  foreign typ.is-static(self.internal-type);
+
+command internal type-module: (Type is vm-type) do
+  let Result = foreign typ.module(Type.internal-type);
+  condition
+    when Result is nothing => #result error: not-found;
+    otherwise => #result ok: new vm-module(Result);
+  end
+end
+
+// -- Commands
+command vm-command name =
+  foreign cmd.name(self.internal-command);
+
+command vm-command arity =
+  foreign cmd.arity(self.internal-command);
+
+command vm-command branches do
+  let Branches = foreign cmd.branches(self.internal-command);
+  Branches map: { X in new vm-command-branch(self, X) };
+end
+
+
+command vm-command-branch name =
+  foreign branch.name(self.internal-branch);
+
+command vm-command-branch documentation =
+  foreign branch.documentation(self.internal-branch);
+
+command vm-command-branch ir do
+  foreign branch.ir(self.internal-branch);
+end
+
+command internal branch-module: (Branch is vm-command-branch) =
+  new vm-module(foreign branch.module(Branch.internal-branch));
+
+// -- Files
+implement equality for vm-file;
+command vm-file === (That is vm-file) = 
+  self.filename === That.filename;
+

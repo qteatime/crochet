@@ -1,0 +1,15 @@
+{
+  "name": "crochet.vm.reflection",
+  "target": "*",
+  "native_sources": ["native/pkg.js"],
+  "sources": [
+    "source/0-types.crochet",
+    "source/entities.crochet",
+    "source/main.crochet"
+  ],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

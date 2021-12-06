@@ -27,6 +27,22 @@ export class Namespace<V> {
     return result;
   }
 
+  *prefixed_values(prefix: string | null) {
+    if (!prefix) {
+      yield* this.values();
+    } else {
+      for (const [key, value] of this.bindings.entries()) {
+        if (key.startsWith(prefix + "/")) {
+          yield value;
+        }
+      }
+    }
+  }
+
+  *values() {
+    yield* this.bindings.values();
+  }
+
   prefixed(name: string): string {
     return this.make_namespace(this.prefix, name);
   }
@@ -96,6 +112,12 @@ export class PassthroughNamespace<V> extends Namespace<V> {
     readonly prefix: string | null
   ) {
     super(parent, prefix);
+  }
+
+  *values() {
+    if (this.parent != null) {
+      yield* this.parent.prefixed_values(this.prefix);
+    }
   }
 
   define(name: string, value: V): boolean {

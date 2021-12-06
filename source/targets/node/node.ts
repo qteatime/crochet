@@ -79,6 +79,7 @@ export class CrochetForNode {
       "crochet.wrapper.node.io",
       "crochet.wrapper.node.os",
       "crochet.wrapper.node.shell",
+      "crochet.vm.reflection",
     ]);
   }
 
