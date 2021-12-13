@@ -1,12 +1,15 @@
 % crochet
 
 capability internal;
+capability vm-introspection;
 
 singleton vm;
 singleton internal;
 
 protect global internal with internal;
 protect type internal with internal;
+protect global vm with vm-introspection;
+protect type vm with vm-introspection;
 
 type vm-universe(internal-universe is unknown);
 type vm-world(internal-world is unknown);
@@ -18,22 +21,10 @@ type vm-command-branch(cmd is vm-command, internal-branch is unknown);
 type vm-file(filename is text);
 
 
+type vm-package-data(package is vm-package);
+
+
 type vm-type-field(
   global name is text,
   global index is integer,
 );
-
-type ir-basic-block(ops is list<ir-op>);
-abstract ir-op;
-abstract ir-lit;
-abstract ir-type;
-
-type ir-op-drop(meta) is ir-op;
-type ir-op-let(meta, name is text) is ir-op;
-type ir-op-push-variable(meta, name is text) is ir-op;
-type ir-op-push-self(meta) is ir-op;
-type ir-op-push-global(meta, name is text) is ir-op;
-type ir-op-push-literal(meta, value is ir-lit) is ir-op;
-type ir-op-push-return(meta) is ir-op;
-type ir-op-push-list(meta, arity is integer) is ir-op;
-type ir-op-push-new(meta, typ is ir-type, arity is integer) is ir-op;

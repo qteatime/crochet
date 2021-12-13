@@ -19,7 +19,17 @@ command vm-world commands do
   Commands map: { X in new vm-command(X) };
 end
 
+command vm-world types do
+  self packages flat-map: (_ types);
+end
+
 // -- Packages
+implement equality for vm-package-data;
+command vm-package-data === (That is vm-package-data) =
+  self.package === That.package;
+
+command vm-package-data name = self.package name;
+
 implement equality for vm-package;
 command vm-package === (That is vm-package) =
   self.internal-package =:= That.internal-package;
@@ -35,7 +45,9 @@ command vm-package dependencies do
   let Packages = World packages
                    | fold-from: [->] with: { R, P in R at: P name put: P };
   let Dependencies = foreign pkg.dependencies(self.internal-package);
-  Dependencies map: (Packages at: _);
+  Dependencies 
+    | map: (Packages at: _)
+    | map: { Pkg in new vm-package-data(Pkg) };
 end
 
 command vm-package types do
@@ -51,7 +63,7 @@ command vm-module package =
   new vm-package(foreign module.pkg(self.internal-module));
 
 // -- Types
-command vm-type sealed =
+command vm-type is-sealed =
   foreign typ.sealed(self.internal-type);
 
 command vm-type name =
@@ -70,6 +82,12 @@ end
 
 command vm-type is-static =
   foreign typ.is-static(self.internal-type);
+
+command vm-type package do
+  internal type-module: self
+    | map: (_ package)
+    | map: { Pkg in new vm-package-data(Pkg) };
+end
 
 command internal type-module: (Type is vm-type) do
   let Result = foreign typ.module(Type.internal-type);
