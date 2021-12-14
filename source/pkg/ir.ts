@@ -21,12 +21,15 @@ export type Target = TargetAny | TargetNode | TargetWeb;
 
 export type TargetAny = {
   readonly tag: TargetTag.ANY;
+  toString(): string;
 };
 export type TargetNode = {
   readonly tag: TargetTag.NODE;
+  toString(): string;
 };
 export type TargetWeb = {
   readonly tag: TargetTag.WEB;
+  toString(): string;
 };
 
 export type Dependency = {
@@ -61,13 +64,13 @@ export function file(x: File): File {
 }
 
 export function target_any(): TargetAny {
-  return { tag: TargetTag.ANY };
+  return { tag: TargetTag.ANY, toString: () => "*" };
 }
 export function target_node(): TargetNode {
-  return { tag: TargetTag.NODE };
+  return { tag: TargetTag.NODE, toString: () => "Node.js" };
 }
 export function target_web(): TargetWeb {
-  return { tag: TargetTag.WEB };
+  return { tag: TargetTag.WEB, toString: () => "Browser" };
 }
 
 export function dependency(x: Dependency): Dependency {

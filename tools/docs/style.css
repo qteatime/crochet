@@ -1,0 +1,157 @@
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+#doc-root {
+  font-family: "Lora", serif;
+  font-size: 20px;
+  border-top: 20px solid #f7f7f7;
+  padding-top: 1em;
+}
+
+.doc-page {
+  margin: 2em auto;
+  max-width: 820px;
+}
+
+.heading {
+  margin-bottom: 2em;
+}
+
+.title {
+  font-family: "PT Sans Caption", sans-serif;
+  font-size: 2.2em;
+}
+
+.heading-meta {
+  display: flex;
+  flex-direction: row;
+  gap: 3em;
+}
+
+.heading-meta-item {
+  flex-grow: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75em;
+  font-family: sans-serif;
+}
+
+.heading-meta-item strong {
+  text-transform: uppercase;
+  display: block;
+  color: #777;
+  font-family: 0.9em;
+  margin-bottom: 0.2em;
+}
+
+.overview-text {
+  white-space: pre-wrap;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #ececea;
+}
+
+.doc-section {
+  margin-bottom: 2em;
+}
+
+.summary-table {
+  display: table;
+  width: 100%;
+}
+
+.summary-table .doc-summary-entry {
+  display: table-row;
+}
+
+.summary-table .doc-summary-entry-title,
+.summary-table .doc-summary-entry-description {
+  display: table-cell;
+  border-bottom: 1px solid #ececea;
+  padding: 0.5em 0.5em 0.3em 0.5em;
+  margin: 0;
+}
+
+.summary-table .doc-summary-entry-description {
+  width: 100%;
+}
+
+.doc-summary-entry {
+  padding: 0.5em 0 0.3em 0;
+  margin-bottom: 1em;
+}
+
+.doc-summary-entry-title {
+  font-weight: bold;
+  white-space: nowrap;
+  line-height: 1.8em;
+}
+
+.doc-summary-entry-description {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.doc-summary-entry-description.full-description {
+  text-overflow: unset;
+  white-space: normal;
+  overflow: unset;
+}
+
+a {
+  color: #1565c0;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #1e88e5;
+  text-decoration: underline;
+}
+
+.breadcrumbs {
+  font-family: sans-serif;
+  font-size: 0.8em;
+  margin-bottom: 2em;
+  display: flex;
+  flex-direction: row;
+}
+
+.breadcrumb-item:not(:last-child)::after {
+  content: " / ";
+  margin: 0 0.6em;
+}
+
+.page-type-tag {
+  text-transform: uppercase;
+  font-size: 16px;
+  font-family: sans-serif;
+  color: #9f9f9f;
+  line-height: 100%;
+  margin-bottom: -0.8em;
+  font-weight: bold;
+}
+
+.source-code {
+  white-space: pre;
+  overflow: auto;
+  font-family: "Source Sans Pro", monospace;
+}
+
+.declaration-code {
+  background: #fff;
+  padding: 1em;
+  border: 1px solid #cfd8dc;
+  border-left-width: 4px;
+  color: #4f4f4f;
+  margin-bottom: 2em;
+}
+
+.source-code-caption {
+  font-family: sans-serif;
+  background: #cfd8dc;
+  padding: 0.4em 0.5em;
+  font-size: 0.7em;
+}
