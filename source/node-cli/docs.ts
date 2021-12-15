@@ -3,7 +3,13 @@ import * as FS from "fs";
 import * as Package from "../pkg";
 import { CrochetForNode, build, build_file } from "../targets/node";
 import type { BootedCrochet } from "../crochet";
-import { CrochetModule, CrochetPackage, CrochetType, Metadata } from "../vm";
+import {
+  CrochetModule,
+  CrochetPackage,
+  CrochetTrait,
+  CrochetType,
+  Metadata,
+} from "../vm";
 import {
   module_location,
   trait_name,
@@ -88,6 +94,7 @@ export async function serve_docs(
 
 function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
   const types = mapmap(sys.universe.world.types.bindings, type_doc);
+  const traits = mapmap(sys.universe.world.traits.bindings, trait_doc);
   return {
     package: {
       meta: pkg.meta,
@@ -95,6 +102,7 @@ function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
       overview: package_readme(pkg),
     },
     types,
+    traits,
   };
 }
 
@@ -118,14 +126,45 @@ function type_doc(name: string, typ: CrochetType) {
     module: typ.module?.filename ?? "(intrinsic)",
     package: typ.module?.pkg.name ?? "(intrinsic)",
     fields: type_fields(typ),
-    traits: [...typ.traits].map((t) => trait_name(t)),
-    capabilities: [...typ.protected_by].map((c) => c.full_name),
-    subtypes: [...typ.sub_types].map(
-      (c) => `${c.module?.pkg.name ?? "crochet.core"}/${c.name}`
+    parents: type_parents(typ.parent),
+    traits: [...new Set(all_implemented_traits(typ))].map((t) =>
+      full_trait_name(t)
     ),
+    capabilities: [...typ.protected_by].map((c) => c.full_name),
+    subtypes: [...typ.sub_types].map((t) => full_type_name(t)),
     declaration: get_source(typ.meta, typ.module),
     location: typ.module ? module_location(typ.module) : "(intrinsic)",
   };
+}
+
+function trait_doc(name: string, trait: CrochetTrait) {
+  return {
+    full_name: name,
+    name: trait.name,
+    documentation: trait.documentation,
+    location: trait.module ? module_location(trait.module) : "(intrinsic)",
+    declaration: get_source(trait.meta, trait.module),
+    implemented_by: [...trait.implemented_by].map((t) => full_type_name(t)),
+    protected_by: [...trait.protected_by].map((c) => c.full_name),
+    package: trait.module?.pkg.name ?? "(intrinsic)",
+    module: trait.module?.filename ?? "(intrinsic)",
+  };
+}
+
+function type_parents(typ: CrochetType | null): string[] {
+  if (typ == null) {
+    return [];
+  } else {
+    return [full_type_name(typ), ...type_parents(typ.parent)];
+  }
+}
+
+function all_implemented_traits(typ: CrochetType | null): CrochetTrait[] {
+  if (typ == null) {
+    return [];
+  } else {
+    return [...typ.traits, ...all_implemented_traits(typ.parent)];
+  }
 }
 
 function type_fields(typ: CrochetType) {
@@ -136,4 +175,12 @@ function type_fields(typ: CrochetType) {
       constraint: type_constraint_name(constraint),
     };
   });
+}
+
+function full_type_name(typ: CrochetType) {
+  return `${typ.module?.pkg.name ?? "crochet.core"}/${typ.name}`;
+}
+
+function full_trait_name(trait: CrochetTrait) {
+  return `${trait.module?.pkg.name ?? "crochet.core"}/${trait.name}`;
 }

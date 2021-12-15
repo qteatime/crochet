@@ -155,3 +155,37 @@ a:hover {
   padding: 0.4em 0.5em;
   font-size: 0.7em;
 }
+
+.type-hierarchy {
+  margin: 1em 1em 2em 1em;
+  display: flex;
+  flex-direction: column;
+}
+
+.type-hierarchy-item::after {
+  content: " ";
+  display: block;
+  height: 15px;
+  background: #aaa;
+  left: 14px;
+  position: absolute;
+  top: calc(100% + 4px);
+  width: 2px;
+}
+
+.type-hierarchy-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.type-hierarchy-item::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  border-top: 6px solid #aaa;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  top: calc(100% + 15px);
+  left: 9px;
+  z-index: 2;
+}
