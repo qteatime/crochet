@@ -2,15 +2,20 @@ import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
 import { CrochetForNode, build, build_file } from "../targets/node";
-import type { BootedCrochet, CrochetValue } from "../crochet";
+import type { BootedCrochet } from "../crochet";
 import {
+  CrochetCapability,
   CrochetCommand,
   CrochetCommandBranch,
   CrochetModule,
   CrochetPackage,
+  CrochetProtectedValue,
   CrochetTrait,
   CrochetType,
+  CrochetValue,
+  CrochetWorld,
   Metadata,
+  Tag,
 } from "../vm";
 import {
   module_location,
@@ -96,10 +101,16 @@ export async function serve_docs(
 }
 
 function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
-  const types = mapmap(sys.universe.world.types.bindings, type_doc);
+  const types = mapmap(sys.universe.world.types.bindings, type_doc).filter(
+    (t) => !/^effect /.test(t.name)
+  );
   const traits = mapmap(sys.universe.world.traits.bindings, trait_doc);
   const commands = mapmap(sys.universe.world.commands.bindings, command_doc);
   const globals = mapmap(sys.universe.world.definitions.bindings, global_doc);
+  const capabilities = mapmap(
+    sys.universe.world.capabilities.bindings,
+    (a, b) => capability_doc(a, b, sys.universe.world)
+  );
   return {
     package: {
       meta: pkg.meta,
@@ -110,6 +121,7 @@ function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
     traits,
     commands,
     globals,
+    capabilities,
   };
 }
 
@@ -185,12 +197,54 @@ function command_branch_doc(branch: CrochetCommandBranch) {
 }
 
 function global_doc(name: string, value: CrochetValue) {
+  const protection =
+    value.tag === Tag.PROTECTED
+      ? (value.payload as CrochetProtectedValue)
+      : null;
+  const real_value = protection?.value ?? value;
+  const protected_by = protection?.protected_by ?? new Set();
+
   return {
     full_name: name,
     name: name.split("/").slice(-1)[0],
-    value: simple_value(value),
-    type: full_type_name(value.type),
+    value: simple_value(real_value),
+    type: full_type_name(real_value.type),
+    protected_by: [...protected_by].map((c) => c.full_name),
     package: name.split("/")[0],
+  };
+}
+
+function capability_doc(
+  name: string,
+  capability: CrochetCapability,
+  world: CrochetWorld
+) {
+  return {
+    full_name: name,
+    name: capability.name,
+    module: capability.module?.filename ?? "(intrinsic)",
+    package: capability.module?.pkg.name ?? "crochet.core",
+    documentation: capability.documentation,
+    location: capability.module
+      ? module_location(capability.module)
+      : "(intrinsic)",
+    declaration: get_source(capability.meta, capability.module),
+    protecting: [...capability.protecting].map((x) => {
+      if (x instanceof CrochetValue) {
+        const global = [...world.definitions.bindings.entries()].find(
+          ([_, v]) => {
+            return v.tag === Tag.PROTECTED
+              ? (v.payload as CrochetProtectedValue).value === x
+              : false;
+          }
+        )!;
+        return { type: "global", name: global[0] };
+      } else if (x instanceof CrochetType) {
+        return { type: "type", name: full_type_name(x) };
+      } else {
+        throw new Error("unhandled protected type");
+      }
+    }),
   };
 }
 

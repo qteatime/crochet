@@ -352,6 +352,53 @@ function unambiguous_trait_name(name, data) {
   }
 }
 
+function capability_page(capability, data) {
+  return h(".doc-page.page-capability", {}, [
+    h(".heading", {}, [
+      breadcrumbs(data, [capability.name]),
+      h("h1.title", {}, [
+        h(".page-type-tag", {}, ["Capability"]),
+        capability.name,
+      ]),
+    ]),
+    h(".overview-text", {}, [capability.documentation]),
+    h(".doc-section", {}, [
+      h("h2.subtitle", {}, ["Source code"]),
+      h(".source-code-caption", {}, [capability.location]),
+      h(".source-code.declaration-code", {}, [capability.declaration]),
+    ]),
+    h(".doc-section", {}, [
+      h("h2.subtitle", {}, ["Accesses granted"]),
+      h(
+        ".doc-access-list",
+        {},
+        capability.protecting
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((x) => do_access_granted_summary(x, data))
+      ),
+    ]),
+  ]);
+}
+
+function do_access_granted_summary(x, data) {
+  if (x.type === "global") {
+    return h(".doc-access-item", {}, [h("strong", {}, "global "), x.name]);
+  } else if (x.type === "type") {
+    const type = data.types.find((t) => t.full_name === x.name) ?? {
+      name: x.name,
+    };
+    return h(".doc-access-item", {}, [
+      h("strong", {}, "type "),
+      type.full_name
+        ? link(type.full_name, () => render(type_page(type, data)))
+        : type.name,
+    ]);
+  } else {
+    return h(".error", {}, [`Unknown ${x.type}`]);
+  }
+}
+
 function pkg_overview(data) {
   return h(".doc-page.package-overview", {}, [
     h(".heading", {}, [
@@ -377,10 +424,36 @@ function pkg_overview(data) {
     ]),
     h(".overview-text", {}, [data.package.overview]),
     h(".package-contents", {}, [
+      capability_summary(data),
       globals_summary(data),
       type_summary(data),
       trait_summary(data),
       command_summary(data.commands, data),
+    ]),
+  ]);
+}
+
+function capability_summary(data) {
+  return h(".doc-section", {}, [
+    h("h2.subtitle", { id: "capabilities" }, ["Capabilities"]),
+    h(
+      ".doc-section-summary.summary-capabilities",
+      {},
+      data.capabilities
+        .filter((c) => c.package === data.package.meta.name)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((c) => do_capability_summary(c, data))
+    ),
+  ]);
+}
+
+function do_capability_summary(capability, data) {
+  return h(".doc-summary-entry", {}, [
+    h(".doc-summary-entry-title", {}, [
+      link(capability.name, () => render(capability_page(capability, data))),
+    ]),
+    h(".doc-summary-entry-description", {}, [
+      capability.documentation || "(no documentation)",
     ]),
   ]);
 }
@@ -403,14 +476,18 @@ function do_global_summary(global, data) {
   const type = data.types.find((t) => t.full_name === global.type);
   return h(".doc-summary-entry", {}, [
     h(".doc-summary-entry-title", {}, [
-      global.name === type.name
-        ? link(type.name, () => render(type_page(type, data)))
-        : (global.name,
-          " is ",
-          link(type.name, () => render(type_page(type, data)))),
+      ...(type == null
+        ? [global.name, " is ", global.type]
+        : global.name === type.name
+        ? [link(type.name, () => render(type_page(type, data)))]
+        : [
+            global.name,
+            " is ",
+            link(type.name, () => render(type_page(type, data))),
+          ]),
     ]),
     h(".doc-summary-entry-description", {}, [
-      type.documentation || "(no documentation)",
+      type?.documentation || "(no documentation)",
     ]),
   ]);
 }
