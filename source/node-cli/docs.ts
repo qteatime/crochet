@@ -2,8 +2,10 @@ import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
 import { CrochetForNode, build, build_file } from "../targets/node";
-import type { BootedCrochet } from "../crochet";
+import type { BootedCrochet, CrochetValue } from "../crochet";
 import {
+  CrochetCommand,
+  CrochetCommandBranch,
   CrochetModule,
   CrochetPackage,
   CrochetTrait,
@@ -12,6 +14,7 @@ import {
 } from "../vm";
 import {
   module_location,
+  simple_value,
   trait_name,
   type_constraint_name,
   type_name,
@@ -95,6 +98,8 @@ export async function serve_docs(
 function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
   const types = mapmap(sys.universe.world.types.bindings, type_doc);
   const traits = mapmap(sys.universe.world.traits.bindings, trait_doc);
+  const commands = mapmap(sys.universe.world.commands.bindings, command_doc);
+  const globals = mapmap(sys.universe.world.definitions.bindings, global_doc);
   return {
     package: {
       meta: pkg.meta,
@@ -103,6 +108,8 @@ function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
     },
     types,
     traits,
+    commands,
+    globals,
   };
 }
 
@@ -119,12 +126,13 @@ function type_doc(name: string, typ: CrochetType) {
   return {
     full_name: name,
     name: typ.name,
+    static_full_name: full_static_type_name(typ),
     signature: type_name(typ),
     documentation: typ.documentation,
     is_sealed: typ.sealed,
     is_static: typ.is_static,
     module: typ.module?.filename ?? "(intrinsic)",
-    package: typ.module?.pkg.name ?? "(intrinsic)",
+    package: typ.module?.pkg.name ?? "crochet.core",
     fields: type_fields(typ),
     parents: type_parents(typ.parent),
     traits: [...new Set(all_implemented_traits(typ))].map((t) =>
@@ -146,8 +154,43 @@ function trait_doc(name: string, trait: CrochetTrait) {
     declaration: get_source(trait.meta, trait.module),
     implemented_by: [...trait.implemented_by].map((t) => full_type_name(t)),
     protected_by: [...trait.protected_by].map((c) => c.full_name),
-    package: trait.module?.pkg.name ?? "(intrinsic)",
+    package: trait.module?.pkg.name ?? "crochet.core",
     module: trait.module?.filename ?? "(intrinsic)",
+  };
+}
+
+function command_doc(name: string, command: CrochetCommand) {
+  return {
+    name: name,
+    arity: command.arity,
+    branches: command.branches.map(command_branch_doc),
+  };
+}
+
+function command_branch_doc(branch: CrochetCommandBranch) {
+  return {
+    name: branch.name,
+    module: branch.module.filename,
+    package: branch.module.pkg.name,
+    documentation: branch.documentation,
+    parameters: branch.parameters,
+    types: branch.types.map((c) => ({
+      type: full_type_name(c.type),
+      traits: c.traits.map((t) => full_trait_name(t)),
+      signature: type_constraint_name(c),
+    })),
+    location: module_location(branch.module),
+    declaration: get_source(branch.meta, branch.module),
+  };
+}
+
+function global_doc(name: string, value: CrochetValue) {
+  return {
+    full_name: name,
+    name: name.split("/").slice(-1)[0],
+    value: simple_value(value),
+    type: full_type_name(value.type),
+    package: name.split("/")[0],
   };
 }
 
@@ -179,6 +222,10 @@ function type_fields(typ: CrochetType) {
 
 function full_type_name(typ: CrochetType) {
   return `${typ.module?.pkg.name ?? "crochet.core"}/${typ.name}`;
+}
+
+function full_static_type_name(typ: CrochetType) {
+  return `${typ.module?.pkg.name ?? "crochet.core"}/#${typ.name}`;
 }
 
 function full_trait_name(trait: CrochetTrait) {
