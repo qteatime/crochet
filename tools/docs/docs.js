@@ -31,6 +31,10 @@ function summary(entries) {
   return h(".doc-section-summary", {}, entries);
 }
 
+function command_list(entries) {
+  return h(".doc-command-list", {}, entries);
+}
+
 function summary_entry({ title, description }) {
   return h(".doc-summary-entry", {}, [
     h(".doc-summary-entry-title", {}, [title]),
@@ -53,6 +57,21 @@ function source_code(location, declaration) {
   ]);
 }
 
+function meta(entries) {
+  return h(".heading-meta", {}, entries);
+}
+
+function meta_entry(title, contents) {
+  return h(".heading-meta-item", {}, [
+    h("strong", {}, [title]),
+    h(".heading-meta-contents", {}, [contents]),
+  ]);
+}
+
+function hseq(contents) {
+  return h(".hseq", {}, contents);
+}
+
 function breadcrumbs(data, items) {
   return h(".breadcrumbs", {}, [
     h(".breadcrumb-item.breadcrumb-home", {}, [
@@ -60,6 +79,47 @@ function breadcrumbs(data, items) {
     ]),
     ...items.map((x) => h(".breadcrumb-item", {}, [x])),
   ]);
+}
+
+function tab_panel(tabs) {
+  function select(tab) {
+    Array.from(contents.querySelectorAll(".tab-panel-content")).forEach((x) =>
+      x.classList.remove("selected")
+    );
+    Array.from(header.querySelectorAll(".tab-panel-button")).forEach((x) =>
+      x.classList.remove("selected")
+    );
+    header
+      .querySelector(`.tab-panel-button[data-id="${tab.id}"]`)
+      .classList.add("selected");
+    contents
+      .querySelector(`.tab-panel-content[data-id="${tab.id}"]`)
+      .classList.add("selected");
+  }
+
+  const contents = h(
+    ".tab-panel-contents",
+    {},
+    tabs.map((t) => h(".tab-panel-content", { "data-id": t.id }, [t.contents]))
+  );
+
+  const header = h(
+    ".tab-panel-header",
+    {},
+    tabs.map((t) =>
+      h(".tab-panel-button", { "data-id": t.id }, [
+        link(t.title, () => select(t)),
+      ])
+    )
+  );
+
+  select(tabs[0]);
+
+  return h(".tab-panel", {}, [header, contents]);
+}
+
+function tab(id, title, contents) {
+  return { id, title, contents };
 }
 
 function effect_page(effect, data) {
@@ -201,30 +261,19 @@ function type_implemented_traits(type, data) {
 }
 
 function type_summary(data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", { id: "types" }, ["Types"]),
-    h(
-      ".doc-section-summary.summary-types",
-      {},
-      data.types
-        .filter((t) => t.package === data.package.meta.name)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((t) => do_type_summary(t, data))
-    ),
-  ]);
+  return data.types
+    .filter((t) => t.package === data.package.meta.name)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => type_summary_entry(t, data));
 }
 
-function do_type_summary(type, data) {
-  return h(".doc-summary-entry", {}, [
-    h(".doc-summary-entry-title", {}, [
-      type.full_name
-        ? link(type.name, () => render(type_page(type, data)))
-        : type.name,
-    ]),
-    h(".doc-summary-entry-description", {}, [
-      type.documentation || "(no documentation)",
-    ]),
-  ]);
+function type_summary_entry(type, data) {
+  return summary_entry({
+    title: type.full_name
+      ? link(type.name, () => render(type_page(type, data)))
+      : type.name,
+    description: type.documentation || "(no documentation)",
+  });
 }
 
 function trait_page(trait, data) {
@@ -262,54 +311,36 @@ function trait_implementers(trait, data) {
 }
 
 function trait_summary(data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", { id: "traits" }, ["Traits"]),
-    h(
-      ".doc-section-summary.summary-traits",
-      {},
-      data.traits
-        .filter((t) => t.package === data.package.meta.name)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((t) => do_trait_summary(t, data))
-    ),
-  ]);
+  return data.traits
+    .filter((t) => t.package === data.package.meta.name)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => trait_summary_entry(t, data));
 }
 
-function do_trait_summary(trait, data) {
-  return h(".doc-summary-entry", {}, [
-    h(".doc-summary-entry-title", {}, [
-      trait.full_name
-        ? link(trait.name, () => render(trait_page(trait, data)))
-        : trait.name,
-    ]),
-    h(".doc-summary-entry-description", {}, [
-      trait.documentation || "(no documentation)",
-    ]),
-  ]);
+function trait_summary_entry(trait, data) {
+  return summary_entry({
+    title: trait.full_name
+      ? link(trait.name, () => render(trait_page(trait, data)))
+      : trait.name,
+    description: trait.documentation || "(no documentation)",
+  });
 }
 
 function command_summary(commands, data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", { id: "commands" }, ["Commands"]),
-    h(
-      ".doc-command-list",
-      {},
-      commands
-        .map((c) => ({
-          ...c,
-          branches: c.branches.filter(
-            (b) => b.package === data.package.meta.name
-          ),
-        }))
-        .filter((c) => c.branches.length > 0)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((c) =>
-          h(".doc-command-entry", {}, [
-            link(`${c.name} (${c.branches.length} branches)`, () =>
-              render(command_page(c, data))
-            ),
-          ])
-        )
+  return commands
+    .map((c) => ({
+      ...c,
+      branches: c.branches.filter((b) => b.package === data.package.meta.name),
+    }))
+    .filter((c) => c.branches.length > 0)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((c) => command_summary_entry(c, data));
+}
+
+function command_summary_entry(command, data) {
+  return h(".doc-command-entry", {}, [
+    link(`${command.name} (${command.branches.length} branches)`, () =>
+      render(command_page(command, data))
     ),
   ]);
 }
@@ -482,83 +513,59 @@ function pkg_overview(data) {
   return h(".doc-page.package-overview", {}, [
     h(".heading", {}, [
       h("h1.title", {}, [data.package.meta.name]),
-      h(".heading-meta", {}, [
-        h(".heading-meta-item", {}, [
-          h("strong", {}, ["Stability"]),
-          h(".heading-meta-contents", {}, [
-            data.package.meta.stability ?? "(experimental)",
-          ]),
-        ]),
-        h(".heading-meta-item", {}, [
-          h("strong", {}, ["Target"]),
-          h(".heading-meta-contents", {}, [data.package.target]),
-        ]),
-        h(".heading-meta-item", {}, [
-          h("strong", {}, ["Version"]),
-          h(".heading-meta-contents", {}, [
-            data.package.meta.version ?? "(not yet published)",
-          ]),
-        ]),
+      meta([
+        meta_entry(
+          "Stability",
+          data.package.meta.stability ?? "(experimental)"
+        ),
+        meta_entry("Target", data.package.target),
+        meta_entry(
+          "Version",
+          data.package.meta.version ?? "(not yet published)"
+        ),
       ]),
     ]),
     h(".overview-text", {}, [md_to_html(data.package.overview)]),
     h(".package-contents", {}, [
-      capability_summary(data),
-      globals_summary(data),
-      section(
-        "Effects",
-        summary(data.effects.map((x) => effect_summary_entry(x, data)))
-      ),
-      type_summary(data),
-      trait_summary(data),
-      command_summary(data.commands, data),
+      tab_panel([
+        tab(1, "Capabilities", summary(capability_summary(data))),
+        tab(2, "Global definitions", summary(globals_summary(data))),
+        tab(3, "Effects", summary(effects_summary(data))),
+        tab(4, "Types", summary(type_summary(data))),
+        tab(5, "Traits", summary(trait_summary(data))),
+        tab(6, "Commands", command_list(command_summary(data.commands, data))),
+      ]),
     ]),
   ]);
 }
 
 function capability_summary(data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", { id: "capabilities" }, ["Capabilities"]),
-    h(
-      ".doc-section-summary.summary-capabilities",
-      {},
-      data.capabilities
-        .filter((c) => c.package === data.package.meta.name)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((c) => do_capability_summary(c, data))
-    ),
-  ]);
+  return data.capabilities
+    .filter((c) => c.package === data.package.meta.name)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((c) => capability_summary_entry(c, data));
 }
 
 function do_capability_summary(capability, data) {
-  return h(".doc-summary-entry", {}, [
-    h(".doc-summary-entry-title", {}, [
-      link(capability.name, () => render(capability_page(capability, data))),
-    ]),
-    h(".doc-summary-entry-description", {}, [
-      capability.documentation || "(no documentation)",
-    ]),
-  ]);
+  return summary_entry({
+    title: link(capability.name, () =>
+      render(capability_page(capability, data))
+    ),
+    description: capability.documentation || "(no documentation)",
+  });
 }
 
 function globals_summary(data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", { id: "globals" }, ["Global definitions"]),
-    h(
-      ".doc-section-summary.summary-globals",
-      {},
-      data.globals
-        .filter((t) => t.package === data.package.meta.name)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((t) => do_global_summary(t, data))
-    ),
-  ]);
+  return data.globals
+    .filter((t) => t.package === data.package.meta.name)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => global_summary_entry(t, data));
 }
 
-function do_global_summary(global, data) {
+function global_summary_entry(global, data) {
   const type = data.types.find((t) => t.full_name === global.type);
-  return h(".doc-summary-entry", {}, [
-    h(".doc-summary-entry-title", {}, [
+  return summary_entry({
+    title: hseq([
       ...(type == null
         ? [global.name, " is ", global.type]
         : global.name === type.name
@@ -569,14 +576,19 @@ function do_global_summary(global, data) {
             link(type.name, () => render(type_page(type, data))),
           ]),
     ]),
-    h(".doc-summary-entry-description", {}, [
-      type?.documentation || "(no documentation)",
-    ]),
-  ]);
+    description: type?.documentation || "(no documentation)",
+  });
+}
+
+function effects_summary(data) {
+  return data.effects
+    .filter((t) => t.package === data.package.meta.name)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => effect_summary_entry(t, data));
 }
 
 function index(data) {
-  return h(".doc-container", {}, [pkg_overview(data)]);
+  return h(".doc-container", { id: "page-root" }, [pkg_overview(data)]);
 }
 
 function main() {
@@ -584,11 +596,11 @@ function main() {
     document.querySelector("script[data-id='docs']")?.textContent ?? "";
   const data = JSON.parse(source);
   const page = index(data);
-  render(page);
+  render(page, "#doc-root");
 }
 
-function render(page) {
-  const root = document.querySelector("#doc-root");
+function render(page, selector = "#page-root") {
+  const root = document.querySelector(selector);
   root.textContent = "";
   root.append(page);
 }

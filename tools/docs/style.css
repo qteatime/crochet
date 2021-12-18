@@ -218,3 +218,47 @@ a:hover,
   color: #484d5a;
   font-family: "Source Sans Pro", monospace;
 }
+
+.tab-panel {
+  margin-bottom: 2em;
+}
+
+.tab-panel .tab-panel-header {
+  background: #fff;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid #ececea;
+  border-top: 2px solid #ececea;
+}
+
+.tab-panel .tab-panel-button:not(:last-child) {
+  border-right: 1px solid #f3f3f3;
+}
+
+.tab-panel .tab-panel-button a {
+  padding: 0.7em 1em 0.3em 1em;
+  color: #697885;
+  border-bottom: 3px solid #fff;
+  display: block;
+  text-decoration: none;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.tab-panel .tab-panel-button a:hover {
+  color: #1e88e5;
+}
+
+.tab-panel .tab-panel-button.selected a {
+  border-bottom: 3px solid #1e88e5;
+  color: #1e88e5;
+}
+
+.tab-panel-content {
+  padding: 1em 0;
+}
+
+.tab-panel-content:not(.selected) {
+  display: none;
+}
