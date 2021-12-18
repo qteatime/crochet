@@ -133,11 +133,17 @@ function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
 }
 
 function package_readme(pkg: Package.Package) {
-  const readme = Path.join(Path.dirname(pkg.filename), "readme.md");
-  if (FS.existsSync(readme)) {
-    return FS.readFileSync(readme, "utf-8");
-  } else {
+  const files = FS.readdirSync(Path.dirname(pkg.filename));
+  const readme_file = files.find((n) => /^readme\.md$/i.test(n));
+  if (!readme_file) {
     return "";
+  } else {
+    const full_path = Path.join(Path.dirname(pkg.filename), readme_file);
+    if (FS.existsSync(full_path)) {
+      return FS.readFileSync(full_path, "utf-8");
+    } else {
+      return "";
+    }
   }
 }
 
