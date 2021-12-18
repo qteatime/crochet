@@ -16,7 +16,7 @@ export class App {
 
   async build() {
     console.log("Building all dependencies...");
-    const crochet = new CrochetForNode(false, [], new Set([]), false);
+    const crochet = new CrochetForNode(false, [], new Set([]), false, true);
     await crochet.build(this.pkg.filename);
     for (const dep of this.pkg.meta.dependencies) {
       const dep_pkg = await crochet.fs.read_package(dep.name);
