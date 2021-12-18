@@ -13,14 +13,18 @@ function h(spec, attrs, children) {
   return element;
 }
 
-function link(text, on_click) {
+function link(text, on_click_fn) {
   const element = h("a", { href: "#" }, [text]);
-  element.addEventListener("click", (ev) => {
+  on_click(element, on_click_fn);
+  return element;
+}
+
+function on_click(e, fn) {
+  e.addEventListener("click", (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    on_click();
+    fn();
   });
-  return element;
 }
 
 function section(title, contents) {
@@ -133,7 +137,7 @@ function effect_page(effect, data) {
       tag: "Effect",
       title: effect.name,
     }),
-    h(".overview-text", {}, [md_to_html(effect.documentation)]),
+    h(".overview-text", {}, [md_to_html(effect.documentation, data)]),
     source_code(effect.location, effect.declaration),
     tab_panel([
       tab(
@@ -158,7 +162,7 @@ function effect_op_page(operation, effect, data) {
       tag: "Effect operation",
       title: operation.name,
     }),
-    h(".overview-text", {}, [md_to_html(operation.documentation)]),
+    h(".overview-text", {}, [md_to_html(operation.documentation, data)]),
     source_code(operation.location, operation.declaration),
     section("Fields", summary_table(type_field_summary(operation, data))),
   ]);
@@ -187,7 +191,7 @@ function type_page(type, data) {
       tag: "Type",
       title: type.name,
     }),
-    h(".overview-text", {}, [md_to_html(type.documentation)]),
+    h(".overview-text", {}, [md_to_html(type.documentation, data)]),
     source_code(type.location, type.declaration),
     tab_panel([
       tab(1, "Fields", summary_table(type_field_summary(type, data))),
@@ -291,7 +295,7 @@ function trait_page(trait, data) {
       tag: "Trait",
       title: trait.name,
     }),
-    h(".overview-text", {}, [md_to_html(trait.documentation)]),
+    h(".overview-text", {}, [md_to_html(trait.documentation, data)]),
     source_code(trait.location, trait.declaration),
     tab_panel([
       tab(1, "Implemented by", summary(trait_implementers(trait, data))),
@@ -393,7 +397,7 @@ function branch_page(command, branch, data) {
         full_branch_name(branch, data),
       ]),
     ]),
-    h(".overview-text", {}, [md_to_html(branch.documentation)]),
+    h(".overview-text", {}, [md_to_html(branch.documentation, data)]),
     h(".doc-section", {}, [
       h("h2.subtitle", {}, ["Source code"]),
       h(".source-code-caption", {}, [branch.location]),
@@ -457,7 +461,7 @@ function capability_page(capability, data) {
       tag: "Capability",
       title: capability.name,
     }),
-    h(".overview-text", {}, [md_to_html(capability.documentation)]),
+    h(".overview-text", {}, [md_to_html(capability.documentation, data)]),
     source_code(capability.location, capability.declaration),
     tab_panel([
       tab(1, "Accesses granted", capability_access_summary(capability, data)),
@@ -510,7 +514,7 @@ function pkg_overview(data) {
         ),
       ]),
     ]),
-    h(".overview-text", {}, [md_to_html(data.package.overview)]),
+    h(".overview-text", {}, [md_to_html(data.package.overview, data)]),
     h(".package-contents", {}, [
       tab_panel([
         tab(1, "Capabilities", summary(capability_summary(data))),
@@ -590,22 +594,102 @@ function render(page, selector = "#page-root") {
   root.append(page);
 }
 
-function md_to_html(text) {
+function md_to_html(text, data) {
+  function parse_link(text) {
+    const m1 = text.match(/^(\w+):(.+)/);
+    if (m1 == null) {
+      return {
+        tag: "link",
+        text: text,
+        target: "#",
+      };
+    } else {
+      const [_, type, line] = m1;
+      const [name, desc0] = line.split(/\s*\|\s*/);
+      const desc = desc0 || name;
+      return {
+        tag: type,
+        text: desc,
+        target: name,
+      };
+    }
+  }
+
+  function reify_links(root) {
+    const links = Array.from(
+      root.querySelectorAll("a.inner-link[data-target]")
+    );
+    links.forEach((link) => {
+      const target = link.getAttribute("data-target");
+      switch (link.getAttribute("data-tag")) {
+        case "type": {
+          const type = try_find_item(data.types, target, data);
+          if (type != null) {
+            on_click(link, () => render(type_page(type, data)));
+          } else {
+            link.classList.add("broken-link");
+          }
+          break;
+        }
+        case "effect": {
+          const effect = try_find_item(data.effects, target, data);
+          if (effect != null) {
+            on_click(link, () => render(effect_page(effect, data)));
+          } else {
+            link.classList.add("broken-link");
+          }
+          break;
+        }
+        case "trait": {
+          const trait = try_find_item(data.traits, target, data);
+          if (trait != null) {
+            on_click(link, () => render(trait_page(trait, data)));
+          } else {
+            link.classList.add("broken-link");
+          }
+          break;
+        }
+        case "command": {
+          const command = try_find_item(data.commands, target, data);
+          if (command != null) {
+            on_click(link, () => render(command_page(command, data)));
+          } else {
+            link.classList.add("broken-link");
+          }
+          break;
+        }
+        case "capability": {
+          const capability = try_find_item(data.capabilities, target, data);
+          if (capability != null) {
+            on_click(link, () => render(capability_page(capability, data)));
+          } else {
+            link.classList.add("broken-link");
+          }
+          break;
+        }
+        default:
+          link.classList.add("broken-link");
+      }
+    });
+  }
+
   function render_inline(text) {
     const html0 = h("div.cmd", {}, [text]).innerHTML;
     const html = html0
       .replace(/`(.+?)`/g, (_, x) => h("code", {}, [x]).outerHTML)
-      .replace(
-        /\[([^\]]+)\]/g,
-        (_, x) =>
-          h("a.inner-link", { "data-target": x, href: "#" }, [
-            h("code", {}, [x]),
-          ]).outerHTML
-      )
+      .replace(/\[([^\]]+)\]/g, (_, x) => {
+        const { tag, text, target } = parse_link(x);
+        return h(
+          "a.inner-link",
+          { "data-target": target, href: "#", "data-tag": tag },
+          [h("code", {}, [text])]
+        ).outerHTML;
+      })
       .replace(/\*\*(.+?)\*\*/g, (_, x) => h("strong", {}, [x]).outerHTML)
       .replace(/\*(.+?)\*/g, (_, x) => h("em", {}, [x]).outerHTML);
     const element = h("div.cmd", {}, []);
     element.innerHTML = html;
+    reify_links(element);
     return element;
   }
 
@@ -677,6 +761,18 @@ function md_to_html(text) {
   const result = lines.reduce(handle_line, { blocks: [], current: null });
   const blocks = push(result.blocks, result.current);
   return h("div.crochet-md", {}, blocks);
+}
+
+function try_find_item(items, name, data) {
+  const full_name = name.includes("/")
+    ? name
+    : `${data.package.meta.name}/${name}`;
+  return (
+    items.find((i) => i.full_name === full_name) ??
+    items.find(
+      (i) => full_name !== name && i.full_name === `crochet.core/${name}`
+    )
+  );
 }
 
 main();

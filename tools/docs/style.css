@@ -219,6 +219,16 @@ a:hover,
   font-family: "Source Sans Pro", monospace;
 }
 
+.crochet-md code::after {
+  content: "'";
+  color: #606674;
+}
+
+.crochet-md a.broken-link,
+.crochet-md a.broken-link code {
+  color: rgb(221, 73, 93);
+}
+
 .tab-panel {
   margin-bottom: 2em;
 }
