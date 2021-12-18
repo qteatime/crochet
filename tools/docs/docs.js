@@ -83,7 +83,9 @@ function hseq(contents) {
 function breadcrumbs(data, items) {
   return h(".breadcrumbs", {}, [
     h(".breadcrumb-item.breadcrumb-home", {}, [
-      link(data.package.meta.name, () => render(index(data))),
+      link(data.package.meta.name, () =>
+        navigate("package", data.package.meta.name, pkg_overview(data))
+      ),
     ]),
     ...items.map((x) => h(".breadcrumb-item", {}, [x])),
   ]);
@@ -156,7 +158,9 @@ function effect_op_page(operation, effect, data) {
   return h(".doc-page", {}, [
     heading({
       breadcrumbs: breadcrumbs(data, [
-        link(effect.name, () => render(effect_page(effect, data))),
+        link(effect.name, () =>
+          navigate("effect", effect.full_name, effect_page(effect, data))
+        ),
         operation.name,
       ]),
       tag: "Effect operation",
@@ -171,7 +175,11 @@ function effect_op_page(operation, effect, data) {
 function effect_op_summary_entry(operation, effect, data) {
   return summary_entry({
     title: link(operation.name, () =>
-      render(effect_op_page(operation, effect, data))
+      navigate(
+        "effect_op",
+        `${effect.full_name}/${operation.name}`,
+        effect_op_page(operation, effect, data)
+      )
     ),
     description: operation.documentation || "(no documentation)",
   });
@@ -179,7 +187,9 @@ function effect_op_summary_entry(operation, effect, data) {
 
 function effect_summary_entry(effect, data) {
   return summary_entry({
-    title: link(effect.name, () => render(effect_page(effect, data))),
+    title: link(effect.name, () =>
+      navigate("effect", effect.full_name, effect_page(effect, data))
+    ),
     description: effect.documentation || "(no documentation)",
   });
 }
@@ -245,7 +255,9 @@ function type_hierarchy(type, data) {
     .map((t) =>
       h(".type-hierarchy-item", {}, [
         t.signature
-          ? link(t.signature, () => render(type_page(t, data)))
+          ? link(t.signature, () =>
+              navigate("type", t.full_name, type_page(t, data))
+            )
           : t.name,
       ])
     );
@@ -282,7 +294,9 @@ function type_summary(data) {
 function type_summary_entry(type, data) {
   return summary_entry({
     title: type.full_name
-      ? link(type.name, () => render(type_page(type, data)))
+      ? link(type.name, () =>
+          navigate("type", type.full_name, type_page(type, data))
+        )
       : type.name,
     description: type.documentation || "(no documentation)",
   });
@@ -330,7 +344,9 @@ function trait_summary(data) {
 function trait_summary_entry(trait, data) {
   return summary_entry({
     title: trait.full_name
-      ? link(trait.name, () => render(trait_page(trait, data)))
+      ? link(trait.name, () =>
+          navigate("trait", trait.full_name, trait_page(trait, data))
+        )
       : trait.name,
     description: trait.documentation || "(no documentation)",
   });
@@ -350,7 +366,7 @@ function command_summary(commands, data) {
 function command_summary_entry(command, data) {
   return h(".doc-command-entry", {}, [
     link(`${command.name} (${command.branches.length} branches)`, () =>
-      render(command_page(command, data))
+      navigate("command", command.name, command_page(command, data))
     ),
   ]);
 }
@@ -370,9 +386,10 @@ function command_branches(command, data) {
 }
 
 function branch_summary_entry(command, branch, data) {
+  const full_name = full_branch_name(branch, data);
   return summary_entry({
-    title: link(full_branch_name(branch, data), () =>
-      render(branch_page(command, branch, data))
+    title: link(full_name, () =>
+      navigate("branch", full_name, branch_page(command, branch, data))
     ),
     description: branch.documentation || "(no documentation)",
   });
@@ -390,7 +407,9 @@ function branch_page(command, branch, data) {
   return h(".doc-page.page-branch", {}, [
     h(".heading", {}, [
       breadcrumbs(data, [
-        link(command.name, () => render(command_page(command, data))),
+        link(command.name, () =>
+          navigate("command", command.name, command_page(command, data))
+        ),
       ]),
       h("h1.title", {}, [
         h(".page-type-tag", {}, ["Command branch"]),
@@ -490,7 +509,9 @@ function do_access_granted_summary(x, data) {
     return h(".doc-access-item", {}, [
       h("strong", {}, "type "),
       type.full_name
-        ? link(type.full_name, () => render(type_page(type, data)))
+        ? link(type.full_name, () =>
+            navigate("type", type.full_name, type_page(type, data))
+          )
         : type.name,
     ]);
   } else {
@@ -538,7 +559,13 @@ function capability_summary(data) {
 function capability_summary_entry(capability, data) {
   return summary_entry({
     title: capability.full_name
-      ? link(capability.name, () => render(capability_page(capability, data)))
+      ? link(capability.name, () =>
+          navigate(
+            "capability",
+            capability.full_name,
+            capability_page(capability, data)
+          )
+        )
       : capability.name,
     description: capability.documentation || "(no documentation)",
   });
@@ -558,11 +585,17 @@ function global_summary_entry(global, data) {
       ...(type == null
         ? [global.name, " is ", global.type]
         : global.name === type.name
-        ? [link(type.name, () => render(type_page(type, data)))]
+        ? [
+            link(type.name, () =>
+              navigate("type", type.full_name, type_page(type, data))
+            ),
+          ]
         : [
             global.name,
             " is ",
-            link(type.name, () => render(type_page(type, data))),
+            link(type.name, () =>
+              navigate("type", type.full_name, type_page(type, data))
+            ),
           ]),
     ]),
     description: type?.documentation || "(no documentation)",
@@ -576,22 +609,158 @@ function effects_summary(data) {
     .map((t) => effect_summary_entry(t, data));
 }
 
-function index(data) {
-  return h(".doc-container", { id: "page-root" }, [pkg_overview(data)]);
+function index(page) {
+  return h(".doc-container", { id: "page-root" }, [page]);
 }
 
 function main() {
   const source =
     document.querySelector("script[data-id='docs']")?.textContent ?? "";
   const data = JSON.parse(source);
-  const page = index(data);
-  render(page, "#doc-root");
+  const { state, page } = page_from_url(document.location.hash, data);
+  history.replaceState(state, "");
+  render(index(page), "#doc-root");
+
+  window.addEventListener("popstate", (ev) => {
+    if (!ev.state) {
+      render(pkg_overview(data));
+    } else {
+      const page = reify_page(ev.state, data);
+      if (page != null) {
+        render(page());
+      } else {
+        render(not_found(ev.state, data));
+      }
+    }
+  });
+}
+
+function not_found({ type, target }, data) {
+  return h(".doc-page.not-found", {}, [
+    breadcrumbs(data, [h("span", {}, [type, " ", target])]),
+    h("h1.title", {}, ["Not found"]),
+    h("p.crochet-md", {}, [
+      "No ",
+      type,
+      " ",
+      h("code", {}, [target]),
+      " is reachable from this package.",
+    ]),
+  ]);
 }
 
 function render(page, selector = "#page-root") {
   const root = document.querySelector(selector);
   root.textContent = "";
   root.append(page);
+}
+
+function navigate(type, name, page) {
+  history.pushState({ type, target: name }, "", `#${type}:${name}`);
+  render(page);
+}
+
+function reify_page({ type, target }, data) {
+  const handlers = {
+    type: (t) => [
+      try_find_item(data.types, t, data),
+      (t) => type_page(t, data),
+    ],
+    effect: (t) => [
+      try_find_item(data.effects, t, data),
+      (e) => effect_page(e, data),
+    ],
+    traits: (t) => [
+      try_find_item(data.traits, t, data),
+      (t) => trait_page(t, data),
+    ],
+    command: (t) => [
+      try_find_item(data.commands, t, data),
+      (c) => command_page(c, data),
+    ],
+    branch: (t) => [
+      (() => {
+        const branches = data.commands
+          .flatMap((c) =>
+            c.branches.map((b) => {
+              const full_name = full_branch_name(b, data);
+              return [t === full_name, full_name, c, b];
+            })
+          )
+          .filter(([t]) => t);
+        if (branches.length !== 1) {
+          return null;
+        } else {
+          return branches[0];
+        }
+      })(),
+      ([_, n, c, b]) => branch_page(c, b, data),
+    ],
+    effect_op: (t) => [
+      () => {
+        const ops = data.effects
+          .flatMap((e) =>
+            e.operations.map((op) => {
+              const name = `${e.full_name}/${op.name}`;
+              return [name === target, op, e];
+            })
+          )
+          .filter(([t]) => t);
+        if (ops.length !== 1) {
+          return null;
+        } else {
+          return ops[0];
+        }
+      },
+      ([_, op, effect]) => effect_op_page(op, effect, data),
+    ],
+    capability: (t) => [
+      try_find_item(data.capability, t, data),
+      (c) => capability_page(c, data),
+    ],
+    package: (t) => [
+      data.package.meta.name === t ? data : null,
+      (_) => pkg_overview(data),
+    ],
+  };
+  const handler = handlers[type];
+  if (handler == null) {
+    return null;
+  } else {
+    const [item, present] = handler(target);
+    if (item != null) {
+      return () => present(item);
+    } else {
+      return null;
+    }
+  }
+}
+
+function parse_url(url) {
+  const m1 = url.match(/^#?(\w+):(.+)/);
+  if (m1 != null) {
+    const [_, type, target] = m1;
+    return { type, target };
+  } else {
+    return null;
+  }
+}
+
+function page_from_url(url, data) {
+  const state = parse_url(url);
+  if (!state) {
+    return {
+      state: { type: "package", target: data.package.meta.name },
+      page: pkg_overview(data),
+    };
+  } else {
+    const page = reify_page(state, data);
+    if (page != null) {
+      return { state, page: page() };
+    } else {
+      return { state, page: not_found(state, data) };
+    }
+  }
 }
 
 function md_to_html(text, data) {
@@ -621,54 +790,12 @@ function md_to_html(text, data) {
     );
     links.forEach((link) => {
       const target = link.getAttribute("data-target");
-      switch (link.getAttribute("data-tag")) {
-        case "type": {
-          const type = try_find_item(data.types, target, data);
-          if (type != null) {
-            on_click(link, () => render(type_page(type, data)));
-          } else {
-            link.classList.add("broken-link");
-          }
-          break;
-        }
-        case "effect": {
-          const effect = try_find_item(data.effects, target, data);
-          if (effect != null) {
-            on_click(link, () => render(effect_page(effect, data)));
-          } else {
-            link.classList.add("broken-link");
-          }
-          break;
-        }
-        case "trait": {
-          const trait = try_find_item(data.traits, target, data);
-          if (trait != null) {
-            on_click(link, () => render(trait_page(trait, data)));
-          } else {
-            link.classList.add("broken-link");
-          }
-          break;
-        }
-        case "command": {
-          const command = try_find_item(data.commands, target, data);
-          if (command != null) {
-            on_click(link, () => render(command_page(command, data)));
-          } else {
-            link.classList.add("broken-link");
-          }
-          break;
-        }
-        case "capability": {
-          const capability = try_find_item(data.capabilities, target, data);
-          if (capability != null) {
-            on_click(link, () => render(capability_page(capability, data)));
-          } else {
-            link.classList.add("broken-link");
-          }
-          break;
-        }
-        default:
-          link.classList.add("broken-link");
+      const type = link.getAttribute("data-tag");
+      const page = reify_page({ type, target }, data);
+      if (page) {
+        on_click(link, () => navigate(type, target, page()));
+      } else {
+        link.classList.add("broken-link");
       }
     });
   }
