@@ -23,6 +23,36 @@ function link(text, on_click) {
   return element;
 }
 
+function section(title, contents) {
+  return h(".doc-section", {}, [h("h2.subtitle", {}, [title]), contents]);
+}
+
+function summary(entries) {
+  return h(".doc-section-summary", {}, entries);
+}
+
+function summary_entry({ title, description }) {
+  return h(".doc-summary-entry", {}, [
+    h(".doc-summary-entry-title", {}, [title]),
+    h(".doc-summary-entry-description", {}, [description]),
+  ]);
+}
+
+function heading({ breadcrumbs, tag, title }) {
+  return h(".heading", {}, [
+    breadcrumbs,
+    h("h1.title", {}, [h(".page-type-tag", {}, [tag]), title]),
+  ]);
+}
+
+function source_code(location, declaration) {
+  return h(".doc-section", {}, [
+    h("h2.subtitle", {}, ["Source code"]),
+    h(".source-code-caption", {}, [location]),
+    h(".source-code.declaration-code", {}, [declaration]),
+  ]);
+}
+
 function breadcrumbs(data, items) {
   return h(".breadcrumbs", {}, [
     h(".breadcrumb-item.breadcrumb-home", {}, [
@@ -30,6 +60,55 @@ function breadcrumbs(data, items) {
     ]),
     ...items.map((x) => h(".breadcrumb-item", {}, [x])),
   ]);
+}
+
+function effect_page(effect, data) {
+  return h(".doc-page.page-effect", {}, [
+    heading({
+      breadcrumbs: breadcrumbs(data, [effect.name]),
+      tag: "Effect",
+      title: effect.name,
+    }),
+    h(".overview-text", {}, [md_to_html(effect.documentation)]),
+    source_code(effect.location, effect.declaration),
+    section(
+      "Operations",
+      summary(
+        effect.operations.map((x) => effect_op_summary_entry(x, effect, data))
+      )
+    ),
+  ]);
+}
+
+function effect_op_page(operation, effect, data) {
+  return h(".doc-page", {}, [
+    heading({
+      breadcrumbs: breadcrumbs(data, [
+        link(effect.name, () => render(effect_page(effect, data))),
+        operation.name,
+      ]),
+      tag: "Effect operation",
+      title: operation.name,
+    }),
+    h(".overview-text", {}, [md_to_html(operation.documentation)]),
+    source_code(operation.location, operation.declaration),
+  ]);
+}
+
+function effect_op_summary_entry(operation, effect, data) {
+  return summary_entry({
+    title: link(operation.name, () =>
+      render(effect_op_page(operation, effect, data))
+    ),
+    description: operation.documentation || "(no documentation)",
+  });
+}
+
+function effect_summary_entry(effect, data) {
+  return summary_entry({
+    title: link(effect.name, () => render(effect_page(effect, data))),
+    description: effect.documentation || "(no documentation)",
+  });
 }
 
 function type_page(type, data) {
@@ -426,6 +505,10 @@ function pkg_overview(data) {
     h(".package-contents", {}, [
       capability_summary(data),
       globals_summary(data),
+      section(
+        "Effects",
+        summary(data.effects.map((x) => effect_summary_entry(x, data)))
+      ),
       type_summary(data),
       trait_summary(data),
       command_summary(data.commands, data),

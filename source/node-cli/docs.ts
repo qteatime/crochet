@@ -111,6 +111,10 @@ function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
     sys.universe.world.capabilities.bindings,
     (a, b) => capability_doc(a, b, sys.universe.world)
   );
+  const effects = mapmap(sys.universe.world.types.bindings, (a, b) =>
+    effect_doc(a, b, sys.universe.world)
+  ).filter((x) => x != null);
+
   return {
     package: {
       meta: pkg.meta,
@@ -122,6 +126,7 @@ function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
     commands,
     globals,
     capabilities,
+    effects,
   };
 }
 
@@ -245,6 +250,38 @@ function capability_doc(
         throw new Error("unhandled protected type");
       }
     }),
+  };
+}
+
+function effect_doc(name: string, typ: CrochetType, world: CrochetWorld) {
+  if (!/^effect /.test(typ.name) || /\./.test(typ.name)) {
+    return null;
+  } else {
+    return {
+      name: typ.name.replace(/^effect /, ""),
+      full_name: name.replace(/\/effect /, "/"),
+      documentation: typ.documentation,
+      module: typ.module?.filename ?? "(intrinsic)",
+      package: typ.module?.pkg.name ?? "crochet.core",
+      capabilities: [...typ.protected_by].map((c) => c.full_name),
+      declaration: get_source(typ.meta, typ.module),
+      location: typ.module ? module_location(typ.module) : "(intrinsic)",
+      operations: [...world.types.bindings.values()]
+        .filter((t) => t.parent === typ)
+        .map(effect_operation_doc),
+    };
+  }
+}
+
+function effect_operation_doc(typ: CrochetType) {
+  return {
+    name: typ.name.replace(/^effect /, ""),
+    documentation: typ.documentation,
+    module: typ.module?.filename ?? "(intrinsic)",
+    package: typ.module?.pkg.name ?? "crochet.core",
+    declaration: get_source(typ.meta, typ.module),
+    location: typ.module ? module_location(typ.module) : "(intrinsic)",
+    fields: type_fields(typ),
   };
 }
 
