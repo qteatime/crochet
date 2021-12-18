@@ -35,6 +35,10 @@ function command_list(entries) {
   return h(".doc-command-list", {}, entries);
 }
 
+function summary_table(entries) {
+  return h(".doc-section-summary.summary-table", {}, entries);
+}
+
 function summary_entry({ title, description }) {
   return h(".doc-summary-entry", {}, [
     h(".doc-summary-entry-title", {}, [title]),
@@ -131,12 +135,16 @@ function effect_page(effect, data) {
     }),
     h(".overview-text", {}, [md_to_html(effect.documentation)]),
     source_code(effect.location, effect.declaration),
-    section(
-      "Operations",
-      summary(
-        effect.operations.map((x) => effect_op_summary_entry(x, effect, data))
-      )
-    ),
+    tab_panel([
+      tab(
+        1,
+        "Operations",
+        summary(
+          effect.operations.map((x) => effect_op_summary_entry(x, effect, data))
+        )
+      ),
+      tab(2, "Protected by", summary(type_capability_summary(effect, data))),
+    ]),
   ]);
 }
 
@@ -152,6 +160,7 @@ function effect_op_page(operation, effect, data) {
     }),
     h(".overview-text", {}, [md_to_html(operation.documentation)]),
     source_code(operation.location, operation.declaration),
+    section("Fields", summary_table(type_field_summary(operation, data))),
   ]);
 }
 
@@ -173,91 +182,90 @@ function effect_summary_entry(effect, data) {
 
 function type_page(type, data) {
   return h(".doc-page.page-type", {}, [
-    h(".heading", {}, [
-      breadcrumbs(data, [type.name]),
-      h("h1.title", {}, [h(".page-type-tag", {}, ["Type"]), type.name]),
-    ]),
+    heading({
+      breadcrumbs: breadcrumbs(data, [type.name]),
+      tag: "Type",
+      title: type.name,
+    }),
     h(".overview-text", {}, [md_to_html(type.documentation)]),
-    h(".doc-section", {}, [
-      h("h2.subtitle", {}, ["Source code"]),
-      h(".source-code-caption", {}, [type.location]),
-      h(".source-code.declaration-code", {}, [type.declaration]),
+    source_code(type.location, type.declaration),
+    tab_panel([
+      tab(1, "Fields", summary_table(type_field_summary(type, data))),
+      tab(2, "Hierarchy", type_hierarchy(type, data)),
+      tab(
+        3,
+        "Traits implemented",
+        summary(type_implemented_traits(type, data))
+      ),
+      tab(
+        4,
+        "Relevant commands",
+        summary(
+          branches_summary_for(
+            (c) =>
+              c.type === type.full_name || c.type === type.static_full_name,
+            data
+          )
+        )
+      ),
+      tab(5, "Protected by", summary(type_capability_summary(type, data))),
     ]),
-    type_fields(type, data),
-    type_hierarchy(type, data),
-    type_implemented_traits(type, data),
-    branches_summary_for(
-      (c) => c.type === type.full_name || c.type === type.static_full_name,
-      data
-    ),
   ]);
 }
 
-function type_fields(type, data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", {}, ["Fields"]),
-    h(
-      ".doc-section-summary.summary-fields.summary-table",
-      {},
-      type.fields.map((f) => do_type_field(f, type, data))
-    ),
-  ]);
+function type_capability_summary(type, data) {
+  return type.capabilities
+    .map(
+      (tc) => data.capabilities.find((c) => c.full_name === tc) ?? { name: tc }
+    )
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((c) => capability_summary_entry(c, data));
 }
 
-function do_type_field(field, type, data) {
-  return h(".doc-summary-entry", {}, [
-    h(".doc-summary-entry-title", {}, [field.name]),
-    h(".doc-summary-entry-description.full-description", {}, [
-      field.constraint,
-    ]),
-  ]);
+function type_field_summary(type, data) {
+  return type.fields.map((f) => type_field_summary_entry(f, type, data));
+}
+
+function type_field_summary_entry(field, type, data) {
+  return summary_entry({
+    title: field.name,
+    description: field.constraint,
+  });
 }
 
 function type_hierarchy(type, data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", {}, ["Hierarchy"]),
+  const parent_hierarchy = type.parents
+    .slice()
+    .reverse()
+    .map((n) => data.types.find((t) => t.full_name === n ?? { name: n }))
+    .map((t) =>
+      h(".type-hierarchy-item", {}, [
+        t.signature
+          ? link(t.signature, () => render(type_page(t, data)))
+          : t.name,
+      ])
+    );
+  const subtypes = type.subtypes
+    .map((n) => data.types.find((t) => t.full_name === n) ?? { name: n })
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => type_summary_entry(t, data));
+
+  return h(".type-hierarchy-section", {}, [
+    h("h3.mini-title", {}, ["Parent types"]),
     h(".type-hierarchy", {}, [
-      h(
-        ".type-hierarchy-parents",
-        {},
-        type.parents
-          .slice()
-          .reverse()
-          .map((n) => data.types.find((t) => t.full_name === n ?? { name: n }))
-          .map((t) =>
-            h(".type-hierarchy-item", {}, [
-              t.signature
-                ? link(t.signature, () => render(type_page(t, data)))
-                : t.name,
-            ])
-          )
-      ),
+      h(".type-hierarchy-parents", {}, parent_hierarchy),
       h(".type-hierarchy-current", {}, [type.signature]),
     ]),
-    h("h3.minititle", {}, ["Sub types"]),
-    h(
-      ".doc-section-summary.summary-types",
-      {},
-      type.subtypes
-        .map((n) => data.types.find((t) => t.full_name === n) ?? { name: n })
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((t) => do_type_summary(t, data))
-    ),
+    h("h3.mini-title", {}, ["Sub types"]),
+    h(".doc-section-summary.summary-types", {}, subtypes),
   ]);
 }
 
 function type_implemented_traits(type, data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", {}, ["Traits implemented"]),
-    h(
-      ".doc-section-summary.summary-traits",
-      {},
-      type.traits
-        .map((n) => data.traits.find((t) => t.full_name === n) ?? { name: n })
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((t) => do_trait_summary(t, data))
-    ),
-  ]);
+  return type.traits
+    .map((n) => data.traits.find((t) => t.full_name === n) ?? { name: n })
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => trait_summary_entry(t, data));
 }
 
 function type_summary(data) {
@@ -278,36 +286,34 @@ function type_summary_entry(type, data) {
 
 function trait_page(trait, data) {
   return h(".doc-page.page-trait", {}, [
-    h(".heading", {}, [
-      breadcrumbs(data, [trait.name]),
-      h("h1.title", {}, [h(".page-type-tag", {}, ["Trait"]), trait.name]),
-    ]),
+    heading({
+      breadcrumbs: breadcrumbs(data, [trait.name]),
+      tag: "Trait",
+      title: trait.name,
+    }),
     h(".overview-text", {}, [md_to_html(trait.documentation)]),
-    h(".doc-section", {}, [
-      h("h2.subtitle", {}, ["Source code"]),
-      h(".source-code-caption", {}, [trait.location]),
-      h(".source-code.declaration-code", {}, [trait.declaration]),
+    source_code(trait.location, trait.declaration),
+    tab_panel([
+      tab(1, "Implemented by", summary(trait_implementers(trait, data))),
+      tab(
+        2,
+        "Relevant commands",
+        summary(
+          branches_summary_for(
+            (c) => c.traits.some((t) => trait.full_name === t),
+            data
+          )
+        )
+      ),
     ]),
-    trait_implementers(trait, data),
-    branches_summary_for(
-      (c) => c.traits.some((t) => trait.full_name === t),
-      data
-    ),
   ]);
 }
 
 function trait_implementers(trait, data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", {}, ["Implemented By"]),
-    h(
-      ".doc-section-summary.summary-types",
-      {},
-      trait.implemented_by
-        .map((n) => data.types.find((t) => t.full_name === n) ?? { name: n })
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((t) => do_type_summary(t, data))
-    ),
-  ]);
+  return trait.implemented_by
+    .map((n) => data.types.find((t) => t.full_name === n) ?? { name: n })
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => type_summary_entry(t, data));
 }
 
 function trait_summary(data) {
@@ -350,48 +356,30 @@ function command_page(command, data) {
     h(".heading", {}, [
       breadcrumbs(data, [command.name]),
       h("h1.title", {}, [h(".page-type-tag", {}, ["Command"]), command.name]),
-      command_branches(command, data),
+      section("Branches", summary(command_branches(command, data))),
     ]),
   ]);
 }
 
 function command_branches(command, data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", {}, ["Branches"]),
-    h(
-      ".doc-section-summary.summary-branches",
-      {},
-      command.branches.map((b) => do_branch_summary(command, b, data))
-    ),
-  ]);
+  return command.branches.map((b) => branch_summary_entry(command, b, data));
 }
 
-function do_branch_summary(command, branch, data) {
-  return h(".doc-summary-entry", {}, [
-    h(".doc-summary-entry-title", {}, [
-      link(full_branch_name(branch, data), () =>
-        render(branch_page(command, branch, data))
-      ),
-    ]),
-    h(".doc-summary-entry-description", {}, [
-      branch.documentation || "(no documentation)",
-    ]),
-  ]);
+function branch_summary_entry(command, branch, data) {
+  return summary_entry({
+    title: link(full_branch_name(branch, data), () =>
+      render(branch_page(command, branch, data))
+    ),
+    description: branch.documentation || "(no documentation)",
+  });
 }
 
 function branches_summary_for(predicate, data) {
-  return h(".doc-section", {}, [
-    h("h2.subtitle", {}, ["Relevant command branches"]),
-    h(
-      ".doc-section-summary.summary-branches",
-      {},
-      data.commands
-        .flatMap((c) => c.branches.map((b) => ({ command: c, branch: b })))
-        .filter((b) => b.branch.types.some((c) => predicate(c)))
-        .sort((a, b) => a.branch.name.localeCompare(b.branch.name))
-        .map((b) => do_branch_summary(b.command, b.branch, data))
-    ),
-  ]);
+  return data.commands
+    .flatMap((c) => c.branches.map((b) => ({ command: c, branch: b })))
+    .filter((b) => b.branch.types.some((c) => predicate(c)))
+    .sort((a, b) => a.branch.name.localeCompare(b.branch.name))
+    .map((b) => branch_summary_entry(b.command, b.branch, data));
 }
 
 function branch_page(command, branch, data) {
@@ -464,31 +452,28 @@ function unambiguous_trait_name(name, data) {
 
 function capability_page(capability, data) {
   return h(".doc-page.page-capability", {}, [
-    h(".heading", {}, [
-      breadcrumbs(data, [capability.name]),
-      h("h1.title", {}, [
-        h(".page-type-tag", {}, ["Capability"]),
-        capability.name,
-      ]),
-    ]),
+    heading({
+      breadcrumbs: breadcrumbs(data, [capability.name]),
+      tag: "Capability",
+      title: capability.name,
+    }),
     h(".overview-text", {}, [md_to_html(capability.documentation)]),
-    h(".doc-section", {}, [
-      h("h2.subtitle", {}, ["Source code"]),
-      h(".source-code-caption", {}, [capability.location]),
-      h(".source-code.declaration-code", {}, [capability.declaration]),
-    ]),
-    h(".doc-section", {}, [
-      h("h2.subtitle", {}, ["Accesses granted"]),
-      h(
-        ".doc-access-list",
-        {},
-        capability.protecting
-          .slice()
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map((x) => do_access_granted_summary(x, data))
-      ),
+    source_code(capability.location, capability.declaration),
+    tab_panel([
+      tab(1, "Accesses granted", capability_access_summary(capability, data)),
     ]),
   ]);
+}
+
+function capability_access_summary(capability, data) {
+  return h(
+    ".doc-access-list",
+    {},
+    capability.protecting
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((x) => do_access_granted_summary(x, data))
+  );
 }
 
 function do_access_granted_summary(x, data) {
@@ -546,11 +531,11 @@ function capability_summary(data) {
     .map((c) => capability_summary_entry(c, data));
 }
 
-function do_capability_summary(capability, data) {
+function capability_summary_entry(capability, data) {
   return summary_entry({
-    title: link(capability.name, () =>
-      render(capability_page(capability, data))
-    ),
+    title: capability.full_name
+      ? link(capability.name, () => render(capability_page(capability, data)))
+      : capability.name,
     description: capability.documentation || "(no documentation)",
   });
 }
