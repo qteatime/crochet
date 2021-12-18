@@ -174,9 +174,15 @@ export class PackageGraph {
     check([], `(root)`, root, capabilities);
   }
 
-  check(root: ResolvedPackage, capabilities: Set<Capability>) {
+  check(
+    root: ResolvedPackage,
+    capabilities: Set<Capability>,
+    safe_mode: boolean
+  ) {
     this.check_target(root);
-    this.check_capabilities(root, capabilities);
+    if (!safe_mode) {
+      this.check_capabilities(root, capabilities);
+    }
   }
 
   commit_capabilities(root: ResolvedPackage, capabilities: Set<Capability>) {

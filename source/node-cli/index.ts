@@ -8,7 +8,10 @@ import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
 import Server from "./server";
 import * as Packaging from "./package";
+import type { Target } from "../pkg";
 import * as ChildProcess from "child_process";
+import { serve_docs } from "./docs";
+import { Ok, try_parse } from "../utils/spec";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -40,6 +43,10 @@ interface Options {
   web: {
     port: number;
     www_root: string;
+  };
+  docs: {
+    port: number;
+    target: Target;
   };
   packaging: {
     out_dir: string;
@@ -75,6 +82,10 @@ function parse_options(args0: string[]) {
   };
   options.launcher = {
     project_directory: null,
+  };
+  options.docs = {
+    port: 8080,
+    target: Crochet.pkg.target_any(),
   };
   options.app_args = [];
 
@@ -114,6 +125,7 @@ function parse_options(args0: string[]) {
 
       case "--port": {
         options.web.port = Number(args0[current + 1]) ?? options.web.port;
+        options.docs.port = options.web.port;
         current += 2;
         continue;
       }
@@ -128,6 +140,16 @@ function parse_options(args0: string[]) {
         options.packaging.out_dir =
           args0[current + 1] ?? options.packaging.out_dir;
         current += 2;
+        continue;
+      }
+
+      case "--target": {
+        const target = try_parse(args0[current + 1], Crochet.pkg.target_spec);
+        if (target instanceof Ok) {
+          options.docs.target = target.value;
+        } else {
+          throw new Error(`Invalid target ${args0[current + 1]}`);
+        }
         continue;
       }
 
@@ -221,7 +243,8 @@ async function run([file]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const value = await crochet.run("main: _", [
@@ -239,7 +262,8 @@ async function test([file]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const failures = await crochet.run_tests(
@@ -254,7 +278,8 @@ async function build([file]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   await crochet.build(file);
 }
@@ -264,7 +289,8 @@ async function repl([file0]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   let file = REPL.resolve_file(file0);
 
@@ -275,6 +301,10 @@ async function repl([file0]: string[], options: Options) {
 
 async function run_web([file]: string[], options: Options) {
   await Server(file, options.web.port, options.web.www_root);
+}
+
+async function show_docs([file]: string[], options: Options) {
+  await serve_docs(options.docs.port, file, Crochet.pkg.target_any());
 }
 
 async function package_app([file]: string[], options: Options) {
@@ -406,21 +436,23 @@ function help(command?: string) {
           "crochet --- a safe programming language\n",
           "\n",
           "Usage:\n",
-          "  crochet run <crochet.json> [options] [-- <app-args...>]\n",
-          "  crochet run-web <crochet.json> [options]\n",
-          "  crochet package <crochet.json> [options]\n",
-          "  crochet repl <crochet.json> [options]\n",
-          "  crochet test <crochet.json> [options]\n",
-          "  crochet build <crochet.json> [options]\n",
-          "  crochet launcher:server <crochet.json> [options]\n",
-          "  crochet show-ir <file.crochet> [options]\n",
-          "  crochet show-ast <file.crochet> [options]\n",
-          "  crochet new <name> [options]\n",
+          "  crochet run <crochet.json> [-- <app-args...>]\n",
+          "  crochet run-web <crochet.json> [--port PORT --www-root DIR]\n",
+          "  crochet docs <crochet.json> [--port PORT --target ('node' | 'browser' | '*')]\n",
+          "  crochet package <crochet.json> [--package-to OUT_DIR]\n",
+          "  crochet repl <crochet.json>\n",
+          "  crochet test <crochet.json> [--test-title PATTERN --test-module PATTERN --test-package PATTERN --test-show-ok]\n",
+          "  crochet build <crochet.json>\n",
+          "  crochet launcher:server <crochet.json> [--project-directory DIR]\n",
+          "  crochet show-ir <file.crochet>\n",
+          "  crochet show-ast <file.crochet>\n",
+          "  crochet new <name>\n",
           "  crochet help [<command>]\n",
           "  crochet version\n",
           "\n",
           "Options:\n",
-          "  --verbose      Outputs debugging information\n",
+          "  --verbose          Outputs debugging information\n",
+          "  --disclose-debug   Treats all types as public data when printing\n",
         ].join("")
       );
   }
@@ -463,6 +495,8 @@ void (async function main() {
         return await run(args, options);
       case "run-web":
         return await run_web(args, options);
+      case "docs":
+        return await show_docs(args, options);
       case "test":
         return await test(args, options);
       case "build":

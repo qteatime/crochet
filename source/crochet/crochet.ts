@@ -91,7 +91,11 @@ export class Crochet {
   readonly trusted = new Set<Package.Package>();
   readonly registered_packages: Map<string, Package.Package> = new Map();
 
-  constructor(readonly fs: IFileSystem, readonly signal: ISignal) {}
+  constructor(
+    readonly safe_mode: boolean,
+    readonly fs: IFileSystem,
+    readonly signal: ISignal
+  ) {}
 
   async boot(root: string, target: Package.Target) {
     const pkg = await this.get_package(root);
@@ -101,10 +105,14 @@ export class Crochet {
       this.trusted,
       this.resolver
     );
-    const capabilities = await this.signal.request_capabilities(graph, pkg);
+    const capabilities = this.safe_mode
+      ? new Set([])
+      : await this.signal.request_capabilities(graph, pkg);
     const root_pkg = graph.get_package(root);
-    graph.check(root_pkg, capabilities);
-    graph.commit_capabilities(root_pkg, capabilities);
+    graph.check(root_pkg, capabilities, this.safe_mode);
+    if (!this.safe_mode) {
+      graph.commit_capabilities(root_pkg, capabilities);
+    }
 
     const vm = new BootedCrochet(this, graph);
     await this.signal.booted(vm);
@@ -198,8 +206,10 @@ export class BootedCrochet {
     logger.debug(`Loading package ${pkg.name}`);
     const cpkg = VM.World.get_or_make_package(this.universe.world, pkg);
 
-    for (const x of pkg.native_sources) {
-      await this.load_native(x, pkg, cpkg);
+    if (!this.crochet.safe_mode) {
+      for (const x of pkg.native_sources) {
+        await this.load_native(x, pkg, cpkg);
+      }
     }
 
     for (const x of pkg.sources) {

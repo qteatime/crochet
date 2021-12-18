@@ -1,5 +1,5 @@
 export class Namespace<V> {
-  private bindings = new Map<string, V>();
+  private _bindings = new Map<string, V>();
   readonly allowed_prefixes: Set<string>;
 
   constructor(
@@ -8,6 +8,23 @@ export class Namespace<V> {
     allowed_prefixes?: Set<string> | null
   ) {
     this.allowed_prefixes = allowed_prefixes || new Set<string>();
+  }
+
+  get bindings(): Map<string, V> {
+    const result = new Map<string, V>();
+
+    const parent = this.parent;
+    if (parent != null) {
+      for (const [k, v] of parent.bindings) {
+        result.set(k, v);
+      }
+    }
+
+    for (const [k, v] of this._bindings) {
+      result.set(k, v);
+    }
+
+    return result;
   }
 
   prefixed(name: string): string {
@@ -26,16 +43,16 @@ export class Namespace<V> {
     if (this.has_own(name)) {
       return false;
     }
-    this.bindings.set(this.prefixed(name), value);
+    this._bindings.set(this.prefixed(name), value);
     return true;
   }
 
   overwrite(name: string, value: V) {
-    this.bindings.set(this.prefixed(name), value);
+    this._bindings.set(this.prefixed(name), value);
   }
 
   has_own(name: string) {
-    return this.bindings.has(this.prefixed(name));
+    return this._bindings.has(this.prefixed(name));
   }
 
   has(name: string) {
@@ -43,7 +60,7 @@ export class Namespace<V> {
   }
 
   try_lookup_local(name: string) {
-    return this.bindings.get(this.make_namespace(this.prefix, name)) ?? null;
+    return this._bindings.get(this.make_namespace(this.prefix, name)) ?? null;
   }
 
   try_lookup(name: string) {
@@ -62,7 +79,7 @@ export class Namespace<V> {
   }
 
   try_lookup_namespaced(namespace: string | null, name: string): V | null {
-    const value = this.bindings.get(this.make_namespace(namespace, name));
+    const value = this._bindings.get(this.make_namespace(namespace, name));
     if (value != null) {
       return value;
     } else if (this.parent != null) {

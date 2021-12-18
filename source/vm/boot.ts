@@ -488,6 +488,7 @@ export function load_declaration(
 
     case t.FOREIGN_TYPE: {
       const type = Types.get_foreign_type(universe, module, declaration.target);
+      (type as any).documentation = declaration.documentation;
       Types.define_type(module, declaration.name, type, IR.Visibility.GLOBAL);
       break;
     }

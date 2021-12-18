@@ -27,3 +27,12 @@ export function get_annotated_source(id: number, meta: Metadata) {
     }
   }
 }
+
+export function get_source_slice(id: number, meta: Metadata) {
+  const interval = meta.table.get(id);
+  if (interval == null) {
+    return null;
+  } else {
+    return meta.source.slice(interval.range.start, interval.range.end);
+  }
+}

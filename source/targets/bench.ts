@@ -6,7 +6,7 @@ export class CrochetForBench extends CrochetForNode {
     readonly _sdtlib_path: string,
     readonly capabilities: Set<Package.Capability>
   ) {
-    super(true, [], capabilities, false);
+    super(true, [], capabilities, false, false);
   }
 
   get stdlib_path() {
