@@ -38,7 +38,7 @@ function type_page(type, data) {
       breadcrumbs(data, [type.name]),
       h("h1.title", {}, [h(".page-type-tag", {}, ["Type"]), type.name]),
     ]),
-    h(".overview-text", {}, [type.documentation]),
+    h(".overview-text", {}, [md_to_html(type.documentation)]),
     h(".doc-section", {}, [
       h("h2.subtitle", {}, ["Source code"]),
       h(".source-code-caption", {}, [type.location]),
@@ -154,7 +154,7 @@ function trait_page(trait, data) {
       breadcrumbs(data, [trait.name]),
       h("h1.title", {}, [h(".page-type-tag", {}, ["Trait"]), trait.name]),
     ]),
-    h(".overview-text", {}, [trait.documentation]),
+    h(".overview-text", {}, [md_to_html(trait.documentation)]),
     h(".doc-section", {}, [
       h("h2.subtitle", {}, ["Source code"]),
       h(".source-code-caption", {}, [trait.location]),
@@ -295,7 +295,7 @@ function branch_page(command, branch, data) {
         full_branch_name(branch, data),
       ]),
     ]),
-    h(".overview-text", {}, [branch.documentation]),
+    h(".overview-text", {}, [md_to_html(branch.documentation)]),
     h(".doc-section", {}, [
       h("h2.subtitle", {}, ["Source code"]),
       h(".source-code-caption", {}, [branch.location]),
@@ -315,7 +315,7 @@ function short_constraint_name(constraint, data) {
   if (constraint.traits.length === 0) {
     return unambiguous_type_name(constraint.type, data);
   } else {
-    const type = unambiguous_type_name(constraint.type);
+    const type = unambiguous_type_name(constraint.type, data);
     const traits = constraint.traits.map((t) =>
       unambiguous_trait_name(t, data)
     );
@@ -361,7 +361,7 @@ function capability_page(capability, data) {
         capability.name,
       ]),
     ]),
-    h(".overview-text", {}, [capability.documentation]),
+    h(".overview-text", {}, [md_to_html(capability.documentation)]),
     h(".doc-section", {}, [
       h("h2.subtitle", {}, ["Source code"]),
       h(".source-code-caption", {}, [capability.location]),
@@ -422,7 +422,7 @@ function pkg_overview(data) {
         ]),
       ]),
     ]),
-    h(".overview-text", {}, [data.package.overview]),
+    h(".overview-text", {}, [md_to_html(data.package.overview)]),
     h(".package-contents", {}, [
       capability_summary(data),
       globals_summary(data),
@@ -508,6 +508,95 @@ function render(page) {
   const root = document.querySelector("#doc-root");
   root.textContent = "";
   root.append(page);
+}
+
+function md_to_html(text) {
+  function render_inline(text) {
+    const html0 = h("div.cmd", {}, [text]).innerHTML;
+    const html = html0
+      .replace(/`(.+?)`/g, (_, x) => h("code", {}, [x]).outerHTML)
+      .replace(
+        /\[([^\]]+)\]/g,
+        (_, x) =>
+          h("a.inner-link", { "data-target": x, href: "#" }, [
+            h("code", {}, [x]),
+          ]).outerHTML
+      )
+      .replace(/\*\*(.+?)\*\*/g, (_, x) => h("strong", {}, [x]).outerHTML)
+      .replace(/\*(.+?)\*/g, (_, x) => h("em", {}, [x]).outerHTML);
+    const element = h("div.cmd", {}, []);
+    element.innerHTML = html;
+    return element;
+  }
+
+  function reify(block) {
+    if (block == null) {
+      return "";
+    } else if (block instanceof Node) {
+      return block;
+    } else if (block.type === "paragraph") {
+      return h("p", {}, [render_inline(block.contents.join("\n"))]);
+    } else {
+      throw new Error(`invalid block`);
+    }
+  }
+
+  function push(blocks, content) {
+    if (content == null) {
+      return blocks;
+    } else {
+      blocks.push(reify(content));
+      return blocks;
+    }
+  }
+
+  function push_many(blocks, contents) {
+    return contents.reduce((b, c) => push(b, c), blocks);
+  }
+
+  function push_paragraph(blocks, current, line) {
+    if (current != null && current.type === "paragraph") {
+      return {
+        blocks: blocks,
+        current: {
+          type: "paragraph",
+          contents: [...current.contents, line],
+        },
+      };
+    } else {
+      return {
+        blocks: push(blocks, current),
+        current: {
+          type: "paragraph",
+          contents: [line],
+        },
+      };
+    }
+  }
+
+  function handle_line({ blocks, current }, line) {
+    if (/^#+\s*\S/.test(line)) {
+      const [_, level, text] = line.match(/^(#+)\s*(.*)/);
+      return {
+        blocks: push_many(blocks, [
+          current,
+          h(`h${level.length + 1}.md-title`, {}, [text]),
+        ]),
+        current: null,
+      };
+    } else if (/^\s*$/.test(line)) {
+      return {
+        blocks: push(blocks, current),
+        current: null,
+      };
+    } else {
+      return push_paragraph(blocks, current, line);
+    }
+  }
+  const lines = text.split(/\r\n|\r|\n/);
+  const result = lines.reduce(handle_line, { blocks: [], current: null });
+  const blocks = push(result.blocks, result.current);
+  return h("div.crochet-md", {}, blocks);
 }
 
 main();
