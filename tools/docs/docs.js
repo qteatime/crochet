@@ -25,6 +25,7 @@ function on_click(e, fn) {
     ev.stopPropagation();
     fn();
   });
+  return e;
 }
 
 function section(title, contents) {
@@ -609,8 +610,256 @@ function effects_summary(data) {
     .map((t) => effect_summary_entry(t, data));
 }
 
-function index(page) {
-  return h(".doc-container", { id: "page-root" }, [page]);
+function index(page, data) {
+  return h(".doc-container", {}, [
+    quick_jump(data),
+    h(".page-container", { id: "page-root" }, [page]),
+  ]);
+}
+
+function* ifind(xs, pred) {
+  for (const x of xs) {
+    if (pred(x)) yield x;
+  }
+}
+
+function* itake(xs, n) {
+  let i = n;
+  for (const x of xs) {
+    if (i <= 0) break;
+    yield x;
+    i -= 1;
+  }
+}
+
+function* imap(xs, f) {
+  for (const x of xs) {
+    yield f(x);
+  }
+}
+
+function quick_jump(data) {
+  function* ifind_many(services, pred) {
+    for (const service of Object.values(services)) {
+      yield { service, values: pred(service) };
+    }
+  }
+
+  function htagged(tag, name, click_fn) {
+    return on_click(
+      h(".qj-tagged-item", {}, [
+        h(".qj-tagged-item-tag", {}, [tag]),
+        h(".qj-tagged-item-name", {}, [name]),
+      ]),
+      click_fn
+    );
+  }
+
+  function htagged_many(title, values) {
+    return h(".qj-tagged-section", {}, [
+      h(".qj-tagged-section-title", {}, [title]),
+      h(".qj-tagged-section-items", {}, [...values]),
+    ]);
+  }
+
+  function maybe_pkg(text, type) {
+    if (type.package === data.package.meta.name) {
+      return text;
+    } else {
+      return h(".qj-foreign-package", {}, [
+        text,
+        h(".qj-foreign-package-name", {}, ["(in ", type.package, ")"]),
+      ]);
+    }
+  }
+
+  function maybe_cmd_pkg(text, cmd) {
+    const pkgs = new Set(cmd.branches.map((b) => b.package));
+    if (pkgs.size === 1 && pkgs.has(data.package.meta.name)) {
+      return text;
+    } else if (pkgs.size === 1) {
+      const [pkg] = pkgs.values();
+      return h(".qj-foreign-package", {}, [
+        text,
+        h(".qj-foreign-package-name", {}, ["(in ", pkg, ")"]),
+      ]);
+    } else {
+      const vals = [...pkgs.values()];
+      const [pkg, ...rest] = vals
+        .filter((a) => a === data.package.meta.name)
+        .concat(vals.filter((a) => a !== data.package.meta.name));
+      return h(".qj-foreign-package", {}, [
+        text,
+        h(".qj-foreign-package-name", {}, [
+          "(in ",
+          pkg,
+          " and ",
+          rest.length,
+          " other packages)",
+        ]),
+      ]);
+    }
+  }
+
+  const basic_services = {
+    type: {
+      title: "Types",
+      search: (x) => ifind(data.types, (t) => t.name.includes(x)),
+      render: (t) =>
+        htagged("type", maybe_pkg(t.name, t), () =>
+          navigate("type", t.full_name, type_page(t, data))
+        ),
+      restrict: (xs) => itake(xs, 3),
+    },
+    effect: {
+      title: "Effects and operations",
+      search: (x) =>
+        ifind(
+          data.effects,
+          (e) =>
+            e.name.includes(x) || e.operations.some((o) => o.name.includes(x))
+        ),
+      render: (t) =>
+        htagged("effect", maybe_pkg(t.name, t), () =>
+          navigate("effect", t.full_name, effect_page(t, data))
+        ),
+      restrict: (xs) => itake(xs, 3),
+    },
+    trait: {
+      title: "Traits",
+      search: (x) => ifind(data.traits, (t) => t.name.includes(x)),
+      render: (t) =>
+        htagged("trait", maybe_pkg(t.name, t), () =>
+          navigate("trait", t.full_Name, trait_page(t, data))
+        ),
+      restrict: (xs) => itake(xs, 3),
+    },
+    command: {
+      title: "Commands",
+      search: (x) => ifind(data.commands, (c) => c.name.includes(x)),
+      render: (t) =>
+        htagged("command", maybe_cmd_pkg(t.name, t), () =>
+          navigate("command", t.name, command_page(t, data))
+        ),
+      restrict: (xs) => itake(xs, 3),
+    },
+    capability: {
+      title: "Capabilities",
+      search: (x) => ifind(data.capabilities, (c) => c.name.includes(x)),
+      render: (t) =>
+        htagged("capability", maybe_pkg(t.name, t), () =>
+          navigate("capability", t.full_name, capability_page(c, data))
+        ),
+      restrict: (xs) => itake(xs, 3),
+    },
+  };
+  const services = {
+    ...basic_services,
+    ":default": {
+      title: "Any code entity",
+      search: (x) =>
+        ifind_many(basic_services, (a) => [...itake(a.search(x), 3)]),
+      render: ({ service, values }) => {
+        if (values.length > 0) {
+          return htagged_many(
+            service.title,
+            values.map((x) => service.render(x))
+          );
+        } else {
+          return h(".span", {}, []);
+        }
+      },
+      restrict: (xs) => xs,
+    },
+    ":none": (t) => ({
+      title: "Invalid code entity " + t,
+      search: (_) => [null],
+      render: (_) =>
+        h(".qj-item-error", {}, [
+          `\`${t}' is not a valid type of code entity.`,
+        ]),
+      restrict: (xs) => xs,
+    }),
+  };
+
+  function parse_search(text) {
+    const m1 = text.match(/^(\w+):(.+)/);
+    if (m1 == null) {
+      return { service: services[":default"], input: text };
+    } else {
+      const [_, type, input] = m1;
+      return { service: services[type] ?? services[":none"](type), input };
+    }
+  }
+
+  function search() {
+    const { service, input: value } = parse_search(input.value);
+    results.classList.remove("show");
+    const items = imap(service.restrict(service.search(value)), (x) =>
+      service.render(x)
+    );
+    results.innerHTML = "";
+    let shown = 0;
+    for (const x of items) {
+      results.append(x);
+      shown += 1;
+    }
+    results.classList.add("show");
+    if (shown === 0) {
+      results.append(
+        h(".qj-search-error", {}, [
+          `No results for \`${value}' in ${service.title.toLowerCase()}`,
+        ])
+      );
+      results.classList.add("show");
+    }
+  }
+
+  let timer;
+  function handle_key(ev) {
+    clearTimeout(timer);
+    if (input.value.trim() === "") {
+      results.classList.remove("show");
+    } else {
+      timer = setTimeout(search, 100);
+    }
+  }
+
+  const input = h(
+    "input",
+    { type: "text", placeholder: "Type to search..." },
+    []
+  );
+  const results = h(".qj-results", {}, []);
+
+  input.addEventListener("keyup", handle_key);
+  input.addEventListener("blur", (ev) => {
+    setTimeout(() => results.classList.remove("show"), 100);
+  });
+
+  return h(".quick-jump", {}, [
+    h(".qj-search-input", {}, [
+      input,
+      h("details.qj-search-help", {}, [
+        h("summary.qj-search-help-button", {}, [
+          h("i.fas.fa-question-circle", { title: "How to search" }, []),
+        ]),
+        h(".qj-search-help-details", {}, [
+          md_to_html(`
+            Use this field to quickly search for **code entities**.
+            The keyboard shortcut \`.\` (period) can be used to
+            quickly focus this field.
+
+            If you want to filter by the type of the entity, you
+            can do so by preceding the name with the type and a colon.
+            For example, \`type:ac\` would consider all **types** that
+            contain \`ac\` somewhere in their name.
+          `),
+        ]),
+      ]),
+    ]),
+    results,
+  ]);
 }
 
 function main() {
@@ -619,7 +868,7 @@ function main() {
   const data = JSON.parse(source);
   const { state, page } = page_from_url(document.location.hash, data);
   history.replaceState(state, "");
-  render(index(page), "#doc-root");
+  render(index(page, data), "#doc-root");
 
   window.addEventListener("popstate", (ev) => {
     if (!ev.state) {
@@ -676,7 +925,7 @@ function reify_page({ type, target }, data) {
       (t) => trait_page(t, data),
     ],
     command: (t) => [
-      try_find_item(data.commands, t, data),
+      data.commands.find((c) => c.name === t),
       (c) => command_page(c, data),
     ],
     branch: (t) => [
@@ -741,7 +990,7 @@ function parse_url(url) {
   const m1 = url.match(/^#?(\w+):(.+)/);
   if (m1 != null) {
     const [_, type, target] = m1;
-    return { type, target };
+    return { type, target: decodeURIComponent(target).trim() };
   } else {
     return null;
   }

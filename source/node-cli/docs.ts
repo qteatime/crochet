@@ -28,6 +28,7 @@ import { get_annotated_source, get_source_slice } from "../vm/primitives/meta";
 import type * as Express from "express";
 
 const doc_root = Path.resolve(__dirname, "../../tools/docs");
+const www_root = Path.resolve(__dirname, "../../www");
 
 function get_source(meta: number | null, module: CrochetModule | null) {
   if (meta != null && module != null && module.metadata != null) {
@@ -57,8 +58,8 @@ function template(title0: string, data: any) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${title} - Crochet Documentation</title>
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="./fa-solid.css" />
-    <link rel="stylesheet" href="./fontawesome.min.css" />
+    <link rel="stylesheet" href="media/fa-solid.css" />
+    <link rel="stylesheet" href="media/fontawesome.min.css" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap"
@@ -95,6 +96,7 @@ export async function serve_docs(
     res.send(index);
   });
   app.use("/", express.static(doc_root));
+  app.use("/media", express.static(www_root));
   app.listen(port, () => {
     console.log(`Server started at http://localhost:${port}/`);
   });
