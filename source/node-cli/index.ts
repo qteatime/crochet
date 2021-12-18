@@ -243,7 +243,8 @@ async function run([file]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const value = await crochet.run("main: _", [
@@ -261,7 +262,8 @@ async function test([file]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const failures = await crochet.run_tests(
@@ -276,7 +278,8 @@ async function build([file]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   await crochet.build(file);
 }
@@ -286,7 +289,8 @@ async function repl([file0]: string[], options: Options) {
     options.disclose_debug,
     [],
     new Set([]),
-    true
+    true,
+    false
   );
   let file = REPL.resolve_file(file0);
 

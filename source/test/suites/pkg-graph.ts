@@ -51,7 +51,7 @@ void (async function main() {
     console.log("Providers:");
     console.log(graph.capability_providers);
     console.log("Resolution:");
-    graph.check(resolved_root, new Set(capabilities));
+    graph.check(resolved_root, new Set(capabilities), false);
   } catch (e) {
     console.error(e);
     process.exit(1);

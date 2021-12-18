@@ -23,7 +23,7 @@ function on_click(e, fn) {
   e.addEventListener("click", (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    fn();
+    fn(ev);
   });
   return e;
 }
@@ -651,7 +651,12 @@ function quick_jump(data) {
         h(".qj-tagged-item-tag", {}, [tag]),
         h(".qj-tagged-item-name", {}, [name]),
       ]),
-      click_fn
+      (ev) => {
+        results.classList.remove("show");
+        click_fn();
+        ev.preventDefault();
+        ev.stopPropagation();
+      }
     );
   }
 
@@ -819,6 +824,7 @@ function quick_jump(data) {
   }
 
   let timer;
+  let blur_timer;
   function handle_key(ev) {
     if (ev.code === "ArrowUp" || ev.code === "ArrowDown") {
       const targets = Array.from(results.querySelectorAll(".qj-tagged-item"));
@@ -865,13 +871,20 @@ function quick_jump(data) {
   const results = h(".qj-results", {}, []);
 
   input.addEventListener("keyup", handle_key);
-  input.addEventListener("blur", (ev) => {
-    setTimeout(() => results.classList.remove("show"), 100);
-  });
   input.addEventListener("focus", (ev) => {
+    clearTimeout(blur_timer);
     if (input.value.trim() !== "") {
       search();
     }
+  });
+  input.addEventListener("blur", (ev) => {
+    clearTimeout(blur_timer);
+    blur_timer = setTimeout(() => {
+      results.classList.remove("show");
+    }, 500);
+  });
+  results.addEventListener("click", (ev) => {
+    input.focus();
   });
   document.addEventListener("keyup", (ev) => {
     if (ev.key === ".") {

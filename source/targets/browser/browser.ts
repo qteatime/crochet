@@ -34,7 +34,7 @@ export class CrochetForBrowser {
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean
   ) {
-    this.crochet = new Crochet(this.fs, this.signal);
+    this.crochet = new Crochet(false, this.fs, this.signal);
     this.debug_ui = new DebugUI();
   }
 

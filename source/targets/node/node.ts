@@ -30,10 +30,11 @@ export class CrochetForNode {
     disclose_debug: boolean,
     readonly library_paths: string[],
     readonly capabilities: Set<Package.Capability>,
-    readonly interactive: boolean
+    readonly interactive: boolean,
+    readonly safe_mode: boolean
   ) {
     this.renderer = new TerminalRenderer(disclose_debug);
-    this.crochet = new Crochet(this.fs, this.signal);
+    this.crochet = new Crochet(safe_mode, this.fs, this.signal);
   }
 
   render_entry = (entry: TraceEvent) => {

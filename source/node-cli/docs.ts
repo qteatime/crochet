@@ -82,7 +82,7 @@ export async function serve_docs(
   filename: string,
   target0: Package.Target | null
 ) {
-  const crochet = new CrochetForNode(false, [], new Set([]), false);
+  const crochet = new CrochetForNode(false, [], new Set([]), false, true);
   const pkg = crochet.read_package_from_file(filename);
   const target = target0 ?? pkg.meta.target;
   await crochet.boot(pkg, target);
