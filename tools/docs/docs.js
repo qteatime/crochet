@@ -645,9 +645,9 @@ function quick_jump(data) {
     }
   }
 
-  function htagged(tag, name, click_fn) {
+  function htagged(tag, name, url, click_fn) {
     return on_click(
-      h(".qj-tagged-item", {}, [
+      h("a.qj-tagged-item", { href: url }, [
         h(".qj-tagged-item-tag", {}, [tag]),
         h(".qj-tagged-item-name", {}, [name]),
       ]),
@@ -706,10 +706,10 @@ function quick_jump(data) {
       title: "Types",
       search: (x) => ifind(data.types, (t) => t.name.includes(x)),
       render: (t) =>
-        htagged("type", maybe_pkg(t.name, t), () =>
+        htagged("type", maybe_pkg(t.name, t), `#type:${t.full_name}`, () =>
           navigate("type", t.full_name, type_page(t, data))
         ),
-      restrict: (xs) => itake(xs, 3),
+      restrict: (xs) => itake(xs, 8),
     },
     effect: {
       title: "Effects and operations",
@@ -720,37 +720,40 @@ function quick_jump(data) {
             e.name.includes(x) || e.operations.some((o) => o.name.includes(x))
         ),
       render: (t) =>
-        htagged("effect", maybe_pkg(t.name, t), () =>
+        htagged("effect", maybe_pkg(t.name, t), `#effect:${t.full_name}`, () =>
           navigate("effect", t.full_name, effect_page(t, data))
         ),
-      restrict: (xs) => itake(xs, 3),
+      restrict: (xs) => itake(xs, 8),
     },
     trait: {
       title: "Traits",
       search: (x) => ifind(data.traits, (t) => t.name.includes(x)),
       render: (t) =>
-        htagged("trait", maybe_pkg(t.name, t), () =>
+        htagged("trait", maybe_pkg(t.name, t), `#trait:${t.full_name}`, () =>
           navigate("trait", t.full_Name, trait_page(t, data))
         ),
-      restrict: (xs) => itake(xs, 3),
+      restrict: (xs) => itake(xs, 8),
     },
     command: {
       title: "Commands",
       search: (x) => ifind(data.commands, (c) => c.name.includes(x)),
       render: (t) =>
-        htagged("command", maybe_cmd_pkg(t.name, t), () =>
+        htagged("command", maybe_cmd_pkg(t.name, t), `#command:${t.name}`, () =>
           navigate("command", t.name, command_page(t, data))
         ),
-      restrict: (xs) => itake(xs, 3),
+      restrict: (xs) => itake(xs, 8),
     },
     capability: {
       title: "Capabilities",
       search: (x) => ifind(data.capabilities, (c) => c.name.includes(x)),
       render: (t) =>
-        htagged("capability", maybe_pkg(t.name, t), () =>
-          navigate("capability", t.full_name, capability_page(c, data))
+        htagged(
+          "capability",
+          maybe_pkg(t.name, t),
+          `#capability:${t.full_name}`,
+          () => navigate("capability", t.full_name, capability_page(c, data))
         ),
-      restrict: (xs) => itake(xs, 3),
+      restrict: (xs) => itake(xs, 8),
     },
   };
   const services = {
@@ -817,12 +820,41 @@ function quick_jump(data) {
 
   let timer;
   function handle_key(ev) {
-    clearTimeout(timer);
-    if (input.value.trim() === "") {
+    if (ev.code === "ArrowUp" || ev.code === "ArrowDown") {
+      const targets = Array.from(results.querySelectorAll(".qj-tagged-item"));
+      const selected = targets.findIndex((x) =>
+        x.classList.contains("selected")
+      );
+      if (ev.code === "ArrowUp") {
+        const sel =
+          selected === -1 || selected === 0 ? targets.length - 1 : selected - 1;
+        targets.forEach((x) => x.classList.remove("selected"));
+        targets[sel]?.classList.add("selected");
+      } else {
+        const sel =
+          selected === -1 || selected === targets.length - 1 ? 0 : selected + 1;
+        targets.forEach((x) => x.classList.remove("selected"));
+        targets[sel]?.classList.add("selected");
+      }
+      ev.preventDefault();
+    } else if (ev.code === "Enter") {
+      const selected = results.querySelector(".qj-tagged-item.selected");
+      const url = selected.getAttribute("href");
+      const state = parse_url(url);
+      const page = reify_page(state, data);
+      navigate(state.type, state.target, page());
       results.classList.remove("show");
+      input.blur();
+      ev.preventDefault();
     } else {
-      timer = setTimeout(search, 100);
+      clearTimeout(timer);
+      if (input.value.trim() === "") {
+        results.classList.remove("show");
+      } else {
+        timer = setTimeout(search, 100);
+      }
     }
+    ev.stopPropagation();
   }
 
   const input = h(
@@ -836,6 +868,16 @@ function quick_jump(data) {
   input.addEventListener("blur", (ev) => {
     setTimeout(() => results.classList.remove("show"), 100);
   });
+  input.addEventListener("focus", (ev) => {
+    if (input.value.trim() !== "") {
+      search();
+    }
+  });
+  document.addEventListener("keyup", (ev) => {
+    if (ev.key === ".") {
+      input.focus();
+    }
+  });
 
   return h(".quick-jump", {}, [
     h(".qj-search-input", {}, [
@@ -848,12 +890,16 @@ function quick_jump(data) {
           md_to_html(`
             Use this field to quickly search for **code entities**.
             The keyboard shortcut \`.\` (period) can be used to
-            quickly focus this field.
+            quickly focus this field. Arrow keys can
+            be used to select items, and Enter can be used to
+            navigate to them.
 
             If you want to filter by the type of the entity, you
             can do so by preceding the name with the type and a colon.
             For example, \`type:ac\` would consider all **types** that
             contain \`ac\` somewhere in their name.
+
+            Valid filters: \`type:\`, \`command:\`, \`trait:\`, \`effect:\`, and \`capability:\`.
           `),
         ]),
       ]),

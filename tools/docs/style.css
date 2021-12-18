@@ -391,11 +391,13 @@ a:hover,
   cursor: pointer;
 }
 
-.qj-tagged-item:hover {
+.qj-tagged-item:hover,
+.qj-tagged-item.selected {
   background: #ebf6ff;
 }
 
-.qj-tagged-item:hover .qj-tagged-item-name {
+.qj-tagged-item:hover .qj-tagged-item-name,
+.qj-tagged-item.selected .qj-tagged-item-name {
   color: #1e88e5;
 }
 
