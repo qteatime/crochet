@@ -658,6 +658,7 @@ function render(page, selector = "#page-root") {
 function navigate(type, name, page) {
   history.pushState({ type, target: name }, "", `#${type}:${name}`);
   render(page);
+  window.scrollTo({ top: 0 });
 }
 
 function reify_page({ type, target }, data) {
@@ -670,7 +671,7 @@ function reify_page({ type, target }, data) {
       try_find_item(data.effects, t, data),
       (e) => effect_page(e, data),
     ],
-    traits: (t) => [
+    trait: (t) => [
       try_find_item(data.traits, t, data),
       (t) => trait_page(t, data),
     ],
@@ -715,7 +716,7 @@ function reify_page({ type, target }, data) {
       ([_, op, effect]) => effect_op_page(op, effect, data),
     ],
     capability: (t) => [
-      try_find_item(data.capability, t, data),
+      try_find_item(data.capabilities, t, data),
       (c) => capability_page(c, data),
     ],
     package: (t) => [
