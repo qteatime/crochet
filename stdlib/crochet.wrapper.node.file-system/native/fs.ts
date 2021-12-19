@@ -82,7 +82,9 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("fs.read-file-text", (path) => {
-    return ffi.text(FS.readFileSync(ffi.text_to_string(path), "utf-8"));
+    return ffi.untrusted_text(
+      FS.readFileSync(ffi.text_to_string(path), "utf-8")
+    );
   });
 
   ffi.defun("fs.real-path", (path) => {

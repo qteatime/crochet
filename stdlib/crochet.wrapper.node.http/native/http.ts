@@ -53,7 +53,7 @@ export default (ffi: ForeignInterface) => {
         const chunks: string[] = [];
         res.on("data", (chunk) => chunks.push(chunk));
         res.on("end", () => {
-          result.set("body", ffi.text(chunks.join("")));
+          result.set("body", ffi.untrusted_text(chunks.join("")));
           resolve(
             ffi.record(
               new Map([
