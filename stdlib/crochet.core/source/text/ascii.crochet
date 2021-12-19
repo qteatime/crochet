@@ -1,7 +1,7 @@
 % crochet
 
 // Manipulating text as ASCII is usually enough for a lot of use cases.
-local type ascii-view(text is text);
+type ascii-view(text is text);
 
 command text ascii 
 requires ascii-text :: self is-ascii
