@@ -1109,10 +1109,18 @@ function md_to_html(text, data) {
     });
   }
 
+  function escape_special(text) {
+    return text.replace(/[\*\[\_\`]/g, (m) => {
+      return `&#x${m.charCodeAt(0).toString(16)};`;
+    });
+  }
+
   function render_inline(text) {
     const html0 = h("div.cmd", {}, [text]).innerHTML;
     const html = html0
-      .replace(/`(.+?)`/g, (_, x) => h("code", {}, [x]).outerHTML)
+      .replace(/`(.+?)`/g, (_, x) =>
+        escape_special(h("code", {}, [x]).outerHTML)
+      )
       .replace(/\[([^\]]+)\]/g, (_, x) => {
         const { tag, text, target } = parse_link(x);
         return h(
@@ -1121,8 +1129,14 @@ function md_to_html(text, data) {
           [h("code", {}, [text])]
         ).outerHTML;
       })
-      .replace(/\*\*(.+?)\*\*/g, (_, x) => h("strong", {}, [x]).outerHTML)
-      .replace(/\*(.+?)\*/g, (_, x) => h("em", {}, [x]).outerHTML);
+      .replace(
+        /\*\*(?=\w)[\w\s]+(?<=\w)\*\*/g,
+        (_, x) => h("strong", {}, [x]).outerHTML
+      )
+      .replace(
+        /\_(?=\w)([\w\s]+)(?<=\w)\_/g,
+        (_, x) => h("em", {}, [x]).outerHTML
+      );
     const element = h("div.cmd", {}, []);
     element.innerHTML = html;
     reify_links(element);
