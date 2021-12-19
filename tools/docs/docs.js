@@ -1115,26 +1115,32 @@ function md_to_html(text, data) {
     });
   }
 
+  function html_to_text(x) {
+    const e = h("div", {}, []);
+    e.innerHTML = x;
+    return e.textContent;
+  }
+
   function render_inline(text) {
     const html0 = h("div.cmd", {}, [text]).innerHTML;
     const html = html0
       .replace(/`(.+?)`/g, (_, x) =>
-        escape_special(h("code", {}, [x]).outerHTML)
+        escape_special(h("code", {}, [html_to_text(x)]).outerHTML)
       )
       .replace(/\[([^\]]+)\]/g, (_, x) => {
-        const { tag, text, target } = parse_link(x);
+        const { tag, text, target } = parse_link(html_to_text(x));
         return h(
           "a.inner-link",
-          { "data-target": target, href: "#", "data-tag": tag },
+          { "data-target": target, href: `#${tag}:${target}`, "data-tag": tag },
           [h("code", {}, [text])]
         ).outerHTML;
       })
       .replace(
-        /\*\*(?=\w)[\w\s]+(?<=\w)\*\*/g,
+        /\*\*(?=\w)([\w\-\s]+)(?<=\w)\*\*/g,
         (_, x) => h("strong", {}, [x]).outerHTML
       )
       .replace(
-        /\_(?=\w)([\w\s]+)(?<=\w)\_/g,
+        /\_(?=\w)([\w\-\s]+)(?<=\w)\_/g,
         (_, x) => h("em", {}, [x]).outerHTML
       );
     const element = h("div.cmd", {}, []);
