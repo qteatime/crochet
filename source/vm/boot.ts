@@ -142,10 +142,49 @@ export function make_universe() {
     null
   );
 
-  const Text = new CrochetType(null, "text", "", Any, [], [], false, null);
+  const UnsafeArbitraryText = new CrochetType(
+    null,
+    "unsafe-arbitrary-text",
+    "",
+    Any,
+    [],
+    [],
+    false,
+    null
+  );
+  const UntrustedText = new CrochetType(
+    null,
+    "untrusted-text",
+    "",
+    UnsafeArbitraryText,
+    [],
+    [],
+    false,
+    null
+  );
+  const Text = new CrochetType(
+    null,
+    "text",
+    "",
+    UnsafeArbitraryText,
+    [],
+    [],
+    false,
+    null
+  );
   const StaticText = new CrochetType(
     null,
     "static-text",
+    "",
+    Text,
+    [],
+    [],
+    false,
+    null
+  );
+  const DynamicText = new CrochetType(
+    null,
+    "dynamic-text",
     "",
     Text,
     [],
@@ -318,8 +357,14 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.integral", Integral);
   world.native_types.define("crochet.core/core.float", Float);
   world.native_types.define("crochet.core/core.integer", Integer);
+  world.native_types.define(
+    "crochet.core/core.unsafe-arbitrary-text",
+    UnsafeArbitraryText
+  );
+  world.native_types.define("crochet.core/core.untrusted-text", UntrustedText);
   world.native_types.define("crochet.core/core.text", Text);
   world.native_types.define("crochet.core/core.static-text", StaticText);
+  world.native_types.define("crochet.core/core.dynamic-text", DynamicText);
   world.native_types.define("crochet.core/core.interpolation", Interpolation);
   world.native_types.define("crochet.core/core.function", Function);
   for (const f of functions) {
@@ -354,8 +399,11 @@ export function make_universe() {
     False,
     Integer,
     Float,
+    UnsafeArbitraryText,
+    UntrustedText,
     Text,
     StaticText,
+    DynamicText,
     Interpolation,
     Function: functions,
     NativeFunctions: native_lambdas,

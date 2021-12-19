@@ -1,5 +1,18 @@
 % crochet
 
+// -- The capabilities
+capability tainting;
+capability untainting;
+
+// -- The tainters
+singleton taint;
+protect global taint with tainting;
+protect type taint with tainting;
+
+singleton untaint;
+protect global untaint with untainting;
+protect type untaint with untainting;
+
 // -- The hierarchy
 
 /// The base of the type hierarchy in Crochet.
@@ -65,12 +78,18 @@ type integer = foreign core.integer;
 
 /// The type of textual values.
 ///
-/// All textual types descend from [text]. And a [text] is always to be
+/// All textual types descend from [unsafe-arbitrary-text]. And it is always to be
 /// considered an opaque blob, only operated on through whatever text
 /// commands are available, and with representation that's entirely up
 /// to the runtime---indeed, the representation may change if the runtime
 /// thinks that's more efficient.
+type unsafe-arbitrary-text = foreign core.unsafe-arbitrary-text;
+
+type untrusted-text = foreign core.untrusted-text;
+
 type text = foreign core.text;
+
+type dynamic-text = foreign core.dynamic-text;
 
 /// The type of text *literals* in source programs.
 ///

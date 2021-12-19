@@ -1,0 +1,14 @@
+% crochet
+
+command taint make-untrusted: (Text is untrusted-text) =
+  Text;
+
+command taint make-untrusted: (Text is text) =
+  foreign text.make-untrusted(Text);
+
+
+command untaint make-trusted: (Text is untrusted-text) =
+  foreign text.make-trusted(Text);
+
+command untaint make-trusted: (Text is text) =
+  Text;

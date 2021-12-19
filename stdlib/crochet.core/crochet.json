@@ -91,6 +91,7 @@
     "source/text/equality.crochet",
     "source/text/interpolation.crochet",
     "source/text/views.crochet",
+    "source/text/taint.crochet",
 
     "source/traits/conversion.crochet",
     "source/traits/container.crochet",
@@ -103,6 +104,6 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": ["tainting", "untainting"]
   }
 }

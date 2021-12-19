@@ -1,7 +1,7 @@
 % crochet
 
 /// Concatenates two pieces of text
-command (X is text) ++ (Y is text) = 
+command (X is unsafe-arbitrary-text) ++ (Y is unsafe-arbitrary-text) = 
   "[X][Y]"
 test
   assert ("" ++ "") flatten-into-plain-text =:= "";
@@ -25,13 +25,13 @@ test
   assert ("[1]a[2]x" ++ "y[3]b[4]") normalise =:= "[1]a[2]xy[3]b[4]";
 end
 
-command (X is text) ++ (Y is interpolation) do
+command (X is unsafe-arbitrary-text) ++ (Y is interpolation) do
   "[X]" ++ Y;
 test
   assert ("abc" ++ "d[1]f") =:= "["abc"]d[1]f";
 end
 
-command (X is interpolation) ++ (Y is text) do
+command (X is interpolation) ++ (Y is unsafe-arbitrary-text) do
   X ++ "[Y]";
 test
   assert ("a[1]c" ++ "def") =:= "a[1]c["def"]";
@@ -66,5 +66,49 @@ test
   assert "[1][2]" static-text =:= "\[_\]\[_\]";
 end
 
-command (X is interpolation) flatten-into-plain-text =
-  foreign interpolation.to-plain-text(X);
+local singleton text-concat;
+
+command (X is interpolation) flatten-into-plain-text do
+  X parts
+    | fold-from: "" with: (text-concat left: _ right: _);
+test
+  // Trusted text begets trusted text
+  let Trusted-A = "A";
+  let Trusted-B = "B";
+  assert "[Trusted-A][Trusted-B]" flatten-into-plain-text === "AB";
+  assert "[Trusted-A][Trusted-B]" flatten-into-plain-text is dynamic-text;
+
+  // Untrusted text begets untrusted text
+  let Untrusted-A = taint make-untrusted: Trusted-A;
+  let Untrusted-B = taint make-untrusted: Trusted-B;
+  assert (untaint make-trusted: "[Trusted-A][Untrusted-B]" flatten-into-plain-text) === "AB";
+  assert "[Trusted-A][Untrusted-B]" flatten-into-plain-text is untrusted-text;
+  assert (untaint make-trusted: "[Untrusted-A][Trusted-B]" flatten-into-plain-text) === "AB";
+  assert "[Untrusted-A][Trusted-B]" flatten-into-plain-text is untrusted-text;
+  assert (untaint make-trusted: "[Untrusted-A][Untrusted-B]" flatten-into-plain-text) === "AB";
+  assert "[Untrusted-A][Untrusted-B]" flatten-into-plain-text is untrusted-text;
+  
+  // Interpolation is flattened recursively
+  let AB = "[Trusted-A][Trusted-B]";
+  let ABAB = "[AB][AB]";
+  let CABABC = "C[ABAB]C";
+  assert CABABC flatten-into-plain-text === "CABABC";
+end
+
+command text-concat left: (L is untrusted-text) right: (R is text) =
+  foreign text.untrusted-concat(L, R);
+
+command text-concat left: (L is text) right: (R is untrusted-text) =
+  foreign text.untrusted-concat(L, R);
+
+command text-concat left: (L is untrusted-text) right: (R is untrusted-text) =
+  foreign text.untrusted-concat(L, R);
+
+command text-concat left: (L is text) right: (R is text) =
+  foreign text.trusted-concat(L, R);
+
+command text-concat left: (L is interpolation) right: R =
+  text-concat left: L flatten-into-plain-text right: R;
+
+command text-concat left: L right: (R is interpolation) =
+  text-concat left: L right: R flatten-into-plain-text;
