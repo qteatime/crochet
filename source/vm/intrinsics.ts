@@ -904,8 +904,11 @@ export class Universe {
       False: CrochetType;
       Integer: CrochetType;
       Float: CrochetType;
+      UnsafeArbitraryText: CrochetType;
+      UntrustedText: CrochetType;
       Text: CrochetType;
       StaticText: CrochetType;
+      DynamicText: CrochetType;
       Interpolation: CrochetType;
       Function: CrochetType[];
       NativeFunctions: CrochetType[];

@@ -12,14 +12,14 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("os.arch", () => {
-    return ffi.text(process.arch);
+    return ffi.untrusted_text(process.arch);
   });
 
   ffi.defun("os.argv", () => {
     const args0 = process.argv.slice(2);
     const split_index = args0.indexOf("--");
     const args = split_index < 0 ? [] : args0.slice(split_index + 1);
-    return ffi.list(args.map((x) => ffi.text(x)));
+    return ffi.list(args.map((x) => ffi.untrusted_text(x)));
   });
 
   ffi.defun("os.chdir", (dir) => {
@@ -28,21 +28,21 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("os.cwd", () => {
-    return ffi.text(process.cwd());
+    return ffi.untrusted_text(process.cwd());
   });
 
   ffi.defun("os.env", () => {
     const map = new Map<string, CrochetValue>();
     for (const [k, v] of Object.entries(process.env)) {
       if (v != null) {
-        map.set(k, ffi.text(v));
+        map.set(k, ffi.untrusted_text(v));
       }
     }
     return ffi.record(map);
   });
 
   ffi.defun("os.platform", () => {
-    return ffi.text(process.platform);
+    return ffi.untrusted_text(process.platform);
   });
 
   ffi.defun("os.pid", () => {

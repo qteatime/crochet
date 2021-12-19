@@ -41,8 +41,12 @@ export function make_float(universe: Universe, x: number) {
   return universe.make_float(x);
 }
 
-export function make_text(universe: Universe, x: string) {
-  return new CrochetValue(Tag.TEXT, universe.types.Text, x);
+export function make_dynamic_text(universe: Universe, x: string) {
+  return new CrochetValue(Tag.TEXT, universe.types.DynamicText, x);
+}
+
+export function make_untrusted_text(universe: Universe, x: string) {
+  return new CrochetValue(Tag.TEXT, universe.types.UntrustedText, x);
 }
 
 export function make_static_text(universe: Universe, x: string) {
@@ -504,7 +508,7 @@ export function from_plain_object(
   if (x == null) {
     return universe.nothing;
   } else if (typeof x === "string") {
-    return make_text(universe, x);
+    return make_dynamic_text(universe, x);
   } else if (typeof x === "bigint") {
     return make_integer(universe, x);
   } else if (typeof x === "number") {

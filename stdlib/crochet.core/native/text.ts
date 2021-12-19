@@ -65,6 +65,22 @@ export default (ffi: ForeignInterface) => {
     return ffi.normalise_interpolation(x);
   });
 
+  ffi.defun("text.make-trusted", (t) => {
+    return ffi.text(ffi.text_to_string(t));
+  });
+
+  ffi.defun("text.make-untrusted", (t) => {
+    return ffi.untrusted_text(ffi.text_to_string(t));
+  });
+
+  ffi.defun("text.untrusted-concat", (l, r) => {
+    return ffi.untrusted_text(ffi.text_to_string(l) + ffi.text_to_string(r));
+  });
+
+  ffi.defun("text.trusted-concat", (l, r) => {
+    return ffi.text(ffi.text_to_string(l) + ffi.text_to_string(r));
+  });
+
   ffi.defun("text.repeat", (x0, n0) => {
     const x = ffi.text_to_string(x0);
     const n = Number(ffi.integer_to_bigint(n0));

@@ -37,6 +37,6 @@ export default (ffi: ForeignInterface) => {
     const options = make_options(ffi.record_to_map(options0));
 
     const result = execFileSync(file, args, options);
-    return ffi.text(result);
+    return ffi.untrusted_text(result);
   });
 };

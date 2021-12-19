@@ -55,7 +55,9 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defmachine("terminal.read-line", function* (prompt0) {
     const prompt = ffi.text_to_string(prompt0);
-    const value = yield ffi.await(readline(prompt).then((x) => ffi.text(x)));
+    const value = yield ffi.await(
+      readline(prompt).then((x) => ffi.untrusted_text(x))
+    );
     return value;
   });
 };

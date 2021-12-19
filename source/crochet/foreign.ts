@@ -72,7 +72,11 @@ export class ForeignInterface {
   }
 
   text(x: string) {
-    return Values.make_text(this.#universe, x);
+    return Values.make_dynamic_text(this.#universe, x);
+  }
+
+  untrusted_text(x: string) {
+    return Values.make_untrusted_text(this.#universe, x);
   }
 
   box(x: unknown) {

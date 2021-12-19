@@ -14,7 +14,7 @@ import {
   make_lambda,
   make_record_from_map,
   make_static_text,
-  make_text,
+  make_dynamic_text,
   make_thunk,
   make_list,
 } from "./values";
