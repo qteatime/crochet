@@ -302,12 +302,6 @@ type cell = foreign core.cell;
 type read-only-cell(cell);
 
 
-// -- The idea of inspecting data
-
-/// The module for representations
-singleton representation;
-
-
 //-- Other types
 /// A pair constructed by zipping two elements together.
 type zip-pair(global first, global second);
