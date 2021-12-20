@@ -45,6 +45,6 @@ end
 /// does not succeed.
 command pocket-lisp parse: (Source is text) do
   pocket-lisp try-parse: Source
-    | recover: { Error in panic-without-trace: Error tag: "syntax-error" }
+    | recover: { Error in panic message: Error tag: "syntax-error" }
     | value;
 end
