@@ -1156,6 +1156,10 @@ function md_to_html(text, data) {
       return block;
     } else if (block.type === "paragraph") {
       return h("p", {}, [render_inline(block.contents.join("\n"))]);
+    } else if (block.type === "code") {
+      return h("pre.code-block", {}, [
+        h("code.code-block-contents", {}, [block.contents.join("\n")]),
+      ]);
     } else {
       throw new Error(`invalid block`);
     }
@@ -1194,6 +1198,26 @@ function md_to_html(text, data) {
     }
   }
 
+  function push_code(blocks, current, line) {
+    if (current != null && current.type === "code") {
+      return {
+        blocks: blocks,
+        current: {
+          type: "code",
+          contents: [...current.contents, line],
+        },
+      };
+    } else {
+      return {
+        blocks: push(blocks, current),
+        current: {
+          type: "code",
+          contents: [line],
+        },
+      };
+    }
+  }
+
   function handle_line({ blocks, current }, line) {
     if (/^#+\s*\S/.test(line)) {
       const [_, level, text] = line.match(/^(#+)\s*(.*)/);
@@ -1204,6 +1228,8 @@ function md_to_html(text, data) {
         ]),
         current: null,
       };
+    } else if (/^ {4,}/.test(line)) {
+      return push_code(blocks, current, line.slice(4));
     } else if (/^\s*$/.test(line)) {
       return {
         blocks: push(blocks, current),

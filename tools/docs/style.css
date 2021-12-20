@@ -142,7 +142,8 @@ a:hover,
   font-family: "Source Sans Pro", monospace;
 }
 
-.declaration-code {
+.declaration-code,
+.crochet-md .code-block {
   background: #fff;
   padding: 1em;
   border: 1px solid #cfd8dc;
@@ -218,14 +219,14 @@ a:hover,
   font-family: "Source Sans Pro", monospace;
 }
 
-.crochet-md code::before,
-.crochet-md code::after {
+.crochet-md code:not(.code-block-contents)::before,
+.crochet-md code:not(.code-block-contents)::after {
   content: "`";
   color: #484d5a;
   font-family: "Source Sans Pro", monospace;
 }
 
-.crochet-md code::after {
+.crochet-md code:not(.code-block-contents)::after {
   content: "'";
   color: #606674;
 }
