@@ -1,9 +1,13 @@
 % crochet
 
 // -- Constructors
+
+/// Returns the empty list
 command #list empty = [];
 
 // -- Other
+
+/// Returns a list without duplicate values (as compared by `=:=`).
 command (X is list) without-duplicates = foreign list.unique(X)
 test
   assert ([] without-duplicates) === [];

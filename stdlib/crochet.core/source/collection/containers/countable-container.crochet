@@ -55,6 +55,7 @@ end
 // -- Map
 implement countable-container for map;
 
+/// The number of key/value pairs in the map.
 command map count do
   foreign map.count(self.box);
 test

@@ -18,8 +18,8 @@ test
   assert 1 predecessor =:= 0;
 end
 
-/// The range of integers from [Min] to [Max], inclusive on
-/// both bounds, and with [Step] arithmetic steps.
+/// The range of integers from `Min` to `Max`, inclusive on
+/// both bounds, and with `Step` arithmetic steps.
 ///
 /// That is, for `0 to: 10 by: 2` we would have the
 /// arithmetic sequence of `[0, 2, 4, 6, 8, 10]`.
@@ -38,10 +38,10 @@ test
   assert (3 to: 6 by: 2) =:= [3, 5];
 end
 
-/// The range of integers from [Min] to [Max], considering
+/// The range of integers from `Min` to `Max`, considering
 /// `1` as the arithmetic step.
 ///
-/// @see: [integer to: integer by: integer]
+/// See [command:_ to: _ by: _]
 command (Min is integer) to: (Max is integer)
   = Min to: Max by: 1
 test
@@ -50,8 +50,8 @@ test
   assert (3 to: 3) =:= [3];  
 end
 
-/// The range of integers from [Min] until (but not including)
-/// [Max].
+/// The range of integers from `Min` until (but not including)
+/// `Max`.
 ///
 /// That is, for `0 until: 10 by: 2` we would have the
 /// arithmetic sequence of `[0, 2, 4, 6, 8]`.
@@ -67,10 +67,10 @@ test
   assert (3 until: 3 by: 1) =:= [];
 end
 
-/// The range of integers from [Min] until (but not including)
-/// [Max], considering `1` as the arithmetic step.
+/// The range of integers from `Min` until (but not including)
+/// `Max`, considering `1` as the arithmetic step.
 ///
-/// @see: [integer until: integer by: integer]
+/// See [command:_ until: _ by: _]
 command (Min is integer) until: (Max is integer)
   = Min until: Max by: 1
 test

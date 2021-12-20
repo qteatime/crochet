@@ -87,14 +87,20 @@ end
 
 
 // # Relational operators across numeric types
+/// True if `X` is less than `Y`.
 command (X is integer) <  (Y is float) = (X as float) < Y;
-command (X is integer) <= (Y is float) = (X as float) <= Y;
-command (X is integer) >  (Y is float) = (X as float) > Y;
-command (X is integer) >= (Y is float) = (X as float) >= Y;
-
 command (X is float) <  (Y is integer) = X <  (Y as float);
+
+/// True if `X` is less or equal to `Y`.
+command (X is integer) <= (Y is float) = (X as float) <= Y;
 command (X is float) <= (Y is integer) = X <= (Y as float);
+
+/// True if `X` is greater than `Y`.
+command (X is integer) >  (Y is float) = (X as float) > Y;
 command (X is float) >  (Y is integer) = X >  (Y as float);
+
+/// True if `X` is greater or equal to `Y`.
+command (X is integer) >= (Y is float) = (X as float) >= Y;
 command (X is float) >= (Y is integer) = X >= (Y as float);
 
 

@@ -3,7 +3,7 @@
 // -- List
 implement mappable-collection for list;
 
-/// Returns a list where all elements are transformed by [Fun].
+/// Returns a list where all elements are transformed by `Fun`.
 command list map: (Fun is function-1) do
   foreign list.map(self, Fun);
 test
@@ -15,7 +15,7 @@ end
 // -- Record
 implement mappable-collection for record;
 
-/// Returns a record where all values are transformed by [Fun]
+/// Returns a record where all values are transformed by `Fun`.
 command record map: (Fun is (A -> B)) do
   self fold-from: [->] with: { R, P in R at: P key put: Fun(P) };
 test
@@ -27,6 +27,10 @@ end
 // -- Set
 implement mappable-collection for set;
 
+/// Returns a new set where all values are transformed by `Fun`. If the
+/// `Fun` returns the same value for different inputs, then only one copy
+/// of it will exist in the resulting set, but since sets are inherently
+/// unordered this isn't an issue.
 command set map: (Fun is (A -> B)) do
   new set(foreign set.map(self.box, Fun));
 test
@@ -43,7 +47,7 @@ end
 // -- Stream
 implement mappable-collection for linked-stream;
 
-/// Transforms the stream with the given [Fun].
+/// Transforms the stream with the given `Fun`.
 command linked-stream-empty map: (Fun is (A -> B)) = self;
 command linked-stream-cons map: (Fun is (A -> B)) =
   new linked-stream-cons(Fun(self first), lazy self rest map: Fun);
@@ -56,11 +60,13 @@ end
 // -- Maps
 implement mappable-collection for map;
 
-command map map: (Fun is (association<K, V> -> association<K2, V2>)) do
-  new map(foreign map.map(self.box, { X in let R = Fun(new association(X at: 1, X at: 2));
-                                           [R key, R value] }));
+/// Transforms the map with the given `Fun`. Because maps are unordered, `Fun`
+/// is only able to return a new value for each key, as otherwise it would
+/// not be possible to reason about the result of this transformation.
+command map map: (Fun is (association<K, V> -> V2)) do
+  new map(foreign map.map(self.box, { X in Fun(new association(X at: 1, X at: 2)) }));
 test
-  let F = { X in #association key: X key value: (X value + 1) };
+  let F = { X in X value + 1 };
   assert (#map empty map: F) === #map empty;
   assert (#map from: [a -> 1, b -> 2, c -> 3] | map: F) === (#map from: [a -> 2, b -> 3, c -> 4]);
 end

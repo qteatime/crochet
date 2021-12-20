@@ -1,6 +1,6 @@
 % crochet
 
-/// Constructs a [cell] with the given value.
+/// Constructs a [type:cell] with the given value.
 command #cell with-value: V -> cell
   = foreign cell.make(V)
 test
@@ -8,7 +8,7 @@ test
 end
 
 
-/// Constructs a [cell] with [nothing] inside.
+/// Constructs a [type:cell] with [type:nothing] inside.
 command #cell empty -> cell
   = #cell with-value: nothing
 test
@@ -16,7 +16,7 @@ test
 end
 
 
-/// Retrieves the value of a [cell].
+/// Retrieves the value of a [type:cell].
 command (X is cell) value = foreign cell.deref(X)
 test
   let C = #cell with-value: 1;
@@ -24,8 +24,8 @@ test
 end
 
 
-/// Updates the value of a [cell], but only if its current value matches
-/// the provided [Old] value. The comparison and update are performed
+/// Updates the value of a [type:cell], but only if its current value matches
+/// the provided `Old` value. The comparison and update are performed
 /// atomically.
 command (X is cell) compare: Old and-set: New -> boolean
   = foreign cell.cas(X, Old, New)
@@ -38,9 +38,9 @@ test
 end
 
 
-/// Updates the value of a [cell] to [Value] unconditionally, but atomically.
+/// Updates the value of a [type:cell] to `Value` unconditionally, but atomically.
 ///
-/// This function is basically [cell compare: _ and-set: _] with a spin-loop.
+/// This function is basically [command:_ compare: _ and-set: _] with a spin-loop.
 command (X is cell) <- Value -> cell do
   let Old = X value;
   let Set = X compare: Old and-set: Value;

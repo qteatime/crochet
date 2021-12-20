@@ -1,5 +1,8 @@
 % crochet
 
+// These operations are probably not going to survive the stable release.
+
+/// True if an arbitrary piece of text ends with the given piece of text.
 command text ends-with: (Text is text)
 requires
   non-empty :: not Text is-empty
@@ -12,6 +15,7 @@ test
   assert not ("hello" ends-with: "he");
 end
 
+/// True if an arbitrary piece of text starts with the given piece of text.
 command text starts-with: (Text is text)
 requires
   non-empty :: not Text is-empty
@@ -24,6 +28,7 @@ test
   assert not ("hello" starts-with: "llo");
 end
 
+/// True if an arbitrary piece of text contains another piece of text.
 command text contains: (Text is text)
 requires
   non-empty :: not Text is-empty
@@ -37,7 +42,8 @@ test
   assert not ("hello" contains: "oll");
 end
 
-
+/// Returns the piece of text without spaces at the beginning of it. Note 
+/// that what you _see_ as "beginning" is dependent on its contents.
 command text trim-start
   = foreign text.trim-start(self)
 test
@@ -47,6 +53,8 @@ test
   assert "  abc  " trim-start =:= "abc  ";
 end
 
+/// Returns the piece of text without spaces at the end of it. Note that
+/// what you _see_ as "ending" is dependent on its contents.
 command text trim-end
   = foreign text.trim-end(self)
 test
@@ -56,6 +64,7 @@ test
   assert "  abc  " trim-end =:= "  abc";
 end
 
+/// Returns the piece of text without spaces at both ends of it.
 command text trim
   = foreign text.trim(self)
 test

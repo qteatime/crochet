@@ -4,8 +4,8 @@
 
 implement sliceable-sequence for list;
 
-/// Returns the sub-list that comprises elements at index [Start] up to
-/// (and including) element at index [End].
+/// Returns the sub-list that comprises elements at index `Start` up to
+/// (and including) element at index `End`.
 command list slice-from: (Start is integer) to: (End is integer)
 requires
   positive :: Start >= 1,
@@ -20,7 +20,7 @@ test
   assert ([0, 1, 2, 3] slice-from: 3 to: 5) =:= [2, 3];
 end
 
-/// Returns the sub-list that comprises elements at index [Start] up
+/// Returns the sub-list that comprises elements at index `Start` up
 /// to (and including) the end.
 command list slice-from: Start =
   self slice-from: Start to: (greater-of: Start and: self count)

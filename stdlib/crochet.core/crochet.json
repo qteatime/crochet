@@ -95,7 +95,6 @@
 
     "source/traits/conversion.crochet",
     "source/traits/container.crochet",
-    "source/traits/enumeration.crochet",
     "source/traits/equality.crochet",
     "source/traits/iteration.crochet",
     "source/traits/ordering.crochet",

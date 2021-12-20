@@ -1,13 +1,13 @@
 % crochet
 
-/// Retrieves the computed ranking score for an [action-choice].
+/// Retrieves the computed ranking score for an [type:action-choice].
 command action-choice score =
   foreign action.score(self);
 
-/// Retrieves the computed title for an [action-choice].
+/// Retrieves the computed title for an [type:action-choice].
 command action-choice title =
   (foreign action.action(self)) title;
 
-/// True if this [action] has fired before for the given turn-value.
+/// True if this [type:action] has fired before for the given turn-value.
 command 'action fired-for: Value =
   (foreign action.fired-for(self, Value));

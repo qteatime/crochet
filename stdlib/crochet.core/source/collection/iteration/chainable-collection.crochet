@@ -6,7 +6,7 @@ local singleton module;
 implement chainable-collection for list;
 
 /// Transforms every element of the list with the given function, concatenates
-/// all results returned by [Fun].
+/// all results returned by `Fun`.
 command list flat-map: (Fun is function-1) do
   foreign list.flatmap(self, Fun);
 test
@@ -25,7 +25,7 @@ end
 // -- Sets
 implement chainable-collection for set;
 
-/// Transforms every element of the set with the given [Fun], which must
+/// Transforms every element of the set with the given `Fun`, which must
 /// return a new set.
 command set flat-map: (Fun is (A -> set<B>)) do
   new set(foreign set.flatmap(self.box, { A in let R = Fun(A); assert R is set; R.box }));
@@ -40,7 +40,7 @@ end
 // -- Stream
 implement chainable-collection for stream;
 
-/// Transforms a stream using the given [Fun]. The [Fun] should return a
+/// Transforms a stream using the given `Fun`. The `Fun` should return a
 /// new stream.
 command linked-stream-empty flat-map: (Fun is (A -> stream<A>)) = self;
 command linked-stream-cons flat-map: (Fun is (A -> stream<A>)) =
@@ -61,6 +61,8 @@ end
 // -- Maps
 implement chainable-collection for map;
 
+/// Transforms all key/value pairs in the map using the given `Fun`. The `Fun`
+/// must return a new map.
 command map flat-map: (Fun is (association<K1, V1> -> map<K2, V2>)) -> map<K2, V2> do
   new map(foreign map.flatmap(self.box, { X in let R = Fun(new association(X at: 1, X at: 2));
                                                assert R is map;

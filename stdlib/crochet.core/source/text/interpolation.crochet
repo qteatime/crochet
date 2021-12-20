@@ -68,6 +68,8 @@ end
 
 local singleton text-concat;
 
+/// If given an interpolation consisting only of pieces of text, returns
+/// the flattened piece of text that combines all of them together.
 command (X is interpolation) flatten-into-plain-text do
   X parts
     | fold-from: "" with: (text-concat left: _ right: _);

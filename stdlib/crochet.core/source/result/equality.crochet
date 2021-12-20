@@ -2,7 +2,7 @@
 
 implement equality for result;
 
-/// True if two [result] values have the same state and
+/// True if two [type:result] values have the same state and
 /// value/reason.
 command result === result = false;
 command ok === (That is ok) = self value === That value;

@@ -14,7 +14,7 @@ test
   assert (["a", "b", "c"] remove-at: 3) =:= ["a", "b"];
 end
 
-/// Inserts [Value] before the element at [Index].
+/// Inserts `Value` before the element at `Index`.
 command list at: (Index is integer) insert-before: Value
 requires within-bounds :: (Index >= 1) and (Index <= self count)
   = foreign list.at-insert(self, Index, Value)
@@ -24,7 +24,7 @@ test
   assert (["a", "b", "c"] at: 3 insert-before: 0) =:= ["a", "b", 0, "c"];
 end
 
-/// Inserts [Value] after the element at [Index].
+/// Inserts `Value` after the element at `Index`.
 command list at: (Index is integer) insert-after: Value
 requires within-bounds :: (Index >= 1) and (Index <= self count)
   = foreign list.after-insert(self, Index, Value)

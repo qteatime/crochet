@@ -4,7 +4,7 @@
 implement filterable-collection for list;
 
 /// Produces a new list that only contains items for which the given
-/// [Predicate] holds.
+/// `Predicate` holds.
 command list keep-if: (Predicate is (A -> boolean)) do
   for X in self if Predicate(X) do X end
 test
@@ -17,7 +17,7 @@ end
 // -- Records
 implement filterable-collection for record;
 
-/// Produces a record without associations for which the [Predicate]
+/// Produces a record without associations for which the `Predicate`
 /// does not hold.
 command (X is record) keep-if: (Predicate is (association<K, V> -> boolean)) do
   self fold-from: [->] with: { R, P in
@@ -38,7 +38,7 @@ end
 implement filterable-collection for set;
 
 /// Returns a new set that does not contain the elements for which the
-/// given [Predicate] holds.
+/// given `Predicate` holds.
 command set keep-if: (Predicate is (A -> boolean)) do
   new set(foreign set.filter(self.box, Predicate));
 test
@@ -52,7 +52,7 @@ end
 // -- Streams
 implement filterable-collection for linked-stream;
 
-/// Returns a stream containing only items that pass the [Predicate].
+/// Returns a stream containing only items that pass the `Predicate`.
 command linked-stream-empty keep-if: (Predicate is (A -> boolean)) = self;
 command linked-stream-cons keep-if: (Predicate is (A -> boolean)) =
   condition
@@ -68,6 +68,7 @@ end
 // -- Maps
 implement filterable-collection for map;
 
+/// Returns a new map containing only the key/value pairs that pass the `Predicate`.
 command map keep-if: (Predicate is (association<K, V> -> boolean)) -> map<K, V> do
   new map(foreign map.filter(self.box, { X in Predicate(new association(X at: 1, X at: 2)) }));
 test

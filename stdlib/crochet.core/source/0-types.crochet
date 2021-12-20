@@ -1,14 +1,33 @@
 % crochet
 
 // -- The capabilities
+
+/// Allows converting trusted values to untrusted values.
 capability tainting;
+
+/// Allows converting untrusted values to trusted values.
+///
+/// This power allows code to promote an untrusted value to a trusted
+/// one without any required verification of its semantics. It's a
+/// dangerous escape hatch that should only be necessary in very few
+/// cases. Be very skeptical of any code to which this power is granted.
 capability untainting;
 
+/// Allows constructing mutable memory cells.
+capability mutability;
+
+
 // -- The tainters
+
+/// Allows converting trusted values to untrusted values.
 singleton taint;
 protect global taint with tainting;
 protect type taint with tainting;
 
+/// Allows converting untrusted values to trusted values.
+///
+/// This type is particularly dangerous. See the [capability:untainting]
+/// capability for more details on its danger.
 singleton untaint;
 protect global untaint with untainting;
 protect type untaint with untainting;
@@ -29,7 +48,7 @@ type any = foreign core.any;
 /// unsealed.
 type unknown = foreign core.unknown;
 
-/// The unit type which represents the absense of useful values.
+/// The type which represents the absense of useful values.
 type nothing = foreign core.nothing;
 
 
@@ -38,7 +57,7 @@ type nothing = foreign core.nothing;
 /// The base type for two-valued logical values.
 ///
 /// Booleans model a two-valued logic with two possible values:
-/// [true] and [false].
+/// [type:true] and [type:false].
 type boolean = foreign core.boolean;
 
 /// The true case of booleans.
@@ -52,13 +71,13 @@ type false = foreign core.false;
 
 /// The base type for the numeric tower.
 ///
-/// Any numeric types in Crochet are expected to be a subtype of [numeric].
+/// Any numeric types in Crochet are expected to be a subtype of [type:numeric].
 type numeric = foreign core.numeric;
 
 /// The base type for fractional numbers.
 ///
 /// Any representations of fractions or real numbers with a fractional part
-/// should be a subtype of [fractional].
+/// should be a subtype of [type:fractional].
 type fractional = foreign core.fractional;
 
 /// The type for IEEE-754 64-bit floating point numbers.
@@ -67,7 +86,7 @@ type float = foreign core.float;
 /// The base type for integral numbers.
 ///
 /// Any representation of whole integral numbers should be a subtype of
-/// [integral].
+/// [type:integral].
 type integral = foreign core.integral;
 
 /// The type of arbitrary-precision integers.
@@ -78,29 +97,41 @@ type integer = foreign core.integer;
 
 /// The type of textual values.
 ///
-/// All textual types descend from [unsafe-arbitrary-text]. And it is always to be
+/// All textual types descend from [type:unsafe-arbitrary-text]. And it is always to be
 /// considered an opaque blob, only operated on through whatever text
 /// commands are available, and with representation that's entirely up
 /// to the runtime---indeed, the representation may change if the runtime
 /// thinks that's more efficient.
 type unsafe-arbitrary-text = foreign core.unsafe-arbitrary-text;
 
+/// The type of untrusted pieces of text.
+///
+/// This type represents pieces of text that come from outside of
+/// a Crochet program, and thus has semantics that cannot be verified.
+/// In order to be able to use this value one must first verify its
+/// semantics and turn it into a (more restricted) trusted text.
+/// As an escape hatch, it's also possible to use the [type:untaint]
+/// type to make it trusted without verifying its semantics.
 type untrusted-text = foreign core.untrusted-text;
 
+/// The base type of trusted pieces of text.
 type text = foreign core.text;
 
+/// The type of trusted pieces of text constructed by running a Crochet
+/// program.
 type dynamic-text = foreign core.dynamic-text;
 
-/// The type of text *literals* in source programs.
+/// The type of text _literals_ in source programs.
 ///
 /// This type assures users that the piece of text originates from the
-/// program itself. In this sense, [static-text] represents a piece of
-/// text that is trusted to not come from external sources.
+/// program itself. In this sense, [type:static-text] represents a piece of
+/// text that is trusted to not come from external sources or have
+/// been composed without verifying the semantics of that composition.
 type static-text = foreign core.static-text;
 
 /// The type of interpolation sequences.
 ///
-/// An interpolation is not a descendant of [text], but rather its own
+/// An interpolation is not a descendant of [type:text], but rather its own
 /// first class concept of mixed values. Interpolations reify the idea
 /// of text that may contain other pieces of data within it, and turn
 /// this into a kind of tree-based representation of values. This
@@ -148,9 +179,9 @@ type function-9 = foreign core.function-9;
 
 /// The type of lazy expressions.
 ///
-/// A [thunk] is similar to a [function-0], in that it represents
+/// A [type:thunk] is similar to a [type:function-0], in that it represents
 /// a computation that hasn't been evaluated yet (therefore we don't know
-/// what it's value will be). However, [thunk]s also provide a guarantee
+/// what it's value will be). However, [type:thunk | thunks] also provide a guarantee
 /// that the computation will be evaluated at most once, no matter how 
 /// many times we try to get the value out of it.
 type thunk = foreign core.thunk;
@@ -166,17 +197,14 @@ type thunk = foreign core.thunk;
 /// privacy, and command specialisation are not a concern.
 ///
 /// Records are constructable by anyone, inspectable by anyone, and
-/// extensible by anyone.
+/// extensible by anyone. They should not be used for data that is
+/// sensitive or isn't public.
 type record = foreign core.record;
 
 /// A list is an ordered sequence of values, possibly of different types.
-/// This sequence is fixed---you cannot modify it to have more or less
-/// values. And although there are certain list operations that allow
-/// you to construct new ones that have more or less elements, this is
-/// not optimised, and thus not expected to be a common occurrence.
-///
-/// This limitation of lists is also its strength: it allows the runtime
-/// to choose more efficient ways of storing and using it.
+/// It's implemented as a persistent vector under the hood, supporting
+/// efficient additions of items to the beginning or the end of the
+/// list, without modifying the original list.
 type list = foreign core.list;
 
 /// A set is a collection of unordered elements that allows efficiently
@@ -187,32 +215,24 @@ type set(box);
 /// with exactly one value.
 type map(box);
 
-/// A stream is a procedural sequence.
+/// A stream is a procedural sequence. It guarantees a constant use
+/// of memory, and fusing of operations performed on it.
 abstract stream;
-abstract linked-stream is stream;
-singleton linked-stream-empty is linked-stream;
-type linked-stream-cons(value, rest is thunk<linked-stream<A>>) is linked-stream;
 
-/// Represents an inclusive integer range.
-type integer-range(start is integer, stop is integer, step is integer);
-
-
-/// A linked list is an ordered sequence of values of the same type
-/// which can grow by having new values prepended to this sequence.
-/// Prepending elements and iterating elements in order is cheap,
-/// but linked lists are not great for use cases where elements
-/// need to be accessed out of order, or where many insertions
-/// happen at the end of the list.
+/// The base type of streams based on lazy linked lists.
 ///
-/// Linked lists are an inductive structure with two cases:
-/// it can be either the [empty-list], meaning there's nothing in it,
-/// or a [cons-list], meaning there's one value that's followed by
-/// possibly many others, as described by its `rest` field.
-abstract linked-list;
-/// The empty case of linked lists.
-singleton empty-list is linked-list;
-/// The at-least-one-value case of linked lists.
-type cons-list(value, rest is linked-list);
+/// Linked streams can be iterated multiple times, with the guarantee
+/// that the items of the stream are computed as needed, and only
+/// computed at most once.
+abstract linked-stream is stream;
+
+/// A linked stream with no values.
+singleton linked-stream-empty is linked-stream;
+
+/// A linked stream with one value and, possibly, many others. The
+/// `rest` field is a thunk, which guarantees it's not computed more
+/// than once.
+type linked-stream-cons(value, rest is thunk<linked-stream<A>>) is linked-stream;
 
 
 /// The base type of enumerations.
@@ -243,11 +263,12 @@ type action-choice = foreign core.action-choice;
 
 // -- The idea of computational failure
 
-/// The type of results that may fail.
+/// The base type of results that may fail.
 ///
 /// A result explicitly models the idea that a computation may fail, and then
-/// reifies the status of the evaluation (whether it succeeded or failed),
-/// along with the value it would otherwise produce.
+/// reifies the status of the evaluation (whether it succeeded, with an [type:ok]
+/// type, or failed, with an [type:error] type), along with the value it would
+/// otherwise produce or the reason for its failure.
 abstract result;
 
 /// Represents successful evaluations.
@@ -256,15 +277,25 @@ type ok(global value) is result;
 /// Represents failed evaluations.
 type error(global reason) is result;
 
-/// The common error representing values that are missing.
+/// The common error representing values that are missing. This is used as
+/// the reason for [type:error] types in some cases.
 singleton not-found;
 
-/// Grants the capability of interrupting the program with a panic message.
+/// Allows halting the program with an error message.
 singleton panic;
+
 
 // -- The idea of state
 
 /// The type of mutable cells.
+///
+/// Passing this type around does grant the capability of mutating the
+/// value it holds. If you're passing it around, you may want to construct
+/// a [type:read-only-cell] instead, through [command:_ read-only].
+///
+/// Mutability is discouraged in Crochet, but sometimes necessary. For
+/// those cases you'll need to acquire the [capability:mutability]
+/// capability.
 type cell = foreign core.cell;
 
 /// A wrapper that allows accessing the value of a cell but not changing it.
@@ -296,12 +327,12 @@ enum ordering = less-than, equal, greater-than;
 
 // -- Traits
 
-/// A type has [equality] if it's possible to determine, for any pair of
+/// A type has [trait:equality] if it's possible to determine, for any pair of
 /// values it can have, if they're equal or not.
 ///
 /// We assume that equality is "structural". That is, there's an expectation
 /// that `A === B` will hold even if `A` and `B` are not the exact same
-/// typed data, as long as they can *mean* the same thing.
+/// typed data, as long as they can _mean_ the same thing.
 ///
 /// What "mean the same thing" should stand for is up to each type.
 trait equality with
@@ -313,7 +344,7 @@ trait equality with
 end
 
 
-/// A type has a [total-ordering] if for any pair of values, the operation
+/// A type has a [trait:total-ordering] if for any pair of values, the operation
 /// `A <= B` makes sense. It builds upon [equality] because of that.
 trait total-ordering with
   requires trait equality;
@@ -332,9 +363,9 @@ trait total-ordering with
 end
 
 
-/// A type has [bounds] if it has [total-ordering] and there are known
+/// A type has [trait:bounds] if it has [trait:total-ordering] and there are known
 /// discrete limits that determine the range of values in the type.
-/// Such limits are described by [_ lower-bound] and [_ upper-bound].
+/// Such limits are described by [command:_ lower-bound] and [command:_ upper-bound].
 trait bounds with
   requires trait total-ordering;
 
@@ -346,7 +377,7 @@ trait bounds with
 end
 
 
-/// A type has [enumeration] if its values are discretely ordered such that
+/// A type has [trait:enumeration] if its values are discretely ordered such that
 /// it's possible to always get the immediate next smaller or greater value.
 trait enumeration with
   requires trait total-ordering;
@@ -371,10 +402,10 @@ trait enumeration with
 end
 
 
-/// A type has a [boolean-algebra] if it can implement the common boolean
+/// A type has a [trait:boolean-algebra] if it can implement the common boolean
 /// operations (respecting their laws).
 ///
-/// A proper implementation of [boolean-algebra] requires:
+/// A proper implementation of [trait:boolean-algebra] requires:
 ///
 /// * Associativity of `or`:                x or (y or z) =:= (x or y) or z
 /// * Associativity of `and`:               x and (y and z) =:= (x and y) and z
@@ -398,7 +429,7 @@ trait boolean-algebra with
 end
 
 
-/// A type has an [arithmetic] if it can implement the common
+/// A type has an [trait:arithmetic] if it can implement the common
 /// arithmetic operations. This generally means you have
 /// some kind of number.
 ///
@@ -431,7 +462,7 @@ trait arithmetic with
 end
 
 
-/// A type generally has [rounding-strategies] if it's a
+/// A type generally has [trait:rounding-strategies] if it's a
 /// fractional type.
 trait rounding-strategies with
   /// Gets rid of the fractional part.
@@ -447,14 +478,14 @@ trait rounding-strategies with
   command A round;
 end
 
-/// A type has a [container] if it's an arbitrary collection of items, for
+/// A type has a [trait:container] if it's an arbitrary collection of items, for
 /// which one can test if an item exists within it.
 trait container with
   /// True if the [Value] exists within [Container]
   command Container contains: Value -> boolean;
 end
 
-/// A type has a [countable-container] if it has a [container] with a known,
+/// A type has a [trait:countable-container] if it has a [trait:container] with a known,
 /// finite number of items.
 trait countable-container with
   requires trait container;
@@ -466,7 +497,7 @@ trait countable-container with
   command Container is-empty -> boolean;
 end
 
-/// A type has a [modifiable-container] if it has a [container] that allows
+/// A type has a [trait:modifiable-container] if it has a [trait:container] that allows
 /// items to be added or removed from it.
 trait modifiable-container with
   requires trait container;
@@ -478,8 +509,8 @@ trait modifiable-container with
   command Container remove: Value;
 end
 
-/// A type has a [mapped-container] if each item it contains is identified
-/// by a key. In other words, a [mapped-container] "maps" (in the mathematical
+/// A type has a [trait:mapped-container] if each item it contains is identified
+/// by a key. In other words, a [trait:mapped-container] "maps" (in the mathematical
 /// sense) some key to some value.
 ///
 /// There are no restrictions on whether a key may map to multiple values, or
@@ -498,7 +529,7 @@ trait mapped-container with
   command Container contains-key: Key -> boolean;
 end
 
-/// A type has a [modifiable-mapped-container] if it has a [mapped-container]
+/// A type has a [trait:modifiable-mapped-container] if it has a [trait:mapped-container]
 /// that allows the mappings within it to be added, removed, or updated.
 trait modifiable-mapped-container with
   requires trait mapped-container;
@@ -516,7 +547,7 @@ trait modifiable-mapped-container with
   command Container remove-at: Key;
 end
 
-/// A type has a [mergeable-mapped-container] if it has a [mapped-container]
+/// A type has a [trait:mergeable-mapped-container] if it has a [trait:mapped-container]
 /// and allows one to merge the mappings of its container with the mappings
 /// of another container.
 ///
@@ -529,7 +560,7 @@ trait mergeable-mapped-container with
     ensures all-keys :: (set: (This keys ++ That keys)) === (set: return keys);
 end
 
-/// A type has a [sequence] if it contains a series of ordered items.
+/// A type has a [trait:sequence] if it contains a series of ordered items.
 trait sequence with
   /// The first element in the sequence.
   command Sequence first;
@@ -545,7 +576,7 @@ trait sequence with
   command Sequence drop-while: Predicate;
 end
 
-/// A type has an [appendable-sequence] if it has a [sequence] that allows
+/// A type has an [trait:appendable-sequence] if it has a [trait:sequence] that allows
 /// elements to be added to the beginning or to the end.
 trait appendable-sequence with
   requires trait sequence;
@@ -563,7 +594,7 @@ trait appendable-sequence with
   command This ++ That;
 end
 
-/// A type has a [finite-sequence] if it has a [sequence] with a known,
+/// A type has a [trait:finite-sequence] if it has a [trait:sequence] with a known,
 /// finite number of elements, such that one may actually reach the end
 /// of it by following all of the elements in order.
 trait finite-sequence with
@@ -577,7 +608,7 @@ trait finite-sequence with
   command Sequence without-last;
 end
 
-/// A type has an [indexed-sequence] if it has a [sequence] where each
+/// A type has an [trait:indexed-sequence] if it has a [trait:sequence] where each
 /// ordered value can be given an index---its position in the sequence
 /// is known.
 ///
@@ -590,7 +621,7 @@ trait indexed-sequence with
   command Sequence at: Index;
 end
 
-/// A type has a [modifiable-indexed-sequence] if it has an [indexed-sequence]
+/// A type has a [trait:modifiable-indexed-sequence] if it has an [trait:indexed-sequence]
 /// that allows elements at particular indexes to change.
 trait modifiable-indexed-sequence with
   requires trait indexed-sequence;
@@ -619,7 +650,7 @@ trait growable-indexed-sequence with
   command Sequence at: Index insert-after: Value;
 end
 
-/// A type has a [sortable-sequence] if it has a [sequence] that allows the
+/// A type has a [trait:sortable-sequence] if it has a [trait:sequence] that allows the
 /// ordering of the elements within it to be changed.
 trait sortable-sequence with
   requires trait sequence;
@@ -651,7 +682,7 @@ trait reversible-sequence with
   command Sequence reverse;
 end
 
-/// A type has a [sliceable-sequence] if it has an [indexed-sequence] that
+/// A type has a [trait:sliceable-sequence] if it has an [trait:indexed-sequence] that
 /// allows one to take a "slice" of it by giving a starting and ending index.
 trait sliceable-sequence with
   requires trait indexed-sequence;
@@ -661,7 +692,7 @@ trait sliceable-sequence with
   command Sequence slice-from: Start to: End;
 end
 
-/// A type has a [foldable-collection] if it supports the fold operations.
+/// A type has a [trait:foldable-collection] if it supports the fold operations.
 trait foldable-collection with
   requires trait foldable-collection;
 
@@ -673,7 +704,7 @@ trait foldable-collection with
   command Collection fold-from: Initial with: Computation;
 
   /// Similar to [_ fold-from: _ with: _], but uses the [Initial] value
-  /// in the *final* computation.
+  /// in the _final_ computation.
   command Collection fold-right-from: Initial with: Computation;
 
   /// (optional) Similar to [_ fold-from: _ with: _], but uses another value of the
@@ -687,7 +718,7 @@ trait foldable-collection with
   command Collection fold-right-from: Computation;
 end
 
-/// A type has a [filterable-collection] if it's possible to produce a new
+/// A type has a [trait:filterable-collection] if it's possible to produce a new
 /// collection of the same type that will not contain certain items, as
 /// described by a predicate.
 trait filterable-collection with
@@ -700,14 +731,14 @@ trait filterable-collection with
   command Collection remove-if: Predicate;
 end
 
-/// A type has a [mappable-collection] if it supports [_ map: _].
+/// A type has a [trait:mappable-collection] if it supports [command:_ map: _].
 trait mappable-collection with
   /// Produces a new collection of the same type where all elements have been
   /// transformed by the given [Transformation].
   command Collection map: Transformation;
 end
 
-/// A type has a [chainable-collection] if it supports [_ flat-map: _].
+/// A type has a [trait:chainable-collection] if it supports [command:_ flat-map: _].
 trait chainable-collection with
   /// Produces a new collection of the same type by merging all of the
   /// smaller collections produced by the [Transformation].
@@ -718,7 +749,7 @@ trait chainable-collection with
   command Collection flat-map: Transformation;
 end
 
-/// A type has a [zippable-collection] if it supports [_ zip: _ with: _].
+/// A type has a [trait:zippable-collection] if it supports [command:_ zip: _ with: _].
 trait zippable-collection with
   /// Produces a new collection of the same type where elements have been
   /// paired with the ones from the [Other] collection and combined through
@@ -726,7 +757,7 @@ trait zippable-collection with
   command Collection zip: Other with: Combine;
 end
 
-/// A type has a [set-algebra] if it supports the common set operations.
+/// A type has a [trait:set-algebra] if it supports the common set operations.
 trait set-algebra with
   /// The union of two sets.
   command A union: B;

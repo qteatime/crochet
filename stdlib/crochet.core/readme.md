@@ -152,10 +152,6 @@ The following collections are provided:
   linked list (in [type:linked-stream]). Streams naturally fuse their
   operations and use constant memory, but cannot be changed.
 
-- [type:linked-list] is a persistent linked-list, with support for
-  more efficient prepending of items, but requires accessing items in
-  the way they're ordered.
-
 ## Mutable state
 
 `Core` is mostly a pure library, but it provides support for (local)

@@ -111,9 +111,9 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defmachine("map.map", function* (x, f) {
     let result = Map().asMutable();
-    for (const pair0 of get_map(x).entries()) {
-      const [k, v] = ffi.list_to_array(yield ffi.apply(f, [ffi.list(pair0)]));
-      result = result.set(k, v);
+    for (const [k, v0] of get_map(x).entries()) {
+      const v1 = yield ffi.apply(f, [ffi.list([k, v0])]);
+      result = result.set(k, v1);
     }
     return ffi.box(result.asImmutable());
   });

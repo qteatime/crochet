@@ -34,6 +34,7 @@ end
 // -- Map
 implement container for map;
 
+/// True if the map contains the given value in one of its key/value pairs.
 command map contains: Value do
   #set from: self values
     | contains: Value;
