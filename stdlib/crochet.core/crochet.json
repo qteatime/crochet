@@ -58,8 +58,6 @@
     "source/collection/set-algebra.crochet",
     "source/collection/stream.crochet",
 
-    "source/debugging/debug-representation.crochet",
-
     "source/enum/bounds.crochet",
     "source/enum/enumeration.crochet",
     "source/enum/equality.crochet",

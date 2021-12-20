@@ -42,9 +42,3 @@ command instant + (That is duration) =
 
 command instant - (That is duration) =
   #instant from-milliseconds: (self epoch-milliseconds - That to-milliseconds);
-
-// Debug
-command debug-representation of: (X is instant) =
-  debug-representation type: "instant"
-    | value: X to-iso8601-text
-    | finish;

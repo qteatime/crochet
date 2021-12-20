@@ -306,7 +306,6 @@ type read-only-cell(cell);
 
 /// The module for representations
 singleton representation;
-singleton debug-representation;
 
 
 //-- Other types

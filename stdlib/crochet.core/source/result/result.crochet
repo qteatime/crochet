@@ -138,18 +138,3 @@ command error and (That is result) = self;
 /// `That`.
 command ok or (That is result) = self;
 command error or (That is result) = That;
-
-
-// -- Displaying results
-
-/// The debug representation of an [ok].
-command debug-representation of: (X is ok) =
-  debug-representation type: "ok"
-    | value: X value
-    | finish;
-
-/// The debug representation of an [error].
-command debug-representation of: (X is error) =
-  debug-representation type: "error"
-    | value: X reason
-    | finish;

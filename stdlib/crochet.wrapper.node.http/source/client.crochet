@@ -52,10 +52,3 @@ command http patch: Url data: Data =
 command response status = self.status;
 command response headers = self.headers;
 command response body = self.body;
-
-command debug-representation of: (X is response) =
-  debug-representation type: "response"
-    | field: "status" value: X.status
-    | field: "headers" value: X.headers
-    | field: "body" value: X.body
-    | finish;

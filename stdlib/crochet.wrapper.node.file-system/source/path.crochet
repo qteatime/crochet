@@ -52,9 +52,3 @@ command path-obj resolve =
 
 command path-obj to-text =
   self.path;
-
-
-command debug-representation of: (X is path) =
-  debug-representation type: "path"
-    | value: X.path
-    | finish;

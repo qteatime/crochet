@@ -20,40 +20,6 @@ command skeleton-list meta = self.meta;
 command skeleton-interpolation parts = self.parts;
 command skeleton-interpolation meta = self.meta;
 
-
-command debug-representation of: (X is skeleton-node) =
-  debug-representation type: "skeleton-node"
-    | field: "name" value: X name
-    | field: "children" value: X children
-    | field: "attributes" value: X attributes
-    | finish;
-
-command debug-representation of: (X is skeleton-literal) =
-  debug-representation type: "skeleton-literal"
-    | value: X value
-    | finish;
-
-command debug-representation of: (X is skeleton-name) =
-  debug-representation type: "skeleton-name"
-    | value: X value
-    | finish;
-
-command debug-representation of: (X is skeleton-dynamic) =
-  debug-representation type: "skeleton-dynamic"
-    | value: X thunk
-    | finish;
-
-command debug-representation of: (X is skeleton-list) =
-  debug-representation type: "skeleton-list"
-    | value: X children
-    | finish;
-
-command debug-representation of: (X is skeleton-interpolation) =
-  debug-representation type: "skeleton-interpolation"
-    | value: X parts
-    | finish;
-
-
 command skeleton-ast position-message do
   let Meta = self meta;
   condition

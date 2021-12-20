@@ -53,11 +53,6 @@ end
 
 command hex === (That is hex) = self.x === That.x;
 
-command debug-representation of: (X is hex) =
-  debug-representation type: "hex"
-    | value: self.x
-    | finish;
-
 test "decode(encode(X)) === X" do
   assert (#hex encode: "It was a dark, stormy night" | to-text)
     === "It was a dark, stormy night";

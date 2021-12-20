@@ -7,8 +7,3 @@ command indexed === (That is indexed) =
 
 /// Constructs an indexed type with the given index and value.
 command #indexed index: I value: V = new indexed(I, V);
-
-command debug-representation of: (X is indexed) =
-  debug-representation of: X index
-    | append: ": "
-    | append: (debug-representation of: X value);

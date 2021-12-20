@@ -43,9 +43,3 @@ command plain-date-time > (That is plain-date-time) =
 
 command plain-date-time >= (That is plain-date-time) =
   (self as instant) >= (That as instant);
-
-
-command debug-representation of: (X is plain-date-time) =
-  debug-representation type: "plain-date-time"
-    | value: (X as instant) to-iso8601-text
-    | finish;
