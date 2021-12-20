@@ -65,9 +65,6 @@ end
 
 implement to-widget for state;
 command loading as widget do
-  transcript write: "Loading to-widget tap";
-  transcript inspect: (runtime-debugger current-activation handlers to-text);
-
   purr defer: {
     let Project = perform playground.get-project();
     let Process = purr spawn-playground: Project;

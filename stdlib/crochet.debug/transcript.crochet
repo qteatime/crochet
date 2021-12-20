@@ -1,23 +1,24 @@
 % crochet
 
+/// Minimal support for outputting messages as part of the execution of a
+/// Crochet program.
 singleton transcript;
 
+/// Writes a single piece of text to the debugging transcript.
 command (Self is transcript) write: (Text is text) do
   foreign debug.write(Text);
   self;
 end
 
+/// Writes an arbitrary value to the debugging transcript. The value's
+/// internal fields will be displayed in the transcript if the program
+/// is being executed with `--disclose-debug`.
 command (Self is transcript) inspect: Value do
   foreign debug.write-inspect(Value);
   self;
 end
 
-
+/// Writes an interpolation to the debugging transcript.
 command transcript write: (X is interpolation) do
   transcript write: (X flatten-into-plain-text);
-end
-
-command transcript inspect: Value tag: (Tag is text) do
-  transcript inspect: "[Tag] [Value]";
-  Value;
 end
