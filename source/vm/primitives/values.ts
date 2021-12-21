@@ -503,12 +503,17 @@ export function to_plain_object(x: CrochetValue): unknown {
 
 export function from_plain_object(
   universe: Universe,
-  x: unknown
+  x: unknown,
+  trusted: boolean
 ): CrochetValue {
   if (x == null) {
     return universe.nothing;
   } else if (typeof x === "string") {
-    return make_dynamic_text(universe, x);
+    if (!trusted) {
+      return make_untrusted_text(universe, x);
+    } else {
+      return make_dynamic_text(universe, x);
+    }
   } else if (typeof x === "bigint") {
     return make_integer(universe, x);
   } else if (typeof x === "number") {
@@ -518,7 +523,7 @@ export function from_plain_object(
   } else if (Array.isArray(x)) {
     return make_list(
       universe,
-      x.map((x) => from_plain_object(universe, x))
+      x.map((x) => from_plain_object(universe, x, trusted))
     );
   } else if (x instanceof Map) {
     const result = new Map<string, CrochetValue>();
@@ -529,7 +534,7 @@ export function from_plain_object(
           `Cannot convert native map because it has non-text keys`
         );
       }
-      result.set(k, from_plain_object(universe, v));
+      result.set(k, from_plain_object(universe, v, trusted));
     }
     return make_record_from_map(universe, result);
   } else {

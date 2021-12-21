@@ -240,12 +240,13 @@ export class ForeignInterface {
   }
 
   // == Conversions
+  // TODO: this currently loses track of the taint bit on the string
   to_plain_native(x: CrochetValue): unknown {
     return Values.to_plain_object(x);
   }
 
-  from_plain_native(x: unknown): CrochetValue {
-    return Values.from_plain_object(this.#universe, x);
+  from_plain_native(x: unknown, trusted: boolean): CrochetValue {
+    return Values.from_plain_object(this.#universe, x, trusted);
   }
 
   // == Reflection
