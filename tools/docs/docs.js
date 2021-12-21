@@ -1218,6 +1218,19 @@ function md_to_html(text, data) {
     }
   }
 
+  function push_empty(blocks, current, line) {
+    if (current == null) {
+      return { blocks: blocks, current: null };
+    } else if (current.type === "code") {
+      return push_code(blocks, current, line.slice(4));
+    } else {
+      return {
+        blocks: push(blocks, current),
+        current: null,
+      };
+    }
+  }
+
   function handle_line({ blocks, current }, line) {
     if (/^#+\s*\S/.test(line)) {
       const [_, level, text] = line.match(/^(#+)\s*(.*)/);
@@ -1231,10 +1244,7 @@ function md_to_html(text, data) {
     } else if (/^ {4,}/.test(line)) {
       return push_code(blocks, current, line.slice(4));
     } else if (/^\s*$/.test(line)) {
-      return {
-        blocks: push(blocks, current),
-        current: null,
-      };
+      return push_empty(blocks, current, line);
     } else {
       return push_paragraph(blocks, current, line);
     }
