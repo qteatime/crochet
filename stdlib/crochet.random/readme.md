@@ -16,8 +16,8 @@ type.
 
 Random number generators are **immutable** by default. That is,
 calling methods on them does not _change_ the state of the generator,
-but rather returns a new generator to use. This leads to a pattern
-of usage that looks like the following:
+but rather returns a [type:random-next] value with a new generator to use.
+This leads to a pattern of usage that looks like the following:
 
     let Random1 = #random with-seed: 123456;
     let Result1 = Random1 between: 1 and: 10;
