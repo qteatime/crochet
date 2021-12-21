@@ -1,0 +1,13 @@
+% crochet
+
+implement equality for random-choice;
+
+/// True if two [type:random-choice] values are equal.
+command random-choice === (That is random-choice) =
+  (self chosen === That chosen) and
+  (self new-list === That new-list);
+
+/// True if two [type:scored-item] values are equal.
+command scored-item === (That is scored-item) =
+  (self score === That score) and
+  (self value === That value);

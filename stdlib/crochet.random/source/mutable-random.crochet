@@ -1,0 +1,88 @@
+% crochet
+
+/// Returns a fractional number from 0 up to (but not including) 1.
+command mutable-random uniform -> float do
+  let Result = self.random value uniform;
+  self.random <- Result random;
+  Result.value
+test
+  let Random = (#random xor-shift: 20) mutable;
+  assert Random uniform =:= 0.5964457555674016;
+  assert (Random.random value).seed =:= 1280857507;
+
+  assert Random uniform =:= 0.20454500569030643;
+  assert (Random.random value).seed =:= 439257055;
+end
+
+/// Returns an integral number between `Min` and `Max`, inclusive on both
+/// ends.
+command mutable-random between: (Min is integer) and: (Max is integer) -> integer
+requires ordered :: Min <= Max
+do
+  let Result = self.random value between: Min and: Max;
+  self.random <- Result random;
+  Result value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  assert (Random between: 1 and: 20) =:= 12;
+  assert (Random.random value).seed =:= 1280857507;
+
+  assert (Random between: 1 and: 20) =:= 4;
+  assert (Random.random value).seed =:= 439257055;
+end
+
+/// Returns one item of the given (non-empty) list.
+command mutable-random choose: (Items is list<A>) -> A do
+  let Result = self.random value choose: Items;
+  self.random <- Result random;
+  Result value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  let Items = [1, 2, 3, 4];
+
+  assert (Random choose: Items) =:= 2;
+  assert (Random choose: Items) =:= 1;
+  assert (Random choose: Items) =:= 3;
+end
+
+/// Returns one item of the given (non-empty) list, along with a new list
+/// that does not include the chosen item.
+command mutable-random choose-and-tear: (Items is list<A>) -> random-choice<A> do
+  let Result = self.random value choose-and-tear: Items;
+  self.random <- Result random;
+  Result value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  let Items = [1, 2, 3, 4];
+
+  let Res1 = Random choose-and-tear: Items;
+  assert Res1 === new random-choice(2, [1, 3, 4]);
+
+  let Res2 = Random choose-and-tear: Res1 new-list;
+  assert Res2 === new random-choice(1, [3, 4]);
+
+  let Res3 = Random choose-and-tear: Res2 new-list;
+  assert Res3 === new random-choice(3, [4]);
+
+  let Res4 = Random choose-and-tear: Res3 new-list;
+  assert Res4 === new random-choice(4, []);
+end
+
+/// Returns one item of the given (non-empty) list, considering the weights
+/// that each item has.
+command mutable-random choose-weighted: (Items is list<scored-item<A>>) -> A do
+  let Result = self.random value choose-weighted: Items;
+  self.random <- Result random;
+  Result value;
+test
+  let Random = (#random xor-shift: 20) mutable;
+  let Items = [
+    new scored-item(10, "a"),
+    new scored-item(3, "b"),
+    new scored-item(4, "c"),
+  ];
+
+  assert (Random choose-weighted: Items) =:= "a";
+  assert (Random choose-weighted: Items) =:= "b";
+  assert (Random choose-weighted: Items) =:= "a";
+end

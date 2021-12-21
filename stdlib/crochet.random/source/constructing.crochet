@@ -1,0 +1,16 @@
+% crochet
+
+/// Constructs a predictable random number generator with the given
+/// `Seed`. Currently uses [type:xor-shift] as the implementation.
+command #random with-seed: Seed -> xor-shift
+  = #random xor-shift: Seed;
+
+/// Constructs a XOR-shift-based predictable random number generator
+/// with the given `Seed`.
+command #random xor-shift: Seed 
+requires unsigned-small-integer :: (Seed >= 0) and (Seed < (2 ** 32))
+  = new xor-shift(Seed, Seed);
+
+/// Constructs a mutable, predictable random number generator from
+/// an existing immutable one. See [type:mutable-random].
+command random mutable = new mutable-random(#cell with-value: self);

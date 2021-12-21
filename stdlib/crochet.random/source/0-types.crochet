@@ -1,0 +1,116 @@
+% crochet
+
+// -- The PRNG implementations
+
+/// The base type of predictable random number generators.
+abstract random;
+
+/// A predictable random number generator based on the XOR-shift
+/// algorithm. Internally, it restricts the integers it uses as
+/// state to 32-bit integers.
+type xor-shift(seed is integer, inc is integer) is random;
+
+/// A predictable random number generator wrapper that provides
+/// an interface where state is updated in-place, rather than
+/// returned as the result of each operation.
+type mutable-random(random is cell<T has predictable-rng>) is random;
+
+
+// -- The PRNG states
+
+/// The return value of immutable predictable random number generators.
+/// Contains both the value that was computed (`value`), and a new predictable
+/// random number generator with the updated state (`random`).
+type random-next(global value, global random is random);
+
+/// An auxiliary type that represents a choice from a list, along with the
+/// new state of the list without that choice.
+type random-choice(global chosen, global new-list is list);
+
+/// An auxiliary type that represents a item along with its score. To be used
+/// when doing weighted choices.
+type scored-item(global score is integer, global value);
+
+
+// -- The traits
+
+/// Operations that a predictable random number generator must support.
+/// This trait concerns itself only with **immutable** implementations
+/// of random number generation, since the mutable interface can be
+/// derived automatically from it.
+trait predictable-rng with
+  /// Returns a fractional number from 0 up to (but not including) 1.
+  command Random uniform -> random-next<float>;
+
+  /// Returns an integral number between `Min` and `Max`, inclusive on
+  /// both ends.
+  command Random between: (Min is integer) and: (Max is integer) -> random-next<integer>
+    requires
+      ordered :: Min <= Max;
+
+  /// Returns one item of the given (non-empty) list.
+  ///
+  /// This command is optional and can be derived from [command:_ choose-and-tear: _].
+  command Random choose: (Items is list<A>) -> random-next<A>
+    requires
+      non-empty :: not Items is-empty;
+
+  /// Returns one item of the given (non-empty) list, along with a new
+  /// list that does not include the chosen item.
+  command Random choose-and-tear: (Items is list<A>) -> random-next<random-choice<A>>
+    requires
+      non-empty :: not Items is-empty;
+
+  /// Returns one item of the given (non-empty) list, considering the
+  /// weights that each item has.
+  command Random choose-weighted: (Items is list<scored-item<A>>) -> random-next<A>
+    requires
+      non-empty :: not Items is-empty;
+end
+
+
+// -- The effects
+
+/// An effect that allows sharing a mutable, predictable random number
+/// generator within a `handle` block. 
+effect scoped-random with
+  /// Returns the current predictable random number generator instance.
+  get-random();
+end
+
+/// Allows sharing a mutable, predictable random number generator with
+/// all code called from within the block of [command:_ with-source: _ do: _].
+/// Requires the [capability:update-shared-instance].
+singleton scoped-random;
+
+/// Allows reading the mutable, predictable random number generator that
+/// has been shared in the current context. It's important to note that,
+/// since this gives access to a **mutable** shared instance, code with
+/// access to this type is able to interfere with other pieces of code
+/// by simply invoking methods on the random number generator.
+/// Requires the [capability:read-shared-instance].
+singleton shared-random;
+
+
+// -- The capabilities
+
+/// Grants the power of changing the shared predictable random number generator.
+///
+/// The pieces of code who hold this capability have control over
+/// all predictable random number generation---including the power of
+/// making it unpredictable! For most applications, you want to grant this
+/// only to your application, and not to libraries your application may
+/// use (unless you have a **really good** reason to do so).
+capability update-shared-instance;
+
+/// Grants the power of reading (and mutating) the shared predictable random
+/// number generator.
+///
+/// The pieces of code who hold this capability are able to change the state
+/// of the shared random number generator, thus they are able to make the
+/// generation less predictable (in the sense that they may use it when it
+/// isn't expected, causing the generator state to change). This can be
+/// confusing and make your game or simulation non-reproducible/unpredictable.
+/// Generally you want to give this capability to your application, and not
+/// to libraries you use (unless you have a reason to do so).
+capability read-shared-instance;
