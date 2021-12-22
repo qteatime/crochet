@@ -1,105 +1,261 @@
 % crochet
 
-// There are two primary ways of constructing regexes here:
-//
-//   - By providing a literal string to `from-text:`. This only works
-//     with literal strings because we do not want people to bring unknown
-//     pieces of text into this. We'll still parse it to check it's well-formed.
-//
-//   - By using the combinators directly.
-//
-// Future support for dynamic text might be added in the future.
-
+/// Constructs a pattern from its textual syntax. The
+/// pattern **must be** self-contained.
 command regex from-text: (Text is static-text)
 requires valid-regex :: foreign re.valid(Text)
 do
   new regex-raw(Text);
 end
 
-// Top-level combinator constructors
+/// Constructs a pattern that matches exactly the given
+/// piece of text.
 command regex exactly: (Text is text) =
-  new regex-exact(Text);
+  new regex-exact(Text)
+test
+  assert regex exactly: "(a)b\[x\]+\\d" | compile | can-match: "(a)b\[x\]+\\d";
+  assert not (regex exactly: "(a)b+d" | compile | can-match: "(a)bbbbbbbd");
+end
 
+/// Constructs a pattern that matches any character.
 command regex anything =
-  regex-anything;
+  regex-anything
+test
+  assert regex anything compile can-match: "a";
+end
 
+/// Constructs a pattern that matches a word boundary,
+/// but does not consume any input.
 command regex word-boundary =
   regex-word-boundary;
 
+/// Constructs a pattern that matches anything between
+/// two words that isn't a word. Does not consume any input.
 command regex not-word-boundary =
   regex-not-word-boundary;
 
-command regex any-of: (Characters is text) =
-  new regex-charset(Characters);
-
-command regex not-any-of: (Characters is text) =
-  new regex-charset(Characters);
-
-command regex sequence: (Nodes is list<regex-node>) =
-  new regex-seq(Nodes);
-
-command regex backreference: (Index is integer)
-requires positive :: Index >= 1
-  = new regex-backreference(Index);
-
-command regex named-backreference: (Name is text)
-  = new regex-backreference-named(#regex-id from-text: Name);
-
-// TODO: parse characters here
-command regex character-between: (Start is text) and: (End is text)
-do
-  new regex-range(Start, End);
+/// Constructs a pattern that matches any of the given
+/// characters.
+command regex any-of: (Characters is list<text>) =
+  new regex-charset(Characters)
+test
+  assert (regex any-of: ["a", "\u0301", "b"] | compile | can-match: "a");
+  assert (regex any-of: ["a", "\u0301", "b"] | compile | can-match: "\u0301");
+  assert (regex any-of: ["a", "\u0301", "b"] | compile | can-match: "b");
+  assert not (regex any-of: ["a", "\u0301", "b"] | compile | can-match: "á");
+  assert not (regex any-of: ["a", "\u0301", "b"] | compile | can-match: "c");
 end
 
-command regex character-not-between: (Start is text) and: (End is text)
-do
-  new regex-not-range(Start, End);
+/// Constructs a pattern that matches anything but the
+/// given characters.
+command regex not-any-of: (Characters is list<text>) =
+  new regex-not-charset(Characters)
+test
+  assert (regex not-any-of: ["a", "\u0301", "b"] | compile | can-match: "c");
+  assert (regex not-any-of: ["a", "\u0301", "b"] | compile | can-match: "á");
+  assert not (regex not-any-of: ["a", "\u0301", "b"] | compile | can-match: "a");
+  assert not (regex not-any-of: ["a", "\u0301", "b"] | compile | can-match: "\u0301");
+  assert not (regex not-any-of: ["a", "\u0301", "b"] | compile | can-match: "b");
+end
+
+/// Constructs a patterns that tries to match the given
+/// patterns in sequence.
+command regex sequence: (Nodes is list<regex-pattern>) =
+  new regex-seq(Nodes)
+test
+  let Re = regex sequence: [ regex exactly: "moon"
+                           , regex anything
+                           , regex exactly: "noom" ]
+            | compile;
+  assert Re can-match: "moon/noom";
+  assert not (Re can-match: "noom/moon");
+  assert not (Re can-match: "oon/noo");
+end
+
+/// Constructs a pattern that matches exactly what has
+/// been captured before with `Name`.
+/// 
+/// See [command:_ capture: _].
+command regex backreference: (Name is text) =
+  new regex-backreference-named(#regex-id from-text: Name)
+test
+  let Re = regex sequence: [regex anything | capture: "a", regex backreference: "a"]
+            | compile;
+  assert Re can-match: "aa";
+  assert not (Re can-match: "ab");
+end
+
+/// Constructs a pattern that matches any character, as long as it is
+/// within the unicode range starting at `Start` and ending at `End`
+/// (inclusive on both ends).
+command regex character-between: (Start is text) and: (End is text) =
+  new regex-range(Start, End)
+test
+  let Re = regex character-between: "a" and: "z" | compile;
+  assert Re can-match: "a";
+  assert Re can-match: "z";
+  assert Re can-match: "l";
+  assert not (Re can-match: "3");
+end
+
+/// Constructs a pattern that matches any character, as long as it is not
+/// within the unicode range starting at `Start` and ending at `End`
+/// (inclusive on both ends).
+command regex character-not-between: (Start is text) and: (End is text) =
+  new regex-not-range(Start, End)
+test
+  let Re = regex character-not-between: "a" and: "z" | compile;
+  assert Re can-match: "3";
+  assert Re can-match: " ";
+  assert not (Re can-match: "a");
+  assert not (Re can-match: "z");
+  assert not (Re can-match: "l");
 end
 
 
-// Combinator transformations
-command regex-node pin-start = new regex-pin-start(self);
+/// Transforms the pattern so that it only matches at the beginning of the
+/// text (or of the line, if using the `multiline` flag).
+command regex-pattern pin-start =
+  new regex-pin-start(self)
+test
+  let Re = regex exactly: "a" | pin-start | compile;
+  assert Re can-match: "abc";
+  assert not (Re can-match: "cba");
+  assert not (Re can-match: "c\nb\na");
+  assert Re pin-at-line-endings can-match: "c\nb\na";
+end
 
-command regex-node pin-end = new regex-pin-end(self);
+/// Transforms the pattern so that it only matches at the ending of the
+/// text (or of the line, if using the `multiline` flag).
+command regex-pattern pin-end =
+  new regex-pin-end(self)
+test
+  let Re = regex exactly: "a" | pin-end | compile;
+  assert Re can-match: "cba";
+  assert not (Re can-match: "abc");
+  assert not (Re can-match: "a\nb\nc");
+  assert Re pin-at-line-endings can-match: "a\nb\nc";
+end
 
-command regex-node if-followed-by: (Peek is regex-node) = new regex-lookahead(Peek, self);
+/// Transforms the pattern so that it only matches if it's followed 
+/// by the given `Peek` pattern. `Peek` does not consume any input.
+command regex-pattern if-followed-by: (Peek is regex-pattern) =
+  new regex-lookahead(Peek, self)
+test
+  let Re = regex exactly: "c" | if-followed-by: (regex exactly: "at") | compile;
+  assert Re can-match: "cat";
+  assert not (Re can-match: "car");
+  assert not (Re can-match: "c");
+end
 
-command regex-node if-not-followed-by: (Peek is regex-node) = new regex-not-lookahead(Peek, self);
+/// Transforms the pattern so that it only matches if it's not followed
+/// by the given `Peek` pattern. `Peek` does not consume any input.
+command regex-pattern if-not-followed-by: (Peek is regex-pattern) =
+  new regex-not-lookahead(Peek, self)
+test
+  let Re = regex exactly: "c" | if-not-followed-by: (regex exactly: "ar") | compile;
+  assert Re can-match: "cat";
+  assert Re can-match: "can";
+  assert Re can-match: "c";
+  assert not (Re can-match: "car");
+end
 
-command regex-node if-preceded-by: (Peek is regex-node) = new regex-lookbehind(Peek, self);
+/// Transforms the pattern so that it only matches if it's preceded by
+/// the given `Peek` pattern. `Peek` does not consume any input.
+command regex-pattern if-preceded-by: (Peek is regex-pattern) =
+  new regex-lookbehind(Peek, self)
+test
+  let Re = regex exactly: "at" | if-preceded-by: (regex exactly: "c") | compile;
+  assert Re can-match: "cat";
+  assert not (Re can-match: "bat");
+  assert not (Re can-match: "at");
+end
 
-command regex-node if-not-preceded-by: (Peek is regex-node) = new regex-not-lookbehind(Peek, self);
+/// Transforms the pattern so that it only matches if it's not preceded
+/// by the given `Peek` pattern. `Peek` does not consume any input.
+command regex-pattern if-not-preceded-by: (Peek is regex-pattern) =
+  new regex-not-lookbehind(Peek, self)
+test
+  let Re = regex exactly: "at" | if-not-preceded-by: (regex exactly: "b") | compile;
+  assert Re can-match: "at";
+  assert Re can-match: "cat";
+  assert Re can-match: "rat";
+  assert not (Re can-match: "bat");
+end
 
-command regex-node or (That is regex-node) = new regex-or(self, That);
+/// Constructs a pattern that matches either the current pattern, or the
+/// one described by `That`. Whichiever comes first in the text.
+command regex-pattern or (That is regex-pattern) =
+  new regex-or(self, That)
+test
+  let Re = (regex exactly: "cat") or (regex exactly: "bat")
+            | compile;
+  assert Re can-match: "cat";
+  assert Re can-match: "bat";
+  assert not (Re can-match: "atba");
+end
 
-command regex-node capture = new regex-capture(self);
+/// Transforms the pattern such that matching it causes the matched text
+/// to be available as the capture group `Name`.
+command regex-pattern capture: (Name is text) =
+  new regex-capture-named(self, #regex-id from-text: Name)
+test
+  let Re = regex sequence: [regex exactly: "o", regex anything | capture: "letter"]
+            | compile;
+  assert Re can-match: "ox";
+  assert (Re search-first: "ox" | value | at: "letter") === "x";
+end
 
-command regex-node capture-with-name: (Name is text) = new regex-capture-named(self, #regex-id from-text: Name);
+/// Transforms the pattern such that it tries to match zero or more
+/// times, in sequence.
+command regex-pattern zero-or-more =
+  new regex-many(self)
+test
+  let Re = regex exactly: "o" | zero-or-more;
+  assert (Re search-first: "moon" | value | matched-text) === "oo";
+  assert (Re search-first: "o" | value | matched-text) === "o";
+  assert (Re search-first: "m" | value | matched-text) === "";
+end
 
-command regex-node zero-or-more = new regex-many(self);
+/// Transforms the pattern such that it tries to match one or more
+/// times, in sequence.
+command regex-pattern one-or-more =
+  new regex-many1(self)
+test
+  let Re = regex exactly: "o" | one-or-more;
+  assert (Re search-first: "moon" | value | matched-text) === "oo";
+  assert (Re search-first: "o" | value | matched-text) === "o";
+  assert not (Re can-match: "m");
+end
 
-command regex-node one-or-more = new regex-many1(self);
+/// Transforms the pattern such that even if it fails, it'll still
+/// count as a success that consumed no input.
+command regex-pattern optional =
+  new regex-optional(self)
+test
+  let Re = regex exactly: "cat" | optional;
+  assert (Re search-first: "cat" | value | matched-text) === "cat";
+  assert (Re search-first: "bat" | value | matched-text) === "";
+end
 
-command regex-node optional = new regex-optional(self);
-
-command regex-node repeat-exactly: (Times is integer)
+command regex-pattern repeat-exactly: (Times is integer)
 requires positive :: Times >= 1
   = new regex-repeat(self, Times);
 
-command regex-node repeat-at-least: (Times is integer)
+command regex-pattern repeat-at-least: (Times is integer)
 requires positive :: Times >= 1
   = new regex-repeat-at-least(self, Times);
 
-command regex-node repeat-at-least: (Min is integer) at-most: (Max is integer)
+command regex-pattern repeat-at-least: (Min is integer) at-most: (Max is integer)
 requires positive-min :: Min >= 1,
          ordered :: Min <= Max
   = new regex-repeat-between(self, Min, Max);
 
-command regex-node followed-by: (That is regex-node) =
+command regex-pattern followed-by: (That is regex-pattern) =
   regex sequence: [self, That];
 
-command regex-node preceded-by: (That is regex-node) =
+command regex-pattern preceded-by: (That is regex-pattern) =
   regex sequence: [That, self];
 
-command regex-node between: (Prefix is regex-node) and: (Suffix is regex-node) =
+command regex-pattern between: (Prefix is regex-pattern) and: (Suffix is regex-pattern) =
   regex sequence: [Prefix, self, That];

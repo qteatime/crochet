@@ -14,7 +14,7 @@ requires within-bounds :: (Index >= 1) and (Index <= self captures count)
   = foreign re.matched-index(self.box, Index);
 
 /// The named group capture with the given name.
-command regex-match named: (Name is text)
+command regex-match at: (Name is text)
 requires group-defined :: self named-captures contains-key: Name
   = foreign re.matched-name(self.box, Name);
 

@@ -35,25 +35,25 @@ command regex-flags anything-does-not-match-newline =
 
 // For convenience it's possible to call the same methods directly
 // on a compiled regex instance.
-command compiled-regex case-insensitive =
-  new compiled-regex(self.code, self.flags case-insensitive);
+command compiled-regex-pattern case-insensitive =
+  new compiled-regex-pattern(self.code, self.flags case-insensitive);
 
-command compiled-regex case-sensitive =
-  new compiled-regex(self.code, self.flags case-sensitive);
+command compiled-regex-pattern case-sensitive =
+  new compiled-regex-pattern(self.code, self.flags case-sensitive);
 
-command compiled-regex pin-at-line-endings =
-  new compiled-regex(self.code, self.flags pin-at-line-endings);
+command compiled-regex-pattern pin-at-line-endings =
+  new compiled-regex-pattern(self.code, self.flags pin-at-line-endings);
 
-command compiled-regex pin-at-text-endings =
-  new compiled-regex(self.code, self.flags pin-at-text-endings);
+command compiled-regex-pattern pin-at-text-endings =
+  new compiled-regex-pattern(self.code, self.flags pin-at-text-endings);
 
-command compiled-regex anything-matches-newline =
-  new compiled-regex(self.code, self.flags anything-matches-newline);
+command compiled-regex-pattern anything-matches-newline =
+  new compiled-regex-pattern(self.code, self.flags anything-matches-newline);
 
-command compiled-regex anything-does-not-match-newline =
-  new compiled-regex(self.code, self.flags anything-does-not-match-newline);
+command compiled-regex-pattern anything-does-not-match-newline =
+  new compiled-regex-pattern(self.code, self.flags anything-does-not-match-newline);
 
 
 // We can also replace all flags at once.
-command compiled-regex with-flags: (Flags is regex-flags) =
-  new compiled-regex(self.code, Flags);
+command compiled-regex-pattern with-flags: (Flags is regex-flags) =
+  new compiled-regex-pattern(self.code, Flags);

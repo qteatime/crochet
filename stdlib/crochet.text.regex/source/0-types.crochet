@@ -1,57 +1,171 @@
 % crochet
 
-// Modules
+/// The entry-point for constructing regular expression patterns.
 singleton regex;
 
-// Errors
+// -- Errors
+
+/// Any regular expression error will be a subtype of this.
 abstract regex-error;
+
+/// Returned when trying to search a piece of text with a regular expression
+/// pattern, and the pattern does not match anything in the piece of text.
 singleton regex-matched-nothing is regex-error;
 
-// Objects
-/// Wraps an underlying JS regex match
+// -- Auxiliar types
+
+/// Represents a matched portion of a piece of text when searching it with
+/// a regular expression.
 type regex-match(box);
 
-/// Represents a set of flags
+/// Represents a set of regular expression flags.
+///
+/// When `ignore-case` is enabled, the regular expression pattern will not
+/// consider differences in casing. It's very important to note that this
+/// is **not locale-aware**.
+///
+/// When `multiline` is enabled, the regular expression will consider the
+/// pattern as operating on a line-by-line basis. That means that the
+/// `^` and `$` patterns will operate on start/end of line, rather than
+/// start/end of the text.
+///
+/// When `dot-all` is enabled, the `.` operator will match new lines as
+/// well.
 type regex-flags(
   ignore-case is boolean,
   multiline is boolean,
   dot-all is boolean,
 );
 
-/// Represents a partially compiled regex (we'll re-compile when reifying
-/// to JavaScript to redo the flags in some methods)
-type compiled-regex(code is text, flags is regex-flags);
+/// Represents a committed regular expression pattern, which can then
+/// be used to operate on pieces of text.
+type compiled-regex-pattern(code is text, flags is regex-flags);
 
-// Regex AST
+
+// -- Pattern combinators
+
 /// Represents a restricted ID in a regex (used for named captures)
 type regex-id(name is text);
 
-abstract regex-node;
-type regex-raw(code is text) is regex-node;
-singleton regex-anything is regex-node;
-type regex-pin-start(expr is regex-node) is regex-node;
-type regex-pin-end(expr is regex-node) is regex-node;
-singleton regex-word-boundary is regex-node;
-singleton regex-not-word-boundary is regex-node;
-type regex-lookahead(peek is regex-node, consume is regex-node) is regex-node;
-type regex-not-lookahead(peek is regex-node, consume is regex-node) is regex-node;
-type regex-lookbehind(peek is regex-node, consume is regex-node) is regex-node;
-type regex-not-lookbehind(peek is regex-node, consume is regex-node) is regex-node;
-type regex-or(left is regex-node, right is regex-node) is regex-node;
-type regex-range(start is text, stop is text) is regex-node;
-type regex-charset(chars is text) is regex-node;
-type regex-not-charset(chars is text) is regex-node;
-type regex-not-range(start is text, stop is text) is regex-node;
-type regex-capture(expr is regex-node) is regex-node;
-type regex-capture-named(expr is regex-node, name is regex-id) is regex-node;
-type regex-backreference(index is integer) is regex-node;
-type regex-backreference-named(name is regex-id) is regex-node;
-type regex-parens(expr is regex-node) is regex-node;
-type regex-many(expr is regex-node) is regex-node;
-type regex-many1(expr is regex-node) is regex-node;
-type regex-optional(expr is regex-node) is regex-node;
-type regex-repeat(expr is regex-node, times is integer) is regex-node;
-type regex-repeat-at-least(expr is regex-node, times is integer) is regex-node;
-type regex-repeat-between(expr is regex-node, times-min is integer, times-max is integer) is regex-node;
-type regex-exact(text is text) is regex-node;
-type regex-seq(items is list<regex-node>) is regex-node;
+/// The base type of all regular expression patterns.
+abstract regex-pattern;
+
+/// Represents a self-contained regular expression pattern, from its
+/// serialisation syntax alone.
+type regex-raw(code is text) is regex-pattern;
+
+/// A pattern that matches any character (`.`)
+singleton regex-anything is regex-pattern;
+
+/// A pattern that modifies another pattern (`expr`), such that it can
+/// only match at the beginning of the text (or line, depending on the
+/// `multiline` flag). (`^`)
+type regex-pin-start(expr is regex-pattern) is regex-pattern;
+
+/// A pattern that modifies another pattern (`expr`), such that it can
+/// only match at the end of the text (or line, depending on the 
+/// `multiline` flag). (`$`)
+type regex-pin-end(expr is regex-pattern) is regex-pattern;
+
+/// A pattern that matches a word boundary (the place between something
+/// that is a letter or digit and something that isn't). Does not
+/// consume anything.
+singleton regex-word-boundary is regex-pattern;
+
+/// A pattern that matches anything that is not a word boundary (the place
+/// between two letters or digits, granted it isn't either). Does not
+/// consume anything.
+singleton regex-not-word-boundary is regex-pattern;
+
+/// A pattern that matches `consume`, but only if it's followed by `peek`.
+/// `peek` itself does not consume any input.
+type regex-lookahead(peek is regex-pattern, consume is regex-pattern) is regex-pattern;
+
+/// A pattern that matches `consume`, but only if it's not followed by `peek`.
+/// `peek` itself does not consume any input.
+type regex-not-lookahead(peek is regex-pattern, consume is regex-pattern) is regex-pattern;
+
+/// A pattern that matches `consume`, but only if it's preceded by `peek`.
+/// `peek` itself does not consume any input.
+type regex-lookbehind(peek is regex-pattern, consume is regex-pattern) is regex-pattern;
+
+/// A pattern that matches `consume`, but only if it's not preceded by `peek`.
+/// `peek` itself does not consume any input.
+type regex-not-lookbehind(peek is regex-pattern, consume is regex-pattern) is regex-pattern;
+
+/// A pattern that matches either `left` or `right`, whichever can be found first.
+type regex-or(left is regex-pattern, right is regex-pattern) is regex-pattern;
+
+/// A pattern that matches any character within the unicode range starting at
+/// `start` and ending at `stop`. Both ends are included.
+///
+/// Note that this should actually be working on grapheme clusters, but Crochet
+/// does not have that type yet.
+type regex-range(start is text, stop is text) is regex-pattern;
+
+/// A pattern that matches any of the characters in the given list.
+///
+/// Note that this should actually be working on grapheme clusters, but Crochet
+/// does not have that type yet.
+type regex-charset(chars is list<text>) is regex-pattern;
+
+/// A pattern that matches any character, as long as it's not in the given list.
+///
+/// Note that this should actually be working on grapheme clusters, but Crochet
+/// does not have that type yet.
+type regex-not-charset(chars is list<text>) is regex-pattern;
+
+/// A pattern that matches any character, as long as it's not within the unicode
+/// range starting at `start` and ending at `stop` (including both ends).
+///
+/// Note that this should actually be working on grapheme clusters, but Crochet
+/// does not have that type yet.
+type regex-not-range(start is text, stop is text) is regex-pattern;
+
+// TODO: probably makes sense to just get rid of positional captures altogether?
+/// A pattern that matches `expr` and then makes it available as a capture
+/// group. Care must be taken when composing this as the captures are positional.
+type regex-capture(expr is regex-pattern) is regex-pattern;
+
+/// A pattern that matches `expr`, and then makes it available under the given
+/// name.
+type regex-capture-named(expr is regex-pattern, name is regex-id) is regex-pattern;
+
+/// A pattern that references a previous capture (unnamed) capture group by its
+/// position.
+type regex-backreference(index is integer) is regex-pattern;
+
+/// A patern that references a previous capture group by its name. It will match
+/// whatever this group has matched previously.
+type regex-backreference-named(name is regex-id) is regex-pattern;
+
+/// A pattern that groups a pattern without changing its semantics. This
+/// should never be constructed directly, and is rather an artifact of
+/// Crochet's more precise modelling of regular expression syntax.
+type regex-parens(expr is regex-pattern) is regex-pattern;
+
+/// A pattern that matches `expr` zero or more times.
+type regex-many(expr is regex-pattern) is regex-pattern;
+
+/// A pattern that matches `expr` one or more times.
+type regex-many1(expr is regex-pattern) is regex-pattern;
+
+/// A pattern that tries to match `expr`, but succeeds even if the underlying
+/// pattern fails to match anything.
+type regex-optional(expr is regex-pattern) is regex-pattern;
+
+/// A pattern that matches `expr` exactly `times` times.
+type regex-repeat(expr is regex-pattern, times is integer) is regex-pattern;
+
+/// A pattern that matches `expr` at least `times` times.
+type regex-repeat-at-least(expr is regex-pattern, times is integer) is regex-pattern;
+
+/// A pattern that matches `expr` at least `times-min` times, and at most `times-max` times.
+type regex-repeat-between(expr is regex-pattern, times-min is integer, times-max is integer) is regex-pattern;
+
+/// A pattern that matches an exact piece of text.
+type regex-exact(text is text) is regex-pattern;
+
+/// A pattern that matches the given patterns one after the other, as if they
+/// were juxtaposed.
+type regex-seq(items is list<regex-pattern>) is regex-pattern;
