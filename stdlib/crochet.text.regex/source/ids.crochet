@@ -5,6 +5,8 @@
 // AST that have bogus identifiers because we don't do any name mangling.
 // This makes errors a bit easier to follow in exchange for expressiveness
 // of the identifiers.
+
+/// Constructs a restricted identifier that can be used to name captures.
 command #regex-id from-text: (Text is text)
 requires valid :: foreign re.valid-id(Text)
   = new regex-id(Text);

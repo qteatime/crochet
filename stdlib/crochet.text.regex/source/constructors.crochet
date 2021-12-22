@@ -1,5 +1,15 @@
 % crochet
 
+// There are two primary ways of constructing regexes here:
+//
+//   - By providing a literal string to `from-text:`. This only works
+//     with literal strings because we do not want people to bring unknown
+//     pieces of text into this. We'll still parse it to check it's well-formed.
+//
+//   - By using the combinators directly.
+//
+// Support for dynamic text might be added in the future.
+
 /// Constructs a pattern from its textual syntax. The
 /// pattern **must be** self-contained.
 command regex from-text: (Text is static-text)
@@ -211,8 +221,8 @@ end
 command regex-pattern zero-or-more =
   new regex-many(self)
 test
-  let Re = regex exactly: "o" | zero-or-more;
-  assert (Re search-first: "moon" | value | matched-text) === "oo";
+  let Re = regex exactly: "o" | zero-or-more | compile;
+  assert (Re search-first: "oon" | value | matched-text) === "oo";
   assert (Re search-first: "o" | value | matched-text) === "o";
   assert (Re search-first: "m" | value | matched-text) === "";
 end
@@ -222,7 +232,7 @@ end
 command regex-pattern one-or-more =
   new regex-many1(self)
 test
-  let Re = regex exactly: "o" | one-or-more;
+  let Re = regex exactly: "o" | one-or-more | compile;
   assert (Re search-first: "moon" | value | matched-text) === "oo";
   assert (Re search-first: "o" | value | matched-text) === "o";
   assert not (Re can-match: "m");
@@ -233,29 +243,59 @@ end
 command regex-pattern optional =
   new regex-optional(self)
 test
-  let Re = regex exactly: "cat" | optional;
+  let Re = regex exactly: "cat" | optional | compile;
   assert (Re search-first: "cat" | value | matched-text) === "cat";
   assert (Re search-first: "bat" | value | matched-text) === "";
 end
 
+/// Transforms the pattern such that it is matched exactly `Times` times.
 command regex-pattern repeat-exactly: (Times is integer)
 requires positive :: Times >= 1
-  = new regex-repeat(self, Times);
+  = new regex-repeat(self, Times)
+test
+  let Re = regex exactly: "cat" | repeat-exactly: 3 | compile;
+  assert not (Re can-match: "cat");
+  assert not (Re can-match: "catcat");
+  assert Re can-match: "catcatcat";
+  assert (Re search-first: "catcatcatcat" | value | matched-text) === "catcatcat";
+end
 
+/// Transforms the pattern such that it is matched at least `Times` times.
 command regex-pattern repeat-at-least: (Times is integer)
 requires positive :: Times >= 1
-  = new regex-repeat-at-least(self, Times);
+  = new regex-repeat-at-least(self, Times)
+test
+  let Re = regex exactly: "cat" | repeat-at-least: 3 | compile;
+  assert not (Re can-match: "cat");
+  assert not (Re can-match: "catcat");
+  assert Re can-match: "catcatcat";
+  assert (Re search-first: "catcatcatcat" | value | matched-text) === "catcatcatcat";
+end
 
+/// Transforms the pattern such that it is matched at most `Min` times, and
+/// at most `Max` times.
 command regex-pattern repeat-at-least: (Min is integer) at-most: (Max is integer)
 requires positive-min :: Min >= 1,
          ordered :: Min <= Max
-  = new regex-repeat-between(self, Min, Max);
+  = new regex-repeat-between(self, Min, Max)
+test
+  let Re = regex exactly: "cat" | repeat-at-least: 3 at-most: 4 | compile;
+  assert not (Re can-match: "cat");
+  assert not (Re can-match: "catcat");
+  assert Re can-match: "catcatcat";
+  assert (Re search-first: "catcatcatcat" | value | matched-text) === "catcatcatcat";
+  assert (Re search-first: "catcatcatcatcat" | value | matched-text) === "catcatcatcat";
+end
 
+/// Creates a pattern that matches this pattern, then `That` pattern.
 command regex-pattern followed-by: (That is regex-pattern) =
   regex sequence: [self, That];
 
+/// Creates a pattern that matches `That` pattern, then this pattern.
 command regex-pattern preceded-by: (That is regex-pattern) =
   regex sequence: [That, self];
 
+/// Creates a pattern that matches the pattern by first matching `Prefix`, and
+/// later matches `Suffix`.
 command regex-pattern between: (Prefix is regex-pattern) and: (Suffix is regex-pattern) =
   regex sequence: [Prefix, self, That];

@@ -4,7 +4,7 @@
 // directly, but here we don't really expose the `index` of the match
 // because Crochet's text is supposed to be entirely opaque.
 
-/// The entire matched text.
+/// The entire text that was matched by the regular expression.
 command regex-match matched-text =
   foreign re.matched-text(self.box);
 
@@ -13,15 +13,15 @@ command regex-match at: (Index is integer)
 requires within-bounds :: (Index >= 1) and (Index <= self captures count)
   = foreign re.matched-index(self.box, Index);
 
-/// The named group capture with the given name.
+/// The named capture with the given name.
 command regex-match at: (Name is text)
 requires group-defined :: self named-captures contains-key: Name
   = foreign re.matched-name(self.box, Name);
 
-/// All captures in the match.
-command regex-match captures =
+/// All indexed captures in the match.
+command regex-match indexed-captures -> list<text> =
   foreign re.matched-groups(self.box);
 
 /// All named captures in the match.
-command regex-match named-captures =
+command regex-match named-captures -> record =
   foreign re.matched-named-groups(self.box);

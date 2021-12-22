@@ -1,5 +1,11 @@
 % crochet
 
+// Here we take care of translating our regex AST into the textual form
+// JS uses, so the JS runtime can take care of everything else. The entry-point
+// is the `compile` method, but we define local helpers for each node in the
+// AST as well.
+//
+// Compiled regexes get no flags set by default.
 local singleton module;
 
 /// Creates a compiled version of the regular expression pattern, which
@@ -114,7 +120,7 @@ command regex-repeat-at-least compile-in: module =
   "(?:[self.expr compile-in: module]){[self.times to-text],}";
 
 command regex-repeat-between compile-in: module =
-  "(?:[self.expr compile-in: module]){[self.times-min to-text], [self.times-max to-text]}";
+  "(?:[self.expr compile-in: module]){[self.times-min to-text],[self.times-max to-text]}";
 
 command regex-exact compile-in: module =
   foreign re.escape(self.text);
