@@ -38,8 +38,10 @@ This will allow you to use commands that operate on pieces of text with
 the regular expression:
 
     let Regex = Pattern compile;
+
     // This would succeed because there are many letters in the text
     assert Regex can-match: "word";
+
     // This would fail because there are no letters in the text
     assert not (Regex can-match: "123456");
 
