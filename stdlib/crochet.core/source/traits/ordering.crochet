@@ -1,6 +1,6 @@
 % crochet
 
-/// True if [X] is less than or equal to [Y].
+/// True if `X` is less than or equal to `Y`.
 command (X has total-ordering) <= (Y has total-ordering) =
   (X === Y) or (X < Y)
 test
@@ -8,7 +8,7 @@ test
   assert 1 <= 2;
 end
 
-/// True if [X] is greater than or equal to [Y].
+/// True if `X` is greater than or equal to `Y`.
 command (X has total-ordering) >= (Y has total-ordering) =
   (X === Y) or (X > Y)
 test
@@ -16,7 +16,7 @@ test
   assert 2 >= 1;
 end
 
-/// Returns the bigger value of the pair [X] and [Y].
+/// Returns the bigger value.
 command greater-of: (X has total-ordering) and: (Y has total-ordering) =
   condition
     when X >= Y => X;
@@ -29,7 +29,7 @@ test
   assert (greater-of: 1 and: -1) =:= 1;
 end
 
-/// Returns the smaller value of the pair [X] and [Y].
+/// Returns the smaller value.
 command lesser-of: (X has total-ordering) and: (Y has total-ordering) =
   condition
     when X <= Y => X;
@@ -43,7 +43,7 @@ test
 end
 
 /// Compares two values and returns the ordering relationship
-/// between [X] and [Y], from [X]'s point of view.
+/// between `X` and `Y`, from `X`'s point of view.
 command (X has total-ordering) compare-to: (Y has total-ordering) do
   condition
     when X === Y => equal;
@@ -56,9 +56,9 @@ test
   assert (1 compare-to: 0) =:= greater-than;
 end
 
-/// Returns [X] restricted to the range between [Min] and [Max].
-/// That is, if [X] is outside of the range, will return [Min]
-/// or [Max].
+/// Returns `X` restricted to the range between `Min` and `Max`.
+/// That is, if `X` is outside of the range, will return `Min`
+/// or `Max`.
 command (X has total-ordering) clamp-between: (Min has total-ordering) and: (Max has total-ordering) do
   condition
     when X < Min => Min;
@@ -71,4 +71,16 @@ test
   assert (1 clamp-between: 0 and: 2) =:= 1;
   assert (2 clamp-between: 0 and: 2) =:= 2;
   assert (3 clamp-between: 0 and: 2) =:= 2;
+end
+
+/// True if `X` is in the range formed by `Min` to `Max` (inclusive on both ends).
+/// Pretty much `Min <= X <= Max`.
+command (X has total-ordering) is-between: (Min has total-ordering) and: (Max has total-ordering) do
+  (X >= Min) and (X <= Max);
+test
+  assert 0 is-between: 0 and: 10;
+  assert 1 is-between: 0 and: 10;
+  assert 10 is-between: 0 and: 10;
+  assert not (-1 is-between: 0 and: 10);
+  assert not (11 is-between: 0 and: 10);
 end

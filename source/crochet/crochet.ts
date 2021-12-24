@@ -321,7 +321,7 @@ export class BootedCrochet {
   }
 
   async load_declaration(x: IR.Declaration, module: VM.CrochetModule) {
-    VM.load_declaration(this.universe, module, x);
+    VM.load_declaration(this.universe, module, x, null);
   }
 
   async run_block(x: IR.BasicBlock, env: VM.Environment) {

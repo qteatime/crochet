@@ -1,7 +1,7 @@
 % crochet
 
 /// True if the regex can match the given text, anywhere (unless pinned).
-command compiled-regex can-match: (Text is text) -> boolean =
+command compiled-regex-pattern can-match: (Text is text) -> boolean =
   foreign re.test(self.code, self.flags to-text, Text)
 test
   assert (regex from-text: "ca." | compile | can-match: "cat");
@@ -9,7 +9,7 @@ test
 end
 
 /// Returns the first successful match in the text, if one exists.
-command compiled-regex search-first: (Text is text) -> result<regex-match, regex-error> do
+command compiled-regex-pattern search-first: (Text is text) -> result<regex-match, regex-error> do
   let Result = foreign re.search(self.code, self.flags to-text, Text);
   condition
     when Result is nothing => #result error: regex-matched-nothing;
@@ -22,7 +22,7 @@ test
             | value;
 
   assert R1 matched-text === "cat";
-  assert R1 captures === ["t"];
+  assert R1 indexed-captures === ["t"];
   assert R1 named-captures === [->];
 
   let R2 = regex from-text: "(?<first>.)a(.)"
@@ -31,7 +31,7 @@ test
             | value;
   
   assert R2 matched-text === "cat";
-  assert R2 captures === ["c", "t"];
+  assert R2 indexed-captures === ["c", "t"];
   assert R2 named-captures === [first -> "c"];
 
   let R3 = regex from-text: "bat"
@@ -42,7 +42,7 @@ test
 end
 
 /// Returns all non-overlapping matches in the text.
-command compiled-regex search-all: (Text is text) -> list<regex-match> do
+command compiled-regex-pattern search-all: (Text is text) -> list<regex-match> do
   let Result = foreign re.search-all(self.code, self.flags to-text, Text);
   Result map: { X in new regex-match(X) };
 test
@@ -52,7 +52,7 @@ test
 
   assert R1 count === 1;
   assert R1 first matched-text === "cat";
-  assert R1 first captures === ["t"];
+  assert R1 first indexed-captures === ["t"];
   assert R1 first named-captures === [->];
 
   let R2 = regex from-text: "(?<first>\[cb\])a(.)"
@@ -62,34 +62,34 @@ test
   assert R2 count === 2;
 
   assert R2 first matched-text === "cat";
-  assert R2 first captures === ["c", "t"];
+  assert R2 first indexed-captures === ["c", "t"];
   assert R2 first named-captures === [first -> "c"];
 
   assert (R2 at: 2 | matched-text) === "bat";
-  assert (R2 at: 2 | captures) === ["b", "t"];
+  assert (R2 at: 2 | indexed-captures) === ["b", "t"];
   assert (R2 at: 2 | named-captures) === [first -> "b"];
 end
 
-/// Replaces the first match with [Text] in the [Corpus].
-command compiled-regex substitute: (Text is text) in: (Corpus is text) -> text do
+/// Replaces the first match with `Text` in the `Corpus`.
+command compiled-regex-pattern substitute-first-by: (Text is text) in: (Corpus is text) -> text do
   foreign re.replace(self.code, self.flags to-text, Text, Corpus)
 test
   let R1 = regex from-text: "(.)at" | compile;
-  assert (R1 substitute: "rat" in: "a fluffy cat here, a bat there")
+  assert (R1 substitute-first-by: "rat" in: "a fluffy cat here, a bat there")
     === "a fluffy rat here, a bat there";
 
-  assert (R1 substitute: "rat" in: "a fluffy dog here")
+  assert (R1 substitute-first-by: "rat" in: "a fluffy dog here")
     === "a fluffy dog here";
 end
 
-/// Replaces all non-overlapping matches with [Text] in [Corpus].
-command compiled-regex substitute-all: (Text is text) in: (Corpus is text) -> text do
+/// Replaces all non-overlapping matches with `Text` in `Corpus`.
+command compiled-regex-pattern substitute-all-by: (Text is text) in: (Corpus is text) -> text do
   foreign re.replace-all(self.code, self.flags to-text, Text, Corpus);
 test
   let R1 = regex from-text: "(.)at" | compile;
-  assert (R1 substitute-all: "rat" in: "a fluffy cat here, a bat there")
+  assert (R1 substitute-all-by: "rat" in: "a fluffy cat here, a bat there")
     === "a fluffy rat here, a rat there";
 
-  assert (R1 substitute-all: "rat" in: "a fluffy dog here")
+  assert (R1 substitute-all-by: "rat" in: "a fluffy dog here")
     === "a fluffy dog here";
 end

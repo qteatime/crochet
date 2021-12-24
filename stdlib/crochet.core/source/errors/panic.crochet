@@ -1,15 +1,5 @@
 % crochet
 
-/// Stops the program with a panic message, does not output trace information.
-command panic-without-trace: (Message is text) tag: (Tag is text) =
-  foreign etc.panic-untraced(Tag, Message);
-
-command panic-without-trace: (Message is interpolation) tag: Tag =
-  panic-without-trace: Message flatten-into-plain-text tag: Tag;
-
-command panic-without-trace: Message =
-  panic-without-trace: Message tag: "panic";
-
 /// Stops the program with a panic message.
 command panic message: (Message is text) tag: (Tag is text) =
   foreign etc.panic(Tag, Message);

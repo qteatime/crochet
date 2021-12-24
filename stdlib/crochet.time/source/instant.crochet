@@ -1,50 +1,68 @@
 % crochet
 
-// Constructors
-command #instant from-milliseconds: (X is integer) =
+// -- Constructors
+
+/// Constructs an instant from the number of milliseconds since the
+/// UNIX epoch (1st January 1970, 00:00:00.000)
+command #instant from-milliseconds-since-unix-epoch: (X is integer) =
   new instant(foreign instant.from-ms(X));
 
+/// Constructs an instant from an ISO-8601 date or date-time text.
 command #instant from-iso8601: (X is text) =
   new instant(foreign instant.from-iso(X));
 
-// Views
-command instant epoch-milliseconds =
+
+// -- Conversions
+
+/// Converts an instant to the number of milliseconds since the
+/// UNIX epoch (1st January 1970, 00:00:00.000)
+command instant to-milliseconds-since-unix-epoch -> integer =
   foreign instant.epoch-ms(self.x);
 
-command instant to-iso8601-text =
+/// Converts an instant to its text representation in ISO-8601
+command instant to-iso8601-text -> text =
   foreign instant.to-iso(self.x);
 
-command instant to-plain-date-time =
+/// Converts an instant to a [type:plain-date-time]
+command instant to-plain-date-time -> plain-date-time =
   new plain-date-time(self);
 
-// Relations
+
+// -- Relations
+
+/// True if two instants represent the same fixed point in time.
 command instant === (That is instant) =
-  self epoch-milliseconds === That epoch-milliseconds;
+  self to-milliseconds-since-unix-epoch === That to-milliseconds-since-unix-epoch;
 
+/// True if two instants DO NOT represent the same fixed point in time.
 command instant =/= (That is instant) =
-  self epoch-milliseconds =/= That epoch-milliseconds;
+  self to-milliseconds-since-unix-epoch =/= That to-milliseconds-since-unix-epoch;
 
+/// True if this instant represents an earlier fixed point in time than `That` instant.
 command instant < (That is instant) =
-  self epoch-milliseconds < That epoch-milliseconds;
+  self to-milliseconds-since-unix-epoch < That to-milliseconds-since-unix-epoch;
 
+/// True if this instant represents the same or an earlier fixed point in time
+/// than `That` instant.
 command instant <= (That is instant) =
-  self epoch-milliseconds <= That epoch-milliseconds;
+  self to-milliseconds-since-unix-epoch <= That to-milliseconds-since-unix-epoch;
 
+/// True if this instant represents a later fixed point in time than `That` instant.
 command instant > (That is instant) =
-  self epoch-milliseconds > That epoch-milliseconds;
+  self to-milliseconds-since-unix-epoch > That to-milliseconds-since-unix-epoch;
 
+/// True if this instant represents the same or a later fixed point in time than
+/// `That` instant.
 command instant >= (That is instant) =
-  self epoch-milliseconds >= That epoch-milliseconds;
+  self to-milliseconds-since-unix-epoch >= That to-milliseconds-since-unix-epoch;
 
-// Arithmetic
+
+// -- Arithmetic
+
+/// Forwards this instant in time by the periods described in the given [type:duration].
 command instant + (That is duration) =
-  #instant from-milliseconds: (self epoch-milliseconds + That to-milliseconds);
+  #instant from-milliseconds-since-unix-epoch: (self to-milliseconds-since-unix-epoch + That to-milliseconds);
 
+/// Moves this instant back in time by the periods described in the given [type:duration].
 command instant - (That is duration) =
-  #instant from-milliseconds: (self epoch-milliseconds - That to-milliseconds);
-
-// Debug
-command debug-representation of: (X is instant) =
-  debug-representation type: "instant"
-    | value: X to-iso8601-text
-    | finish;
+  #instant from-milliseconds-since-unix-epoch: (self to-milliseconds-since-unix-epoch - That to-milliseconds);

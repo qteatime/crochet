@@ -1,5 +1,9 @@
 % crochet
 
+/// Converts an integer to a 64-bit floating point number.
+///
+/// The conversion is guaranteed to not lose precision by having a pre-condition
+/// on the range of safe integers that can be converted.
 command integer as float
 requires
   within-float-bounds :: (self > -9007199254740992) and (self < 9007199254740992)
@@ -11,6 +15,8 @@ test
   assert (-1 as float) =:= -1.0;
 end
 
+/// Converts a 64-bit floating point to an integer. The floating point
+/// number must be a whole number.
 command float as integer
 requires
   integral :: self =:= self truncate
@@ -22,23 +28,34 @@ test
   assert (-1.0 as integer) =:= -1;
 end
 
+/// Converts a list of values to an interpolation. All values in the
+/// interpolation will be dynamic values.
 command (X is list) as interpolation
   = foreign conversion.list-to-interpolation(X)
 test
   assert (["a", 1, "c"] as interpolation) =:= "["a"][1]["c"]";
 end
 
+/// Converts a piece of text to an interpolation. The interpolation will
+/// consist of a single dynamic value.
 command (X is text) as interpolation
   = "[X]"
 test
   assert ("abc" as interpolation) =:= "["abc"]";
 end
 
-
+/// The base type for errors when trying to convert a type to another.
 abstract conversion-error;
+
+/// Parsing the integer from a piece of text was not possible.
 type error-parsing-integer(value) is conversion-error;
+
+/// Parsing the float from a piece of text was not possible.
 type error-parsing-float(value) is conversion-error;
 
+/// Attempts to parse a piece of text as an integer. The grammar only
+/// accepts digits, so it's a bit more restricted than Crochet's integer
+/// literals.
 command #integer try-parse: (X is text) -> result do
   let Result = foreign integer.parse(X);
   condition
@@ -52,6 +69,8 @@ test
   assert (#integer try-parse: "nope") is error;
 end
 
+/// Attempts to parse a piece of text as a floating point number. The
+/// grammar is similar to the JavaScript's floating point grammar.
 command #float try-parse: (X is text) -> result do
   let Result = foreign float.parse(X);
   condition
@@ -66,5 +85,8 @@ test
   assert (#float try-parse: "nope") is error;
 end
   
+/// Converts an integer to a piece of trusted text.
 command integer to-text = foreign integer.to-text(self);
+
+/// Converts a floating point number to a piece of trusted text.
 command float to-text = foreign float.to-text(self);

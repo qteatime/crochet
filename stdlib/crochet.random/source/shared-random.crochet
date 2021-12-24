@@ -1,0 +1,22 @@
+% crochet
+
+/// Introduces a new shared, predictable random number generator to
+/// the context. This will be available to anyone who can read the
+/// shared generator (see [type:shared-random]) if their code runs
+/// within the given `Block`.
+command scoped-random with-source: (Instance0 is random) do: (Block is (() -> A)) -> A do
+  let Instance = Instance0 mutable;
+  handle
+    Block();
+  with
+    on random.get-random() => continue with Instance;
+  end
+end
+
+
+/// Retrieves the current shared, predictable random number generator
+/// for this context. An instance must have been provided before through
+/// [type:scoped-random].
+command shared-random instance -> random do
+  perform random.get-random();
+end

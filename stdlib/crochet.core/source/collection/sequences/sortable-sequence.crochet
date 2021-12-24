@@ -5,7 +5,7 @@
 implement sortable-sequence for list;
 
 /// Returns an ordered list where the order is defined by the given
-/// [Comparator] function. The ordering is stable, and items that
+/// `Comparator` function. The ordering is stable, and items that
 /// compare equal will remain in the same relative order.
 command list sort-by: (Comparator is function-2)
 ensures same-size :: self count === return count do

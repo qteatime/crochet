@@ -1,0 +1,117 @@
+% crochet
+
+implement predictable-rng for xor-shift;
+
+/// Returns a fractional number from 0 up to (but not including) 1.
+command xor-shift uniform -> random-next<float>
+do
+  let Result = foreign xorshift.next-uniform(self.seed, self.inc);
+  new random-next(Result.value, new xor-shift(Result.seed, Result.inc))
+test
+  let Random = #random xor-shift: 20;
+  let Result = Random uniform;
+  assert Random.seed =:= 20;
+  assert Result value =:= 0.5964457555674016;
+  assert (Result random).seed =:= 1280857507;
+end
+
+/// Returns an integral number between `Min` and `Max`, inclusive on both ends.
+command xor-shift between: (Min is integer) and: (Max is integer) -> random-next<integer>
+requires
+  ordered :: Min <= Max
+do
+  let Result = foreign xorshift.next-integer(self.seed, self.inc, Min, Max);
+  new random-next(Result.value, new xor-shift(Result.seed, Result.inc));
+test
+  let Random = #random xor-shift: 20;
+  let Result = Random between: 1 and: 20;
+  assert Random.seed =:= 20;
+  assert Result value =:= 12;
+  assert (Result random).seed =:= 1280857507;
+end
+
+/// Returns one item of the given (non-empty) list.
+command xor-shift choose: (Items is list<A>) -> random-next<A>
+requires non-empty :: not Items is-empty
+do
+  let Result = self between: 1 and: Items count;
+  let Choice = Items at: Result value;
+  new random-next(Choice, Result random);
+test
+  let Random = #random xor-shift: 20;
+  let Items = [1, 2, 3, 4];
+
+  let Res1 = Random choose: Items;
+  assert Res1 value =:= 2;
+
+  let Res2 = Res1 random choose: Items;
+  assert Res2 value =:= 1;
+
+  let Res3 = Res2 random choose: Items;
+  assert Res3 value =:= 3;
+end
+
+/// Returns one item of the given (non-empty) list, along with a new list
+/// that does not include the chosen item.
+command xor-shift choose-and-tear: (Items0 is list<A>) -> random-next<random-choice<A>>
+requires non-empty :: not Items0 is-empty
+do
+  let Result = self between: 1 and: Items0 count;
+  let Choice = Items0 at: Result value;
+  let Items = Items0 remove-at: Result value;
+  new random-next(
+    new random-choice(Choice, Items),
+    Result random
+  );
+test
+  let Random = #random xor-shift: 20;
+  let Items = [1, 2, 3, 4];
+  let Res1 = Random choose-and-tear: Items;
+  assert Res1 value === new random-choice(2, [1, 3, 4]);
+
+  let Res2 = Res1.random choose-and-tear: Res1 value new-list;
+  assert Res2 value === new random-choice(1, [3, 4]);
+
+  let Res3 = Res2.random choose-and-tear: Res2 value new-list;
+  assert Res3 value === new random-choice(3, [4]);
+
+  let Res4 = Res3.random choose-and-tear: Res3 value new-list;
+  assert Res4 value === new random-choice(4, []);
+end
+
+/// Returns one item of the given (non-empty) list, considering the weights
+/// that each item has.
+command xor-shift choose-weighted: (Items0 is list<scored-item<A>>) -> random-next<A>
+requires non-empty :: not Items0 is-empty
+do
+  let Total = Items0 map: (_ score) | sum;
+  let Items = Items0 sort-by: { A, B in A score compare-to: B score };
+  let Result = self between: 0 and: Total;
+  let Choice = Result value;
+
+  let Go = { Score, Items in do
+    let Item = Items first;
+    condition
+      when Score <= Item score => Item value;
+      otherwise => Go(Score - Item score, Items rest);
+    end
+  end};
+
+  new random-next(Go(Choice, Items), Result random);
+test
+  let Random = #random xor-shift: 20;
+  let Items = [
+    new scored-item(10, "a"),
+    new scored-item(3, "b"),
+    new scored-item(4, "c")
+  ];
+
+  let R1 = Random choose-weighted: Items;
+  assert R1 value =:= "a";
+
+  let R2 = R1.random choose-weighted: Items;
+  assert R2 value =:= "b";
+
+  let R3 = R2.random choose-weighted: Items;
+  assert R3 value =:= "a";
+end

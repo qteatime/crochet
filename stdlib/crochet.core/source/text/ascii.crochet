@@ -1,8 +1,10 @@
 % crochet
 
-// Manipulating text as ASCII is usually enough for a lot of use cases.
-local type ascii-view(text is text);
+/// A text view that guarantees its text fits in the ASCII range.
+type ascii-view(text is text);
 
+/// Views a piece of text as containing only ASCII characters---will
+/// fail if any characters are outside of the ASCII range.
 command text ascii 
 requires ascii-text :: self is-ascii
   = new ascii-view(self)
@@ -10,6 +12,7 @@ test
   "abc" ascii;
 end
 
+/// True if a piece of text only contains ASCII characters.
 command text is-ascii
   = foreign text.is-ascii(self)
 test
@@ -18,6 +21,7 @@ test
   assert not "🌷" is-ascii;
 end
 
+/// Converts any upper-case ASCII letter to its lower-case equivalent.
 command ascii-view to-lower-case
   = new ascii-view(foreign text.to-lower(self.text))
 test
@@ -27,6 +31,7 @@ test
   assert "AbC" ascii to-lower-case to-text =:= "abc";
 end
 
+/// Converts any lower-case ASCII letter to its upper-case equivalent.
 command ascii-view to-upper-case
   = new ascii-view(foreign text.to-upper(self.text))
 test
@@ -36,6 +41,9 @@ test
   assert "AbC" ascii to-upper-case to-text =:= "ABC";
 end
 
+/// Returns a piece of text with precisely `Count` ASCII characters, and
+/// fills the left part of the text with the given `Char` if the original
+/// text has less characters.
 command ascii-view pad-start: (Count is integer) character: (Char is ascii-view)
 requires non-zero :: Count >= 0
   = new ascii-view(foreign text.pad-start(self.text, Count, Char.text))
@@ -45,6 +53,9 @@ test
   assert ("1" ascii | pad-start: 3 character: "0" ascii | to-text) =:= "001";
 end
 
+/// Returns a piece of text with precisely `Count` ASCII characters, and
+/// fills the right part of the text with the given `Char` if the original
+/// text has less characters.
 command ascii-view pad-end: (Count is integer) character: (Char is ascii-view)
 requires non-zero :: Count >= 0
   = new ascii-view(foreign text.pad-end(self.text, Count, Char.text))
@@ -54,8 +65,13 @@ test
   assert ("1" ascii | pad-end: 3 character: "0" ascii | to-text) =:= "100";
 end
 
+/// A convenience for [_ pad-start: _ character: _] where the character is
+/// `0`.
 command ascii-view pad-start: Count = self pad-start: Count character: "0" ascii;
+
+/// A convenience for [_ pad-end: _ character: _] where the character is `0`.
 command ascii-view pad-end: Count = self pad-end: Count character: "0" ascii;
 
+/// Retrieves the less-restricted opaque piece of text from its ASCII view.
 command ascii-view to-text
   = self.text;

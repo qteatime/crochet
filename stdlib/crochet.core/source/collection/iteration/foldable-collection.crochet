@@ -95,6 +95,7 @@ end
 // -- Maps
 implement foldable-collection for map;
 
+/// Folds a map.
 command map fold-from: Initial with: (Combine is ((A, association<K, V>) -> A)) do
   foreign map.fold(self.box, Initial, { A, X in Combine(A, new association(X at: 1, X at: 2)) });
 test

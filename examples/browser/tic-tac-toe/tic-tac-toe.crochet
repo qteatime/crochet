@@ -91,7 +91,7 @@ end
 type ref;
 
 command main-html: Root do
-  scoped-random with-source: #random with-random-seed do: {
+  scoped-random with-source: (#random with-seed: 20) do: {
     novella with-root: Root do: {
       novella show: (
         novella header: [

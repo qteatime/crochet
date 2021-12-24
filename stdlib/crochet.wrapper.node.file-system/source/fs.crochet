@@ -131,19 +131,3 @@ command directory remove =
 
 command directory remove-recursive =
   foreign fs.rmdir(self.path to-text, true);
-
-
-command debug-representation of: (X is inode) =
-  debug-representation type: "i-node"
-    | value: X.path
-    | finish;
-
-command debug-representation of: (X is file) =
-  debug-representation type: "file"
-    | value: X.path
-    | finish;
-
-command debug-representation of: (X is directory) =
-  debug-representation type: "directory"
-    | value: X.path
-    | finish;

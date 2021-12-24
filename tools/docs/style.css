@@ -142,7 +142,8 @@ a:hover,
   font-family: "Source Sans Pro", monospace;
 }
 
-.declaration-code {
+.declaration-code,
+.crochet-md .code-block {
   background: #fff;
   padding: 1em;
   border: 1px solid #cfd8dc;
@@ -196,14 +197,36 @@ a:hover,
   white-space: normal;
 }
 
+.crochet-md .external-link::after {
+  content: "\f35d";
+  font-family: "Font Awesome 5 Free";
+  padding: 0em 0.2em;
+  font-size: 0.7em;
+  position: relative;
+  top: -0.3em;
+}
+
 .crochet-md p {
   margin-bottom: 1.5em;
 }
 
 .crochet-md h2,
-.crochet-md h3 {
+.crochet-md h3,
+.crochet-md h4 {
+  margin-bottom: 0.5em;
+  margin-top: 1.5em;
+  font-family: "PT Sans Caption", sans-serif;
+}
+
+.crochet-md h4 {
+  border-bottom: 1px solid #ececea;
+}
+
+.crochet-md h5 {
+  margin-top: 1.5em;
   margin-bottom: 0.3em;
-  margin-top: 1em;
+  font-family: "PT Sans Caption", sans-serif;
+  text-transform: uppercase;
 }
 
 .crochet-md code {
@@ -212,14 +235,14 @@ a:hover,
   font-family: "Source Sans Pro", monospace;
 }
 
-.crochet-md code::before,
-.crochet-md code::after {
+.crochet-md code:not(.code-block-contents)::before,
+.crochet-md code:not(.code-block-contents)::after {
   content: "`";
   color: #484d5a;
   font-family: "Source Sans Pro", monospace;
 }
 
-.crochet-md code::after {
+.crochet-md code:not(.code-block-contents)::after {
   content: "'";
   color: #606674;
 }

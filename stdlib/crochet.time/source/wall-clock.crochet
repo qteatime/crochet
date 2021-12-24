@@ -1,4 +1,6 @@
 % crochet
 
+/// Returns the an instant that represents the current system's wall clock,
+/// in UTC, and with milliseconds precision.
 command wall-clock now =
-  #instant from-milliseconds: (foreign clock.now());
+  #instant from-milliseconds-since-unix-epoch: (foreign clock.now());

@@ -13,7 +13,7 @@ implement equality for lset;
 command lset === A = self.x === A.x;
 
 
-/// True if [B] includes all elements of [A].
+/// True if `B` includes all elements of `A`.
 command (A has set-algebra, countable-container) is-subset: (B has set-algebra, countable-container) do
   (A complement: B | is-empty)
 test
@@ -25,7 +25,7 @@ test
   assert not ((#lset from: [1, 2, 3]) is-subset: (#lset from: [4, 5, 6]));
 end
 
-// True if [A] includes all elements of [B].
+// True if `A` includes all elements of `B`.
 command (A has set-algebra, countable-container) is-superset: (B has set-algebra, countable-container) do
   (B complement: A | is-empty);
 test

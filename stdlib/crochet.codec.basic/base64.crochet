@@ -32,11 +32,6 @@ end
 
 command base64 === (That is base64) = self.x === That.x;
 
-command debug-representation of: (X is base64) =
-  debug-representation type: "base64"
-    | value: self.x
-    | finish;
-
 test "decode(encode(X)) === X" do
   assert (#base64 encode: "It was a dark, stormy night" | to-text)
     === "It was a dark, stormy night";

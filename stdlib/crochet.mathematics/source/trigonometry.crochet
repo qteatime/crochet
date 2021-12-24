@@ -1,59 +1,105 @@
 % crochet
 
+/// The ratio of a circle's circumference to its diameter (approximately 3.14).
 command #float pi = foreign float.pi()
-test #float pi end
+test
+  assert #float pi === 3.141592653589793;
+end
 
+/// The sine of `X`.
 command (X is float) sin = foreign float.sin(X)
-test 2.0 sin end
+test
+  assert 2.0 sin === 0.9092974268256817;
+end
 
+/// The hyperbolic sine of `X`.
 command (X is float) sinh = foreign float.sinh(X)
-test 2.0 sinh end
+test
+  assert 2.0 sinh === 3.626860407847019;
+end
 
+/// The arcsine of `X`.
 command (X is float) asin = foreign float.asin(X)
-test 2.0 asin end
+test
+  assert 1.0 asin === 1.5707963267948966;
+end
 
+/// The hyperbolic arcsine of `X`.
 command (X is float) asinh = foreign float.asinh(X)
-test 2.0 asinh end
+test
+  assert 2.0 asinh === 1.4436354751788103;
+end
 
+/// The cosine of `X`.
 command (X is float) cos = foreign float.cos(X)
-test 2.0 cos end
+test
+  assert 2.0 cos === -0.4161468365471424;
+end
 
+/// The hyperbolic cosine of `X`.
 command (X is float) cosh = foreign float.cosh(X)
-test 2.0 cosh end
+test
+  assert 2.0 cosh === 3.7621956910836314;
+end
 
+/// The arccosine of `X`.
 command (X is float) acos = foreign float.acos(X)
-test 2.0 acos end
+test
+  assert 0.5 acos === 1.0471975511965979;
+end
 
+/// The hyperbolic arccosine of `X`.
 command (X is float) acosh = foreign float.acosh(X)
-test 2.0 acosh end
+test
+  assert 2.0 acosh === 1.3169578969248166;
+end
 
+/// The tangent of `X`.
 command (X is float) tan = foreign float.tan(X)
-test 2.0 tan end
+test
+  assert 2.0 tan === -2.185039863261519;
+end
 
+/// The arctangent of `X`.
 command (X is float) atan = foreign float.atan(X)
-test 2.0 atan end
+test
+  assert 2.0 atan === 1.1071487177940904;
+end
 
+/// The hyperbolic arctangent of `X`.
 command (X is float) atanh = foreign float.atanh(X)
-test 2.0 atanh end
+test
+  assert 0.5 atanh === 0.5493061443340548;
+end
 
+/// The hyperbolic tangent of `X`.
 command (X is float) tanh = foreign float.tanh(X)
-test 2.0 tanh end
+test
+  assert 2.0 tanh === 0.9640275800758169;
+end
 
+/// Converts from degrees to radians.
 command float degrees-to-radians =
   self * (#float pi / 180.0)
 test
-  45.0 degrees-to-radians
+  assert 45.0 degrees-to-radians === 0.7853981633974483;
 end
 
+/// Converts from radians to degrees.
 command float radians-to-degrees =
   self / (#float pi / 180.0)
 test
-  2.0 radians-to-degrees
+  assert 2.0 radians-to-degrees === 114.59155902616465;
 end
 
-
+/// The cube root of `X`.
 command (X is float) cbrt = foreign float.cbrt(X)
-test 2.0 cbrt end
+test
+  assert 9.0 cbrt === 2.080083823051904;
+end
 
+/// The square root of `X`.
 command (X is float) sqrt = foreign float.sqrt(X)
-test 2.0 sqrt end
+test
+  assert 9.0 sqrt === 3.0;
+end

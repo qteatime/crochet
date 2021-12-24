@@ -1,5 +1,6 @@
 % crochet
 
+/// Converts a trusted piece of text to an untrusted piece of text.
 command taint make-untrusted: (Text is untrusted-text) =
   Text;
 
@@ -7,6 +8,10 @@ command taint make-untrusted: (Text is text) =
   foreign text.make-untrusted(Text);
 
 
+/// Converts an untrusted piece of text to a trusted piece of text, without
+/// doing any verification of its semantics. This command should be avoided
+/// whenever possible, as trusting arbitrary text without verification often
+/// leads to security vulnerabilities.
 command untaint make-trusted: (Text is untrusted-text) =
   foreign text.make-trusted(Text);
 

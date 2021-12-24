@@ -3,8 +3,8 @@
 // -- Records
 implement mergeable-mapped-container for record;
 
-/// Returns a new record where the associations of [That] record are carried
-/// over, possibly overriding the previous associations in the [self] record,
+/// Returns a new record where the associations of `That` record are carried
+/// over, possibly overriding the previous associations in the `self` record,
 /// if associations for the same key already existed.
 command record merge: (That is record) =
   foreign record.concat(self, That)
@@ -18,6 +18,9 @@ end
 // -- Maps
 implement mergeable-mapped-container for map;
 
+/// Returns a new map that contains the key/value pairs of both maps.
+/// If both maps have the same key, then the key/value pair of the second
+/// map (`That`) will be used.
 command map merge: (That is map) do
   new map(foreign map.merge(self.box, That.box));
 test

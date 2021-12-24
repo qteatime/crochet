@@ -1,23 +1,27 @@
 % crochet
 
-local singleton module;
-
 // Here we take care of translating our regex AST into the textual form
 // JS uses, so the JS runtime can take care of everything else. The entry-point
 // is the `compile` method, but we define local helpers for each node in the
 // AST as well.
 //
 // Compiled regexes get no flags set by default.
-command regex-node compile do
+local singleton module;
+
+/// Creates a compiled version of the regular expression pattern, which
+/// can then be used to operate on pieces of text.
+command regex-pattern compile do
   let Code = module code-to-text: (self compile-in: module);
-  new compiled-regex(Code, #regex-flags empty);
+  new compiled-regex-pattern(Code, #regex-flags empty);
+test
+  let Compiled = regex from-text: "\\w" | pin-start | pin-end | compile;
+  assert Compiled.code === "(?:^(?:\\w))$";
 end
 
 command module code-to-text: (X is interpolation) = X flatten-into-plain-text;
 command module code-to-text: (X is text) = X;
 
-// Flag compilation just picks all letter flags that are set and
-// packs that together into a string.
+/// A textual representation of the set of flags in a regular expression.
 command regex-flags to-text do
   [
     module flag: "i" if-set: self.ignore-case,
@@ -31,10 +35,7 @@ command module flag: Text if-set: true = Text;
 command module flag: Text if-set: false = "";
 
 
-// AST node compilation conservatively wraps a lot of stuff into non-capturing
-// groups just so we can make sure that when they're combined their meaning
-// doesn't change. We expect the JS runtime compiler to get rid of it, but
-// it might make parsing a bit more expensive.
+/// Compiles the regular expression pattern.
 command regex-raw compile-in: module =
   self.code;
 
@@ -71,11 +72,19 @@ command regex-or compile-in: module =
 command regex-range compile-in: module =
   "\[[foreign re.escape(self.start)]-[foreign re.escape(self.stop)]\]";
 
-command regex-charset compile-in: module =
-  "\[[foreign re.escape(self.chars)]\]";
+command regex-charset compile-in: module do
+  let Chars = self.chars
+                |> _ map: { C in foreign re.escape(C) }
+                |> #text join: _ with: "";
+  "\[[Chars]\]";
+end
 
-command regex-not-charset compile-in: module =
-  "\[^[foreign re.escape(self.chars)]\]";
+command regex-not-charset compile-in: module do
+  let Chars = self.chars
+                |> _ map: { C in foreign re.escape(C) }
+                |> #text join: _ with: "";
+  "\[^[Chars]\]";
+end
 
 command regex-not-range compile-in: module =
   "\[^[foreign re.escape(self.start)]-[foreign re.escape(self.stop)]\]";
@@ -111,7 +120,7 @@ command regex-repeat-at-least compile-in: module =
   "(?:[self.expr compile-in: module]){[self.times to-text],}";
 
 command regex-repeat-between compile-in: module =
-  "(?:[self.expr compile-in: module]){[self.times-min to-text], [self.times-max to-text]}";
+  "(?:[self.expr compile-in: module]){[self.times-min to-text],[self.times-max to-text]}";
 
 command regex-exact compile-in: module =
   foreign re.escape(self.text);

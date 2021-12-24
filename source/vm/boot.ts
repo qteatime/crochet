@@ -438,8 +438,9 @@ export function load_module(
     new Metadata(program.source, program.meta_table)
   );
 
+  let last_doc: { name: string; doc: string } | null = null;
   for (const x of program.declarations) {
-    load_declaration(universe, module, x);
+    last_doc = load_declaration(universe, module, x, last_doc) ?? null;
   }
 
   return module;
@@ -448,7 +449,8 @@ export function load_module(
 export function load_declaration(
   universe: Universe,
   module: CrochetModule,
-  declaration: IR.Declaration
+  declaration: IR.Declaration,
+  last_doc: { name: string; doc: string } | null
 ) {
   const t = IR.DeclarationTag;
 
@@ -459,12 +461,21 @@ export function load_declaration(
         declaration.name,
         declaration.parameters.length
       );
+      const inferred_doc =
+        last_doc == null
+          ? ""
+          : last_doc.name === declaration.name
+          ? last_doc.doc
+          : "";
+      const doc = declaration.documentation.trim()
+        ? declaration.documentation
+        : inferred_doc;
 
       const branch = new CrochetCommandBranch(
         module,
         new Environment(null, null, module, null),
         declaration.name,
-        declaration.documentation,
+        doc,
         declaration.parameters,
         declaration.types.map((t) =>
           Types.materialise_type_constraint(universe, module, t)
@@ -474,7 +485,7 @@ export function load_declaration(
       );
 
       Commands.add_branch(command, branch);
-      break;
+      return { name: declaration.name, doc: doc };
     }
 
     case t.TYPE: {

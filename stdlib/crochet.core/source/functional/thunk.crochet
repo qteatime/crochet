@@ -1,5 +1,6 @@
 % crochet
 
+/// True if the thunk has been evaluated.
 command thunk is-forced -> boolean do
   foreign thunk.is-forced(self);
 test

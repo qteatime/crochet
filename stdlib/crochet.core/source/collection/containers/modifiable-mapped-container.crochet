@@ -4,7 +4,7 @@
 
 implement modifiable-mapped-container for record;
 
-/// Returns a new record where [Key] is now associated with [Value].
+/// Returns a new record where `Key` is now associated with `Value`.
 command record at: (Key is text) put: Value =
   foreign record.at-put(self, Key, Value)
 test
@@ -15,7 +15,7 @@ test
   assert (A at: "c" put: 3) === [a -> 1, b -> 2, c -> 3];
 end
 
-/// Returns a new record that no longer associates the given [Key] with any
+/// Returns a new record that no longer associates the given `Key` with any
 /// value.
 command record remove-at: (Key is text) =
   foreign record.delete-at(self, Key)
@@ -27,6 +27,7 @@ end
 // -- Map
 implement modifiable-mapped-container for map;
 
+/// Returns a new map that contains the `Key`=`Value` pair provided.
 command map at: Key put: Value do
   new map(foreign map.set(self.box, Key, Value));
 test
@@ -40,6 +41,8 @@ test
   assert (#map empty | at: 1 put: 2 | at: 1 put: 3 | at: 1) === 3;
 end
 
+/// Returns a new map that does not contain the key/value pair described by
+/// `Key`.
 command map remove-at: Key do
   new map(foreign map.remove(self.box, Key));
 test

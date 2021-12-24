@@ -199,16 +199,27 @@ test
 end
 
 // Arithmetic tower
-command (X is integer) + (Y is float) = (X as float) + Y;
-command (X is integer) - (Y is float) = (X as float) - Y;
-command (X is integer) * (Y is float) = (X as float) * Y;
-command (X is integer) / (Y is float) = (X as float) / Y;
-command (X is integer) % (Y is float) = (X as float) % Y;
 
+/// Addition of mixed numbers.
+command (X is integer) + (Y is float) = (X as float) + Y;
 command (X is float) + (Y is integer) = X + (Y as float);
+
+/// Subtraction of mixed numbers.
+command (X is integer) - (Y is float) = (X as float) - Y;
 command (X is float) - (Y is integer) = X - (Y as float);
+
+/// Multiplication of mixed numbers.
+command (X is integer) * (Y is float) = (X as float) * Y;
 command (X is float) * (Y is integer) = X * (Y as float);
+
+/// Division of mixed numbers.
+command (X is integer) / (Y is float) = (X as float) / Y;
 command (X is float) / (Y is integer) = X / (Y as float);
+
+/// Floating point division of integers.
+command (X is integer) / (Y is integer) = (X as float) / (Y as float);
+
+/// Modulo of mixed numbers.
+command (X is integer) % (Y is float) = (X as float) % Y;
 command (X is float) % (Y is integer) = X % (Y as float);
 
-command (X is integer) / (Y is integer) = (X as float) / (Y as float);

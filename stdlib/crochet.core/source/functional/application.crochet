@@ -1,5 +1,6 @@
 % crochet
 
+/// Applies the function to the given argument list.
 command function-0 apply: (Args is list)
 requires nullary :: Args count =:= 0
 do
@@ -60,7 +61,7 @@ do
   self(Args at: 1, Args at: 2, Args at: 3, Args at: 4, Args at: 5, Args at: 6, Args at: 7, Args at: 8, Args at: 9)
 end
 
-
+/// The number of arguments that the function takes.
 command function-0 arity = 0;
 command function-1 arity = 1;
 command function-2 arity = 2;

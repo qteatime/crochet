@@ -1,5 +1,8 @@
 % crochet
 
+/// Constructs a function that captures its current dynamic environment,
+/// such that it may be called later on, from anywhere, with the effect
+/// handlers that were available at the time of the capture.
 command function-0 capture =
   foreign fun.capture(0, self);
 

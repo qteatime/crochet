@@ -1,5 +1,7 @@
 % crochet
 
+/// Returns a view of the lines of text, as described by the line break
+/// characters contained in the original text.
 command text lines
   = foreign text.lines(self)
 test
@@ -8,18 +10,24 @@ test
   assert "a\r\nb\rc\nd" lines =:= ["a", "b", "c", "d"];
 end
 
+/// Returns a view of the UTF-16 unicode code points in the text.
 command text unicode-code-points 
   = foreign text.code-points(self)
 test
   assert "abc❤🌹✨" unicode-code-points =:= [97, 98, 99, 10084, 127801, 10024];
 end
 
+// TODO: This currently allows an untrusted list of integers to become a
+// _trusted_ piece of text, and this needs to be fixed before the stable release.
+
+/// Creates a piece of dynamic text given a list of code-points.
 command #text from-code-points: (Points is list)
   = foreign text.from-code-points(Points)
 test
   assert (#text from-code-points: ("abc❤🌹✨" unicode-code-points)) =:= "abc❤🌹✨";
 end
 
+/// Creates a piece of text from a list of lines of text.
 command #text from-lines: (Lines is list) do
   foreign text.from-lines(Lines)
 test

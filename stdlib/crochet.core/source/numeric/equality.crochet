@@ -50,9 +50,14 @@ test
 end
 
 // -- Equality across the numeric tower
+/// True if two numbers of different types are equal if we convert them to
+/// the lowest common type between them. This is often a lossy conversion.
 command (X is integer) === (Y is float) = (X as float) === Y;
-command (X is integer) =/= (Y is float) = (X as float) =/= Y;
 command (X is float) === (Y is integer) = X === (Y as float);
+
+/// True if two numbers of different types are not equal if we convert them
+/// to the lowest common type between them. This is often a lossy conversion.
+command (X is integer) =/= (Y is float) = (X as float) =/= Y;
 command (X is float) =/= (Y is integer) = X =/= (Y as float);
 
 test "Numeric equality tower" do

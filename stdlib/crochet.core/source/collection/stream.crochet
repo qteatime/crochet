@@ -10,11 +10,19 @@ command #stream from: Xs -> stream<A> =
 command #stream from: Initial iterate: Computation =
   #linked-stream from: Initial iterate: Computation;
 
+/// Constructs an infinite stream by cycling through all values in the
+/// given sequence, over and over again.
 command #stream cycle: Xs = #linked-stream cycle: Xs;
 
+/// Constructs an infinite stream that just repeats the given value.
 command #stream repeat: X = #linked-stream repeat: X;
 
+/// Constructs an infinite stream consisting of the sequence of all
+/// non-negative integers (0 onwards).
 command #stream non-negative-integers = #stream from: 0 iterate: (_ + 1);
+
+/// Constructs an infinite stream consisting of all positive integers
+/// (1 onwards).
 command #stream positive-integers = #stream from: 1 iterate: (_ + 1);
 
 /// Constructs a linked-stream from a sequence.
@@ -94,7 +102,7 @@ test "linked-stream drop: integer" do
 end
 
 /// Returns a stream that contains elements from the first one up until the
-/// [Predicate] fails.
+/// `Predicate` fails.
 command linked-stream-empty take-while: (Predicate is (A -> boolean)) = linked-stream-empty;
 command linked-stream-cons take-while: (Predicate is (A -> boolean)) do
   condition
@@ -121,7 +129,7 @@ test "linked-stream drop-while: function-1" do
   assert (Naturals drop-while: (_ < 5) |> _ take: 5 |> _ as list) === [5, 6, 7, 8, 9];
 end
 
-/// Returns a stream of chunks of the specified [Size].
+/// Returns a stream of chunks of the specified `Size`.
 command linked-stream-empty chunked-by-size: (Size is integer) = self;
 command linked-stream-cons chunked-by-size: (Size is integer) do
   let Result = module chunk: self by-size: Size result: [];

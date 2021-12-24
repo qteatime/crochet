@@ -1,6 +1,6 @@
 % crochet
 
-/// Converts a [linked-stream] to a [list]. Assumes that the [linked-stream]
+/// Converts a [type:linked-stream] to a [type:list]. Assumes that the [type:linked-stream]
 /// is finite, as otherwise the conversion will never finish.
 command linked-stream-empty as list = [];
 command linked-stream-cons as list = (self rest as list) prepend: self first;
@@ -12,7 +12,7 @@ test "linked-stream as list" do
 end
 
 // -- List conversions
-/// Converts a [list] to a [stream].
+/// Converts a [type:list] to a [type:stream].
 command list as stream do
   let Go = { I in
     condition
@@ -26,8 +26,8 @@ test
   assert (([1, 2, 3] as stream) as list) === [1, 2, 3];
 end
 
-/// Converts a [list] to a [set].
+/// Converts a [type:list] to a [type:set].
 command list as set = #set from: self;
 
-/// Converts a [list] to a [map]
+/// Converts a [type:list] to a [type:map]
 command list as map = #map from: list;

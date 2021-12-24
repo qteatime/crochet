@@ -1109,20 +1109,50 @@ function md_to_html(text, data) {
     });
   }
 
+  function escape_special(text) {
+    return text.replace(/[\*\[\_\`]/g, (m) => {
+      return `&#x${m.charCodeAt(0).toString(16)};`;
+    });
+  }
+
+  function html_to_text(x) {
+    const e = h("div", {}, []);
+    e.innerHTML = x;
+    return e.textContent;
+  }
+
   function render_inline(text) {
     const html0 = h("div.cmd", {}, [text]).innerHTML;
     const html = html0
-      .replace(/`(.+?)`/g, (_, x) => h("code", {}, [x]).outerHTML)
+      .replace(/`(.+?)`/g, (_, x) =>
+        escape_special(h("code", {}, [html_to_text(x)]).outerHTML)
+      )
       .replace(/\[([^\]]+)\]/g, (_, x) => {
-        const { tag, text, target } = parse_link(x);
-        return h(
-          "a.inner-link",
-          { "data-target": target, href: "#", "data-tag": tag },
-          [h("code", {}, [text])]
-        ).outerHTML;
+        const { tag, text, target } = parse_link(html_to_text(x));
+        if (tag === "link") {
+          return h("a.external-link", { href: target, target: "_blank" }, [
+            text,
+          ]).outerHTML;
+        } else {
+          return h(
+            "a.inner-link",
+            {
+              "data-target": target,
+              href: `#${tag}:${target}`,
+              "data-tag": tag,
+            },
+            [h("code", {}, [text])]
+          ).outerHTML;
+        }
       })
-      .replace(/\*\*(.+?)\*\*/g, (_, x) => h("strong", {}, [x]).outerHTML)
-      .replace(/\*(.+?)\*/g, (_, x) => h("em", {}, [x]).outerHTML);
+      .replace(
+        /\*\*(?=\w)([\w\-\s]+)(?<=\w)\*\*/g,
+        (_, x) => h("strong", {}, [x]).outerHTML
+      )
+      .replace(
+        /\_(?=\w)([\w\-\s]+)(?<=\w)\_/g,
+        (_, x) => h("em", {}, [x]).outerHTML
+      );
     const element = h("div.cmd", {}, []);
     element.innerHTML = html;
     reify_links(element);
@@ -1136,6 +1166,10 @@ function md_to_html(text, data) {
       return block;
     } else if (block.type === "paragraph") {
       return h("p", {}, [render_inline(block.contents.join("\n"))]);
+    } else if (block.type === "code") {
+      return h("pre.code-block", {}, [
+        h("code.code-block-contents", {}, [block.contents.join("\n")]),
+      ]);
     } else {
       throw new Error(`invalid block`);
     }
@@ -1174,6 +1208,39 @@ function md_to_html(text, data) {
     }
   }
 
+  function push_code(blocks, current, line) {
+    if (current != null && current.type === "code") {
+      return {
+        blocks: blocks,
+        current: {
+          type: "code",
+          contents: [...current.contents, line],
+        },
+      };
+    } else {
+      return {
+        blocks: push(blocks, current),
+        current: {
+          type: "code",
+          contents: [line],
+        },
+      };
+    }
+  }
+
+  function push_empty(blocks, current, line) {
+    if (current == null) {
+      return { blocks: blocks, current: null };
+    } else if (current.type === "code") {
+      return push_code(blocks, current, line.slice(4));
+    } else {
+      return {
+        blocks: push(blocks, current),
+        current: null,
+      };
+    }
+  }
+
   function handle_line({ blocks, current }, line) {
     if (/^#+\s*\S/.test(line)) {
       const [_, level, text] = line.match(/^(#+)\s*(.*)/);
@@ -1184,11 +1251,10 @@ function md_to_html(text, data) {
         ]),
         current: null,
       };
+    } else if (/^ {4,}/.test(line)) {
+      return push_code(blocks, current, line.slice(4));
     } else if (/^\s*$/.test(line)) {
-      return {
-        blocks: push(blocks, current),
-        current: null,
-      };
+      return push_empty(blocks, current, line);
     } else {
       return push_paragraph(blocks, current, line);
     }

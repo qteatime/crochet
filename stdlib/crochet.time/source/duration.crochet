@@ -1,47 +1,111 @@
 % crochet
 
+// -- Constructors
+
+/// Constructs a duration that represents a 0-length period of time,
+/// a collective amount of 0 milliseconds.
 command #duration zero =
   new duration(0, 0, 0, 0, 0);
 
-command #duration days: Days = #duration zero days: Days;
-command #duration hours: Hours = #duration zero hours: Hours;
-command #duration minutes: Minutes = #duration zero minutes: Minutes;
-command #duration seconds: Seconds = #duration zero seconds: Seconds;
-command #duration milliseconds: Milliseconds = #duration zero milliseconds: Milliseconds;
+/// Constructs a duration that represents the given number of days.
+command #duration days: Days =
+  new duration(Days, 0, 0, 0, 0);
 
-command duration days: (Days is integer) =
-  new duration(Days, self hours, self minutes, self seconds, self milliseconds);
+/// Constructs a duration that represents the given number of hours.
+command #duration hours: Hours =
+  new duration(0, Hours, 0, 0, 0);
 
-command duration hours: (Hours is integer) =
-  new duration(self days, Hours, self minutes, self seconds, self milliseconds);
+/// Constructs a duration that represents the given number of minutes.
+command #duration minutes: Minutes =
+  new duration(0, 0, Minutes, 0, 0);
 
-command duration minutes: (Minutes is integer) =
-  new duration(self days, self hours, Minutes, self seconds, self milliseconds);
+/// Constructs a duration that represents the given number of seconds.
+command #duration seconds: Seconds =
+  new duration(0, 0, 0, Seconds, 0);
 
-command duration seconds: (Seconds is integer) =
-  new duration(self days, self hours, self minutes, Seconds, self milliseconds);
+/// Constructs a duration that represents the given number of milliseconds.
+command #duration milliseconds: Milliseconds =
+  new duration(0, 0, 0, 0, Milliseconds);
 
-command duration milliseconds: (Milliseconds is integer) =
-  new duration(self days, self hours, self minutes, self seconds, Milliseconds);
+/// Constructs a duration that represents the given number of days.
+command integer days =
+  #duration days: self;
 
-command integer days = #duration days: self;
-command integer hours = #duration hours: self;
-command integer minutes = #duration minutes: self;
-command integer seconds = #duration seconds: self;
-command integer milliseconds = #duration milliseconds: self;
-command integer day = #duration days: self;
-command integer hour = #duration hours: self;
-command integer minute = #duration minutes: self;
-command integer second = #duration seconds: self;
-command integer millisecond = #duration milliseconds: self;
+/// Constructs a duration that represents the 1 day (integer must be 1).
+command integer day
+requires one :: self === 1
+do
+  #duration days: self;
+end
 
+/// Constructs a duration that represents the given number of hours.
+command integer hours =
+  #duration hours: self;
+
+/// Constructs a duration that represents 1 hour (integer must be 1).
+command integer hour
+requires one :: self === 1
+do
+  #duration hours: self;
+end
+
+/// Constructs a duration that represents the given number of minutes.
+command integer minutes =
+  #duration minutes: self;
+
+/// Constructs a duration that represents 1 minute (integer must be 1).
+command integer minute
+requires one :: self === 1
+do
+  #duration minutes: self;
+end
+
+/// Constructs a duration that represents the given number of seconds.
+command integer seconds =
+  #duration seconds: self;
+
+/// Constructs a duration that represents 1 second (integer must be 1).
+command integer second
+requires one :: self === 1
+do
+  #duration seconds: self;
+end
+
+/// Constructs a duration that represents the given number of milliseconds.
+command integer milliseconds =
+  #duration milliseconds: self;
+
+/// Constructs a duration that represents 1 millisecond (integer must be 1).
+command integer millisecond
+requires one :: self === 1
+do
+  #duration milliseconds: self;
+end
+
+
+// -- Accessing components
+
+/// The exact number of days **stored** in the duration.
 command duration days = self.days;
+
+/// The exact number of hours **stored** in the duration.
 command duration hours = self.hours;
+
+/// The exact number of minutes **stored** in the duration.
 command duration minutes = self.minutes;
+
+/// The exact number of seconds **stored** in the duration.
 command duration seconds = self.seconds;
+
+/// The exact number of milliseconds **stored** in the duration.
 command duration milliseconds = self.milliseconds;
 
-command duration balanced do
+
+// -- Balancing
+
+/// Balances the duration, promoting smaller period portions upwards (up to
+/// the given unit) if the smaller values overflow.
+command duration balanced-to: (Unit is duration-unit) do
   let Millis = self milliseconds % 1000;
   let MillisC = self milliseconds divided-by: 1000;
 
@@ -59,9 +123,55 @@ command duration balanced do
 
   let Days = self days + HoursC;
 
-  new duration(Days, Hours, Minutes, Seconds, Millis);
+  condition
+    when Unit is du-days =>
+      new duration(Days, Hours, Minutes, Seconds, Millis);
+
+    when Unit is du-hours =>
+      new duration(0, Hours0 + (self days * 24), Minutes, Seconds, Millis);
+
+    when Unit is du-minutes =>
+      new duration(0, 0, Minutes0 + (self hours * 60) + (self days * 24 * 60), Seconds, Millis);
+
+    when Unit is du-seconds =>
+      new duration(0, 0, 0, Seconds0 + (self minutes * 60) + (self hours * 60 * 60) + (self days * 24 * 60 * 60), Millis);
+
+    when Unit is du-milliseconds =>
+      new duration(0, 0, 0, 0, self milliseconds +
+                               (self seconds * 1000) +
+                               (self minutes * 60 * 1000) +
+                               (self hours * 60 * 60 * 1000) +
+                               (self days * 24 * 60 * 60 * 1000));
+  end
 end
 
+/// Balances a duration up to its largest unit.
+command duration balanced do
+  self balanced-to: self largest-unit;
+end
+
+/// Returns the largest unit in the duration.
+command duration largest-unit -> duration-unit do
+  condition
+    when self days =/= 0 => du-days;
+    when self hours =/= 0 => du-hours;
+    when self minutes =/= 0 => du-minutes;
+    when self seconds =/= 0 => du-seconds;
+    otherwise => du-milliseconds;
+  end
+test
+  assert new duration(1, 1, 1, 1, 1) largest-unit === du-days;
+  assert new duration(0, 1, 1, 1, 1) largest-unit === du-hours;
+  assert new duration(0, 0, 1, 1, 1) largest-unit === du-minutes;
+  assert new duration(0, 0, 0, 1, 1) largest-unit === du-seconds;
+  assert new duration(0, 0, 0, 0, 1) largest-unit === du-milliseconds;
+  assert new duration(0, 0, 0, 0, 0) largest-unit === du-milliseconds;
+end
+
+// -- Arithmetic
+
+/// Adds two durations together. The resulting duration will be the sum
+/// of both periods of time.
 command duration + (That is duration) =
   new duration(
     self days + That days,
@@ -69,41 +179,48 @@ command duration + (That is duration) =
     self minutes + That minutes,
     self seconds + That seconds,
     self milliseconds + That milliseconds
-  );
+  )
+test
+  assert (3 days + 50 minutes) === new duration(3, 0, 50, 0, 0);
+  assert (3 days + 4 days) === new duration(7, 0, 0, 0, 0);
+end
 
-command duration - (That is duration)
-requires
-  smaller-subtractend :: self balanced >= That balanced
-=
-  new duration(
-    self days - That days,
-    self hours - That hours,
-    self minutes - That minutes,
-    self seconds - That seconds,
-    self milliseconds - That milliseconds
-  );
+// -- Comparisons
 
-
+/// True if two durations represent equivalent lengths of time. Note that
+/// this does not mean the same as durations having _equal components_.
 command duration === (That is duration) =
   self to-milliseconds === That to-milliseconds;
 
+/// True if two durations represent different lengths of time. Note that
+/// this does not mean the same as durations having _non-equal components_.
 command duration =/= (That is duration) =
   self to-milliseconds =/= That to-milliseconds;
 
+/// True if this duration represents a length of time that's collectively
+/// less than that of `That` duration.
 command duration < (That is duration) =
   self to-milliseconds < That to-milliseconds;
 
+/// True if this duration represents a length of time that's collectively
+/// less than or equal to that of `That` duration.
 command duration <= (That is duration) =
   self to-milliseconds <= That to-milliseconds;
 
+/// True if this duration represents a length of time that's collectively
+/// greater than that of `That` duration.
 command duration > (That is duration) =
   self to-milliseconds > That to-milliseconds;
 
+/// True if this duration represents a length of time that's collectively
+/// greater than or equal to that of `That` duration.
 command duration >= (That is duration) =
   self to-milliseconds >= That to-milliseconds;
 
+// -- Conversions
 
-command duration to-milliseconds do
+/// Converts a duration to milliseconds
+command duration to-milliseconds -> integer do
     (self.days * 24 * 60 * 60 * 1000)
   + (self.hours * 60 * 60 * 1000)
   + (self.minutes * 60 * 1000)
@@ -111,7 +228,8 @@ command duration to-milliseconds do
   + self.milliseconds;
 end
 
-command duration to-seconds do
+/// Converts a duration to seconds
+command duration to-seconds -> float do
     (self.days * 24 * 60 * 60)
   + (self.hours * 60 * 60)
   + (self.minutes * 60)
@@ -119,7 +237,8 @@ command duration to-seconds do
   + (self.milliseconds / 1000.0);
 end
 
-command duration to-minutes do
+/// Converts a duration to minutes
+command duration to-minutes -> float do
     (self.days * 24 * 60)
   + (self.hours * 60)
   + (self.minutes)
@@ -127,7 +246,8 @@ command duration to-minutes do
   + (self.milliseconds / (60.0 * 1000.0));
 end
 
-command duration to-hours do
+/// Converts a duration to hours
+command duration to-hours -> float do
     (self.days * 24)
   + (self.hours)
   + (self.minutes / 60.0)
@@ -135,58 +255,11 @@ command duration to-hours do
   + (self.milliseconds / (60.0 * 60.0 * 1000.0));
 end
 
-command duration to-days do
+/// Converts a duration to days
+command duration to-days -> float do
     (self.days)
   + (self.hours / 24.0)
   + (self.minutes / (24.0 * 60.0))
   + (self.seconds / (24.0 * 60.0 * 60.0))
   + (self.milliseconds / (24.0 * 60.0 * 60.0 * 1000.0));
-end
-
-
-command debug-representation of: (X is duration) do
-  let Days =
-    condition
-      when X days === 0 => debug-representation empty;
-      otherwise => debug-representation number: X days
-                     | append: " days";
-    end;
-
-  let Hours =
-    condition
-      when X hours === 0 => debug-representation empty;
-      otherwise => debug-representation number: X hours
-                     | append: " hours";
-    end;
-
-  let Minutes =
-    condition
-      when X minutes === 0 => debug-representation empty;
-      otherwise => debug-representation number: X minutes
-                     | append: " minutes";
-    end;
-
-  let Seconds =
-    condition
-      when X seconds === 0 => debug-representation empty;
-      otherwise => debug-representation number: X seconds
-                     | append: " seconds";
-    end;
-
-  let Millis =
-    condition
-      when X milliseconds === 0 => debug-representation empty;
-      otherwise => debug-representation number: X milliseconds
-                     | append: " milliseconds";
-    end;
-
-  let Representation = 
-    debug-representation
-      list: [Days, Hours, Minutes, Seconds, Millis]
-      separator: ", ";
-
-  Representation;  
-  debug-representation type: "duration"
-    | value: Representation
-    | finish;
 end

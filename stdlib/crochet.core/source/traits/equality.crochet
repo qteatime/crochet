@@ -3,3 +3,9 @@
 /// True if two values with an equality trait are not equal.
 command (Left has equality) =/= (Right has equality) =
   not (Left === Right);
+
+
+implement equality for nothing;
+
+/// True if two nothings are equal
+command nothing === nothing = true;

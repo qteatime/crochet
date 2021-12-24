@@ -2,4 +2,5 @@
 
 implement equality for regex-error;
 
-command regex-error === (That is regex-error) = self =:= That;
+/// True if two regex-matched-nothing errors are equal
+command regex-matched-nothing === (That is regex-matched-nothing) = self =:= That;
