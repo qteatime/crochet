@@ -42,20 +42,36 @@ export class ForeignInterface {
   }
 
   defun(name: string, fn: (...args: CrochetValue[]) => CrochetValue) {
-    this.#package.native_functions.define(
+    const result = this.#package.native_functions.define(
       name,
       new NativeFunction(NativeTag.NATIVE_SYNCHRONOUS, name, this.#package, fn)
     );
+    if (!result) {
+      throw this.panic(
+        "duplicate-entry",
+        `The foreign function ${name} is already defined in ${
+          this.#package.name
+        }`
+      );
+    }
   }
 
   defmachine(
     name: string,
     fn: (...args: CrochetValue[]) => Machine<CrochetValue>
   ) {
-    this.#package.native_functions.define(
+    const result = this.#package.native_functions.define(
       name,
       new NativeFunction(NativeTag.NATIVE_MACHINE, name, this.#package, fn)
     );
+    if (!result) {
+      throw this.panic(
+        "duplicate-entry",
+        `The foreign function ${name} is already defined in ${
+          this.#package.name
+        }`
+      );
+    }
   }
 
   // == Constructors
