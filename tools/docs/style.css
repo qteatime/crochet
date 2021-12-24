@@ -222,6 +222,13 @@ a:hover,
   border-bottom: 1px solid #ececea;
 }
 
+.crochet-md h5 {
+  margin-top: 1.5em;
+  margin-bottom: 0.3em;
+  font-family: "PT Sans Caption", sans-serif;
+  text-transform: uppercase;
+}
+
 .crochet-md code {
   margin: 0 0.1em;
   color: #484d5a;
