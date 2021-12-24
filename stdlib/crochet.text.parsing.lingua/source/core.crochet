@@ -1,16 +1,43 @@
 % crochet
 
+/// The Lingua module. Used as a static type due to old conventions.
 abstract lingua;
+
+/// Represents a Lingua grammar.
 type grammar(ohm-grammar);
+
+/// Represents the semantic actions for a Lingua grammar.
 type semantics(ohm-semantics);
+
+/// Represents the portion of the original input matched by Lingua rules.
+/// This **does** capture the original source code, so if you hold on to
+/// these types for particularly large inputs you might see your memory
+/// usage grow unreasonably.
 type interval(ohm-interval);
+
+/// Represents the position of an interval in the input, in terms of
+/// line and column numbers. Lines and columns start at 1.
+type interval-position(global line is integer, global column is integer);
+
+/// Represents the position of an interval in the input, in terms of 
+/// the UTF-16 offset—that is, the index of the UTF-16 code point in the
+/// UTF-16 code points sequence.
+///
+/// Both ends here are inclusive, and they start at 1.
+type interval-range(global start is integer, global stop is integer);
+
+/// The result of parsing some text with a Lingua grammar, before applying
+/// any semantics to it.
 type parse-tree(ohm-parse-tree);
+
+/// The root of the Lingua AST node hierarchy.
 abstract node;
 
-
+/// Constructs a Lingua grammar from a grammar definition source.
 command #lingua grammar: (Source is text)
   = new grammar(foreign lingua.make-grammar(Source));
 
+/// Uses the grammar to parse some input, starts from the given `Rule`.
 command grammar parse: (Source is text) rule: (Rule is text) do
   let Parse-tree = foreign lingua.parse(self.ohm-grammar, Source, Rule);
   let Succeeded = foreign lingua.succeeded(Parse-tree);
@@ -22,37 +49,64 @@ command grammar parse: (Source is text) rule: (Rule is text) do
   end
 end
 
+/// Creates a semantic operation for this grammar, given a record of visitors
+/// for each possible rule. Semantics are used to transform the [type:parse-tree] into
+/// something more usable by Crochet.
 command grammar semantics: (Visitor is record) =
   new semantics(foreign lingua.make-semantics(self.ohm-grammar, Visitor));
 
+/// Applies a semantic to a [type:parse-tree].
 command semantics transform: (Tree is parse-tree) =
   foreign lingua.apply-semantics(self.ohm-semantics, Tree.ohm-parse-tree);
 
 
+// -- Constructing visitors for the Lingua grammar
+
+/// Returns the input as-is
 command #lingua visitor-identity
   = foreign lingua.visitor-identity();
 
+/// Returns the matched piece of text as-is
 command #lingua visitor-source
   = foreign lingua.visitor-source();
 
+/// Returns the first matched pattern as-is
 command #lingua visitor-singleton
   = foreign lingua.visitor-singleton();
 
+/// Applies the given function to a rule's match.
 command #lingua visitor-lambda: (Lambda is function)
   = foreign lingua.visitor-lambda(Lambda);
 
 
+// -- The interval functions
+
+/// Constructs an [type:interval] type from an underlying parse tree node.
 command #lingua interval: Node
   = new interval(foreign lingua.interval(Node));
 
-command interval position
-  = foreign lingua.interval-position(self.ohm-interval);
+/// Returns the position of the start of the match as a line/column record.
+command interval position -> interval-position do
+  let Pos = foreign lingua.interval-position(self.ohm-interval);
+  new interval-position(Pos.line, Pos.column);
+end
 
-command interval range
-  = foreign lingua.interval-range(self.ohm-interval);
+/// Returns the starting and ending offset of the match as a start/stop record.
+/// In this case the offset refers to the index in the sequence of UTF-16
+/// codepoints.
+command interval range -> interval-range do
+  let Range = foreign lingua.interval-range(self.ohm-interval);
+  new interval-range(Range.start, Range.stop);
+end
 
-command interval source
+/// Returns the complete text that was matched for this interval. That is,
+/// the portion of the input from `range.start` until `range.stop`.
+command interval source -> text
   = foreign lingua.interval-source(self.ohm-interval);
 
-command interval annotated-source
+/// Returns the complete text that was matched for this interval, but
+/// annotated with the line numbers and the specific portion marked
+/// with ASCII-art. Suitable for outputting in the console, but not
+/// really suitable for much else.
+command interval annotated-source -> text
   = foreign lingua.interval-annotated-source(self.ohm-interval);
