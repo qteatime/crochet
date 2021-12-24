@@ -1129,11 +1129,21 @@ function md_to_html(text, data) {
       )
       .replace(/\[([^\]]+)\]/g, (_, x) => {
         const { tag, text, target } = parse_link(html_to_text(x));
-        return h(
-          "a.inner-link",
-          { "data-target": target, href: `#${tag}:${target}`, "data-tag": tag },
-          [h("code", {}, [text])]
-        ).outerHTML;
+        if (tag === "link") {
+          return h("a.external-link", { href: target, target: "_blank" }, [
+            text,
+          ]).outerHTML;
+        } else {
+          return h(
+            "a.inner-link",
+            {
+              "data-target": target,
+              href: `#${tag}:${target}`,
+              "data-tag": tag,
+            },
+            [h("code", {}, [text])]
+          ).outerHTML;
+        }
       })
       .replace(
         /\*\*(?=\w)([\w\-\s]+)(?<=\w)\*\*/g,

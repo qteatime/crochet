@@ -197,6 +197,15 @@ a:hover,
   white-space: normal;
 }
 
+.crochet-md .external-link::after {
+  content: "\f35d";
+  font-family: "Font Awesome 5 Free";
+  padding: 0em 0.2em;
+  font-size: 0.7em;
+  position: relative;
+  top: -0.3em;
+}
+
 .crochet-md p {
   margin-bottom: 1.5em;
 }

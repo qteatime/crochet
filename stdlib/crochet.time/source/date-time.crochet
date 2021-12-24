@@ -1,45 +1,209 @@
 % crochet
 
+local singleton module;
+
+// -- Converting
+
+/// Converts a [type:plain-date-time] to an [type:instant].
 command plain-date-time as instant =
   self.instant;
 
+// -- Constructing
 
-command plain-date-time year =
-  foreign date.year(self.instant.x);
+command module valid-day: Day month: Month year: Year =
+  foreign date.valid(Year, Month, Day);
 
-command plain-date-time month =
-  foreign date.month(self.instant.x);
+/// Constructs a [type:plain-date-time] from the date and time components.
+///
+/// Note that it uses JavaScript's `Date.UTC` underneath, which results in
+/// years between (0, 99) ending up "corrected" to "19xx". This is **not**
+/// the expected behaviour of this command, this is a bug.
+command #plain-date-time year: (Year is integer)
+                         month: (Month is integer)
+                         day: (Day is integer)
+                         hours: (Hours is integer)
+                         minutes: (Minutes is integer)
+                         seconds: (Seconds is integer)
+                         milliseconds: (Milliseconds is integer)
+requires
+  valid-month :: Month is-between: 1 and: 12,
+  valid-day :: module valid-day: Day month: Month year: Year,
+  valid-hours :: Hours is-between: 0 and: 24,
+  valid-minutes :: Minutes is-between: 0 and: 59,
+  valid-seconds :: Seconds is-between: 0 and: 59,
+  valid-milliseconds :: Milliseconds is-between: 0 and: 999
+do
+  let Date = foreign date.make(Year, Month, Day, Hours, Minutes, Seconds, Milliseconds);
+  new plain-date-time(new instant(Date));
+test
+  let Date = #plain-date-time year: 2021 month: 12 day: 24
+                              hours: 14 minutes: 15 seconds: 10 milliseconds: 150;
+  assert Date year === 2021;
+  assert Date month === 12;
+  assert Date day === 24;
+  assert Date hours === 14;
+  assert Date minutes === 15;
+  assert Date seconds === 10;
+  assert Date milliseconds === 150;
 
-command plain-date-time day =
-  foreign date.day(self.instant.x);
+  // Buggy behaviour
+  let Buggy-date = #plain-date-time year: 90 month: 1 day: 1 hours: 0 minutes: 0 seconds: 0 milliseconds: 0;
+  assert Buggy-date year === 1990;
+end
 
-command plain-date-time hours =
-  foreign date.hours(self.instant.x);
+/// Constructs a [type:plain-date-time] from the date components.
+command #plain-date-time year: Y month: M day: D =
+  #plain-date-time year: Y month: M day: D
+                   hours: 0 minutes: 0 seconds: 0 milliseconds: 0
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) ===
+         (#plain-date-time year: 2021 month: 12 day: 24 hours: 0 minutes: 0 seconds: 0 milliseconds: 0);
+end
 
-command plain-date-time minutes =
-  foreign date.minutes(self.instant.x);
+/// Constructs a [type:plain-date-time] from the date and time components.
+command #plain-date-time year: Y month: M day: D hours: Th minutes: Tm =
+  #plain-date-time year: Y month: M day: D
+                   hours: Th minutes: Tm seconds: 0 milliseconds: 0
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24 hours: 14 minutes: 15) ===
+         (#plain-date-time year: 2021 month: 12 day: 24 hours: 14 minutes: 15 seconds: 0 milliseconds: 0);
+end
 
-command plain-date-time seconds =
-  foreign date.seconds(self.instant.x);
+/// Constructs a [type:plain-date-time] from the date components.
+command #plain-date-time year: Y month: M day: D hours: Th minutes: Tm seconds: Ts =
+  #plain-date-time year: Y month: M day: D
+                   hours: Th minutes: Tm seconds: Ts milliseconds: 0
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24 hours: 14 minutes: 15 seconds: 10) ===
+         (#plain-date-time year: 2021 month: 12 day: 24 hours: 14 minutes: 15 seconds: 10 milliseconds: 0);
+end
 
-command plain-date-time milliseconds =
-  foreign date.milliseconds(self.instant.x);
+// -- Accessing components
 
+/// Returns the year portion of the date (non-abbreviated)
+command plain-date-time year -> integer =
+  foreign date.year(self.instant.x)
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) year === 2021;
+end
 
+/// Returns the month portion of the date (starting at 1).
+command plain-date-time month -> integer =
+  foreign date.month(self.instant.x)
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) month === 12;
+end
+
+/// Returns the day portion of the date (starting at 1).
+command plain-date-time day -> integer =
+  foreign date.day(self.instant.x)
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) day === 24;
+end
+
+/// Returns the hours portion of the time (24-hours format, starting at 0 for midnight).
+command plain-date-time hours -> integer =
+  foreign date.hours(self.instant.x)
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) hours === 0;
+  assert (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 0) hours === 10;
+  assert (#plain-date-time year: 2021 month: 12 day: 24 hours: 23 minutes: 0) hours === 23;
+end
+
+/// Returns the minutes portion of the time
+command plain-date-time minutes -> integer =
+  foreign date.minutes(self.instant.x)
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) minutes === 0;
+  assert (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 0 milliseconds: 0) minutes === 20;
+  assert (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20) minutes === 20;
+end
+
+/// Returns the seconds portion of the time
+command plain-date-time seconds -> integer =
+  foreign date.seconds(self.instant.x)
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) seconds === 0;
+  assert (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50) seconds === 50;
+end
+
+/// Returns the milliseconds portion of the time
+command plain-date-time milliseconds -> integer =
+  foreign date.milliseconds(self.instant.x)
+test
+  assert (#plain-date-time year: 2021 month: 12 day: 24) milliseconds === 0;
+  assert (#plain-date-time year: 2021 month: 12 day: 24
+                           hours: 10 minutes: 20 seconds: 50 milliseconds: 230) milliseconds === 230;
+end
+
+/// True if two plain date-times refer to the same instant
 command plain-date-time === (That is plain-date-time) =
-  (self as instant) === (That as instant);
+  (self as instant) === (That as instant)
+test
+  let D1 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D2 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D3 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 231);
+  assert D1 === D2;
+  assert not (D1 === D3);
+end
 
+/// True if two plain date-times do not refer to the same instant
 command plain-date-time =/= (That is plain-date-time) =
-  (self as instant) =/= (That as instant);
+  (self as instant) =/= (That as instant)
+test
+  let D1 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D2 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D3 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 231);
+  assert D1 =/= D3;
+  assert not (D1 =/= D2);
+end
 
+/// True if this date-time refers to an instant prior to `That` date-time.
 command plain-date-time < (That is plain-date-time) =
-  (self as instant) < (That as instant);
+  (self as instant) < (That as instant)
+test
+  let D1 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D2 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D3 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 231);
+  assert D1 < D3;
+  assert not (D1 < D2);
+end
 
+/// True if this date-time refers to an instant prior or equal to `That` date-time.
 command plain-date-time <= (That is plain-date-time) =
-  (self as instant) <= (That as instant);
+  (self as instant) <= (That as instant)
+test
+  let D1 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D2 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D3 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 231);
+  let D4 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 229);
+  assert D1 <= D3;
+  assert D1 <= D2;
+  assert not (D1 <= D4);
+end
 
+/// True if this date-time refers to an instant after `That` date-time.
 command plain-date-time > (That is plain-date-time) =
-  (self as instant) > (That as instant);
+  (self as instant) > (That as instant)
+test
+  let D1 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D2 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D3 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 231);
+  let D4 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 229);
+  assert D1 > D4;
+  assert D3 > D1;
+  assert not (D1 > D3);
+end
 
+/// True if this date-time refers to an instant after or equal `That` date-time.
 command plain-date-time >= (That is plain-date-time) =
-  (self as instant) >= (That as instant);
+  (self as instant) >= (That as instant)
+test
+  let D1 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D2 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 230);
+  let D3 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 231);
+  let D4 = (#plain-date-time year: 2021 month: 12 day: 24 hours: 10 minutes: 20 seconds: 50 milliseconds: 229);
+  assert D1 >= D4;
+  assert D1 >= D2;
+  assert not (D1 >= D3);
+end

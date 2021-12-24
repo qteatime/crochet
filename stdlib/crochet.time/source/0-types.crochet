@@ -1,5 +1,12 @@
 % crochet
 
+// -- The types
+
+/// Represents a specific period of time, like "3 days and 5 minutes".
+///
+/// Durations have no concept of calendars, so they cannot represent things
+/// like "3 months"---there's no calendar-agnostic idea of what "3 months"
+/// should mean.
 type duration(
   days is integer, 
   hours is integer, 
@@ -7,11 +14,44 @@ type duration(
   seconds is integer, 
   milliseconds is integer,
 );
-type instant(x); // x :: box<Date>
+
+/// Represents a fixed point in time, disregarding any concept of calendar,
+/// time-zone, and other cultural aspects. You can think of it as an
+/// "UTC timestamp", in a sense.
+type instant(x is unknown); // box<JSDate>
+
+/// Represents an instant as an UTC date-time in the Gregorian calendar.
+/// It has no concept of time-zones.
 type plain-date-time(instant is instant);
 
 
+/// A duration unit represents one of the units of a duration.
+enum duration-unit =
+  du-days,
+  du-hours,
+  du-minutes,
+  du-seconds,
+  du-milliseconds;
+
+// -- The capabilities
+
+/// Allows access to the system's wall clock. This has some data-privacy
+/// implications due to modern hardware bugs.
+///
+/// Having access to the system's clock might not sound like much, but
+/// it incidentally allows pieces of code to measure how much time
+/// things take with some accuracy, and this in turn may let malicious
+/// code observe aspects of the program that they shouldn't be able to.
+///
+/// Due to vulnerabilities like [link:https://spectreattack.com/ | Spectre],
+/// this may allow attackers to guess sensitive data from these measurements
+/// alone. So, care must be taken with who this capability is granted to.
 capability wall-clock;
+
+/// An interface to interact with the underlying system's wall-clock.
+/// This currently supports getting the current time as an instant.
 singleton wall-clock;
+
+
 protect type wall-clock with wall-clock;
 protect global wall-clock with wall-clock;

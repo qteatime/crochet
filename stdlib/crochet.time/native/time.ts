@@ -83,10 +83,6 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("date.minutes", (x) => {
-    return ffi.integer(BigInt(get_date(x).getUTCHours()));
-  });
-
-  ffi.defun("date.minutes", (x) => {
     return ffi.integer(BigInt(get_date(x).getUTCMinutes()));
   });
 
@@ -96,6 +92,30 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("date.milliseconds", (x) => {
     return ffi.integer(BigInt(get_date(x).getUTCMilliseconds()));
+  });
+
+  ffi.defun("date.make", (yy, mm, dd, h, m, s, ms) => {
+    return ffi.box(
+      new Date(
+        Date.UTC(
+          Number(ffi.integer_to_bigint(yy)),
+          Number(ffi.integer_to_bigint(mm)) - 1,
+          Number(ffi.integer_to_bigint(dd)),
+          Number(ffi.integer_to_bigint(h)),
+          Number(ffi.integer_to_bigint(m)),
+          Number(ffi.integer_to_bigint(s)),
+          Number(ffi.integer_to_bigint(ms))
+        )
+      )
+    );
+  });
+
+  ffi.defun("date.valid", (yy0, mm0, dd0) => {
+    const y = Number(ffi.integer_to_bigint(yy0));
+    const m = Number(ffi.integer_to_bigint(mm0)) - 1;
+    const d = Number(ffi.integer_to_bigint(dd0));
+    const date = new Date(Date.UTC(y, m, d));
+    return ffi.boolean(date.getUTCMonth() === m && date.getUTCDate() === d);
   });
 
   ffi.defun("clock.now", () => {

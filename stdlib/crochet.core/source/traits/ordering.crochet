@@ -72,3 +72,15 @@ test
   assert (2 clamp-between: 0 and: 2) =:= 2;
   assert (3 clamp-between: 0 and: 2) =:= 2;
 end
+
+/// True if `X` is in the range formed by `Min` to `Max` (inclusive on both ends).
+/// Pretty much `Min <= X <= Max`.
+command (X has total-ordering) is-between: (Min has total-ordering) and: (Max has total-ordering) do
+  (X >= Min) and (X <= Max);
+test
+  assert 0 is-between: 0 and: 10;
+  assert 1 is-between: 0 and: 10;
+  assert 10 is-between: 0 and: 10;
+  assert not (-1 is-between: 0 and: 10);
+  assert not (11 is-between: 0 and: 10);
+end
