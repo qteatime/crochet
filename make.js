@@ -111,7 +111,7 @@ w.task("build-targets", ["build"], () => {
   exec(`npm run build-targets`);
 }).with_doc("Packages JavaScript targets with webpack");
 
-w.task("build-browser", ["build"], () => {
+w.task("build-browser", ["build-grammar", "build-ts"], () => {
   exec(`npm run build-browser`);
 }).with_doc("Builds Crochet for the Browser target with browserify");
 
@@ -119,11 +119,9 @@ w.task("build-stdlib", [], () => {
   exec(`npm run build-stdlib`);
 }).with_doc("Compiles the TypeScript stdlib source to JavaScript");
 
-w.task(
-  "build",
-  ["build-grammar", "build-ts", "build-stdlib"],
-  () => {}
-).with_doc("Builds a complete Crochet system");
+w.task("build", ["build-browser", "build-stdlib"], () => {}).with_doc(
+  "Builds a complete Crochet system"
+);
 
 w.task("test", ["build", "run-tests"], () => {}).with_doc(
   "Builds Crochet and runs all tests"
