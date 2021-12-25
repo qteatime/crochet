@@ -136,7 +136,7 @@ w.task("benchmark", ["build"], () => {
   exec("node --expose-gc build/test/benchmarks/run.js");
 }).with_doc("Runs all Crochet benchmarks");
 
-w.task("launcher:build", ["build-browser"], () => {
+w.task("launcher:build", ["build"], () => {
   exec("npm install", { cwd: "tools/launcher" });
   exec("npm run build-server", { cwd: "tools/launcher" });
   exec("npm run build-app", { cwd: "tools/launcher" });
