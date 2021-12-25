@@ -4,34 +4,40 @@
 > of breaking changes here as I figure out what kind of language fits the
 > games I want to create, and how to generalise that.
 
-Crochet is a small engine for building, mainly, story and AI-driven simulations,
-particularly turn-based and text-based ones. This means that Crochet would work
-great for building Interactive Fiction games with AI-controlled NPCs, as well as
-Rogue-like games with a large amount of procedurally-generated content.
-
-The goal is to have Crochet eventually support building games that are less
-turn-based as well, such as The Sims-style games, but that's not currently
-feasible.
+Crochet is a tool designed for creating and remixing interactive media safely.
+It is best thought as targeting the domains of Interactive Fiction, Simulation
+Games, Software Verification, and Interactive/Live Language Tooling.
 
 ## Documentation
 
-There's not much documentation on Crochet currently (there will be more efforts
-towards this before the public release), but you can read:
+The documentation books on Crochet are a work in progress, you can find
+them in [the Crochet documentation website](https://crochet.qteati.me/docs/).
 
-- [An overview of Crochet](./docs/README.md)
-- [A technical overview of Crochet (for professional programmers)](./docs/technical-overview.md)
-- [The (tentative) project roadmap](https://crochet.qteati.me/roadmap/)
+Currently there's:
 
-## Running
+- A reference book, which discusses the concepts and design philosophy of Crochet;
+- A syntax cheatsheet, which just lists all syntactical forms with examples; and
+- A contribution book, which describes how to contribute to Crochet.
 
-For now, you can install Crochet from npm:
+## Installing Crochet
+
+For now, you can install Crochet from npm. You want the `@origamitower/crochet`
+package with the experimental flag:
 
 ```shell
-$ npm install @origamitower/crochet
+$ npm install @origamitower/crochet@experimental
 ```
 
-See `crochet --help` (or `./node_modules/.bin/crochet --help` if you've installed it locally)
-for usage information.
+You can also compile it from source:
+
+```shell
+$ git clone https://github.com/qteatime/crochet.git
+$ cd crochet
+$ npm install
+$ node make build
+```
+
+See `crochet --help` (or `./node_modules/.bin/crochet --help` if you've installed it locally) for usage information.
 
 ## REPL
 
@@ -56,28 +62,30 @@ declaration. Typing the rest of it, e.g.: `"hello";` will then allow the
 declaration to be executed. Entering an empty line by just pressing return
 will accept the partial declaration and present the parser error on the screen.
 
-## Building
+## API Reference
 
-Crochet is written in TypeScript, so you'll need Node installed. To build
-Crochet, run the following at the root of the repository:
-
-```shell
-$ npm install
-$ npm run build
-```
-
-To make sure you've got Crochet built correctly, you can run any of the
-examples in `examples/features`:
+You can get a reference documentation page on any package by using the
+`docs` command. E.g.:
 
 ```shell
-$ node crochet.js run examples/features/search.crochet
+$ crochet docs <path/to/crochet.core/crochet.json>
 ```
 
-Try also running some of the web games with:
+You'll be able to navigate through the documentation by accessing
+http://localhost:8080 in your browser.
 
+## Running packages
+
+You can run a Crochet package on the terminal by using the `run` command.
+E.g.:
+
+```shell
+$ crochet run <path/to/your/crochet.json> -- argument1 argument2
 ```
-$ node crochet.js run-web examples/web-games/cloak-of-darkness
-```
+
+Anything after `--` is passed as the invocation arguments as-is to your
+package. You must provide a command called `main: _`, where the only
+parameter will be this list of command line arguments.
 
 ## Licence
 
