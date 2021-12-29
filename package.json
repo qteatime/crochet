@@ -1,5 +1,5 @@
 {
-  "name": "@origamitower/crochet",
+  "name": "@qteatime/crochet",
   "version": "0.13.0",
   "bin": {
     "crochet": "crochet.js"

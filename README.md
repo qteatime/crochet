@@ -21,11 +21,11 @@ Currently there's:
 
 ## Installing Crochet
 
-For now, you can install Crochet from npm. You want the `@origamitower/crochet`
+For now, you can install Crochet from npm. You want the `@qteatime/crochet`
 package with the experimental flag:
 
 ```shell
-$ npm install @origamitower/crochet@experimental
+$ npm install @qteatime/crochet@experimental
 ```
 
 You can also compile it from source:

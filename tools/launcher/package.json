@@ -1,8 +1,9 @@
 {
-  "name": "@origamitower/crochet-launcher",
+  "name": "@qteatime/crochet-launcher",
   "version": "0.12.0",
   "description": "A small tool for managing Crochet projects",
   "author": "Q.",
+  "private": true,
   "main": "build/electron.js",
   "scripts": {
     "build-server": "tsc -p .",
