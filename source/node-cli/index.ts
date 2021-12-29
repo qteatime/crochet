@@ -509,7 +509,7 @@ void (async function main() {
         return await new_package(args, options);
       case "launcher:server": {
         const server = require("../../tools/launcher/build/launcher");
-        await server.start_servers({ ...options.launcher, port: 8080 });
+        await server.start_servers({ ...options.launcher, port: 8000 });
         break;
       }
       case "version": {
