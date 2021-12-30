@@ -30,7 +30,7 @@ command #document list: (Xs is list<document>) =
 /// Represents a table of values.
 command #document table-header: (Hs is list<document>) rows: (Rs is list<doc-table-row>)
 requires
-  consistent-layout :: Rs all-true: { R in R.cells count === Hs count }
+  consistent-layout :: Rs all: { R in R.cells count === Hs count }
 do
   new doc-table(Hs, Rs);
 end

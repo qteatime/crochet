@@ -501,6 +501,47 @@ export function to_plain_object(x: CrochetValue): unknown {
   }
 }
 
+export function to_plain_json_object(x: CrochetValue): unknown {
+  switch (x.tag) {
+    case Tag.NOTHING:
+      return null;
+
+    case Tag.INTEGER:
+      return x.payload;
+
+    case Tag.FLOAT_64:
+      return x.payload;
+
+    case Tag.TEXT:
+      return x.payload;
+
+    case Tag.TRUE:
+      return true;
+
+    case Tag.FALSE:
+      return false;
+
+    case Tag.LIST:
+      assert_tag(Tag.LIST, x);
+      return x.payload.map((x) => to_plain_json_object(x));
+
+    case Tag.RECORD: {
+      assert_tag(Tag.RECORD, x);
+      const result = Object.create(null);
+      for (const [k, v] of x.payload.entries()) {
+        result[k] = to_plain_json_object(v);
+      }
+      return result;
+    }
+
+    default:
+      throw new ErrArbitrary(
+        `no-conversion-to-native`,
+        `No conversion supported for values of type ${type_name(x.type)}`
+      );
+  }
+}
+
 export function from_plain_object(
   universe: Universe,
   x: unknown,

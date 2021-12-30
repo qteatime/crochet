@@ -28,7 +28,12 @@
     "source/ipc.crochet",
     "source/main.crochet"
   ],
-  "native_sources": ["native/dom.js", "native/api.js", "native/ipc.js"],
+  "native_sources": [
+    "native/dom.js",
+    "native/api.js",
+    "native/ipc.js",
+    "native/lens.js"
+  ],
   "dependencies": [
     "crochet.core",
     "crochet.language.json",

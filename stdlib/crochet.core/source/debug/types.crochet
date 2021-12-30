@@ -12,9 +12,7 @@
 singleton debug-representation;
 
 /// Used for serialisation. No powers are granted for external modules.
-singleton debug-serialisation;
-protect global debug-serialisation with internal;
-protect type debug-serialisation with internal;
+type debug-serialisation;
 
 // -- Perspectives
 
@@ -29,7 +27,8 @@ abstract perspective;
 /// The default perspective. Whenever one isn't specified, this will
 /// be used to represent the value. Generally the "most commonly useful"
 /// view of it.
-singleton default-perspective;
+type default-perspective is perspective;
+define default-perspective = new default-perspective;
 
 /// The minimal amount of commands that a perspective needs to provide
 /// for all of Crochet's debugging tools to work properly.
@@ -82,7 +81,7 @@ type doc-text(value is unsafe-arbitrary-text) is document;
 type doc-boolean(value is boolean) is document;
 
 /// A piece of text with no semantics.
-type doc-plain-text(name is text) is document;
+type doc-plain-text(value is text) is document;
 
 /// A list of values.
 type doc-list(items is list<document>) is document;

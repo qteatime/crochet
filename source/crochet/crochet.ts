@@ -5,7 +5,15 @@ import * as VM from "../vm";
 import * as Binary from "../binary";
 import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
-import { CrochetValue, Environment, CrochetTrace, ErrArbitrary } from "../vm";
+import {
+  CrochetValue,
+  Environment,
+  CrochetTrace,
+  ErrArbitrary,
+  debug_perspectives,
+  CrochetType,
+  debug_representations,
+} from "../vm";
 import * as UUID from "uuid";
 
 export type TestReportMessage =
@@ -331,5 +339,16 @@ export class BootedCrochet {
 
   async invoke(name: string, args: CrochetValue[]) {
     return await VM.run_command(this.universe, name, args);
+  }
+
+  async debug_perspectives(value: CrochetValue) {
+    return debug_perspectives(this.universe, value);
+  }
+
+  async debug_representations(
+    value: CrochetValue,
+    perspectives: CrochetType[]
+  ) {
+    return debug_representations(this.universe, value, perspectives);
   }
 }

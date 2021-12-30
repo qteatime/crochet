@@ -6,6 +6,11 @@ command #value-lens parse-plain: (Lens is record) do
   condition
     when Lens.tag === "RAW" =>
       new vl-raw(Lens.code);
+    
+    when Lens.tag === "PERSPECTIVES" =>
+      new vl-perspectives(Lens.perspectives map: { R in
+        new vlp-representation(R.name, R.document)
+      });
   end
 end
 
@@ -20,6 +25,19 @@ command vl-raw as widget do
   ];
 end
 
+command vl-perspectives as widget do
+  w tabbed-panel: (
+    self.perspectives map: (_ as widget)
+  );
+end
+
 command vl-nothing as widget do
   w fragment: [];
+end
+
+implement to-widget for vlp-representation;
+command vlp-representation as widget do
+  w
+    | tab: self.name
+    | with: [new w-committed(new dom-node(foreign lens.render(self.document)))]
 end

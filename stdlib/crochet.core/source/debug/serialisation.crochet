@@ -9,7 +9,7 @@ command debug-serialisation for: doc-empty =
 command debug-serialisation for: (X is doc-number) =
   [
     tag -> "number",
-    value -> X.value,
+    value -> X.value to-text,
   ];
 
 command debug-serialisation for: (X is doc-text) =
@@ -22,7 +22,7 @@ command debug-serialisation for: (X is doc-text) =
 command debug-serialisation for: (X is doc-boolean) =
   [
     tag -> "boolean",
-    value -> X.value,
+    value -> X.value to,
   ];
 
 command debug-serialisation for: (X is doc-plain-text) =
@@ -78,7 +78,7 @@ command debug-serialisation for: (X is doc-fixed-layout) =
 command debug-serialisation for: (X is doc-position) =
   [
     tag -> "position",
-    items -> X.items map: (self for: _),
+    content -> self for: X.content,
     position -> self for: X.position,
     anchor -> self for: X.position,
   ];

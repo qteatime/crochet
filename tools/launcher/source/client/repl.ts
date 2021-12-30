@@ -57,10 +57,19 @@ export class ReplStatements extends ReplExpr {
       }
     }
 
+    const perspectives = await process.vm.system.debug_perspectives(value);
+    const representations = await process.vm.system.debug_representations(
+      value,
+      perspectives
+    );
+
     client.post_message("playground/success", {
       value: {
-        tag: "RAW",
-        code: VM.Location.simple_value(value),
+        tag: "PERSPECTIVES",
+        perspectives: representations.map((x) => ({
+          name: x.name,
+          document: JSON.stringify(x.document),
+        })),
       },
     });
   }
