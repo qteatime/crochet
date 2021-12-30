@@ -245,7 +245,16 @@ export function make_universe() {
   const List = new CrochetType(null, "list", "", Any, [], [], false, null);
   const Enum = new CrochetType(null, "enum", "", Any, [], [], false, null);
   const Cell = new CrochetType(null, "cell", "", Any, [], [], false, null);
-  const Type = new CrochetType(null, "type", "", Any, [], [], false, null);
+  const Type = new CrochetType(
+    null,
+    "static-type",
+    "",
+    Any,
+    [],
+    [],
+    false,
+    null
+  );
   const Effect = new CrochetType(null, "effect", "", null, [], [], false, null);
 
   // Simulations
@@ -345,6 +354,7 @@ export function make_universe() {
     null
   );
 
+  world.native_types.define("crochet.core/core.static-type", Type);
   world.native_types.define("crochet.core/core.any", Any);
   world.native_types.define("crochet.core/core.protected", Protected);
   world.native_types.define("crochet.core/core.unknown", Unknown);

@@ -22,6 +22,7 @@ import {
   run_native,
   run_native_sync,
   Tag,
+  Types,
   Universe,
   Values,
 } from "../vm";
@@ -268,6 +269,28 @@ export class ForeignInterface {
   // == Reflection
   type_name(x: CrochetValue) {
     return Location.type_name(x.type);
+  }
+
+  get_static_type(x: CrochetValue) {
+    return Values.make_static_type(
+      this.#universe,
+      Types.get_static_type(this.#universe, x.type)
+    );
+  }
+
+  get_type_info(x: CrochetValue) {
+    if (x.tag === Tag.TYPE) {
+      Values.assert_tag(Tag.TYPE, x);
+      const type = x.payload;
+      return this.record(
+        new Map([
+          ["name", this.text(type.name)],
+          ["package", this.text(type.module?.pkg.name ?? "crochet.core")],
+        ])
+      );
+    } else {
+      throw this.panic("invalid-type", "Expected a static-type");
+    }
   }
 
   to_debug_string(x: CrochetValue) {

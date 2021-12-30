@@ -72,7 +72,6 @@ The language is as follows:
     text(value: text)         -- any text
     boolean(value: boolean)   -- any boolean
 
-    keyword(name: text)       -- highlighted text with no semantics
     plain-text(content: text) -- text with no semantics
 
     lazy(description: text, pointer: external-capability)
@@ -86,10 +85,15 @@ The language is as follows:
 
     fixed(width: integer, height: integer, content: document)
     positioned(position: point2d, anchor: point2d, content: document)
-    padding(top, left, bottom, right)
-    border(top, left, bottom, right)
 
     circle, triangle, square, line, polygon   (svg shapes)
+
+> **NOTE:**
+>
+> Future versions of document _will_ include interactivity, but that needs
+> a more well thought-out language because it brings in more threats.
+> Interactivity is the base of allowing user-defined debugging tools for
+> their own types, however.
 
 Documents can be safely serialised as JSON to send to different processes.
 The only constructor that needs a longer explanation is `lazy`. This is

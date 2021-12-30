@@ -1,0 +1,79 @@
+% crochet
+
+/// Represents nothing
+command #document empty =
+  doc-empty;
+
+/// Represents any number
+command #document number: (X is numeric) =
+  new doc-number(X)
+    | typed: (foreign debug.type(X));
+
+/// Represents any crochet text (and _highlights_ that it is a Crochet text,
+/// e.g.: by having quotes around it).
+command #document crochet-text: (X is unsafe-arbitrary-text) =
+  new doc-text(X);
+
+/// Represents any boolean.
+command #document boolean: (X is boolean) =
+  new doc-boolean(X);
+
+
+/// Represents a piece of text with no semantics.
+command #document plain-text: (X is text) =
+  new doc-plain-text(X);
+
+/// Represents a list of values.
+command #document list: (Xs is list<document>) =
+  new doc-list(Xs);
+
+/// Represents a table of values.
+command #document table-header: (Hs is list<document>) rows: (Rs is list<doc-table-row>)
+requires
+  consistent-layout :: Rs all-true: { R in R.cells count === Hs count }
+do
+  new doc-table(Hs, Rs);
+end
+
+/// Represents a row in a table.
+command #document table-row: (Cells is list<document>) =
+  new doc-table-row(Cells);
+
+/// Lays items with flow layouting.
+command #document flow: (Xs is list<document>) =
+  new doc-flow(Xs);
+
+/// Lays items with a flex row.
+command #document flex-row: (Xs is list<document>) =
+  new doc-flex-row(Xs, doc-unit-unset);
+
+/// Lays items with a flex column.
+command #document flex-column: (Xs is list<document>) =
+  new doc-flex-column(Xs, doc-unit-unset);
+
+/// Lays items with a fixed layout.
+command #document fixed-layout: (Xs is list<document>) width: (W is doc-unit) height: (H is doc-unit) =
+  new doc-fixed-layout(Xs, W, H);
+
+/// Constructs a table from a record of fields.
+command #document fields: (R is record) do
+  let Rows = R pairs
+               | map: { P in #document table-row: [#document plain-text: P key, P value] };
+  #document
+    | table-header: [#document plain-text: "Field", #document plain-text: "Value"]
+      rows: Rows;
+end
+
+/// Represents a typed value.
+command document typed: (Type is static-type) =
+  new doc-typed(self, Type);
+
+
+/// Positions a document in a fixed layout.
+command document x: (X is doc-unit) y: (Y is doc-unit) =
+  self position: new doc-point2d(X, Y)
+       anchor: new doc-point2d(doc-unit-unset, doc-unit-unset);
+
+/// Positions a document in a fixed layout.
+command document position: (Pos is doc-point2d) anchor: (Anchor is doc-point2d) =
+  new doc-position(self, Pos, Anchor);
