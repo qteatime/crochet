@@ -136,7 +136,7 @@ end
 command debug-serialisation for: (X is doc-polygon) do
   [
     tag -> "polygon",
-    points -> (self.points map: (self for: _)),
+    points -> (X.points map: (self for: _)),
     presentation -> self for: X.presentation,
   ];
 end
@@ -144,7 +144,7 @@ end
 command debug-serialisation for: (X is doc-polyline) do
   [
     tag -> "polyline",
-    points -> (self.points map: (self for: _)),
+    points -> (X.points map: (self for: _)),
     presentation -> self for: X.presentation,
   ];
 end

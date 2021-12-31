@@ -382,12 +382,12 @@ export default (ffi: ForeignInterface) => {
           const svg = make_svg();
           const points = (data.points as any[])
             .map(compile_point2d)
-            .map((p) => (p == null ? null : `${p.x}, ${p.y}`))
+            .map((p) => (p == null ? null : `${p.x},${p.y}`))
             .filter((x) => x != null);
           const polygon = h(
             "polygon",
             {
-              points: points.join(", "),
+              points: points.join(" "),
               ...svg_presentation(compile_presentation(data.presentation)),
             },
             [],
@@ -401,12 +401,12 @@ export default (ffi: ForeignInterface) => {
           const svg = make_svg();
           const points = (data.points as any[])
             .map(compile_point2d)
-            .map((p) => (p == null ? null : `${p.x}, ${p.y}`))
+            .map((p) => (p == null ? null : `${p.x},${p.y}`))
             .filter((x) => x != null);
           const polygon = h(
             "polyline",
             {
-              points: points.join(", "),
+              points: points.join(" "),
               ...svg_presentation(compile_presentation(data.presentation)),
             },
             [],
