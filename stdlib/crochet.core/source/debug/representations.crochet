@@ -31,17 +31,26 @@ command debug-representation for: (X is record) perspective: default-perspective
   #document
     | table-header: [#document plain-text: "Key", #document plain-text: "Value"]
       rows: Rows
-    | typed: #record;
+    | typed: #record
+    | compact-layout: (
+        #document plain-text: "(record with [Rows count to-text] keys)"
+      );
 end
 
 command debug-representation for: (X is list) perspective: default-perspective do
   #document list: (X map: (self for: _ perspective: default-perspective))
-    | typed: #list;
+    | typed: #list
+    | compact-layout: (
+        #document plain-text: "(list with [X count to-text] elements)"
+      );
 end
 
 command debug-representation for: (X is set) perspective: default-perspective do
   #document list: (X map: (self for: _ perspective: default-perspective))
-    | typed: #set;
+    | typed: #set
+    | compact-layout: (
+        #document plain-text: "(set with [X count to-text] elements)"
+      );
 end
 
 command debug-representation for: (X is map) perspective: default-perspective do
@@ -54,7 +63,10 @@ command debug-representation for: (X is map) perspective: default-perspective do
   #document
     | table-header: [#document plain-text: "Key", #document plain-text: "Value"]
       rows: Rows
-    | typed: #map;
+    | typed: #map
+    | compact-layout: (
+        #document plain-text: "(map with [Rows count to-text] pairs)"
+      );
 end
 
 command debug-representation for: (X is ok) perspective: default-perspective do

@@ -84,6 +84,8 @@ The language is as follows:
     fixed(width: integer, height: integer, content: document)
     positioned(position: point2d, anchor: point2d, content: document)
 
+    group(collapsed: document, expanded: document)
+
     circle, triangle, square, line, polygon   (svg shapes)
 
 > **NOTE:**
@@ -92,6 +94,15 @@ The language is as follows:
 > a more well thought-out language because it brings in more threats.
 > Interactivity is the base of allowing user-defined debugging tools for
 > their own types, however.
+
+The `group` layout is used in a similar fashion to Wadler's idea of layout
+unions in the [A Prettier Printer](https://homepages.inf.ed.ac.uk/wadler/papers/prettier/prettier.pdf)
+paper, but in a slightly simpler and more restricted fashion. One can
+provide a collapsed and an expanded representation, which the renderer
+then decides on based on the current rendering context. This is intended
+as a temporary layout document that should be replaced by a more generic
+one based on goals and constraints in the future---since documents are
+not yet intended to be stored, the risk of doing this is small.
 
 Documents can be safely serialised as JSON to send to different processes,
 and this is an _explicit goal_ of this document language. You should be able

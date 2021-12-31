@@ -23,6 +23,9 @@ command #document boolean: (X is boolean) =
 command #document plain-text: (X is text) =
   new doc-plain-text(X);
 
+command #document plain-text: (X is interpolation) =
+  #document plain-text: (X flatten-into-plain-text);
+
 /// Represents a list of values.
 command #document list: (Xs is list<document>) =
   new doc-list(Xs);
@@ -61,7 +64,10 @@ command #document fields: (R is record) do
                | map: { P in #document table-row: [#document plain-text: P key, P value] };
   #document
     | table-header: [#document plain-text: "Field", #document plain-text: "Value"]
-      rows: Rows;
+      rows: Rows
+    | compact-layout: (
+        #document plain-text: "([Rows count to-text] fields)"
+      );
 end
 
 /// Represents a typed value.
@@ -77,3 +83,11 @@ command document x: (X is doc-unit) y: (Y is doc-unit) =
 /// Positions a document in a fixed layout.
 command document position: (Pos is doc-point2d) anchor: (Anchor is doc-point2d) =
   new doc-position(self, Pos, Anchor);
+
+/// Provides a compact layout alternative.
+command document compact-layout: (Doc is document) =
+  new doc-group(Doc, self);
+
+/// Provides an expanded layout alternative.
+command document expanded-layout: (Doc is document) =
+  new doc-group(self, Doc);

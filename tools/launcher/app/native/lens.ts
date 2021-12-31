@@ -16,7 +16,7 @@ export default (ffi: ForeignInterface) => {
     return element;
   }
 
-  function render(data: any): HTMLElement {
+  function render(data: any, compact = false): HTMLElement {
     if (data == null) {
       return h("div", { class: "value-lens-nothing" }, []);
     } else {
@@ -46,7 +46,7 @@ export default (ffi: ForeignInterface) => {
           return h(
             "div",
             { class: "value-lens-list" },
-            data.items.map((x: any) => render(x))
+            data.items.map((x: any) => render(x, true))
           );
 
         case "table":
@@ -54,14 +54,16 @@ export default (ffi: ForeignInterface) => {
             h(
               "div",
               { class: "value-lens-table-header" },
-              data.header.map((x: any) => render(x))
+              data.header.map((x: any) => render(x, true))
             ),
             ...data.rows.map((x: any) =>
               h(
                 "div",
                 { class: "value-lens-table-row" },
                 x.map((y: any) =>
-                  h("div", { class: "value-lens-table-cell" }, [render(y)])
+                  h("div", { class: "value-lens-table-cell" }, [
+                    render(y, true),
+                  ])
                 )
               )
             ),
@@ -71,33 +73,33 @@ export default (ffi: ForeignInterface) => {
           return h(
             "div",
             { class: "value-lens-flow" },
-            data.items.map((x: any) => render(x))
+            data.items.map((x: any) => render(x, compact))
           );
 
         case "flex-row":
           return h(
             "div",
             { class: "value-lens-flex-row" },
-            data.items.map((x: any) => render(x))
+            data.items.map((x: any) => render(x, compact))
           );
 
         case "flex-column":
           return h(
             "div",
             { class: "value-lens-flex-column" },
-            data.items.map((x: any) => render(x))
+            data.items.map((x: any) => render(x, compact))
           );
 
         case "fixed-layout":
           return h(
             "div",
             { class: "value-lens-fixed-layout" },
-            data.items.map((x: any) => render(x))
+            data.items.map((x: any) => render(x, compact))
           );
 
         case "position":
           return h("div", { class: "value-lens-position" }, [
-            render(data.content),
+            render(data.content, compact),
           ]);
 
         case "typed":
@@ -111,9 +113,40 @@ export default (ffi: ForeignInterface) => {
               ]),
             ]),
             h("div", { class: "value-lens-typed-value" }, [
-              render(data.content),
+              render(data.content, compact),
             ]),
           ]);
+
+        case "group": {
+          let state = compact;
+          const button = h("div", { class: "value-lens-group-button" }, [
+            h("i", { class: "fas fa-plus" }, []),
+          ]);
+          const element = h(
+            "div",
+            { class: "value-lens-group", "data-compact": String(state) },
+            [
+              button,
+              h("div", { class: "value-lens-group-contents" }, [
+                h("div", { class: "value-lens-group-compact" }, [
+                  render(data.compact),
+                ]),
+                h("div", { class: "value-lens-group-expanded" }, [
+                  render(data.expanded),
+                ]),
+              ]),
+            ]
+          );
+          button.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            state = !state;
+            const icon = state ? "fa-plus" : "fa-minus";
+            element.setAttribute("data-compact", String(state));
+            button.querySelector("i")!.className = `fas ${icon}`;
+          });
+          return element;
+        }
 
         default:
           return h("div", { class: "value-lens-unknown" }, [

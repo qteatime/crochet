@@ -93,6 +93,14 @@ command debug-serialisation for: (X is doc-typed) do
   ];
 end
 
+command debug-serialisation for: (X is doc-group) do
+  [
+    tag -> "group",
+    compact -> self for: X.compact,
+    expanded -> self for: X.expanded,
+  ];
+end
+
 
 // -- Units
 command debug-serialisation for: (X is doc-point2d) =

@@ -109,3 +109,7 @@ type doc-position(content is document, position is doc-point2d, anchor is doc-po
 
 /// Marks a document as belonging to a specific type
 type doc-typed(content is document, crochet-type is static-type) is document;
+
+/// Allows the renderer to choose between a compact and expanded representation
+/// depending on its rendering context, amount of space available, etc.
+type doc-group(compact is document, expanded is document) is document;
