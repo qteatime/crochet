@@ -44,6 +44,30 @@ export default (ffi: ForeignInterface) => {
     return element;
   }
 
+  function fix_svg_box(svg: SVGSVGElement) {
+    const measure = h(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          top: "-1000px",
+          height: "-1000px",
+          width: "1px",
+          overflow: "hidden",
+          visibility: "hidden",
+        },
+      },
+      []
+    );
+    document.body.append(measure);
+    measure.append(svg);
+    const bounds = svg.getBBox();
+    svg.setAttribute("width", `${bounds.width}px`);
+    svg.setAttribute("height", `${bounds.height}px`);
+    measure.remove();
+    return svg;
+  }
+
   function compile_point2d(data: any) {
     if (data.tag !== "point-2d") {
       throw ffi.panic("invalid-type", `Expected point2d`);
@@ -89,7 +113,9 @@ export default (ffi: ForeignInterface) => {
     } else {
       switch (data.tag) {
         case "rgba":
-          return `rgba(${data.red}, ${data.green}, ${data.blue}, ${data.alpha})`;
+          return `rgba(${data.red}, ${data.green}, ${data.blue}, ${
+            data.alpha / 255
+          })`;
         default:
           throw ffi.panic("invalid-type", `Unknown colour tag ${data.tag}`);
       }
@@ -97,7 +123,7 @@ export default (ffi: ForeignInterface) => {
   }
 
   function compile_unit(data: any) {
-    if (data.unit == null) {
+    if (data == null) {
       return null;
     }
 
@@ -289,7 +315,7 @@ export default (ffi: ForeignInterface) => {
             svgNS
           );
           svg.append(circle);
-          return svg;
+          return fix_svg_box(svg);
         }
 
         case "rectangle": {
@@ -308,7 +334,7 @@ export default (ffi: ForeignInterface) => {
             svgNS
           );
           svg.append(rect);
-          return svg;
+          return fix_svg_box(svg);
         }
 
         default:
