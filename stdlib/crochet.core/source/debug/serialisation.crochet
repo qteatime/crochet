@@ -1,0 +1,220 @@
+% crochet
+
+/// Serialises a document to a JSON-friendly format.
+command debug-serialisation for: doc-empty =
+  [
+    tag -> "empty"
+  ];
+
+command debug-serialisation for: (X is doc-number) =
+  [
+    tag -> "number",
+    value -> X.value to-text,
+  ];
+
+command debug-serialisation for: (X is doc-text) =
+  [
+    tag -> "text",
+    value -> X.value,
+    untrusted -> X.value is untrusted-text,
+  ];
+
+command debug-serialisation for: (X is doc-boolean) =
+  [
+    tag -> "boolean",
+    value -> X.value to,
+  ];
+
+command debug-serialisation for: (X is doc-plain-text) =
+  [
+    tag -> "plain-text",
+    value -> X.value,
+  ];
+
+command debug-serialisation for: (X is doc-code) =
+  [
+    tag -> "code",
+    value -> X.value,
+  ];
+
+command debug-serialisation for: (X is doc-list) =
+  [
+    tag -> "list",
+    items -> X.items map: (self for: _),
+  ];
+
+command debug-serialisation for: (X is doc-table) =
+  [
+    tag -> "table",
+    header -> X.header map: (self for: _),
+    rows -> X.rows map: (self for: _),
+  ];
+
+command debug-serialisation for: (X is doc-table-row) =
+  X.cells map: (self for: _);
+
+command debug-serialisation for: (X is doc-flow) =
+  [
+    tag -> "flow",
+    items -> X.items map: (self for: _),
+  ];
+
+command debug-serialisation for: (X is doc-flex-row) =
+  [
+    tag -> "flex-row",
+    items -> X.items map: (self for: _),
+    gap -> self for: X.gap,
+  ];
+
+command debug-serialisation for: (X is doc-flex-column) =
+  [
+    tag -> "flex-column",
+    items -> X.items map: (self for: _),
+    gap -> self for: X.gap,
+  ];
+
+command debug-serialisation for: (X is doc-fixed-layout) =
+  [
+    tag -> "fixed-layout",
+    items -> X.items map: (self for: _),
+    width -> self for: X.width,
+    height -> self for: X.height,
+  ];
+
+command debug-serialisation for: (X is doc-position) =
+  [
+    tag -> "position",
+    content -> self for: X.content,
+    position -> self for: X.position
+  ];
+
+command debug-serialisation for: (X is doc-typed) do
+  let Info = foreign debug.type-info(X.crochet-type);
+  [
+    tag -> "typed",
+    content -> self for: X.content,
+    type-name -> Info.name,
+    package-name -> Info.package,
+  ];
+end
+
+command debug-serialisation for: (X is doc-group) do
+  [
+    tag -> "group",
+    compact -> self for: X.compact,
+    expanded -> self for: X.expanded,
+  ];
+end
+
+command debug-serialisation for: (X is doc-circle) do
+  [
+    tag -> "circle",
+    center -> self for: X.center,
+    radius -> self for: X.radius,
+    presentation -> self for: X.presentation,
+  ];
+end
+
+command debug-serialisation for: (X is doc-ellipse) do
+  [
+    tag -> "ellipse",
+    center -> self for: X.center,
+    radius -> self for: X.radius,
+    presentation -> self for: X.presentation,
+  ];
+end
+
+command debug-serialisation for: (X is doc-line) do
+  [
+    tag -> "line",
+    from -> self for: X.from,
+    to -> self for: X.to,
+    presentation -> self for: X.presentation,
+  ];
+end
+
+command debug-serialisation for: (X is doc-polygon) do
+  [
+    tag -> "polygon",
+    points -> (X.points map: (self for: _)),
+    presentation -> self for: X.presentation,
+  ];
+end
+
+command debug-serialisation for: (X is doc-polyline) do
+  [
+    tag -> "polyline",
+    points -> (X.points map: (self for: _)),
+    presentation -> self for: X.presentation,
+  ];
+end
+
+command debug-serialisation for: (X is doc-rectangle) do
+  [
+    tag -> "rectangle",
+    origin -> self for: X.origin,
+    size -> self for: X.size,
+    roundness -> self for: X.roundness,
+    presentation -> self for: X.presentation,
+  ]
+end
+
+// -- Units
+command debug-serialisation for: (X is doc-point2d) =
+  [
+    tag -> "point-2d",
+    x -> self for: X.x,
+    y -> self for: X.y,
+  ];
+
+command debug-serialisation for: (X is doc-dimension) =
+  [
+    tag -> "dimension",
+    width -> self for: X.width,
+    height -> self for: X.height
+  ];
+
+command debug-serialisation for: (X is doc-em) =
+  [
+    unit -> "em",
+    value -> X.value,
+  ];
+
+command debug-serialisation for: (X is doc-percent) =
+  [
+    unit -> "percent",
+    value -> X.value,
+  ];
+
+command debug-serialisation for: (X is doc-pixels) =
+  [
+    unit -> "pixel",
+    value -> X.value as float,
+  ];
+
+command debug-serialisation for: doc-unit-unset =
+  nothing;
+
+
+// -- Presentation
+command debug-serialisation for: (X is doc-presentation) =
+  [
+    tag -> "presentation",
+    stroke-colour -> self for: X.stroke-colour,
+    stroke-width -> self for: X.stroke-width,
+    fill-colour -> self for: X.fill-colour,
+  ];
+
+
+// -- Colours
+command debug-serialisation for: doc-colour-transparent =
+  nothing;
+
+command debug-serialisation for: (X is doc-colour-rgba) =
+  [
+    tag -> "rgba",
+    red -> X.red as float,
+    green -> X.green as float,
+    blue -> X.blue as float,
+    alpha -> X.alpha as float,
+  ];

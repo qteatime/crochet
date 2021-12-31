@@ -1,0 +1,139 @@
+% crochet
+
+/// Default debug representation.
+command debug-representation for: X =
+  self for: X perspective: default-perspective;
+
+/// Default debug representation.
+command debug-representation for: X perspective: default-perspective =
+  #document empty typed: (foreign debug.type(X));
+
+command debug-representation for: (X is document) perspective: default-perspective =
+  X;
+
+command debug-representation for: (X is boolean) perspective: default-perspective =
+  #document boolean: X;
+
+command debug-representation for: (X is numeric) perspective: default-perspective =
+  #document number: X;
+
+command debug-representation for: (X is unsafe-arbitrary-text) perspective: default-perspective =
+  #document crochet-text: X;
+
+command debug-representation for: (X is interpolation) perspective: default-perspective =
+  #document flow: (X parts map: (self for: _ perspective: default-perspective))
+    | typed: #interpolation;
+
+command debug-representation for: (X is record) perspective: default-perspective do
+  let Rows = X pairs
+              | map: { P in #document table-row: [
+                              self for: P key perspective: default-perspective,
+                              self for: P value perspective: default-perspective,
+                            ]
+                     };
+  #document
+    | table-header: [#document plain-text: "Key", #document plain-text: "Value"]
+      rows: Rows
+    | typed: #record
+    | compact-layout: (
+        #document plain-text: "(record with [Rows count to-text] keys)"
+      );
+end
+
+command debug-representation for: (X is list) perspective: default-perspective do
+  #document list: (X map: (self for: _ perspective: default-perspective))
+    | typed: #list
+    | compact-layout: (
+        #document plain-text: "(list with [X count to-text] elements)"
+      );
+end
+
+command debug-representation for: (X is set) perspective: default-perspective do
+  #document list: (X map: (self for: _ perspective: default-perspective))
+    | typed: #set
+    | compact-layout: (
+        #document plain-text: "(set with [X count to-text] elements)"
+      );
+end
+
+command debug-representation for: (X is map) perspective: default-perspective do
+  let Rows = X pairs
+              | map: { P in #document table-row: [
+                              self for: P key perspective: default-perspective,
+                              self for: P value perspective: default-perspective,
+                            ]
+                     };
+  #document
+    | table-header: [#document plain-text: "Key", #document plain-text: "Value"]
+      rows: Rows
+    | typed: #map
+    | compact-layout: (
+        #document plain-text: "(map with [Rows count to-text] pairs)"
+      );
+end
+
+command debug-representation for: (X is ok) perspective: default-perspective do
+  self for: X value perspective: default-perspective
+    | typed: #ok;
+end
+
+command debug-representation for: (X is error) perspective: default-perspective do
+  self for: X reason perspective: default-perspective
+    | typed: #error;
+end
+
+command debug-representation for: (X is cell) perspective: default-perspective do
+  self for: X value perspective: default-perspective
+    | typed: #cell;
+end
+
+command debug-representation for: (X is read-only-cell) perspective: default-perspective do
+  self for: X.cell value perspective: default-perspective
+    | typed: #read-only-cell;
+end
+
+command debug-representation for: (X is zip-pair) perspective: default-perspective do
+  #document
+    | fields: [
+        first -> self for: X first perspective: default-perspective,
+        second -> self for: X second perspective: default-perspective,
+      ]
+    | typed: #zip-pair;
+end
+
+command debug-representation for: (X is partition-pair) perspective: default-perspective do
+  #document
+    | fields: [
+        satisfying -> self for: X satisfying perspective: default-perspective,
+        not-satisfying -> self for: X not-satisfying perspective: default-perspective,
+      ]
+    | typed: #partition-pair;
+end
+
+command debug-representation for: (X is indexed) perspective: default-perspective do
+  #document
+    | fields: [
+        index -> self for: X index perspective: default-perspective,
+        value -> self for: X value perspective: default-perspective,
+      ]
+    | typed: #indexed;
+end
+
+command debug-representation for: (X is association) perspective: default-perspective do
+  #document
+    | fields: [
+        key -> self for: X key perspective: default-perspective,
+        value -> self for: X value perspective: default-perspective,
+      ]
+    | typed: #association;
+end
+
+/// Source code perspectives for documents
+command debug-representation for: (X is document) perspective: source-perspective do
+  let Serialisation = new debug-serialisation;
+  let JSON = Serialisation for: X;
+
+  #document
+    | code: (foreign debug.to-json(JSON))
+    | typed: (foreign debug.type(X))
+end

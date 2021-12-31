@@ -1,0 +1,9 @@
+% crochet
+
+implement debug-perspective for default-perspective;
+implement debug-perspective for source-perspective;
+
+/// The name of the perspective.
+command default-perspective name = "Default";
+
+command source-perspective name = "Source code";

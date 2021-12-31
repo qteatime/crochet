@@ -1,0 +1,238 @@
+% crochet
+
+/// Represents nothing
+command #document empty =
+  doc-empty;
+
+/// Represents any number
+command #document number: (X is numeric) =
+  new doc-number(X)
+    | typed: (foreign debug.type(X));
+
+/// Represents any crochet text (and _highlights_ that it is a Crochet text,
+/// e.g.: by having quotes around it).
+command #document crochet-text: (X is unsafe-arbitrary-text) =
+  new doc-text(X);
+
+/// Represents any boolean.
+command #document boolean: (X is boolean) =
+  new doc-boolean(X);
+
+
+/// Represents a piece of text with no semantics.
+command #document plain-text: (X is text) =
+  new doc-plain-text(X);
+
+command #document plain-text: (X is interpolation) =
+  #document plain-text: (X flatten-into-plain-text);
+
+/// Represents a piece of text with monospaced font.
+command #document code: (X is text) =
+  new doc-code(X);
+
+command #document code: (X is interpolation) =
+  #document plain-text: (X flatten-into-plain-text);
+
+/// Represents a list of values.
+command #document list: (Xs is list<document>) =
+  new doc-list(Xs);
+
+/// Represents a table of values.
+command #document table-header: (Hs is list<document>) rows: (Rs is list<doc-table-row>)
+requires
+  consistent-layout :: Rs all: { R in R.cells count === Hs count }
+do
+  new doc-table(Hs, Rs);
+end
+
+/// Represents a row in a table.
+command #document table-row: (Cells is list<document>) =
+  new doc-table-row(Cells);
+
+/// Lays items with flow layouting.
+command #document flow: (Xs is list<document>) =
+  new doc-flow(Xs);
+
+/// Lays items with a flex row.
+command #document flex-row: (Xs is list<document>) =
+  new doc-flex-row(Xs, doc-unit-unset);
+
+/// Lays items with a flex column.
+command #document flex-column: (Xs is list<document>) =
+  new doc-flex-column(Xs, doc-unit-unset);
+
+/// Lays items with a fixed layout.
+command #document fixed-layout: (Xs is list<document>) width: (W has to-doc-unit) height: (H has to-doc-unit) =
+  new doc-fixed-layout(Xs, W as doc-unit, H as doc-unit);
+
+/// Constructs a table from a record of fields.
+command #document fields: (R is record) do
+  let Rows = R pairs
+               | map: { P in #document table-row: [#document plain-text: P key, P value] };
+  #document
+    | table-header: [#document plain-text: "Field", #document plain-text: "Value"]
+      rows: Rows
+    | compact-layout: (
+        #document plain-text: "([Rows count to-text] fields)"
+      );
+end
+
+/// Constructs a circle shape
+command #document circle =
+  new doc-circle(#doc-point2d zero, doc-unit-unset, #document style);
+
+command doc-circle center: (Point is doc-point2d) =
+  new doc-circle(Point, self.radius, self.presentation);
+
+command doc-circle radius: (Radius has to-doc-unit) =
+  new doc-circle(self.center, Radius as doc-unit, self.presentation);
+
+command doc-circle style: (Style is doc-presentation) =
+  new doc-circle(self.center, self.radius, Style);
+
+
+/// Constructs an ellipse
+command #document ellipse =
+  new doc-ellipse(#doc-point2d zero, #doc-point2d zero, #document style);
+
+command doc-ellipse center: (Point is doc-point2d) =
+  new doc-ellipse(Point, self.radius, self.presentation);
+
+command doc-ellipse radius: (Radius is doc-point2d) =
+  new doc-ellipse(self.center, Radius, self.presentation);
+
+command doc-ellipse style: (Style is doc-presentation) =
+  new doc-ellipse(self.center, self.radius, Style);
+
+/// Constructs a rectangle shape
+command #document rectangle =
+  new doc-rectangle(#doc-point2d zero, #doc-dimension zero, #doc-point2d zero, #document style);
+
+command doc-rectangle origin: (Point is doc-point2d) =
+  new doc-rectangle(Point, self.size, self.roundness, self.presentation);
+
+command doc-rectangle size: (Size is doc-dimension) =
+  new doc-rectangle(self.origin, Size, self.roundness, self.presentation);
+
+command doc-rectangle style: (Style is doc-presentation) =
+  new doc-rectangle(self.origin, self.size, self.roundness, Style);
+
+command doc-rectangle width: (Width has to-doc-unit) =
+  new doc-rectangle(self.origin, self.size width: Width as doc-unit, self.roundness, self.presentation);
+
+command doc-rectangle height: (Height has to-doc-unit) =
+  new doc-rectangle(self.origin, self.size height: Height as doc-unit, self.roundness, self.presentation);
+
+command doc-rectangle x: (X has to-doc-unit) =
+  new doc-rectangle(self.origin x: X as doc-unit, self.size, self.roundness, self.presentation);
+
+command doc-rectangle y: (Y has to-doc-unit) =
+  new doc-rectangle(self.origin y: Y as doc-unit, self.size, self.roundness, self.presentation);
+
+command doc-rectangle roundness: (Point is doc-point2d) =
+  new doc-rectangle(self.origin, self.size, Point, self.presentation);
+
+/// Constructs a line shape
+command #document line =
+  new doc-line(#doc-point2d zero, #doc-point2d zero, #document style);
+
+command doc-line from: (Point is doc-point2d) =
+  new doc-line(Point, self.to, self.presentation);
+
+command doc-line to: (Point is doc-point2d) =
+  new doc-line(self.from, Point, self.presentation);
+
+command doc-line style: (Style is doc-presentation) =
+  new doc-line(self.from, self.to, Style);
+
+/// Constructs a polygon shape
+command #document polygon: (Points is list<point2d>) =
+  new doc-polygon(Points, #document style);
+
+command doc-polygon style: (Style is doc-presentation) =
+  new doc-polygon(self.points, Style);
+
+/// Constructs a polyline shape
+command #document polyline: (Points is list<point2d>) =
+  new doc-polyline(Points, #document style);
+
+command doc-polyline style: (Style is doc-presentation) =
+  new doc-polyline(self.points, Style);
+
+
+/// Represents a typed value.
+command document typed: (Type is static-type) =
+  new doc-typed(self, Type);
+
+/// Positions a document in a fixed layout.
+command document x: (X has to-doc-unit) y: (Y has to-doc-unit) =
+  self position: (#doc-point2d x: X y: Y);
+
+/// Positions a document in a fixed layout.
+command document position: (Pos is doc-point2d) =
+  new doc-position(self, Pos);
+
+/// Provides a compact layout alternative.
+command document compact-layout: (Doc is document) =
+  new doc-group(Doc, self);
+
+/// Provides an expanded layout alternative.
+command document expanded-layout: (Doc is document) =
+  new doc-group(self, Doc);
+
+
+// -- Styles
+command #document style =
+  new doc-presentation(doc-colour-transparent, doc-unit-unset, doc-colour-transparent);
+
+command doc-presentation stroke-colour: (Colour is doc-colour) =
+  new doc-presentation(Colour, self.stroke-width, self.fill-colour);
+
+command doc-presentation stroke-width: (Width has to-doc-unit) =
+  new doc-presentation(self.stroke-colour, Width as doc-unit, self.fill-colour);
+
+command doc-presentation fill-colour: (Colour is doc-colour) =
+  new doc-presentation(self.stroke-colour, self.stroke-width, Colour);
+
+
+command #doc-unit unset = doc-unit-unset;
+
+
+command #doc-point2d zero =
+  new doc-point2d(new doc-pixels(0), new doc-pixels(0));
+
+command #doc-point2d x: (X has to-doc-unit) y: (Y has to-doc-unit) =
+  new doc-point2d(X as doc-unit, Y as doc-unit);
+
+command doc-point2d x: (X has to-doc-unit) =
+  new doc-point2d(X as doc-unit, self.y);
+
+command doc-point2d y: (Y has to-doc-unit) =
+  new doc-point2d(self.x, Y as doc-unit);
+
+
+command #doc-dimension zero =
+  new doc-dimension(new doc-pixels(0), new doc-pixels(0));
+
+command #doc-dimension width: (W has to-doc-unit) height: (H has to-doc-unit) =
+  new doc-dimension(W as doc-unit, H as doc-unit);
+
+command doc-dimension width: (W has to-doc-unit) =
+  new doc-dimension(W as doc-unit, self.height);
+
+command doc-dimension height: (H has to-doc-unit) =
+  new doc-dimension(self.width, H as doc-unit);
+
+
+command #doc-colour transparent =
+  doc-colour-transparent;
+
+command #doc-colour red: (R is integer) green: (G is integer) blue: (B is integer) alpha: (A is integer)
+requires
+  byte-red :: (R >= 0) and (R <= 255),
+  byte-green :: (G >= 0) and (G <= 255),
+  byte-blue :: (B >= 0) and (B <= 255),
+  byte-alpha :: (A >= 0) and (A <= 255)
+do
+  new doc-colour-rgba(R, G, B, A);
+end

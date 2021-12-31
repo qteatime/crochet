@@ -1,0 +1,33 @@
+% crochet
+
+implement to-doc-unit for doc-unit;
+
+/// Coerces a Crochet value to a doc-unit
+command doc-unit as doc-unit =
+  self;
+
+implement to-doc-unit for integer;
+/// Coerces an integet to a doc-pixels.
+command integer as doc-unit =
+  new doc-pixels(self);
+
+implement to-doc-unit for float;
+/// Coerces a float to a doc-percent.
+command float as doc-unit =
+  new doc-percent(self);
+
+implement to-doc-unit for nothing;
+/// Coerces a nothing to a doc-unit
+command nothing as doc-unit =
+  doc-unit-unset;
+
+
+/// Constructs a doc-unit from a numeric value.
+command integer as doc-pixels =
+  new doc-pixels(self);
+
+command float as doc-percent =
+  new doc-percent(self);
+
+command float as doc-em =
+  new doc-em(self);

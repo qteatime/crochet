@@ -1,0 +1,167 @@
+% crochet
+
+// -- Module
+
+/// Allows defining (rich) ways of representing Crochet values
+/// according to a particular perspective.
+///
+/// You can define a debug representation for any type by providing
+/// a new [command:_ for: _ perspective: _] branch. A perspective
+/// has to be a nullary type extending [type:perspective] and
+/// implementing the [trait:debug-perspective] trait.
+singleton debug-representation;
+
+/// Used for serialisation. No powers are granted for external modules.
+type debug-serialisation;
+
+// -- Perspectives
+
+/// The base of all perspectives.
+///
+/// A perspective is a nullary type that allows selecting one of
+/// the debug representations, and extending these representations,
+/// without any coordination. This means that packages need not be
+/// aware of other packages' perspectives and representations.
+abstract perspective;
+
+/// The default perspective. Whenever one isn't specified, this will
+/// be used to represent the value. Generally the "most commonly useful"
+/// view of it.
+type default-perspective is perspective;
+define default-perspective = new default-perspective;
+
+/// Shows the "source code" representation of a value.
+type source-perspective is perspective;
+
+/// The minimal amount of commands that a perspective needs to provide
+/// for all of Crochet's debugging tools to work properly.
+///
+/// Currently the only requirement is a [command:_ name] command, but
+/// more commands may be added in the future.
+trait debug-perspective with
+  /// Returns a human-readable description of the perspective. Used in
+  /// debugging tools to show the available ways they can inspect the
+  /// data.
+  command Perspective name -> text;
+end
+
+
+// -- Numeric values
+/// The base type of all numeric units used by documents.
+abstract doc-unit;
+
+/// No unit value
+singleton doc-unit-unset is doc-unit;
+
+/// Value in pixels.
+type doc-pixels(value is integer) is doc-unit;
+
+/// Value in percentage (context-dependent).
+type doc-percent(value is float) is doc-unit;
+
+/// Value in em units.
+type doc-em(value is float) is doc-unit;
+
+/// A 2d point of doc units.
+type doc-point2d(x is doc-unit, y is doc-unit);
+
+/// A dimension of doc units.
+type doc-dimension(width is doc-unit, height is doc-unit);
+
+/// The trait of everything that can be made into a doc-unit implicitly
+trait to-doc-unit with
+  command Type as doc-unit -> doc-unit;
+end
+
+/// The base type of all colours used by documents.
+abstract doc-colour;
+
+/// No colour value
+singleton doc-colour-transparent is doc-colour;
+
+/// RGBA colour
+type doc-colour-rgba(
+  red is integer,
+  green is integer,
+  blue is integer,
+  alpha is integer,
+) is doc-colour;
+
+/// A way of formatting and presenting shapes
+type doc-presentation(
+  stroke-colour is doc-colour,
+  stroke-width is doc-unit,
+  fill-colour is doc-colour,
+);
+
+// -- Document language
+
+/// The root of the document language.
+abstract document;
+
+/// The empty document
+singleton doc-empty is document;
+
+/// A numeric value.
+type doc-number(value is numeric) is document;
+
+/// A piece of Crochet text.
+type doc-text(value is unsafe-arbitrary-text) is document;
+
+/// A boolean.
+type doc-boolean(value is boolean) is document;
+
+/// A piece of text with no semantics.
+type doc-plain-text(value is text) is document;
+
+/// A piece of text that's guaranteed to be rendered in monospaced font.
+type doc-code(value is text) is document;
+
+/// A list of values.
+type doc-list(items is list<document>) is document;
+
+/// A table of values.
+type doc-table(header is list<document>, rows is list<doc-table-row>) is document;
+
+/// A row in a table.
+type doc-table-row(cells is list<document>) is document;
+
+/// Lays its items with flow layouting.
+type doc-flow(items is list<document>) is document;
+
+/// Lays its items with a flex row.
+type doc-flex-row(items is list<document>, gap is doc-unit) is document;
+
+/// Lays its items with a flex column.
+type doc-flex-column(items is list<document>, gap is doc-unit) is document;
+
+/// Lays its items with fixed layout (the items need to be positioned)
+type doc-fixed-layout(items is list<document>, width is doc-unit, height is doc-unit) is document;
+
+/// Positions the item inside of a fixed layout container
+type doc-position(content is document, position is doc-point2d) is document;
+
+/// Marks a document as belonging to a specific type
+type doc-typed(content is document, crochet-type is static-type) is document;
+
+/// Allows the renderer to choose between a compact and expanded representation
+/// depending on its rendering context, amount of space available, etc.
+type doc-group(compact is document, expanded is document) is document;
+
+/// A circle shape
+type doc-circle(center is doc-point2d, radius is doc-unit, presentation is doc-presentation) is document;
+
+/// A rectangle shape
+type doc-rectangle(origin is doc-point2d, size is doc-dimension, roundness is doc-point2d, presentation is doc-presentation) is document;
+
+/// An ellipse shape
+type doc-ellipse(center is doc-point2d, radius is doc-point2d, presentation is doc-presentation) is document;
+
+/// A line shape
+type doc-line(from is doc-point2d, to is doc-point2d, presentation is doc-presentation) is document;
+
+/// A polygon shape
+type doc-polygon(points is list<doc-point2d>, presentation is doc-presentation) is document;
+
+/// A poly-line shape
+type doc-polyline(points is list<doc-point2d>, presentation is doc-presentation) is document;
