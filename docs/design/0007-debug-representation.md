@@ -73,6 +73,7 @@ The language is as follows:
     boolean(value: boolean)   -- any boolean
 
     plain-text(content: text) -- text with no semantics
+    code(content: text)       -- text, but monospaced
 
     list(values: document[])
     table(header: document[], rows: document[][])

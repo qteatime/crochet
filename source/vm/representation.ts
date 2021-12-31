@@ -53,7 +53,7 @@ export async function debug_representations(
       {
         name: "Internal",
         document: {
-          tag: "plain-text",
+          tag: "code",
           value: Location.simple_value(value),
         },
       },
@@ -127,7 +127,7 @@ export async function debug_representations(
     {
       name: "Internal",
       document: {
-        tag: "plain-text",
+        tag: "code",
         value: Location.simple_value(value),
       },
     },

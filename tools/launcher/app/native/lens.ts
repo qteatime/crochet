@@ -42,6 +42,9 @@ export default (ffi: ForeignInterface) => {
         case "plain-text":
           return h("div", { class: "value-lens-plain-text" }, [data.value]);
 
+        case "code":
+          return h("div", { class: "value-lens-code" }, [data.value]);
+
         case "list":
           return h(
             "div",

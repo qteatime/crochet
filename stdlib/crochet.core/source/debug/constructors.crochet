@@ -26,6 +26,13 @@ command #document plain-text: (X is text) =
 command #document plain-text: (X is interpolation) =
   #document plain-text: (X flatten-into-plain-text);
 
+/// Represents a piece of text with monospaced font.
+command #document code: (X is text) =
+  new doc-code(X);
+
+command #document code: (X is interpolation) =
+  #document plain-text: (X flatten-into-plain-text);
+
 /// Represents a list of values.
 command #document list: (Xs is list<document>) =
   new doc-list(Xs);

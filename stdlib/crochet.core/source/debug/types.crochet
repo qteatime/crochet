@@ -83,6 +83,9 @@ type doc-boolean(value is boolean) is document;
 /// A piece of text with no semantics.
 type doc-plain-text(value is text) is document;
 
+/// A piece of text that's guaranteed to be rendered in monospaced font.
+type doc-code(value is text) is document;
+
 /// A list of values.
 type doc-list(items is list<document>) is document;
 
