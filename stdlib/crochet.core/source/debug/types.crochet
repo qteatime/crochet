@@ -65,6 +65,13 @@ type doc-em(value is float) is doc-unit;
 /// A 2d point of doc units.
 type doc-point2d(x is doc-unit, y is doc-unit);
 
+/// A dimension of doc units.
+type doc-dimension(width is doc-unit, height is doc-unit);
+
+/// The trait of everything that can be made into a doc-unit implicitly
+trait to-doc-unit with
+  command Type as doc-unit -> doc-unit;
+end
 
 /// The base type of all colours used by documents.
 abstract doc-colour;
@@ -132,7 +139,7 @@ type doc-flex-column(items is list<document>, gap is doc-unit) is document;
 type doc-fixed-layout(items is list<document>, width is doc-unit, height is doc-unit) is document;
 
 /// Positions the item inside of a fixed layout container
-type doc-position(content is document, position is doc-point2d, anchor is doc-point2d) is document;
+type doc-position(content is document, position is doc-point2d) is document;
 
 /// Marks a document as belonging to a specific type
 type doc-typed(content is document, crochet-type is static-type) is document;
@@ -143,3 +150,7 @@ type doc-group(compact is document, expanded is document) is document;
 
 /// A circle shape
 type doc-circle(x is doc-unit, y is doc-unit, radius is doc-unit, presentation is doc-presentation) is document;
+
+/// A rectangle shape
+type doc-rectangle(origin is doc-point2d, size is doc-dimension, roundness is doc-point2d, presentation is doc-presentation) is document;
+

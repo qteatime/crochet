@@ -61,6 +61,7 @@
     "source/collection/stream.crochet",
 
     "source/debug/constructors.crochet",
+    "source/debug/coercions.crochet",
     "source/debug/perspectives.crochet",
     "source/debug/representations.crochet",
     "source/debug/serialisation.crochet",

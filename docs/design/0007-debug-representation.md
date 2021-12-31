@@ -83,7 +83,7 @@ The language is as follows:
     column(items: document[])
 
     fixed(width: integer, height: integer, content: document)
-    positioned(position: point2d, anchor: point2d, content: document)
+    positioned(position: point2d, content: document)
 
     group(collapsed: document, expanded: document)
 

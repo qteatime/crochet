@@ -62,8 +62,8 @@ command #document flex-column: (Xs is list<document>) =
   new doc-flex-column(Xs, doc-unit-unset);
 
 /// Lays items with a fixed layout.
-command #document fixed-layout: (Xs is list<document>) width: (W is doc-unit) height: (H is doc-unit) =
-  new doc-fixed-layout(Xs, W, H);
+command #document fixed-layout: (Xs is list<document>) width: (W has to-doc-unit) height: (H has to-doc-unit) =
+  new doc-fixed-layout(Xs, W as doc-unit, H as doc-unit);
 
 /// Constructs a table from a record of fields.
 command #document fields: (R is record) do
@@ -78,8 +78,52 @@ command #document fields: (R is record) do
 end
 
 /// Constructs a circle shape
-command #document circle-x: (X is doc-unit) y: (Y is doc-unit) radius: (Radius is doc-unit) style: (Style is doc-presentation) =
-  new doc-circle(X, Y, Radius, Style);
+command #document circle =
+  new doc-circle(doc-unit-unset, doc-unit-unset, doc-unit-unset, #document style);
+
+command doc-circle center-x: (X has to-doc-unit) =
+  new doc-circle(X as doc-unit, self.y, self.radius, self.presentation);
+
+command doc-circle center-y: (Y has to-doc-unit) =
+  new doc-circle(self.x, Y as doc-unit, self.radius, self.presentation);
+
+command doc-circle center: (Point is doc-point2d) =
+  new doc-circle(Point.x, Point.y, self.radius, self.presentation);
+
+command doc-circle radius: (Radius has to-doc-unit) =
+  new doc-circle(self.x, self.y, Radius as doc-unit, self.presentation);
+
+command doc-circle style: (Style is doc-presentation) =
+  new doc-circle(self.x, self.y, self.radius, Style);
+
+/// Constructs a rectangle shape
+command #document rectangle =
+  new doc-rectangle(#doc-point2d zero, #doc-dimension zero, #doc-point2d zero, #document style);
+
+command doc-rectangle origin: (Point is doc-point2d) =
+  new doc-rectangle(Point, self.size, self.roundness, self.presentation);
+
+command doc-rectangle size: (Size is doc-dimension) =
+  new doc-rectangle(self.origin, Size, self.roundness, self.presentation);
+
+command doc-rectangle style: (Style is doc-presentation) =
+  new doc-rectangle(self.origin, self.size, self.roundness, Style);
+
+command doc-rectangle width: (Width has to-doc-unit) =
+  new doc-rectangle(self.origin, self.size width: Width as doc-unit, self.roundness, self.presentation);
+
+command doc-rectangle height: (Height has to-doc-unit) =
+  new doc-rectangle(self.origin, self.size height: Height as doc-unit, self.roundness, self.presentation);
+
+command doc-rectangle x: (X has to-doc-unit) =
+  new doc-rectangle(self.origin x: X as doc-unit, self.size, self.roundness, self.presentation);
+
+command doc-rectangle y: (Y has to-doc-unit) =
+  new doc-rectangle(self.origin y: Y as doc-unit, self.size, self.roundness, self.presentation);
+
+command doc-rectangle roundness: (Point is doc-point2d) =
+  new doc-rectangle(self.origin, self.size, Point, self.presentation);
+
 
 /// Represents a typed value.
 command document typed: (Type is static-type) =
@@ -87,12 +131,11 @@ command document typed: (Type is static-type) =
 
 /// Positions a document in a fixed layout.
 command document x: (X is doc-unit) y: (Y is doc-unit) =
-  self position: new doc-point2d(X, Y)
-       anchor: new doc-point2d(doc-unit-unset, doc-unit-unset);
+  self position: new doc-point2d(X, Y);
 
 /// Positions a document in a fixed layout.
-command document position: (Pos is doc-point2d) anchor: (Anchor is doc-point2d) =
-  new doc-position(self, Pos, Anchor);
+command document position: (Pos is doc-point2d) =
+  new doc-position(self, Pos);
 
 /// Provides a compact layout alternative.
 command document compact-layout: (Doc is document) =
@@ -119,18 +162,32 @@ command doc-presentation fill-colour: (Colour is doc-colour) =
 
 command #doc-unit unset = doc-unit-unset;
 
-command integer as doc-pixels =
-  new doc-pixels(self);
 
-command float as doc-percent =
-  new doc-percent(self);
+command #doc-point2d zero =
+  new doc-point2d(new doc-pixels(0), new doc-pixels(0));
 
-command float as doc-em =
-  new doc-em(self);
+command #doc-point2d x: (X has to-doc-unit) y: (Y has to-doc-unit) =
+  new doc-point2d(X as doc-unit, Y as doc-unit);
+
+command doc-point2d x: (X has to-doc-unit) =
+  new doc-point2d(X as doc-unit, self.y);
+
+command doc-point2d y: (Y has to-doc-unit) =
+  new doc-point2d(self.x, Y as doc-unit);
 
 
-command #doc-point2d x: (X is doc-unit) y: (Y is doc-unit) =
-  new doc-point2d(X, Y);
+command #doc-dimension zero =
+  new doc-dimension(new doc-pixels(0), new doc-pixels(0));
+
+command #doc-dimension width: (W has to-doc-unit) height: (H has to-doc-unit) =
+  new doc-dimension(W as doc-unit, H as doc-unit);
+
+command doc-dimension width: (W has to-doc-unit) =
+  new doc-dimension(W as doc-unit, self.height);
+
+command doc-dimension height: (H has to-doc-unit) =
+  new doc-dimension(self.width, H as doc-unit);
+
 
 command #doc-colour transparent =
   doc-colour-transparent;

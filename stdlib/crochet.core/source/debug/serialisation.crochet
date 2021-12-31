@@ -77,16 +77,15 @@ command debug-serialisation for: (X is doc-fixed-layout) =
   [
     tag -> "fixed-layout",
     items -> X.items map: (self for: _),
-    width -> self for: X.gap,
-    height -> self for: X.gap,
+    width -> self for: X.width,
+    height -> self for: X.height,
   ];
 
 command debug-serialisation for: (X is doc-position) =
   [
     tag -> "position",
     content -> self for: X.content,
-    position -> self for: X.position,
-    anchor -> self for: X.position,
+    position -> self for: X.position
   ];
 
 command debug-serialisation for: (X is doc-typed) do
@@ -117,12 +116,29 @@ command debug-serialisation for: (X is doc-circle) do
   ];
 end
 
+command debug-serialisation for: (X is doc-rectangle) do
+  [
+    tag -> "rectangle",
+    origin -> self for: X.origin,
+    size -> self for: X.size,
+    roundness -> self for: X.roundness,
+    presentation -> self for: X.presentation,
+  ]
+end
+
 // -- Units
 command debug-serialisation for: (X is doc-point2d) =
   [
     tag -> "point-2d",
     x -> self for: X.x,
     y -> self for: X.y,
+  ];
+
+command debug-serialisation for: (X is doc-dimension) =
+  [
+    tag -> "dimension",
+    width -> self for: X.width,
+    height -> self for: X.height
   ];
 
 command debug-serialisation for: (X is doc-em) =

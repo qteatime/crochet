@@ -4,7 +4,14 @@ export default (ffi: ForeignInterface) => {
   const svgNS = "http://www.w3.org/2000/svg";
   function h(
     tag: string,
-    attrs: { [key: string]: string },
+    attrs: {
+      [key: string]:
+        | string
+        | { [key: string]: string | null }
+        | undefined
+        | null;
+      style?: { [key: string]: string | null };
+    },
     children: (Node | string)[],
     ns: string | null = null
   ) {
@@ -12,20 +19,24 @@ export default (ffi: ForeignInterface) => {
       ? document.createElementNS(ns, tag)
       : document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
-      element.setAttribute(k, v);
+      if (v == null) {
+        continue;
+      } else if (typeof v === "string") {
+        element.setAttribute(k, v);
+      } else if (k === "style" && element instanceof HTMLElement) {
+        for (const [k, x] of Object.entries(v)) {
+          if (x != null) {
+            element.style[k as any] = x;
+          }
+        }
+      } else {
+        throw ffi.panic("internal", `Invalid attribute ${k}`);
+      }
     }
     for (const x of children) {
       element.append(x);
     }
     return element;
-  }
-
-  function hv(
-    tag: string,
-    attrs: { [key: string]: string },
-    children: (Node | string)[]
-  ) {
-    return h(tag, attrs, children, svgNS);
   }
 
   function make_svg() {
@@ -40,6 +51,16 @@ export default (ffi: ForeignInterface) => {
     return {
       x: compile_unit(data.x),
       y: compile_unit(data.y),
+    };
+  }
+
+  function compile_dimension(data: any) {
+    if (data.tag !== "dimension") {
+      throw ffi.panic("invalid-type", `Expected dimension`);
+    }
+    return {
+      width: compile_unit(data.width),
+      height: compile_unit(data.height),
     };
   }
 
@@ -164,28 +185,48 @@ export default (ffi: ForeignInterface) => {
         case "flex-row":
           return h(
             "div",
-            { class: "value-lens-flex-row" },
+            {
+              class: "value-lens-flex-row",
+              style: { gap: compile_unit(data.gap) },
+            },
             data.items.map((x: any) => render(x, compact))
           );
 
         case "flex-column":
           return h(
             "div",
-            { class: "value-lens-flex-column" },
+            {
+              class: "value-lens-flex-column",
+              style: { gap: compile_unit(data.gap) },
+            },
             data.items.map((x: any) => render(x, compact))
           );
 
         case "fixed-layout":
           return h(
             "div",
-            { class: "value-lens-fixed-layout" },
+            {
+              class: "value-lens-fixed-layout",
+              style: {
+                width: compile_unit(data.width) ?? "0px",
+                height: compile_unit(data.height) ?? "0px",
+              },
+            },
             data.items.map((x: any) => render(x, compact))
           );
 
         case "position":
-          return h("div", { class: "value-lens-position" }, [
-            render(data.content, compact),
-          ]);
+          return h(
+            "div",
+            {
+              class: "value-lens-position",
+              style: {
+                top: compile_unit(data.position.y),
+                left: compile_unit(data.position.x),
+              },
+            },
+            [render(data.content, compact)]
+          );
 
         case "typed":
           return h("div", { class: "value-lens-typed" }, [
@@ -236,7 +277,7 @@ export default (ffi: ForeignInterface) => {
 
         case "circle": {
           const svg = make_svg();
-          const circle = hv(
+          const circle = h(
             "circle",
             {
               cx: compile_unit(data.x) ?? "0",
@@ -244,9 +285,29 @@ export default (ffi: ForeignInterface) => {
               r: compile_unit(data.radius) ?? "0",
               ...svg_presentation(compile_presentation(data.presentation)),
             },
-            []
+            [],
+            svgNS
           );
           svg.append(circle);
+          return svg;
+        }
+
+        case "rectangle": {
+          const svg = make_svg();
+          const roundness = compile_point2d(data.roundness);
+          const rect = h(
+            "rect",
+            {
+              ...compile_point2d(data.origin),
+              ...compile_dimension(data.size),
+              rx: roundness.x,
+              ry: roundness.y,
+              ...svg_presentation(compile_presentation(data.presentation)),
+            },
+            [],
+            svgNS
+          );
+          svg.append(rect);
           return svg;
         }
 
