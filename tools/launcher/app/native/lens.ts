@@ -49,7 +49,9 @@ export default (ffi: ForeignInterface) => {
           return h(
             "div",
             { class: "value-lens-list" },
-            data.items.map((x: any) => render(x, true))
+            data.items.map((x: any) =>
+              h("div", { class: "value-lens-list-item" }, [render(x, true)])
+            )
           );
 
         case "table":
@@ -57,7 +59,9 @@ export default (ffi: ForeignInterface) => {
             h(
               "div",
               { class: "value-lens-table-header" },
-              data.header.map((x: any) => render(x, true))
+              data.header.map((x: any) =>
+                h("div", { class: "value-lens-table-cell" }, [render(x, true)])
+              )
             ),
             ...data.rows.map((x: any) =>
               h(
@@ -76,7 +80,9 @@ export default (ffi: ForeignInterface) => {
           return h(
             "div",
             { class: "value-lens-flow" },
-            data.items.map((x: any) => render(x, compact))
+            data.items.map((x: any) =>
+              h("div", { class: "value-lens-flow-item" }, [render(x, compact)])
+            )
           );
 
         case "flex-row":
@@ -111,6 +117,7 @@ export default (ffi: ForeignInterface) => {
               h("div", { class: "value-lens-typed-type-name" }, [
                 data["type-name"],
               ]),
+              " in ",
               h("div", { class: "value-lens-typed-type-package" }, [
                 data["package-name"],
               ]),
@@ -153,7 +160,7 @@ export default (ffi: ForeignInterface) => {
 
         default:
           return h("div", { class: "value-lens-unknown" }, [
-            JSON.stringify(data),
+            JSON.stringify(data, null, 2),
           ]);
       }
     }
@@ -161,6 +168,6 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("lens.render", (json) => {
     const data = JSON.parse(ffi.text_to_string(json));
-    return ffi.box(render(data));
+    return ffi.box(h("div", { class: "value-lens-container" }, [render(data)]));
   });
 };
