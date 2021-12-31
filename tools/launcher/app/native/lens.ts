@@ -61,9 +61,9 @@ export default (ffi: ForeignInterface) => {
     );
     document.body.append(measure);
     measure.append(svg);
-    const bounds = svg.getBBox();
-    svg.setAttribute("width", `${bounds.width}px`);
-    svg.setAttribute("height", `${bounds.height}px`);
+    const bounds = svg.getBBox({ stroke: true, fill: true });
+    svg.setAttribute("width", `${bounds.x + bounds.width}px`);
+    svg.setAttribute("height", `${bounds.y + bounds.height}px`);
     measure.remove();
     return svg;
   }
