@@ -68,13 +68,13 @@ export default (ffi: ForeignInterface) => {
     return svg;
   }
 
-  function compile_point2d(data: any) {
+  function compile_point2d(data: any, unit = compile_unit) {
     if (data.tag !== "point-2d") {
       throw ffi.panic("invalid-type", `Expected point2d`);
     }
     return {
-      x: compile_unit(data.x),
-      y: compile_unit(data.y),
+      x: unit(data.x),
+      y: unit(data.y),
     };
   }
 
@@ -118,6 +118,22 @@ export default (ffi: ForeignInterface) => {
           })`;
         default:
           throw ffi.panic("invalid-type", `Unknown colour tag ${data.tag}`);
+      }
+    }
+  }
+
+  function compile_pixel_unit(data: any) {
+    if (data == null) {
+      return "0";
+    } else {
+      switch (data.unit) {
+        case "pixel":
+          return String(data.value);
+        default:
+          throw ffi.panic(
+            "invalid-unit",
+            `Only pixels are allowed, got ${data.unit}`
+          );
       }
     }
   }
@@ -381,7 +397,7 @@ export default (ffi: ForeignInterface) => {
         case "polygon": {
           const svg = make_svg();
           const points = (data.points as any[])
-            .map(compile_point2d)
+            .map((x) => compile_point2d(x, compile_pixel_unit))
             .map((p) => (p == null ? null : `${p.x},${p.y}`))
             .filter((x) => x != null);
           const polygon = h(
@@ -400,7 +416,7 @@ export default (ffi: ForeignInterface) => {
         case "polyline": {
           const svg = make_svg();
           const points = (data.points as any[])
-            .map(compile_point2d)
+            .map((x) => compile_point2d(x, compile_pixel_unit))
             .map((p) => (p == null ? null : `${p.x},${p.y}`))
             .filter((x) => x != null);
           const polygon = h(
