@@ -74,8 +74,6 @@ The language is as follows:
 
     plain-text(content: text) -- text with no semantics
 
-    lazy(description: text, pointer: external-capability)
-
     list(values: document[])
     table(header: document[], rows: document[][])
 
@@ -95,12 +93,10 @@ The language is as follows:
 > Interactivity is the base of allowing user-defined debugging tools for
 > their own types, however.
 
-Documents can be safely serialised as JSON to send to different processes.
-The only constructor that needs a longer explanation is `lazy`. This is
-used to share complex, potentially infinite objects with the outside world,
-and it's done so through an external capability---an unforgeable pointer
-to a Crochet object, which is interacted through RPC (this in turn requires
-some kind of distributed GC).
+Documents can be safely serialised as JSON to send to different processes,
+and this is an _explicit goal_ of this document language. You should be able
+to pass documents across processes and render them safely, which means that
+you could use this to debug systems remotely as well.
 
 ## Threat model
 
