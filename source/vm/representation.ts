@@ -81,14 +81,25 @@ export async function debug_representations(
         return null;
       }
 
-      const name = await run_command(universe, "_ name", [
-        Values.instantiate(perspective, []),
-      ]);
-      return {
-        name: name,
-        type: perspective,
-        instance: Values.instantiate(perspective, []),
-      };
+      try {
+        const name = await run_command(universe, "_ name", [
+          Values.instantiate(perspective, []),
+        ]);
+        return {
+          name: name,
+          type: perspective,
+          instance: Values.instantiate(perspective, []),
+        };
+      } catch (error: any) {
+        console.warn(
+          `Skipping ${Location.type_name(
+            perspective
+          )} in debug representation: an error occurred when getting its name.\n\n${
+            error?.stack ?? error
+          }`
+        );
+        return null;
+      }
     })
   );
   const perspectives = perspectives1.filter((x) => x != null).map((x) => x!);
