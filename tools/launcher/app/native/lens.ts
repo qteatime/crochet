@@ -358,6 +358,26 @@ export default (ffi: ForeignInterface) => {
           return fix_svg_box(svg);
         }
 
+        case "line": {
+          const svg = make_svg();
+          const from = compile_point2d(data.from);
+          const to = compile_point2d(data.to);
+          const line = h(
+            "line",
+            {
+              x1: from.x ?? "0px",
+              y1: from.y ?? "0px",
+              x2: to.x ?? "0px",
+              y2: to.y ?? "0px",
+              ...svg_presentation(compile_presentation(data.presentation)),
+            },
+            [],
+            svgNS
+          );
+          svg.append(line);
+          return fix_svg_box(svg);
+        }
+
         default:
           return h("div", { class: "value-lens-unknown" }, [
             JSON.stringify(data, null, 2),

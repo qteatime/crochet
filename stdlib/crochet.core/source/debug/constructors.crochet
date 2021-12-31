@@ -104,7 +104,6 @@ command doc-ellipse radius: (Radius is doc-point2d) =
 command doc-ellipse style: (Style is doc-presentation) =
   new doc-ellipse(self.center, self.radius, Style);
 
-
 /// Constructs a rectangle shape
 command #document rectangle =
   new doc-rectangle(#doc-point2d zero, #doc-dimension zero, #doc-point2d zero, #document style);
@@ -133,6 +132,18 @@ command doc-rectangle y: (Y has to-doc-unit) =
 command doc-rectangle roundness: (Point is doc-point2d) =
   new doc-rectangle(self.origin, self.size, Point, self.presentation);
 
+/// Constructs a line shape
+command #document line =
+  new doc-line(#doc-point2d zero, #doc-point2d zero, #document style);
+
+command doc-line from: (Point is doc-point2d) =
+  new doc-line(Point, self.to, self.presentation);
+
+command doc-line to: (Point is doc-point2d) =
+  new doc-line(self.from, Point, self.presentation);
+
+command doc-line style: (Style is doc-presentation) =
+  new doc-line(self.from, self.to, Style);
 
 /// Represents a typed value.
 command document typed: (Type is static-type) =

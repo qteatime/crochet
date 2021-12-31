@@ -120,7 +120,16 @@ command debug-serialisation for: (X is doc-ellipse) do
     tag -> "ellipse",
     center -> self for: X.center,
     radius -> self for: X.radius,
-    presentation -> self for: X.presentation
+    presentation -> self for: X.presentation,
+  ];
+end
+
+command debug-serialisation for: (X is doc-line) do
+  [
+    tag -> "line",
+    from -> self for: X.from,
+    to -> self for: X.to,
+    presentation -> self for: X.presentation,
   ];
 end
 

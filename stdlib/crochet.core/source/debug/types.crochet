@@ -156,3 +156,6 @@ type doc-rectangle(origin is doc-point2d, size is doc-dimension, roundness is do
 
 /// An ellipse shape
 type doc-ellipse(center is doc-point2d, radius is doc-point2d, presentation is doc-presentation) is document;
+
+/// A line shape
+type doc-line(from is doc-point2d, to is doc-point2d, presentation is doc-presentation) is document;
