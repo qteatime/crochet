@@ -31,6 +31,12 @@ command debug-serialisation for: (X is doc-plain-text) =
     value -> X.value,
   ];
 
+command debug-serialisation for: (X is doc-code) =
+  [
+    tag -> "code",
+    value -> X.value,
+  ];
+
 command debug-serialisation for: (X is doc-list) =
   [
     tag -> "list",

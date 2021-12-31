@@ -30,6 +30,9 @@ abstract perspective;
 type default-perspective is perspective;
 define default-perspective = new default-perspective;
 
+/// Shows the "source code" representation of a value.
+type source-perspective is perspective;
+
 /// The minimal amount of commands that a perspective needs to provide
 /// for all of Crochet's debugging tools to work properly.
 ///

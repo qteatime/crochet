@@ -262,6 +262,10 @@ export class ForeignInterface {
     return Values.to_plain_object(x);
   }
 
+  to_plain_json_native(x: CrochetValue): unknown {
+    return Values.to_plain_json_object(x);
+  }
+
   from_plain_native(x: unknown, trusted: boolean): CrochetValue {
     return Values.from_plain_object(this.#universe, x, trusted);
   }

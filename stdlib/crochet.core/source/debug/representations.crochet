@@ -8,6 +8,9 @@ command debug-representation for: X =
 command debug-representation for: X perspective: default-perspective =
   #document empty typed: (foreign debug.type(X));
 
+command debug-representation for: (X is document) perspective: default-perspective =
+  X;
+
 command debug-representation for: (X is boolean) perspective: default-perspective =
   #document boolean: X;
 
@@ -125,3 +128,12 @@ command debug-representation for: (X is association) perspective: default-perspe
     | typed: #association;
 end
 
+/// Source code perspectives for documents
+command debug-representation for: (X is document) perspective: source-perspective do
+  let Serialisation = new debug-serialisation;
+  let JSON = Serialisation for: X;
+
+  #document
+    | code: (foreign debug.to-json(JSON))
+    | typed: (foreign debug.type(X))
+end
