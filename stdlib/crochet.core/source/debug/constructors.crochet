@@ -165,8 +165,8 @@ command document typed: (Type is static-type) =
   new doc-typed(self, Type);
 
 /// Positions a document in a fixed layout.
-command document x: (X has doc-unit) y: (Y has doc-unit) =
-  self position: new doc-point2d(X as doc-unit, Y as doc-unit);
+command document x: (X has to-doc-unit) y: (Y has to-doc-unit) =
+  self position: (#doc-point2d x: X y: Y);
 
 /// Positions a document in a fixed layout.
 command document position: (Pos is doc-point2d) =
