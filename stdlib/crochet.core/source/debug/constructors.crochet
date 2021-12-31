@@ -77,10 +77,13 @@ command #document fields: (R is record) do
       );
 end
 
+/// Constructs a circle shape
+command #document circle-x: (X is doc-unit) y: (Y is doc-unit) radius: (Radius is doc-unit) style: (Style is doc-presentation) =
+  new doc-circle(X, Y, Radius, Style);
+
 /// Represents a typed value.
 command document typed: (Type is static-type) =
   new doc-typed(self, Type);
-
 
 /// Positions a document in a fixed layout.
 command document x: (X is doc-unit) y: (Y is doc-unit) =
@@ -98,3 +101,46 @@ command document compact-layout: (Doc is document) =
 /// Provides an expanded layout alternative.
 command document expanded-layout: (Doc is document) =
   new doc-group(self, Doc);
+
+
+// -- Styles
+command #document style =
+  new doc-presentation(doc-colour-transparent, doc-unit-unset, doc-colour-transparent);
+
+command doc-presentation stroke-colour: (Colour is doc-colour) =
+  new doc-presentation(Colour, self.stroke-width, self.fill-colour);
+
+command doc-presentation stroke-width: (Width is doc-unit) =
+  new doc-presentation(self.stroke-colour, Width, self.fill-colour);
+
+command doc-presentation fill-colour: (Colour is doc-colour) =
+  new doc-presentation(self.stroke-colour, self.stroke-width, Colour);
+
+
+command #doc-unit unset = doc-unit-unset;
+
+command integer as doc-pixels =
+  new doc-pixels(self);
+
+command float as doc-percent =
+  new doc-percent(self);
+
+command float as doc-em =
+  new doc-em(self);
+
+
+command #doc-point2d x: (X is doc-unit) y: (Y is doc-unit) =
+  new doc-point2d(X, Y);
+
+command #doc-colour transparent =
+  doc-colour-transparent;
+
+command #doc-colour red: (R is integer) green: (G is integer) blue: (B is integer) alpha: (A is integer)
+requires
+  byte-red :: (R >= 0) and (R <= 255),
+  byte-green :: (G >= 0) and (G <= 255),
+  byte-blue :: (B >= 0) and (B <= 255),
+  byte-alpha :: (A >= 0) and (A <= 255)
+do
+  new doc-colour-rgba(R, G, B, A);
+end

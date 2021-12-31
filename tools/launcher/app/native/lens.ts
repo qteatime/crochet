@@ -1,12 +1,16 @@
 import type { ForeignInterface, CrochetValue } from "../../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
+  const svgNS = "http://www.w3.org/2000/svg";
   function h(
     tag: string,
     attrs: { [key: string]: string },
-    children: (Node | string)[]
+    children: (Node | string)[],
+    ns: string | null = null
   ) {
-    const element = document.createElement(tag);
+    const element = ns
+      ? document.createElementNS(ns, tag)
+      : document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
       element.setAttribute(k, v);
     }
@@ -16,7 +20,79 @@ export default (ffi: ForeignInterface) => {
     return element;
   }
 
-  function render(data: any, compact = false): HTMLElement {
+  function hv(
+    tag: string,
+    attrs: { [key: string]: string },
+    children: (Node | string)[]
+  ) {
+    return h(tag, attrs, children, svgNS);
+  }
+
+  function make_svg() {
+    const element = document.createElementNS(svgNS, "svg");
+    return element;
+  }
+
+  function compile_point2d(data: any) {
+    if (data.tag !== "point-2d") {
+      throw ffi.panic("invalid-type", `Expected point2d`);
+    }
+    return {
+      x: compile_unit(data.x),
+      y: compile_unit(data.y),
+    };
+  }
+
+  function compile_presentation(data: any) {
+    if (data.tag !== "presentation") {
+      throw ffi.panic("invalid-type", `Expected presentation`);
+    }
+    return {
+      stroke_colour: compile_colour(data["stroke-colour"]),
+      stroke_width: compile_unit(data["stroke-width"]),
+      fill_colour: compile_colour(data["fill-colour"]),
+    };
+  }
+
+  function svg_presentation(presentation: any) {
+    return {
+      fill: presentation.fill_colour ?? "none",
+      stroke: presentation.stroke_colour ?? "none",
+      "stroke-width": presentation.stroke_width ?? "0",
+    };
+  }
+
+  function compile_colour(data: any) {
+    if (data == null) {
+      return null;
+    } else {
+      switch (data.tag) {
+        case "rgba":
+          return `rgba(${data.red}, ${data.green}, ${data.blue}, ${data.alpha})`;
+        default:
+          throw ffi.panic("invalid-type", `Unknown colour tag ${data.tag}`);
+      }
+    }
+  }
+
+  function compile_unit(data: any) {
+    if (data.unit == null) {
+      return null;
+    }
+
+    switch (data.unit) {
+      case "em":
+        return `${data.value}em`;
+      case "percent":
+        return `${data.value}%`;
+      case "pixel":
+        return `${data.value}px`;
+      default:
+        throw ffi.panic("invalid-type", `Unknown unit tag ${data.unit}`);
+    }
+  }
+
+  function render(data: any, compact = false): Element {
     if (data == null) {
       return h("div", { class: "value-lens-nothing" }, []);
     } else {
@@ -156,6 +232,22 @@ export default (ffi: ForeignInterface) => {
             button.querySelector("i")!.className = `fas ${icon}`;
           });
           return element;
+        }
+
+        case "circle": {
+          const svg = make_svg();
+          const circle = hv(
+            "circle",
+            {
+              cx: compile_unit(data.x) ?? "0",
+              cy: compile_unit(data.y) ?? "0",
+              r: compile_unit(data.radius) ?? "0",
+              ...svg_presentation(compile_presentation(data.presentation)),
+            },
+            []
+          );
+          svg.append(circle);
+          return svg;
         }
 
         default:

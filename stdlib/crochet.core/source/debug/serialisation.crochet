@@ -107,10 +107,20 @@ command debug-serialisation for: (X is doc-group) do
   ];
 end
 
+command debug-serialisation for: (X is doc-circle) do
+  [
+    tag -> "circle",
+    x -> self for: X.x,
+    y -> self for: X.y,
+    radius -> self for: X.radius,
+    presentation -> self for: X.presentation,
+  ];
+end
 
 // -- Units
 command debug-serialisation for: (X is doc-point2d) =
   [
+    tag -> "point-2d",
     x -> self for: X.x,
     y -> self for: X.y,
   ];
@@ -130,8 +140,32 @@ command debug-serialisation for: (X is doc-percent) =
 command debug-serialisation for: (X is doc-pixels) =
   [
     unit -> "pixel",
-    value -> X.value,
+    value -> X.value as float,
   ];
 
 command debug-serialisation for: doc-unit-unset =
   nothing;
+
+
+// -- Presentation
+command debug-serialisation for: (X is doc-presentation) =
+  [
+    tag -> "presentation",
+    stroke-colour -> self for: X.stroke-colour,
+    stroke-width -> self for: X.stroke-width,
+    fill-colour -> self for: X.fill-colour,
+  ];
+
+
+// -- Colours
+command debug-serialisation for: doc-colour-transparent =
+  nothing;
+
+command debug-serialisation for: (X is doc-colour-rgba) =
+  [
+    tag -> "rgba",
+    red -> X.red as float,
+    green -> X.green as float,
+    blue -> X.blue as float,
+    alpha -> X.alpha as float,
+  ];

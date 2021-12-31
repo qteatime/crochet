@@ -51,20 +51,41 @@ end
 abstract doc-unit;
 
 /// No unit value
-singleton doc-unit-unset;
+singleton doc-unit-unset is doc-unit;
 
 /// Value in pixels.
-type doc-pixels(value is integer);
+type doc-pixels(value is integer) is doc-unit;
 
 /// Value in percentage (context-dependent).
-type doc-percent(value is float);
+type doc-percent(value is float) is doc-unit;
 
 /// Value in em units.
-type doc-em(value is float);
+type doc-em(value is float) is doc-unit;
 
 /// A 2d point of doc units.
 type doc-point2d(x is doc-unit, y is doc-unit);
 
+
+/// The base type of all colours used by documents.
+abstract doc-colour;
+
+/// No colour value
+singleton doc-colour-transparent is doc-colour;
+
+/// RGBA colour
+type doc-colour-rgba(
+  red is integer,
+  green is integer,
+  blue is integer,
+  alpha is integer,
+) is doc-colour;
+
+/// A way of formatting and presenting shapes
+type doc-presentation(
+  stroke-colour is doc-colour,
+  stroke-width is doc-unit,
+  fill-colour is doc-colour,
+);
 
 // -- Document language
 
@@ -119,3 +140,6 @@ type doc-typed(content is document, crochet-type is static-type) is document;
 /// Allows the renderer to choose between a compact and expanded representation
 /// depending on its rendering context, amount of space available, etc.
 type doc-group(compact is document, expanded is document) is document;
+
+/// A circle shape
+type doc-circle(x is doc-unit, y is doc-unit, radius is doc-unit, presentation is doc-presentation) is document;
