@@ -188,8 +188,8 @@ command #document style =
 command doc-presentation stroke-colour: (Colour is doc-colour) =
   new doc-presentation(Colour, self.stroke-width, self.fill-colour);
 
-command doc-presentation stroke-width: (Width is doc-unit) =
-  new doc-presentation(self.stroke-colour, Width, self.fill-colour);
+command doc-presentation stroke-width: (Width has to-doc-unit) =
+  new doc-presentation(self.stroke-colour, Width as doc-unit, self.fill-colour);
 
 command doc-presentation fill-colour: (Colour is doc-colour) =
   new doc-presentation(self.stroke-colour, self.stroke-width, Colour);
