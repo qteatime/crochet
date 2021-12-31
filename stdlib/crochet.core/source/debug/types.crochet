@@ -149,8 +149,10 @@ type doc-typed(content is document, crochet-type is static-type) is document;
 type doc-group(compact is document, expanded is document) is document;
 
 /// A circle shape
-type doc-circle(x is doc-unit, y is doc-unit, radius is doc-unit, presentation is doc-presentation) is document;
+type doc-circle(center is doc-point2d, radius is doc-unit, presentation is doc-presentation) is document;
 
 /// A rectangle shape
 type doc-rectangle(origin is doc-point2d, size is doc-dimension, roundness is doc-point2d, presentation is doc-presentation) is document;
 
+/// An ellipse shape
+type doc-ellipse(center is doc-point2d, radius is doc-point2d, presentation is doc-presentation) is document;

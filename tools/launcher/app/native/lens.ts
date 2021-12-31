@@ -303,12 +303,33 @@ export default (ffi: ForeignInterface) => {
 
         case "circle": {
           const svg = make_svg();
+          const center = compile_point2d(data.center);
           const circle = h(
             "circle",
             {
-              cx: compile_unit(data.x) ?? "0",
-              cy: compile_unit(data.y) ?? "0",
-              r: compile_unit(data.radius) ?? "0",
+              cx: center.x ?? "0px",
+              cy: center.y ?? "0px",
+              r: compile_unit(data.radius) ?? "0px",
+              ...svg_presentation(compile_presentation(data.presentation)),
+            },
+            [],
+            svgNS
+          );
+          svg.append(circle);
+          return fix_svg_box(svg);
+        }
+
+        case "ellipse": {
+          const svg = make_svg();
+          const center = compile_point2d(data.center);
+          const radius = compile_point2d(data.radius);
+          const circle = h(
+            "ellipse",
+            {
+              cx: center.x ?? "0px",
+              cy: center.y ?? "0px",
+              rx: radius.x ?? "0px",
+              ry: radius.y ?? "0px",
               ...svg_presentation(compile_presentation(data.presentation)),
             },
             [],

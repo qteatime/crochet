@@ -109,10 +109,18 @@ end
 command debug-serialisation for: (X is doc-circle) do
   [
     tag -> "circle",
-    x -> self for: X.x,
-    y -> self for: X.y,
+    center -> self for: X.center,
     radius -> self for: X.radius,
     presentation -> self for: X.presentation,
+  ];
+end
+
+command debug-serialisation for: (X is doc-ellipse) do
+  [
+    tag -> "ellipse",
+    center -> self for: X.center,
+    radius -> self for: X.radius,
+    presentation -> self for: X.presentation
   ];
 end
 

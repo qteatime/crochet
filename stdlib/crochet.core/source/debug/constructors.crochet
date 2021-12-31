@@ -79,22 +79,31 @@ end
 
 /// Constructs a circle shape
 command #document circle =
-  new doc-circle(doc-unit-unset, doc-unit-unset, doc-unit-unset, #document style);
-
-command doc-circle center-x: (X has to-doc-unit) =
-  new doc-circle(X as doc-unit, self.y, self.radius, self.presentation);
-
-command doc-circle center-y: (Y has to-doc-unit) =
-  new doc-circle(self.x, Y as doc-unit, self.radius, self.presentation);
+  new doc-circle(#doc-point2d zero, doc-unit-unset, #document style);
 
 command doc-circle center: (Point is doc-point2d) =
-  new doc-circle(Point.x, Point.y, self.radius, self.presentation);
+  new doc-circle(Point, self.radius, self.presentation);
 
 command doc-circle radius: (Radius has to-doc-unit) =
-  new doc-circle(self.x, self.y, Radius as doc-unit, self.presentation);
+  new doc-circle(self.center, Radius as doc-unit, self.presentation);
 
 command doc-circle style: (Style is doc-presentation) =
-  new doc-circle(self.x, self.y, self.radius, Style);
+  new doc-circle(self.center, self.radius, Style);
+
+
+/// Constructs an ellipse
+command #document ellipse =
+  new doc-ellipse(#doc-point2d zero, #doc-point2d zero, #document style);
+
+command doc-ellipse center: (Point is doc-point2d) =
+  new doc-ellipse(Point, self.radius, self.presentation);
+
+command doc-ellipse radius: (Radius is doc-point2d) =
+  new doc-ellipse(self.center, Radius, self.presentation);
+
+command doc-ellipse style: (Style is doc-presentation) =
+  new doc-ellipse(self.center, self.radius, Style);
+
 
 /// Constructs a rectangle shape
 command #document rectangle =
@@ -130,8 +139,8 @@ command document typed: (Type is static-type) =
   new doc-typed(self, Type);
 
 /// Positions a document in a fixed layout.
-command document x: (X is doc-unit) y: (Y is doc-unit) =
-  self position: new doc-point2d(X, Y);
+command document x: (X has doc-unit) y: (Y has doc-unit) =
+  self position: new doc-point2d(X as doc-unit, Y as doc-unit);
 
 /// Positions a document in a fixed layout.
 command document position: (Pos is doc-point2d) =
