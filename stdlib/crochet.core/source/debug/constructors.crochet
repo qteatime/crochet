@@ -145,6 +145,21 @@ command doc-line to: (Point is doc-point2d) =
 command doc-line style: (Style is doc-presentation) =
   new doc-line(self.from, self.to, Style);
 
+/// Constructs a polygon shape
+command #document polygon: (Points is list<point2d>) =
+  new doc-polygon(Points, #document style);
+
+command doc-polygon style: (Style is doc-presentation) =
+  new doc-polygon(self.points, Style);
+
+/// Constructs a polyline shape
+command #document polyline: (Points is list<point2d>) =
+  new doc-polyline(Points, #document style);
+
+command doc-polyline style: (Style is doc-presentation) =
+  new doc-polyline(self.points, Style);
+
+
 /// Represents a typed value.
 command document typed: (Type is static-type) =
   new doc-typed(self, Type);

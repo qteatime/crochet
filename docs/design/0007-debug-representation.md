@@ -87,7 +87,7 @@ The language is as follows:
 
     group(collapsed: document, expanded: document)
 
-    circle, triangle, square, line, polygon   (svg shapes)
+    circle, ellipse, rectangle, line, polygon, polyline   -- svg shapes
 
 > **NOTE:**
 >

@@ -378,6 +378,44 @@ export default (ffi: ForeignInterface) => {
           return fix_svg_box(svg);
         }
 
+        case "polygon": {
+          const svg = make_svg();
+          const points = (data.points as any[])
+            .map(compile_point2d)
+            .map((p) => (p == null ? null : `${p.x}, ${p.y}`))
+            .filter((x) => x != null);
+          const polygon = h(
+            "polygon",
+            {
+              points: points.join(", "),
+              ...svg_presentation(compile_presentation(data.presentation)),
+            },
+            [],
+            svgNS
+          );
+          svg.append(polygon);
+          return fix_svg_box(svg);
+        }
+
+        case "polyline": {
+          const svg = make_svg();
+          const points = (data.points as any[])
+            .map(compile_point2d)
+            .map((p) => (p == null ? null : `${p.x}, ${p.y}`))
+            .filter((x) => x != null);
+          const polygon = h(
+            "polyline",
+            {
+              points: points.join(", "),
+              ...svg_presentation(compile_presentation(data.presentation)),
+            },
+            [],
+            svgNS
+          );
+          svg.append(polygon);
+          return fix_svg_box(svg);
+        }
+
         default:
           return h("div", { class: "value-lens-unknown" }, [
             JSON.stringify(data, null, 2),
