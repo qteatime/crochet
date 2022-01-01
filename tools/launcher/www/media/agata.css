@@ -4,8 +4,8 @@
   border: none;
   outline: none;
   background: none;
-  font-weight: normal;
-  font-style: normal;
+  font-weight: inherit;
+  font-style: inherit;
   font-size: 100%;
 }
 
