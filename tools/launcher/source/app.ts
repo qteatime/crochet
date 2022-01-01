@@ -2,6 +2,7 @@ import * as FS from "fs";
 import * as Path from "path";
 import * as Package from "../../../build/pkg";
 import { CrochetForNode, build_file } from "../../../build/targets/node";
+import * as DocTool from "../../../build/node-cli/docs";
 
 export class App {
   constructor(readonly library_root: string, readonly pkg: Package.Package) {}
@@ -22,6 +23,16 @@ export class App {
       const dep_pkg = await crochet.fs.read_package(dep.name);
       await crochet.build(dep_pkg.filename);
     }
+  }
+
+  async docs() {
+    const crochet = new CrochetForNode(false, [], new Set([]), false, true);
+    const pkg = crochet.read_package_from_file(this.pkg.filename);
+    const target = pkg.meta.target;
+    await crochet.boot(pkg, target);
+    const data = DocTool.generate_docs(pkg, crochet.system);
+    const index = DocTool.template(pkg.meta.name, data);
+    return index;
   }
 
   get resolved_package() {

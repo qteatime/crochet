@@ -66,6 +66,10 @@ command purr project-playground: (Project is purr-project) do
   agata show: new ps-playground(Project) render;
 end
 
+command purr project-documentation: (Project is purr-project) do
+  agata show: new ps-docs(Project) render;
+end
+
 command purr home do
   agata show: ps-welcome render;
 end

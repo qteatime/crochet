@@ -75,6 +75,7 @@ type ps-test(project is purr-project) is purr-screen;
 type ps-package(project is purr-project) is purr-screen;
 type ps-run(project is purr-project) is purr-screen;
 type ps-playground(project is purr-project) is purr-screen;
+type ps-docs(project is purr-project) is purr-screen;
 
 singleton purr-common-widgets;
 

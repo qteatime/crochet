@@ -109,6 +109,19 @@ export async function setup_app_server(port: number, state: AppState) {
 
   app.use("/:id/library", Express.static(Path.join(repo_root, "stdlib")));
 
+  app.get("/:id/docs", async (req, res) => {
+    const id = (req.params as any).id;
+    try {
+      const capp = state.app(id);
+      const docs = await capp.docs();
+      res.send(docs);
+    } catch (e) {
+      res.status(500).send(`<pre>${String(e).replace(/</g, "&lt;")}</pre>`);
+    }
+  });
+  app.use("/:id/docs", Express.static(Path.join(repo_root, "tools/docs")));
+  app.use("/:id/docs/media", Express.static(Path.join(repo_root, "www")));
+
   const result = defer<void>();
   app.listen(port, () => {
     console.log(`App server started at http://localhost:${port}`);

@@ -46,6 +46,12 @@ command purr-common-widgets project-menu: (Project is purr-project) at: (Section
       | on-click: { _ in purr project-playground: Project },
 
     w action-button
+      | icon: "book"
+      | title: "Documentation"
+      | description: "Reference documentation of the project"
+      | on-click: { _ in purr project-documentation: Project },
+
+    w action-button
       | icon: "folder-open"
       | title: "Open directory"
       | description: "Open the project directory in your OS"

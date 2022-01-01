@@ -23,6 +23,7 @@
     "source/screens/package.crochet",
     "source/screens/playground.crochet",
     "source/screens/summary.crochet",
+    "source/screens/docs.crochet",
     "source/lens.crochet",
     "source/event.crochet",
     "source/ipc.crochet",

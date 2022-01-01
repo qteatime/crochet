@@ -49,7 +49,7 @@ function mapmap<K, V, U>(m: Map<K, V>, fn: (k: K, v: V) => U): U[] {
   return result;
 }
 
-function template(title0: string, data: any) {
+export function template(title0: string, data: any) {
   const title = title0.replace(/[^\w\d.\-]/g, "");
   return `
 <!DOCTYPE html>
@@ -102,7 +102,7 @@ export async function serve_docs(
   });
 }
 
-function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
+export function generate_docs(pkg: Package.Package, sys: BootedCrochet) {
   const types = mapmap(sys.universe.world.types.bindings, type_doc).filter(
     (t) => !/^effect /.test(t.name)
   );
