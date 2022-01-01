@@ -99,7 +99,7 @@ export class CrochetForBrowser {
 
     const root = await this.crochet.register_package(entry);
     const booted = await this.crochet.boot(root.meta.name, target);
-    await booted.initialise(root.meta.name);
+    await booted.initialise(root.meta.name, false);
     this._root = root;
     this._booted_system = booted;
     this._ffi = new ForeignInterface(

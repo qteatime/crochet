@@ -111,7 +111,7 @@ export class CrochetForNode {
     await this.register_libraries();
     const root = await this.crochet.register_package(entry);
     const booted = await this.crochet.boot(root.meta.name, target);
-    await booted.initialise(root.meta.name);
+    await booted.initialise(root.meta.name, this.safe_mode);
     this._root = root;
     this._booted_system = booted;
     this._ffi = new ForeignInterface(

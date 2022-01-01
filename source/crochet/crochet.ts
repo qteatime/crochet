@@ -181,7 +181,7 @@ export class BootedCrochet {
     this.universe = VM.make_universe();
   }
 
-  async initialise(root: string) {
+  async initialise(root: string, safe_mode: boolean) {
     if (this.initialised) {
       throw new Error(`initialise() called twice!`);
     }
@@ -195,7 +195,9 @@ export class BootedCrochet {
       this.reify_capability_grants(x);
     }
 
-    await VM.run_prelude(this.universe);
+    if (!safe_mode) {
+      await VM.run_prelude(this.universe);
+    }
   }
 
   async run(name: string, args: VM.CrochetValue[]) {
