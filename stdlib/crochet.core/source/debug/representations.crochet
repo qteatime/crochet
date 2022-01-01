@@ -49,7 +49,7 @@ command debug-representation for: (X is list) perspective: default-perspective d
 end
 
 command debug-representation for: (X is set) perspective: default-perspective do
-  #document list: (X map: (self for: _ perspective: default-perspective))
+  #document list: (X values map: (self for: _ perspective: default-perspective))
     | typed: #set
     | compact-layout: (
         #document plain-text: "(set with [X count to-text] elements)"
