@@ -57,13 +57,28 @@ command #document flow: (Xs is list<document>) =
 command #document flex-row: (Xs is list<document>) =
   new doc-flex-row(Xs, doc-unit-unset);
 
+command doc-flex-row gap: (X has to-doc-unit) =
+  new doc-flex-row(self.items, X as doc-unit);
+
 /// Lays items with a flex column.
 command #document flex-column: (Xs is list<document>) =
   new doc-flex-column(Xs, doc-unit-unset);
 
+command doc-flex-column gap: (X has to-doc-unit) =
+  new doc-flex-column(self.items, X as doc-unit);
+
 /// Lays items with a fixed layout.
-command #document fixed-layout: (Xs is list<document>) width: (W has to-doc-unit) height: (H has to-doc-unit) =
+command #document fixed-width: (W has to-doc-unit) height: (H has to-doc-unit) with: (Xs is list<document>) =
   new doc-fixed-layout(Xs, W as doc-unit, H as doc-unit);
+
+command #document fixed-layout: (Xs is list<document>) =
+  new doc-fixed-layout(Xs, new doc-pixels(0), new doc-pixels(0));
+
+command doc-fixed-layout width: (W has to-doc-unit) =
+  new doc-fixed-layout(self.items, W as doc-unit, self.height);
+
+command doc-fixed-layout height: (H has to-doc-unit) =
+  new doc-fixed-layout(self.items, self.width, H as doc-unit);
 
 /// Constructs a table from a record of fields.
 command #document fields: (R is record) do
