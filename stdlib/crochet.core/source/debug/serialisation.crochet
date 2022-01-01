@@ -16,7 +16,10 @@ command debug-serialisation for: (X is doc-text) =
   [
     tag -> "text",
     value -> X.value,
-    untrusted -> X.value is untrusted-text,
+    untrusted -> condition
+                   when X.value is untrusted-text => "true";
+                   otherwise => "false";
+                 end,
   ];
 
 command debug-serialisation for: (X is doc-boolean) =

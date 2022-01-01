@@ -606,7 +606,6 @@ body {
 .value-lens-text[data-untrusted="true"]::before {
   content: "(untrusted text) “";
   color: #525252;
-  margin-right: 0.5em;
 }
 
 .value-lens-boolean {
