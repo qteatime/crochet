@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added debug representations with multiple perspectives [#37](https://github.com/qteatime/crochet/pull/37);
 
-- Added `_ empty` command to `set`.
+- Added `_ empty` command to `set`;
 
 ### Fixed
 
 - Fixed the port of the launcher server when running from the CLI [6ac17ac704be634751a21006a387f413f94622c3](https://github.com/qteatime/crochet/commit/6ac17ac704be634751a21006a387f413f94622c3);
+
+- Support running the `docs` command on packages that have `prelude` declarations.
 
 ## [0.13.0] - 2021-12-25
 
