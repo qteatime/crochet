@@ -1,5 +1,12 @@
 % crochet
 
+/// Constructs an empty set.
+command #set empty =
+  #set from: []
+test
+  assert (#set empty | values) === [];
+end
+
 /// Constructs a new set from the values found in the given list.
 command #set from: (Items is list<Value>) =
   new set(foreign set.make-from-list(Items));
