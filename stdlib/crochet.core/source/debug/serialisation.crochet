@@ -25,7 +25,7 @@ command debug-serialisation for: (X is doc-text) =
 command debug-serialisation for: (X is doc-boolean) =
   [
     tag -> "boolean",
-    value -> X.value to,
+    value -> X.value,
   ];
 
 command debug-serialisation for: (X is doc-plain-text) =
