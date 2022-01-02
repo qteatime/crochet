@@ -57,7 +57,7 @@ command debug-representation for: (X is set) perspective: default-perspective do
 end
 
 command debug-representation for: (X is map) perspective: default-perspective do
-  let Rows = X pairs
+  let Rows = X entries
               | map: { P in #document table-row: [
                               self for: P key perspective: default-perspective,
                               self for: P value perspective: default-perspective,
