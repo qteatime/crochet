@@ -87,7 +87,7 @@ With this we have:
     let Trace = trace span: { [3, 5, 1, 2, 6, 9, 7] sort-by: (_ <= _) };
     Trace
       | select: Tracer
-      | map: { Call in [in -> Call parameters at: 0, out -> Call result] };
+      | map: { Call in [in -> Call parameters first, out -> Call result] };
 
 This can then be rendered as a tree of states, rather than a linear timeline.
 It's important that this work as a tree because here each step of `_ sort-by: _`
