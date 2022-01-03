@@ -8,7 +8,9 @@
 
 ## Summary
 
-Crochet needs a way of letting people understand the execution of their programs over time. Tracing has long since been used for this, and this document proposes a way of adding tracing to Crochet.
+Crochet needs a way of letting people understand the execution of their
+programs over time. Tracing has long since been used for this, and this
+document proposes a way of adding tracing to Crochet.
 
 For example, let's say you want to understand how a certain value evolves
 over time. You could write the following:
@@ -90,7 +92,7 @@ With this we have:
 This can then be rendered as a tree of states, rather than a linear timeline.
 It's important that this work as a tree because here each step of `_ sort-by: _`
 makes two separate calls to itself. A linear timeline would lose that
-relationship, and thus make it easier to understand what was going on with
+relationship, and thus make it harder to understand what was going on with
 the program.
 
 The top-level span here is added by the user, but all other spans in this
@@ -99,7 +101,11 @@ during the program's execution.
 
 ## Traces and spans
 
-The primitives of this proposal are traces and spans. A trace is a typed stream of all things that happened during the execution of the program over a certain period of time. Spans, on the other hand, are a way of classifying how all of these typed trace entries relate to each other---in a similar way to distributed tracing spans.
+The primitives of this proposal are traces and spans. A trace is a typed
+stream of all things that happened during the execution of the program over
+a certain period of time. Spans, on the other hand, are a way of classifying
+how all of these typed trace entries relate to each other---in a similar way
+to distributed tracing spans.
 
 This gives rise to the following language:
 
@@ -112,19 +118,26 @@ This gives rise to the following language:
 
     trace(stream<trace-entry>)
 
-Notice how spans naturally organise the relations of the entries in ways that capture how they nested during runtime, making it possible to build more useful visualisations that account for these relationships. Spans also quite naturally mimic actual activation frames.
+Notice how spans naturally organise the relations of the entries in ways that
+capture how they nested during runtime, making it possible to build more useful
+visualisations that account for these relationships. Spans also quite naturally
+mimic actual activation frames.
 
 ## VM support
 
 In order for this to work the VM needs to support tracing in its core---it
 would be very hard to properly trace things like function calls or type
-constructions otherwise. The VM currently has minimal support for tracing, based on recordable streams with constraint-based selections. This is similar to the tracing mechanisms of the BEAM VM.
+constructions otherwise. The VM currently has minimal support for tracing,
+based on recordable streams with constraint-based selections. This is similar
+to the tracing mechanisms of the BEAM VM.
 
-More work is needed to relate these recorded traces to spans, though, as the VM does not have any concept of spans currently.
+More work is needed to relate these recorded traces to spans, though, as the
+VM does not have any concept of spans currently.
 
 ## Library support
 
-`crochet.debug` should be the entry point of all tracing interactions with the user. The operations it supports are:
+`crochet.debug` should be the entry point of all tracing interactions with
+the user. The operations it supports are:
 
 - Marking a region of code as a trace span (i.e.: all code within ran from
   that dynamic region will get tagged with the same span);
