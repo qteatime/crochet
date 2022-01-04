@@ -44,7 +44,7 @@ function* run_turn(
   state: SimulationState,
   relations: Namespace<CrochetRelation>
 ) {
-  const location = state.state.activation.location;
+  const location = state.state.activation.span;
   const trace = state.state.universe.trace;
   let actions_fired = 0;
   let events_fired = 0;
@@ -128,7 +128,7 @@ function* pick_action(
     actor
   );
   state.state.universe.trace.publish_action_choice(
-    state.state.activation.location,
+    state.state.activation.span,
     actor,
     actions
   );

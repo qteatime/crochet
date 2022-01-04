@@ -695,6 +695,14 @@ export class ContinuationTap {
 export const _done = new ContinuationDone();
 export const _return = new ContinuationReturn();
 
+export class TraceSpan {
+  constructor(
+    readonly parent: TraceSpan | null,
+    readonly location: ActivationLocation,
+    readonly description: string
+  ) {}
+}
+
 export enum ActivationTag {
   CROCHET_ACTIVATION,
   NATIVE_ACTIVATION,
@@ -705,6 +713,7 @@ export type Activation = CrochetActivation | NativeActivation;
 export interface IActivation {
   tag: ActivationTag;
   parent: Activation | null;
+  span: TraceSpan;
   continuation: Continuation;
   handlers: HandlerStack;
 }
@@ -725,6 +734,7 @@ export class CrochetActivation implements IActivation {
   public block_stack: [number, IR.BasicBlock][] = [];
   private _return: CrochetValue | null = null;
   public instruction: number = 0;
+  public span: TraceSpan;
 
   constructor(
     readonly parent: Activation | null,
@@ -733,7 +743,13 @@ export class CrochetActivation implements IActivation {
     readonly continuation: Continuation,
     readonly handlers: HandlerStack,
     public block: IR.BasicBlock
-  ) {}
+  ) {
+    if (parent != null) {
+      this.span = parent.span;
+    } else {
+      this.span = new TraceSpan(null, location, "(root span)");
+    }
+  }
 
   get current(): IR.Op | null {
     if (this.instruction < 0 || this.instruction > this.block.ops.length) {
@@ -870,6 +886,8 @@ export type NativeLocation = NativeFunction | null;
 
 export class NativeActivation implements IActivation {
   readonly tag = ActivationTag.NATIVE_ACTIVATION;
+  public span: TraceSpan;
+
   constructor(
     readonly parent: Activation | null,
     readonly location: NativeLocation,
@@ -877,7 +895,13 @@ export class NativeActivation implements IActivation {
     readonly routine: Machine<CrochetValue>,
     readonly handlers: HandlerStack,
     readonly continuation: Continuation
-  ) {}
+  ) {
+    if (parent != null) {
+      this.span = parent.span;
+    } else {
+      this.span = new TraceSpan(null, location, "(root span)");
+    }
+  }
 }
 
 export class Universe {

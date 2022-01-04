@@ -6,6 +6,7 @@ import {
   CrochetRelation,
   CrochetValue,
   RelationTag,
+  TraceSpan,
 } from "../intrinsics";
 import { EventChoice } from "../simulation/contexts";
 import {
@@ -40,7 +41,7 @@ export class CrochetTrace {
   }
 
   publish_fact(
-    location: ActivationLocation,
+    location: TraceSpan,
     relation: CrochetRelation,
     values: CrochetValue[]
   ) {
@@ -48,31 +49,31 @@ export class CrochetTrace {
   }
 
   publish_forget(
-    location: ActivationLocation,
+    location: TraceSpan,
     relation: CrochetRelation,
     values: CrochetValue[]
   ) {
     this.publish(new TEForget(location, relation as any, values));
   }
 
-  publish_turn(location: ActivationLocation, turn: CrochetValue) {
+  publish_turn(location: TraceSpan, turn: CrochetValue) {
     this.publish(new TETurn(location, turn));
   }
 
-  publish_action(location: ActivationLocation, choice: ActionChoice) {
+  publish_action(location: TraceSpan, choice: ActionChoice) {
     this.publish(new TEAction(location, choice));
   }
 
-  publish_event(location: ActivationLocation, event: EventChoice) {
+  publish_event(location: TraceSpan, event: EventChoice) {
     this.publish(new TEEvent(location, event));
   }
 
-  publish_goal_reached(location: ActivationLocation, goal: IR.SimulationGoal) {
+  publish_goal_reached(location: TraceSpan, goal: IR.SimulationGoal) {
     this.publish(new TEGoalReached(location, goal));
   }
 
   publish_action_choice(
-    location: ActivationLocation,
+    location: TraceSpan,
     turn: CrochetValue,
     choices: ActionChoice[]
   ) {

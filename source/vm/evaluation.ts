@@ -298,28 +298,6 @@ export class Thread {
     }
   }
 
-  find_crochet_location(
-    start_activation: Activation
-  ): ActivationLocation | null {
-    let activation: Activation | null = start_activation;
-    while (activation != null) {
-      switch (activation.tag) {
-        case ActivationTag.CROCHET_ACTIVATION: {
-          return activation.location;
-        }
-
-        case ActivationTag.NATIVE_ACTIVATION: {
-          activation = activation.parent;
-          continue;
-        }
-
-        default:
-          throw unreachable(activation, "Activation");
-      }
-    }
-    return null;
-  }
-
   step_native(activation: NativeActivation, input: CrochetValue): Signal {
     const { value, done } = activation.routine.next(input);
     if (done) {
@@ -381,10 +359,13 @@ export class Thread {
         }
 
         case NativeSignalTag.TRANSCRIPT_WRITE: {
-          const loc = this.find_crochet_location(activation);
-
           this.universe.trace.publish(
-            new TELog("transcript.write", value.tag_name, loc, value.message)
+            new TELog(
+              "transcript.write",
+              value.tag_name,
+              activation.span,
+              value.message
+            )
           );
           return this.step_native(activation, this.universe.nothing);
         }
@@ -825,7 +806,7 @@ export class Thread {
           op.relation
         );
         Relation.insert(relation, values);
-        this.universe.trace.publish_fact(activation.location, relation, values);
+        this.universe.trace.publish_fact(activation.span, relation, values);
         activation.next();
         return _continue;
       }
@@ -838,11 +819,7 @@ export class Thread {
           op.relation
         );
         Relation.remove(relation, values);
-        this.universe.trace.publish_forget(
-          activation.location,
-          relation,
-          values
-        );
+        this.universe.trace.publish_forget(activation.span, relation, values);
         activation.next();
         return _continue;
       }
