@@ -4,9 +4,6 @@
 singleton benchmark;
 
 /// Runs the given `Block` and outputs the amount of time it took to execute.
-command benchmark block: (Block is function-0) tag: (Tag is text)
-  = foreign debug.time(Tag, Block);
+command benchmark tag: (Tag is text) block: (Block is function-0) =
+  foreign debug.time(Tag, Block);
 
-/// Runs the givne `Block` and outputs the amount of time it took to execute.
-command benchmark block: Block =
-  benchmark block: Block tag: "Time";

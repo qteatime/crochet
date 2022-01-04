@@ -6,13 +6,25 @@ capability internal;
 protect global internal with internal;
 protect type internal with internal;
 
+capability tracing;
+
+singleton trace;
+
+protect global trace with tracing;
+protect type trace with tracing;
+
+abstract trace-event;
+type te-log(tag, location, value) is trace-event;
+type te-log-message(tag, location, message is text) is trace-event;
+
 type trace-span(box is unknown);
 type trace-recorder(box is unknown);
+type trace-slice(events is list<trace-event>);
 
 abstract trace-constraint;
 
 type tc-has-tag(tag) is trace-constraint;
 type tc-has-span(span is trace-span) is trace-constraint;
 
-abstract trace-event;
-type te-log(tag, location, message) is trace-event;
+
+

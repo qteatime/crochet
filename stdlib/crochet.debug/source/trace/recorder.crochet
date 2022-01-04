@@ -1,0 +1,16 @@
+% crochet
+
+command trace-recorder stop do
+  foreign trace.stop(self.box);
+  self;
+end
+
+command trace-recorder start do
+  foreign trace.start(self.box);
+  self;
+end
+
+command trace-recorder events do
+  let Events = foreign trace.events(self.box);
+  new trace-slice(Events map: (internal to-event: _));
+end

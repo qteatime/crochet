@@ -1,0 +1,8 @@
+% crochet
+
+command trace record: (Constraint is trace-constraint) =
+  new trace-recorder(foreign trace.make-recorder(internal compile: Constraint));
+
+command trace with-span: (Fn is (trace-span -> A)) -> A =
+  foreign trace.with-span(Fn);
+

@@ -1,0 +1,14 @@
+% crochet
+
+command internal compile: (C is tc-has-tag) =
+  foreign trace.tc-has-tag(C.tag);
+
+command internal compile: (C is tc-has-span) =
+  foreign trace.tc-has-span(C.span.box);
+
+
+command #trace-constraint has-tag: Tag =
+  new tc-has-tag(Tag);
+
+command #trace-constraint has-span: (Span is trace-span) =
+  new tc-has-span(Span);

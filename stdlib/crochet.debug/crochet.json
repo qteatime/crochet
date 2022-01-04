@@ -6,9 +6,14 @@
     "source/types.crochet",
     "source/transcript.crochet",
     "source/time.crochet",
-    "source/trace.crochet"
+    "source/trace/api.crochet",
+    "source/trace/constraint.crochet",
+    "source/trace/events.crochet",
+    "source/trace/recorder.crochet",
+    "source/trace/representation.crochet",
+    "source/trace/slice.crochet"
   ],
-  "native_sources": ["native/debug.js"],
+  "native_sources": ["native/debug.js", "native/trace.js"],
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],

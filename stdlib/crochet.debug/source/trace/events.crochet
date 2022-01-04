@@ -1,0 +1,14 @@
+% crochet
+
+command internal to-event: Event do
+  condition
+    when Event.tag === "LOG" =>
+      new te-log(Event.log-tag, Event.location, Event.value);
+    
+    when Event.tag === "LOG_MESSAGE" =>
+      new te-log-message(Event.log-tag, Event.location, Event.message);
+  end
+end
+
+command te-log value = self.value as unknown;
+command te-log-message message = self.message as unknown;

@@ -2,6 +2,7 @@ import * as Collection from "../collection";
 import type { Set as ISet, Map as IMap, List as IList } from "../collection";
 import { XorShift } from "../utils/xorshift";
 import {
+  ActivationLocation,
   CrochetModule,
   CrochetPackage,
   CrochetType,
@@ -290,6 +291,16 @@ export class ForeignInterface {
     );
   }
 
+  is_value_of_same_type(x: CrochetValue, type0: CrochetValue) {
+    if (type0.tag === Tag.TYPE) {
+      Values.assert_tag(Tag.TYPE, type0);
+      const type = type0.payload;
+      return Types.get_static_type(this.#universe, x.type) === type;
+    } else {
+      throw this.panic("invalid-type", "Expected a static-type");
+    }
+  }
+
   get_type_info(x: CrochetValue) {
     if (x.tag === Tag.TYPE) {
       Values.assert_tag(Tag.TYPE, x);
@@ -388,6 +399,10 @@ export class ForeignInterface {
 
   get_traced_events(recorder: TraceRecorder) {
     return recorder.events;
+  }
+
+  location_debug_string(x: ActivationLocation) {
+    return Location.activation_location(x);
   }
 
   // == Dangerous introspection that needs more thought

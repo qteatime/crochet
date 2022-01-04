@@ -1,0 +1,25 @@
+% crochet
+
+command debug-representation for: (E is te-log) perspective: (P is default-perspective) do
+  let Location = foreign trace.location-repr(E.location);
+  #document flex-column: [
+    debug-representation for: E.tag perspective: P,
+    #document plain-text: Location,
+    debug-representation for: E.value perspective: P,
+  ];
+end
+
+command debug-representation for: (E is te-log-message) perspective: (P is default-perspective) do
+  let Location = foreign trace.location-repr(E.location);
+  #document flex-column: [
+    debug-representation for: E.tag perspective: P,
+    #document plain-text: Location,
+    #document plain-text: E.message
+  ];
+end
+
+command debug-representation for: (X is trace-slice) perspective: (P is default-perspective) do
+  #document list: (
+    X.events map: (debug-representation for: _ perspective: P)
+  );
+end
