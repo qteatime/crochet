@@ -41,7 +41,7 @@ export class CrochetTrace {
   }
 
   publish_fact(
-    location: TraceSpan,
+    location: TraceSpan | null,
     relation: CrochetRelation,
     values: CrochetValue[]
   ) {
@@ -49,31 +49,31 @@ export class CrochetTrace {
   }
 
   publish_forget(
-    location: TraceSpan,
+    location: TraceSpan | null,
     relation: CrochetRelation,
     values: CrochetValue[]
   ) {
     this.publish(new TEForget(location, relation as any, values));
   }
 
-  publish_turn(location: TraceSpan, turn: CrochetValue) {
+  publish_turn(location: TraceSpan | null, turn: CrochetValue) {
     this.publish(new TETurn(location, turn));
   }
 
-  publish_action(location: TraceSpan, choice: ActionChoice) {
+  publish_action(location: TraceSpan | null, choice: ActionChoice) {
     this.publish(new TEAction(location, choice));
   }
 
-  publish_event(location: TraceSpan, event: EventChoice) {
+  publish_event(location: TraceSpan | null, event: EventChoice) {
     this.publish(new TEEvent(location, event));
   }
 
-  publish_goal_reached(location: TraceSpan, goal: IR.SimulationGoal) {
+  publish_goal_reached(location: TraceSpan | null, goal: IR.SimulationGoal) {
     this.publish(new TEGoalReached(location, goal));
   }
 
   publish_action_choice(
-    location: TraceSpan,
+    location: TraceSpan | null,
     turn: CrochetValue,
     choices: ActionChoice[]
   ) {

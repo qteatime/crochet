@@ -713,7 +713,7 @@ export type Activation = CrochetActivation | NativeActivation;
 export interface IActivation {
   tag: ActivationTag;
   parent: Activation | null;
-  span: TraceSpan;
+  span: TraceSpan | null;
   continuation: Continuation;
   handlers: HandlerStack;
 }
@@ -734,7 +734,7 @@ export class CrochetActivation implements IActivation {
   public block_stack: [number, IR.BasicBlock][] = [];
   private _return: CrochetValue | null = null;
   public instruction: number = 0;
-  public span: TraceSpan;
+  public span: TraceSpan | null;
 
   constructor(
     readonly parent: Activation | null,
@@ -747,7 +747,7 @@ export class CrochetActivation implements IActivation {
     if (parent != null) {
       this.span = parent.span;
     } else {
-      this.span = new TraceSpan(null, location, "(root span)");
+      this.span = null;
     }
   }
 
@@ -886,7 +886,7 @@ export type NativeLocation = NativeFunction | null;
 
 export class NativeActivation implements IActivation {
   readonly tag = ActivationTag.NATIVE_ACTIVATION;
-  public span: TraceSpan;
+  public span: TraceSpan | null;
 
   constructor(
     readonly parent: Activation | null,
@@ -899,7 +899,7 @@ export class NativeActivation implements IActivation {
     if (parent != null) {
       this.span = parent.span;
     } else {
-      this.span = new TraceSpan(null, location, "(root span)");
+      this.span = null;
     }
   }
 }
