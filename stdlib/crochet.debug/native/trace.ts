@@ -40,25 +40,25 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("trace.tc-has-span", (span) => {
-    return ffi.box(ffi.trace_constraint.event_span(ffi.unbox(span)));
+    return ffi.box(ffi.trace_constraint.event_span(ffi.unbox(span) as any));
   });
 
   ffi.defun("trace.make-recorder", (constraint) => {
-    return ffi.box(ffi.make_trace_recorder(ffi.unbox(constraint)));
+    return ffi.box(ffi.make_trace_recorder(ffi.unbox(constraint) as any));
   });
 
   ffi.defun("trace.stop", (recorder) => {
-    ffi.stop_recorder(ffi.unbox(recorder));
+    ffi.stop_recorder(ffi.unbox(recorder) as any);
     return ffi.nothing;
   });
 
   ffi.defun("trace.start", (recorder) => {
-    ffi.start_recorder(ffi.unbox(recorder));
+    ffi.start_recorder(ffi.unbox(recorder) as any);
     return ffi.nothing;
   });
 
   ffi.defun("trace.events", (recorder) => {
-    const events = ffi.get_traced_events(ffi.unbox(recorder));
+    const events = ffi.get_traced_events(ffi.unbox(recorder) as any);
     return ffi.list(
       events
         .map(to_event_record)
