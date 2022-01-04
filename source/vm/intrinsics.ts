@@ -859,7 +859,7 @@ export class NSTranscriptWrite extends NSBase {
   readonly tag = NativeSignalTag.TRANSCRIPT_WRITE;
 
   constructor(
-    readonly tag_name: string,
+    readonly tag_name: CrochetValue,
     readonly message: CrochetValue | string
   ) {
     super();

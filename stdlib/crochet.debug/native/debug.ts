@@ -36,14 +36,12 @@ export default (ffi: ForeignInterface) => {
   }
 
   ffi.defmachine("debug.write", function* (text) {
-    console.log(ffi.text_to_string(text));
-    yield ffi.push_transcript("debug", ffi.text_to_string(text));
+    yield ffi.push_transcript(ffi.text("debug"), ffi.text_to_string(text));
     return ffi.nothing;
   });
 
   ffi.defmachine("debug.write-inspect", function* (value) {
-    console.debug("[INSPECT]", value);
-    yield ffi.push_transcript("inspect", value);
+    yield ffi.push_transcript(ffi.text("inspect"), value);
     return ffi.nothing;
   });
 
@@ -53,7 +51,7 @@ export default (ffi: ForeignInterface) => {
     const us_end = now();
     const diff = us_end - us_start;
     yield ffi.push_transcript(
-      "time",
+      ffi.text("time"),
       `[${ffi.text_to_string(label)}] ${format_time_diff(diff)}`
     );
     return result;

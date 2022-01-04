@@ -62,7 +62,7 @@ export class TELog extends BaseTraceEvent {
   readonly tag = TraceTag.LOG;
   constructor(
     readonly category: string,
-    readonly log_tag: string,
+    readonly log_tag: CrochetValue,
     readonly location: ActivationLocation,
     readonly value: CrochetValue | string
   ) {

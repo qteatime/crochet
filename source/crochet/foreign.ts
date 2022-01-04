@@ -332,7 +332,7 @@ export class ForeignInterface {
     return XorShift.new_random();
   }
 
-  push_transcript(tag: string, x: CrochetValue | string) {
+  push_transcript(tag: CrochetValue, x: CrochetValue | string) {
     return new NSTranscriptWrite(tag, x);
   }
 
