@@ -14,12 +14,9 @@ import {
   TRM_Test_Started,
 } from "../../crochet";
 import { CrochetValue, CrochetTest } from "../../vm";
-import { Transcript } from "../../services/transcript";
-import { html } from "../../services/debug/representation/html-renderer";
 import { DebugUI } from "../../services/debug/app";
 import { EventStream } from "../../utils/event";
-import * as UUID from "uuid";
-import { defer, unreachable } from "../../utils/utils";
+import { defer } from "../../utils/utils";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;

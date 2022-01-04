@@ -254,7 +254,7 @@ async function run([file]: string[], options: Options) {
     return;
   }
 
-  console.log(crochet.renderer.render_value(value));
+  console.log(Crochet.vm.Location.simple_value(value));
 }
 
 async function test([file]: string[], options: Options) {
