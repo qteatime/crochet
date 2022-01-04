@@ -794,6 +794,7 @@ export enum NativeSignalTag {
   EVALUATE,
   JUMP,
   TRANSCRIPT_WRITE,
+  WITH_SPAN,
   MAKE_CLOSURE,
   CURRENT_ACTIVATION,
   CURRENT_UNIVERSE,
@@ -807,6 +808,7 @@ export type NativeSignal =
   | NSJump
   | NSTranscriptWrite
   | NSMakeClosure
+  | NSWithSpan
   | NSCurrentActivation
   | NSCurrentUniverse;
 
@@ -824,6 +826,17 @@ export class NSApply extends NSBase {
   readonly tag = NativeSignalTag.APPLY;
 
   constructor(readonly fn: CrochetValue, readonly args: CrochetValue[]) {
+    super();
+  }
+}
+
+export class NSWithSpan extends NSBase {
+  readonly tag = NativeSignalTag.WITH_SPAN;
+
+  constructor(
+    readonly fn: (span: TraceSpan) => Machine<CrochetValue>,
+    readonly description: string
+  ) {
     super();
   }
 }

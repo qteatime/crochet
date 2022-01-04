@@ -1,4 +1,4 @@
-import { CrochetCapturedContext, CrochetNativeLambda, Tag } from ".";
+import { CrochetCapturedContext, CrochetNativeLambda, Tag, TraceSpan } from ".";
 import * as IR from "../ir";
 import { AssertType } from "../ir";
 import { logger } from "../utils/logger";
@@ -383,6 +383,25 @@ export class Thread {
               )
             )
           );
+        }
+
+        case NativeSignalTag.WITH_SPAN: {
+          const span = new TraceSpan(
+            activation.span,
+            activation.location,
+            value.description
+          );
+          const machine = value.fn(span);
+          const new_activation = new NativeActivation(
+            activation,
+            activation.location,
+            new Environment(null, null, null, null),
+            machine,
+            activation.handlers,
+            _return
+          );
+          new_activation.span = span;
+          return new JumpSignal(new_activation);
         }
 
         case NativeSignalTag.CURRENT_ACTIVATION: {

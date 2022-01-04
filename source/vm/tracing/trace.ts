@@ -1,14 +1,12 @@
 import * as IR from "../../ir";
 import {
   ActionChoice,
-  ActivationLocation,
-  CrochetActivation,
   CrochetRelation,
   CrochetValue,
-  RelationTag,
   TraceSpan,
 } from "../intrinsics";
 import { EventChoice } from "../simulation/contexts";
+import { TraceConstraint } from "./constraint";
 import {
   TEAction,
   TEActionChoice,
@@ -18,10 +16,37 @@ import {
   TEGoalReached,
   TETurn,
   TraceEvent,
-  TraceTag,
 } from "./events";
 
 type Subscriber = (event: TraceEvent) => void;
+
+export class TraceRecorder {
+  private _events: TraceEvent[] = [];
+
+  constructor(
+    readonly trace: CrochetTrace,
+    readonly constraint: TraceConstraint
+  ) {}
+
+  get events() {
+    return this._events;
+  }
+
+  start() {
+    this._events = [];
+    this.trace.subscribe(this.receive);
+  }
+
+  stop() {
+    this.trace.unsubscribe(this.receive);
+  }
+
+  receive = (event: TraceEvent) => {
+    if (this.constraint.accepts(event)) {
+      this._events.push(event);
+    }
+  };
+}
 
 export class CrochetTrace {
   private subscribers: Subscriber[] = [];

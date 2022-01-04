@@ -1,0 +1,18 @@
+% crochet
+
+singleton internal;
+
+capability internal;
+protect global internal with internal;
+protect type internal with internal;
+
+type trace-span(box is unknown);
+type trace-recorder(box is unknown);
+
+abstract trace-constraint;
+
+type tc-has-tag(tag) is trace-constraint;
+type tc-has-span(span is trace-span) is trace-constraint;
+
+abstract trace-event;
+type te-log(tag, location, message) is trace-event;

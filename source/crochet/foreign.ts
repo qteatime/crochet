@@ -19,9 +19,17 @@ import {
   NSInvoke,
   NSMakeClosure,
   NSTranscriptWrite,
+  NSWithSpan,
   run_native,
   run_native_sync,
   Tag,
+  TCEventSpan,
+  TCLogTag,
+  TraceConstraint,
+  TraceEvent,
+  TraceRecorder,
+  TraceSpan,
+  TraceTag,
   Types,
   Universe,
   Values,
@@ -338,6 +346,48 @@ export class ForeignInterface {
 
   uuid4() {
     return UUID.v4();
+  }
+
+  // == Tracing (only exposed for debug package)
+  trace_constraint = {
+    log_tag(tag: CrochetValue) {
+      return new TCLogTag(tag);
+    },
+
+    event_span(span: TraceSpan) {
+      return new TCEventSpan(span);
+    },
+  };
+
+  match_trace_event<A>(
+    event: TraceEvent,
+    patterns: Record<keyof typeof TraceTag, (event: TraceEvent) => A>
+  ): A {
+    const key = TraceTag[event.tag];
+    return (patterns as any)[key](event);
+  }
+
+  with_span(
+    description: string,
+    fn: (span: TraceSpan) => Machine<CrochetValue>
+  ) {
+    return new NSWithSpan(fn, description);
+  }
+
+  make_trace_recorder(constraint: TraceConstraint) {
+    return new TraceRecorder(this.#universe.trace, constraint);
+  }
+
+  start_recorder(recorder: TraceRecorder) {
+    recorder.start();
+  }
+
+  stop_recorder(recorder: TraceRecorder) {
+    recorder.stop();
+  }
+
+  get_traced_events(recorder: TraceRecorder) {
+    return recorder.events;
   }
 
   // == Dangerous introspection that needs more thought
