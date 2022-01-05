@@ -87,6 +87,10 @@ type doc-colour-rgba(
   alpha is integer,
 ) is doc-colour;
 
+trait to-doc-colour with
+  command Value as doc-colour;
+end
+
 /// A way of formatting and presenting shapes
 type doc-presentation(
   stroke-colour is doc-colour,

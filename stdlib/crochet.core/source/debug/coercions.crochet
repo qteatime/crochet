@@ -81,3 +81,18 @@ command (Text is static-text) as doc-font-decoration do
     when Text =:= "none" => doc-font-no-decoration;
   end
 end
+
+
+implement to-doc-colour for static-text;
+
+command (Code is static-text) as doc-colour do
+  let Components = foreign conversion.colour-code-to-components(Code);
+  #doc-colour
+    red: Components.red
+    green: Components.green
+    blue: Components.blue
+    alpha: Components.alpha;
+test
+  assert ("#000000" as doc-colour) === (#doc-colour red: 0 green: 0 blue: 0 alpha: 255);
+  assert ("#ffffff00" as doc-colour) === (#doc-colour red: 255 green: 255 blue: 255 alpha: 0);
+end

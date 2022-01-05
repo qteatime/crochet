@@ -252,14 +252,14 @@ command document expanded-layout: (Doc is document) =
 command #document style =
   new doc-presentation(doc-colour-inherit, doc-unit-unset, doc-colour-inherit);
 
-command doc-presentation stroke-colour: (Colour is doc-colour) =
-  new doc-presentation(Colour, self.stroke-width, self.fill-colour);
+command doc-presentation stroke-colour: (Colour has to-doc-colour) =
+  new doc-presentation(Colour as doc-colour, self.stroke-width, self.fill-colour);
 
 command doc-presentation stroke-width: (Width has to-doc-unit) =
   new doc-presentation(self.stroke-colour, Width as doc-unit, self.fill-colour);
 
-command doc-presentation fill-colour: (Colour is doc-colour) =
-  new doc-presentation(self.stroke-colour, self.stroke-width, Colour);
+command doc-presentation fill-colour: (Colour has to-doc-colour) =
+  new doc-presentation(self.stroke-colour, self.stroke-width, Colour as doc-colour);
 
 
 command #doc-unit unset = doc-unit-unset;
@@ -296,6 +296,12 @@ command #doc-colour inherit =
 
 command #doc-colour transparent =
   #doc-colour red: 255 green: 255 blue: 255 alpha: 0;
+
+command #doc-colour black =
+  #doc-colour red: 0 green: 0 blue: 0 alpha: 255;
+
+command #doc-colour white =
+  #doc-colour red: 255 green: 255 blue: 255 alpha: 255;
 
 command #doc-colour red: (R is integer) green: (G is integer) blue: (B is integer) alpha: (A is integer)
 requires
@@ -342,11 +348,11 @@ command doc-font-presentation size: (Size has to-doc-unit) =
     self.decoration,
   );
 
-command doc-font-presentation colour: (Colour is doc-colour) =
+command doc-font-presentation colour: (Colour has to-doc-colour) =
   new doc-font-presentation(
     self.family,
     self.size,
-    Colour,
+    Colour as doc-colour,
     self.style,
     self.weight,
     self.decoration,

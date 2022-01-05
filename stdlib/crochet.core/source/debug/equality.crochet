@@ -1,0 +1,9 @@
+% crochet
+
+implement equality for doc-colour-rgba;
+
+command doc-colour-rgba === (That is doc-colour-rgba) =
+  (self.red === That.red) and
+  (self.green === That.green) and
+  (self.blue === That.blue) and
+  (self.alpha === That.alpha);
