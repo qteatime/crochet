@@ -1,25 +1,50 @@
 % crochet
 
+local singleton repr;
+
+command repr meta-colour =
+  "#95A5A6" as doc-colour;
+
+command repr location: Text do
+  #document plain-text: Text
+    | format-text: { F in 
+        F size: (0.9 as doc-em)
+        | colour: repr meta-colour
+      };
+end
+
+
 command debug-representation for: (E is te-log) perspective: (P is default-perspective) do
   let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     debug-representation for: E.tag perspective: P,
-    #document plain-text: Location,
+    repr location: Location,
     debug-representation for: E.value perspective: P,
-  ];
+  ] | gap: (0.5 as doc-em);
 end
 
 command debug-representation for: (E is te-log-message) perspective: (P is default-perspective) do
   let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     debug-representation for: E.tag perspective: P,
-    #document plain-text: Location,
+    repr location: Location,
     #document plain-text: E.message
-  ];
+  ] | gap: (0.5 as doc-em);
 end
 
 command debug-representation for: (X is trace-slice) perspective: (P is default-perspective) do
   #document list: (
     X.events map: (debug-representation for: _ perspective: P)
-  );
+  )
+  | scroll-view: { V in V max-height: 500 };
+end
+
+
+type event-perspective is perspective;
+
+implement debug-perspective for event-perspective;
+command event-perspective name = "Events";
+
+command debug-representation for: (X is trace-recorder) perspective: (P is event-perspective) do
+  debug-representation for: X events perspective: default-perspective;
 end

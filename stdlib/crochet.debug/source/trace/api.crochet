@@ -3,6 +3,14 @@
 command trace record: (Constraint is trace-constraint) =
   new trace-recorder(foreign trace.make-recorder(internal compile: Constraint));
 
+command trace record: Constraint in: (Block is (() -> nothing)) do
+  let Trace = trace record: Constraint;
+  Trace start;
+  Block();
+  Trace stop;
+  Trace;
+end
+
 command trace with-span: (Fn is (trace-span -> A)) -> A =
   foreign trace.with-span(Fn);
 

@@ -32,6 +32,10 @@ command float as doc-percent =
 command float as doc-em =
   new doc-em(self);
 
+implement to-doc-font-family for doc-font-family;
+command doc-font-family as doc-font-family =
+  self;
+
 
 implement to-doc-font-family for static-text;
 
@@ -44,6 +48,10 @@ command (Text is static-text) as doc-font-family do
   end
 end
 
+implement to-doc-font-style for doc-font-style;
+command doc-font-style as doc-font-style =
+  self;
+
 
 implement to-doc-font-style for static-text;
 
@@ -55,6 +63,10 @@ command (Text is static-text) as doc-font-style do
   end
 end
 
+
+implement to-doc-font-weight for doc-font-weight;
+command doc-font-weight as doc-font-weight =
+  self;
 
 implement to-doc-font-weight for static-text;
 
@@ -69,6 +81,9 @@ command (Text is static-text) as doc-font-weight do
   end
 end
 
+implement to-doc-font-decoration for doc-font-decoration;
+command doc-font-decoration as doc-font-decoration =
+  self;
 
 implement to-doc-font-decoration for static-text;
 
@@ -82,6 +97,11 @@ command (Text is static-text) as doc-font-decoration do
   end
 end
 
+
+implement to-doc-colour for doc-colour;
+
+command doc-colour as doc-colour =
+  self;
 
 implement to-doc-colour for static-text;
 

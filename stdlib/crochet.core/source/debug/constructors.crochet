@@ -183,23 +183,14 @@ command doc-polyline style: (Style is doc-presentation) =
 
 
 /// Constructs a scrollable view
-command #document scroll-view: (Items is list<document>) =
-  new doc-scroll-view(Items, #doc-scroll-presentation zero);
+command document scroll-view: (View is (doc-scroll-presentation -> doc-scroll-presentation)) =
+  new doc-scroll-view(self, View(#doc-scroll-presentation defaults));
 
-command doc-scroll-view max-width: (Width has to-doc-unit) =
-  new doc-scroll-view(self.items, self.scroll max-width: Width);
-
-command doc-scroll-view max-height: (Height has to-doc-unit) =
-  new doc-scroll-view(self.items, self.scroll max-height: Height);
-
-command doc-scroll-view scroll-horizontally: (Scroll is doc-scroll) = 
-  new doc-scroll-view(self.items, self.scroll scroll-horizontally: Scroll);
-
-command doc-scroll-view scroll-vertically: (Scroll is doc-scroll) =
-  new doc-scroll-view(self.items, self.scroll scroll-vertically: Scroll);
+command doc-scroll-view scroll-view: (View is (doc-scroll-presentation -> doc-scroll-presentation)) =
+  new doc-scroll-view(self, View(self.scroll));
 
 
-command #doc-scroll-presentation zero =
+command #doc-scroll-presentation defaults =
   new doc-scroll-presentation(
     doc-unit-unset,
     doc-unit-unset,

@@ -165,9 +165,8 @@ end
 command debug-serialisation for: (X is doc-scroll-view) =
   [
     tag -> "scroll-view",
-    items -> X.items map: (self for: _),
-    scroll -> self for: X.scroll,
-    presentation -> self for: X.presentation
+    content -> self for: X.content,
+    scroll -> self for: X.scroll
   ];
 
 command debug-serialisation for: (X is doc-format-text) =

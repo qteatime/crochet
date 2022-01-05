@@ -238,7 +238,7 @@ type doc-polygon(points is list<doc-point2d>, presentation is doc-presentation) 
 type doc-polyline(points is list<doc-point2d>, presentation is doc-presentation) is document;
 
 /// A container with bounded dimensions that allows scrolling
-type doc-scroll-view(items is list<document>, scroll is doc-scroll-presentation) is document;
+type doc-scroll-view(content is document, scroll is doc-scroll-presentation) is document;
 
 /// A document that formats text within it differently
 type doc-format-text(content is document, formatting is doc-font-presentation) is document;

@@ -403,7 +403,7 @@ export default (ffi: ForeignInterface) => {
                 overflowY: scroll.scroll_vertically,
               },
             },
-            [...data.items.map((x: any) => render(x, compact, "scroll-view"))]
+            [render(data.content, compact, "scroll-view")]
           );
         }
 
