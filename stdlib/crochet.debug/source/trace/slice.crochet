@@ -1,5 +1,12 @@
 % crochet
 
+command trace-slice timeline: (Name is text) =
+  new trace-timeline(Name, self);
+
+command trace-slice timeline =
+  self timeline: "Timeline";
+
+
 command trace-slice is-empty =
   self.events is-empty;
 

@@ -59,3 +59,8 @@ command event-perspective name = "Events";
 command debug-representation for: (X is trace-recorder) perspective: (P is event-perspective) do
   debug-representation for: X events perspective: default-perspective;
 end
+
+
+command debug-representation for: (X is trace-timeline) perspective: (P is default-perspective) do
+  #document timeline: (X.slice.events map: (self for: _ perspective: P));
+end

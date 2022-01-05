@@ -252,6 +252,10 @@ command doc-box margin: (F is (doc-margin -> doc-margin)) =
   new doc-box(self.content, self.borders, self.background, self.padding, F(self.margin));
 
 
+// -- Timelines
+command #document timeline: (Frames is list<document>) =
+  new doc-timeline(Frames);
+
 /// Represents a typed value.
 command document typed: (Type is static-type) =
   new doc-typed(self, Type);

@@ -292,3 +292,6 @@ type doc-box(
   padding is doc-padding,
   margin is doc-margin,
 ) is document;
+
+/// A document that provides a timeline
+type doc-timeline(frames is list<document>) is document;

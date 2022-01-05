@@ -187,6 +187,12 @@ command debug-serialisation for: (X is doc-box) =
     margin -> self for: X.margin,
   ];
 
+command debug-serialisation for: (X is doc-timeline) =
+  [
+    tag -> "timeline",
+    frames -> X.frames map: (self for: _)
+  ];
+
 // -- Units
 command debug-serialisation for: (X is doc-point2d) =
   [

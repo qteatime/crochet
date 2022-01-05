@@ -331,6 +331,75 @@ export default (ffi: ForeignInterface) => {
     };
   }
 
+  function make_timeline(frames: any[]) {
+    let current = -1;
+    const rframes = frames.map((x, i) =>
+      h(
+        "div",
+        {
+          class: "value-lens-timeline-frames-entry",
+          "data-index": String(i),
+        },
+        [render(x, false, "timeline")]
+      )
+    );
+    const time = h(
+      "input",
+      {
+        class: "value-lens-timeline-control-time",
+        type: "range",
+        min: "0",
+        max: String(frames.length - 1),
+        step: "1",
+        value: "0",
+      },
+      []
+    ) as HTMLInputElement;
+    const prev = h(
+      "button",
+      { class: "value-lens-timeline-control-button", title: "Previous frame" },
+      [h("i", { class: "fas fa-angle-left" }, [])]
+    );
+    const next = h(
+      "button",
+      { class: "value-lens-timeline-control-button", title: "Next frame" },
+      [h("i", { class: "fas fa-angle-right" }, [])]
+    );
+    const container = h("div", { class: "value-lens-timeline" }, [
+      h("div", { class: "value-lens-timeline-frames" }, rframes),
+      h("div", { class: "value-lens-timeline-controls" }, [prev, time, next]),
+    ]);
+
+    function select(index: number) {
+      if (rframes[current]) {
+        rframes[current].classList.remove("show");
+      }
+      current = index;
+      if (rframes[current]) {
+        rframes[current].classList.add("show");
+      }
+    }
+
+    time.addEventListener("input", (ev) => {
+      select(Number(time.value));
+    });
+    prev.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      time.stepDown();
+      select(Number(time.value));
+    });
+    next.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      time.stepUp();
+      select(Number(time.value));
+    });
+    select(0);
+
+    return container;
+  }
+
   function render(
     data: any,
     compact: boolean,
@@ -537,6 +606,10 @@ export default (ffi: ForeignInterface) => {
             },
             [render(data.content, compact, "box")]
           );
+        }
+
+        case "timeline": {
+          return make_timeline(data.frames);
         }
 
         case "typed":

@@ -20,6 +20,7 @@ type te-log-message(tag, location, message is text) is trace-event;
 type trace-span(box is unknown);
 type trace-recorder(box is unknown);
 type trace-slice(events is list<trace-event>);
+type trace-timeline(name is text, slice is trace-slice);
 
 abstract trace-constraint;
 
