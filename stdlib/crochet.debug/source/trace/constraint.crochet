@@ -6,9 +6,21 @@ command internal compile: (C is tc-has-tag) =
 command internal compile: (C is tc-has-span) =
   foreign trace.tc-has-span(C.span.box);
 
+command internal compile: (C is tc-or) =
+  foreign trace.tc-or(internal compile: C.left, internal compile: C.right);
+
+command internal compile: (C is tc-and) =
+  foreign trace.tc-and(internal compile: C.left, internal compile: C.right);
+
 
 command #trace-constraint has-tag: Tag =
   new tc-has-tag(Tag);
 
 command #trace-constraint has-span: (Span is trace-span) =
   new tc-has-span(Span);
+
+command trace-constraint or (That is trace-constraint) =
+  new tc-or(self, That);
+
+command trace-constraint and (That is trace-constraint) =
+  new tc-and(self, That);

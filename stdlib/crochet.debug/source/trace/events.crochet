@@ -5,7 +5,7 @@ command internal to-event: Event do
     when Event.tag === "LOG" =>
       new te-log(Event.log-tag, Event.location, Event.value);
     
-    when Event.tag === "LOG_MESSAGE" =>
+    when Event.tag === "LOG_TEXT" =>
       new te-log-message(Event.log-tag, Event.location, Event.message);
   end
 end

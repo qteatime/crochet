@@ -5,9 +5,11 @@ import { TraceEvent, TraceTag } from "./events";
 export enum ConstraintTag {
   EVENT_SPAN,
   LOG_TAG,
+  OR,
+  AND,
 }
 
-export type TraceConstraint = TCLogTag | TCEventSpan;
+export type TraceConstraint = TCLogTag | TCEventSpan | TCOr | TCAnd;
 
 export abstract class BaseConstraint {
   abstract accepts(event: TraceEvent): boolean;
@@ -30,5 +32,25 @@ export class TCEventSpan extends BaseConstraint {
 
   accepts(event: TraceEvent) {
     return event.location === this.span;
+  }
+}
+
+export class TCOr extends BaseConstraint {
+  constructor(readonly left: TraceConstraint, readonly right: TraceConstraint) {
+    super();
+  }
+
+  accepts(event: TraceEvent): boolean {
+    return this.left.accepts(event) || this.right.accepts(event);
+  }
+}
+
+export class TCAnd extends BaseConstraint {
+  constructor(readonly left: TraceConstraint, readonly right: TraceConstraint) {
+    super();
+  }
+
+  accepts(event: TraceEvent): boolean {
+    return this.left.accepts(event) && this.right.accepts(event);
   }
 }

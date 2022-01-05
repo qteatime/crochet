@@ -24,8 +24,10 @@ import {
   run_native,
   run_native_sync,
   Tag,
+  TCAnd,
   TCEventSpan,
   TCLogTag,
+  TCOr,
   TraceConstraint,
   TraceEvent,
   TraceRecorder,
@@ -367,6 +369,14 @@ export class ForeignInterface {
 
     event_span(span: TraceSpan) {
       return new TCEventSpan(span);
+    },
+
+    or(left: TraceConstraint, right: TraceConstraint) {
+      return new TCOr(left, right);
+    },
+
+    and(left: TraceConstraint, right: TraceConstraint) {
+      return new TCAnd(left, right);
     },
   };
 

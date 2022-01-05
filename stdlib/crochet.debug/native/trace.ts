@@ -50,6 +50,18 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(ffi.trace_constraint.event_span(ffi.unbox(span) as any));
   });
 
+  ffi.defun("trace.tc-or", (l, r) => {
+    return ffi.box(
+      ffi.trace_constraint.or(ffi.unbox(l) as any, ffi.unbox(r) as any)
+    );
+  });
+
+  ffi.defun("trace.tc-and", (l, r) => {
+    return ffi.box(
+      ffi.trace_constraint.and(ffi.unbox(l) as any, ffi.unbox(r) as any)
+    );
+  });
+
   ffi.defun("trace.make-recorder", (constraint) => {
     return ffi.box(ffi.make_trace_recorder(ffi.unbox(constraint) as any));
   });
@@ -66,15 +78,12 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("trace.events", (recorder) => {
     const events = ffi.get_traced_events(ffi.unbox(recorder) as any);
-    const result = ffi.list(
+    return ffi.list(
       events
         .map(to_event_record)
         .filter((x) => x != null)
         .map((x) => x!)
     );
-    console.log("events", events);
-    console.log("results", result);
-    return result;
   });
 
   ffi.defun("trace.location-repr", (loc0) => {

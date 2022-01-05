@@ -25,6 +25,8 @@ abstract trace-constraint;
 
 type tc-has-tag(tag) is trace-constraint;
 type tc-has-span(span is trace-span) is trace-constraint;
+type tc-or(left is trace-constraint, right is trace-constraint) is trace-constraint;
+type tc-and(left is trace-constraint, right is trace-constraint) is trace-constraint;
 
 
 
