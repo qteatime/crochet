@@ -155,7 +155,11 @@ export default (ffi: ForeignInterface) => {
     }
   }
 
-  function render(data: any, compact = false): Element {
+  function render(
+    data: any,
+    compact: boolean,
+    context: string | null
+  ): Element {
     if (data == null) {
       return h("div", { class: "value-lens-nothing" }, []);
     } else {
@@ -189,7 +193,9 @@ export default (ffi: ForeignInterface) => {
             "div",
             { class: "value-lens-list" },
             data.items.map((x: any) =>
-              h("div", { class: "value-lens-list-item" }, [render(x, true)])
+              h("div", { class: "value-lens-list-item" }, [
+                render(x, true, "list"),
+              ])
             )
           );
 
@@ -199,7 +205,9 @@ export default (ffi: ForeignInterface) => {
               "div",
               { class: "value-lens-table-header" },
               data.header.map((x: any) =>
-                h("div", { class: "value-lens-table-cell" }, [render(x, true)])
+                h("div", { class: "value-lens-table-cell" }, [
+                  render(x, true, "table"),
+                ])
               )
             ),
             ...data.rows.map((x: any) =>
@@ -208,7 +216,7 @@ export default (ffi: ForeignInterface) => {
                 { class: "value-lens-table-row" },
                 x.map((y: any) =>
                   h("div", { class: "value-lens-table-cell" }, [
-                    render(y, true),
+                    render(y, true, "table"),
                   ])
                 )
               )
@@ -220,7 +228,9 @@ export default (ffi: ForeignInterface) => {
             "div",
             { class: "value-lens-flow" },
             data.items.map((x: any) =>
-              h("div", { class: "value-lens-flow-item" }, [render(x, compact)])
+              h("div", { class: "value-lens-flow-item" }, [
+                render(x, compact, "flow"),
+              ])
             )
           );
 
@@ -231,7 +241,7 @@ export default (ffi: ForeignInterface) => {
               class: "value-lens-flex-row",
               style: { gap: compile_unit(data.gap) },
             },
-            data.items.map((x: any) => render(x, compact))
+            data.items.map((x: any) => render(x, compact, "flex-row"))
           );
 
         case "flex-column":
@@ -241,7 +251,7 @@ export default (ffi: ForeignInterface) => {
               class: "value-lens-flex-column",
               style: { gap: compile_unit(data.gap) },
             },
-            data.items.map((x: any) => render(x, compact))
+            data.items.map((x: any) => render(x, compact, "flex-column"))
           );
 
         case "fixed-layout":
@@ -254,21 +264,37 @@ export default (ffi: ForeignInterface) => {
                 height: compile_unit(data.height) ?? "0px",
               },
             },
-            data.items.map((x: any) => render(x, compact))
+            data.items.map((x: any) => render(x, compact, "fixed-layout"))
           );
 
-        case "position":
+        case "position": {
+          let style;
+          if (context === "fixed-layout") {
+            style = {
+              top: compile_unit(data.position.y),
+              left: compile_unit(data.position.x),
+            };
+          } else {
+            console.warn(
+              `Not making document absolute positioned, as it's not included in a fixed-layout context.`,
+              {
+                document: data,
+                context: context,
+              }
+            );
+            style = {
+              position: "unset",
+            };
+          }
           return h(
             "div",
             {
               class: "value-lens-position",
-              style: {
-                top: compile_unit(data.position.y),
-                left: compile_unit(data.position.x),
-              },
+              style: style,
             },
-            [render(data.content, compact)]
+            [render(data.content, compact, "position")]
           );
+        }
 
         case "typed":
           return h("div", { class: "value-lens-typed" }, [
@@ -282,7 +308,7 @@ export default (ffi: ForeignInterface) => {
               ]),
             ]),
             h("div", { class: "value-lens-typed-value" }, [
-              render(data.content, compact),
+              render(data.content, compact, "typed"),
             ]),
           ]);
 
@@ -298,10 +324,10 @@ export default (ffi: ForeignInterface) => {
               button,
               h("div", { class: "value-lens-group-contents" }, [
                 h("div", { class: "value-lens-group-compact" }, [
-                  render(data.compact),
+                  render(data.compact, true, context),
                 ]),
                 h("div", { class: "value-lens-group-expanded" }, [
-                  render(data.expanded),
+                  render(data.expanded, false, context),
                 ]),
               ]),
             ]
@@ -442,6 +468,8 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("lens.render", (json) => {
     const data = JSON.parse(ffi.text_to_string(json));
-    return ffi.box(h("div", { class: "value-lens-container" }, [render(data)]));
+    return ffi.box(
+      h("div", { class: "value-lens-container" }, [render(data, false, null)])
+    );
   });
 };

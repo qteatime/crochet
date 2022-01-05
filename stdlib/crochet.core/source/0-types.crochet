@@ -19,6 +19,10 @@ capability mutability;
 /// Used for internal types.
 capability internal;
 
+singleton internal;
+protect type internal with internal;
+protect global internal with internal;
+
 // -- The tainters
 
 /// Allows converting trusted values to untrusted values.

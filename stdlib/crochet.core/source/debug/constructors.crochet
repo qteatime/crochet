@@ -69,16 +69,23 @@ command doc-flex-column gap: (X has to-doc-unit) =
 
 /// Lays items with a fixed layout.
 command #document fixed-width: (W has to-doc-unit) height: (H has to-doc-unit) with: (Xs is list<document>) =
-  new doc-fixed-layout(Xs, W as doc-unit, H as doc-unit);
+  new doc-fixed-layout(Xs map: (internal make-positioned: _), W as doc-unit, H as doc-unit);
 
 command #document fixed-layout: (Xs is list<document>) =
-  new doc-fixed-layout(Xs, new doc-pixels(0), new doc-pixels(0));
+  new doc-fixed-layout(Xs map: (internal make-positioned: _), new doc-pixels(0), new doc-pixels(0));
 
 command doc-fixed-layout width: (W has to-doc-unit) =
   new doc-fixed-layout(self.items, W as doc-unit, self.height);
 
 command doc-fixed-layout height: (H has to-doc-unit) =
   new doc-fixed-layout(self.items, self.width, H as doc-unit);
+
+
+command internal make-positioned: (D is document) =
+  D position: (#doc-point2d x: 0 y: 0);
+
+command internal make-positioned: (D is doc-position) =
+  D;
 
 /// Constructs a table from a record of fields.
 command #document fields: (R is record) do
