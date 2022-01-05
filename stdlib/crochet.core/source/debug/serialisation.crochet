@@ -177,6 +177,16 @@ command debug-serialisation for: (X is doc-format-text) =
     formatting -> self for: X.formatting
   ];
 
+command debug-serialisation for: (X is doc-box) =
+  [
+    tag -> "box",
+    content -> self for: X.content,
+    borders -> self for: X.borders,
+    background -> self for: X.background,
+    padding -> self for: X.padding,
+    margin -> self for: X.margin,
+  ];
+
 // -- Units
 command debug-serialisation for: (X is doc-point2d) =
   [
@@ -271,6 +281,55 @@ command debug-serialisation for: doc-font-underline = "underline";
 command debug-serialisation for: doc-font-strike-through = "line-through";
 command debug-serialisation for: doc-font-overline = "overline";
 command debug-serialisation for: doc-font-no-decoration = "none";
+
+
+command debug-serialisation for: doc-border-style-none = "none";
+command debug-serialisation for: doc-border-style-hidden = "hidden";
+command debug-serialisation for: doc-border-style-dotted = "dotted";
+command debug-serialisation for: doc-border-style-dashed = "dashed";
+command debug-serialisation for: doc-border-style-solid = "solid";
+
+
+command debug-serialisation for: (X is doc-border) =
+  [
+    tag -> "border",
+    width -> self for: X.width,
+    colour -> self for: X.colour,
+    style -> self for: X.style,
+  ];
+
+command debug-serialisation for: (X is doc-borders) =
+  [
+    tag -> "borders",
+    top -> self for: X.top,
+    right -> self for: X.right,
+    bottom -> self for: X.bottom,
+    left -> self for: X.left,
+  ];
+
+command debug-serialisation for: (X is doc-background) =
+  [
+    tag -> "background",
+    colour -> self for: X.colour,
+  ];
+
+command debug-serialisation for: (X is doc-padding) =
+  [
+    tag -> "padding",
+    top -> self for: X.top,
+    right -> self for: X.right,
+    bottom -> self for: X.bottom,
+    left -> self for: X.left,
+  ];
+
+command debug-serialisation for: (X is doc-margin) =
+  [
+    tag -> "margin",
+    top -> self for: X.top,
+    right -> self for: X.right,
+    bottom -> self for: X.bottom,
+    left -> self for: X.left,
+  ];
 
 // -- Colours
 command debug-serialisation for: doc-colour-inherit =

@@ -2,22 +2,31 @@
 
 local singleton repr;
 
-command repr meta-colour =
-  "#95A5A6" as doc-colour;
-
 command repr location: Text do
   #document plain-text: Text
     | format-text
-        | font: { F in F size: (0.9 as doc-em)
-                       | colour: repr meta-colour };
+      | font: { F in F size: (0.9 as doc-em) };
+end
+
+command repr meta-header: Contents do
+  #document flex-column: Contents
+    | box
+      | background: { B in B colour: "#95A5A6" }
+      | padding: { P in P all: (0.5 as doc-em) }
+      | margin: { M in M bottom: (0.5 as doc-em) }
+      | borders: { B in B all: { B in B width: 1 | colour: "#7F8C8D" | style: "solid" } }
+    | format-text
+      | font: { F in F colour: "#ECF0F1" };
 end
 
 
 command debug-representation for: (E is te-log) perspective: (P is default-perspective) do
   let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
-    debug-representation for: E.tag perspective: P,
-    repr location: Location,
+    repr meta-header: [
+      debug-representation for: E.tag perspective: P,
+      repr location: Location,
+    ],
     debug-representation for: E.value perspective: P,
   ]
   | gap: (0.5 as doc-em);
@@ -26,8 +35,10 @@ end
 command debug-representation for: (E is te-log-message) perspective: (P is default-perspective) do
   let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
-    debug-representation for: E.tag perspective: P,
-    repr location: Location,
+    repr meta-header: [
+      debug-representation for: E.tag perspective: P,
+      repr location: Location,
+    ],
     #document plain-text: E.message
   ]
   | gap: (0.5 as doc-em);

@@ -163,6 +163,49 @@ trait to-doc-font-decoration with
   command Value as doc-font-decoration;
 end
 
+enum doc-border-style =
+  doc-border-style-none,
+  doc-border-style-hidden,
+  doc-border-style-dotted,
+  doc-border-style-dashed,
+  doc-border-style-solid;
+
+trait to-doc-border-style with
+  command Value as doc-border-style;
+end
+
+type doc-border(
+  width is doc-unit,
+  colour is doc-colour,
+  style is doc-border-style
+);
+
+type doc-borders(
+  top is doc-border,
+  right is doc-border,
+  bottom is doc-border,
+  left is doc-border,
+);
+
+type doc-background(
+  colour is doc-colour
+);
+
+type doc-padding(
+  top is doc-unit,
+  right is doc-unit,
+  bottom is doc-unit,
+  left is doc-unit,
+);
+
+type doc-margin(
+  top is doc-unit,
+  right is doc-unit,
+  bottom is doc-unit,
+  left is doc-unit,
+);
+
+
 // -- Document language
 
 /// The root of the document language.
@@ -240,3 +283,12 @@ type doc-scroll-view(content is document, bounds is doc-dimension, scroll is doc
 
 /// A document that formats text within it differently
 type doc-format-text(content is document, formatting is doc-font-presentation) is document;
+
+/// A document that provides HTML box-style semantics
+type doc-box(
+  content is document, 
+  borders is doc-borders, 
+  background is doc-background,
+  padding is doc-padding,
+  margin is doc-margin,
+) is document;

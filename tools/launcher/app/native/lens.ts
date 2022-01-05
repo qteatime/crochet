@@ -247,6 +247,90 @@ export default (ffi: ForeignInterface) => {
     }
   }
 
+  function compile_borders(data: any) {
+    if (data.tag !== "borders") {
+      throw ffi.panic("invalid-type", "Expected borders");
+    }
+    return {
+      top: compile_border(data.top),
+      right: compile_border(data.right),
+      bottom: compile_border(data.bottom),
+      left: compile_border(data.left),
+    };
+  }
+
+  function compact_border(data: any) {
+    return `${data.width ?? ""} ${data.colour ?? ""} ${
+      data.style ?? "none"
+    }`.trim();
+  }
+
+  function compact_borders(data: any) {
+    return {
+      top: compact_border(data.top),
+      right: compact_border(data.right),
+      bottom: compact_border(data.bottom),
+      left: compact_border(data.left),
+    };
+  }
+
+  function compile_border(data: any) {
+    if (data.tag !== "border") {
+      throw ffi.panic("invalid-type", "Expected border");
+    }
+    return {
+      width: compile_unit(data.width),
+      colour: compile_colour(data.colour),
+      style: compile_border_style(data.style),
+    };
+  }
+
+  function compile_border_style(data: any) {
+    switch (data) {
+      case "none":
+      case "hidden":
+      case "dotted":
+      case "dashed":
+      case "solid":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Not a valid border style ${data}`);
+    }
+  }
+
+  function compile_background(data: any) {
+    if (data.tag !== "background") {
+      throw ffi.panic("invalid-value", `Expected background`);
+    }
+    return {
+      colour: compile_colour(data.colour),
+    };
+  }
+
+  function compile_padding(data: any) {
+    if (data.tag !== "padding") {
+      throw ffi.panic("invalid-value", `Expected padding`);
+    }
+    return compile_rectangle_units(data);
+  }
+
+  function compile_margin(data: any) {
+    if (data.tag !== "margin") {
+      throw ffi.panic("invalid-value", `Expected margin`);
+    }
+    return compile_rectangle_units(data);
+  }
+
+  function compile_rectangle_units(data: any) {
+    return {
+      top: compile_unit(data.top),
+      right: compile_unit(data.right),
+      bottom: compile_unit(data.bottom),
+      left: compile_unit(data.left),
+    };
+  }
+
   function render(
     data: any,
     compact: boolean,
@@ -422,6 +506,36 @@ export default (ffi: ForeignInterface) => {
               },
             },
             [render(data.content, compact, context)]
+          );
+        }
+
+        case "box": {
+          const borders = compact_borders(compile_borders(data.borders));
+          const background = compile_background(data.background);
+          const padding = compile_padding(data.padding);
+          const margin = compile_margin(data.margin);
+
+          return h(
+            "div",
+            {
+              class: "value-lens-box",
+              style: {
+                borderTop: borders.top || "none",
+                borderRight: borders.right || "none",
+                borderBottom: borders.bottom || "none",
+                borderLeft: borders.left || "none",
+                backgroundColor: background.colour ?? "unset",
+                paddingLeft: padding.left ?? "0px",
+                paddingRight: padding.right ?? "0px",
+                paddingTop: padding.top ?? "0px",
+                paddingBottom: padding.bottom ?? "0px",
+                marginTop: margin.top ?? "0px",
+                marginRight: margin.right ?? "0px",
+                marginBottom: margin.bottom ?? "0px",
+                marginLeft: margin.left ?? "0px",
+              },
+            },
+            [render(data.content, compact, "box")]
           );
         }
 

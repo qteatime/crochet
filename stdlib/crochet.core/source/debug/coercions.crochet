@@ -116,3 +116,16 @@ test
   assert ("#000000" as doc-colour) === (#doc-colour red: 0 green: 0 blue: 0 alpha: 255);
   assert ("#ffffff00" as doc-colour) === (#doc-colour red: 255 green: 255 blue: 255 alpha: 0);
 end
+
+
+implement to-doc-border-style for static-text;
+
+command (Style is static-text) as doc-border-style do
+  condition
+    when Style =:= "none" => doc-border-style-none;
+    when Style =:= "hidden" => doc-border-style-hidden;
+    when Style =:= "dotted" => doc-border-style-dotted;
+    when Style =:= "dashed" => doc-border-style-dashed;
+    when Style =:= "solid" => doc-border-style-solid;
+  end
+end

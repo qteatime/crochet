@@ -186,11 +186,17 @@ command doc-polyline style: (Style is doc-presentation) =
 command document scroll-view =
   new doc-scroll-view(self, #doc-dimension unset, #doc-scroll-style defaults);
 
+command doc-scroll-view scroll: (X is doc-scroll-style) =
+  new doc-scroll-view(self.content, self.bounds, X);
+
 command doc-scroll-view scroll: (F is (doc-scroll-style -> doc-scroll-style)) =
-  new doc-scroll-view(self, self.bounds, F(self.scroll));
+  new doc-scroll-view(self.content, self.bounds, F(self.scroll));
+
+command doc-scroll-view bounds: (X is doc-dimension) =
+  new doc-scroll-view(self.content, X, self.scroll);
 
 command doc-scroll-view bounds: (F is (doc-dimension -> doc-dimension)) =
-  new doc-scroll-view(self, F(self.bounds), self.scroll);
+  new doc-scroll-view(self.content, F(self.bounds), self.scroll);
 
 
 command #doc-scroll-style defaults =
@@ -210,8 +216,41 @@ command doc-scroll-style vertically: (Scroll is doc-scroll) =
 command document format-text =
   new doc-format-text(self, #doc-font-presentation defaults);
 
+command doc-format-text font: (X is doc-font-presentation) =
+  new doc-format-text(self.content, X);
+
 command doc-format-text font: (F is (doc-font-presentation -> doc-font-presentation)) =
-  new doc-format-text(self, F(self.formatting));
+  new doc-format-text(self.content, F(self.formatting));
+
+
+// -- Box formatting
+command document box =
+  new doc-box(self, #doc-borders defaults, #doc-background defaults, #doc-padding defaults, #doc-margin defaults);
+
+command doc-box borders: (X is doc-borders) =
+  new doc-box(self.content, X, self.background, self.padding, self.margin);
+
+command doc-box borders: (F is (doc-borders -> doc-borders)) =
+  new doc-box(self.content, F(self.borders), self.background, self.padding, self.margin);
+
+command doc-box background: (X is doc-background) =
+  new doc-box(self.content, self.borders, X, self.padding, self.margin);
+
+command doc-box background: (F is (doc-background -> doc-background)) =
+  new doc-box(self.content, self.borders, F(self.background), self.padding, self.margin);
+
+command doc-box padding: (X is doc-padding) =
+  new doc-box(self.content, self.borders, self.background, X, self.margin);
+
+command doc-box padding: (F is (doc-padding -> doc-padding)) =
+  new doc-box(self.content, self.borders, self.background, F(self.padding), self.margin);
+
+command doc-box margin: (X is doc-margin) =
+  new doc-box(self.content, self.borders, self.background, self.padding, X);
+
+command doc-box margin: (F is (doc-margin -> doc-margin)) =
+  new doc-box(self.content, self.borders, self.background, self.padding, F(self.margin));
+
 
 /// Represents a typed value.
 command document typed: (Type is static-type) =
@@ -376,3 +415,89 @@ command doc-font-presentation decoration: (Decoration has to-doc-font-decoration
     self.weight,
     Decoration as doc-font-decoration,
   );
+
+
+command #doc-border defaults =
+  new doc-border(doc-unit-unset, doc-colour-inherit, doc-border-style-none);
+
+command #doc-border width: (W has to-doc-unit) colour: (C has to-doc-colour) style: (S has to-doc-border-style) =
+  new doc-border(W as doc-unit, C as doc-colour, S as doc-border-style);
+
+command doc-border width: (X has to-doc-unit) =
+  new doc-border(X as doc-unit, self.colour, self.style);
+
+command doc-border colour: (X has to-doc-colour) =
+  new doc-border(self.width, X as doc-colour, self.style);
+
+command doc-border style: (X has to-doc-border-style) =
+  new doc-border(self.width, self.colour, X as doc-border-style);
+
+
+command #doc-borders defaults do
+  let B = #doc-border defaults;
+  new doc-borders(B, B, B, B);
+end
+
+command doc-borders top: (F is (doc-border -> doc-border)) =
+  new doc-borders(F(self.top), self.right, self.bottom, self.left);
+
+command doc-borders right: (F is (doc-border -> doc-border)) =
+  new doc-borders(self.top, F(self.right), self.bottom, self.left);
+
+command doc-borders bottom: (F is (doc-border -> doc-border)) =
+  new doc-borders(self.top, self.right, F(self.bottom), self.left);
+
+command doc-borders left: (F is (doc-border -> doc-border)) =
+  new doc-borders(self.top, self.right, self.bottom, F(self.left));
+
+command doc-borders all: (F is (doc-border -> doc-border)) =
+  new doc-borders(F(self.top), F(self.right), F(self.bottom), F(self.left));
+
+
+command #doc-background defaults =
+  new doc-background(doc-colour-inherit);
+
+command doc-background colour: (X has to-doc-colour) =
+  new doc-background(X as doc-colour);
+
+
+command #doc-padding defaults =
+  new doc-padding(doc-unit-unset, doc-unit-unset, doc-unit-unset, doc-unit-unset);
+
+command doc-padding top: (X has to-doc-unit) =
+  new doc-padding(X as doc-unit, self.right, self.bottom, self.left);
+
+command doc-padding right: (X has to-doc-unit) =
+  new doc-padding(self.top, X as doc-unit, self.bottom, self.left);
+
+command doc-padding bottom: (X has to-doc-unit) =
+  new doc-padding(self.top, self.right, X as doc-unit, self.left);
+
+command doc-padding left: (X has to-doc-unit) =
+  new doc-padding(self.top, self.right, self.bottom, X as doc-unit);
+
+command doc-padding all: (X0 has to-doc-unit) do
+  let X = X0 as doc-unit;
+  new doc-padding(X, X, X, X);
+end
+
+
+command #doc-margin defaults =
+  new doc-margin(doc-unit-unset, doc-unit-unset, doc-unit-unset, doc-unit-unset);
+
+command doc-margin top: (X has to-doc-unit) =
+  new doc-margin(X as doc-unit, self.right, self.bottom, self.left);
+
+command doc-margin right: (X has to-doc-unit) =
+  new doc-margin(self.top, X as doc-unit, self.bottom, self.left);
+
+command doc-margin bottom: (X has to-doc-unit) =
+  new doc-margin(self.top, self.right, X as doc-unit, self.left);
+
+command doc-margin left: (X has to-doc-unit) =
+  new doc-margin(self.top, self.right, self.bottom, X as doc-unit);
+
+command doc-margin all: (X0 has to-doc-unit) do
+  let X = X0 as doc-unit;
+  new doc-margin(X, X, X, X);
+end
