@@ -1,4 +1,5 @@
 import { inspect } from "util";
+import { CrochetActivation, NativeActivation } from "..";
 import * as IR from "../../ir";
 import { unreachable } from "../../utils/utils";
 import {
@@ -322,4 +323,29 @@ export function handler_stack(x: HandlerStack): string {
     ...entries,
     ...(x.parent ? ["\n---\n", handler_stack(x.parent)] : []),
   ].join("");
+}
+
+export function find_good_transcript_write_location(activation0: Activation) {
+  let activation: Activation | null = activation0;
+
+  while (activation != null) {
+    if (activation instanceof NativeActivation) {
+      activation = activation.parent;
+      continue;
+    } else if (activation instanceof CrochetActivation) {
+      if (activation.location instanceof CrochetCommandBranch) {
+        const module = activation.location.module;
+        if (module != null && module.pkg.name === "crochet.debug") {
+          activation = activation.parent;
+          continue;
+        }
+      } else {
+        return activation.location;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  return null;
 }

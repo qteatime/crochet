@@ -1,3 +1,4 @@
+import { ActivationLocation } from "..";
 import * as IR from "../../ir";
 import {
   ActionChoice,
@@ -60,7 +61,8 @@ export class TELog extends BaseTraceEvent {
   constructor(
     readonly category: string,
     readonly log_tag: CrochetValue,
-    readonly location: TraceSpan | null,
+    readonly span: TraceSpan | null,
+    readonly location: ActivationLocation,
     readonly value: CrochetValue | string
   ) {
     super();

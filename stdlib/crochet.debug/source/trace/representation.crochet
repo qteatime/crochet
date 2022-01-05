@@ -24,7 +24,6 @@ command debug-representation for: (E is te-log) perspective: (P is default-persp
   let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     repr meta-header: [
-      debug-representation for: E.tag perspective: P,
       repr location: Location,
     ],
     debug-representation for: E.value perspective: P,
@@ -36,7 +35,6 @@ command debug-representation for: (E is te-log-message) perspective: (P is defau
   let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     repr meta-header: [
-      debug-representation for: E.tag perspective: P,
       repr location: Location,
     ],
     #document plain-text: E.message

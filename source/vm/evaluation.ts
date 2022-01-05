@@ -364,6 +364,7 @@ export class Thread {
               "transcript.write",
               value.tag_name,
               activation.span,
+              Location.find_good_transcript_write_location(activation),
               value.message
             )
           );
