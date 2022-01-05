@@ -105,11 +105,9 @@ enum doc-scroll =
   doc-scroll-if-needed;
 
 /// Scroll-view properties
-type doc-scroll-presentation(
-  max-width is doc-unit,
-  max-height is doc-unit,
-  scroll-horizontally is doc-scroll,
-  scroll-vertically is doc-scroll,
+type doc-scroll-style(
+  horizontally is doc-scroll,
+  vertically is doc-scroll,
 );
 
 /// Font properties
@@ -238,7 +236,7 @@ type doc-polygon(points is list<doc-point2d>, presentation is doc-presentation) 
 type doc-polyline(points is list<doc-point2d>, presentation is doc-presentation) is document;
 
 /// A container with bounded dimensions that allows scrolling
-type doc-scroll-view(content is document, scroll is doc-scroll-presentation) is document;
+type doc-scroll-view(content is document, bounds is doc-dimension, scroll is doc-scroll-style) is document;
 
 /// A document that formats text within it differently
 type doc-format-text(content is document, formatting is doc-font-presentation) is document;

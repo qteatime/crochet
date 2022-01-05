@@ -166,6 +166,7 @@ command debug-serialisation for: (X is doc-scroll-view) =
   [
     tag -> "scroll-view",
     content -> self for: X.content,
+    bounds -> self for: X.bounds,
     scroll -> self for: X.scroll
   ];
 
@@ -222,13 +223,11 @@ command debug-serialisation for: (X is doc-presentation) =
     fill-colour -> self for: X.fill-colour,
   ];
 
-command debug-serialisation for: (X is doc-scroll-presentation) =
+command debug-serialisation for: (X is doc-scroll-style) =
   [
-    tag -> "scroll-presentation",
-    max-width -> self for: X.max-width,
-    max-height -> self for: X.max-height,
-    scroll-horizontally -> self for: X.scroll-horizontally,
-    scroll-vertically -> self for: X.scroll-vertically,
+    tag -> "scroll-style",
+    horizontally -> self for: X.horizontally,
+    vertically -> self for: X.vertically,
   ];
 
 command debug-serialisation for: doc-scroll-visible =

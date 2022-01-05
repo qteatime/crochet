@@ -183,32 +183,27 @@ command doc-polyline style: (Style is doc-presentation) =
 
 
 /// Constructs a scrollable view
-command document scroll-view: (View is (doc-scroll-presentation -> doc-scroll-presentation)) =
-  new doc-scroll-view(self, View(#doc-scroll-presentation defaults));
+command document scroll-view =
+  new doc-scroll-view(self, #doc-dimension unset, #doc-scroll-style defaults);
 
-command doc-scroll-view scroll-view: (View is (doc-scroll-presentation -> doc-scroll-presentation)) =
-  new doc-scroll-view(self, View(self.scroll));
+command doc-scroll-view scroll: (F is (doc-scroll-style -> doc-scroll-style)) =
+  new doc-scroll-view(self, self.bounds, F(self.scroll));
+
+command doc-scroll-view bounds: (F is (doc-dimension -> doc-dimension)) =
+  new doc-scroll-view(self, F(self.bounds), self.scroll);
 
 
-command #doc-scroll-presentation defaults =
-  new doc-scroll-presentation(
-    doc-unit-unset,
-    doc-unit-unset,
+command #doc-scroll-style defaults =
+  new doc-scroll-style(
     doc-scroll-if-needed,
     doc-scroll-if-needed
   );
 
-command doc-scroll-presentation max-width: (Width has to-doc-unit) =
-  new doc-scroll-presentation(Width as doc-unit, self.max-height, self.scroll-horizontally, self.scroll-vertically);
+command doc-scroll-style horizontally: (Scroll is doc-scroll) =
+  new doc-scroll-style(Scroll, self.vertically);
 
-command doc-scroll-presentation max-height: (Height has to-doc-unit) =
-  new doc-scroll-presentation(self.max-width, Height as doc-unit, self.scroll-horizontally, self.scroll-vertically);
-
-command doc-scroll-presentation scroll-horizontally: (Scroll is doc-scroll) =
-  new doc-scroll-presentation(self.max-width, self.max-height, Scroll, self.scroll-vertically);
-
-command doc-scroll-presentation scroll-vertically: (Scroll is doc-scroll) =
-  new doc-scroll-presentation(self.max-width, self.max-height, self.scroll-horizontally, Scroll);
+command doc-scroll-style vertically: (Scroll is doc-scroll) =
+  new doc-scroll-style(self.horizontally, Scroll);
 
 
 // -- Text formatting
@@ -271,6 +266,9 @@ command doc-point2d y: (Y has to-doc-unit) =
 
 command #doc-dimension zero =
   new doc-dimension(new doc-pixels(0), new doc-pixels(0));
+
+command #doc-dimension unset =
+  new doc-dimension(doc-unit-unset, doc-unit-unset);
 
 command #doc-dimension width: (W has to-doc-unit) height: (H has to-doc-unit) =
   new doc-dimension(W as doc-unit, H as doc-unit);

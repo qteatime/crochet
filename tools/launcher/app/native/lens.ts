@@ -168,14 +168,12 @@ export default (ffi: ForeignInterface) => {
   }
 
   function compile_scroll_presentation(data: any) {
-    if (data.tag !== "scroll-presentation") {
+    if (data.tag !== "scroll-style") {
       throw ffi.panic("invalid-type", "Expected scroll-presentation");
     }
     return {
-      max_width: compile_unit(data["max-width"]),
-      max_height: compile_unit(data["max-height"]),
-      scroll_horizontally: compile_scroll(data["scroll-horizontally"]),
-      scroll_vertically: compile_scroll(data["scroll-vertically"]),
+      horizontally: compile_scroll(data["horizontally"]),
+      vertically: compile_scroll(data["vertically"]),
     };
   }
 
@@ -392,15 +390,16 @@ export default (ffi: ForeignInterface) => {
 
         case "scroll-view": {
           const scroll = compile_scroll_presentation(data.scroll);
+          const bounds = compile_dimension(data.bounds);
           return h(
             "div",
             {
               class: "value-lens-scroll-view",
               style: {
-                maxWidth: scroll.max_width ?? "auto",
-                maxHeight: scroll.max_height ?? "auto",
-                overflowX: scroll.scroll_horizontally,
-                overflowY: scroll.scroll_vertically,
+                maxWidth: bounds.width ?? "auto",
+                maxHeight: bounds.height ?? "auto",
+                overflowX: scroll.horizontally,
+                overflowY: scroll.vertically,
               },
             },
             [render(data.content, compact, "scroll-view")]

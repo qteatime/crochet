@@ -20,7 +20,8 @@ command debug-representation for: (E is te-log) perspective: (P is default-persp
     debug-representation for: E.tag perspective: P,
     repr location: Location,
     debug-representation for: E.value perspective: P,
-  ] | gap: (0.5 as doc-em);
+  ]
+  | gap: (0.5 as doc-em);
 end
 
 command debug-representation for: (E is te-log-message) perspective: (P is default-perspective) do
@@ -29,14 +30,16 @@ command debug-representation for: (E is te-log-message) perspective: (P is defau
     debug-representation for: E.tag perspective: P,
     repr location: Location,
     #document plain-text: E.message
-  ] | gap: (0.5 as doc-em);
+  ]
+  | gap: (0.5 as doc-em);
 end
 
 command debug-representation for: (X is trace-slice) perspective: (P is default-perspective) do
   #document list: (
     X.events map: (debug-representation for: _ perspective: P)
   )
-  | scroll-view: { V in V max-height: 350 };
+  | scroll-view
+    | bounds: { B in B height: 350 };
 end
 
 
