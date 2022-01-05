@@ -77,7 +77,7 @@ end
 abstract doc-colour;
 
 /// No colour value
-singleton doc-colour-transparent is doc-colour;
+singleton doc-colour-inherit is doc-colour;
 
 /// RGBA colour
 type doc-colour-rgba(
@@ -107,6 +107,59 @@ type doc-scroll-presentation(
   scroll-horizontally is doc-scroll,
   scroll-vertically is doc-scroll,
 );
+
+/// Font properties
+enum doc-font-family =
+  doc-font-family-inherit,
+  doc-font-family-serif,
+  doc-font-family-sans-serif,
+  doc-font-family-monospace;
+
+enum doc-font-style =
+  doc-font-italic,
+  doc-font-normal,
+  doc-font-style-inherit;
+
+enum doc-font-weight =
+  doc-font-lighter,
+  doc-font-light,
+  doc-font-regular,
+  doc-font-bold,
+  doc-font-bolder,
+  doc-font-weight-inherit;
+
+// TODO: turn this into a more fully-featured thing, like CSS's text decoration
+enum doc-font-decoration =
+  doc-font-decoration-inherit,
+  doc-font-overline,
+  doc-font-underline,
+  doc-font-strike-through,
+  doc-font-no-decoration;
+
+type doc-font-presentation(
+  family is doc-font-family,
+  size is doc-unit,
+  colour is doc-colour,
+  style is doc-font-style,
+  weight is doc-font-weight,
+  decoration is doc-font-decoration,
+);
+
+trait to-doc-font-family with
+  command Value as doc-font-family;
+end
+
+trait to-doc-font-style with
+  command Value as doc-font-style;
+end
+
+trait to-doc-font-weight with
+  command Value as doc-font-weight;
+end
+
+trait to-doc-font-decoration with
+  command Value as doc-font-decoration;
+end
 
 // -- Document language
 
@@ -181,4 +234,7 @@ type doc-polygon(points is list<doc-point2d>, presentation is doc-presentation) 
 type doc-polyline(points is list<doc-point2d>, presentation is doc-presentation) is document;
 
 /// A container with bounded dimensions that allows scrolling
-type doc-scroll-view(items is list<document>, scroll is doc-scroll-presentation, presentation is doc-presentation) is document;
+type doc-scroll-view(items is list<document>, scroll is doc-scroll-presentation) is document;
+
+/// A document that formats text within it differently
+type doc-format-text(content is document, formatting is doc-font-presentation) is document;

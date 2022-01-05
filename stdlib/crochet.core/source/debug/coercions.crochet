@@ -31,3 +31,53 @@ command float as doc-percent =
 
 command float as doc-em =
   new doc-em(self);
+
+
+implement to-doc-font-family for static-text;
+
+command (Text is static-text) as doc-font-family do
+  condition
+    when Text =:= "inherit" => doc-font-family-inherit;
+    when Text =:= "serif" => doc-font-serif;
+    when Text =:= "sans-serif" => doc-font-sans-serif;
+    when Text =:= "monospace" => doc-font-monospace;
+  end
+end
+
+
+implement to-doc-font-style for static-text;
+
+command (Text is static-text) as doc-font-style do
+  condition
+    when Text =:= "inherit" => doc-font-style-inherit;
+    when Text =:= "italic" => doc-font-italic;
+    when Text =:= "normal" => doc-font-normal;
+  end
+end
+
+
+implement to-doc-font-weight for static-text;
+
+command (Text is static-text) as doc-font-weight do
+  condition
+    when Text =:= "inherit" => doc-font-weight-inherit;
+    when Text =:= "lighter" => doc-font-lighter;
+    when Text =:= "light" => doc-font-light;
+    when Text =:= "regular" => doc-font-regular;
+    when Text =:= "bold" => doc-font-bold;
+    when Text =:= "bolder" => doc-font-bolder;
+  end
+end
+
+
+implement to-doc-font-decoration for static-text;
+
+command (Text is static-text) as doc-font-decoration do
+  condition
+    when Text =:= "inherit" => doc-font-decoration-inherit;
+    when Text =:= "underline" => doc-font-underline;
+    when Text =:= "overline" => doc-font-overline;
+    when Text =:= "strike-through" => doc-font-strike-through;
+    when Text =:= "none" => doc-font-no-decoration;
+  end
+end

@@ -99,6 +99,74 @@ export default (ffi: ForeignInterface) => {
     };
   }
 
+  function compile_font_presentation(data: any) {
+    if (data.tag !== "font-presentation") {
+      throw ffi.panic("invalid-type", "Expected font-presentation");
+    }
+    return {
+      family: compile_font_family(data.family),
+      size: compile_unit(data.size),
+      colour: compile_colour(data.colour),
+      style: compile_font_style(data.style),
+      weight: compile_font_weight(data.weight),
+      decoration: compile_font_decoration(data.decoration),
+    };
+  }
+
+  function compile_font_family(data: any) {
+    switch (data) {
+      case "inherit":
+      case "serif":
+      case "sans-serif":
+      case "monospace":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font family ${data}`);
+    }
+  }
+
+  function compile_font_style(data: any) {
+    switch (data) {
+      case "inherit":
+      case "italic":
+      case "normal":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font style ${data}`);
+    }
+  }
+
+  function compile_font_weight(data: any) {
+    switch (data) {
+      case "lighter":
+      case "light":
+      case "regular":
+      case "bold":
+      case "bolder":
+      case "inherit":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font weight ${data}`);
+    }
+  }
+
+  function compile_font_decoration(data: any) {
+    switch (data) {
+      case "inherit":
+      case "underline":
+      case "line-through":
+      case "overline":
+      case "none":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font decoration ${data}`);
+    }
+  }
+
   function compile_scroll_presentation(data: any) {
     if (data.tag !== "scroll-presentation") {
       throw ffi.panic("invalid-type", "Expected scroll-presentation");
@@ -336,6 +404,25 @@ export default (ffi: ForeignInterface) => {
               },
             },
             [...data.items.map((x: any) => render(x, compact, "scroll-view"))]
+          );
+        }
+
+        case "format-text": {
+          const font = compile_font_presentation(data.formatting);
+          return h(
+            "div",
+            {
+              class: "value-lens-format-text",
+              style: {
+                fontFamily: font.family,
+                fontSize: font.size,
+                color: font.colour,
+                fontStyle: font.style,
+                fontWeight: font.weight,
+                textDecoration: font.decoration,
+              },
+            },
+            [render(data.content, compact, context)]
           );
         }
 

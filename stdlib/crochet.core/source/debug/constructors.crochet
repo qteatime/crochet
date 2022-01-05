@@ -184,19 +184,19 @@ command doc-polyline style: (Style is doc-presentation) =
 
 /// Constructs a scrollable view
 command #document scroll-view: (Items is list<document>) =
-  new doc-scroll-view(Items, #doc-scroll-presentation zero, #document style);
+  new doc-scroll-view(Items, #doc-scroll-presentation zero);
 
 command doc-scroll-view max-width: (Width has to-doc-unit) =
-  new doc-scroll-view(self.items, self.scroll max-width: Width, self.presentation);
+  new doc-scroll-view(self.items, self.scroll max-width: Width);
 
 command doc-scroll-view max-height: (Height has to-doc-unit) =
-  new doc-scroll-view(self.items, self.scroll max-height: Height, self.presentation);
+  new doc-scroll-view(self.items, self.scroll max-height: Height);
 
 command doc-scroll-view scroll-horizontally: (Scroll is doc-scroll) = 
-  new doc-scroll-view(self.items, self.scroll scroll-horizontally: Scroll, self.presentation);
+  new doc-scroll-view(self.items, self.scroll scroll-horizontally: Scroll);
 
 command doc-scroll-view scroll-vertically: (Scroll is doc-scroll) =
-  new doc-scroll-view(self.items, self.scroll scroll-vertically: Scroll, self.presentation);
+  new doc-scroll-view(self.items, self.scroll scroll-vertically: Scroll);
 
 
 command #doc-scroll-presentation zero =
@@ -219,6 +219,13 @@ command doc-scroll-presentation scroll-horizontally: (Scroll is doc-scroll) =
 command doc-scroll-presentation scroll-vertically: (Scroll is doc-scroll) =
   new doc-scroll-presentation(self.max-width, self.max-height, self.scroll-horizontally, Scroll);
 
+
+// -- Text formatting
+command document format-text: (Formatter is (doc-font-presentation -> doc-font-presentation)) =
+  new doc-format-text(self, Formatter(#doc-font-presentation defaults));
+
+command doc-format-text format-text: (Formatter is (doc-font-presentation -> doc-font-presentation)) =
+  new doc-format-text(self, Formatter(self.formatting));
 
 /// Represents a typed value.
 command document typed: (Type is static-type) =
@@ -243,7 +250,7 @@ command document expanded-layout: (Doc is document) =
 
 // -- Styles
 command #document style =
-  new doc-presentation(doc-colour-transparent, doc-unit-unset, doc-colour-transparent);
+  new doc-presentation(doc-colour-inherit, doc-unit-unset, doc-colour-inherit);
 
 command doc-presentation stroke-colour: (Colour is doc-colour) =
   new doc-presentation(Colour, self.stroke-width, self.fill-colour);
@@ -284,8 +291,11 @@ command doc-dimension height: (H has to-doc-unit) =
   new doc-dimension(self.width, H as doc-unit);
 
 
+command #doc-colour inherit =
+  doc-colour-inherit;
+
 command #doc-colour transparent =
-  doc-colour-transparent;
+  #doc-colour red: 255 green: 255 blue: 255 alpha: 0;
 
 command #doc-colour red: (R is integer) green: (G is integer) blue: (B is integer) alpha: (A is integer)
 requires
@@ -297,3 +307,77 @@ do
   new doc-colour-rgba(R, G, B, A);
 end
 
+command #doc-colour red: R green: G blue: B =
+  #doc-colour red: R green: G blue: B alpha: 255;
+
+
+// -- Fonts
+command #doc-font-presentation defaults =
+  new doc-font-presentation(
+    doc-font-family-inherit,
+    doc-unit-unset,
+    doc-colour-inherit,
+    doc-font-style-inherit,
+    doc-font-weight-inherit,
+    doc-font-decoration-inherit,
+  );
+
+command doc-font-presentation family: (Family has to-doc-font-family) =
+  new doc-font-presentation(
+    Family as doc-font-family,
+    self.size,
+    self.colour,
+    self.style,
+    self.weight,
+    self.decoration,
+  );
+
+command doc-font-presentation size: (Size has to-doc-unit) =
+  new doc-font-presentation(
+    self.family,
+    Size as doc-unit,
+    self.colour,
+    self.style,
+    self.weight,
+    self.decoration,
+  );
+
+command doc-font-presentation colour: (Colour is doc-colour) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    Colour,
+    self.style,
+    self.weight,
+    self.decoration,
+  );
+
+command doc-font-presentation style: (Style has to-doc-font-style) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    self.colour,
+    Style as doc-font-style,
+    self.weight,
+    self.decoration
+  );
+
+command doc-font-presentation weight: (Weight has to-doc-font-weight) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    self.colour,
+    self.style,
+    Weight as doc-font-weight,
+    self.decoration
+  );
+
+command doc-font-presentation decoration: (Decoration has to-doc-font-decoration) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    self.colour,
+    self.style,
+    self.weight,
+    Decoration as doc-font-decoration,
+  );
