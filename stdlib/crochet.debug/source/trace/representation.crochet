@@ -36,7 +36,7 @@ command debug-representation for: (X is trace-slice) perspective: (P is default-
   #document list: (
     X.events map: (debug-representation for: _ perspective: P)
   )
-  | scroll-view: { V in V max-height: 500 };
+  | scroll-view: { V in V max-height: 350 };
 end
 
 

@@ -47,7 +47,6 @@
   border: 1px solid var(--border);
   background: #fafafa;
   border-top: none;
-  border-bottom-width: 2px;
 }
 
 .launcher-playground-entry-errors {
@@ -59,11 +58,15 @@
   color: var(--error-text);
 }
 
-.launcher-playground-entry-log-entry {
-  margin-bottom: 1.5em;
-  border-bottom: 1px solid var(--border);
+.launcher-playground-entry-logs {
+  border: 1px solid var(--border);
+  background: #f3f3f3;
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
-.launcher-playground-entry-log-entry::before {
-  content: "• ";
+.launcher-playground-entry-log-entry {
+  padding: 0.7em 1em 1em 1em;
+  border-bottom: 1px solid var(--border);
 }

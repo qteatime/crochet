@@ -170,6 +170,10 @@ command ps-running as widget do
 
     w style: "launcher-playground-entry-results" with: [
       Values
+    ],
+
+    w style: "launcher-playground-entry-logs" with: [
+      Logs
     ]
   ];
 end
