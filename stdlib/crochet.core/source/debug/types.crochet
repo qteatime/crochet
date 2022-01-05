@@ -94,6 +94,20 @@ type doc-presentation(
   fill-colour is doc-colour,
 );
 
+/// Types of scroll bars
+enum doc-scroll =
+  doc-scroll-visible,
+  doc-scroll-hidden,
+  doc-scroll-if-needed;
+
+/// Scroll-view properties
+type doc-scroll-presentation(
+  max-width is doc-unit,
+  max-height is doc-unit,
+  scroll-horizontally is doc-scroll,
+  scroll-vertically is doc-scroll,
+);
+
 // -- Document language
 
 /// The root of the document language.
@@ -165,3 +179,6 @@ type doc-polygon(points is list<doc-point2d>, presentation is doc-presentation) 
 
 /// A poly-line shape
 type doc-polyline(points is list<doc-point2d>, presentation is doc-presentation) is document;
+
+/// A container with bounded dimensions that allows scrolling
+type doc-scroll-view(items is list<document>, scroll is doc-scroll-presentation, presentation is doc-presentation) is document;

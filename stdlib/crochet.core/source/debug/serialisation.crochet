@@ -162,6 +162,14 @@ command debug-serialisation for: (X is doc-rectangle) do
   ]
 end
 
+command debug-serialisation for: (X is doc-scroll-view) =
+  [
+    tag -> "scroll-view",
+    items -> X.items map: (self for: _),
+    scroll -> self for: X.scroll,
+    presentation -> self for: X.presentation
+  ];
+
 // -- Units
 command debug-serialisation for: (X is doc-point2d) =
   [
@@ -208,6 +216,23 @@ command debug-serialisation for: (X is doc-presentation) =
     fill-colour -> self for: X.fill-colour,
   ];
 
+command debug-serialisation for: (X is doc-scroll-presentation) =
+  [
+    tag -> "scroll-presentation",
+    max-width -> self for: X.max-width,
+    max-height -> self for: X.max-height,
+    scroll-horizontally -> self for: X.scroll-horizontally,
+    scroll-vertically -> self for: X.scroll-vertically,
+  ];
+
+command debug-serialisation for: doc-scroll-visible =
+  "visible";
+
+command debug-serialisation for: doc-scroll-hidden =
+  "hidden";
+
+command debug-serialisation for: doc-scroll-if-needed =
+  "auto";
 
 // -- Colours
 command debug-serialisation for: doc-colour-transparent =

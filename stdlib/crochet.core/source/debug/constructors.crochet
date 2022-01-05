@@ -182,6 +182,44 @@ command doc-polyline style: (Style is doc-presentation) =
   new doc-polyline(self.points, Style);
 
 
+/// Constructs a scrollable view
+command #document scroll-view: (Items is list<document>) =
+  new doc-scroll-view(Items, #doc-scroll-presentation zero, #document style);
+
+command doc-scroll-view max-width: (Width has to-doc-unit) =
+  new doc-scroll-view(self.items, self.scroll max-width: Width, self.presentation);
+
+command doc-scroll-view max-height: (Height has to-doc-unit) =
+  new doc-scroll-view(self.items, self.scroll max-height: Height, self.presentation);
+
+command doc-scroll-view scroll-horizontally: (Scroll is doc-scroll) = 
+  new doc-scroll-view(self.items, self.scroll scroll-horizontally: Scroll, self.presentation);
+
+command doc-scroll-view scroll-vertically: (Scroll is doc-scroll) =
+  new doc-scroll-view(self.items, self.scroll scroll-vertically: Scroll, self.presentation);
+
+
+command #doc-scroll-presentation zero =
+  new doc-scroll-presentation(
+    doc-unit-unset,
+    doc-unit-unset,
+    doc-scroll-if-needed,
+    doc-scroll-if-needed
+  );
+
+command doc-scroll-presentation max-width: (Width has to-doc-unit) =
+  new doc-scroll-presentation(Width as doc-unit, self.max-height, self.scroll-horizontally, self.scroll-vertically);
+
+command doc-scroll-presentation max-height: (Height has to-doc-unit) =
+  new doc-scroll-presentation(self.max-width, Height as doc-unit, self.scroll-horizontally, self.scroll-vertically);
+
+command doc-scroll-presentation scroll-horizontally: (Scroll is doc-scroll) =
+  new doc-scroll-presentation(self.max-width, self.max-height, Scroll, self.scroll-vertically);
+
+command doc-scroll-presentation scroll-vertically: (Scroll is doc-scroll) =
+  new doc-scroll-presentation(self.max-width, self.max-height, self.scroll-horizontally, Scroll);
+
+
 /// Represents a typed value.
 command document typed: (Type is static-type) =
   new doc-typed(self, Type);
@@ -258,3 +296,4 @@ requires
 do
   new doc-colour-rgba(R, G, B, A);
 end
+

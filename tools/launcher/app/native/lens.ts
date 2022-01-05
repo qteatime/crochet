@@ -99,6 +99,32 @@ export default (ffi: ForeignInterface) => {
     };
   }
 
+  function compile_scroll_presentation(data: any) {
+    if (data.tag !== "scroll-presentation") {
+      throw ffi.panic("invalid-type", "Expected scroll-presentation");
+    }
+    return {
+      max_width: compile_unit(data["max-width"]),
+      max_height: compile_unit(data["max-height"]),
+      scroll_horizontally: compile_scroll(data["scroll-horizontally"]),
+      scroll_vertically: compile_scroll(data["scroll-vertically"]),
+    };
+  }
+
+  function compile_scroll(data: any) {
+    switch (data) {
+      case "visible":
+        return "scroll";
+
+      case "hidden":
+      case "auto":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", "Expected visible, hidden, or auto");
+    }
+  }
+
   function svg_presentation(presentation: any) {
     return {
       fill: presentation.fill_colour ?? "none",
@@ -293,6 +319,23 @@ export default (ffi: ForeignInterface) => {
               style: style,
             },
             [render(data.content, compact, "position")]
+          );
+        }
+
+        case "scroll-view": {
+          const scroll = compile_scroll_presentation(data.scroll);
+          return h(
+            "div",
+            {
+              class: "value-lens-scroll-view",
+              style: {
+                maxWidth: scroll.max_width ?? "auto",
+                maxHeight: scroll.max_height ?? "auto",
+                overflowX: scroll.scroll_horizontally,
+                overflowY: scroll.scroll_vertically,
+              },
+            },
+            [...data.items.map((x: any) => render(x, compact, "scroll-view"))]
           );
         }
 
