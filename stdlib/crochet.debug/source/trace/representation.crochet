@@ -7,10 +7,9 @@ command repr meta-colour =
 
 command repr location: Text do
   #document plain-text: Text
-    | format-text: { F in 
-        F size: (0.9 as doc-em)
-        | colour: repr meta-colour
-      };
+    | format-text
+        | font: { F in F size: (0.9 as doc-em)
+                       | colour: repr meta-colour };
 end
 
 

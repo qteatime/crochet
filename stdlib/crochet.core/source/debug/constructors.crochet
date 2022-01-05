@@ -207,11 +207,11 @@ command doc-scroll-style vertically: (Scroll is doc-scroll) =
 
 
 // -- Text formatting
-command document format-text: (Formatter is (doc-font-presentation -> doc-font-presentation)) =
-  new doc-format-text(self, Formatter(#doc-font-presentation defaults));
+command document format-text =
+  new doc-format-text(self, #doc-font-presentation defaults);
 
-command doc-format-text format-text: (Formatter is (doc-font-presentation -> doc-font-presentation)) =
-  new doc-format-text(self, Formatter(self.formatting));
+command doc-format-text font: (F is (doc-font-presentation -> doc-font-presentation)) =
+  new doc-format-text(self, F(self.formatting));
 
 /// Represents a typed value.
 command document typed: (Type is static-type) =
