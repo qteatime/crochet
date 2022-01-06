@@ -14,13 +14,11 @@ import {
   TRM_Test_Started,
 } from "../../crochet";
 import { CrochetValue, CrochetTest } from "../../vm";
-import { DebugUI } from "../../services/debug/app";
 import { EventStream } from "../../utils/event";
 import { defer } from "../../utils/utils";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
-  readonly debug_ui: DebugUI;
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
   private _ffi: ForeignInterface | null = null;
@@ -32,7 +30,6 @@ export class CrochetForBrowser {
     readonly interactive: boolean
   ) {
     this.crochet = new Crochet(false, this.fs, this.signal);
-    this.debug_ui = new DebugUI();
   }
 
   get trusted_core() {

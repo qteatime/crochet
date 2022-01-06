@@ -19,7 +19,6 @@
         <div class="crochet-loading-screen">Loading...</div>
       </div>
     </div>
-    <div id="crochet-tools"></div>
     <script src="crochet.js"></script>
     <script>
       void (async function () {
@@ -43,8 +42,6 @@
           for (const child of root.children) {
             child.remove();
           }
-          const tools = document.querySelector("#crochet-tools");
-          crochet.debug_ui.render(crochet, tools);
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
         } catch (error) {
           console.error(error);

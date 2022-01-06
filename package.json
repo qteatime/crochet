@@ -18,15 +18,11 @@
     "express": "^4.17.1",
     "immutable": "^4.0.0-rc.14",
     "ohm-js": "^15.3.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/express": "^4.17.11",
     "@types/node": "^14.14.20",
-    "@types/react": "^17.0.6",
-    "@types/react-dom": "^17.0.5",
     "@types/uuid": "^8.3.1",
     "browserify": "^17.0.0",
     "glob": "^7.2.0",
