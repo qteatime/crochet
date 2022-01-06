@@ -19,8 +19,8 @@ export default (ffi: ForeignInterface) => {
           return ffi.record(
             new Map([
               ["tag", ffi.text("LOG_TEXT")],
-              ["log-tag", log.log_tag],
               ["location", ffi.box(log.location)],
+              ["log-tag", log.log_tag],
               ["message", ffi.text(log.value)],
             ])
           );
@@ -28,8 +28,8 @@ export default (ffi: ForeignInterface) => {
           return ffi.record(
             new Map([
               ["tag", ffi.text("LOG")],
-              ["log-tag", log.log_tag],
               ["location", ffi.box(log.location)],
+              ["log-tag", log.log_tag],
               ["value", log.value],
             ])
           );
@@ -40,7 +40,6 @@ export default (ffi: ForeignInterface) => {
         return ffi.record(
           new Map([
             ["tag", ffi.text("NEW")],
-            ["span", ffi.box(x.span)],
             ["location", ffi.box(x.location)],
             ["crochet-type", ffi.box(x.type)],
             ["parameters", ffi.list(x.parameters)],

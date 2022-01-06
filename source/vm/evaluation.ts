@@ -1,4 +1,3 @@
-import { CrochetCapturedContext, CrochetNativeLambda, Tag, TraceSpan } from ".";
 import * as IR from "../ir";
 import { AssertType } from "../ir";
 import { logger } from "../utils/logger";
@@ -6,10 +5,8 @@ import { unreachable } from "../utils/utils";
 import { CrochetEvaluationError, ErrArbitrary } from "./errors";
 import {
   Activation,
-  ActivationLocation,
   ActivationTag,
   Continuation,
-  ContinuationReturn,
   ContinuationTag,
   ContinuationTap,
   CrochetActivation,
@@ -27,6 +24,9 @@ import {
   Universe,
   _done,
   _return,
+  CrochetNativeLambda,
+  Tag,
+  TraceSpan,
 } from "./intrinsics";
 import { Relation, run_match_case, run_search, search } from "./logic";
 import { Namespace } from "./namespaces";
@@ -47,7 +47,7 @@ import {
 } from "./primitives";
 import { Contexts } from "./simulation";
 import { run_simulation } from "./simulation/simulation";
-import { TELog, TENew } from "./tracing";
+import { TELog, TENew, EventLocation } from "./tracing";
 
 export enum RunResultTag {
   DONE,
@@ -361,10 +361,12 @@ export class Thread {
         case NativeSignalTag.TRANSCRIPT_WRITE: {
           this.universe.trace.publish(
             new TELog(
+              EventLocation.from_activation(
+                activation,
+                Location.find_good_transcript_write_location(activation)
+              ),
               "transcript.write",
               value.tag_name,
-              activation.span,
-              Location.find_good_transcript_write_location(activation),
               value.message
             )
           );
@@ -530,7 +532,11 @@ export class Thread {
         );
         const value = Values.instantiate(type, values);
         this.universe.trace.publish(
-          new TENew(activation.span, activation.location, type, values)
+          new TENew(
+            EventLocation.from_activation(activation, null),
+            type,
+            values
+          )
         );
         this.push(activation, value);
         activation.next();
@@ -829,7 +835,7 @@ export class Thread {
           op.relation
         );
         Relation.insert(relation, values);
-        this.universe.trace.publish_fact(activation.span, relation, values);
+        this.universe.trace.publish_fact(activation, relation, values);
         activation.next();
         return _continue;
       }
@@ -842,7 +848,7 @@ export class Thread {
           op.relation
         );
         Relation.remove(relation, values);
-        this.universe.trace.publish_forget(activation.span, relation, values);
+        this.universe.trace.publish_forget(activation, relation, values);
         activation.next();
         return _continue;
       }

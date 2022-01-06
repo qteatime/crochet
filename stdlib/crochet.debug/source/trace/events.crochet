@@ -3,13 +3,13 @@
 command internal to-event: Event do
   condition
     when Event.tag === "LOG" =>
-      new te-log(Event.log-tag, Event.location, Event.value);
+      new te-log(Event.location, Event.log-tag, Event.value);
     
     when Event.tag === "LOG_TEXT" =>
-      new te-log-message(Event.log-tag, Event.location, Event.message);
+      new te-log-message(Event.location, Event.log-tag, Event.message);
 
     when Event.tag === "NEW" =>
-      new te-instantiated(Event.span, Event.location, Event.crochet-type, Event.parameters);
+      new te-instantiated(Event.location, Event.crochet-type, Event.parameters);
   end
 end
 

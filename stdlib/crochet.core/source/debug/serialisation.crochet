@@ -54,7 +54,10 @@ command debug-serialisation for: (X is doc-table) =
   ];
 
 command debug-serialisation for: (X is doc-table-row) =
-  X.cells map: (self for: _);
+  [
+    tag -> "table-row",
+    cells -> X.cells map: (self for: _)
+  ];
 
 command debug-serialisation for: (X is doc-flow) =
   [

@@ -298,7 +298,7 @@ export function activation_location(x: ActivationLocation): string {
       x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"
     }`;
   } else if (x instanceof CrochetCommandBranch) {
-    return branch_location(x);
+    return branch_name_location(x);
   } else if (x instanceof CrochetThunk) {
     return `thunk from ${
       x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"

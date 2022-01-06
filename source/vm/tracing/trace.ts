@@ -4,6 +4,7 @@ import {
   CrochetRelation,
   CrochetValue,
   TraceSpan,
+  Activation,
 } from "../intrinsics";
 import { EventChoice } from "../simulation/contexts";
 import { TraceConstraint } from "./constraint";
@@ -16,6 +17,7 @@ import {
   TEGoalReached,
   TETurn,
   TraceEvent,
+  EventLocation,
 } from "./events";
 
 type Subscriber = (event: TraceEvent) => void;
@@ -66,42 +68,68 @@ export class CrochetTrace {
   }
 
   publish_fact(
-    location: TraceSpan | null,
+    activation: Activation,
     relation: CrochetRelation,
     values: CrochetValue[]
   ) {
-    this.publish(new TEFact(location, relation as any, values));
+    this.publish(
+      new TEFact(
+        EventLocation.from_activation(activation, null),
+        relation as any,
+        values
+      )
+    );
   }
 
   publish_forget(
-    location: TraceSpan | null,
+    activation: Activation,
     relation: CrochetRelation,
     values: CrochetValue[]
   ) {
-    this.publish(new TEForget(location, relation as any, values));
+    this.publish(
+      new TEForget(
+        EventLocation.from_activation(activation, null),
+        relation as any,
+        values
+      )
+    );
   }
 
-  publish_turn(location: TraceSpan | null, turn: CrochetValue) {
-    this.publish(new TETurn(location, turn));
+  publish_turn(activation: Activation, turn: CrochetValue) {
+    this.publish(
+      new TETurn(EventLocation.from_activation(activation, null), turn)
+    );
   }
 
-  publish_action(location: TraceSpan | null, choice: ActionChoice) {
-    this.publish(new TEAction(location, choice));
+  publish_action(activation: Activation, choice: ActionChoice) {
+    this.publish(
+      new TEAction(EventLocation.from_activation(activation, null), choice)
+    );
   }
 
-  publish_event(location: TraceSpan | null, event: EventChoice) {
-    this.publish(new TEEvent(location, event));
+  publish_event(activation: Activation, event: EventChoice) {
+    this.publish(
+      new TEEvent(EventLocation.from_activation(activation, null), event)
+    );
   }
 
-  publish_goal_reached(location: TraceSpan | null, goal: IR.SimulationGoal) {
-    this.publish(new TEGoalReached(location, goal));
+  publish_goal_reached(activation: Activation, goal: IR.SimulationGoal) {
+    this.publish(
+      new TEGoalReached(EventLocation.from_activation(activation, null), goal)
+    );
   }
 
   publish_action_choice(
-    location: TraceSpan | null,
+    activation: Activation,
     turn: CrochetValue,
     choices: ActionChoice[]
   ) {
-    this.publish(new TEActionChoice(location, turn, choices));
+    this.publish(
+      new TEActionChoice(
+        EventLocation.from_activation(activation, null),
+        turn,
+        choices
+      )
+    );
   }
 }

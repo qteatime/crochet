@@ -32,7 +32,7 @@ export class TCEventSpan extends BaseConstraint {
   }
 
   accepts(event: TraceEvent) {
-    return event.location === this.span;
+    return event.location.span === this.span;
   }
 }
 

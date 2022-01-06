@@ -455,18 +455,20 @@ export default (ffi: ForeignInterface) => {
                 ])
               )
             ),
-            ...data.rows.map((x: any) =>
-              h(
-                "div",
-                { class: "value-lens-table-row" },
-                x.map((y: any) =>
-                  h("div", { class: "value-lens-table-cell" }, [
-                    render(y, true, "table"),
-                  ])
-                )
-              )
-            ),
+            ...data.rows.map((x: any) => render(x, compact, "table")),
           ]);
+
+        case "table-row": {
+          return h(
+            "div",
+            { class: "value-lens-table-row" },
+            data.cells.map((y: any) =>
+              h("div", { class: "value-lens-table-cell" }, [
+                render(y, true, "table-row"),
+              ])
+            )
+          );
+        }
 
         case "flow":
           return h(

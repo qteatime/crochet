@@ -3,12 +3,14 @@ import type { Set as ISet, Map as IMap, List as IList } from "../collection";
 import { XorShift } from "../utils/xorshift";
 import {
   ActivationLocation,
+  CrochetActivation,
   CrochetModule,
   CrochetPackage,
   CrochetType,
   CrochetValue,
   Environment,
   ErrNativePanic,
+  EventLocation,
   Location,
   Machine,
   NativeFunction,
@@ -438,8 +440,24 @@ export class ForeignInterface {
     return recorder.events;
   }
 
-  location_debug_string(x: ActivationLocation) {
-    return Location.activation_location(x);
+  location_debug_string(x: EventLocation) {
+    const location = Location.activation_location(x.location);
+    if (x.activation instanceof CrochetActivation && x.instruction != null) {
+      const op = x.activation.block.ops[x.instruction] ?? null;
+      if (op != null && op.meta != null) {
+        const position = Location.format_position_suffix(
+          op.meta,
+          x.activation.env.raw_module?.metadata ?? null
+        );
+        return `${location}${position}`;
+      } else {
+        return location;
+      }
+    } else if (x.location == null && x.span != null) {
+      return `at span ${x.span.description}`;
+    } else {
+      return location;
+    }
   }
 
   // == Dangerous introspection that needs more thought
