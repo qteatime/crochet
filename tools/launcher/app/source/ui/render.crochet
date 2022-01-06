@@ -30,7 +30,7 @@ command dom-renderer render: (X is w-action-button) do
     "agata-action-button",
     [
       new w-button(
-        X.title,
+        X.description,
         X.on-click,
         [
           new w-icon(X.icon),

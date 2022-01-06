@@ -1,3 +1,7 @@
+#crochet-container {
+  overflow-x: hidden;
+}
+
 .launcher-run-frame {
   height: calc(100vh - 65px); /* top bar is 65px */
   overflow-y: auto;
@@ -69,4 +73,14 @@
 .launcher-playground-entry-log-entry {
   padding: 0.7em 1em 1em 1em;
   border-bottom: 1px solid var(--border);
+}
+
+.purr-project-menu > .agata-flex-column {
+  gap: 0;
+}
+
+@media (max-width: 1024px) {
+  .purr-project-menu .agata-action-text {
+    display: none;
+  }
 }
