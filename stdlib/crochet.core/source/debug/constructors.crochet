@@ -445,17 +445,32 @@ end
 command doc-borders top: (F is (doc-border -> doc-border)) =
   new doc-borders(F(self.top), self.right, self.bottom, self.left);
 
+command doc-borders top: (B is doc-border) =
+  new doc-borders(B, self.right, self.bottom, self.left);
+
 command doc-borders right: (F is (doc-border -> doc-border)) =
   new doc-borders(self.top, F(self.right), self.bottom, self.left);
+
+command doc-borders right: (B is doc-border) =
+  new doc-borders(self.top, B, self.bottom, self.left);
 
 command doc-borders bottom: (F is (doc-border -> doc-border)) =
   new doc-borders(self.top, self.right, F(self.bottom), self.left);
 
+command doc-borders bottom: (B is doc-border) =
+  new doc-borders(self.top, self.right, B, self.left);
+
 command doc-borders left: (F is (doc-border -> doc-border)) =
   new doc-borders(self.top, self.right, self.bottom, F(self.left));
 
+command doc-borders left: (B is doc-border) =
+  new doc-borders(self.top, self.right, self.bottom, B);
+
 command doc-borders all: (F is (doc-border -> doc-border)) =
   new doc-borders(F(self.top), F(self.right), F(self.bottom), F(self.left));
+
+command doc-borders all: (B is doc-border) =
+  new doc-borders(B, B, B, B);
 
 
 command #doc-background defaults =

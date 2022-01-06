@@ -3,6 +3,7 @@ import type {
   CrochetCommandBranch,
   CrochetTypeConstraint,
   CrochetValue,
+  EventLocation,
 } from "../../../build/vm";
 
 export default (ffi: ForeignInterface) => {
@@ -12,6 +13,10 @@ export default (ffi: ForeignInterface) => {
 
   function get_constraint(x: CrochetValue): CrochetTypeConstraint {
     return ffi.unbox(x) as CrochetTypeConstraint;
+  }
+
+  function get_trace_location(x: CrochetValue): EventLocation {
+    return ffi.unbox(x) as EventLocation;
   }
 
   ffi.defun("reflection.branch-name", (b) => {
@@ -43,5 +48,14 @@ export default (ffi: ForeignInterface) => {
       ffi.is_subtype(type, constraint.type) ||
       ffi.is_subtype(stype, constraint.type);
     return ffi.boolean(ok);
+  });
+
+  ffi.defun("reflection.trace-location-span", (x) => {
+    const location = get_trace_location(x);
+    if (location.span == null) {
+      return ffi.nothing;
+    } else {
+      return ffi.box(location.span);
+    }
   });
 };

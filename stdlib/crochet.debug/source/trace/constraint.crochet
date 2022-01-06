@@ -22,7 +22,7 @@ command internal compile: (C is tc-invoke) =
 command #trace-constraint has-tag: Tag =
   new tc-has-tag(Tag);
 
-command #trace-constraint has-span: (Span is trace-span) =
+command #trace-constraint has-span: (Span is span) =
   new tc-has-span(Span);
 
 command #trace-constraint instantiated: (Type is static-type) =

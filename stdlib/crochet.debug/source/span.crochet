@@ -1,0 +1,27 @@
+% crochet
+
+type span-result(global span is span, global result);
+
+command #span name: (Name is static-text) do: (Fun is (() -> A)) -> span-result<A> do
+  foreign span.run(Name, { Span in new span-result(Span, Fun()); });
+end
+
+command span name =
+  foreign span.name(self.box);
+
+implement equality for span;
+command span === (That is span) =
+  foreign span.eq(self.box, That.box);
+
+command span is-parent-of: (That is span) do
+  let Parent = foreign span.parent(That);
+  condition
+    when Parent is nothing => false;
+    when new span(Parent) === self => true;
+    otherwise => span is-parent-of: new span(Parent);
+  end
+end
+
+command span is-child-of: (That is span) =
+  That is-parent-of: self;
+

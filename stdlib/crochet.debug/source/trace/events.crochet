@@ -36,3 +36,14 @@ command te-invoked branch =
 command te-invoked arguments =
   self.arguments map: (_ as unknown);
 
+
+command te-log location = new trace-location(self.location);
+command te-log-message location = new trace-location(self.location);
+command te-instantiated location = new trace-location(self.location);
+command te-invoked location = new trace-location(self.location);
+
+command trace-location span do
+  #result
+    | from-nullable: (foreign reflection.trace-location-span(self.box))
+    | map: { X in new span(X) };
+end

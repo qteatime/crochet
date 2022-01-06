@@ -33,3 +33,28 @@ test
   assert ([1, 2, 3, 4] drop-while: (_ <= 2)) === [3, 4];
   assert ([1, 2, 3, 2, 1] drop-while: (_ <= 2)) === [3, 2, 1];
 end
+
+
+command (X has indexed-sequence) second =
+  X at: 2;
+
+command (X has indexed-sequence) third =
+  X at: 3;
+
+command (X has indexed-sequence) fourth =
+  X at: 4;
+
+command (X has indexed-sequence) fifth =
+  X at: 5;
+
+command (X has indexed-sequence) sixth =
+  X at: 6;
+
+command (X has indexed-sequence) seventh =
+  X at: 7;
+
+command (X has indexed-sequence) eight =
+  X at: 8;
+
+command (X has indexed-sequence) ninth =
+  X at: 9;

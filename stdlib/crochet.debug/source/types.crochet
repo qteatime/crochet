@@ -19,7 +19,9 @@ type te-log-message(location, tag, message is text) is trace-event;
 type te-instantiated(location, crochet-type, arguments is list<any>) is trace-event;
 type te-invoked(location, branch, arguments is list<any>) is trace-event;
 
-type trace-span(box is unknown);
+type span(box is unknown);
+type trace-location(box is unknown);
+
 type trace-recorder(box is unknown);
 type trace-slice(events is list<trace-event>);
 type trace-timeline(name is text, slice is trace-slice);
@@ -27,7 +29,7 @@ type trace-timeline(name is text, slice is trace-slice);
 abstract trace-constraint;
 
 type tc-has-tag(tag) is trace-constraint;
-type tc-has-span(span is trace-span) is trace-constraint;
+type tc-has-span(span is span) is trace-constraint;
 type tc-instantiate(static-type is static-type) is trace-constraint;
 type tc-invoke(name is text) is trace-constraint;
 type tc-or(left is trace-constraint, right is trace-constraint) is trace-constraint;
