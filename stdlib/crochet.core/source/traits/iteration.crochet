@@ -247,3 +247,36 @@ test
                     | at: 2 put: 2
                     | at: 3 put: 1);
 end
+
+
+local type collect-fold-context(state, result);
+
+/// Similar to [command:_ fold-from: _ with: _], but yields all intermediate
+/// results, rather than just the final state.
+command (Xs has foldable-collection) collect-fold-from: (Initial is B) with: (Combine is ((A, B) -> B)) -> list<B> do
+  let Result =
+    self fold-from: new collect-fold-context(Initial, [])
+         with: { Previous, Current in
+           let New-state = Combine(Previous.state, Current);
+           new collect-fold-context(New-state, Previous.result append: New-state);
+         };
+  Result.result;
+test
+  assert ([] collect-fold-from: 0 with: (_ + _)) === [];
+  assert ([1, 2, 3] collect-fold-from: 0 with: (_ + _)) === [1, 3, 6];
+end
+
+/// Similar to [command:_ fold-right-from: _ with: _], but yields all intermediate
+/// results, rather than just the final state.
+command (Xs has foldable-collection) collect-fold-right-from: (Initial is B) with: (Combine is ((A, B) -> B)) -> list<B> do
+  let Result =
+    self fold-right-from: new collect-fold-context(Initial, [])
+         with: { Previous, Current in
+           let New-state = Combine(Previous.state, Current);
+           new collect-fold-context(New-state, Previous.result append: New-state);
+         };
+  Result.result;
+test
+  assert ([] collect-fold-from: 10 with: (_ - _)) === [];
+  assert ([1, 2, 3] collect-fold-from: 10 with: (_ - _)) === [9, 7, 4];
+end

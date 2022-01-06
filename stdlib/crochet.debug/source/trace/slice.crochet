@@ -30,19 +30,3 @@ implement mappable-collection for trace-slice;
 
 command trace-slice map: Transformation =
   new trace-slice(self.events map: Transformation);
-
-
-local type collect-fold-context(state, result);
-
-command trace-slice collect-fold-from: Initial with: Combine do
-  let Result =
-    self fold-from: new collect-fold-context(Initial, [])
-        with: { Previous, Current in
-          let New-state = Combine(Previous.state, Current);
-          new collect-fold-context(New-state, Previous.result append: New-state);
-        };
-  Result.result;
-test
-  let Slice = new trace-slice([1, 2, 3]);
-  assert (Slice collect-fold-from: 0 with: (_ + _)).events === [[2], [2, 3], [2, 3, 4]];
-end
