@@ -47,7 +47,7 @@ import {
 } from "./primitives";
 import { Contexts } from "./simulation";
 import { run_simulation } from "./simulation/simulation";
-import { TELog } from "./tracing";
+import { TELog, TENew } from "./tracing";
 
 export enum RunResultTag {
   DONE,
@@ -529,6 +529,9 @@ export class Thread {
           type
         );
         const value = Values.instantiate(type, values);
+        this.universe.trace.publish(
+          new TENew(activation.span, activation.location, type, values)
+        );
         this.push(activation, value);
         activation.next();
         return _continue;

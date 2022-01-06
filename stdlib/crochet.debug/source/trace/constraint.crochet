@@ -12,12 +12,18 @@ command internal compile: (C is tc-or) =
 command internal compile: (C is tc-and) =
   foreign trace.tc-and(internal compile: C.left, internal compile: C.right);
 
+command internal compile: (C is tc-instantiate) =
+  foreign trace.tc-instantiate(C.static-type);
+
 
 command #trace-constraint has-tag: Tag =
   new tc-has-tag(Tag);
 
 command #trace-constraint has-span: (Span is trace-span) =
   new tc-has-span(Span);
+
+command #trace-constraint instantiated: (Type is static-type) =
+  new tc-instantiate(Type);
 
 command trace-constraint or (That is trace-constraint) =
   new tc-or(self, That);

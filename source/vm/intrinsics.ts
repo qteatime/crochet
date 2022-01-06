@@ -919,6 +919,7 @@ export class NativeActivation implements IActivation {
 
 export class Universe {
   readonly type_cache = new Map<CrochetType, CrochetType>();
+  readonly reverse_type_cache = new Map<CrochetType, CrochetType>();
   readonly static_type_cache = new Map<CrochetType, CrochetValue>();
   readonly registered_instances = new Map<CrochetType, CrochetValue[]>();
   readonly nothing: CrochetValue;

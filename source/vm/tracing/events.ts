@@ -1,4 +1,4 @@
-import { ActivationLocation } from "..";
+import { ActivationLocation, CrochetType } from "..";
 import * as IR from "../../ir";
 import {
   ActionChoice,
@@ -18,6 +18,7 @@ export enum TraceTag {
   SIMULATION_GOAL_REACHED,
   SIMULATION_ACTION_CHOICE,
   LOG,
+  NEW,
 }
 
 export type TraceEvent =
@@ -28,7 +29,8 @@ export type TraceEvent =
   | TEEvent
   | TETurn
   | TEGoalReached
-  | TEActionChoice;
+  | TEActionChoice
+  | TENew;
 
 export abstract class BaseTraceEvent {
   abstract tag: TraceTag;
@@ -115,6 +117,18 @@ export class TEActionChoice extends BaseTraceEvent {
     readonly location: TraceSpan | null,
     readonly turn: CrochetValue,
     readonly choices: ActionChoice[]
+  ) {
+    super();
+  }
+}
+
+export class TENew extends BaseTraceEvent {
+  readonly tag = TraceTag.NEW;
+  constructor(
+    readonly span: TraceSpan | null,
+    readonly location: ActivationLocation,
+    readonly type: CrochetType,
+    readonly parameters: CrochetValue[]
   ) {
     super();
   }

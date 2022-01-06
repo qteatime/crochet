@@ -42,6 +42,18 @@ command debug-representation for: (E is te-log-message) perspective: (P is defau
   | gap: (0.5 as doc-em);
 end
 
+command debug-representation for: (E is te-instantiated) perspective: (P is default-perspective) do
+  let Location = foreign trace.location-repr(E.location);
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Type instantiated",
+      repr location: Location
+    ],
+    debug-representation for: E static-type perspective: P,
+    debug-representation for: E parameters perspective: P,
+  ];
+end
+
 command debug-representation for: (X is trace-slice) perspective: (P is default-perspective) do
   #document list: (
     X.events map: (debug-representation for: _ perspective: P)

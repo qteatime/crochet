@@ -5,6 +5,7 @@ import type {
   TraceEvent,
   TELog,
   CrochetValue,
+  TENew,
 } from "../../../build/vm";
 
 export default (ffi: ForeignInterface) => {
@@ -34,6 +35,18 @@ export default (ffi: ForeignInterface) => {
           );
         }
       },
+      NEW: (event) => {
+        const x = event as TENew;
+        return ffi.record(
+          new Map([
+            ["tag", ffi.text("NEW")],
+            ["span", ffi.box(x.span)],
+            ["location", ffi.box(x.location)],
+            ["crochet-type", ffi.box(x.type)],
+            ["parameters", ffi.list(x.parameters)],
+          ])
+        );
+      },
       SIMULATION_ACTION: () => null,
       SIMULATION_ACTION_CHOICE: () => null,
       SIMULATION_EVENT: () => null,
@@ -60,6 +73,14 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(
       ffi.trace_constraint.and(ffi.unbox(l) as any, ffi.unbox(r) as any)
     );
+  });
+
+  ffi.defun("trace.tc-instantiate", (t) => {
+    const st = ffi.static_type_to_type(ffi.get_type(t));
+    if (st == null) {
+      throw ffi.panic("internal", `No static type -> type mapping available`);
+    }
+    return ffi.box(ffi.trace_constraint.instantiate(st));
   });
 
   ffi.defun("trace.make-recorder", (constraint) => {
@@ -90,5 +111,16 @@ export default (ffi: ForeignInterface) => {
     const loc = ffi.unbox(loc0) as any;
     const repr = ffi.location_debug_string(loc);
     return ffi.text(repr);
+  });
+
+  ffi.defun("trace.make-static-type", (t0) => {
+    const t = ffi.unbox(t0) as any;
+    return ffi.make_static_type(t);
+  });
+
+  ffi.defun("trace.type-fields", (t0) => {
+    const t = ffi.unbox(t0) as any;
+    const fields = ffi.get_type_fields(t);
+    return ffi.list(fields.map((x) => ffi.text(x)));
   });
 };

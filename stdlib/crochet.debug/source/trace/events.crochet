@@ -7,8 +7,20 @@ command internal to-event: Event do
     
     when Event.tag === "LOG_TEXT" =>
       new te-log-message(Event.log-tag, Event.location, Event.message);
+
+    when Event.tag === "NEW" =>
+      new te-instantiated(Event.span, Event.location, Event.crochet-type, Event.parameters);
   end
 end
 
 command te-log value = self.value as unknown;
 command te-log-message message = self.message as unknown;
+
+command te-instantiated static-type =
+  foreign trace.make-static-type(self.crochet-type);
+
+command te-instantiated parameters do
+  let Fields = foreign trace.type-fields(self.crochet-type);
+  let Parameters = self.parameters map: (_ as unknown);
+  #record from-pairs: (Fields zip: Parameters with: (#association key: _ value: _));
+end

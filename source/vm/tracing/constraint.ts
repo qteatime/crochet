@@ -1,5 +1,5 @@
 import { Values } from "../primitives";
-import { CrochetValue, TraceSpan } from "../intrinsics";
+import { CrochetValue, TraceSpan, CrochetType } from "../intrinsics";
 import { TraceEvent, TraceTag } from "./events";
 
 export enum ConstraintTag {
@@ -7,6 +7,7 @@ export enum ConstraintTag {
   LOG_TAG,
   OR,
   AND,
+  NEW_TYPE,
 }
 
 export type TraceConstraint = TCLogTag | TCEventSpan | TCOr | TCAnd;
@@ -52,5 +53,15 @@ export class TCAnd extends BaseConstraint {
 
   accepts(event: TraceEvent): boolean {
     return this.left.accepts(event) && this.right.accepts(event);
+  }
+}
+
+export class TCNewType extends BaseConstraint {
+  constructor(readonly type: CrochetType) {
+    super();
+  }
+
+  accepts(event: TraceEvent) {
+    return event.tag === TraceTag.NEW && event.type === this.type;
   }
 }

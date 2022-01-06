@@ -27,6 +27,7 @@ import {
   TCAnd,
   TCEventSpan,
   TCLogTag,
+  TCNewType,
   TCOr,
   TraceConstraint,
   TraceEvent,
@@ -293,6 +294,21 @@ export class ForeignInterface {
     );
   }
 
+  make_static_type(x: CrochetType) {
+    return Values.make_static_type(
+      this.#universe,
+      Types.get_static_type(this.#universe, x)
+    );
+  }
+
+  static_type_to_type(x: CrochetType) {
+    return this.#universe.reverse_type_cache.get(x) ?? null;
+  }
+
+  get_type(x: CrochetValue) {
+    return x.type;
+  }
+
   is_value_of_same_type(x: CrochetValue, type0: CrochetValue) {
     if (type0.tag === Tag.TYPE) {
       Values.assert_tag(Tag.TYPE, type0);
@@ -316,6 +332,13 @@ export class ForeignInterface {
     } else {
       throw this.panic("invalid-type", "Expected a static-type");
     }
+  }
+
+  get_type_fields(x: CrochetType) {
+    if (!(x instanceof CrochetType)) {
+      throw new ErrNativePanic("invalid-type", "Expected a type");
+    }
+    return x.fields;
   }
 
   to_debug_string(x: CrochetValue) {
@@ -369,6 +392,10 @@ export class ForeignInterface {
 
     event_span(span: TraceSpan) {
       return new TCEventSpan(span);
+    },
+
+    instantiate(type: CrochetType) {
+      return new TCNewType(type);
     },
 
     or(left: TraceConstraint, right: TraceConstraint) {
