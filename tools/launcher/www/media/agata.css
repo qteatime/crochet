@@ -740,6 +740,7 @@ body {
 }
 .value-lens-timeline-frames-entry {
   display: none;
+  margin: 0.5em;
 }
 
 .value-lens-timeline-controls {

@@ -42,9 +42,9 @@ implement to-doc-font-family for static-text;
 command (Text is static-text) as doc-font-family do
   condition
     when Text =:= "inherit" => doc-font-family-inherit;
-    when Text =:= "serif" => doc-font-serif;
-    when Text =:= "sans-serif" => doc-font-sans-serif;
-    when Text =:= "monospace" => doc-font-monospace;
+    when Text =:= "serif" => doc-font-family-serif;
+    when Text =:= "sans-serif" => doc-font-family-sans-serif;
+    when Text =:= "monospace" => doc-font-family-monospace;
   end
 end
 

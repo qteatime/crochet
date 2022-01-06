@@ -50,7 +50,24 @@ command debug-representation for: (E is te-instantiated) perspective: (P is defa
       repr location: Location
     ],
     debug-representation for: E static-type perspective: P,
-    debug-representation for: E parameters perspective: P,
+    debug-representation for: E arguments perspective: P,
+  ];
+end
+
+command debug-representation for: (E is te-invoked) perspective: (P is default-perspective) do
+  let Location = foreign trace.location-repr(E.location);
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Invoked [E branch name]",
+      repr location: Location
+    ],
+    #document plain-text: E branch name
+      | format-text
+        | font: { F in F family: "monospace" | weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) },
+
+    debug-representation for: E arguments perspective: P,
   ];
 end
 

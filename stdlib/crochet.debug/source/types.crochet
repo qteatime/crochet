@@ -16,7 +16,8 @@ protect type trace with tracing;
 abstract trace-event;
 type te-log(location, tag, value) is trace-event;
 type te-log-message(location, tag, message is text) is trace-event;
-type te-instantiated(location, crochet-type, parameters is list<any>) is trace-event;
+type te-instantiated(location, crochet-type, arguments is list<any>) is trace-event;
+type te-invoked(location, branch, arguments is list<any>) is trace-event;
 
 type trace-span(box is unknown);
 type trace-recorder(box is unknown);
@@ -28,8 +29,11 @@ abstract trace-constraint;
 type tc-has-tag(tag) is trace-constraint;
 type tc-has-span(span is trace-span) is trace-constraint;
 type tc-instantiate(static-type is static-type) is trace-constraint;
+type tc-invoke(name is text) is trace-constraint;
 type tc-or(left is trace-constraint, right is trace-constraint) is trace-constraint;
 type tc-and(left is trace-constraint, right is trace-constraint) is trace-constraint;
 
 
-
+type tv-branch(branch is unknown);
+type tv-constraint(constraint is unknown);
+type tv-parameter(global name is text, global constraint is tv-constraint);

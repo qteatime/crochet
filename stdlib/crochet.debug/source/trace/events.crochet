@@ -9,18 +9,30 @@ command internal to-event: Event do
       new te-log-message(Event.location, Event.log-tag, Event.message);
 
     when Event.tag === "NEW" =>
-      new te-instantiated(Event.location, Event.crochet-type, Event.parameters);
+      new te-instantiated(Event.location, Event.crochet-type, Event.arguments);
+
+    when Event.tag === "INVOKE" =>
+      new te-invoked(Event.location, Event.branch, Event.arguments);
   end
 end
 
 command te-log value = self.value as unknown;
 command te-log-message message = self.message as unknown;
 
+
 command te-instantiated static-type =
   foreign trace.make-static-type(self.crochet-type);
 
-command te-instantiated parameters do
+command te-instantiated arguments do
   let Fields = foreign trace.type-fields(self.crochet-type);
-  let Parameters = self.parameters map: (_ as unknown);
-  #record from-pairs: (Fields zip: Parameters with: (#association key: _ value: _));
+  let Arguments = self.arguments map: (_ as unknown);
+  #record from-pairs: (Fields zip: Arguments with: (#association key: _ value: _));
 end
+
+
+command te-invoked branch =
+  new tv-branch(self.branch);
+
+command te-invoked arguments =
+  self.arguments map: (_ as unknown);
+

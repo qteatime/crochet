@@ -15,6 +15,9 @@ command internal compile: (C is tc-and) =
 command internal compile: (C is tc-instantiate) =
   foreign trace.tc-instantiate(C.static-type);
 
+command internal compile: (C is tc-invoke) =
+  foreign trace.tc-invoke(C.name);
+
 
 command #trace-constraint has-tag: Tag =
   new tc-has-tag(Tag);
@@ -24,6 +27,9 @@ command #trace-constraint has-span: (Span is trace-span) =
 
 command #trace-constraint instantiated: (Type is static-type) =
   new tc-instantiate(Type);
+
+command #trace-constraint invoked: (Name is static-text) =
+  new tc-invoke(Name);
 
 command trace-constraint or (That is trace-constraint) =
   new tc-or(self, That);

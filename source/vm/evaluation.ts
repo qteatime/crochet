@@ -359,16 +359,11 @@ export class Thread {
         }
 
         case NativeSignalTag.TRANSCRIPT_WRITE: {
-          this.universe.trace.publish(
-            new TELog(
-              EventLocation.from_activation(
-                activation,
-                Location.find_good_transcript_write_location(activation)
-              ),
-              "transcript.write",
-              value.tag_name,
-              value.message
-            )
+          this.universe.trace.publish_log(
+            activation,
+            "transcript.write",
+            value.tag_name,
+            value.message
           );
           return this.step_native(activation, this.universe.nothing);
         }
@@ -668,6 +663,7 @@ export class Thread {
           branch,
           args
         );
+        this.universe.trace.publish_invoke(activation, branch, args);
         return new JumpSignal(new_activation);
       }
 

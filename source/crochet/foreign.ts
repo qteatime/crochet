@@ -28,6 +28,7 @@ import {
   Tag,
   TCAnd,
   TCEventSpan,
+  TCInvoke,
   TCLogTag,
   TCNewType,
   TCOr,
@@ -321,6 +322,10 @@ export class ForeignInterface {
     }
   }
 
+  is_subtype(x: CrochetType, y: CrochetType) {
+    return Types.is_subtype(x, y);
+  }
+
   get_type_info(x: CrochetValue) {
     if (x.tag === Tag.TYPE) {
       Values.assert_tag(Tag.TYPE, x);
@@ -398,6 +403,10 @@ export class ForeignInterface {
 
     instantiate(type: CrochetType) {
       return new TCNewType(type);
+    },
+
+    invoke(name: string) {
+      return new TCInvoke(name);
     },
 
     or(left: TraceConstraint, right: TraceConstraint) {

@@ -11,9 +11,14 @@
     "source/trace/events.crochet",
     "source/trace/recorder.crochet",
     "source/trace/representation.crochet",
-    "source/trace/slice.crochet"
+    "source/trace/slice.crochet",
+    "source/trace/reflection.crochet"
   ],
-  "native_sources": ["native/debug.js", "native/trace.js"],
+  "native_sources": [
+    "native/debug.js",
+    "native/trace.js",
+    "native/reflection.js"
+  ],
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],

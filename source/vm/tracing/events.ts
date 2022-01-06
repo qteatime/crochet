@@ -9,6 +9,7 @@ import {
   CrochetType,
   Activation,
   CrochetActivation,
+  CrochetCommandBranch,
 } from "../intrinsics";
 import { EventChoice } from "../simulation/contexts";
 
@@ -22,6 +23,7 @@ export enum TraceTag {
   SIMULATION_ACTION_CHOICE,
   LOG,
   NEW,
+  INVOKE,
 }
 
 export type TraceEvent =
@@ -33,7 +35,8 @@ export type TraceEvent =
   | TETurn
   | TEGoalReached
   | TEActionChoice
-  | TENew;
+  | TENew
+  | TEInvoke;
 
 export class EventLocation {
   constructor(
@@ -151,6 +154,17 @@ export class TENew extends BaseTraceEvent {
     readonly location: EventLocation,
     readonly type: CrochetType,
     readonly parameters: CrochetValue[]
+  ) {
+    super();
+  }
+}
+
+export class TEInvoke extends BaseTraceEvent {
+  readonly tag = TraceTag.INVOKE;
+  constructor(
+    readonly location: EventLocation,
+    readonly command: CrochetCommandBranch,
+    readonly args: CrochetValue[]
   ) {
     super();
   }

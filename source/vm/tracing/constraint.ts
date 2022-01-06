@@ -8,9 +8,16 @@ export enum ConstraintTag {
   OR,
   AND,
   NEW_TYPE,
+  INVOKE,
 }
 
-export type TraceConstraint = TCLogTag | TCEventSpan | TCOr | TCAnd;
+export type TraceConstraint =
+  | TCLogTag
+  | TCEventSpan
+  | TCOr
+  | TCAnd
+  | TCNewType
+  | TCInvoke;
 
 export abstract class BaseConstraint {
   abstract accepts(event: TraceEvent): boolean;
@@ -63,5 +70,15 @@ export class TCNewType extends BaseConstraint {
 
   accepts(event: TraceEvent) {
     return event.tag === TraceTag.NEW && event.type === this.type;
+  }
+}
+
+export class TCInvoke extends BaseConstraint {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  accepts(event: TraceEvent) {
+    return event.tag === TraceTag.INVOKE && event.command.name === this.name;
   }
 }

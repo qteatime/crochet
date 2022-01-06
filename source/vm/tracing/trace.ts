@@ -5,7 +5,10 @@ import {
   CrochetValue,
   TraceSpan,
   Activation,
+  CrochetCommandBranch,
+  CrochetType,
 } from "../intrinsics";
+import { find_good_transcript_write_location } from "../primitives/location";
 import { EventChoice } from "../simulation/contexts";
 import { TraceConstraint } from "./constraint";
 import {
@@ -18,6 +21,9 @@ import {
   TETurn,
   TraceEvent,
   EventLocation,
+  TEInvoke,
+  TENew,
+  TELog,
 } from "./events";
 
 type Subscriber = (event: TraceEvent) => void;
@@ -129,6 +135,49 @@ export class CrochetTrace {
         EventLocation.from_activation(activation, null),
         turn,
         choices
+      )
+    );
+  }
+
+  publish_instantiation(
+    activation: Activation,
+    type: CrochetType,
+    args: CrochetValue[]
+  ) {
+    this.publish(
+      new TENew(EventLocation.from_activation(activation, null), type, args)
+    );
+  }
+
+  publish_invoke(
+    activation: Activation,
+    branch: CrochetCommandBranch,
+    args: CrochetValue[]
+  ) {
+    this.publish(
+      new TEInvoke(
+        EventLocation.from_activation(activation, null),
+        branch,
+        args
+      )
+    );
+  }
+
+  publish_log(
+    activation: Activation,
+    category: string,
+    tag: CrochetValue,
+    message: string | CrochetValue
+  ) {
+    this.publish(
+      new TELog(
+        EventLocation.from_activation(
+          activation,
+          find_good_transcript_write_location(activation)
+        ),
+        category,
+        tag,
+        message
       )
     );
   }

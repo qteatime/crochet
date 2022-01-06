@@ -6,13 +6,12 @@ import type {
   TELog,
   CrochetValue,
   TENew,
+  TEInvoke,
 } from "../../../build/vm";
 
 export default (ffi: ForeignInterface) => {
   function to_event_record(event: TraceEvent): null | CrochetValue {
     return ffi.match_trace_event(event, {
-      FACT: () => null,
-      FORGET: () => null,
       LOG: (log0: TraceEvent) => {
         const log = log0 as TELog;
         if (typeof log.value === "string") {
@@ -42,10 +41,23 @@ export default (ffi: ForeignInterface) => {
             ["tag", ffi.text("NEW")],
             ["location", ffi.box(x.location)],
             ["crochet-type", ffi.box(x.type)],
-            ["parameters", ffi.list(x.parameters)],
+            ["arguments", ffi.list(x.parameters)],
           ])
         );
       },
+      INVOKE: (event) => {
+        const x = event as TEInvoke;
+        return ffi.record(
+          new Map([
+            ["tag", ffi.text("INVOKE")],
+            ["location", ffi.box(x.location)],
+            ["branch", ffi.box(x.command)],
+            ["arguments", ffi.list(x.args)],
+          ])
+        );
+      },
+      FACT: () => null,
+      FORGET: () => null,
       SIMULATION_ACTION: () => null,
       SIMULATION_ACTION_CHOICE: () => null,
       SIMULATION_EVENT: () => null,
@@ -80,6 +92,10 @@ export default (ffi: ForeignInterface) => {
       throw ffi.panic("internal", `No static type -> type mapping available`);
     }
     return ffi.box(ffi.trace_constraint.instantiate(st));
+  });
+
+  ffi.defun("trace.tc-invoke", (t) => {
+    return ffi.box(ffi.trace_constraint.invoke(ffi.text_to_string(t)));
   });
 
   ffi.defun("trace.make-recorder", (constraint) => {
