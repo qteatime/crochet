@@ -24,6 +24,7 @@ export enum TraceTag {
   LOG,
   NEW,
   INVOKE,
+  RETURN,
 }
 
 export type TraceEvent =
@@ -36,7 +37,8 @@ export type TraceEvent =
   | TEGoalReached
   | TEActionChoice
   | TENew
-  | TEInvoke;
+  | TEInvoke
+  | TEReturn;
 
 export class EventLocation {
   constructor(
@@ -164,8 +166,16 @@ export class TEInvoke extends BaseTraceEvent {
   constructor(
     readonly location: EventLocation,
     readonly command: CrochetCommandBranch,
+    readonly activation: CrochetActivation | null,
     readonly args: CrochetValue[]
   ) {
+    super();
+  }
+}
+
+export class TEReturn extends BaseTraceEvent {
+  readonly tag = TraceTag.RETURN;
+  constructor(readonly location: EventLocation, readonly value: CrochetValue) {
     super();
   }
 }

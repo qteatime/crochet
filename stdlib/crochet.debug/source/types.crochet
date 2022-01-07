@@ -13,18 +13,59 @@ singleton trace;
 protect global trace with tracing;
 protect type trace with tracing;
 
-abstract trace-event;
-type te-log(location, tag, value) is trace-event;
-type te-log-message(location, tag, message is text) is trace-event;
-type te-instantiated(location, crochet-type, arguments is list<any>) is trace-event;
-type te-invoked(location, branch, arguments is list<any>) is trace-event;
-
 type span(box is unknown);
 type trace-location(box is unknown);
+
+type tv-activation(box is unknown);
+type tv-branch(branch is unknown);
+type tv-constraint(constraint is unknown);
+type tv-parameter(global name is text, global constraint is tv-constraint);
+
+
+abstract trace-event;
+type te-log(
+  global location is trace-location,
+  global tag is unknown,
+  global value is unknown
+) is trace-event;
+
+type te-log-message(
+  global location is trace-location,
+  global tag is unknown,
+  message is text
+) is trace-event;
+
+type te-instantiated(
+  global location is trace-location,
+  crochet-type,
+  arguments is list<unknown>
+) is trace-event;
+
+type te-invoked(
+  global location is trace-location,
+  activation is tv-activation,
+  global branch is tv-branch,
+  global arguments is list<unknown>
+) is trace-event;
+
+type te-returned(
+  global location is trace-location,
+  global value is unknown
+) is trace-event;
+
+type te-command(
+  global location is trace-location,
+  activation is tv-activation,
+  global branch is tv-branch,
+  global arguments is list<any>,
+  global result is te-returned
+) is trace-event;
+
 
 type trace-recorder(box is unknown);
 type trace-slice(events is list<trace-event>);
 type trace-timeline(name is text, slice is trace-slice);
+
 
 abstract trace-constraint;
 
@@ -32,10 +73,6 @@ type tc-has-tag(tag) is trace-constraint;
 type tc-has-span(span is span) is trace-constraint;
 type tc-instantiate(static-type is static-type) is trace-constraint;
 type tc-invoke(name is text) is trace-constraint;
+type tc-invoke-return(name is text) is trace-constraint;
 type tc-or(left is trace-constraint, right is trace-constraint) is trace-constraint;
 type tc-and(left is trace-constraint, right is trace-constraint) is trace-constraint;
-
-
-type tv-branch(branch is unknown);
-type tv-constraint(constraint is unknown);
-type tv-parameter(global name is text, global constraint is tv-constraint);

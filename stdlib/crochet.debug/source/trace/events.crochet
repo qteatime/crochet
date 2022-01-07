@@ -3,21 +3,42 @@
 command internal to-event: Event do
   condition
     when Event.tag === "LOG" =>
-      new te-log(Event.location, Event.log-tag, Event.value);
+      new te-log(
+        new trace-location(Event.location),
+        Event.log-tag as unknown,
+        Event.value as unknown
+      );
     
     when Event.tag === "LOG_TEXT" =>
-      new te-log-message(Event.location, Event.log-tag, Event.message);
+      new te-log-message(
+        new trace-location(Event.location),
+        Event.log-tag as unknown,
+        Event.message
+      );
 
     when Event.tag === "NEW" =>
-      new te-instantiated(Event.location, Event.crochet-type, Event.arguments);
+      new te-instantiated(
+        new trace-location(Event.location),
+        Event.crochet-type,
+        Event.arguments map: (_ as unknown)
+      );
 
     when Event.tag === "INVOKE" =>
-      new te-invoked(Event.location, Event.branch, Event.arguments);
+      new te-invoked(
+        new trace-location(Event.location),
+        new tv-activation(Event.activation),
+        new tv-branch(Event.branch),
+        Event.arguments map: (_ as unknown)
+      );
+
+    when Event.tag === "RETURN" =>
+      new te-returned(
+        new trace-location(Event.location),
+        Event.value as unknown
+      );
   end
 end
 
-command te-log value = self.value as unknown;
-command te-log-message message = self.message as unknown;
 
 
 command te-instantiated static-type =
@@ -25,25 +46,6 @@ command te-instantiated static-type =
 
 command te-instantiated arguments do
   let Fields = foreign trace.type-fields(self.crochet-type);
-  let Arguments = self.arguments map: (_ as unknown);
-  #record from-pairs: (Fields zip: Arguments with: (#association key: _ value: _));
+  #record from-pairs: (Fields zip: self.arguments with: (#association key: _ value: _));
 end
 
-
-command te-invoked branch =
-  new tv-branch(self.branch);
-
-command te-invoked arguments =
-  self.arguments map: (_ as unknown);
-
-
-command te-log location = new trace-location(self.location);
-command te-log-message location = new trace-location(self.location);
-command te-instantiated location = new trace-location(self.location);
-command te-invoked location = new trace-location(self.location);
-
-command trace-location span do
-  #result
-    | from-nullable: (foreign reflection.trace-location-span(self.box))
-    | map: { X in new span(X) };
-end

@@ -663,7 +663,12 @@ export class Thread {
           branch,
           args
         );
-        this.universe.trace.publish_invoke(activation, branch, args);
+        this.universe.trace.publish_invoke(
+          activation,
+          branch,
+          new_activation,
+          args
+        );
         return new JumpSignal(new_activation);
       }
 
@@ -689,6 +694,7 @@ export class Thread {
           value = this.universe.nothing;
         }
         activation.set_return_value(value);
+        this.universe.trace.publish_return(activation, value);
         activation.next();
         return _continue;
       }

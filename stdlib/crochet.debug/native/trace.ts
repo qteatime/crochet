@@ -7,6 +7,7 @@ import type {
   CrochetValue,
   TENew,
   TEInvoke,
+  TEReturn,
 } from "../../../build/vm";
 
 export default (ffi: ForeignInterface) => {
@@ -51,8 +52,19 @@ export default (ffi: ForeignInterface) => {
           new Map([
             ["tag", ffi.text("INVOKE")],
             ["location", ffi.box(x.location)],
+            ["activation", ffi.box(x.activation)],
             ["branch", ffi.box(x.command)],
             ["arguments", ffi.list(x.args)],
+          ])
+        );
+      },
+      RETURN: (event) => {
+        const x = event as TEReturn;
+        return ffi.record(
+          new Map([
+            ["tag", ffi.text("RETURN")],
+            ["location", ffi.box(x.location)],
+            ["value", x.value],
           ])
         );
       },
@@ -96,6 +108,10 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("trace.tc-invoke", (t) => {
     return ffi.box(ffi.trace_constraint.invoke(ffi.text_to_string(t)));
+  });
+
+  ffi.defun("trace.tc-invoke-return", (t) => {
+    return ffi.box(ffi.trace_constraint.invoke_return(ffi.text_to_string(t)));
   });
 
   ffi.defun("trace.make-recorder", (constraint) => {

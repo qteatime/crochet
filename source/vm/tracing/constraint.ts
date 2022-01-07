@@ -1,5 +1,10 @@
 import { Values } from "../primitives";
-import { CrochetValue, TraceSpan, CrochetType } from "../intrinsics";
+import {
+  CrochetValue,
+  TraceSpan,
+  CrochetType,
+  CrochetCommandBranch,
+} from "../intrinsics";
 import { TraceEvent, TraceTag } from "./events";
 
 export type TraceConstraint =
@@ -8,7 +13,8 @@ export type TraceConstraint =
   | TCOr
   | TCAnd
   | TCNewType
-  | TCInvoke;
+  | TCInvoke
+  | TCInvokeReturn;
 
 export abstract class BaseConstraint {
   abstract accepts(event: TraceEvent): boolean;
@@ -71,5 +77,21 @@ export class TCInvoke extends BaseConstraint {
 
   accepts(event: TraceEvent) {
     return event.tag === TraceTag.INVOKE && event.command.name === this.name;
+  }
+}
+
+export class TCInvokeReturn extends BaseConstraint {
+  constructor(readonly name: string) {
+    super();
+  }
+
+  accepts(event: TraceEvent) {
+    const loc = event.location.location;
+    return (
+      event.tag === TraceTag.RETURN &&
+      loc != null &&
+      loc instanceof CrochetCommandBranch &&
+      loc.name === this.name
+    );
   }
 }

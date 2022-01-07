@@ -4,6 +4,7 @@ import type {
   CrochetTypeConstraint,
   CrochetValue,
   EventLocation,
+  Activation,
 } from "../../../build/vm";
 
 export default (ffi: ForeignInterface) => {
@@ -17,6 +18,10 @@ export default (ffi: ForeignInterface) => {
 
   function get_trace_location(x: CrochetValue): EventLocation {
     return ffi.unbox(x) as EventLocation;
+  }
+
+  function maybe_get_activation(x: CrochetValue): Activation | null {
+    return ffi.unbox(x) as Activation | null;
   }
 
   ffi.defun("reflection.branch-name", (b) => {
@@ -56,6 +61,21 @@ export default (ffi: ForeignInterface) => {
       return ffi.nothing;
     } else {
       return ffi.box(location.span);
+    }
+  });
+
+  ffi.defun("reflection.location-activation", (x) => {
+    const location = get_trace_location(x);
+    return ffi.box(location.activation);
+  });
+
+  ffi.defun("reflection.same-activation", (x, y) => {
+    const ax = maybe_get_activation(x);
+    const ay = maybe_get_activation(y);
+    if (ax != null && ay != null) {
+      return ffi.boolean(ax === ay);
+    } else {
+      return ffi.nothing;
     }
   });
 };

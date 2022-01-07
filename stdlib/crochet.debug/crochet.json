@@ -13,7 +13,8 @@
     "source/trace/recorder.crochet",
     "source/trace/representation.crochet",
     "source/trace/slice.crochet",
-    "source/trace/reflection.crochet"
+    "source/trace/reflection.crochet",
+    "source/trace/location.crochet"
   ],
   "native_sources": [
     "native/debug.js",

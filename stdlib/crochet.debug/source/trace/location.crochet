@@ -1,0 +1,27 @@
+% crochet
+
+command trace-location span do
+  #result
+    | from-nullable: (foreign reflection.trace-location-span(self.box))
+    | map: { X in new span(X) };
+end
+
+/// Checks if two trace locations refer to the same *activation*. This is
+/// used for correlating command/lambda invocations and their return.
+///
+/// Because activation data isn't reliable across the board (tracing
+/// with activations is expensive!), this command will return [type:nothing]
+/// if it can't compare the two activations for any reason.
+command trace-location has-same-activation: (Other is trace-location) do
+  let A = foreign reflection.location-activation(self.box);
+  let B = foreign reflection.location-activation(Other.box);
+  foreign reflection.same-activation(A, B);
+end
+
+command trace-location has-same-activation: (Other is tv-activation) do
+  let A = foreign reflection.location-activation(self.box);
+  foreign reflection.same-activation(A, Other.box);
+end
+
+command tv-activation has-same-activation: (Other is trace-location) =
+  Other has-same-activation: self;

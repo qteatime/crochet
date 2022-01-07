@@ -2,7 +2,8 @@
 
 local singleton repr;
 
-command repr location: Text do
+command repr location: (Location is trace-location) do
+  let Text = foreign trace.location-repr(Location.box);
   #document plain-text: Text
     | format-text
       | font: { F in F size: (0.9 as doc-em) };
@@ -20,11 +21,15 @@ command repr meta-header: Contents do
 end
 
 
+command debug-representation for: (E is trace-location) perspective: default-perspective do
+  repr location: E
+    | typed: #trace-location;
+end
+
 command debug-representation for: (E is te-log) perspective: (P is default-perspective) do
-  let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     repr meta-header: [
-      repr location: Location,
+      repr location: E location,
     ],
     debug-representation for: E.value perspective: P,
   ]
@@ -32,10 +37,9 @@ command debug-representation for: (E is te-log) perspective: (P is default-persp
 end
 
 command debug-representation for: (E is te-log-message) perspective: (P is default-perspective) do
-  let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     repr meta-header: [
-      repr location: Location,
+      repr location: E location,
     ],
     #document plain-text: E.message
   ]
@@ -43,11 +47,10 @@ command debug-representation for: (E is te-log-message) perspective: (P is defau
 end
 
 command debug-representation for: (E is te-instantiated) perspective: (P is default-perspective) do
-  let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     repr meta-header: [
       #document plain-text: "Type instantiated",
-      repr location: Location
+      repr location: E location
     ],
     debug-representation for: E static-type perspective: P,
     debug-representation for: E arguments perspective: P,
@@ -55,11 +58,10 @@ command debug-representation for: (E is te-instantiated) perspective: (P is defa
 end
 
 command debug-representation for: (E is te-invoked) perspective: (P is default-perspective) do
-  let Location = foreign trace.location-repr(E.location);
   #document flex-column: [
     repr meta-header: [
       #document plain-text: "Invoked [E branch name]",
-      repr location: Location
+      repr location: E location
     ],
     #document plain-text: E branch name
       | format-text
@@ -68,6 +70,33 @@ command debug-representation for: (E is te-invoked) perspective: (P is default-p
         | margin: { M in M bottom: (0.5 as doc-em) },
 
     debug-representation for: E arguments perspective: P,
+  ];
+end
+
+command debug-representation for: (E is te-returned) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Returned",
+      repr location: E location
+    ],
+    debug-representation for: E value perspective: P
+  ];
+end
+
+command debug-representation for: (E is te-command) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Invoked [E branch name]",
+      repr location: E location
+    ],
+    #document plain-text: E branch name
+      | format-text
+        | font: { F in F family: "monospace" | weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) },
+
+    debug-representation for: E arguments perspective: P,
+    debug-representation for: E result perspective: P,
   ];
 end
 

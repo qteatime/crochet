@@ -29,6 +29,7 @@ import {
   TCAnd,
   TCEventSpan,
   TCInvoke,
+  TCInvokeReturn,
   TCLogTag,
   TCNewType,
   TCOr,
@@ -407,6 +408,10 @@ export class ForeignInterface {
 
     invoke(name: string) {
       return new TCInvoke(name);
+    },
+
+    invoke_return(name: string) {
+      return new TCInvokeReturn(name);
     },
 
     or(left: TraceConstraint, right: TraceConstraint) {

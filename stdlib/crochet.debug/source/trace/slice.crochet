@@ -30,3 +30,56 @@ implement mappable-collection for trace-slice;
 
 command trace-slice map: Transformation =
   new trace-slice(self.events map: Transformation);
+
+
+command trace-slice correlate-returns do
+  let Seen = #cell with-value: #map empty;
+  new trace-slice(
+    self.events
+      | flat-map: (internal correlate: _ seen: Seen)
+      | map: (internal reify-correlation: _ seen: Seen)
+  );
+end
+
+
+command internal correlate: (Event is trace-event) seen: _ do
+  [Event];
+end
+
+command internal correlate: (Event is te-invoked) seen: Seen do
+  Seen <- Seen value at: Event put: nothing;
+  [Event];
+end
+
+command internal correlate: (Event is te-returned) seen: Seen do
+  let Invocation = internal find-invocation: Event location in: Seen value keys;
+  condition
+    when Invocation is nothing => [Event];
+    otherwise do
+      Seen <- Seen value at: Invocation put: Event;
+      [];
+    end
+  end
+end
+
+
+command internal reify-correlation: (Event is te-invoked) seen: Seen do
+  let Return = Seen value at: Event;
+  condition
+    when Return is nothing => Event;
+    otherwise => new te-command(Event location, Event.activation, Event branch, Event arguments, Return);
+  end
+end
+
+command internal reify-correlation: (Event is trace-event) seen: _ do
+  Event;
+end
+
+
+command internal find-invocation: Location in: Invocations do
+  let Invocation = Invocations find-first: { X in
+    (Location has-same-activation: X.activation) =:= true;
+  };
+
+  Invocation value-or-default: nothing;
+end

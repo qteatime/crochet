@@ -18,6 +18,9 @@ command internal compile: (C is tc-instantiate) =
 command internal compile: (C is tc-invoke) =
   foreign trace.tc-invoke(C.name);
 
+command internal compile: (C is tc-invoke-return) =
+  foreign trace.tc-invoke-return(C.name);
+
 
 command #trace-constraint has-tag: Tag =
   new tc-has-tag(Tag);
@@ -28,8 +31,15 @@ command #trace-constraint has-span: (Span is span) =
 command #trace-constraint instantiated: (Type is static-type) =
   new tc-instantiate(Type);
 
-command #trace-constraint invoked: (Name is static-text) =
+command #trace-constraint command-invoked: (Name is static-text) =
   new tc-invoke(Name);
+
+command #trace-constraint command-returned: (Name is static-text) =
+  new tc-invoke-return(Name);
+
+command #trace-constraint command: (Name is static-text) =
+  (#trace-constraint command-invoked: Name) or
+  (#trace-constraint command-returned: Name);
 
 command trace-constraint or (That is trace-constraint) =
   new tc-or(self, That);
