@@ -2,15 +2,6 @@ import { Values } from "../primitives";
 import { CrochetValue, TraceSpan, CrochetType } from "../intrinsics";
 import { TraceEvent, TraceTag } from "./events";
 
-export enum ConstraintTag {
-  EVENT_SPAN,
-  LOG_TAG,
-  OR,
-  AND,
-  NEW_TYPE,
-  INVOKE,
-}
-
 export type TraceConstraint =
   | TCLogTag
   | TCEventSpan
