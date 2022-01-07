@@ -10,6 +10,7 @@
     "source/recorder.crochet",
     "source/representation.crochet",
     "source/slice.crochet",
+    "source/slice-correlation.crochet",
     "source/reflection.crochet",
     "source/location.crochet"
   ],
