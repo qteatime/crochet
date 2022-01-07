@@ -186,7 +186,10 @@ export interface SnippetClient {
 
 async function main() {
   const query = new URL(document.location.href).searchParams;
-  const capabilities = (query.get("capabilities") || "native").split(",");
+  const capabilities = (
+    query.get("capabilities") ||
+    "native,crochet.debug/internal,crochet.debug.tracing/tracing"
+  ).split(",");
   const client = new Client(
     query.get("id")!,
     new Set(capabilities),
