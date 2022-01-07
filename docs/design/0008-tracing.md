@@ -16,6 +16,7 @@ For example, let's say you want to understand how a certain value evolves
 over time. You could write the following:
 
     open crochet.debug;
+    open crochet.debug.tracing;
 
     singleton player-coordinates;
 
@@ -41,7 +42,7 @@ And then record the program and format the trace visualisation:
                           #document circle
                             | center: (#doc-point2d x: Coords.x y: Coords.y)
                             | radius: 10
-                            | style: { S in fill-colour: "#000000" }
+                            | style: { S in S fill-colour: "#000000" }
                         ]}
       | timeline;
 
@@ -91,7 +92,7 @@ With this we have:
 
     let Constraint = #trace-constraint command: "_ sort: _";
     let Trace = trace record: Constraint in: {
-      [3, 5, 1, 2, 6, 9, 7] sort-by: (_ <= _)
+      [3, 5, 1, 2, 6, 9, 7] sort: (_ <= _)
     };
     Trace events
       | correlate-returns
