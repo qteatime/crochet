@@ -54,11 +54,20 @@ type te-returned(
 ) is trace-event;
 
 type te-command(
+  global invocation is te-invoked,
+  global result is te-returned,
+) is trace-event;
+
+type te-apply(
   global location is trace-location,
   activation is tv-activation,
-  global branch is tv-branch,
-  global arguments is list<any>,
-  global result is te-returned
+  global lambda is unknown,
+  global arguments is list<any>
+) is trace-event;
+
+type te-lambda(
+  global application is te-apply,
+  global result is te-returned,
 ) is trace-event;
 
 
@@ -74,5 +83,7 @@ type tc-has-span(span is span) is trace-constraint;
 type tc-instantiate(static-type is static-type) is trace-constraint;
 type tc-invoke(name is text) is trace-constraint;
 type tc-invoke-return(name is text) is trace-constraint;
+singleton tc-lambda-apply is trace-constraint;
+singleton tc-lambda-return is trace-constraint;
 type tc-or(left is trace-constraint, right is trace-constraint) is trace-constraint;
 type tc-and(left is trace-constraint, right is trace-constraint) is trace-constraint;

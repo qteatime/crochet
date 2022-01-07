@@ -75,6 +75,10 @@
   border-bottom: 1px solid var(--border);
 }
 
+.purr-project-menu {
+  flex-shrink: 0;
+}
+
 .purr-project-menu > .agata-flex-column {
   gap: 0;
 }

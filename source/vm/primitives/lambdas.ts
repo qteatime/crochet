@@ -42,6 +42,12 @@ export function prepare_activation(
         parent_activation.handlers,
         p.body
       );
+      universe.trace.publish_lambda_apply(
+        parent_activation,
+        activation,
+        lambda,
+        values
+      );
       return activation;
     }
 

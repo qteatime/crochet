@@ -31,6 +31,14 @@ command internal to-event: Event do
         Event.arguments map: (_ as unknown)
       );
 
+    when Event.tag === "APPLY" =>
+      new te-apply(
+        new trace-location(Event.location),
+        new tv-activation(Event.activation),
+        Event.lambda as unknown,
+        Event.arguments map: (_ as unknown)
+      );
+
     when Event.tag === "RETURN" =>
       new te-returned(
         new trace-location(Event.location),

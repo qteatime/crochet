@@ -73,6 +73,43 @@ command debug-representation for: (E is te-invoked) perspective: (P is default-p
   ];
 end
 
+command debug-representation for: (E is te-apply) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Lambda applied",
+      repr location: E location
+    ],
+    debug-representation for: E lambda perspective: P,
+    #document plain-text: "Arguments:"
+      | format-text
+        | font: { F in F weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) | top: (1.0 as doc-em) },
+
+    debug-representation for: E arguments perspective: P
+  ];
+end
+
+command debug-representation for: (E is te-lambda) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Lambda applied",
+      repr location: E application location
+    ],
+    debug-representation for: E application lambda perspective: P,
+    #document plain-text: "Arguments:"
+      | format-text
+        | font: { F in F weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) | top: (1.0 as doc-em) },
+
+    debug-representation for: E application arguments perspective: P,
+    debug-representation for: E result perspective: P
+      | box
+        | margin: { M in M top: (1.0 as doc-em) },
+  ];
+end
+
 command debug-representation for: (E is te-returned) perspective: (P is default-perspective) do
   #document flex-column: [
     repr meta-header: [
@@ -86,17 +123,19 @@ end
 command debug-representation for: (E is te-command) perspective: (P is default-perspective) do
   #document flex-column: [
     repr meta-header: [
-      #document plain-text: "Invoked [E branch name]",
-      repr location: E location
+      #document plain-text: "Invoked [E invocation branch name]",
+      repr location: E invocation location
     ],
-    #document plain-text: E branch name
+    #document plain-text: E invocation branch name
       | format-text
         | font: { F in F family: "monospace" | weight: "bold" }
       | box
         | margin: { M in M bottom: (0.5 as doc-em) },
 
-    debug-representation for: E arguments perspective: P,
-    debug-representation for: E result perspective: P,
+    debug-representation for: E invocation arguments perspective: P,
+    debug-representation for: E result perspective: P
+      | box
+        | margin: { M in M top: (1.0 as doc-em) },
   ];
 end
 

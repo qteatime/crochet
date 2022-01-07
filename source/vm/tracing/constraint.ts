@@ -6,6 +6,7 @@ import {
   CrochetCommandBranch,
 } from "../intrinsics";
 import { TraceEvent, TraceTag } from "./events";
+import { CrochetLambda } from "..";
 
 export type TraceConstraint =
   | TCLogTag
@@ -14,7 +15,8 @@ export type TraceConstraint =
   | TCAnd
   | TCNewType
   | TCInvoke
-  | TCInvokeReturn;
+  | TCInvokeReturn
+  | TCLambdaApply;
 
 export abstract class BaseConstraint {
   abstract accepts(event: TraceEvent): boolean;
@@ -92,6 +94,23 @@ export class TCInvokeReturn extends BaseConstraint {
       loc != null &&
       loc instanceof CrochetCommandBranch &&
       loc.name === this.name
+    );
+  }
+}
+
+export class TCLambdaApply extends BaseConstraint {
+  accepts(event: TraceEvent) {
+    return event.tag === TraceTag.APPLY_LAMBDA;
+  }
+}
+
+export class TCLambdaReturn extends BaseConstraint {
+  accepts(event: TraceEvent) {
+    const loc = event.location.location;
+    return (
+      event.tag === TraceTag.RETURN &&
+      loc != null &&
+      loc instanceof CrochetLambda
     );
   }
 }

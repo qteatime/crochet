@@ -10,6 +10,9 @@ import {
   Activation,
   CrochetActivation,
   CrochetCommandBranch,
+  CrochetPartial,
+  CrochetLambda,
+  CrochetNativeLambda,
 } from "../intrinsics";
 import { EventChoice } from "../simulation/contexts";
 
@@ -25,6 +28,7 @@ export enum TraceTag {
   NEW,
   INVOKE,
   RETURN,
+  APPLY_LAMBDA,
 }
 
 export type TraceEvent =
@@ -38,7 +42,8 @@ export type TraceEvent =
   | TEActionChoice
   | TENew
   | TEInvoke
-  | TEReturn;
+  | TEReturn
+  | TEApplyLambda;
 
 export class EventLocation {
   constructor(
@@ -176,6 +181,18 @@ export class TEInvoke extends BaseTraceEvent {
 export class TEReturn extends BaseTraceEvent {
   readonly tag = TraceTag.RETURN;
   constructor(readonly location: EventLocation, readonly value: CrochetValue) {
+    super();
+  }
+}
+
+export class TEApplyLambda extends BaseTraceEvent {
+  readonly tag = TraceTag.APPLY_LAMBDA;
+  constructor(
+    readonly location: EventLocation,
+    readonly activation: Activation | null,
+    readonly lambda: CrochetValue,
+    readonly args: CrochetValue[]
+  ) {
     super();
   }
 }

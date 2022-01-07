@@ -1,3 +1,5 @@
+import { TEApplyLambda } from ".";
+import { CrochetLambda, CrochetNativeLambda, CrochetPartial } from "..";
 import * as IR from "../../ir";
 import {
   ActionChoice,
@@ -189,6 +191,22 @@ export class CrochetTrace {
   publish_return(activation: Activation, value: CrochetValue) {
     this.publish(
       new TEReturn(EventLocation.from_activation(activation, null), value)
+    );
+  }
+
+  publish_lambda_apply(
+    parent_activation: Activation,
+    activation: Activation,
+    lambda: CrochetValue,
+    args: CrochetValue[]
+  ) {
+    this.publish(
+      new TEApplyLambda(
+        EventLocation.from_activation(parent_activation, null),
+        activation,
+        lambda,
+        args
+      )
     );
   }
 }

@@ -30,6 +30,8 @@ import {
   TCEventSpan,
   TCInvoke,
   TCInvokeReturn,
+  TCLambdaApply,
+  TCLambdaReturn,
   TCLogTag,
   TCNewType,
   TCOr,
@@ -412,6 +414,14 @@ export class ForeignInterface {
 
     invoke_return(name: string) {
       return new TCInvokeReturn(name);
+    },
+
+    lambda_apply() {
+      return new TCLambdaApply();
+    },
+
+    lambda_return() {
+      return new TCLambdaReturn();
     },
 
     or(left: TraceConstraint, right: TraceConstraint) {

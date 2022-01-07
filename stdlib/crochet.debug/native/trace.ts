@@ -8,6 +8,7 @@ import type {
   TENew,
   TEInvoke,
   TEReturn,
+  TEApplyLambda,
 } from "../../../build/vm";
 
 export default (ffi: ForeignInterface) => {
@@ -54,6 +55,18 @@ export default (ffi: ForeignInterface) => {
             ["location", ffi.box(x.location)],
             ["activation", ffi.box(x.activation)],
             ["branch", ffi.box(x.command)],
+            ["arguments", ffi.list(x.args)],
+          ])
+        );
+      },
+      APPLY_LAMBDA: (event) => {
+        const x = event as TEApplyLambda;
+        return ffi.record(
+          new Map([
+            ["tag", ffi.text("APPLY")],
+            ["location", ffi.box(x.location)],
+            ["activation", ffi.box(x.activation)],
+            ["lambda", x.lambda],
             ["arguments", ffi.list(x.args)],
           ])
         );
@@ -112,6 +125,14 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("trace.tc-invoke-return", (t) => {
     return ffi.box(ffi.trace_constraint.invoke_return(ffi.text_to_string(t)));
+  });
+
+  ffi.defun("trace.tc-lambda-apply", () => {
+    return ffi.box(ffi.trace_constraint.lambda_apply());
+  });
+
+  ffi.defun("trace.tc-lambda-return", () => {
+    return ffi.box(ffi.trace_constraint.lambda_return());
   });
 
   ffi.defun("trace.make-recorder", (constraint) => {
