@@ -1,9 +1,11 @@
 % crochet
 
+open crochet.debug;
+
 command trace-location span do
   #result
     | from-nullable: (foreign reflection.trace-location-span(self.box))
-    | map: { X in new span(X) };
+    | map: { X in debug-internal wrap-native-span: X };
 end
 
 /// Checks if two trace locations refer to the same *activation*. This is

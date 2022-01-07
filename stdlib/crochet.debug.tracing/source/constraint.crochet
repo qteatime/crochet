@@ -1,10 +1,12 @@
 % crochet
 
+open crochet.debug;
+
 command internal compile: (C is tc-has-tag) =
   foreign trace.tc-has-tag(C.tag);
 
 command internal compile: (C is tc-has-span) =
-  foreign trace.tc-has-span(C.span.box);
+  foreign trace.tc-has-span(debug-internal unwrap-to-native-span: C.span);
 
 command internal compile: (C is tc-or) =
   foreign trace.tc-or(internal compile: C.left, internal compile: C.right);

@@ -1,6 +1,13 @@
 % crochet
 
+type span(box is unknown);
 type span-result(global span is span, global result);
+
+command debug-internal wrap-native-span: (Box is unknown) =
+  new span(Box);
+
+command debug-internal unwrap-to-native-span: (Span is span) =
+  Span.box;
 
 command #span name: (Name is static-text) do: (Fun is (() -> A)) -> span-result<A> do
   foreign span.run(Name, { Span in new span-result(Span, Fun()); });

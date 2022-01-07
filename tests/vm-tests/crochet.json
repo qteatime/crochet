@@ -5,6 +5,10 @@
     "crochet.codec.basic",
     "crochet.core",
     "crochet.debug",
+    {
+      "name": "crochet.debug.tracing",
+      "capabilities": ["crochet.debug/internal"]
+    },
     "crochet.language.cli-arguments",
     "crochet.language.csv",
     "crochet.language.json",
@@ -26,7 +30,7 @@
     "dsl.crochet"
   ],
   "capabilities": {
-    "requires": [],
+    "requires": ["crochet.debug/internal"],
     "provides": []
   }
 }

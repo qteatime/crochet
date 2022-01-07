@@ -99,9 +99,10 @@ command #document fields: (R is record) do
       );
 end
 
+
 /// Constructs a circle shape
 command #document circle =
-  new doc-circle(#doc-point2d zero, doc-unit-unset, #document style);
+  new doc-circle(#doc-point2d zero, doc-unit-unset, #doc-presentation defaults);
 
 command doc-circle center: (Point is doc-point2d) =
   new doc-circle(Point, self.radius, self.presentation);
@@ -112,10 +113,12 @@ command doc-circle radius: (Radius has to-doc-unit) =
 command doc-circle style: (Style is doc-presentation) =
   new doc-circle(self.center, self.radius, Style);
 
+command doc-circle style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-circle(self.center, self.radius, F(self.presentation));
 
 /// Constructs an ellipse
 command #document ellipse =
-  new doc-ellipse(#doc-point2d zero, #doc-point2d zero, #document style);
+  new doc-ellipse(#doc-point2d zero, #doc-point2d zero, #doc-presentation defaults);
 
 command doc-ellipse center: (Point is doc-point2d) =
   new doc-ellipse(Point, self.radius, self.presentation);
@@ -126,9 +129,12 @@ command doc-ellipse radius: (Radius is doc-point2d) =
 command doc-ellipse style: (Style is doc-presentation) =
   new doc-ellipse(self.center, self.radius, Style);
 
+command doc-ellipse style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-ellipse(self.center, self.radius, F(self.presentation));
+
 /// Constructs a rectangle shape
 command #document rectangle =
-  new doc-rectangle(#doc-point2d zero, #doc-dimension zero, #doc-point2d zero, #document style);
+  new doc-rectangle(#doc-point2d zero, #doc-dimension zero, #doc-point2d zero, #doc-presentation defaults);
 
 command doc-rectangle origin: (Point is doc-point2d) =
   new doc-rectangle(Point, self.size, self.roundness, self.presentation);
@@ -154,9 +160,12 @@ command doc-rectangle y: (Y has to-doc-unit) =
 command doc-rectangle roundness: (Point is doc-point2d) =
   new doc-rectangle(self.origin, self.size, Point, self.presentation);
 
+command doc-rectangle style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-rectangle(self.origin, self.size, Point, F(self.presentation));
+
 /// Constructs a line shape
 command #document line =
-  new doc-line(#doc-point2d zero, #doc-point2d zero, #document style);
+  new doc-line(#doc-point2d zero, #doc-point2d zero, #doc-presentation defaults);
 
 command doc-line from: (Point is doc-point2d) =
   new doc-line(Point, self.to, self.presentation);
@@ -167,20 +176,28 @@ command doc-line to: (Point is doc-point2d) =
 command doc-line style: (Style is doc-presentation) =
   new doc-line(self.from, self.to, Style);
 
+command doc-line style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-line(self.from, self.to, F(self.presentation));
+
 /// Constructs a polygon shape
 command #document polygon: (Points is list<point2d>) =
-  new doc-polygon(Points, #document style);
+  new doc-polygon(Points, #doc-presentation defaults);
 
 command doc-polygon style: (Style is doc-presentation) =
   new doc-polygon(self.points, Style);
 
+command doc-polygon style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-polygon(self.points, F(self.presentation));
+
 /// Constructs a polyline shape
 command #document polyline: (Points is list<point2d>) =
-  new doc-polyline(Points, #document style);
+  new doc-polyline(Points, #doc-presentation defaults);
 
 command doc-polyline style: (Style is doc-presentation) =
   new doc-polyline(self.points, Style);
 
+command doc-polyline style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-polyline(self.points, F(self.presentation));
 
 /// Constructs a scrollable view
 command document scroll-view =
@@ -278,8 +295,8 @@ command document expanded-layout: (Doc is document) =
 
 
 // -- Styles
-command #document style =
-  new doc-presentation(doc-colour-inherit, doc-unit-unset, doc-colour-inherit);
+command #doc-presentation defaults =
+  new doc-presentation("#000000" as doc-colour, 1 as doc-unit, doc-colour-inherit);
 
 command doc-presentation stroke-colour: (Colour has to-doc-colour) =
   new doc-presentation(Colour as doc-colour, self.stroke-width, self.fill-colour);

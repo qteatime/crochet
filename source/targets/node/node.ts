@@ -65,6 +65,7 @@ export class CrochetForNode {
       "crochet.codec.basic",
       "crochet.core",
       "crochet.debug",
+      "crochet.debug.tracing",
       "crochet.language.cli-arguments",
       "crochet.language.csv",
       "crochet.language.json",

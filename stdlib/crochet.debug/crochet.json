@@ -6,25 +6,12 @@
     "source/types.crochet",
     "source/transcript.crochet",
     "source/time.crochet",
-    "source/span.crochet",
-    "source/trace/api.crochet",
-    "source/trace/constraint.crochet",
-    "source/trace/events.crochet",
-    "source/trace/recorder.crochet",
-    "source/trace/representation.crochet",
-    "source/trace/slice.crochet",
-    "source/trace/reflection.crochet",
-    "source/trace/location.crochet"
+    "source/span.crochet"
   ],
-  "native_sources": [
-    "native/debug.js",
-    "native/trace.js",
-    "native/reflection.js",
-    "native/span.js"
-  ],
+  "native_sources": ["native/debug.js", "native/span.js"],
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
-    "provides": ["tracing"]
+    "provides": ["internal"]
   }
 }

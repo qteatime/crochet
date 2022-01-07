@@ -1,0 +1,103 @@
+% crochet
+
+open crochet.debug;
+
+singleton internal;
+
+capability internal;
+protect global internal with internal;
+protect type internal with internal;
+
+
+singleton trace;
+
+capability tracing;
+protect global trace with tracing;
+protect type trace with tracing;
+
+type trace-location(box is unknown);
+
+type tv-activation(box is unknown);
+type tv-branch(branch is unknown);
+type tv-constraint(constraint is unknown);
+type tv-parameter(global name is text, global constraint is tv-constraint);
+
+
+abstract trace-event;
+type te-log(
+  global location is trace-location,
+  global tag is unknown,
+  global value is unknown
+) is trace-event;
+
+type te-log-message(
+  global location is trace-location,
+  global tag is unknown,
+  message is text
+) is trace-event;
+
+type te-instantiated(
+  global location is trace-location,
+  crochet-type,
+  arguments is list<unknown>
+) is trace-event;
+
+type te-invoked(
+  global location is trace-location,
+  activation is tv-activation,
+  global branch is tv-branch,
+  global arguments is list<unknown>
+) is trace-event;
+
+type te-returned(
+  global location is trace-location,
+  global value is unknown
+) is trace-event;
+
+type te-command(
+  global invocation is te-invoked,
+  global result is te-returned,
+) is trace-event;
+
+type te-apply(
+  global location is trace-location,
+  activation is tv-activation,
+  global lambda is unknown,
+  global arguments is list<any>
+) is trace-event;
+
+type te-lambda(
+  global application is te-apply,
+  global result is te-returned,
+) is trace-event;
+
+type te-forced(
+  global location is trace-location,
+  activation is tv-activation,
+  global thunk is unknown
+) is trace-event;
+
+type te-thunk(
+  global application is te-forced,
+  global result is te-returned,
+) is trace-event;
+
+
+type trace-recorder(box is unknown);
+type trace-slice(events is list<trace-event>);
+type trace-timeline(name is text, slice is trace-slice);
+
+
+abstract trace-constraint;
+
+type tc-has-tag(tag) is trace-constraint;
+type tc-has-span(span is span) is trace-constraint;
+type tc-instantiate(static-type is static-type) is trace-constraint;
+type tc-invoke(name is text) is trace-constraint;
+type tc-invoke-return(name is text) is trace-constraint;
+singleton tc-lambda-apply is trace-constraint;
+singleton tc-lambda-return is trace-constraint;
+singleton tc-thunk-force is trace-constraint;
+singleton tc-thunk-return is trace-constraint;
+type tc-or(left is trace-constraint, right is trace-constraint) is trace-constraint;
+type tc-and(left is trace-constraint, right is trace-constraint) is trace-constraint;

@@ -3,7 +3,7 @@
 |                  |                  |
 | ---------------- | ---------------- |
 | **Authors**      | Q.               |
-| **Last updated** | 3rd January 2022 |
+| **Last updated** | 7th January 2022 |
 | **Status**       | Draft            |
 
 ## Summary
@@ -19,39 +19,39 @@ over time. You could write the following:
 
     singleton player-coordinates;
 
+    type player(x, y, speed, gravity);
+
     command player update do
       self.x <- self.x value + self.speed;
-      condition
-        when not self is-touching-ground do
-          self.y <- self.y value - self.gravity;
-        end
-      end
-      transcript inspect: [x -> self.x, y -> self.y] tag: player-coordinates;
+      self.y <- self.y value + self.gravity;
+      transcript tag: player-coordinates inspect: [x -> self.x value, y -> self.y value];
     end
 
 And then record the program and format the trace visualisation:
 
-    let Trace = trace record
-                  | timeout: 30 seconds;
-    Trace
-      | select: player-coordinates
-      | map: { Coords0 in let Coords = Coords0 as record; // otherwise sealed
-                          #document fixed-width: 500 height: 500 with: [
-                            #document circle
-                              | center: (#doc-point2d x: Coords.x y: Coords.y)
-                              | radius: 10
-                          ]};
+    let Constraint = #trace-constraint has-tag: player-coordinates;
+    let Trace = trace record: Constraint in: {
+      let P = new player(#cell with-value: 0, #cell with-value: 0, 2, 1);
+      for I in 1 to: 100 do P update end
+    };
+
+    Trace events
+      | map: { Event in let Coords = Event value as record; // otherwise sealed
+                        #document fixed-width: 250 height: 200 with: [
+                          #document circle
+                            | center: (#doc-point2d x: Coords.x y: Coords.y)
+                            | radius: 10
+                            | style: { S in fill-colour: "#000000" }
+                        ]}
+      | timeline;
 
 This should result in a _timeline_ in the playground that lets you step
 forward and backwards in time, with the position of the player being
-plotted in a 500x500 canvas at each step. In the future the trace and
-document languages should be able to support more advanced uses, e.g.:
-folding this trace over a sliding window so that you can display an
-onion-skin trajectory of the player. Or provide enough information that
-allows this document to both relate to the original source code and
-modify it---e.g.: by providing an interactive curve of the trajectory
-that the user can modify by directly interacting with the curve or the
-player coordinates at each step.
+plotted in a 250x200 canvas at each step. With a bit more of effort, one
+could fold over the events and display an onion-skin of the trajectory
+of the player. And once the document language supports interactive elements,
+these frames could even support direct and immediate manipulation of the
+underlying code.
 
 But that's out of the scope for _this_ proposal, because it requires
 careful consideration of the capabilities that should be involved in
@@ -68,10 +68,16 @@ version of the function, and then things are bound to get _confusing_).
 
 Consider:
 
-    command list<A> sort-by: (Lt is (A -> B)) -> list<B> do
-      let Less-than = self rest filter: { X in Lt(X) };
-      let Greater-than = self rest filter: { X in not Lt(X) };
-      (Less-than sort-by: Lt) ++ [self first] ++ (Greater-than sort-by: Lt);
+    command list sort: (Lt is ((A, A) -> boolean)) -> list<A> do
+      condition
+        when self is-empty => [];
+        otherwise do
+          let X = self first;
+          let Less-than = self rest keep-if: { Y in Lt(X, X) };
+          let Greater-than = self rest keep-if: { Y in not Lt(X, Y) };
+          (Less-than sort: Lt) ++ [X] ++ (Greater-than sort: Lt);
+        end
+      end
     end
 
 Understanding this function requires understanding how all of the calls
@@ -83,21 +89,19 @@ program's execution.
 
 With this we have:
 
-    let Tracer = trace observe: (trace-constraint command: "_ sort-by: _");
-    let Trace = trace span: { [3, 5, 1, 2, 6, 9, 7] sort-by: (_ <= _) };
-    Trace
-      | select: Tracer
-      | map: { Call in [in -> Call parameters first, out -> Call result] };
+    let Constraint = #trace-constraint command: "_ sort: _";
+    let Trace = trace record: Constraint in: {
+      [3, 5, 1, 2, 6, 9, 7] sort-by: (_ <= _)
+    };
+    Trace events
+      | correlate-returns
+      | hierarchy;
 
 This can then be rendered as a tree of states, rather than a linear timeline.
-It's important that this work as a tree because here each step of `_ sort-by: _`
+It's important that this work as a tree because here each step of `_ sort: _`
 makes two separate calls to itself. A linear timeline would lose that
 relationship, and thus make it harder to understand what was going on with
 the program.
-
-The top-level span here is added by the user, but all other spans in this
-example are handled by the VM, based on how the activation frames nest
-during the program's execution.
 
 ## Traces and spans
 
@@ -131,13 +135,21 @@ constructions otherwise. The VM currently has minimal support for tracing,
 based on recordable streams with constraint-based selections. This is similar
 to the tracing mechanisms of the BEAM VM.
 
-More work is needed to relate these recorded traces to spans, though, as the
-VM does not have any concept of spans currently.
+The choice of implementation here is to allow the span to be either a
+user-defined first-class span (created through the tracing API), or
+an activation record (implicitly created by the VM). Locations may or
+may not exist, as having traces that hold on to the activation records
+for too long in all cases would make it difficult to optimise the
+execution---recorded frames could never be garbage collected.
+
+It's not as much of a problem since tracing is meant primarily for debugging,
+not production. But the more flexible location makes it usable in production
+as well, with reduced accuracy for implicit hierarchies.
 
 ## Library support
 
-`crochet.debug` should be the entry point of all tracing interactions with
-the user. The operations it supports are:
+`crochet.debug.tracing` should be the entry point of all tracing
+interactions with the user. The operations it supports are:
 
 - Marking a region of code as a trace span (i.e.: all code within ran from
   that dynamic region will get tagged with the same span);

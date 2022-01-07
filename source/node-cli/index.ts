@@ -40,6 +40,8 @@ function read(file: string) {
 interface Options {
   verbose: boolean;
   disclose_debug: boolean;
+  capabilities: Set<string>;
+  interactive: boolean;
   web: {
     port: number;
     www_root: string;
@@ -69,6 +71,8 @@ function parse_options(args0: string[]) {
   let current = 0;
   const repo_root = Path.resolve(__dirname, "../../");
 
+  options.interactive = true;
+  options.capabilities = new Set([]);
   options.verbose = false;
   options.test = {
     show_success: false,
@@ -165,6 +169,19 @@ function parse_options(args0: string[]) {
         continue;
       }
 
+      case "--capabilities": {
+        const cap = (args0[current + 1] ?? "").trim().split(/\s*,\s*/);
+        options.capabilities = new Set(cap);
+        current += 2;
+        continue;
+      }
+
+      case "--non-interactive": {
+        options.interactive = false;
+        current += 1;
+        continue;
+      }
+
       case "--": {
         options.app_args = args0.slice(current + 1);
         break loop;
@@ -242,8 +259,8 @@ async function run([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
     options.disclose_debug,
     [],
-    new Set([]),
-    true,
+    options.capabilities,
+    options.interactive,
     false
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
@@ -261,8 +278,8 @@ async function test([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
     options.disclose_debug,
     [],
-    new Set([]),
-    true,
+    options.capabilities,
+    options.interactive,
     false
   );
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
