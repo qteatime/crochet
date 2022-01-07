@@ -56,6 +56,11 @@ command internal correlate: (Event is te-apply) seen: Seen do
   [Event];
 end
 
+command internal correlate: (Event is te-forced) seen: Seen do
+  Seen <- Seen value at: Event put: nothing;
+  [Event];
+end
+
 
 command internal correlate: (Event is te-returned) seen: Seen do
   let Invocation = internal find-invocation: Event location in: Seen value keys;
@@ -85,6 +90,14 @@ command internal reify-correlation: (Event is te-apply) seen: Seen do
   end
 end
 
+command internal reify-correlation: (Event is te-forced) seen: Seen do
+  let Return = Seen value at: Event;
+  condition
+    when Return is nothing => Event;
+    otherwise => new te-thunk(Event, Return);
+  end
+end
+
 command internal reify-correlation: (Event is trace-event) seen: _ do
   Event;
 end
@@ -100,3 +113,4 @@ end
 
 command internal event-activation: (E is te-invoked) = E.activation;
 command internal event-activation: (E is te-apply) = E.activation;
+command internal event-activation: (E is te-forced) = E.activation;

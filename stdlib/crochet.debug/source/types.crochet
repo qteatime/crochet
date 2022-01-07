@@ -70,6 +70,17 @@ type te-lambda(
   global result is te-returned,
 ) is trace-event;
 
+type te-forced(
+  global location is trace-location,
+  activation is tv-activation,
+  global thunk is unknown
+) is trace-event;
+
+type te-thunk(
+  global application is te-forced,
+  global result is te-returned,
+) is trace-event;
+
 
 type trace-recorder(box is unknown);
 type trace-slice(events is list<trace-event>);
@@ -85,5 +96,7 @@ type tc-invoke(name is text) is trace-constraint;
 type tc-invoke-return(name is text) is trace-constraint;
 singleton tc-lambda-apply is trace-constraint;
 singleton tc-lambda-return is trace-constraint;
+singleton tc-thunk-force is trace-constraint;
+singleton tc-thunk-return is trace-constraint;
 type tc-or(left is trace-constraint, right is trace-constraint) is trace-constraint;
 type tc-and(left is trace-constraint, right is trace-constraint) is trace-constraint;

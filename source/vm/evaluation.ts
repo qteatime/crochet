@@ -583,25 +583,21 @@ export class Thread {
           activation.next();
           return _continue;
         } else {
-          return new JumpSignal(
-            new CrochetActivation(
-              this.state.activation,
-              thunk,
-              thunk.env,
-              new ContinuationTap(this.state, (_previous, _state, value) => {
-                Values.update_thunk(thunk, value);
-                this.push(activation, value);
-                activation.next();
-                return new State(
-                  this.universe,
-                  activation,
-                  this.universe.random
-                );
-              }),
-              activation.handlers,
-              thunk.body
-            )
+          const new_activation = new CrochetActivation(
+            this.state.activation,
+            thunk,
+            thunk.env,
+            new ContinuationTap(this.state, (_previous, _state, value) => {
+              Values.update_thunk(thunk, value);
+              this.push(activation, value);
+              activation.next();
+              return new State(this.universe, activation, this.universe.random);
+            }),
+            activation.handlers,
+            thunk.body
           );
+          this.universe.trace.publish_force(activation, new_activation, value);
+          return new JumpSignal(new_activation);
         }
       }
 

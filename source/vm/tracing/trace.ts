@@ -1,4 +1,4 @@
-import { TEApplyLambda } from ".";
+import { TEApplyLambda, TEForceThunk } from ".";
 import { CrochetLambda, CrochetNativeLambda, CrochetPartial } from "..";
 import * as IR from "../../ir";
 import {
@@ -206,6 +206,20 @@ export class CrochetTrace {
         activation,
         lambda,
         args
+      )
+    );
+  }
+
+  publish_force(
+    call_site: Activation,
+    activation: Activation,
+    thunk: CrochetValue
+  ) {
+    this.publish(
+      new TEForceThunk(
+        EventLocation.from_activation(call_site, null),
+        activation,
+        thunk
       )
     );
   }

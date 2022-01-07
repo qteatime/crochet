@@ -29,6 +29,7 @@ export enum TraceTag {
   INVOKE,
   RETURN,
   APPLY_LAMBDA,
+  FORCE_THUNK,
 }
 
 export type TraceEvent =
@@ -43,7 +44,8 @@ export type TraceEvent =
   | TENew
   | TEInvoke
   | TEReturn
-  | TEApplyLambda;
+  | TEApplyLambda
+  | TEForceThunk;
 
 export class EventLocation {
   constructor(
@@ -192,6 +194,17 @@ export class TEApplyLambda extends BaseTraceEvent {
     readonly activation: Activation | null,
     readonly lambda: CrochetValue,
     readonly args: CrochetValue[]
+  ) {
+    super();
+  }
+}
+
+export class TEForceThunk extends BaseTraceEvent {
+  readonly tag = TraceTag.FORCE_THUNK;
+  constructor(
+    readonly location: EventLocation,
+    readonly activation: Activation | null,
+    readonly thunk: CrochetValue
   ) {
     super();
   }

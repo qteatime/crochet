@@ -110,6 +110,29 @@ command debug-representation for: (E is te-lambda) perspective: (P is default-pe
   ];
 end
 
+command debug-representation for: (E is te-forced) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Thunk forced",
+      repr location: E location
+    ],
+    debug-representation for: E thunk perspective: P,
+  ];
+end
+
+command debug-representation for: (E is te-thunk) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Thunk forced",
+      repr location: E application location
+    ],
+    debug-representation for: E application thunk perspective: P,
+    debug-representation for: E result perspective: P
+      | box
+        | margin: { M in M top: (1.0 as doc-em) },
+  ];
+end
+
 command debug-representation for: (E is te-returned) perspective: (P is default-perspective) do
   #document flex-column: [
     repr meta-header: [

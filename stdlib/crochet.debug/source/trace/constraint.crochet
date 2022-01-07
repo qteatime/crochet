@@ -27,6 +27,12 @@ command internal compile: tc-lambda-apply =
 command internal compile: tc-lambda-return =
   foreign trace.tc-lambda-return();
 
+command internal compile: tc-thunk-force =
+  foreign trace.tc-thunk-force();
+
+command internal compile: tc-thunk-return =
+  foreign trace.tc-thunk-return();
+
 
 command #trace-constraint has-tag: Tag =
   new tc-has-tag(Tag);
@@ -47,14 +53,23 @@ command #trace-constraint command: (Name is static-text) =
   (#trace-constraint command-invoked: Name) or
   (#trace-constraint command-returned: Name);
 
-command #trace-constraint lambda-application =
+command #trace-constraint lambda-applied =
   tc-lambda-apply;
 
-command #trace-constraint lambda-return =
+command #trace-constraint lambda-returned =
   tc-lambda-return;
 
 command #trace-constraint lambda =
   tc-lambda-apply or tc-lambda-return;
+
+command #trace-constraint thunk-forced =
+  tc-thunk-force;
+
+command #trace-constraint thunk-returned =
+  tc-thunk-return;
+
+command #trace-constraint thunk =
+  tc-thunk-force or tc-thunk-return;
 
 command trace-constraint or (That is trace-constraint) =
   new tc-or(self, That);

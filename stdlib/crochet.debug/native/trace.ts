@@ -9,6 +9,7 @@ import type {
   TEInvoke,
   TEReturn,
   TEApplyLambda,
+  TEForceThunk,
 } from "../../../build/vm";
 
 export default (ffi: ForeignInterface) => {
@@ -81,6 +82,17 @@ export default (ffi: ForeignInterface) => {
           ])
         );
       },
+      FORCE_THUNK: (event) => {
+        const x = event as TEForceThunk;
+        return ffi.record(
+          new Map([
+            ["tag", ffi.text("FORCE")],
+            ["location", ffi.box(x.location)],
+            ["activation", ffi.box(x.activation)],
+            ["thunk", x.thunk],
+          ])
+        );
+      },
       FACT: () => null,
       FORGET: () => null,
       SIMULATION_ACTION: () => null,
@@ -133,6 +145,14 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("trace.tc-lambda-return", () => {
     return ffi.box(ffi.trace_constraint.lambda_return());
+  });
+
+  ffi.defun("trace.tc-thunk-force", () => {
+    return ffi.box(ffi.trace_constraint.thunk_force());
+  });
+
+  ffi.defun("trace.tc-thunk-return", () => {
+    return ffi.box(ffi.trace_constraint.thunk_return());
   });
 
   ffi.defun("trace.make-recorder", (constraint) => {

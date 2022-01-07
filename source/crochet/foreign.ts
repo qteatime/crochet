@@ -28,6 +28,7 @@ import {
   Tag,
   TCAnd,
   TCEventSpan,
+  TCForceThunk,
   TCInvoke,
   TCInvokeReturn,
   TCLambdaApply,
@@ -35,6 +36,7 @@ import {
   TCLogTag,
   TCNewType,
   TCOr,
+  TCThunkReturn,
   TraceConstraint,
   TraceEvent,
   TraceRecorder,
@@ -422,6 +424,14 @@ export class ForeignInterface {
 
     lambda_return() {
       return new TCLambdaReturn();
+    },
+
+    thunk_force() {
+      return new TCForceThunk();
+    },
+
+    thunk_return() {
+      return new TCThunkReturn();
     },
 
     or(left: TraceConstraint, right: TraceConstraint) {
