@@ -526,13 +526,7 @@ export class Thread {
           type
         );
         const value = Values.instantiate(type, values);
-        this.universe.trace.publish(
-          new TENew(
-            EventLocation.from_activation(activation, null),
-            type,
-            values
-          )
-        );
+        this.universe.trace.publish_instantiation(activation, type, values);
         this.push(activation, value);
         activation.next();
         return _continue;
