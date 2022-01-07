@@ -695,6 +695,14 @@ export class ContinuationTap {
 export const _done = new ContinuationDone();
 export const _return = new ContinuationReturn();
 
+export class TraceSpan {
+  constructor(
+    readonly parent: TraceSpan | null,
+    readonly location: ActivationLocation,
+    readonly description: string
+  ) {}
+}
+
 export enum ActivationTag {
   CROCHET_ACTIVATION,
   NATIVE_ACTIVATION,
@@ -705,6 +713,7 @@ export type Activation = CrochetActivation | NativeActivation;
 export interface IActivation {
   tag: ActivationTag;
   parent: Activation | null;
+  span: TraceSpan | null;
   continuation: Continuation;
   handlers: HandlerStack;
 }
@@ -725,6 +734,7 @@ export class CrochetActivation implements IActivation {
   public block_stack: [number, IR.BasicBlock][] = [];
   private _return: CrochetValue | null = null;
   public instruction: number = 0;
+  public span: TraceSpan | null;
 
   constructor(
     readonly parent: Activation | null,
@@ -733,7 +743,13 @@ export class CrochetActivation implements IActivation {
     readonly continuation: Continuation,
     readonly handlers: HandlerStack,
     public block: IR.BasicBlock
-  ) {}
+  ) {
+    if (parent != null) {
+      this.span = parent.span;
+    } else {
+      this.span = null;
+    }
+  }
 
   get current(): IR.Op | null {
     if (this.instruction < 0 || this.instruction > this.block.ops.length) {
@@ -778,6 +794,7 @@ export enum NativeSignalTag {
   EVALUATE,
   JUMP,
   TRANSCRIPT_WRITE,
+  WITH_SPAN,
   MAKE_CLOSURE,
   CURRENT_ACTIVATION,
   CURRENT_UNIVERSE,
@@ -791,6 +808,7 @@ export type NativeSignal =
   | NSJump
   | NSTranscriptWrite
   | NSMakeClosure
+  | NSWithSpan
   | NSCurrentActivation
   | NSCurrentUniverse;
 
@@ -808,6 +826,17 @@ export class NSApply extends NSBase {
   readonly tag = NativeSignalTag.APPLY;
 
   constructor(readonly fn: CrochetValue, readonly args: CrochetValue[]) {
+    super();
+  }
+}
+
+export class NSWithSpan extends NSBase {
+  readonly tag = NativeSignalTag.WITH_SPAN;
+
+  constructor(
+    readonly fn: (span: TraceSpan) => Machine<CrochetValue>,
+    readonly description: string
+  ) {
     super();
   }
 }
@@ -859,7 +888,7 @@ export class NSTranscriptWrite extends NSBase {
   readonly tag = NativeSignalTag.TRANSCRIPT_WRITE;
 
   constructor(
-    readonly tag_name: string,
+    readonly tag_name: CrochetValue,
     readonly message: CrochetValue | string
   ) {
     super();
@@ -870,6 +899,8 @@ export type NativeLocation = NativeFunction | null;
 
 export class NativeActivation implements IActivation {
   readonly tag = ActivationTag.NATIVE_ACTIVATION;
+  public span: TraceSpan | null;
+
   constructor(
     readonly parent: Activation | null,
     readonly location: NativeLocation,
@@ -877,11 +908,18 @@ export class NativeActivation implements IActivation {
     readonly routine: Machine<CrochetValue>,
     readonly handlers: HandlerStack,
     readonly continuation: Continuation
-  ) {}
+  ) {
+    if (parent != null) {
+      this.span = parent.span;
+    } else {
+      this.span = null;
+    }
+  }
 }
 
 export class Universe {
   readonly type_cache = new Map<CrochetType, CrochetType>();
+  readonly reverse_type_cache = new Map<CrochetType, CrochetType>();
   readonly static_type_cache = new Map<CrochetType, CrochetValue>();
   readonly registered_instances = new Map<CrochetType, CrochetValue[]>();
   readonly nothing: CrochetValue;

@@ -5,20 +5,20 @@
 singleton transcript;
 
 /// Writes a single piece of text to the debugging transcript.
-command (Self is transcript) write: (Text is text) do
-  foreign debug.write(Text);
+command transcript tag: Tag write: (Text is text) do
+  foreign debug.write(Text, Tag);
   self;
 end
 
 /// Writes an arbitrary value to the debugging transcript. The value's
 /// internal fields will be displayed in the transcript if the program
 /// is being executed with `--disclose-debug`.
-command (Self is transcript) inspect: Value do
-  foreign debug.write-inspect(Value);
+command transcript tag: Tag inspect: Value do
+  foreign debug.write-inspect(Value, Tag);
   self;
 end
 
 /// Writes an interpolation to the debugging transcript.
-command transcript write: (X is interpolation) do
-  transcript write: (X flatten-into-plain-text);
+command transcript tag: Tag write: (X is interpolation) do
+  self write: (X flatten-into-plain-text) tag: Tag;
 end

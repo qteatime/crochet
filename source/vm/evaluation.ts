@@ -1,4 +1,3 @@
-import { CrochetCapturedContext, CrochetNativeLambda, Tag } from ".";
 import * as IR from "../ir";
 import { AssertType } from "../ir";
 import { logger } from "../utils/logger";
@@ -6,10 +5,8 @@ import { unreachable } from "../utils/utils";
 import { CrochetEvaluationError, ErrArbitrary } from "./errors";
 import {
   Activation,
-  ActivationLocation,
   ActivationTag,
   Continuation,
-  ContinuationReturn,
   ContinuationTag,
   ContinuationTap,
   CrochetActivation,
@@ -27,6 +24,9 @@ import {
   Universe,
   _done,
   _return,
+  CrochetNativeLambda,
+  Tag,
+  TraceSpan,
 } from "./intrinsics";
 import { Relation, run_match_case, run_search, search } from "./logic";
 import { Namespace } from "./namespaces";
@@ -47,7 +47,7 @@ import {
 } from "./primitives";
 import { Contexts } from "./simulation";
 import { run_simulation } from "./simulation/simulation";
-import { TELog } from "./tracing";
+import { TELog, TENew, EventLocation } from "./tracing";
 
 export enum RunResultTag {
   DONE,
@@ -298,28 +298,6 @@ export class Thread {
     }
   }
 
-  find_crochet_location(
-    start_activation: Activation
-  ): ActivationLocation | null {
-    let activation: Activation | null = start_activation;
-    while (activation != null) {
-      switch (activation.tag) {
-        case ActivationTag.CROCHET_ACTIVATION: {
-          return activation.location;
-        }
-
-        case ActivationTag.NATIVE_ACTIVATION: {
-          activation = activation.parent;
-          continue;
-        }
-
-        default:
-          throw unreachable(activation, "Activation");
-      }
-    }
-    return null;
-  }
-
   step_native(activation: NativeActivation, input: CrochetValue): Signal {
     const { value, done } = activation.routine.next(input);
     if (done) {
@@ -381,10 +359,11 @@ export class Thread {
         }
 
         case NativeSignalTag.TRANSCRIPT_WRITE: {
-          const loc = this.find_crochet_location(activation);
-
-          this.universe.trace.publish(
-            new TELog("transcript.write", value.tag_name, loc, value.message)
+          this.universe.trace.publish_log(
+            activation,
+            "transcript.write",
+            value.tag_name,
+            value.message
           );
           return this.step_native(activation, this.universe.nothing);
         }
@@ -402,6 +381,25 @@ export class Thread {
               )
             )
           );
+        }
+
+        case NativeSignalTag.WITH_SPAN: {
+          const span = new TraceSpan(
+            activation.span,
+            activation.location,
+            value.description
+          );
+          const machine = value.fn(span);
+          const new_activation = new NativeActivation(
+            activation,
+            activation.location,
+            new Environment(null, null, null, null),
+            machine,
+            activation.handlers,
+            _return
+          );
+          new_activation.span = span;
+          return new JumpSignal(new_activation);
         }
 
         case NativeSignalTag.CURRENT_ACTIVATION: {
@@ -528,6 +526,7 @@ export class Thread {
           type
         );
         const value = Values.instantiate(type, values);
+        this.universe.trace.publish_instantiation(activation, type, values);
         this.push(activation, value);
         activation.next();
         return _continue;
@@ -578,25 +577,21 @@ export class Thread {
           activation.next();
           return _continue;
         } else {
-          return new JumpSignal(
-            new CrochetActivation(
-              this.state.activation,
-              thunk,
-              thunk.env,
-              new ContinuationTap(this.state, (_previous, _state, value) => {
-                Values.update_thunk(thunk, value);
-                this.push(activation, value);
-                activation.next();
-                return new State(
-                  this.universe,
-                  activation,
-                  this.universe.random
-                );
-              }),
-              activation.handlers,
-              thunk.body
-            )
+          const new_activation = new CrochetActivation(
+            this.state.activation,
+            thunk,
+            thunk.env,
+            new ContinuationTap(this.state, (_previous, _state, value) => {
+              Values.update_thunk(thunk, value);
+              this.push(activation, value);
+              activation.next();
+              return new State(this.universe, activation, this.universe.random);
+            }),
+            activation.handlers,
+            thunk.body
           );
+          this.universe.trace.publish_force(activation, new_activation, value);
+          return new JumpSignal(new_activation);
         }
       }
 
@@ -658,6 +653,12 @@ export class Thread {
           branch,
           args
         );
+        this.universe.trace.publish_invoke(
+          activation,
+          branch,
+          new_activation,
+          args
+        );
         return new JumpSignal(new_activation);
       }
 
@@ -683,6 +684,7 @@ export class Thread {
           value = this.universe.nothing;
         }
         activation.set_return_value(value);
+        this.universe.trace.publish_return(activation, value);
         activation.next();
         return _continue;
       }
@@ -825,7 +827,7 @@ export class Thread {
           op.relation
         );
         Relation.insert(relation, values);
-        this.universe.trace.publish_fact(activation.location, relation, values);
+        this.universe.trace.publish_fact(activation, relation, values);
         activation.next();
         return _continue;
       }
@@ -838,11 +840,7 @@ export class Thread {
           op.relation
         );
         Relation.remove(relation, values);
-        this.universe.trace.publish_forget(
-          activation.location,
-          relation,
-          values
-        );
+        this.universe.trace.publish_forget(activation, relation, values);
         activation.next();
         return _continue;
       }

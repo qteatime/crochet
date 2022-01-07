@@ -565,7 +565,7 @@ body {
 
 /* -- Value lenses */
 .value-lens-container {
-  margin: 1em 0;
+  margin: 1em;
 }
 
 .value-lens-unknown {
@@ -725,4 +725,40 @@ body {
   > .value-lens-group-contents
   > .value-lens-group-compact {
   display: none;
+}
+
+.value-lens-timeline {
+  border: 1px solid #ececea;
+}
+
+.value-lens-timeline-frames {
+  position: relative;
+}
+
+.value-lens-timeline-frames-entry.show {
+  display: block;
+}
+.value-lens-timeline-frames-entry {
+  display: none;
+  margin: 0.5em;
+}
+
+.value-lens-timeline-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5em;
+  background: #f3f3f3;
+  border-top: 2px solid #ececea;
+  gap: 1em;
+}
+
+.value-lens-timeline-control-time {
+  flex-grow: 1;
+}
+
+.value-lens-timeline-control-button {
+  width: 24px;
+  height: 24px;
 }

@@ -2,12 +2,15 @@ import * as Collection from "../collection";
 import type { Set as ISet, Map as IMap, List as IList } from "../collection";
 import { XorShift } from "../utils/xorshift";
 import {
+  ActivationLocation,
+  CrochetActivation,
   CrochetModule,
   CrochetPackage,
   CrochetType,
   CrochetValue,
   Environment,
   ErrNativePanic,
+  EventLocation,
   Location,
   Machine,
   NativeFunction,
@@ -19,9 +22,26 @@ import {
   NSInvoke,
   NSMakeClosure,
   NSTranscriptWrite,
+  NSWithSpan,
   run_native,
   run_native_sync,
   Tag,
+  TCAnd,
+  TCEventSpan,
+  TCForceThunk,
+  TCInvoke,
+  TCInvokeReturn,
+  TCLambdaApply,
+  TCLambdaReturn,
+  TCLogTag,
+  TCNewType,
+  TCOr,
+  TCThunkReturn,
+  TraceConstraint,
+  TraceEvent,
+  TraceRecorder,
+  TraceSpan,
+  TraceTag,
   Types,
   Universe,
   Values,
@@ -282,6 +302,35 @@ export class ForeignInterface {
     );
   }
 
+  make_static_type(x: CrochetType) {
+    return Values.make_static_type(
+      this.#universe,
+      Types.get_static_type(this.#universe, x)
+    );
+  }
+
+  static_type_to_type(x: CrochetType) {
+    return this.#universe.reverse_type_cache.get(x) ?? null;
+  }
+
+  get_type(x: CrochetValue) {
+    return x.type;
+  }
+
+  is_value_of_same_type(x: CrochetValue, type0: CrochetValue) {
+    if (type0.tag === Tag.TYPE) {
+      Values.assert_tag(Tag.TYPE, type0);
+      const type = type0.payload;
+      return Types.get_static_type(this.#universe, x.type) === type;
+    } else {
+      throw this.panic("invalid-type", "Expected a static-type");
+    }
+  }
+
+  is_subtype(x: CrochetType, y: CrochetType) {
+    return Types.is_subtype(x, y);
+  }
+
   get_type_info(x: CrochetValue) {
     if (x.tag === Tag.TYPE) {
       Values.assert_tag(Tag.TYPE, x);
@@ -295,6 +344,13 @@ export class ForeignInterface {
     } else {
       throw this.panic("invalid-type", "Expected a static-type");
     }
+  }
+
+  get_type_fields(x: CrochetType) {
+    if (!(x instanceof CrochetType)) {
+      throw new ErrNativePanic("invalid-type", "Expected a type");
+    }
+    return x.fields;
   }
 
   to_debug_string(x: CrochetValue) {
@@ -332,12 +388,110 @@ export class ForeignInterface {
     return XorShift.new_random();
   }
 
-  push_transcript(tag: string, x: CrochetValue | string) {
+  push_transcript(tag: CrochetValue, x: CrochetValue | string) {
     return new NSTranscriptWrite(tag, x);
   }
 
   uuid4() {
     return UUID.v4();
+  }
+
+  // == Tracing (only exposed for debug package)
+  trace_constraint = {
+    log_tag(tag: CrochetValue) {
+      return new TCLogTag(tag);
+    },
+
+    event_span(span: TraceSpan) {
+      return new TCEventSpan(span);
+    },
+
+    instantiate(type: CrochetType) {
+      return new TCNewType(type);
+    },
+
+    invoke(name: string) {
+      return new TCInvoke(name);
+    },
+
+    invoke_return(name: string) {
+      return new TCInvokeReturn(name);
+    },
+
+    lambda_apply() {
+      return new TCLambdaApply();
+    },
+
+    lambda_return() {
+      return new TCLambdaReturn();
+    },
+
+    thunk_force() {
+      return new TCForceThunk();
+    },
+
+    thunk_return() {
+      return new TCThunkReturn();
+    },
+
+    or(left: TraceConstraint, right: TraceConstraint) {
+      return new TCOr(left, right);
+    },
+
+    and(left: TraceConstraint, right: TraceConstraint) {
+      return new TCAnd(left, right);
+    },
+  };
+
+  match_trace_event<A>(
+    event: TraceEvent,
+    patterns: Record<keyof typeof TraceTag, (event: TraceEvent) => A>
+  ): A {
+    const key = TraceTag[event.tag];
+    return (patterns as any)[key](event);
+  }
+
+  with_span(
+    description: string,
+    fn: (span: TraceSpan) => Machine<CrochetValue>
+  ) {
+    return new NSWithSpan(fn, description);
+  }
+
+  make_trace_recorder(constraint: TraceConstraint) {
+    return new TraceRecorder(this.#universe.trace, constraint);
+  }
+
+  start_recorder(recorder: TraceRecorder) {
+    recorder.start();
+  }
+
+  stop_recorder(recorder: TraceRecorder) {
+    recorder.stop();
+  }
+
+  get_traced_events(recorder: TraceRecorder) {
+    return recorder.events;
+  }
+
+  location_debug_string(x: EventLocation) {
+    const location = Location.activation_location(x.location);
+    if (x.activation instanceof CrochetActivation && x.instruction != null) {
+      const op = x.activation.block.ops[x.instruction] ?? null;
+      if (op != null && op.meta != null) {
+        const position = Location.format_position_suffix(
+          op.meta,
+          x.activation.env.raw_module?.metadata ?? null
+        );
+        return `${location}${position}`;
+      } else {
+        return location;
+      }
+    } else if (x.location == null && x.span != null) {
+      return `at span ${x.span.description}`;
+    } else {
+      return location;
+    }
   }
 
   // == Dangerous introspection that needs more thought

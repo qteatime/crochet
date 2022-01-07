@@ -19,6 +19,10 @@ capability mutability;
 /// Used for internal types.
 capability internal;
 
+singleton internal;
+protect type internal with internal;
+protect global internal with internal;
+
 // -- The tainters
 
 /// Allows converting trusted values to untrusted values.
@@ -764,4 +768,9 @@ trait set-algebra with
 
   /// The complement of two sets.
   command A complement: B;
+end
+
+/// Allows non-local returns (only used internally)
+effect non-local with
+  result(value);
 end

@@ -129,7 +129,9 @@ w.task("test", ["build", "run-tests"], () => {}).with_doc(
 
 w.task("run-tests", [], () => {
   require("./build/test/suites/serialisation");
-  exec("node crochet test tests/vm-tests/crochet.json");
+  exec(
+    "node crochet test tests/vm-tests/crochet.json --non-interactive --capabilities crochet.debug/internal"
+  );
 }).with_doc("Runs all Crochet tests");
 
 w.task("benchmark", ["build"], () => {

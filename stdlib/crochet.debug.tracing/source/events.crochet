@@ -1,0 +1,85 @@
+% crochet
+
+command internal to-event: Event do
+  condition
+    when Event.tag === "LOG" =>
+      new te-log(
+        Event.time,
+        new trace-location(Event.location),
+        Event.log-tag as unknown,
+        Event.value as unknown
+      );
+    
+    when Event.tag === "LOG_TEXT" =>
+      new te-log-message(
+        Event.time,
+        new trace-location(Event.location),
+        Event.log-tag as unknown,
+        Event.message
+      );
+
+    when Event.tag === "NEW" =>
+      new te-instantiated(
+        Event.time,
+        new trace-location(Event.location),
+        Event.crochet-type,
+        Event.arguments map: (_ as unknown)
+      );
+
+    when Event.tag === "INVOKE" =>
+      new te-invoked(
+        Event.time,
+        new trace-location(Event.location),
+        new tv-activation(Event.activation),
+        new tv-branch(Event.branch),
+        Event.arguments map: (_ as unknown)
+      );
+
+    when Event.tag === "APPLY" =>
+      new te-apply(
+        Event.time,
+        new trace-location(Event.location),
+        new tv-activation(Event.activation),
+        Event.lambda as unknown,
+        Event.arguments map: (_ as unknown)
+      );
+
+    when Event.tag === "RETURN" =>
+      new te-returned(
+        Event.time,
+        new trace-location(Event.location),
+        Event.value as unknown
+      );
+
+    when Event.tag === "FORCE" =>
+      new te-forced(
+        Event.time,
+        new trace-location(Event.location),
+        new tv-activation(Event.activation),
+        Event.thunk as unknown
+      );
+  end
+end
+
+
+
+command te-instantiated static-type =
+  foreign trace.make-static-type(self.crochet-type);
+
+command te-instantiated arguments do
+  let Fields = foreign trace.type-fields(self.crochet-type);
+  #record from-pairs: (Fields zip: self.arguments with: (#association key: _ value: _));
+end
+
+
+command trace-event time-span =
+  new trace-time-span(self time, self time);
+
+command te-command time-span =
+  new trace-time-span(self invocation time, self result time);
+
+command te-lambda time-span =
+  new trace-time-span(self application time, self result time);
+
+command te-thunk time-span =
+  new trace-time-span(self application time, self result time);

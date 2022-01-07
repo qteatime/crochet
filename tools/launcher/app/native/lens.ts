@@ -99,6 +99,98 @@ export default (ffi: ForeignInterface) => {
     };
   }
 
+  function compile_font_presentation(data: any) {
+    if (data.tag !== "font-presentation") {
+      throw ffi.panic("invalid-type", "Expected font-presentation");
+    }
+    return {
+      family: compile_font_family(data.family),
+      size: compile_unit(data.size),
+      colour: compile_colour(data.colour),
+      style: compile_font_style(data.style),
+      weight: compile_font_weight(data.weight),
+      decoration: compile_font_decoration(data.decoration),
+    };
+  }
+
+  function compile_font_family(data: any) {
+    switch (data) {
+      case "inherit":
+      case "serif":
+      case "sans-serif":
+      case "monospace":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font family ${data}`);
+    }
+  }
+
+  function compile_font_style(data: any) {
+    switch (data) {
+      case "inherit":
+      case "italic":
+      case "normal":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font style ${data}`);
+    }
+  }
+
+  function compile_font_weight(data: any) {
+    switch (data) {
+      case "lighter":
+      case "light":
+      case "regular":
+      case "bold":
+      case "bolder":
+      case "inherit":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font weight ${data}`);
+    }
+  }
+
+  function compile_font_decoration(data: any) {
+    switch (data) {
+      case "inherit":
+      case "underline":
+      case "line-through":
+      case "overline":
+      case "none":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Invalid font decoration ${data}`);
+    }
+  }
+
+  function compile_scroll_presentation(data: any) {
+    if (data.tag !== "scroll-style") {
+      throw ffi.panic("invalid-type", "Expected scroll-presentation");
+    }
+    return {
+      horizontally: compile_scroll(data["horizontally"]),
+      vertically: compile_scroll(data["vertically"]),
+    };
+  }
+
+  function compile_scroll(data: any) {
+    switch (data) {
+      case "visible":
+        return "scroll";
+
+      case "hidden":
+      case "auto":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", "Expected visible, hidden, or auto");
+    }
+  }
+
   function svg_presentation(presentation: any) {
     return {
       fill: presentation.fill_colour ?? "none",
@@ -155,7 +247,164 @@ export default (ffi: ForeignInterface) => {
     }
   }
 
-  function render(data: any, compact = false): Element {
+  function compile_borders(data: any) {
+    if (data.tag !== "borders") {
+      throw ffi.panic("invalid-type", "Expected borders");
+    }
+    return {
+      top: compile_border(data.top),
+      right: compile_border(data.right),
+      bottom: compile_border(data.bottom),
+      left: compile_border(data.left),
+    };
+  }
+
+  function compact_border(data: any) {
+    return `${data.width ?? ""} ${data.colour ?? ""} ${
+      data.style ?? "none"
+    }`.trim();
+  }
+
+  function compact_borders(data: any) {
+    return {
+      top: compact_border(data.top),
+      right: compact_border(data.right),
+      bottom: compact_border(data.bottom),
+      left: compact_border(data.left),
+    };
+  }
+
+  function compile_border(data: any) {
+    if (data.tag !== "border") {
+      throw ffi.panic("invalid-type", "Expected border");
+    }
+    return {
+      width: compile_unit(data.width),
+      colour: compile_colour(data.colour),
+      style: compile_border_style(data.style),
+    };
+  }
+
+  function compile_border_style(data: any) {
+    switch (data) {
+      case "none":
+      case "hidden":
+      case "dotted":
+      case "dashed":
+      case "solid":
+        return data;
+
+      default:
+        throw ffi.panic("invalid-value", `Not a valid border style ${data}`);
+    }
+  }
+
+  function compile_background(data: any) {
+    if (data.tag !== "background") {
+      throw ffi.panic("invalid-value", `Expected background`);
+    }
+    return {
+      colour: compile_colour(data.colour),
+    };
+  }
+
+  function compile_padding(data: any) {
+    if (data.tag !== "padding") {
+      throw ffi.panic("invalid-value", `Expected padding`);
+    }
+    return compile_rectangle_units(data);
+  }
+
+  function compile_margin(data: any) {
+    if (data.tag !== "margin") {
+      throw ffi.panic("invalid-value", `Expected margin`);
+    }
+    return compile_rectangle_units(data);
+  }
+
+  function compile_rectangle_units(data: any) {
+    return {
+      top: compile_unit(data.top),
+      right: compile_unit(data.right),
+      bottom: compile_unit(data.bottom),
+      left: compile_unit(data.left),
+    };
+  }
+
+  function make_timeline(frames: any[]) {
+    let current = -1;
+    const rframes = frames.map((x, i) =>
+      h(
+        "div",
+        {
+          class: "value-lens-timeline-frames-entry",
+          "data-index": String(i),
+        },
+        [render(x, false, "timeline")]
+      )
+    );
+    const time = h(
+      "input",
+      {
+        class: "value-lens-timeline-control-time",
+        type: "range",
+        min: "0",
+        max: String(frames.length - 1),
+        step: "1",
+        value: "0",
+      },
+      []
+    ) as HTMLInputElement;
+    const prev = h(
+      "button",
+      { class: "value-lens-timeline-control-button", title: "Previous frame" },
+      [h("i", { class: "fas fa-angle-left" }, [])]
+    );
+    const next = h(
+      "button",
+      { class: "value-lens-timeline-control-button", title: "Next frame" },
+      [h("i", { class: "fas fa-angle-right" }, [])]
+    );
+    const container = h("div", { class: "value-lens-timeline" }, [
+      h("div", { class: "value-lens-timeline-frames" }, rframes),
+      h("div", { class: "value-lens-timeline-controls" }, [prev, time, next]),
+    ]);
+
+    function select(index: number) {
+      if (rframes[current]) {
+        rframes[current].classList.remove("show");
+      }
+      current = index;
+      if (rframes[current]) {
+        rframes[current].classList.add("show");
+      }
+    }
+
+    time.addEventListener("input", (ev) => {
+      select(Number(time.value));
+    });
+    prev.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      time.stepDown();
+      select(Number(time.value));
+    });
+    next.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      time.stepUp();
+      select(Number(time.value));
+    });
+    select(0);
+
+    return container;
+  }
+
+  function render(
+    data: any,
+    compact: boolean,
+    context: string | null
+  ): Element {
     if (data == null) {
       return h("div", { class: "value-lens-nothing" }, []);
     } else {
@@ -189,7 +438,9 @@ export default (ffi: ForeignInterface) => {
             "div",
             { class: "value-lens-list" },
             data.items.map((x: any) =>
-              h("div", { class: "value-lens-list-item" }, [render(x, true)])
+              h("div", { class: "value-lens-list-item" }, [
+                render(x, true, "list"),
+              ])
             )
           );
 
@@ -199,28 +450,34 @@ export default (ffi: ForeignInterface) => {
               "div",
               { class: "value-lens-table-header" },
               data.header.map((x: any) =>
-                h("div", { class: "value-lens-table-cell" }, [render(x, true)])
+                h("div", { class: "value-lens-table-cell" }, [
+                  render(x, true, "table"),
+                ])
               )
             ),
-            ...data.rows.map((x: any) =>
-              h(
-                "div",
-                { class: "value-lens-table-row" },
-                x.map((y: any) =>
-                  h("div", { class: "value-lens-table-cell" }, [
-                    render(y, true),
-                  ])
-                )
-              )
-            ),
+            ...data.rows.map((x: any) => render(x, compact, "table")),
           ]);
+
+        case "table-row": {
+          return h(
+            "div",
+            { class: "value-lens-table-row" },
+            data.cells.map((y: any) =>
+              h("div", { class: "value-lens-table-cell" }, [
+                render(y, true, "table-row"),
+              ])
+            )
+          );
+        }
 
         case "flow":
           return h(
             "div",
             { class: "value-lens-flow" },
             data.items.map((x: any) =>
-              h("div", { class: "value-lens-flow-item" }, [render(x, compact)])
+              h("div", { class: "value-lens-flow-item" }, [
+                render(x, compact, "flow"),
+              ])
             )
           );
 
@@ -231,7 +488,7 @@ export default (ffi: ForeignInterface) => {
               class: "value-lens-flex-row",
               style: { gap: compile_unit(data.gap) },
             },
-            data.items.map((x: any) => render(x, compact))
+            data.items.map((x: any) => render(x, compact, "flex-row"))
           );
 
         case "flex-column":
@@ -241,7 +498,7 @@ export default (ffi: ForeignInterface) => {
               class: "value-lens-flex-column",
               style: { gap: compile_unit(data.gap) },
             },
-            data.items.map((x: any) => render(x, compact))
+            data.items.map((x: any) => render(x, compact, "flex-column"))
           );
 
         case "fixed-layout":
@@ -254,21 +511,108 @@ export default (ffi: ForeignInterface) => {
                 height: compile_unit(data.height) ?? "0px",
               },
             },
-            data.items.map((x: any) => render(x, compact))
+            data.items.map((x: any) => render(x, compact, "fixed-layout"))
           );
 
-        case "position":
+        case "position": {
+          let style;
+          if (context === "fixed-layout") {
+            style = {
+              top: compile_unit(data.position.y),
+              left: compile_unit(data.position.x),
+            };
+          } else {
+            console.warn(
+              `Not making document absolute positioned, as it's not included in a fixed-layout context.`,
+              {
+                document: data,
+                context: context,
+              }
+            );
+            style = {
+              position: "unset",
+            };
+          }
           return h(
             "div",
             {
               class: "value-lens-position",
+              style: style,
+            },
+            [render(data.content, compact, "position")]
+          );
+        }
+
+        case "scroll-view": {
+          const scroll = compile_scroll_presentation(data.scroll);
+          const bounds = compile_dimension(data.bounds);
+          return h(
+            "div",
+            {
+              class: "value-lens-scroll-view",
               style: {
-                top: compile_unit(data.position.y),
-                left: compile_unit(data.position.x),
+                maxWidth: bounds.width ?? "auto",
+                maxHeight: bounds.height ?? "auto",
+                overflowX: scroll.horizontally,
+                overflowY: scroll.vertically,
               },
             },
-            [render(data.content, compact)]
+            [render(data.content, compact, "scroll-view")]
           );
+        }
+
+        case "format-text": {
+          const font = compile_font_presentation(data.formatting);
+          return h(
+            "div",
+            {
+              class: "value-lens-format-text",
+              style: {
+                fontFamily: font.family,
+                fontSize: font.size,
+                color: font.colour,
+                fontStyle: font.style,
+                fontWeight: font.weight,
+                textDecoration: font.decoration,
+              },
+            },
+            [render(data.content, compact, context)]
+          );
+        }
+
+        case "box": {
+          const borders = compact_borders(compile_borders(data.borders));
+          const background = compile_background(data.background);
+          const padding = compile_padding(data.padding);
+          const margin = compile_margin(data.margin);
+
+          return h(
+            "div",
+            {
+              class: "value-lens-box",
+              style: {
+                borderTop: borders.top || "none",
+                borderRight: borders.right || "none",
+                borderBottom: borders.bottom || "none",
+                borderLeft: borders.left || "none",
+                backgroundColor: background.colour ?? "unset",
+                paddingLeft: padding.left ?? "0px",
+                paddingRight: padding.right ?? "0px",
+                paddingTop: padding.top ?? "0px",
+                paddingBottom: padding.bottom ?? "0px",
+                marginTop: margin.top ?? "0px",
+                marginRight: margin.right ?? "0px",
+                marginBottom: margin.bottom ?? "0px",
+                marginLeft: margin.left ?? "0px",
+              },
+            },
+            [render(data.content, compact, "box")]
+          );
+        }
+
+        case "timeline": {
+          return make_timeline(data.frames);
+        }
 
         case "typed":
           return h("div", { class: "value-lens-typed" }, [
@@ -282,7 +626,7 @@ export default (ffi: ForeignInterface) => {
               ]),
             ]),
             h("div", { class: "value-lens-typed-value" }, [
-              render(data.content, compact),
+              render(data.content, compact, "typed"),
             ]),
           ]);
 
@@ -298,10 +642,10 @@ export default (ffi: ForeignInterface) => {
               button,
               h("div", { class: "value-lens-group-contents" }, [
                 h("div", { class: "value-lens-group-compact" }, [
-                  render(data.compact),
+                  render(data.compact, true, context),
                 ]),
                 h("div", { class: "value-lens-group-expanded" }, [
-                  render(data.expanded),
+                  render(data.expanded, false, context),
                 ]),
               ]),
             ]
@@ -442,6 +786,8 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("lens.render", (json) => {
     const data = JSON.parse(ffi.text_to_string(json));
-    return ffi.box(h("div", { class: "value-lens-container" }, [render(data)]));
+    return ffi.box(
+      h("div", { class: "value-lens-container" }, [render(data, false, null)])
+    );
   });
 };

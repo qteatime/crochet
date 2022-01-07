@@ -1,0 +1,33 @@
+% crochet
+
+command trace-slice timeline: (Name is text) =
+  new trace-timeline(Name, self);
+
+command trace-slice timeline =
+  self timeline: "Timeline";
+
+
+command trace-slice is-empty =
+  self.events is-empty;
+
+
+implement foldable-collection for trace-slice;
+
+command trace-slice fold-from: Initial with: Combine =
+  self.events fold-from: Initial with: Combine;
+
+command trace-slice fold-right-from: Initial with: Combine =
+  self.events fold-right-from: Initial with: Combine;
+
+
+implement filterable-collection for trace-slice;
+
+command trace-slice keep-if: Predicate =
+  new trace-slice(self.events keep-if: Predicate);
+
+
+implement mappable-collection for trace-slice;
+
+command trace-slice map: Transformation =
+  new trace-slice(self.events map: Transformation);
+

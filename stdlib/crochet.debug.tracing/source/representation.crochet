@@ -1,0 +1,186 @@
+% crochet
+
+local singleton repr;
+
+command repr location: (Location is trace-location) do
+  let Text = foreign trace.location-repr(Location.box);
+  #document plain-text: Text
+    | format-text
+      | font: { F in F size: (0.9 as doc-em) };
+end
+
+command repr meta-header: Contents do
+  #document flex-column: Contents
+    | box
+      | background: { B in B colour: "#95A5A6" }
+      | padding: { P in P all: (0.5 as doc-em) }
+      | margin: { M in M bottom: (0.5 as doc-em) }
+      | borders: { B in B all: { B in B width: 1 | colour: "#7F8C8D" | style: "solid" } }
+    | format-text
+      | font: { F in F colour: "#ECF0F1" };
+end
+
+
+command debug-representation for: (E is trace-location) perspective: default-perspective do
+  repr location: E
+    | typed: #trace-location;
+end
+
+command debug-representation for: (E is te-log) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      repr location: E location,
+    ],
+    debug-representation for: E.value perspective: P,
+  ]
+  | gap: (0.5 as doc-em);
+end
+
+command debug-representation for: (E is te-log-message) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      repr location: E location,
+    ],
+    #document plain-text: E.message
+  ]
+  | gap: (0.5 as doc-em);
+end
+
+command debug-representation for: (E is te-instantiated) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Type instantiated",
+      repr location: E location
+    ],
+    debug-representation for: E static-type perspective: P,
+    debug-representation for: E arguments perspective: P,
+  ];
+end
+
+command debug-representation for: (E is te-invoked) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Invoked [E branch name]",
+      repr location: E location
+    ],
+    #document plain-text: E branch name
+      | format-text
+        | font: { F in F family: "monospace" | weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) },
+
+    debug-representation for: E arguments perspective: P,
+  ];
+end
+
+command debug-representation for: (E is te-apply) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Lambda applied",
+      repr location: E location
+    ],
+    debug-representation for: E lambda perspective: P,
+    #document plain-text: "Arguments:"
+      | format-text
+        | font: { F in F weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) | top: (1.0 as doc-em) },
+
+    debug-representation for: E arguments perspective: P
+  ];
+end
+
+command debug-representation for: (E is te-lambda) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Lambda applied",
+      repr location: E application location
+    ],
+    debug-representation for: E application lambda perspective: P,
+    #document plain-text: "Arguments:"
+      | format-text
+        | font: { F in F weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) | top: (1.0 as doc-em) },
+
+    debug-representation for: E application arguments perspective: P,
+    debug-representation for: E result perspective: P
+      | box
+        | margin: { M in M top: (1.0 as doc-em) },
+  ];
+end
+
+command debug-representation for: (E is te-forced) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Thunk forced",
+      repr location: E location
+    ],
+    debug-representation for: E thunk perspective: P,
+  ];
+end
+
+command debug-representation for: (E is te-thunk) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Thunk forced",
+      repr location: E application location
+    ],
+    debug-representation for: E application thunk perspective: P,
+    debug-representation for: E result perspective: P
+      | box
+        | margin: { M in M top: (1.0 as doc-em) },
+  ];
+end
+
+command debug-representation for: (E is te-returned) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Returned",
+      repr location: E location
+    ],
+    debug-representation for: E value perspective: P
+  ];
+end
+
+command debug-representation for: (E is te-command) perspective: (P is default-perspective) do
+  #document flex-column: [
+    repr meta-header: [
+      #document plain-text: "Invoked [E invocation branch name]",
+      repr location: E invocation location
+    ],
+    #document plain-text: E invocation branch name
+      | format-text
+        | font: { F in F family: "monospace" | weight: "bold" }
+      | box
+        | margin: { M in M bottom: (0.5 as doc-em) },
+
+    debug-representation for: E invocation arguments perspective: P,
+    debug-representation for: E result perspective: P
+      | box
+        | margin: { M in M top: (1.0 as doc-em) },
+  ];
+end
+
+command debug-representation for: (X is trace-slice) perspective: (P is default-perspective) do
+  #document list: (
+    X.events map: (debug-representation for: _ perspective: P)
+  )
+  | scroll-view
+    | bounds: { B in B height: 350 };
+end
+
+
+type event-perspective is perspective;
+
+implement debug-perspective for event-perspective;
+command event-perspective name = "Events";
+
+command debug-representation for: (X is trace-recorder) perspective: (P is event-perspective) do
+  debug-representation for: X events perspective: default-perspective;
+end
+
+
+command debug-representation for: (X is trace-timeline) perspective: (P is default-perspective) do
+  #document timeline: (X.slice.events map: (self for: _ perspective: P));
+end

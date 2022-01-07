@@ -63,6 +63,7 @@ export function get_static_type(universe: Universe, type: CrochetType) {
       null
     );
     universe.type_cache.set(type, static_type);
+    universe.reverse_type_cache.set(static_type, type);
     return static_type;
   }
 }

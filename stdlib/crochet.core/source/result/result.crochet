@@ -8,6 +8,10 @@ command #result ok: Value = new ok(Value);
 /// along with the reason for its failure.
 command #result error: Reason = new error(Reason);
 
+/// Constructs a [type:result] from a nullable value.
+command #result from-nullable: nothing = #result error: nothing;
+command #result from-nullable: Value = #result ok: Value;
+
 
 // -- Transformations
 

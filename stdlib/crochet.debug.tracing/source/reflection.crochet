@@ -1,0 +1,14 @@
+% crochet
+
+command tv-branch name =
+  foreign reflection.branch-name(self.branch);
+
+command tv-branch parameters do
+  let Parameters = foreign reflection.branch-parameters(self.branch);
+  Parameters
+    | map: { X in new tv-parameter(X.name, tv-constraint(X.constraint)) };
+end
+
+command tv-constraint accepts: (Type is static-type) =
+  foreign reflection.constraint-accepts(self.constraint, Type);
+

@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="/media/fa-solid.css" />
     <link rel="stylesheet" href="/media/fontawesome.min.css" />
     <link rel="stylesheet" href="/media/crochet.css" />
-    <link rel="stylesheet" href="/media/debugger.css" />
     <link rel="stylesheet" href="/media/agata.css" />
     <link rel="stylesheet" href="/media/launcher.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,7 +29,6 @@
         <div class="crochet-loading-screen">Loading...</div>
       </div>
     </div>
-    <div id="crochet-tools"></div>
 
     <script src="crochet.js"></script>
     <script src="monaco/vs/loader.js"></script>
@@ -52,8 +50,6 @@
           for (const child of root.children) {
             child.remove();
           }
-          const tools = document.querySelector("#crochet-tools");
-          // crochet.debug_ui.render(crochet, tools);
           await crochet.run("main-html: _", [crochet.ffi.box(root)]);
         } catch (error) {
           console.error(error);

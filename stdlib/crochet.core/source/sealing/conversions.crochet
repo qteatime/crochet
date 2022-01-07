@@ -1,0 +1,7 @@
+% crochet
+
+command Value as unknown =
+  foreign seal.box(Value);
+
+command (Value is unknown) as (Type is static-type) =
+  foreign seal.unbox(Value, Type);

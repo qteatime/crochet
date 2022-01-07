@@ -35,27 +35,22 @@ export default (ffi: ForeignInterface) => {
     }
   }
 
-  ffi.defmachine("debug.write", function* (text) {
-    console.log(ffi.text_to_string(text));
-    yield ffi.push_transcript("debug", ffi.text_to_string(text));
+  ffi.defmachine("debug.write", function* (text, tag) {
+    yield ffi.push_transcript(tag, ffi.text_to_string(text));
     return ffi.nothing;
   });
 
-  ffi.defmachine("debug.write-inspect", function* (value) {
-    console.debug("[INSPECT]", value);
-    yield ffi.push_transcript("inspect", value);
+  ffi.defmachine("debug.write-inspect", function* (value, tag) {
+    yield ffi.push_transcript(tag, value);
     return ffi.nothing;
   });
 
-  ffi.defmachine("debug.time", function* (label, computation) {
+  ffi.defmachine("debug.time", function* (tag, computation) {
     const us_start = now();
     const result = yield ffi.apply(computation, []);
     const us_end = now();
     const diff = us_end - us_start;
-    yield ffi.push_transcript(
-      "time",
-      `[${ffi.text_to_string(label)}] ${format_time_diff(diff)}`
-    );
+    yield ffi.push_transcript(tag, format_time_diff(diff));
     return result;
   });
 };

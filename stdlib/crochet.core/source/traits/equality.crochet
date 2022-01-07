@@ -9,3 +9,9 @@ implement equality for nothing;
 
 /// True if two nothings are equal
 command nothing === nothing = true;
+
+
+implement equality for not-found;
+
+/// True if two not-founds are equal
+command not-found === not-found = true;

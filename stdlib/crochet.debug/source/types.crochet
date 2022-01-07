@@ -1,0 +1,6 @@
+% crochet
+
+singleton debug-internal;
+capability internal;
+protect type debug-internal with internal;
+protect global debug-internal with internal;

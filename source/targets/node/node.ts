@@ -14,13 +14,17 @@ import { logger } from "../../utils/logger";
 import { question } from "../../utils/prompt";
 import { union } from "../../utils/collections";
 import { build, build_file, read_updated_binary } from "./build";
-import { CrochetTest, CrochetValue, TELog, TraceEvent } from "../../vm";
-import { TerminalRenderer } from "../../services/debug/representation/terminal-renderer";
+import {
+  CrochetTest,
+  CrochetValue,
+  TELog,
+  TraceEvent,
+  Location,
+} from "../../vm";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
 
 export class CrochetForNode {
-  readonly renderer: TerminalRenderer;
   readonly crochet: Crochet;
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
@@ -33,7 +37,6 @@ export class CrochetForNode {
     readonly interactive: boolean,
     readonly safe_mode: boolean
   ) {
-    this.renderer = new TerminalRenderer(disclose_debug);
     this.crochet = new Crochet(safe_mode, this.fs, this.signal);
   }
 
@@ -43,9 +46,7 @@ export class CrochetForNode {
       if (typeof message === "string") {
         console.log(`[${entry.log_tag}] ${message}`);
       } else {
-        console.log(
-          `[${entry.log_tag}] ${this.renderer.render_value(message)}`
-        );
+        console.log(`[${entry.log_tag}] ${Location.simple_value(message)}`);
       }
     }
   };
@@ -64,6 +65,7 @@ export class CrochetForNode {
       "crochet.codec.basic",
       "crochet.core",
       "crochet.debug",
+      "crochet.debug.tracing",
       "crochet.language.cli-arguments",
       "crochet.language.csv",
       "crochet.language.json",

@@ -14,6 +14,7 @@
     "native/etc.js",
     "native/action.js",
     "native/set.js",
+    "native/seal.js",
     "native/map.js",
     "native/fun.js"
   ],
@@ -62,6 +63,7 @@
 
     "source/debug/constructors.crochet",
     "source/debug/coercions.crochet",
+    "source/debug/equality.crochet",
     "source/debug/perspectives.crochet",
     "source/debug/representations.crochet",
     "source/debug/serialisation.crochet",
@@ -89,6 +91,8 @@
 
     "source/result/equality.crochet",
     "source/result/result.crochet",
+
+    "source/sealing/conversions.crochet",
 
     "source/skeleton/skeleton.crochet",
 

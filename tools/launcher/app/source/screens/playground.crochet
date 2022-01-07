@@ -169,13 +169,11 @@ command ps-running as widget do
       | code: self.code,
 
     w style: "launcher-playground-entry-results" with: [
-      w tabbed-panel: [
-        w tab: "Result"
-          | with: [w contents: [w style: "launcher-playground-entry-values" with: [Values]]],
+      Values
+    ],
 
-        w tab: "Logs"
-          | with: [w contents: [w style: "launcher-playground-entry-logs" with: [Logs]]]
-      ]
+    w style: "launcher-playground-entry-logs" with: [
+      Logs
     ]
   ];
 end

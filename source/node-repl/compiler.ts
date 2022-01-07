@@ -54,7 +54,7 @@ export class ReplStatements extends ReplExpr {
         env.define(k, v);
       }
     }
-    console.log(vm.renderer.render_value(value));
+    console.log(VM.Location.simple_value(value));
   }
 }
 

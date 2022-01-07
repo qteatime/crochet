@@ -77,7 +77,7 @@ end
 abstract doc-colour;
 
 /// No colour value
-singleton doc-colour-transparent is doc-colour;
+singleton doc-colour-inherit is doc-colour;
 
 /// RGBA colour
 type doc-colour-rgba(
@@ -87,12 +87,124 @@ type doc-colour-rgba(
   alpha is integer,
 ) is doc-colour;
 
+trait to-doc-colour with
+  command Value as doc-colour;
+end
+
 /// A way of formatting and presenting shapes
 type doc-presentation(
   stroke-colour is doc-colour,
   stroke-width is doc-unit,
   fill-colour is doc-colour,
 );
+
+/// Types of scroll bars
+enum doc-scroll =
+  doc-scroll-visible,
+  doc-scroll-hidden,
+  doc-scroll-if-needed;
+
+/// Scroll-view properties
+type doc-scroll-style(
+  horizontally is doc-scroll,
+  vertically is doc-scroll,
+);
+
+/// Font properties
+enum doc-font-family =
+  doc-font-family-inherit,
+  doc-font-family-serif,
+  doc-font-family-sans-serif,
+  doc-font-family-monospace;
+
+enum doc-font-style =
+  doc-font-italic,
+  doc-font-normal,
+  doc-font-style-inherit;
+
+enum doc-font-weight =
+  doc-font-lighter,
+  doc-font-light,
+  doc-font-regular,
+  doc-font-bold,
+  doc-font-bolder,
+  doc-font-weight-inherit;
+
+// TODO: turn this into a more fully-featured thing, like CSS's text decoration
+enum doc-font-decoration =
+  doc-font-decoration-inherit,
+  doc-font-overline,
+  doc-font-underline,
+  doc-font-strike-through,
+  doc-font-no-decoration;
+
+type doc-font-presentation(
+  family is doc-font-family,
+  size is doc-unit,
+  colour is doc-colour,
+  style is doc-font-style,
+  weight is doc-font-weight,
+  decoration is doc-font-decoration,
+);
+
+trait to-doc-font-family with
+  command Value as doc-font-family;
+end
+
+trait to-doc-font-style with
+  command Value as doc-font-style;
+end
+
+trait to-doc-font-weight with
+  command Value as doc-font-weight;
+end
+
+trait to-doc-font-decoration with
+  command Value as doc-font-decoration;
+end
+
+enum doc-border-style =
+  doc-border-style-none,
+  doc-border-style-hidden,
+  doc-border-style-dotted,
+  doc-border-style-dashed,
+  doc-border-style-solid;
+
+trait to-doc-border-style with
+  command Value as doc-border-style;
+end
+
+type doc-border(
+  width is doc-unit,
+  colour is doc-colour,
+  style is doc-border-style
+);
+
+type doc-borders(
+  top is doc-border,
+  right is doc-border,
+  bottom is doc-border,
+  left is doc-border,
+);
+
+type doc-background(
+  colour is doc-colour
+);
+
+type doc-padding(
+  top is doc-unit,
+  right is doc-unit,
+  bottom is doc-unit,
+  left is doc-unit,
+);
+
+type doc-margin(
+  top is doc-unit,
+  right is doc-unit,
+  bottom is doc-unit,
+  left is doc-unit,
+);
+
 
 // -- Document language
 
@@ -165,3 +277,21 @@ type doc-polygon(points is list<doc-point2d>, presentation is doc-presentation) 
 
 /// A poly-line shape
 type doc-polyline(points is list<doc-point2d>, presentation is doc-presentation) is document;
+
+/// A container with bounded dimensions that allows scrolling
+type doc-scroll-view(content is document, bounds is doc-dimension, scroll is doc-scroll-style) is document;
+
+/// A document that formats text within it differently
+type doc-format-text(content is document, formatting is doc-font-presentation) is document;
+
+/// A document that provides HTML box-style semantics
+type doc-box(
+  content is document, 
+  borders is doc-borders, 
+  background is doc-background,
+  padding is doc-padding,
+  margin is doc-margin,
+) is document;
+
+/// A document that provides a timeline
+type doc-timeline(frames is list<document>) is document;

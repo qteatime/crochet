@@ -69,16 +69,23 @@ command doc-flex-column gap: (X has to-doc-unit) =
 
 /// Lays items with a fixed layout.
 command #document fixed-width: (W has to-doc-unit) height: (H has to-doc-unit) with: (Xs is list<document>) =
-  new doc-fixed-layout(Xs, W as doc-unit, H as doc-unit);
+  new doc-fixed-layout(Xs map: (internal make-positioned: _), W as doc-unit, H as doc-unit);
 
 command #document fixed-layout: (Xs is list<document>) =
-  new doc-fixed-layout(Xs, new doc-pixels(0), new doc-pixels(0));
+  new doc-fixed-layout(Xs map: (internal make-positioned: _), new doc-pixels(0), new doc-pixels(0));
 
 command doc-fixed-layout width: (W has to-doc-unit) =
   new doc-fixed-layout(self.items, W as doc-unit, self.height);
 
 command doc-fixed-layout height: (H has to-doc-unit) =
   new doc-fixed-layout(self.items, self.width, H as doc-unit);
+
+
+command internal make-positioned: (D is document) =
+  D position: (#doc-point2d x: 0 y: 0);
+
+command internal make-positioned: (D is doc-position) =
+  D;
 
 /// Constructs a table from a record of fields.
 command #document fields: (R is record) do
@@ -92,9 +99,10 @@ command #document fields: (R is record) do
       );
 end
 
+
 /// Constructs a circle shape
 command #document circle =
-  new doc-circle(#doc-point2d zero, doc-unit-unset, #document style);
+  new doc-circle(#doc-point2d zero, doc-unit-unset, #doc-presentation defaults);
 
 command doc-circle center: (Point is doc-point2d) =
   new doc-circle(Point, self.radius, self.presentation);
@@ -105,10 +113,12 @@ command doc-circle radius: (Radius has to-doc-unit) =
 command doc-circle style: (Style is doc-presentation) =
   new doc-circle(self.center, self.radius, Style);
 
+command doc-circle style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-circle(self.center, self.radius, F(self.presentation));
 
 /// Constructs an ellipse
 command #document ellipse =
-  new doc-ellipse(#doc-point2d zero, #doc-point2d zero, #document style);
+  new doc-ellipse(#doc-point2d zero, #doc-point2d zero, #doc-presentation defaults);
 
 command doc-ellipse center: (Point is doc-point2d) =
   new doc-ellipse(Point, self.radius, self.presentation);
@@ -119,9 +129,12 @@ command doc-ellipse radius: (Radius is doc-point2d) =
 command doc-ellipse style: (Style is doc-presentation) =
   new doc-ellipse(self.center, self.radius, Style);
 
+command doc-ellipse style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-ellipse(self.center, self.radius, F(self.presentation));
+
 /// Constructs a rectangle shape
 command #document rectangle =
-  new doc-rectangle(#doc-point2d zero, #doc-dimension zero, #doc-point2d zero, #document style);
+  new doc-rectangle(#doc-point2d zero, #doc-dimension zero, #doc-point2d zero, #doc-presentation defaults);
 
 command doc-rectangle origin: (Point is doc-point2d) =
   new doc-rectangle(Point, self.size, self.roundness, self.presentation);
@@ -147,9 +160,12 @@ command doc-rectangle y: (Y has to-doc-unit) =
 command doc-rectangle roundness: (Point is doc-point2d) =
   new doc-rectangle(self.origin, self.size, Point, self.presentation);
 
+command doc-rectangle style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-rectangle(self.origin, self.size, Point, F(self.presentation));
+
 /// Constructs a line shape
 command #document line =
-  new doc-line(#doc-point2d zero, #doc-point2d zero, #document style);
+  new doc-line(#doc-point2d zero, #doc-point2d zero, #doc-presentation defaults);
 
 command doc-line from: (Point is doc-point2d) =
   new doc-line(Point, self.to, self.presentation);
@@ -160,20 +176,102 @@ command doc-line to: (Point is doc-point2d) =
 command doc-line style: (Style is doc-presentation) =
   new doc-line(self.from, self.to, Style);
 
+command doc-line style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-line(self.from, self.to, F(self.presentation));
+
 /// Constructs a polygon shape
 command #document polygon: (Points is list<point2d>) =
-  new doc-polygon(Points, #document style);
+  new doc-polygon(Points, #doc-presentation defaults);
 
 command doc-polygon style: (Style is doc-presentation) =
   new doc-polygon(self.points, Style);
 
+command doc-polygon style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-polygon(self.points, F(self.presentation));
+
 /// Constructs a polyline shape
 command #document polyline: (Points is list<point2d>) =
-  new doc-polyline(Points, #document style);
+  new doc-polyline(Points, #doc-presentation defaults);
 
 command doc-polyline style: (Style is doc-presentation) =
   new doc-polyline(self.points, Style);
 
+command doc-polyline style: (F is (doc-presentation -> doc-presentation)) =
+  new doc-polyline(self.points, F(self.presentation));
+
+/// Constructs a scrollable view
+command document scroll-view =
+  new doc-scroll-view(self, #doc-dimension unset, #doc-scroll-style defaults);
+
+command doc-scroll-view scroll: (X is doc-scroll-style) =
+  new doc-scroll-view(self.content, self.bounds, X);
+
+command doc-scroll-view scroll: (F is (doc-scroll-style -> doc-scroll-style)) =
+  new doc-scroll-view(self.content, self.bounds, F(self.scroll));
+
+command doc-scroll-view bounds: (X is doc-dimension) =
+  new doc-scroll-view(self.content, X, self.scroll);
+
+command doc-scroll-view bounds: (F is (doc-dimension -> doc-dimension)) =
+  new doc-scroll-view(self.content, F(self.bounds), self.scroll);
+
+
+command #doc-scroll-style defaults =
+  new doc-scroll-style(
+    doc-scroll-if-needed,
+    doc-scroll-if-needed
+  );
+
+command doc-scroll-style horizontally: (Scroll is doc-scroll) =
+  new doc-scroll-style(Scroll, self.vertically);
+
+command doc-scroll-style vertically: (Scroll is doc-scroll) =
+  new doc-scroll-style(self.horizontally, Scroll);
+
+
+// -- Text formatting
+command document format-text =
+  new doc-format-text(self, #doc-font-presentation defaults);
+
+command doc-format-text font: (X is doc-font-presentation) =
+  new doc-format-text(self.content, X);
+
+command doc-format-text font: (F is (doc-font-presentation -> doc-font-presentation)) =
+  new doc-format-text(self.content, F(self.formatting));
+
+
+// -- Box formatting
+command document box =
+  new doc-box(self, #doc-borders defaults, #doc-background defaults, #doc-padding defaults, #doc-margin defaults);
+
+command doc-box borders: (X is doc-borders) =
+  new doc-box(self.content, X, self.background, self.padding, self.margin);
+
+command doc-box borders: (F is (doc-borders -> doc-borders)) =
+  new doc-box(self.content, F(self.borders), self.background, self.padding, self.margin);
+
+command doc-box background: (X is doc-background) =
+  new doc-box(self.content, self.borders, X, self.padding, self.margin);
+
+command doc-box background: (F is (doc-background -> doc-background)) =
+  new doc-box(self.content, self.borders, F(self.background), self.padding, self.margin);
+
+command doc-box padding: (X is doc-padding) =
+  new doc-box(self.content, self.borders, self.background, X, self.margin);
+
+command doc-box padding: (F is (doc-padding -> doc-padding)) =
+  new doc-box(self.content, self.borders, self.background, F(self.padding), self.margin);
+
+command doc-box margin: (X is doc-margin) =
+  new doc-box(self.content, self.borders, self.background, self.padding, X);
+
+command doc-box margin: (F is (doc-margin -> doc-margin)) =
+  new doc-box(self.content, self.borders, self.background, self.padding, F(self.margin));
+
+
+// -- Timelines
+command #document timeline: (Frames is list<document>) =
+  new doc-timeline(Frames);
 
 /// Represents a typed value.
 command document typed: (Type is static-type) =
@@ -197,17 +295,17 @@ command document expanded-layout: (Doc is document) =
 
 
 // -- Styles
-command #document style =
-  new doc-presentation(doc-colour-transparent, doc-unit-unset, doc-colour-transparent);
+command #doc-presentation defaults =
+  new doc-presentation("#000000" as doc-colour, 1 as doc-unit, doc-colour-inherit);
 
-command doc-presentation stroke-colour: (Colour is doc-colour) =
-  new doc-presentation(Colour, self.stroke-width, self.fill-colour);
+command doc-presentation stroke-colour: (Colour has to-doc-colour) =
+  new doc-presentation(Colour as doc-colour, self.stroke-width, self.fill-colour);
 
 command doc-presentation stroke-width: (Width has to-doc-unit) =
   new doc-presentation(self.stroke-colour, Width as doc-unit, self.fill-colour);
 
-command doc-presentation fill-colour: (Colour is doc-colour) =
-  new doc-presentation(self.stroke-colour, self.stroke-width, Colour);
+command doc-presentation fill-colour: (Colour has to-doc-colour) =
+  new doc-presentation(self.stroke-colour, self.stroke-width, Colour as doc-colour);
 
 
 command #doc-unit unset = doc-unit-unset;
@@ -229,6 +327,9 @@ command doc-point2d y: (Y has to-doc-unit) =
 command #doc-dimension zero =
   new doc-dimension(new doc-pixels(0), new doc-pixels(0));
 
+command #doc-dimension unset =
+  new doc-dimension(doc-unit-unset, doc-unit-unset);
+
 command #doc-dimension width: (W has to-doc-unit) height: (H has to-doc-unit) =
   new doc-dimension(W as doc-unit, H as doc-unit);
 
@@ -239,8 +340,17 @@ command doc-dimension height: (H has to-doc-unit) =
   new doc-dimension(self.width, H as doc-unit);
 
 
+command #doc-colour inherit =
+  doc-colour-inherit;
+
 command #doc-colour transparent =
-  doc-colour-transparent;
+  #doc-colour red: 255 green: 255 blue: 255 alpha: 0;
+
+command #doc-colour black =
+  #doc-colour red: 0 green: 0 blue: 0 alpha: 255;
+
+command #doc-colour white =
+  #doc-colour red: 255 green: 255 blue: 255 alpha: 255;
 
 command #doc-colour red: (R is integer) green: (G is integer) blue: (B is integer) alpha: (A is integer)
 requires
@@ -250,4 +360,180 @@ requires
   byte-alpha :: (A >= 0) and (A <= 255)
 do
   new doc-colour-rgba(R, G, B, A);
+end
+
+command #doc-colour red: R green: G blue: B =
+  #doc-colour red: R green: G blue: B alpha: 255;
+
+
+// -- Fonts
+command #doc-font-presentation defaults =
+  new doc-font-presentation(
+    doc-font-family-inherit,
+    doc-unit-unset,
+    doc-colour-inherit,
+    doc-font-style-inherit,
+    doc-font-weight-inherit,
+    doc-font-decoration-inherit,
+  );
+
+command doc-font-presentation family: (Family has to-doc-font-family) =
+  new doc-font-presentation(
+    Family as doc-font-family,
+    self.size,
+    self.colour,
+    self.style,
+    self.weight,
+    self.decoration,
+  );
+
+command doc-font-presentation size: (Size has to-doc-unit) =
+  new doc-font-presentation(
+    self.family,
+    Size as doc-unit,
+    self.colour,
+    self.style,
+    self.weight,
+    self.decoration,
+  );
+
+command doc-font-presentation colour: (Colour has to-doc-colour) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    Colour as doc-colour,
+    self.style,
+    self.weight,
+    self.decoration,
+  );
+
+command doc-font-presentation style: (Style has to-doc-font-style) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    self.colour,
+    Style as doc-font-style,
+    self.weight,
+    self.decoration
+  );
+
+command doc-font-presentation weight: (Weight has to-doc-font-weight) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    self.colour,
+    self.style,
+    Weight as doc-font-weight,
+    self.decoration
+  );
+
+command doc-font-presentation decoration: (Decoration has to-doc-font-decoration) =
+  new doc-font-presentation(
+    self.family,
+    self.size,
+    self.colour,
+    self.style,
+    self.weight,
+    Decoration as doc-font-decoration,
+  );
+
+
+command #doc-border defaults =
+  new doc-border(doc-unit-unset, doc-colour-inherit, doc-border-style-none);
+
+command #doc-border width: (W has to-doc-unit) colour: (C has to-doc-colour) style: (S has to-doc-border-style) =
+  new doc-border(W as doc-unit, C as doc-colour, S as doc-border-style);
+
+command doc-border width: (X has to-doc-unit) =
+  new doc-border(X as doc-unit, self.colour, self.style);
+
+command doc-border colour: (X has to-doc-colour) =
+  new doc-border(self.width, X as doc-colour, self.style);
+
+command doc-border style: (X has to-doc-border-style) =
+  new doc-border(self.width, self.colour, X as doc-border-style);
+
+
+command #doc-borders defaults do
+  let B = #doc-border defaults;
+  new doc-borders(B, B, B, B);
+end
+
+command doc-borders top: (F is (doc-border -> doc-border)) =
+  new doc-borders(F(self.top), self.right, self.bottom, self.left);
+
+command doc-borders top: (B is doc-border) =
+  new doc-borders(B, self.right, self.bottom, self.left);
+
+command doc-borders right: (F is (doc-border -> doc-border)) =
+  new doc-borders(self.top, F(self.right), self.bottom, self.left);
+
+command doc-borders right: (B is doc-border) =
+  new doc-borders(self.top, B, self.bottom, self.left);
+
+command doc-borders bottom: (F is (doc-border -> doc-border)) =
+  new doc-borders(self.top, self.right, F(self.bottom), self.left);
+
+command doc-borders bottom: (B is doc-border) =
+  new doc-borders(self.top, self.right, B, self.left);
+
+command doc-borders left: (F is (doc-border -> doc-border)) =
+  new doc-borders(self.top, self.right, self.bottom, F(self.left));
+
+command doc-borders left: (B is doc-border) =
+  new doc-borders(self.top, self.right, self.bottom, B);
+
+command doc-borders all: (F is (doc-border -> doc-border)) =
+  new doc-borders(F(self.top), F(self.right), F(self.bottom), F(self.left));
+
+command doc-borders all: (B is doc-border) =
+  new doc-borders(B, B, B, B);
+
+
+command #doc-background defaults =
+  new doc-background(doc-colour-inherit);
+
+command doc-background colour: (X has to-doc-colour) =
+  new doc-background(X as doc-colour);
+
+
+command #doc-padding defaults =
+  new doc-padding(doc-unit-unset, doc-unit-unset, doc-unit-unset, doc-unit-unset);
+
+command doc-padding top: (X has to-doc-unit) =
+  new doc-padding(X as doc-unit, self.right, self.bottom, self.left);
+
+command doc-padding right: (X has to-doc-unit) =
+  new doc-padding(self.top, X as doc-unit, self.bottom, self.left);
+
+command doc-padding bottom: (X has to-doc-unit) =
+  new doc-padding(self.top, self.right, X as doc-unit, self.left);
+
+command doc-padding left: (X has to-doc-unit) =
+  new doc-padding(self.top, self.right, self.bottom, X as doc-unit);
+
+command doc-padding all: (X0 has to-doc-unit) do
+  let X = X0 as doc-unit;
+  new doc-padding(X, X, X, X);
+end
+
+
+command #doc-margin defaults =
+  new doc-margin(doc-unit-unset, doc-unit-unset, doc-unit-unset, doc-unit-unset);
+
+command doc-margin top: (X has to-doc-unit) =
+  new doc-margin(X as doc-unit, self.right, self.bottom, self.left);
+
+command doc-margin right: (X has to-doc-unit) =
+  new doc-margin(self.top, X as doc-unit, self.bottom, self.left);
+
+command doc-margin bottom: (X has to-doc-unit) =
+  new doc-margin(self.top, self.right, X as doc-unit, self.left);
+
+command doc-margin left: (X has to-doc-unit) =
+  new doc-margin(self.top, self.right, self.bottom, X as doc-unit);
+
+command doc-margin all: (X0 has to-doc-unit) do
+  let X = X0 as doc-unit;
+  new doc-margin(X, X, X, X);
 end

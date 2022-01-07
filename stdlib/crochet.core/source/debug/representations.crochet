@@ -128,6 +128,20 @@ command debug-representation for: (X is association) perspective: default-perspe
     | typed: #association;
 end
 
+command debug-representation for: (X is unknown) perspective: (P is default-perspective) do
+  let Can-unseal = foreign seal.can-unseal(X);
+  condition
+    when Can-unseal do
+      let Value = foreign seal.unseal-unconditionally(X);
+      debug-representation for: Value perspective: P;
+    end
+
+    otherwise =>
+      #document plain-text: "(native value)"
+        | typed: #unknown;
+  end
+end
+
 /// Source code perspectives for documents
 command debug-representation for: (X is document) perspective: source-perspective do
   let Serialisation = new debug-serialisation;

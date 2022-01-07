@@ -1,0 +1,23 @@
+{
+  "name": "crochet.debug.tracing",
+  "target": "*",
+  "native_sources": ["native/trace.js", "native/reflection.js"],
+  "sources": [
+    "source/types.crochet",
+    "source/api.crochet",
+    "source/constraint.crochet",
+    "source/events.crochet",
+    "source/recorder.crochet",
+    "source/representation.crochet",
+    "source/slice.crochet",
+    "source/slice-correlation.crochet",
+    "source/time-span.crochet",
+    "source/reflection.crochet",
+    "source/location.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.debug"],
+  "capabilities": {
+    "requires": ["crochet.debug/internal"],
+    "provides": ["tracing"]
+  }
+}

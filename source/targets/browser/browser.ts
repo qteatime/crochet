@@ -14,16 +14,11 @@ import {
   TRM_Test_Started,
 } from "../../crochet";
 import { CrochetValue, CrochetTest } from "../../vm";
-import { Transcript } from "../../services/transcript";
-import { html } from "../../services/debug/representation/html-renderer";
-import { DebugUI } from "../../services/debug/app";
 import { EventStream } from "../../utils/event";
-import * as UUID from "uuid";
-import { defer, unreachable } from "../../utils/utils";
+import { defer } from "../../utils/utils";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
-  readonly debug_ui: DebugUI;
   private _booted_system: BootedCrochet | null = null;
   private _root: Package.Package | null = null;
   private _ffi: ForeignInterface | null = null;
@@ -35,7 +30,6 @@ export class CrochetForBrowser {
     readonly interactive: boolean
   ) {
     this.crochet = new Crochet(false, this.fs, this.signal);
-    this.debug_ui = new DebugUI();
   }
 
   get trusted_core() {
@@ -44,6 +38,7 @@ export class CrochetForBrowser {
       "crochet.codec.basic",
       "crochet.core",
       "crochet.debug",
+      "crochet.debug.tracing",
       "crochet.language.cli-arguments",
       "crochet.language.csv",
       "crochet.language.json",

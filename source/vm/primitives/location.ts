@@ -1,4 +1,5 @@
 import { inspect } from "util";
+import { CrochetActivation, NativeActivation } from "..";
 import * as IR from "../../ir";
 import { unreachable } from "../../utils/utils";
 import {
@@ -297,7 +298,7 @@ export function activation_location(x: ActivationLocation): string {
       x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"
     }`;
   } else if (x instanceof CrochetCommandBranch) {
-    return branch_location(x);
+    return branch_name_location(x);
   } else if (x instanceof CrochetThunk) {
     return `thunk from ${
       x.env.raw_module ? module_location(x.env.raw_module) : "(no module)"
@@ -322,4 +323,37 @@ export function handler_stack(x: HandlerStack): string {
     ...entries,
     ...(x.parent ? ["\n---\n", handler_stack(x.parent)] : []),
   ].join("");
+}
+
+export function find_good_transcript_write_location(activation0: Activation) {
+  let activation: Activation | null = activation0;
+  let depth = 0;
+
+  while (activation != null && depth < 10) {
+    depth += 1;
+
+    // Skip native frames
+    if (activation instanceof NativeActivation) {
+      activation = activation.parent;
+      continue;
+    }
+
+    // Skip potentially intermediary thunks/lambdas
+    if (!(activation.location instanceof CrochetCommandBranch)) {
+      activation = activation.parent;
+      continue;
+    }
+
+    const module = activation.location.module;
+    // Skip anything in crochet.debug package so we get more useful callers
+    // (unless you're trying to find a bug *in* crochet.debug...)
+    if (module != null && module.pkg.name === "crochet.debug") {
+      activation = activation.parent;
+      continue;
+    }
+
+    return activation.location;
+  }
+
+  return null;
 }
