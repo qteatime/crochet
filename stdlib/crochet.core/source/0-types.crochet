@@ -769,3 +769,8 @@ trait set-algebra with
   /// The complement of two sets.
   command A complement: B;
 end
+
+/// Allows non-local returns (only used internally)
+effect non-local with
+  result(value);
+end

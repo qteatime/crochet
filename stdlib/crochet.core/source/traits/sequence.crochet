@@ -35,6 +35,32 @@ test
 end
 
 
+/// Returns the first item, wrapped in [type:result], in the sequence for which
+/// the predicate holds, or [type:not-found] if no items pass the predicate.
+///
+/// This function looks at as many items in the sequence as necessary to find
+/// the first item, but no more than that. However, it can potentially span
+/// the entire sequence, thus why it's limited to finite ones.
+command (Xs has finite-sequence) find-first: (Predicate is (A -> boolean)) -> result<A, not-found> do
+  let Go = { Xs in
+    condition
+      when Xs is-empty => #result error: not-found;
+      when Predicate(Xs first) => perform non-local.result(Xs first);
+      otherwise => Go(Xs rest);
+    end
+  };
+
+  handle
+    Go(Xs);
+  with
+    on non-local.result(X) => #result ok: X;
+  end
+test
+  assert ([1, 2, 3] find-first: (_ > 1)) === (#result ok: 2);
+  assert ([1, 2, 3] find-first: (_ > 3)) === (#result error: not-found);
+end
+
+
 command (X has indexed-sequence) second =
   X at: 2;
 
