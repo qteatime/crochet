@@ -327,24 +327,32 @@ export function handler_stack(x: HandlerStack): string {
 
 export function find_good_transcript_write_location(activation0: Activation) {
   let activation: Activation | null = activation0;
+  let depth = 0;
 
-  while (activation != null) {
+  while (activation != null && depth < 10) {
+    depth += 1;
+
+    // Skip native frames
     if (activation instanceof NativeActivation) {
       activation = activation.parent;
       continue;
-    } else if (activation instanceof CrochetActivation) {
-      if (activation.location instanceof CrochetCommandBranch) {
-        const module = activation.location.module;
-        if (module != null && module.pkg.name === "crochet.debug") {
-          activation = activation.parent;
-          continue;
-        }
-      } else {
-        return activation.location;
-      }
-    } else {
-      return null;
     }
+
+    // Skip potentially intermediary thunks/lambdas
+    if (!(activation.location instanceof CrochetCommandBranch)) {
+      activation = activation.parent;
+      continue;
+    }
+
+    const module = activation.location.module;
+    // Skip anything in crochet.debug package so we get more useful callers
+    // (unless you're trying to find a bug *in* crochet.debug...)
+    if (module != null && module.pkg.name === "crochet.debug") {
+      activation = activation.parent;
+      continue;
+    }
+
+    return activation.location;
   }
 
   return null;
