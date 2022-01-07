@@ -21,6 +21,7 @@ export default (ffi: ForeignInterface) => {
           return ffi.record(
             new Map([
               ["tag", ffi.text("LOG_TEXT")],
+              ["time", ffi.integer(log.time)],
               ["location", ffi.box(log.location)],
               ["log-tag", log.log_tag],
               ["message", ffi.text(log.value)],
@@ -30,6 +31,7 @@ export default (ffi: ForeignInterface) => {
           return ffi.record(
             new Map([
               ["tag", ffi.text("LOG")],
+              ["time", ffi.integer(log.time)],
               ["location", ffi.box(log.location)],
               ["log-tag", log.log_tag],
               ["value", log.value],
@@ -42,6 +44,7 @@ export default (ffi: ForeignInterface) => {
         return ffi.record(
           new Map([
             ["tag", ffi.text("NEW")],
+            ["time", ffi.integer(x.time)],
             ["location", ffi.box(x.location)],
             ["crochet-type", ffi.box(x.type)],
             ["arguments", ffi.list(x.parameters)],
@@ -53,6 +56,7 @@ export default (ffi: ForeignInterface) => {
         return ffi.record(
           new Map([
             ["tag", ffi.text("INVOKE")],
+            ["time", ffi.integer(x.time)],
             ["location", ffi.box(x.location)],
             ["activation", ffi.box(x.activation)],
             ["branch", ffi.box(x.command)],
@@ -65,6 +69,7 @@ export default (ffi: ForeignInterface) => {
         return ffi.record(
           new Map([
             ["tag", ffi.text("APPLY")],
+            ["time", ffi.integer(x.time)],
             ["location", ffi.box(x.location)],
             ["activation", ffi.box(x.activation)],
             ["lambda", x.lambda],
@@ -77,6 +82,7 @@ export default (ffi: ForeignInterface) => {
         return ffi.record(
           new Map([
             ["tag", ffi.text("RETURN")],
+            ["time", ffi.integer(x.time)],
             ["location", ffi.box(x.location)],
             ["value", x.value],
           ])
@@ -87,6 +93,7 @@ export default (ffi: ForeignInterface) => {
         return ffi.record(
           new Map([
             ["tag", ffi.text("FORCE")],
+            ["time", ffi.integer(x.time)],
             ["location", ffi.box(x.location)],
             ["activation", ffi.box(x.activation)],
             ["thunk", x.thunk],

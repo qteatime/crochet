@@ -61,6 +61,7 @@ export class TraceRecorder {
 }
 
 export class CrochetTrace {
+  private _time = 0n;
   private subscribers: Subscriber[] = [];
 
   subscribe(action: Subscriber) {
@@ -69,6 +70,10 @@ export class CrochetTrace {
 
   unsubscribe(subscriber: Subscriber) {
     this.subscribers = this.subscribers.filter((x) => x !== subscriber);
+  }
+
+  tick() {
+    return ++this._time;
   }
 
   publish(event: TraceEvent) {
@@ -84,6 +89,7 @@ export class CrochetTrace {
   ) {
     this.publish(
       new TEFact(
+        this.tick(),
         EventLocation.from_activation(activation, null),
         relation as any,
         values
@@ -98,6 +104,7 @@ export class CrochetTrace {
   ) {
     this.publish(
       new TEForget(
+        this.tick(),
         EventLocation.from_activation(activation, null),
         relation as any,
         values
@@ -107,25 +114,41 @@ export class CrochetTrace {
 
   publish_turn(activation: Activation, turn: CrochetValue) {
     this.publish(
-      new TETurn(EventLocation.from_activation(activation, null), turn)
+      new TETurn(
+        this.tick(),
+        EventLocation.from_activation(activation, null),
+        turn
+      )
     );
   }
 
   publish_action(activation: Activation, choice: ActionChoice) {
     this.publish(
-      new TEAction(EventLocation.from_activation(activation, null), choice)
+      new TEAction(
+        this.tick(),
+        EventLocation.from_activation(activation, null),
+        choice
+      )
     );
   }
 
   publish_event(activation: Activation, event: EventChoice) {
     this.publish(
-      new TEEvent(EventLocation.from_activation(activation, null), event)
+      new TEEvent(
+        this.tick(),
+        EventLocation.from_activation(activation, null),
+        event
+      )
     );
   }
 
   publish_goal_reached(activation: Activation, goal: IR.SimulationGoal) {
     this.publish(
-      new TEGoalReached(EventLocation.from_activation(activation, null), goal)
+      new TEGoalReached(
+        this.tick(),
+        EventLocation.from_activation(activation, null),
+        goal
+      )
     );
   }
 
@@ -136,6 +159,7 @@ export class CrochetTrace {
   ) {
     this.publish(
       new TEActionChoice(
+        this.tick(),
         EventLocation.from_activation(activation, null),
         turn,
         choices
@@ -149,7 +173,12 @@ export class CrochetTrace {
     args: CrochetValue[]
   ) {
     this.publish(
-      new TENew(EventLocation.from_activation(activation, null), type, args)
+      new TENew(
+        this.tick(),
+        EventLocation.from_activation(activation, null),
+        type,
+        args
+      )
     );
   }
 
@@ -161,6 +190,7 @@ export class CrochetTrace {
   ) {
     this.publish(
       new TEInvoke(
+        this.tick(),
         EventLocation.from_activation(call_site, null),
         branch,
         activation,
@@ -177,6 +207,7 @@ export class CrochetTrace {
   ) {
     this.publish(
       new TELog(
+        this.tick(),
         EventLocation.from_activation(
           activation,
           find_good_transcript_write_location(activation)
@@ -190,7 +221,11 @@ export class CrochetTrace {
 
   publish_return(activation: Activation, value: CrochetValue) {
     this.publish(
-      new TEReturn(EventLocation.from_activation(activation, null), value)
+      new TEReturn(
+        this.tick(),
+        EventLocation.from_activation(activation, null),
+        value
+      )
     );
   }
 
@@ -202,6 +237,7 @@ export class CrochetTrace {
   ) {
     this.publish(
       new TEApplyLambda(
+        this.tick(),
         EventLocation.from_activation(parent_activation, null),
         activation,
         lambda,
@@ -217,6 +253,7 @@ export class CrochetTrace {
   ) {
     this.publish(
       new TEForceThunk(
+        this.tick(),
         EventLocation.from_activation(call_site, null),
         activation,
         thunk

@@ -1,0 +1,20 @@
+% crochet
+
+command time-span start-coincides-with: (T2 is time-span) =
+  self start === T2 start;
+
+command time-span starts-earlier-than: (T2 is time-span) =
+  self start < T2 start;
+
+command time-span starts-later-than: (T2 is time-span) =
+  self start > T2 start;
+
+
+command time-span end-coincides-with: (T2 is time-span) =
+  self stop === T2 stop;
+
+command time-span ends-earlier-than: (T2 is time-span) =
+  self stop < T2 stop;
+
+command time-span ends-later-than: (T2 is time-span) =
+  self stop > T2 stop;

@@ -11,6 +11,7 @@
     "source/representation.crochet",
     "source/slice.crochet",
     "source/slice-correlation.crochet",
+    "source/time-span.crochet",
     "source/reflection.crochet",
     "source/location.crochet"
   ],

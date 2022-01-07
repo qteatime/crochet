@@ -79,11 +79,13 @@ export class EventLocation {
 
 export abstract class BaseTraceEvent {
   abstract tag: TraceTag;
+  abstract time: bigint;
 }
 
 export class TEFact extends BaseTraceEvent {
   readonly tag = TraceTag.FACT;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly relation: CrochetRelation<RelationTag.CONCRETE>,
     readonly values: CrochetValue[]
@@ -95,6 +97,7 @@ export class TEFact extends BaseTraceEvent {
 export class TEForget extends BaseTraceEvent {
   readonly tag = TraceTag.FORGET;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly relation: CrochetRelation<RelationTag.CONCRETE>,
     readonly values: CrochetValue[]
@@ -106,6 +109,7 @@ export class TEForget extends BaseTraceEvent {
 export class TELog extends BaseTraceEvent {
   readonly tag = TraceTag.LOG;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly category: string,
     readonly log_tag: CrochetValue,
@@ -117,21 +121,33 @@ export class TELog extends BaseTraceEvent {
 
 export class TEAction extends BaseTraceEvent {
   readonly tag = TraceTag.SIMULATION_ACTION;
-  constructor(readonly location: EventLocation, readonly choice: ActionChoice) {
+  constructor(
+    readonly time: bigint,
+    readonly location: EventLocation,
+    readonly choice: ActionChoice
+  ) {
     super();
   }
 }
 
 export class TEEvent extends BaseTraceEvent {
   readonly tag = TraceTag.SIMULATION_EVENT;
-  constructor(readonly location: EventLocation, readonly event: EventChoice) {
+  constructor(
+    readonly time: bigint,
+    readonly location: EventLocation,
+    readonly event: EventChoice
+  ) {
     super();
   }
 }
 
 export class TETurn extends BaseTraceEvent {
   readonly tag = TraceTag.SIMULATION_TURN;
-  constructor(readonly location: EventLocation, readonly turn: CrochetValue) {
+  constructor(
+    readonly time: bigint,
+    readonly location: EventLocation,
+    readonly turn: CrochetValue
+  ) {
     super();
   }
 }
@@ -139,6 +155,7 @@ export class TETurn extends BaseTraceEvent {
 export class TEGoalReached extends BaseTraceEvent {
   readonly tag = TraceTag.SIMULATION_GOAL_REACHED;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly goal: IR.SimulationGoal
   ) {
@@ -149,6 +166,7 @@ export class TEGoalReached extends BaseTraceEvent {
 export class TEActionChoice extends BaseTraceEvent {
   readonly tag = TraceTag.SIMULATION_ACTION_CHOICE;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly turn: CrochetValue,
     readonly choices: ActionChoice[]
@@ -160,6 +178,7 @@ export class TEActionChoice extends BaseTraceEvent {
 export class TENew extends BaseTraceEvent {
   readonly tag = TraceTag.NEW;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly type: CrochetType,
     readonly parameters: CrochetValue[]
@@ -171,6 +190,7 @@ export class TENew extends BaseTraceEvent {
 export class TEInvoke extends BaseTraceEvent {
   readonly tag = TraceTag.INVOKE;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly command: CrochetCommandBranch,
     readonly activation: CrochetActivation | null,
@@ -182,7 +202,11 @@ export class TEInvoke extends BaseTraceEvent {
 
 export class TEReturn extends BaseTraceEvent {
   readonly tag = TraceTag.RETURN;
-  constructor(readonly location: EventLocation, readonly value: CrochetValue) {
+  constructor(
+    readonly time: bigint,
+    readonly location: EventLocation,
+    readonly value: CrochetValue
+  ) {
     super();
   }
 }
@@ -190,6 +214,7 @@ export class TEReturn extends BaseTraceEvent {
 export class TEApplyLambda extends BaseTraceEvent {
   readonly tag = TraceTag.APPLY_LAMBDA;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly activation: Activation | null,
     readonly lambda: CrochetValue,
@@ -202,6 +227,7 @@ export class TEApplyLambda extends BaseTraceEvent {
 export class TEForceThunk extends BaseTraceEvent {
   readonly tag = TraceTag.FORCE_THUNK;
   constructor(
+    readonly time: bigint,
     readonly location: EventLocation,
     readonly activation: Activation | null,
     readonly thunk: CrochetValue
