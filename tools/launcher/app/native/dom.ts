@@ -32,6 +32,11 @@ export default (ffi: ForeignInterface) => {
         foreground: "EC407A",
       },
       {
+        token: "entity.name.function",
+        foreground: "0288D1",
+        fontStyle: "bold",
+      },
+      {
         token: "punctuation",
         foreground: "607D8B",
       },
@@ -125,7 +130,11 @@ export default (ffi: ForeignInterface) => {
       common: [
         [/(?<![a-zA-Z0-9\-])[A-Z][a-zA-Z0-9\-]*|_/, "variable.name.crochet"],
         [
-          /(?<![a-zA-Z0-9\-\.\^])[a-zA-Z\-]+(?!:)/,
+          /(?<![a-zA-Z0-9\-])([a-z\-][a-zA-Z0-9\-]*:)/,
+          "entity.name.function.crochet",
+        ],
+        [
+          /(?<![a-zA-Z0-9\-\.\^])([a-zA-Z\-]+)/,
           {
             cases: {
               "@keywords": "keyword.control.crochet",
@@ -143,10 +152,6 @@ export default (ffi: ForeignInterface) => {
         [
           /(?<![a-zA-Z0-9\-])[\-\+]?[0-9][0-9_]*(\.[0-9][0-9_]*)?([eE][\-\+]?[0-9][0-9_]*)?/,
           "constant.numeric.decimal.crochet",
-        ],
-        [
-          /(?<![a-zA-Z0-9\-])[a-z\-][a-zA-Z0-9\-]*:/,
-          "entity.name.method.crochet",
         ],
         [/"/, "string.double", "@string_double"],
       ],

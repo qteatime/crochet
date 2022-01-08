@@ -27,7 +27,7 @@
       "match": "(?<![a-zA-Z0-9\\-])[A-Z][a-zA-Z0-9\\-]*|_"
     },
     {
-      "name": "entity.name.method.crochet",
+      "name": "entity.name.function.crochet",
       "match": "(?<![a-zA-Z0-9\\-])[a-z][a-zA-Z0-9\\-]*:"
     },
     {
