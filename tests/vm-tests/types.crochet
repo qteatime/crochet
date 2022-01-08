@@ -29,6 +29,9 @@ test "Constructing types" do
 
   let C = new g-list-node(1, g-list-end);
 
+  let D = new g-regular-type-parameters(a -> 1, b -> 2, c -> 3);
+  let E = new g-list-node(value -> 1, rest -> g-list-end);
+
   // FIXME: allow assert failures
   // assert fail new g-abstract-type;
   // assert fail new g-singleton-type;

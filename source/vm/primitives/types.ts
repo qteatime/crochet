@@ -289,3 +289,40 @@ export function* registered_instances(
     yield* registered_instances(universe, sub_type);
   }
 }
+
+export function resolve_field_layout(
+  type: CrochetType,
+  fields: string[],
+  values: CrochetValue[]
+) {
+  if (fields.length !== values.length) {
+    throw new Error(`internal: named instantiation with inconsistent values`);
+  }
+  if (fields.length !== type.fields.length) {
+    const given = new Set(fields);
+    const missing = type.fields.filter((x) => !given.has(x));
+    throw new ErrArbitrary(
+      "missing-fields",
+      `Cannot construct ${Location.type_name(
+        type
+      )} because the following fields are missing: ${missing.join(", ")}`
+    );
+  }
+  const results = new Array(type.fields.length);
+  for (let i = 0; i < fields.length; ++i) {
+    const field = fields[i];
+    const value = values[i];
+    const index = type.layout.get(field);
+    if (index == null) {
+      throw new ErrArbitrary(
+        "unknown-field",
+        `The field ${field} does not exist in type ${Location.type_name(
+          type
+        )} (known fields: ${type.fields.join(", ")})`
+      );
+    } else {
+      results[index] = value;
+    }
+  }
+  return results;
+}

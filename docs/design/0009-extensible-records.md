@@ -84,3 +84,12 @@ checking and security.
 
 Plus, by having records be less dynamic we'll be able to extend dispatch to
 include record _shapes_, too, in unambiguous ways.
+
+## Optimisation
+
+The initial implementation of this proposal will not bother with optimisations,
+however, given the static nature of Crochet's types, a closed-world compiler
+can optimise construction of known types at compile time, translating all
+`new-named` and `extend-instance` instructions into plain `new` instructions,
+which means figuring field saturation and layout needs not be performed at
+runtime.

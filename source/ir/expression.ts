@@ -18,6 +18,7 @@ export enum OpTag {
   PUSH_RETURN, // meta
   PUSH_LIST, // meta arity (value...)
   PUSH_NEW, // meta type arity (value...)
+  PUSH_NEW_NAMED, // meta type fields... (value...)
   PUSH_STATIC_TYPE, // meta name
 
   PUSH_RECORD, // meta key... (value...)
@@ -79,6 +80,7 @@ export type Op =
   | PushReturn
   | PushList
   | PushNew
+  | PushNewNamed
   | PushStaticType
   | PushRecord
   | RecordAtPut
@@ -186,6 +188,18 @@ export class PushNew extends BaseOp {
     readonly meta: Metadata,
     readonly type: Type,
     readonly arity: uint32
+  ) {
+    super();
+  }
+}
+
+export class PushNewNamed extends BaseOp {
+  readonly tag = OpTag.PUSH_NEW_NAMED;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly type: Type,
+    readonly fields: string[]
   ) {
     super();
   }

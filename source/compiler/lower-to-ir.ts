@@ -913,6 +913,24 @@ export class LowerToIR {
         ];
       },
 
+      NewNamed: (pos, type0, fields0) => {
+        const id = this.context.register(pos);
+        const type_id = this.context.register(type0.pos);
+        const type = new IR.LocalType(type_id, type0.name);
+        const { pairs, dynamic_pairs } = this.record_pairs(fields0);
+        if (dynamic_pairs.length !== 0) {
+          throw new Error(`internal: invalid AST.`);
+        }
+        return [
+          ...pairs.flatMap((x) => x.value),
+          new IR.PushNewNamed(
+            id,
+            type,
+            pairs.map((x) => x.key)
+          ),
+        ];
+      },
+
       Type: (pos, type0) => {
         const id = this.context.register(pos);
         const type = this.type(type0) as IR.AnyStaticType;

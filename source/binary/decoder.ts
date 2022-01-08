@@ -504,6 +504,14 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.TraitTest(this.decode_meta_id(), this.decode_trait());
       }
 
+      case t.PUSH_NEW_NAMED: {
+        return new IR.PushNewNamed(
+          this.decode_meta_id(),
+          this.decode_type(),
+          this.array((_) => this.string())
+        );
+      }
+
       default:
         throw unreachable(tag, "Operation");
     }

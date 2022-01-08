@@ -532,6 +532,27 @@ export class Thread {
         return _continue;
       }
 
+      case t.PUSH_NEW_NAMED: {
+        const values0 = this.pop_many(activation, op.fields.length);
+        const type0 = Types.materialise_type(
+          this.state.universe,
+          this.module,
+          op.type
+        );
+        const type = Capability.free_type(this.module, type0);
+        Capability.assert_construct_capability(
+          this.universe,
+          this.module,
+          type
+        );
+        const values = Types.resolve_field_layout(type, op.fields, values0);
+        const value = Values.instantiate(type, values);
+        this.universe.trace.publish_instantiation(activation, type, values);
+        this.push(activation, value);
+        activation.next();
+        return _continue;
+      }
+
       case t.PUSH_STATIC_TYPE: {
         const type0 = Types.materialise_type(
           this.universe,
