@@ -1,4 +1,4 @@
-# [#0009] - Extensible typed data
+# [#0009] - Extensible typed data and records
 
 |                  |                  |
 | ---------------- | ---------------- |
@@ -38,6 +38,9 @@ small difference provided by the user:
     command player x: New-x =
       new player(self with x -> New-x);
 
+This also aims to make records _less_ dynamic, becoming a version
+of typed data that has no capabilities instead.
+
 ## Language
 
 This proposal extends the expression language with the following:
@@ -47,7 +50,14 @@ This proposal extends the expression language with the following:
       | extend-record(instance : CrochetValue<Record>, fields : Pair[])
       | new-named(type : Type, fields : Pair[])
 
-With the following (very roughly written) semantics:
+And removes the following:
+
+    Expression e --=
+      | record-at-put() -- with field and value coming from the stack
+
+As well as removing all reflection support on records from the standard library.
+
+The language changes come with the following (very roughly written) semantics:
 
     eval(extend-instance e) =
       assert capabilities for constructing e.type
