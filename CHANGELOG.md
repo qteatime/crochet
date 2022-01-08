@@ -7,17 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking changes
+
+- Changed `crochet.debug`'s API to require tags for all logging entries (required for proper tracing).
+
 ### Added
 
-- Added debug representations with multiple perspectives [#37](https://github.com/qteatime/crochet/pull/37);
+- Added highlights to keyword command names in VSCode to make them easier to tell apart from other syntactical elements;
+
+- Added tracing support for the functional part of the VM, allowing users to build their own debugging tools - [#43](https://github.com/qteatime/crochet/pull/43);
+
+- Added debug representations with multiple perspectives - [#37](https://github.com/qteatime/crochet/pull/37);
 
 - Added `_ empty` command to `set`;
+
+- Added `_ from-nullable: _` command to `result`;
+
+- Added `_ collect-fold-from: _ with: _` and `_ collect-fold-right-from: _ with: _` commands to `foldable-collection`;
+
+- Added `_ find-first: _` and indexing commands (`_ second`, `_ third`, ...) to `finite-sequence`;
+
+- Added support for sealing and unsealing types through `unknown`;
 
 - Added Documentation section to launcher, which exposes the command line `docs` command in the launcher as well.
 
 ### Fixed
 
-- Fixed the port of the launcher server when running from the CLI [6ac17ac704be634751a21006a387f413f94622c3](https://github.com/qteatime/crochet/commit/6ac17ac704be634751a21006a387f413f94622c3);
+- Improved launcher's design---playground is now more responsive;
+
+- Fixed the port of the launcher server when running from the CLI;
 
 - Support running the `docs` command on packages that have `prelude` declarations.
 
