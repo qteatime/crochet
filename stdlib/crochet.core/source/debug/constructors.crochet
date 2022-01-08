@@ -161,7 +161,7 @@ command doc-rectangle roundness: (Point is doc-point2d) =
   new doc-rectangle(self.origin, self.size, Point, self.presentation);
 
 command doc-rectangle style: (F is (doc-presentation -> doc-presentation)) =
-  new doc-rectangle(self.origin, self.size, Point, F(self.presentation));
+  new doc-rectangle(self.origin, self.size, self.roundness, F(self.presentation));
 
 /// Constructs a line shape
 command #document line =
