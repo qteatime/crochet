@@ -326,3 +326,34 @@ export function resolve_field_layout(
   }
   return results;
 }
+
+export function resolve_field_layout_with_base(
+  type: CrochetType,
+  fields: string[],
+  values: CrochetValue[],
+  base: CrochetValue[]
+) {
+  if (fields.length !== values.length || base.length !== type.fields.length) {
+    throw new Error(`internal: named instantiation with inconsistent values`);
+  }
+  const results = new Array(type.fields.length);
+  for (let i = 0; i < results.length; ++i) {
+    results[i] = base[i];
+  }
+  for (let i = 0; i < fields.length; ++i) {
+    const field = fields[i];
+    const value = values[i];
+    const index = type.layout.get(field);
+    if (index == null) {
+      throw new ErrArbitrary(
+        "unknown-field",
+        `The field ${field} does not exist in type ${Location.type_name(
+          type
+        )} (known fields: ${type.fields.join(", ")})`
+      );
+    } else {
+      results[index] = value;
+    }
+  }
+  return results;
+}

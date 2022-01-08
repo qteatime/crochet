@@ -96,3 +96,15 @@ test "Public fields create accessor methods" do
   assert P x =:= 1;
   assert P y =:= 2;
 end
+
+
+// Extending types
+test "Types can be extended" do
+  let P1 = new g-point(x -> 1, y -> 2);
+  let P2 = new g-point(P1 with y -> 3);
+  let P3 = new g-point(P2 with x -> 2);
+
+  assert (P1 x =:= 1) and (P1 y =:= 2);
+  assert (P2 x =:= 1) and (P2 y =:= 3);
+  assert (P3 x =:= 2) and (P3 y =:= 3);
+end
