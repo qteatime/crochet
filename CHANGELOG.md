@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for named and extending `new` operations. I.e.: `new point(x -> 1, y -> 2)` and `new point(P with y -> 3)` - [45](https://github.com/qteatime/crochet/pull/45);
+
 - Added highlights to keyword command names in VSCode to make them easier to tell apart from other syntactical elements;
 
 - Added tracing support for the functional part of the VM, allowing users to build their own debugging tools - [#43](https://github.com/qteatime/crochet/pull/43);

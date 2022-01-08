@@ -98,6 +98,8 @@ type Signal(pos: Meta, signature: Signature<Parameter>, body: Statement[])
 
 type Expression =
   | New(pos: Meta, typ: Name, fields: Expression[])
+  | NewNamed(pos: Meta, typ: Name, fields: Pair<RecordField, Expression>[])
+  | NewExtend(pos: Meta, typ: Name, base: Expression, fields: Pair<RecordField, Expression>[])
   | Invoke(pos: Meta, signature: Signature<Expression>)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
@@ -834,7 +836,12 @@ grammar Crochet : Program {
       -> Expression.Perform(meta, n, v, xs)
 
   newExpression<e> =
-    | new_ n:atom fs:newFields<e>   -> Expression.New(meta, n, fs)
+    | new_ n:atom s<"("> b:e with_ xs:list1<recordPair<e>, s<",">> s<")">   -> Expression.NewExtend(meta, n, b, xs)
+    | new_ n:atom fs:newPairFields<e>                                       -> Expression.NewNamed(meta, n, fs)
+    | new_ n:atom fs:newFields<e>                                           -> Expression.New(meta, n, fs)
+
+  newPairFields<e> =
+    | s<"("> xs:list1<recordPair<e>, s<",">> s<")">   -> xs
 
   newFields<e> =
     | s<"("> fs:list1<e, s<",">> s<")">    -> fs

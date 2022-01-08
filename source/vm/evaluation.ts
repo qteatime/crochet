@@ -532,6 +532,73 @@ export class Thread {
         return _continue;
       }
 
+      case t.PUSH_NEW_NAMED: {
+        const values0 = this.pop_many(activation, op.fields.length);
+        const type0 = Types.materialise_type(
+          this.state.universe,
+          this.module,
+          op.type
+        );
+        const type = Capability.free_type(this.module, type0);
+        Capability.assert_construct_capability(
+          this.universe,
+          this.module,
+          type
+        );
+        const values = Types.resolve_field_layout(type, op.fields, values0);
+        const value = Values.instantiate(type, values);
+        this.universe.trace.publish_instantiation(activation, type, values);
+        this.push(activation, value);
+        activation.next();
+        return _continue;
+      }
+
+      case t.EXTEND_INSTANCE: {
+        const base = this.pop(activation);
+        const values0 = this.pop_many(activation, op.fields.length);
+        const type0 = Types.materialise_type(
+          this.state.universe,
+          this.module,
+          op.type
+        );
+        const type = Capability.free_type(this.module, type0);
+        Capability.assert_construct_capability(
+          this.universe,
+          this.module,
+          type
+        );
+        if (base.tag !== Tag.INSTANCE) {
+          throw new ErrArbitrary(
+            "invalid-type",
+            `Cannot construct a value of type ${Location.type_name(
+              type
+            )} based on something that is not a regular type instance (${Location.simple_value(
+              base
+            )})`
+          );
+        }
+        if (base.type !== type) {
+          throw new ErrArbitrary(
+            "invalid-type",
+            `Cannot construct a value of type ${Location.type_name(
+              type
+            )} based on a value of type ${Location.type_name(base.type)}`
+          );
+        }
+        Values.assert_tag(Tag.INSTANCE, base);
+        const values = Types.resolve_field_layout_with_base(
+          type,
+          op.fields,
+          values0,
+          base.payload
+        );
+        const value = Values.instantiate(type, values);
+        this.universe.trace.publish_instantiation(activation, type, values);
+        this.push(activation, value);
+        activation.next();
+        return _continue;
+      }
+
       case t.PUSH_STATIC_TYPE: {
         const type0 = Types.materialise_type(
           this.universe,
