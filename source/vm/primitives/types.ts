@@ -1,3 +1,4 @@
+import { CrochetPackage } from "..";
 import * as IR from "../../ir";
 import { unreachable } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
@@ -72,12 +73,16 @@ export function get_type(module: CrochetModule, name: string) {
   const value = module.types.try_lookup(name);
   if (value != null) {
     return value;
-  } else {
-    throw new ErrArbitrary(
-      "no-type",
-      `No type ${name} is accessible from ${Location.module_location(module)}`
-    );
   }
+
+  const missing = module.missing_types.try_lookup(name);
+  if (missing != null) {
+    return missing;
+  }
+
+  const placeholder = make_placeholder_type(module, name);
+  module.missing_types.define(name, placeholder);
+  return placeholder;
 }
 
 export function get_trait(module: CrochetModule, name: string) {
@@ -356,4 +361,77 @@ export function resolve_field_layout_with_base(
     }
   }
   return results;
+}
+
+export function make_placeholder_type(module: CrochetModule, name: string) {
+  return new CrochetType(
+    module,
+    name,
+    "(placeholder type)",
+    null,
+    [],
+    [],
+    false,
+    null
+  );
+}
+
+export function try_get_placeholder(module: CrochetModule, name: string) {
+  return module.missing_types.try_lookup(name);
+}
+
+export function fulfill_placeholder_type(
+  module: CrochetModule,
+  placeholder: CrochetType,
+  type: CrochetType,
+  visibility: IR.Visibility
+) {
+  const value = module.missing_types.try_lookup(type.name);
+  if (value !== placeholder) {
+    throw new ErrArbitrary("internal", `Invalid placeholder for ${type.name}.`);
+  }
+
+  module.missing_types.remove(type.name);
+  if (visibility === IR.Visibility.GLOBAL) {
+    module.pkg.missing_types.remove(type.name);
+  }
+
+  const p: { -readonly [k in keyof typeof type]: typeof type[k] } = placeholder;
+  p.sealed = type.sealed;
+  p.layout = type.layout;
+  p.sub_types = type.sub_types;
+  p.traits = type.traits;
+  p.protected_by = type.protected_by;
+  p.module = type.module;
+  p.name = type.name;
+  p.documentation = type.documentation;
+  p.parent = type.parent;
+  p.fields = type.fields;
+  p.types = type.types;
+  p.is_static = type.is_static;
+  p.meta = type.meta;
+
+  return placeholder;
+}
+
+export function promote_missing_types(module: CrochetModule) {
+  for (const [name, type] of module.missing_types.own_bindings) {
+    module.missing_types.remove(name);
+    if (!module.pkg.missing_types.define(name, type)) {
+      throw new ErrArbitrary("internal", `Duplicate placeholder ${name}`);
+    }
+  }
+}
+
+export function verify_package_types(pkg: CrochetPackage) {
+  if (pkg.missing_types.own_bindings.size > 0) {
+    throw new ErrArbitrary(
+      "internal",
+      `Package ${
+        pkg.name
+      } cannot be loaded because it's missing the following type definitions: ${[
+        ...pkg.missing_types.own_bindings.keys(),
+      ].join(", ")}`
+    );
+  }
 }

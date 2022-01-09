@@ -10,6 +10,10 @@ export class Namespace<V> {
     this.allowed_prefixes = allowed_prefixes || new Set<string>();
   }
 
+  get own_bindings(): Map<string, V> {
+    return this._bindings;
+  }
+
   get bindings(): Map<string, V> {
     const result = new Map<string, V>();
 
@@ -36,6 +40,15 @@ export class Namespace<V> {
       return name;
     } else {
       return `${namespace}/${name}`;
+    }
+  }
+
+  remove(name: string): boolean {
+    if (this.has_own(name)) {
+      this._bindings.delete(name);
+      return true;
+    } else {
+      return false;
     }
   }
 

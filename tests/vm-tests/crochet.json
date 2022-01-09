@@ -19,7 +19,9 @@
     "crochet.time"
   ],
   "sources": [
+    "types-before.crochet",
     "types.crochet",
+    "types-after.crochet",
     "for-all.crochet",
     "interpolation.crochet",
     "multimethod.crochet",

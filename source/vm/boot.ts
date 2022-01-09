@@ -452,6 +452,7 @@ export function load_module(
   for (const x of program.declarations) {
     last_doc = load_declaration(universe, module, x, last_doc) ?? null;
   }
+  Types.promote_missing_types(module);
 
   return module;
 }
@@ -504,7 +505,7 @@ export function load_declaration(
         module,
         declaration.parent
       ).type;
-      const type = new CrochetType(
+      const new_type = new CrochetType(
         module,
         declaration.name,
         declaration.documentation,
@@ -516,6 +517,19 @@ export function load_declaration(
         false,
         declaration.meta
       );
+      let type;
+      const missing = Types.try_get_placeholder(module, declaration.name);
+      if (missing != null) {
+        type = Types.fulfill_placeholder_type(
+          module,
+          missing,
+          new_type,
+          declaration.visibility
+        );
+      } else {
+        type = new_type;
+      }
+
       parent.sub_types.push(type);
 
       Types.define_type(module, declaration.name, type, declaration.visibility);
