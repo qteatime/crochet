@@ -1097,7 +1097,6 @@ export class LowerToIR {
 
       HasTrait: (pos, value, trait) => {
         const id = this.context.register(pos);
-        debugger;
         return [
           ...this.expression(value),
           new IR.TraitTest(id, this.trait(trait)),
