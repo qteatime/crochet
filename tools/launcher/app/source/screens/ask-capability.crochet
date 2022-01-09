@@ -1,0 +1,63 @@
+% crochet
+
+local define w = agata-widget;
+
+command ps-modal-ask-capabilities render do
+  w contents: [
+    w header: [
+      w title: "Capabilities required",
+      w text: "The package [self.project meta title] ([self.project meta name]) needs
+               some capabilities to work. Review the needs below and decide
+               if you trust it with being able to perform these actions.",
+    ],
+
+    w section: [
+      w flex-column: (
+        self.project meta capabilities required
+          | map: (self render-capability: _)
+      )
+    ],
+
+    w section: [
+      w action-buttons: [
+        w style: "left-row" with: [
+          w text-button: "Don't trust"
+            | accessible-title: "Close the [self.project meta name] and go back to safety"
+            | on-click: { _ in
+                perform ask-capability.dismiss(self);
+              },
+        ],
+        
+        w style: "right-row dangerous-action" with: [
+          w text-button: "Trust with these capabilities"
+            | accessible-title: "Trust [self.project meta name] with all of these actions"
+            | on-click: { _ in
+                perform ask-capability.grant(self, self.project required-capabilities);
+              }
+        ]
+      ],
+    ]
+  ]
+end
+
+command ps-modal-ask-capabilities render-capability: (C is purr-capability) do
+  w group: [
+    w group-heading: (self capability-name: C),
+
+    condition
+      when self.grants contains: C name =>
+        w meta: [w text: "(You've trusted this package with this before)"];
+      
+      otherwise =>
+        w blank;
+    end,
+
+    w text: C description
+  ]
+end
+
+command ps-modal-ask-capabilities capability-name: (C is purr-valid-capability) =
+  [w text: C name];
+
+command ps-modal-ask-capabilities capability-name: (C is purr-invalid-capability) =
+  ["(invalid) ", C original-name];

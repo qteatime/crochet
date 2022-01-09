@@ -1,0 +1,18 @@
+% crochet
+
+command purr promise =
+  new promise(foreign dom.promise());
+
+command promise resolve: Value do
+  foreign dom.resolve(self.box, Value);
+  self;
+end
+
+command promise reject: Value do
+  foreign dom.reject(self.box, Value);
+  self;
+end
+
+command promise wait do
+  foreign dom.wait(self.box);
+end

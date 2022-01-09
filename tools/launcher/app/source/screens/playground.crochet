@@ -90,7 +90,7 @@ end
 
 implement to-widget for entry;
 command entry as widget do
-  w with-progress-root: { Progress in 
+  w with-modal-root: { Progress in 
     handle
       w commit: self.state
     with
@@ -100,7 +100,7 @@ command entry as widget do
       end
 
       on playground-entry.run(Code) do
-        Progress show: "Running...";
+        Progress show-label: "Running...";
         let State = perform playground.get-state();
         let Project = perform playground.get-project();
         let Sid = purr project: Project run-snippet: Code in: State.process;

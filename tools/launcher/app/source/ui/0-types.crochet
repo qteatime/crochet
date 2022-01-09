@@ -9,6 +9,8 @@ type agata-state(
 
 effect agata-presentation with
   show(page);
+  show-modal(widget);
+  hide-modal(ref);
   alert(message);
   get-reference(reference);
   register-reference(reference, node);
@@ -33,7 +35,7 @@ type filtered-observable-stream(state is cell<list<A>>, filter is (A -> boolean)
 singleton dom-renderer;
 type dom-canvas(box);
 type dom-dynamic-canvas(box);
-type dom-modal-progress(root-box, label-box);
+type dom-modal(root-box, container-box, label-box);
 type dom-node(box);
 type dom-node-code-editor(box, monaco) is dom-node;
 type dom-node-input(box) is dom-node;
@@ -78,7 +80,7 @@ type w-committed(render is dom-node) is widget;
 type w-focus(widget is widget) is widget;
 type w-text-input(read-only is boolean, value is text, placeholder is text) is widget;
 type w-label(label is text, input is widget) is widget;
-type w-modal-progress(label is widget, child-builder is (dom-modal-progress -> widget)) is widget;
+type w-modal-progress(label is widget, child-builder is (dom-modal -> widget)) is widget;
 
 type wn-switch-case(guard, handler is (any -> widget));
 

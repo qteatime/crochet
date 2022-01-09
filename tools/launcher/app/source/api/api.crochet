@@ -57,3 +57,11 @@ end
 command purr-api launch-code-editor: (Project is purr-project) do
   foreign api.launch-code-editor(Project.id);
 end
+
+command purr-api previously-granted-capabilities: (Project is purr-project) -> set<text> do
+  #set from: (foreign api.previously-granted-capabilities(Project.id));
+end
+
+command purr-api grant: (Project is purr-project) capabilities: (Cap is set<text>) do
+  foreign api.grant-capabilities(Project.id, Cap values);
+end

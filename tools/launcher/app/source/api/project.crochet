@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.text.regex;
+
 local singleton module;
 
 command purr-project id =
@@ -66,12 +68,35 @@ command module parse-capabilities: Xs do
 end
 
 command module parse-capability: (X is text) do
-  new purr-capability(X, "(no description)");
+  module parse-capability: [name -> X, description -> "(no description)"];
 end
 
 command module parse-capability: (X is record) do
-  new purr-capability(
-    X.name,
-    X at: "description" default: "(no description)"
-  );
+  let Valid-name = regex from-text: "^(?:[a-z][a-z0-9\-\.]*/)?[a-z][a-z0-9\-]*$" | compile;
+  condition
+    when Valid-name can-match: X.name =>
+      new purr-valid-capability(
+        name -> X.name,
+        description -> X at: "description" default: "(no description)"
+      );
+
+    otherwise =>
+      new purr-invalid-capability(
+        name -> "(invalid)",
+        description -> X at: "description" default: "(no description)",
+        original-name -> X.name
+      );
+  end
+end
+
+command purr-project missing-capabilities: (Grants is set<text>) do
+  self required-capabilities
+    | remove-if: (Grants contains: _);
+end
+
+command purr-project required-capabilities do
+  self meta capabilities required
+    |> _ keep-if: { C in C is purr-valid-capability }
+    |> _ map: (_ name)
+    |> #set from: _;
 end

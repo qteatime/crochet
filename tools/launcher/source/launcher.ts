@@ -162,6 +162,30 @@ export async function setup_launcher_server(options: Options) {
     });
   });
 
+  app.post("/api/capabilities/previously-granted", async (req, res) => {
+    await trap(res, async () => {
+      const id = req.body.id;
+      const capp = state.app(id);
+      res.send(capp.previously_granted_capabilities());
+    });
+  });
+
+  app.post("/api/capabilities/grant", async (req, res) => {
+    await trap(res, async () => {
+      const id = req.body.id;
+      const name_re = /^(?:[a-z][a-z0-9\-\.]*\/)?[a-z][a-z0-9\-]*$/;
+      const grants = req.body.grants.map((x: any) => {
+        if (typeof x !== "string" || !name_re.test(x)) {
+          throw new Error(`internal: expected a capability name`);
+        }
+        return x;
+      });
+      const capp = state.app(id);
+      capp.update_granted_capabilities(grants);
+      res.send({});
+    });
+  });
+
   app.use("/", Express.static(www));
   app.use("/library", Express.static(Path.join(repo_root, "stdlib")));
 
