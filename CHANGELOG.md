@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Types and traits can now be defined out of order/circularly within a package - [#47](https://github.com/qteatime/crochet/pull/47);
+
 - Improved launcher's design---playground is now more responsive;
 
 - Fixed the port of the launcher server when running from the CLI;
