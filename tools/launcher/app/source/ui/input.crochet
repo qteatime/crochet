@@ -35,6 +35,9 @@ command w-text-button label: (Text is text) =
 command w-text-button accessible-title: (Title is text) =
   new w-text-button(self.label, Title, self.on-click);
 
+command w-text-button accessible-title: (Title is interpolation) =
+  self accessible-title: Title flatten-into-plain-text;
+
 command w-text-button on-click: (Handler is (Ev -> nothing)) =
   new w-text-button(self.label, self.title, Handler);
 

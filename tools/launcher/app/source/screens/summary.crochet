@@ -56,9 +56,15 @@ command ps-summary capability-list: List do
 end
 
 command ps-summary capability: C do
-  self group: C name
+  self group: (self capability-name: C)
        with: [w text: C description]
 end
+
+command ps-summary capability-name: (C is purr-valid-capability) =
+  [C name];
+
+command ps-summary capability-name: (C is purr-invalid-capability) =
+  [C original-name, " (invalid)"];
 
 command ps-summary dependencies do
   w flex-column: (

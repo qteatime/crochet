@@ -206,7 +206,7 @@ end
 
 command dom-renderer render: (X is w-modal-progress) do
   let Nodes = foreign dom.modal-container("agata-modal-progress");
-  let Node = new dom-modal-progress(Nodes.root, Nodes.label);
+  let Node = new dom-modal(Nodes.root, Nodes.container, Nodes.label);
   let Child = self render: X.child-builder(Node);
   foreign dom.render(Nodes.container, Child.box);
   new dom-node(Nodes.root);

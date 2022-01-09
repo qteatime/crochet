@@ -78,7 +78,7 @@ command new-project as widget do
   let RName = agata reference: "name";
   let RTitle = agata reference: "title";
 
-  w with-progress-root: { Progress in 
+  w with-modal-root: { Progress in 
     w contents: [
       w title: "Create a new project",
       w double-space,
@@ -101,7 +101,7 @@ command new-project as widget do
           | on-click: { _ in
               let Name = RName materialisation current-value;
               let Title = RTitle materialisation current-value;
-              Progress show: "Creating and initialising [Title]...";
+              Progress show-label: "Creating and initialising [Title]...";
               purr create-project: new purr-new-project(Name, Title);
             }
       ]

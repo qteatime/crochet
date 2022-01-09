@@ -17,7 +17,7 @@ end
 command ps-test render do
   let State = #observable with-value: not-started;
 
-  w with-progress-root: { Progress in
+  w with-modal-root: { Progress in
     handle
       w commit: (
         cw project-window: self.project at: "test" with: [
@@ -45,7 +45,7 @@ command ps-test render do
       end
 
       on test-screen.show-progress(Label) do
-        Progress show: Label;
+        Progress show-label: Label;
         continue with nothing;
       end
 

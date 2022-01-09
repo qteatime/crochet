@@ -212,6 +212,13 @@ export default (ffi: ForeignInterface) => {
     }
   }
 
+  ffi.defun("dom.append-sibling", (root0, node0) => {
+    const root = get_element(root0);
+    const node = get_node(node0);
+    root.parentElement!.appendChild(node);
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.render", (canvas0, widget0) => {
     const canvas = get_element(canvas0);
     const widget = get_node(widget0);
@@ -610,5 +617,31 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("dom.hide-modal", (box) => {
     get_element(box).classList.remove("agata-modal-visible");
     return ffi.nothing;
+  });
+
+  ffi.defun("dom.promise", () => {
+    const p: any = {};
+    p.promise = new Promise((resolve, reject) => {
+      p.resolve = resolve;
+      p.reject = reject;
+    });
+    return ffi.box(p);
+  });
+
+  ffi.defun("dom.resolve", (p0, x) => {
+    const p = ffi.unbox(p0) as any;
+    p.resolve(x);
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.reject", (p0, x) => {
+    const p = ffi.unbox(p0) as any;
+    p.reject(x);
+    return ffi.nothing;
+  });
+
+  ffi.defmachine("dom.wait", function* (p0) {
+    const p = ffi.unbox(p0) as any;
+    return yield ffi.await(p.promise);
   });
 };

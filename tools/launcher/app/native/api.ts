@@ -97,4 +97,20 @@ export default (ffi: ForeignInterface) => {
     yield ffi.await(get_text(response));
     return ffi.nothing;
   });
+
+  ffi.defmachine("api.previously-granted-capabilities", function* (id0) {
+    const id = ffi.text_to_string(id0);
+    const response = post("/api/capabilities/previously-granted", { id });
+    const result = yield ffi.await(get_text(response));
+    const json = JSON.parse(ffi.text_to_string(result));
+    return ffi.list(json.map((x: any) => ffi.text(x)));
+  });
+
+  ffi.defmachine("api.grant-capabilities", function* (id0, cap0) {
+    const id = ffi.text_to_string(id0);
+    const grants = ffi.list_to_array(cap0).map((x) => ffi.text_to_string(x));
+    const response = post("/api/capabilities/grant", { id, grants });
+    yield ffi.await(get_text(response));
+    return ffi.nothing;
+  });
 };

@@ -1,6 +1,7 @@
 import * as FS from "fs";
 import * as Path from "path";
 import * as Package from "../../../build/pkg";
+import * as Storage from "../../../build/storage";
 import { CrochetForNode, build_file } from "../../../build/targets/node";
 import * as DocTool from "../../../build/node-cli/docs";
 
@@ -64,6 +65,17 @@ export class App {
 
   get package_file() {
     return Path.resolve(this.pkg.filename);
+  }
+
+  previously_granted_capabilities() {
+    const config = Storage.StorageConfig.load();
+    const grants = config.grants(this.pkg.meta.name);
+    return grants != null ? grants.capabilities : [];
+  }
+
+  update_granted_capabilities(capabilities: string[]) {
+    const config = Storage.StorageConfig.load();
+    config.update_grants(this.pkg.meta.name, capabilities);
   }
 }
 

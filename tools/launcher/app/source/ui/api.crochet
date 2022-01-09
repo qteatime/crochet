@@ -1,7 +1,13 @@
 % crochet
 
-command agata with-root: Root do: (Block is (() -> any)) do
+local type modal-ref;
+
+command agata with-root: Root do: (Block is (() -> A)) -> A do
   let Canvas = new dom-canvas(Root);
+  let Modal-nodes = foreign dom.modal-container("agata-modal-top");  
+  let Modal = new dom-modal(Modal-nodes.root, Modal-nodes.container, Modal-nodes.label);
+  foreign dom.append-sibling(Root, Modal-nodes.root);
+  let Modal-ref = #cell with-value: new modal-ref;
   // TODO: this needs to be a weak map
   let Mapping = #cell with-value: #map empty;
   handle
@@ -9,6 +15,20 @@ command agata with-root: Root do: (Block is (() -> any)) do
   with
     on agata-presentation.show(Node) do
       Canvas render: Node;
+      continue with nothing;
+    end
+
+    on agata-presentation.show-modal(Node) do
+      let Ref = new modal-ref;
+      Modal-ref <- Ref;
+      Modal show: Node;
+      continue with Ref;
+    end
+
+    on agata-presentation.hide-modal(Ref) do
+      assert Modal-ref value =:= Ref;
+      Modal-ref <- new modal-ref;
+      Modal hide;
       continue with nothing;
     end
 
@@ -31,6 +51,15 @@ end
 command agata show: Widget do
   let Node = dom-renderer render: Widget;
   perform agata-presentation.show(Node);
+end
+
+command agata show-modal: Widget do
+  let Node = dom-renderer render: Widget;
+  perform agata-presentation.show-modal(Node);
+end
+
+command agata hide-modal: (Ref is modal-ref) do
+  perform agata-presentation.hide-modal(Ref);
 end
 
 command agata window: (Url is text) =

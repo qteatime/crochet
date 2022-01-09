@@ -13,10 +13,38 @@ end
 command purr open-project: (Project is purr-project-meta) do
   let Id = purr-api spawn: Project;
   let Spawned = new purr-project(Id, Project);
-  module spawn: Id project: Spawned;
+  let Grants = purr ask-for-capabilities: Spawned;
+  condition
+    when Grants is ok => module spawn: Id project: Spawned capabilities: Grants value;
+    when (Grants is error) and (Grants reason is error-missing-capabilities) => nothing;
+  end
 end
 
-command module spawn: Id project: Spawned do
+command purr ask-for-capabilities: (Project is purr-project) do
+  let Grants = purr-api previously-granted-capabilities: Project;
+  let Screen = new ps-modal-ask-capabilities(Project, Grants);
+  let Modal = #cell with-value: nothing;
+  handle
+    Modal <- agata show-modal: Screen render;
+    purr promise wait;
+  with
+    on ask-capability.grant(M, Granted) do
+      assert M =:= Screen;
+      purr-api grant: Project capabilities: Granted;
+      agata hide-modal: Modal value;
+      #result ok: Granted;
+    end
+
+    on ask-capability.dismiss(M) do
+      assert M =:= Screen;
+      agata hide-modal: Modal value;
+      #result error: new error-missing-capabilities(Project meta);
+    end
+  end
+end
+
+command module spawn: Id project: Spawned capabilities: Capabilities do
+  let Grant-url = foreign dom.encode(#text join: Capabilities values with: "," | flatten-into-plain-text);
   let Origin = foreign dom.encode("http://localhost:8000");
   let Url = "http://localhost:8001/[Id]/ipc?id=[Id]&origin=[Origin]" flatten-into-plain-text;
   let Frame = agata window: Url;
