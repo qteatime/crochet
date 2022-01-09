@@ -916,7 +916,7 @@ grammar Crochet : Program {
     | c:interpolateStatic<e>     -> InterpolationPart.Static(meta, c)
 
   token interpolateStatic<e> =
-    | (~(e | "\\" | "[") any)+ 
+    | (~(e | "\\" | "[" | "]") any)+ 
 
 
   // -- DSLs
@@ -1123,7 +1123,7 @@ grammar Crochet : Program {
 
   token text_character =
     | "\\" escape_sequence
-    | ~"\"" any
+    | ~("\"" | "[" | "]") any
 
   token escape_sequence =
     | "u" hex_digit hex_digit hex_digit hex_digit

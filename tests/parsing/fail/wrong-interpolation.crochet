@@ -1,0 +1,11 @@
+% crochet
+
+// Crochet allows both interpolated text and trivial text. Because of how
+// PEG works, interpolated text that fails to parse will cause the parser
+// to later try parsing it as a trivial text. We should make sure that this
+// cannot succeed if the piece of text has interpolation holes in it.
+prelude
+  "interpolation with bad hole []";
+  "interpolation with invalid expression [some command:]";
+  "interpolation with only ending hole character]";
+end

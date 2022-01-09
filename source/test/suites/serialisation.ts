@@ -61,7 +61,7 @@ for (const pkg of packages) {
 
       try {
         Assert.deepStrictEqual(decoded_program, program);
-      } catch (error) {
+      } catch (error: any) {
         console.error(error.message);
         process.exit(1);
       }
