@@ -225,6 +225,9 @@ export class BootedCrochet {
     for (const x of pkg.sources) {
       await this.load_source(x, pkg, cpkg);
     }
+
+    VM.Types.verify_package_types(cpkg);
+    VM.Types.verify_package_traits(cpkg);
   }
 
   private reify_capability_grants(pkg: Package.ResolvedPackage) {

@@ -739,6 +739,8 @@ grammar Crochet : Program {
       -> Expression.Invoke(meta, Signature.Binary(meta, op, s, t))
     | s:invokePrePost is_ t:typeAppPrimary
       -> Expression.HasType(meta, s, t)
+    | s:invokePrePost has_ t:traitName
+      -> Expression.HasTrait(meta, s, t)
     | invokePrePost
 
   castType =

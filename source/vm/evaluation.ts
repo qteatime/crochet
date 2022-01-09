@@ -1070,6 +1070,7 @@ export class Thread {
           Values.has_trait(trait, value)
         );
         this.push(activation, result);
+        activation.next();
         return _continue;
       }
 

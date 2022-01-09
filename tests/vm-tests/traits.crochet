@@ -1,0 +1,36 @@
+% crochet
+
+trait test-trait-a with
+  command Type check;
+end
+
+local singleton a;
+local singleton b;
+implement test-trait-a for a;
+command a check = true;
+command b check = true;
+command (W has test-trait-a) check-trait-a = W check;
+
+test "Trait dispatch works" do
+  assert a check === true;
+  assert a check-trait-a === true;
+end
+
+test "Trait assertions work" do
+  assert a has test-trait-a;
+  assert not (b has test-trait-a);
+end
+
+implement test-trait-b for b;
+command (W has test-trait-b) check-trait-b = W check;
+
+trait test-trait-b with
+  command T check-trait-b;
+end
+
+test "Traits can be defined after constraints" do
+  assert b check === true;
+  assert b check-trait-b === true;
+  assert b has test-trait-b;
+  assert not (b has test-trait-a);
+end
