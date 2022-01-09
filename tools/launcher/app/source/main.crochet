@@ -13,16 +13,24 @@ end
 command purr open-project: (Project is purr-project-meta) do
   let Id = purr-api spawn: Project;
   let Spawned = new purr-project(Id, Project);
-  let Grants = purr ask-for-capabilities: Spawned;
+  let Grants = module ask-for-capabilities: Spawned;
   condition
     when Grants is ok => module spawn: Id project: Spawned capabilities: Grants value;
     when (Grants is error) and (Grants reason is error-missing-capabilities) => nothing;
   end
 end
 
-command purr ask-for-capabilities: (Project is purr-project) do
+command module ask-for-capabilities: (Project is purr-project) do
   let Grants = purr-api previously-granted-capabilities: Project;
-  let Screen = new ps-modal-ask-capabilities(Project, Grants);
+  let Missing = Project missing-capabilities: Grants;
+  condition
+    when Missing is-empty => #result ok: (Grants intersection: Project required-capabilities);
+    otherwise => module do-ask-for-capabilities: Project previous: Grants;
+  end
+end
+
+command module do-ask-for-capabilities: (Project is purr-project) previous: (Grants is set<text>) do
+let Screen = new ps-modal-ask-capabilities(Project, Grants);
   let Modal = #cell with-value: nothing;
   handle
     Modal <- agata show-modal: Screen render;

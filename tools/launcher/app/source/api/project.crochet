@@ -72,12 +72,12 @@ command module parse-capability: (X is text) do
 end
 
 command module parse-capability: (X is record) do
-  let Valid-name = #regex from-text: "^(?:[a-z][a-z0-9\-\.]*/)?[a-z][a-z0-9\-]*$" | compile;
+  let Valid-name = regex from-text: "^(?:[a-z][a-z0-9\-\.]*/)?[a-z][a-z0-9\-]*$" | compile;
   condition
-    when Valid-name test: X.name =>
+    when Valid-name can-match: X.name =>
       new purr-valid-capability(
         name -> X.name,
-        original-name -> X at: "description" default: "(no description)"
+        description -> X at: "description" default: "(no description)"
       );
 
     otherwise =>
@@ -87,4 +87,16 @@ command module parse-capability: (X is record) do
         original-name -> X.name
       );
   end
+end
+
+command purr-project missing-capabilities: (Grants is set<text>) do
+  self required-capabilities
+    | remove-if: (Grants contains: _);
+end
+
+command purr-project required-capabilities do
+  self meta capabilities required
+    |> _ keep-if: { C in C is purr-valid-capability }
+    |> _ map: (_ name)
+    |> #set from: _;
 end

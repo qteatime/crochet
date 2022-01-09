@@ -32,10 +32,7 @@ command ps-modal-ask-capabilities render do
           w text-button: "Trust with these capabilities"
             | accessible-title: "Trust [self.project meta name] with all of these actions"
             | on-click: { _ in
-                let Granted = self.project meta capabilities required
-                  | keep-if: { X in X is purr-valid-capability }
-                  | map: (_ name);
-                perform ask-capability.grant(self, #set from: Granted);
+                perform ask-capability.grant(self, self.project required-capabilities);
               }
         ]
       ],

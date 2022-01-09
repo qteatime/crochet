@@ -764,7 +764,12 @@ body {
   height: 24px;
 }
 
+.agata-modal-top {
+  display: none;
+}
+
 .agata-modal-top.agata-modal-visible {
+  display: block;
   position: fixed;
   top: 0px;
   left: 0px;
