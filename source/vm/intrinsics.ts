@@ -362,6 +362,7 @@ export class CrochetWorld {
 }
 
 export class CrochetPackage {
+  readonly missing_traits: Namespace<CrochetTrait>;
   readonly missing_types: Namespace<CrochetType>;
   readonly types: PassthroughNamespace<CrochetType>;
   readonly traits: PassthroughNamespace<CrochetTrait>;
@@ -379,6 +380,7 @@ export class CrochetPackage {
     readonly name: string,
     readonly filename: string
   ) {
+    this.missing_traits = new Namespace(null, null, null);
     this.missing_types = new Namespace(null, null, null);
     this.types = new PassthroughNamespace(world.types, name);
     this.traits = new PassthroughNamespace(world.traits, name);
@@ -408,7 +410,7 @@ export class CrochetModule {
   ) {
     this.open_prefixes = new Set();
     this.open_prefixes.add("crochet.core");
-    this.missing_types = new Namespace(pkg.missing_types, null);
+    this.missing_types = new Namespace(pkg.missing_types, null, null);
     this.types = new Namespace(pkg.types, pkg.name, this.open_prefixes);
     this.definitions = new Namespace(
       pkg.definitions,

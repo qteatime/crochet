@@ -29,7 +29,8 @@
     "branch.crochet",
     "actions.crochet",
     "effects.crochet",
-    "dsl.crochet"
+    "dsl.crochet",
+    "traits.crochet"
   ],
   "capabilities": {
     "requires": ["crochet.debug/internal"],

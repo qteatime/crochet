@@ -89,12 +89,16 @@ export function get_trait(module: CrochetModule, name: string) {
   const value = module.traits.try_lookup(name);
   if (value != null) {
     return value;
-  } else {
-    throw new ErrArbitrary(
-      "no-trait",
-      `No trait ${name} is accessible from ${Location.module_location(module)}`
-    );
   }
+
+  const missing = module.pkg.missing_traits.try_lookup(name);
+  if (missing != null) {
+    return missing;
+  }
+
+  const placeholder = make_placeholder_trait(module, name);
+  module.pkg.missing_traits.define(name, placeholder);
+  return placeholder;
 }
 
 export function get_type_namespaced(
@@ -376,8 +380,16 @@ export function make_placeholder_type(module: CrochetModule, name: string) {
   );
 }
 
-export function try_get_placeholder(module: CrochetModule, name: string) {
+export function make_placeholder_trait(module: CrochetModule, name: string) {
+  return new CrochetTrait(module, name, "(placeholder trait)", null);
+}
+
+export function try_get_placeholder_type(module: CrochetModule, name: string) {
   return module.missing_types.try_lookup(name);
+}
+
+export function try_get_placeholder_trait(module: CrochetModule, name: string) {
+  return module.pkg.missing_traits.try_lookup(name);
 }
 
 export function fulfill_placeholder_type(
@@ -414,6 +426,29 @@ export function fulfill_placeholder_type(
   return placeholder;
 }
 
+export function fulfill_placeholder_trait(
+  module: CrochetModule,
+  placeholder: CrochetTrait,
+  trait: CrochetTrait
+) {
+  const value = module.pkg.missing_traits.try_lookup(trait.name);
+  if (value !== placeholder) {
+    throw new ErrArbitrary("internal", `Invalid placeholder for ${trait.name}`);
+  }
+
+  module.pkg.missing_traits.remove(trait.name);
+  const p: { -readonly [k in keyof typeof trait]: typeof trait[k] } =
+    placeholder;
+  p.implemented_by = trait.implemented_by;
+  p.protected_by = trait.protected_by;
+  p.module = trait.module;
+  p.name = trait.name;
+  p.documentation = trait.documentation;
+  p.meta = trait.meta;
+
+  return placeholder;
+}
+
 export function promote_missing_types(module: CrochetModule) {
   for (const [name, type] of module.missing_types.own_bindings) {
     module.missing_types.remove(name);
@@ -430,6 +465,19 @@ export function verify_package_types(pkg: CrochetPackage) {
       `Package ${
         pkg.name
       } cannot be loaded because it's missing the following type definitions: ${[
+        ...pkg.missing_types.own_bindings.keys(),
+      ].join(", ")}`
+    );
+  }
+}
+
+export function verify_package_traits(pkg: CrochetPackage) {
+  if (pkg.missing_traits.own_bindings.size > 0) {
+    throw new ErrArbitrary(
+      "internal",
+      `Package ${
+        pkg.name
+      } cannot be loaded because it's missing the following trait definitions: ${[
         ...pkg.missing_types.own_bindings.keys(),
       ].join(", ")}`
     );

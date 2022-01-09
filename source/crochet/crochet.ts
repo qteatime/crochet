@@ -227,6 +227,7 @@ export class BootedCrochet {
     }
 
     VM.Types.verify_package_types(cpkg);
+    VM.Types.verify_package_traits(cpkg);
   }
 
   private reify_capability_grants(pkg: Package.ResolvedPackage) {

@@ -518,7 +518,7 @@ export function load_declaration(
         declaration.meta
       );
       let type;
-      const missing = Types.try_get_placeholder(module, declaration.name);
+      const missing = Types.try_get_placeholder_type(module, declaration.name);
       if (missing != null) {
         type = Types.fulfill_placeholder_type(
           module,
@@ -689,12 +689,20 @@ export function load_declaration(
     }
 
     case t.TRAIT: {
-      const trait = new CrochetTrait(
+      const new_trait = new CrochetTrait(
         module,
         declaration.name,
         declaration.documentation,
         declaration.meta
       );
+      let trait;
+      const missing = Types.try_get_placeholder_trait(module, declaration.name);
+      if (missing != null) {
+        trait = Types.fulfill_placeholder_trait(module, missing, new_trait);
+      } else {
+        trait = new_trait;
+      }
+
       Types.define_trait(module, declaration.name, trait);
       break;
     }
