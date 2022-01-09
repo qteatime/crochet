@@ -16,10 +16,10 @@ test "Trait dispatch works" do
   assert a check-trait-a === true;
 end
 
-// test "Trait assertions work" do
-//   assert a has test-trait-a;
-//   assert not (b has test-trait-a);
-// end
+test "Trait assertions work" do
+  assert a has test-trait-a;
+  assert not (b has test-trait-a);
+end
 
 implement test-trait-b for b;
 command (W has test-trait-b) check-trait-b = W check;
@@ -31,5 +31,6 @@ end
 test "Traits can be defined after constraints" do
   assert b check === true;
   assert b check-trait-b === true;
-  // assert b has test-trait-b;
+  assert b has test-trait-b;
+  assert not (b has test-trait-a);
 end
