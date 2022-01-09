@@ -118,13 +118,6 @@ command #future-type now = true;
 command placeholder-type-before now = 2;
 command placeholder-type-after now = 3;
 
-// local type some-other-type(value is (W has some-test-trait-for-future));
-// command (W has some-test-trait-for-future) now = true;
-// 
-// trait some-test-trait-for-future with
-//   command W now;  
-// end
-
 type future-type(value);
 type future-type1;
 
