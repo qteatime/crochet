@@ -1,0 +1,18 @@
+{
+  "name": "crochet.concurrency",
+  "target": "*",
+  "native_sources": ["native/promise.js", "native/timer.js", "native/actor.js"],
+  "sources": [
+    "source/internal.crochet",
+    "source/actor.crochet",
+    "source/event-stream.crochet",
+    "source/observable-cell.crochet",
+    "source/promise.crochet",
+    "source/timer.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.time"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

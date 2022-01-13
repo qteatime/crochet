@@ -16,7 +16,8 @@
     "crochet.parsing.combinators",
     "crochet.random",
     "crochet.text.parsing.lingua",
-    "crochet.time"
+    "crochet.time",
+    "crochet.concurrency"
   ],
   "sources": [
     "types-before.crochet",

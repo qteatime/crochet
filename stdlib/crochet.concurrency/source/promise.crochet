@@ -1,0 +1,73 @@
+% crochet
+
+type deferred(box);
+type promise(deferred is deferred);
+local singleton promise-cancelled;
+
+// -- Deferreds
+command #deferred make =
+  #deferred make: nothing;
+
+command #deferred make: State =
+  new deferred(foreign promise.defer(State));
+
+command deferred is-resolved =
+  foreign promise.is-resolved(self.box);
+
+command deferred is-cancelled =
+  foreign promise.is-cancelled(self.box);
+
+command deferred cancel do
+  foreign promise.cancel(self.box, promise-cancelled);
+  self;
+end
+
+command deferred resolve: Value do
+  foreign promise.resolve(self.box, Value);
+  self;
+end
+
+command deferred reject: Value do
+  foreign promise.reject(self.box, Value);
+  self;
+end
+
+command deferred promise =
+  new promise(self);
+
+
+// -- Promises
+command promise on-resolved: (F is (A -> promise<B, D>))
+                on-rejected: (G is (C -> promise<B, D>))
+                on-cancelled: (H is (() -> promise<B, D>))
+        -> promise<B, D>
+do
+  let Resolved = { X in
+    let P = F(X);
+    assert P is promise;
+    P.deferred.box;  
+  };
+  let Rejected = { X in
+    let P = 
+      condition
+        when X is promise-cancelled => H();
+        otherwise => G(X);
+      end;
+    assert P is promise;
+    P.deferred.box;
+  };
+  foreign promise.then(self.deferred.box, Resolved capture, Rejected capture);
+  new promise(self.deferred);
+end
+
+command promise on-resolved: F =
+  self on-resolved: F on-rejected: { _ in self } on-cancelled: { self };
+
+command promise on-rejected: F =
+  self on-resolved: { _ in self } on-rejected: F on-cancelled: { self};
+
+command promise on-cancelled: F =
+  self on-resolved: { _ in self } on-rejected: { _ in self } on-cancelled: F;
+
+command promise wait =
+  foreign promise.wait(self.deferred.box);

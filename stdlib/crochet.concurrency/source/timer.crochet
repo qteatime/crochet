@@ -1,0 +1,26 @@
+% crochet
+
+open crochet.time;
+
+singleton timer;
+
+effect timer with
+  sleep(time is duration);
+end
+
+
+command timer sleep: (Time is duration) =
+  perform timer.sleep(Time);
+
+// TODO: make it into proper capabilities
+command timer with-real-timer: (Block is (() -> A)) -> A do
+  handle
+    Block();
+  with
+    on timer.sleep(Time) do
+      let Deferred = #deferred make;
+      foreign timer.wait(Time to-milliseconds, { Deferred resolve: nothing } capture);
+      continue with Deferred promise;
+    end
+  end
+end
