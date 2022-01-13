@@ -1,6 +1,7 @@
 import {
   CrochetCapability,
   CrochetModule,
+  CrochetPackage,
   CrochetTrait,
   CrochetType,
   CrochetValue,
@@ -31,13 +32,70 @@ export function define_capability(
 
 export function get_capability(module: CrochetModule, name: string) {
   const capability = module.pkg.capabilities.try_lookup(name);
-  if (capability == null) {
+  if (capability != null) {
+    return capability;
+  }
+
+  const missing = module.pkg.missing_capabilities.try_lookup(name);
+  if (missing != null) {
+    return missing;
+  }
+
+  const placeholder = make_placeholder_capability(module, name);
+  module.pkg.missing_capabilities.define(name, placeholder);
+  return placeholder;
+}
+
+export function make_placeholder_capability(
+  module: CrochetModule,
+  name: string
+) {
+  return new CrochetCapability(module, name, "(placeholder capability)", null);
+}
+
+export function try_get_placeholder_capability(
+  module: CrochetModule,
+  name: string
+) {
+  return module.pkg.missing_capabilities.try_lookup(name);
+}
+
+export function fulfill_placeholder_capability(
+  module: CrochetModule,
+  placeholder: CrochetCapability,
+  capability: CrochetCapability
+) {
+  const value = module.pkg.missing_capabilities.try_lookup(capability.name);
+  if (value !== placeholder) {
     throw new ErrArbitrary(
-      "undefined-capability",
-      `The capability ${name} is not defined in package ${module.pkg.name}`
+      "internal",
+      `Invalid placeholder for ${capability.name}`
     );
   }
-  return capability;
+
+  module.pkg.missing_capabilities.remove(capability.name);
+  const p: { -readonly [k in keyof typeof capability]: typeof capability[k] } =
+    placeholder;
+  p.protecting = capability.protecting;
+  p.module = capability.module;
+  p.name = capability.name;
+  p.documentation = capability.documentation;
+  p.meta = capability.meta;
+
+  return p;
+}
+
+export function verify_package_capabilities(pkg: CrochetPackage) {
+  if (pkg.missing_capabilities.own_bindings.size > 0) {
+    throw new ErrArbitrary(
+      "internal",
+      `Package ${
+        pkg.name
+      } cannot be loaded because it's missing the following capability definitions: ${[
+        ...pkg.missing_capabilities.own_bindings.keys(),
+      ].join(", ")}`
+    );
+  }
 }
 
 export function protect_type(
