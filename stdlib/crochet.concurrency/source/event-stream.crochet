@@ -1,0 +1,119 @@
+% crochet
+
+singleton internal-event-stream;
+protect global internal-event-stream with internal;
+protect type internal-event-stream with internal;
+
+abstract event-stream;
+
+type event-stream-listener(stream is event-stream);
+
+type subscriber(block is (A -> nothing));
+
+type base-event-stream(
+  subscribers is cell<list<subscriber>>
+) is event-stream;
+
+type foldable-event-stream(
+  source is event-stream,
+  state is cell<B>,
+  fold is ((foldable-event-stream-state, A) -> event-publication<B>),
+  reference is subscriber,
+  output is event-stream
+) is event-stream;
+
+type foldable-event-stream-state(state is B);
+
+abstract event-publication;
+type event-publication-push(value) is event-publication;
+singleton event-publication-skip is event-publication;
+
+
+command #event-stream empty =
+  new base-event-stream(#cell with-value: []);
+
+command event-stream-listener fold-from: Initial with: Combine do
+  self.stream fold-from: Initial with: Combine;
+end
+
+command event-stream fold-from: Initial with: (Combine is ((foldable-event-stream-state, A) -> event-publication<B>)) do
+  let State = #cell with-value: Initial;
+  let Output = #event-stream empty;
+  let Reference = self listener subscribe: (internal-event-stream fold: _ with: Combine state: State publish: Output);
+  new foldable-event-stream(
+    source -> self,
+    state -> State,
+    fold -> Combine,
+    reference -> Reference,
+    output -> Output
+  );
+end
+
+command internal-event-stream fold: A with: Combine state: (State is cell) publish: (Output is event-stream) do
+  let Fold = new foldable-event-stream-state(State value);
+  let Result = Combine(Fold, A);
+  internal-event-stream handle-result: Result state: State publish: Output;
+end
+
+command internal-event-stream handle-result: (R is event-publication-skip) state: _ publish: _ do
+  nothing;
+end
+
+command internal-event-stream handle-result: (R is event-publication-push) state: (State is cell) publish: (Output is event-stream) do
+  State <- R.value;
+  Output publish: R.value;
+end
+
+
+command event-stream map: (F is (A -> B)) do
+  self fold-from: nothing
+       with: { State, A in State push: F(A) };
+end
+
+
+command event-stream keep-if: (F is (A -> boolean)) do
+  self fold-from: nothing with: (internal-event-stream fold: _ do-filter: _ with: F);
+end
+
+command internal-event-stream fold: S do-filter: A with: F do
+  condition
+    when F(A) => S push: A;
+    otherwise => S skip;
+  end
+end
+
+command foldable-event-stream-state state = self.state;
+command foldable-event-stream-state skip = event-publication-skip;
+command foldable-event-stream-state push: Value = new event-publication-push(Value);
+
+
+command base-event-stream listener =
+  new event-stream-listener(self);
+
+command foldable-event-stream listener =
+  self.output listener;
+
+
+command base-event-stream publish: Value do
+  for Subscriber in self.subscribers value do
+    Subscriber.block(Value);
+  end
+  self;
+end
+
+
+command event-stream-listener subscribe: (Block is (A -> nothing)) do
+  let Subscriber = new subscriber(Block capture);
+  self.stream.subscribers <- self.stream.subscribers value append: Subscriber;
+  Subscriber;
+end
+
+command event-stream unsubscribe: (Subscriber is subscriber)
+requires
+  has-subscriber :: self.stream.subscribers value contains: Subscriber
+do
+  self.stream.subscribers <- self.stream.subscribers value remove-if: { X in X =:= Subscriber };
+  self;
+end
+
+

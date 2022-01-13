@@ -63,6 +63,7 @@ export class CrochetForNode {
     // TODO: restrict TCB (needs safer native modules support)
     return new Set([
       "crochet.codec.basic",
+      "crochet.concurrency",
       "crochet.core",
       "crochet.debug",
       "crochet.debug.tracing",

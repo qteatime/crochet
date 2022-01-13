@@ -1,0 +1,103 @@
+% crochet
+
+// TODO: This is a hack. We need to reify actors and zones in the runtime.
+type zone;
+
+type actor(zone is zone, process is actor-internal);
+
+type actor-internal(
+  mailbox is cell<list<actor-message>>,
+  state is cell<actor-state>,
+  busy is cell<boolean>,
+);
+
+abstract actor-message;
+abstract actor-state;
+
+abstract actor-message-result;
+singleton amr-done is actor-message-result;
+type amr-transition(new-state) is actor-message-result;
+
+
+// -- Zones 
+define root-zone = new zone;
+
+command zone spawn: (Initial-state is actor-state) =
+  new actor(self, new actor-internal(
+    mailbox -> #cell with-value: [],
+    state -> #cell with-value: Initial-state,
+    busy -> #cell with-value: false
+  ));
+
+
+// -- Actors
+command actor send: (Message is actor-message) do
+  self.process store-message: Message;
+  foreign actor.turn({ self.process wake-up } capture);
+  self;
+end
+
+command actor-state done =
+  amr-done;
+
+command actor-state transition: (New-state is actor-state) =
+  new amr-transition(New-state);
+
+
+// -- Message dispatching
+command actor-internal wake-up do
+  condition
+    when not self.busy value do
+      self dispatch-next;
+    end
+
+    otherwise do nothing end
+  end
+end
+
+command actor-internal store-message: (Message is actor-message)
+requires
+  new-message :: not (self.mailbox value contains: Message)
+do
+  self.mailbox <- self.mailbox value append: Message;
+end
+
+command actor-internal select-message do
+  let State = self.state value;
+  let Mailbox = self.mailbox value;
+  let Message = Mailbox find-first: (State accepts: _);
+  Message;
+end
+
+command actor-internal dispatch-next do
+  self.busy <- true;
+  let Selected = self select-message;
+  condition
+    when Selected is error do
+      self.busy <- false;
+    end
+
+    when Selected is ok do
+      let Message = Selected value;
+      let Mailbox = self.mailbox value;
+      self.mailbox <- Mailbox remove-if: { X in X =:= Message };
+      self handle: Message;
+      self dispatch-next;
+    end
+  end
+end
+
+
+// -- Handling messages
+command actor-internal handle: Message do
+  let Result = self.state value handle: Message;
+  self handle-result: Result;
+end
+
+command actor-internal handle-result: amr-done do
+  nothing;
+end
+
+command actor-internal handle-result: (R is amr-transition) do
+  self.state <- R.new-state;
+end

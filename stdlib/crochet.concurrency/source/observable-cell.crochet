@@ -1,0 +1,74 @@
+% crochet
+
+singleton internal-observable;
+protect global internal-observable with internal;
+protect type internal-observable with internal;
+
+abstract observable-cell;
+
+type mutable-observable-cell(
+  state is cell<A>,
+  stream is event-stream
+) is observable-cell;
+
+type foldable-observable-cell(
+  source is observable-cell<A>,
+  stream is foldable-event-stream
+);
+
+
+
+command #observable-cell with-value: Initial do
+  let State = #cell with-value: Initial;
+  let Stream = #event-stream empty;
+  new mutable-observable-cell(State, Stream);
+end
+
+
+command observable-cell fold-from: (Initial is B) with: (Combine is ((B, A) -> B)) -> observable-cell<B> do
+  new foldable-observable-cell(
+    self,
+    self stream fold-from: Initial with: Combine
+  );
+end
+
+command observable-cell read-only =
+  self fold-from: self value with: { S, X in S push: X };
+
+command observable-cell map: (F is (A -> B)) =
+  self fold-from: self value with: { S, X in S push: F(X) };
+
+command observable-cell keep-if: (F is (A -> boolean)) initial-value: Initial
+requires
+  acceptable-initial :: F(Initial)
+do
+  let Value = condition
+                when F(self value) => self value;
+                otherwise => Initial;
+              end;
+  self fold-from: Value with: { S, X in
+    condition
+      when F(X) => S push: X;
+      otherwise => S skip;
+    end
+  };
+end
+
+
+command mutable-observable-cell stream =
+  self.stream listener;
+
+command mutable-observable-cell value =
+  self.state value;
+
+command mutable-observable-cell <- Value do
+  self.state <- Value;
+  self.stream publish: Value;
+end
+
+
+command foldable-observable-cell stream =
+  self.stream listener;
+
+command foldable-observable-cell value =
+  self.stream.state value;
