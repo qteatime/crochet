@@ -1,0 +1,7 @@
+% crochet
+
+// We can refer to capabilities before they're defined
+type capability-protected;
+protect type capability-protected with protecc;
+
+capability protecc;

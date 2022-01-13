@@ -721,12 +721,26 @@ export function load_declaration(
     }
 
     case t.CAPABILITY: {
-      const capability = new CrochetCapability(
+      const new_capability = new CrochetCapability(
         module,
         declaration.name,
         declaration.documentation,
         declaration.meta
       );
+      let capability;
+      const missing = Capability.try_get_placeholder_capability(
+        module,
+        declaration.name
+      );
+      if (missing != null) {
+        capability = Capability.fulfill_placeholder_capability(
+          module,
+          missing,
+          new_capability
+        );
+      } else {
+        capability = new_capability;
+      }
       Capability.define_capability(module, capability);
       break;
     }
