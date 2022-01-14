@@ -1,34 +1,34 @@
 % crochet
 
 /// True if a floating point value is NaN
-command (X is float) is-nan = foreign float.is-nan(X)
+command (X is float-64bit) is-nan = foreign float-64.is-nan(X)
 test
-  assert #float nan is-nan;
+  assert #float-64bit nan is-nan;
   assert not 1.0 is-nan;
 end
 
 /// True if a floating point value represents a real number.
-command (X is float) is-finite = foreign float.is-finite(X)
+command (X is float-64bit) is-finite = foreign float-64.is-finite(X)
 test
-  assert not #float positive-infinity is-finite;
-  assert not #float negative-infinity is-finite;
+  assert not #float-64bit positive-infinity is-finite;
+  assert not #float-64bit negative-infinity is-finite;
   assert 1.0 is-finite;
 end
 
 /// The special `not a number` representation.
-command #float nan = foreign float.nan()
+command #float-64bit nan = foreign float-64.nan()
 test
-  #float nan;
+  #float-64bit nan;
 end
 
 /// The special positive infinity representation.
-command #float positive-infinity = foreign float.infinity()
+command #float-64bit positive-infinity = foreign float-64.infinity()
 test
-  #float positive-infinity
+  #float-64bit positive-infinity
 end
 
 /// The special negative infinity representation.
-command #float negative-infinity = foreign float.negative-infinity()
+command #float-64bit negative-infinity = foreign float-64.negative-infinity()
 test
-  #float negative-infinity
+  #float-64bit negative-infinity
 end

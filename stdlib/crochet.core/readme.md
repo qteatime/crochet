@@ -34,7 +34,7 @@ Within [type:numeric] we have two broader categories of types:
 
 - [type:fractional] is the base type for all numbers that may contain
   fractions, such as `1234.5`. There's only one fractional type that
-  `Core` provides: [type:float]. This is a 64-bit IEEE-754 floating
+  `Core` provides: [type:float-64bit]. This is a 64-bit IEEE-754 floating
   point value—it supports representing many numbers, but as
   approximations. And these approximations become less and less
   precise as the number grows bigger, just so we can guarantee that

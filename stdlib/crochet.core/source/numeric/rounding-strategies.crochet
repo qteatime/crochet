@@ -1,9 +1,9 @@
 % crochet
 
-implement rounding-strategies for float;
+implement rounding-strategies for float-64bit;
 
 /// Truncate a floating point number
-command (X is float) truncate = foreign float.trunc(X)
+command (X is float-64bit) truncate = foreign float-64.trunc(X)
 test
   assert 1.3 truncate =:= 1.0;
   assert 1.9 truncate =:= 1.0;
@@ -12,7 +12,7 @@ test
 end
 
 /// Returns the next integer smaller than self
-command (X is float) floor = foreign float.floor(X)
+command (X is float-64bit) floor = foreign float-64.floor(X)
 test
   assert 1.3 floor =:= 1.0;
   assert 1.9 floor =:= 1.0;
@@ -21,7 +21,7 @@ test
 end
 
 /// Returns the next integer larger than self
-command (X is float) ceiling = foreign float.ceil(X)
+command (X is float-64bit) ceiling = foreign float-64.ceil(X)
 test
   assert 1.3 ceiling =:= 2.0;
   assert 1.9 ceiling =:= 2.0;
@@ -30,7 +30,7 @@ test
 end
 
 /// Returns the integer nearest to self
-command (X is float) round = foreign float.round(X)
+command (X is float-64bit) round = foreign float-64.round(X)
 test
   assert 1.3 round =:= 1.0;
   assert 1.9 round =:= 2.0;

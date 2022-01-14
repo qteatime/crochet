@@ -89,7 +89,7 @@ type numeric = foreign core.numeric;
 type fractional = foreign core.fractional;
 
 /// The type for IEEE-754 64-bit floating point numbers.
-type float = foreign core.float;
+type float-64bit = foreign core.float-64bit;
 
 /// The base type for integral numbers.
 ///

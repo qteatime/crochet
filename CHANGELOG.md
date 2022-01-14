@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
-- Changed `crochet.debug`'s API to require tags for all logging entries (required for proper tracing).
+- Changed `crochet.debug`'s API to require tags for all logging entries (required for proper tracing);
+
+- Renamed `float` to `float-64bit`, and FFI's `float` to `float_64`, to make it more explicit that these are sized types - [#50](https://github.com/qteatime/crochet/pull/50).
 
 ### Added
 
@@ -33,11 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for sealing and unsealing types through `unknown`;
 
-- Added Documentation section to launcher, which exposes the command line `docs` command in the launcher as well.
+- Added Documentation section to launcher, which exposes the command line `docs` command in the launcher as well;
+
+- Added basic support for concurrency - [#49](https://github.com/qteatime/crochet/pull/49).
 
 ### Fixed
 
-- Types and traits can now be defined out of order/circularly within a package - [#47](https://github.com/qteatime/crochet/pull/47);
+- Capabilities, types and traits can now be defined out of order/circularly within a package - [#47](https://github.com/qteatime/crochet/pull/47), [#48](https://github.com/qteatime/crochet/pull/48);
 
 - Improved launcher's design---playground is now more responsive;
 

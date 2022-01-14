@@ -3,7 +3,7 @@
 implement predictable-rng for xor-shift;
 
 /// Returns a fractional number from 0 up to (but not including) 1.
-command xor-shift uniform -> random-next<float>
+command xor-shift uniform -> random-next<float-64bit>
 do
   let Result = foreign xorshift.next-uniform(self.seed, self.inc);
   new random-next(Result.value, new xor-shift(Result.seed, Result.inc))

@@ -229,7 +229,7 @@ command duration to-milliseconds -> integer do
 end
 
 /// Converts a duration to seconds
-command duration to-seconds -> float do
+command duration to-seconds -> float-64bit do
     (self.days * 24 * 60 * 60)
   + (self.hours * 60 * 60)
   + (self.minutes * 60)
@@ -238,7 +238,7 @@ command duration to-seconds -> float do
 end
 
 /// Converts a duration to minutes
-command duration to-minutes -> float do
+command duration to-minutes -> float-64bit do
     (self.days * 24 * 60)
   + (self.hours * 60)
   + (self.minutes)
@@ -247,7 +247,7 @@ command duration to-minutes -> float do
 end
 
 /// Converts a duration to hours
-command duration to-hours -> float do
+command duration to-hours -> float-64bit do
     (self.days * 24)
   + (self.hours)
   + (self.minutes / 60.0)
@@ -256,7 +256,7 @@ command duration to-hours -> float do
 end
 
 /// Converts a duration to days
-command duration to-days -> float do
+command duration to-days -> float-64bit do
     (self.days)
   + (self.hours / 24.0)
   + (self.minutes / (24.0 * 60.0))

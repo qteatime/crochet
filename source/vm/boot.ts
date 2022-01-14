@@ -121,9 +121,9 @@ export function make_universe() {
     false,
     null
   );
-  const Float = new CrochetType(
+  const Float_64 = new CrochetType(
     null,
-    "float",
+    "float-64bit",
     "",
     Fractional,
     [],
@@ -365,7 +365,7 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.numeric", Numeric);
   world.native_types.define("crochet.core/core.fractional", Fractional);
   world.native_types.define("crochet.core/core.integral", Integral);
-  world.native_types.define("crochet.core/core.float", Float);
+  world.native_types.define("crochet.core/core.float-64bit", Float_64);
   world.native_types.define("crochet.core/core.integer", Integer);
   world.native_types.define(
     "crochet.core/core.unsafe-arbitrary-text",
@@ -408,7 +408,7 @@ export function make_universe() {
     True,
     False,
     Integer,
-    Float,
+    Float_64: Float_64,
     UnsafeArbitraryText,
     UntrustedText,
     Text,

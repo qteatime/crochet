@@ -226,7 +226,7 @@ command debug-serialisation for: (X is doc-percent) =
 command debug-serialisation for: (X is doc-pixels) =
   [
     unit -> "pixel",
-    value -> X.value as float,
+    value -> X.value as float-64bit,
   ];
 
 command debug-serialisation for: doc-unit-unset =
@@ -347,8 +347,8 @@ command debug-serialisation for: doc-colour-inherit =
 command debug-serialisation for: (X is doc-colour-rgba) =
   [
     tag -> "rgba",
-    red -> X.red as float,
-    green -> X.green as float,
-    blue -> X.blue as float,
-    alpha -> X.alpha as float,
+    red -> X.red as float-64bit,
+    green -> X.green as float-64bit,
+    blue -> X.blue as float-64bit,
+    alpha -> X.alpha as float-64bit,
   ];

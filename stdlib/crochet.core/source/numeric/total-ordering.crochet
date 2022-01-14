@@ -1,7 +1,7 @@
 % crochet
 
 implement total-ordering for integer;
-implement total-ordering for float;
+implement total-ordering for float-64bit;
 
 
 /// Relational less than operator for integers
@@ -46,8 +46,8 @@ end
 
 
 /// Relational less than operator for floats
-command (X is float) < (Y is float) = 
-  foreign float.lt(X, Y)
+command (X is float-64bit) < (Y is float-64bit) = 
+  foreign float-64.lt(X, Y)
 test
   assert 0.0 < 1.0;
   assert -1.0 < 0.0;
@@ -56,8 +56,8 @@ test
 end
 
 /// Relational less than or equal operator for floats (provided for perf)
-command (X is float) <= (Y is float) = 
-  foreign float.lte(X, Y)
+command (X is float-64bit) <= (Y is float-64bit) = 
+  foreign float-64.lte(X, Y)
 test
   assert 0.0 <= 1.0;
   assert -1.0 <= 0.0;
@@ -66,8 +66,8 @@ test
 end
 
 /// Relational greater than operator for floats
-command (X is float) > (Y is float) = 
-  foreign float.gt(X, Y)
+command (X is float-64bit) > (Y is float-64bit) = 
+  foreign float-64.gt(X, Y)
 test
   assert 1.0 > 0.0;
   assert 0.0 > -1.0;
@@ -76,8 +76,8 @@ test
 end
 
 /// Relational greater or equal operator for floats (provided for perf)
-command (X is float) >= (Y is float) = 
-  foreign float.gte(X, Y)
+command (X is float-64bit) >= (Y is float-64bit) = 
+  foreign float-64.gte(X, Y)
 test
   assert 1.0 >= 0.0;
   assert 0.0 >= -1.0;
@@ -88,20 +88,20 @@ end
 
 // # Relational operators across numeric types
 /// True if `X` is less than `Y`.
-command (X is integer) <  (Y is float) = (X as float) < Y;
-command (X is float) <  (Y is integer) = X <  (Y as float);
+command (X is integer) <  (Y is float-64bit) = (X as float-64bit) < Y;
+command (X is float-64bit) <  (Y is integer) = X <  (Y as float-64bit);
 
 /// True if `X` is less or equal to `Y`.
-command (X is integer) <= (Y is float) = (X as float) <= Y;
-command (X is float) <= (Y is integer) = X <= (Y as float);
+command (X is integer) <= (Y is float-64bit) = (X as float-64bit) <= Y;
+command (X is float-64bit) <= (Y is integer) = X <= (Y as float-64bit);
 
 /// True if `X` is greater than `Y`.
-command (X is integer) >  (Y is float) = (X as float) > Y;
-command (X is float) >  (Y is integer) = X >  (Y as float);
+command (X is integer) >  (Y is float-64bit) = (X as float-64bit) > Y;
+command (X is float-64bit) >  (Y is integer) = X >  (Y as float-64bit);
 
 /// True if `X` is greater or equal to `Y`.
-command (X is integer) >= (Y is float) = (X as float) >= Y;
-command (X is float) >= (Y is integer) = X >= (Y as float);
+command (X is integer) >= (Y is float-64bit) = (X as float-64bit) >= Y;
+command (X is float-64bit) >= (Y is integer) = X >= (Y as float-64bit);
 
 
 test "Relational conversions" do

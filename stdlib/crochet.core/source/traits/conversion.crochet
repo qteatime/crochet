@@ -4,24 +4,24 @@
 ///
 /// The conversion is guaranteed to not lose precision by having a pre-condition
 /// on the range of safe integers that can be converted.
-command integer as float
+command integer as float-64bit
 requires
   within-float-bounds :: (self > -9007199254740992) and (self < 9007199254740992)
 do
-  foreign integer.to-float(self)
+  foreign integer.to-float-64(self)
 test
-  assert (1 as float) =:= 1.0;
-  assert (0 as float) =:= 0.0;
-  assert (-1 as float) =:= -1.0;
+  assert (1 as float-64bit) =:= 1.0;
+  assert (0 as float-64bit) =:= 0.0;
+  assert (-1 as float-64bit) =:= -1.0;
 end
 
 /// Converts a 64-bit floating point to an integer. The floating point
 /// number must be a whole number.
-command float as integer
+command float-64bit as integer
 requires
   integral :: self =:= self truncate
 do
-  foreign float.to-integer(self)
+  foreign float-64.to-integer(self)
 test
   assert (1.0 as integer) =:= 1;
   assert (0.0 as integer) =:= 0;
@@ -71,22 +71,22 @@ end
 
 /// Attempts to parse a piece of text as a floating point number. The
 /// grammar is similar to the JavaScript's floating point grammar.
-command #float try-parse: (X is text) -> result do
-  let Result = foreign float.parse(X);
+command #float-64bit try-parse: (X is text) -> result do
+  let Result = foreign float-64.parse(X);
   condition
     when Result =:= nothing => (#result error: new error-parsing-float(X));
     otherwise => #result ok: Result;
   end
 test
-  assert (#float try-parse: "123").value =:= 123.0;
-  assert (#float try-parse: "123.123").value =:= 123.123;
-  assert (#float try-parse: "-123.0").value =:= -123.0;
-  assert (#float try-parse: "NaN").value is-nan;
-  assert (#float try-parse: "nope") is error;
+  assert (#float-64bit try-parse: "123").value =:= 123.0;
+  assert (#float-64bit try-parse: "123.123").value =:= 123.123;
+  assert (#float-64bit try-parse: "-123.0").value =:= -123.0;
+  assert (#float-64bit try-parse: "NaN").value is-nan;
+  assert (#float-64bit try-parse: "nope") is error;
 end
   
 /// Converts an integer to a piece of trusted text.
 command integer to-text = foreign integer.to-text(self);
 
 /// Converts a floating point number to a piece of trusted text.
-command float to-text = foreign float.to-text(self);
+command float-64bit to-text = foreign float-64.to-text(self);

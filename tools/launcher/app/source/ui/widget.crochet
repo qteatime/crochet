@@ -241,8 +241,8 @@ command w-switch otherwise: (Handler is (A -> widget)) =
 implement to-widget for integer;
 command integer as widget = agata-widget text: self to-text;
 
-implement to-widget for float;
-command float as widget = agata-widget text: self to-text;
+implement to-widget for float-64bit;
+command float-64bit as widget = agata-widget text: self to-text;
 
 implement to-widget for text;
 command text as widget = agata-widget text: self;

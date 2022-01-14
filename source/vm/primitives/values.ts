@@ -38,7 +38,7 @@ export function make_integer(universe: Universe, x: bigint) {
 }
 
 export function make_float(universe: Universe, x: number) {
-  return universe.make_float(x);
+  return universe.make_float_64(x);
 }
 
 export function make_dynamic_text(universe: Universe, x: string) {

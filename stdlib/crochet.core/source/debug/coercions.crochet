@@ -11,9 +11,9 @@ implement to-doc-unit for integer;
 command integer as doc-unit =
   new doc-pixels(self);
 
-implement to-doc-unit for float;
-/// Coerces a float to a doc-percent.
-command float as doc-unit =
+implement to-doc-unit for float-64bit;
+/// Coerces a float-64bit to a doc-percent.
+command float-64bit as doc-unit =
   new doc-percent(self);
 
 implement to-doc-unit for nothing;
@@ -26,10 +26,10 @@ command nothing as doc-unit =
 command integer as doc-pixels =
   new doc-pixels(self);
 
-command float as doc-percent =
+command float-64bit as doc-percent =
   new doc-percent(self);
 
-command float as doc-em =
+command float-64bit as doc-em =
   new doc-em(self);
 
 implement to-doc-font-family for doc-font-family;

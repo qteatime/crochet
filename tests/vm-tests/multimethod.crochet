@@ -2,8 +2,8 @@
 
 trait spice;
 trait pain;
-implement spice for float;
-implement pain for float;
+implement spice for float-64bit;
+implement pain for float-64bit;
 implement pain for text;
 
 command any multimethod-test-other = "any other";
@@ -14,8 +14,8 @@ command function multimethod-test = "function test";
 command boolean multimethod-test = "boolean test";
 command true multimethod-test = "true test";
 command #integer multimethod-test = "#integer test";
-command (_ is float has pain) multimethod-test-other = "float+pain other";
-command float multimethod-test-other = "float other";
+command (_ is float-64bit has pain) multimethod-test-other = "float-64bit+pain other";
+command float-64bit multimethod-test-other = "float-64bit other";
 command (_ is fractional has pain) multimethod-test-other = "fractional+pain other";
 command (_ has pain) multimethod-test-other = "any+pain other";
 
@@ -31,6 +31,6 @@ test "Multimethod selection and dispatch" do
 
   // Subtyping + traits
   assert 1.0 multimethod-test =:= "any+spice,pain test";
-  assert 1.0 multimethod-test-other =:= "float+pain other";
+  assert 1.0 multimethod-test-other =:= "float-64bit+pain other";
   assert "a" multimethod-test-other =:= "any+pain other";
 end

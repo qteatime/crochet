@@ -47,8 +47,8 @@ type reference-env(parent, mapping is cell<map<agata-reference, dom-node>>);
 
 abstract measure;
 type pixels(value is integer) is measure;
-type percent(value is float) is measure;
-type em(value is float) is measure;
+type percent(value is float-64bit) is measure;
+type em(value is float-64bit) is measure;
 
 type gap(horizontal is measure, vertical is measure);
 
