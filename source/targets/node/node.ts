@@ -71,7 +71,6 @@ export class CrochetForNode {
       "crochet.language.json",
       "crochet.mathematics",
       "crochet.novella",
-      "crochet.parsing.combinators",
       "crochet.random",
       "crochet.text.parsing.lingua",
       "crochet.text.regex",

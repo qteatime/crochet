@@ -12,7 +12,6 @@
     "crochet.language.csv",
     "crochet.language.json",
     "crochet.mathematics",
-    "crochet.parsing.combinators",
     "crochet.random",
     "crochet.text.parsing.lingua",
     "crochet.time",
