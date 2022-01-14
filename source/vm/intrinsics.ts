@@ -949,7 +949,7 @@ export class Universe {
       True: CrochetType;
       False: CrochetType;
       Integer: CrochetType;
-      Float: CrochetType;
+      Float_64: CrochetType;
       UnsafeArbitraryText: CrochetType;
       UntrustedText: CrochetType;
       Text: CrochetType;
@@ -989,7 +989,7 @@ export class Universe {
         types.Integer,
         BigInt(i)
       );
-      this.float_cache[i] = new CrochetValue(Tag.FLOAT_64, types.Float, i);
+      this.float_cache[i] = new CrochetValue(Tag.FLOAT_64, types.Float_64, i);
     }
   }
 
@@ -1001,11 +1001,11 @@ export class Universe {
     }
   }
 
-  make_float(x: number) {
+  make_float_64(x: number) {
     if (Number.isInteger(x) && x >= 0 && x < this.float_cache.length) {
       return this.float_cache[x];
     } else {
-      return new CrochetValue(Tag.FLOAT_64, this.types.Float, x);
+      return new CrochetValue(Tag.FLOAT_64, this.types.Float_64, x);
     }
   }
 
@@ -1066,7 +1066,7 @@ function cmap_get_primitive(v: CrochetValue): Primitive {
 export class CMap<V> {
   private _types: {
     integer: CrochetType;
-    float: CrochetType;
+    float_64: CrochetType;
     true: CrochetValue;
     false: CrochetValue;
     nothing: CrochetValue;
@@ -1179,8 +1179,8 @@ export class CMap<V> {
         break;
 
       case "number":
-        if (this._types.float) break;
-        this._types.float = value.type;
+        if (this._types.float_64) break;
+        this._types.float_64 = value.type;
         break;
 
       case "boolean":
@@ -1207,7 +1207,7 @@ export class CMap<V> {
     } else {
       switch (typeof key) {
         case "number":
-          return new CrochetValue(Tag.FLOAT_64, this._types.float, key);
+          return new CrochetValue(Tag.FLOAT_64, this._types.float_64, key);
         case "bigint":
           return new CrochetValue(Tag.INTEGER, this._types.integer, key);
         case "boolean": {
