@@ -1,7 +1,7 @@
 % crochet
 
 implement arithmetic for integer;
-implement arithmetic for float;
+implement arithmetic for float-64bit;
 
 // # Integers
 
@@ -98,8 +98,8 @@ end
 
 // # Floating points
 /// Arithmetic addition for floats
-command (X is float) + (Y is float) =
-  foreign float.add(X, Y)
+command (X is float-64bit) + (Y is float-64bit) =
+  foreign float-64.add(X, Y)
 test
   assert (0.0 + 1.0) =:= 1.0;
   assert (0.0 + 1.0) =:= 1.0;
@@ -109,8 +109,8 @@ test
 end
 
 /// Arithmetic subtraction for floats
-command (X is float) - (Y is float) =
-  foreign float.sub(X, Y)
+command (X is float-64bit) - (Y is float-64bit) =
+  foreign float-64.sub(X, Y)
 test
   assert (0.0 - 0.0) =:= 0.0;
   assert (0.0 - 1.0) =:= -1.0;
@@ -120,8 +120,8 @@ test
 end
 
 /// Arithmetic multiplication for floats
-command (X is float) * (Y is float) =
-  foreign float.mul(X, Y)
+command (X is float-64bit) * (Y is float-64bit) =
+  foreign float-64.mul(X, Y)
 test
   assert (0.0 * 0.0) =:= 0.0;
   assert (0.0 * 1.0) =:= 0.0;
@@ -132,11 +132,11 @@ test
 end
 
 /// Arithmetic division for floats
-command (X is float) / (Y is float)
+command (X is float-64bit) / (Y is float-64bit)
 // Technically, IEEE754 allows division by zero, but we choose to be
 // consistent with the other numeric types in Crochet instead
 requires non-zero-divisor :: Y =/= 0.0
-  = foreign float.div(X, Y)
+  = foreign float-64.div(X, Y)
 test
   assert (4.0 / 2.0) =:= 2.0;
   assert (3.0 / 2.0) =:= 1.5;
@@ -146,7 +146,7 @@ test
 end
 
 /// Truncating arithmetic division for floats
-command (X is float) divided-by: (Y is float)
+command (X is float-64bit) divided-by: (Y is float-64bit)
 requires non-zero-divisor :: Y =/= 0.0 do
   (X / Y) truncate;
 test
@@ -159,9 +159,9 @@ test
 end
 
 /// Remainder of an arithmetic division for floats
-command (X is float) % (Y is float)
+command (X is float-64bit) % (Y is float-64bit)
 requires non-zero-divisor :: Y =/= 0.0
-  = foreign float.rem(X, Y)
+  = foreign float-64.rem(X, Y)
 test
   assert (4.0 % 2.0) =:= 0.0;
   assert (3.0 % 2.0) =:= 1.0;
@@ -173,7 +173,7 @@ end
 
 /// Convenience function for getting the quotient and remainder
 /// of a division for floats
-command (X is float) divide-by-with-remainder: (Y is float) do
+command (X is float-64bit) divide-by-with-remainder: (Y is float-64bit) do
   [
     quotient -> X divided-by: Y,
     remainder -> X % Y,
@@ -186,9 +186,9 @@ test
 end
 
 /// Arithmetic exponentiation for floats
-command (X is float) ** (P is integer)
+command (X is float-64bit) ** (P is integer)
 requires positive-exponent :: P >= 0
-  = foreign float.power(X, P)
+  = foreign float-64.power(X, P)
 test
   assert (1.0 ** 0) =:= 1.0;
   assert (0.0 ** 0) =:= 1.0;
@@ -201,25 +201,25 @@ end
 // Arithmetic tower
 
 /// Addition of mixed numbers.
-command (X is integer) + (Y is float) = (X as float) + Y;
-command (X is float) + (Y is integer) = X + (Y as float);
+command (X is integer) + (Y is float-64bit) = (X as float-64bit) + Y;
+command (X is float-64bit) + (Y is integer) = X + (Y as float-64bit);
 
 /// Subtraction of mixed numbers.
-command (X is integer) - (Y is float) = (X as float) - Y;
-command (X is float) - (Y is integer) = X - (Y as float);
+command (X is integer) - (Y is float-64bit) = (X as float-64bit) - Y;
+command (X is float-64bit) - (Y is integer) = X - (Y as float-64bit);
 
 /// Multiplication of mixed numbers.
-command (X is integer) * (Y is float) = (X as float) * Y;
-command (X is float) * (Y is integer) = X * (Y as float);
+command (X is integer) * (Y is float-64bit) = (X as float-64bit) * Y;
+command (X is float-64bit) * (Y is integer) = X * (Y as float-64bit);
 
 /// Division of mixed numbers.
-command (X is integer) / (Y is float) = (X as float) / Y;
-command (X is float) / (Y is integer) = X / (Y as float);
+command (X is integer) / (Y is float-64bit) = (X as float-64bit) / Y;
+command (X is float-64bit) / (Y is integer) = X / (Y as float-64bit);
 
 /// Floating point division of integers.
-command (X is integer) / (Y is integer) = (X as float) / (Y as float);
+command (X is integer) / (Y is integer) = (X as float-64bit) / (Y as float-64bit);
 
 /// Modulo of mixed numbers.
-command (X is integer) % (Y is float) = (X as float) % Y;
-command (X is float) % (Y is integer) = X % (Y as float);
+command (X is integer) % (Y is float-64bit) = (X as float-64bit) % Y;
+command (X is float-64bit) % (Y is integer) = X % (Y as float-64bit);
 

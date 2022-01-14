@@ -52,8 +52,8 @@ export default (ffi: ForeignInterface) => {
   );
 
   // Conversion
-  ffi.defun("integer.to-float", (x) => {
-    return ffi.float(Number(ffi.integer_to_bigint(x)));
+  ffi.defun("integer.to-float-64", (x) => {
+    return ffi.float_64(Number(ffi.integer_to_bigint(x)));
   });
 
   ffi.defun("integer.parse", (x0) => {

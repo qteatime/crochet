@@ -12,7 +12,7 @@ local enum serialisation-mode =
   sm-unsupported;
 
 /// Returns the mode of serialisation for a given value (recursively)
-command #serialisation-mode for: float =
+command #serialisation-mode for: float-64bit =
   sm-trusted;
 
 command #serialisation-mode for: boolean =

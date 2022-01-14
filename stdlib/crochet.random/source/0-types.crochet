@@ -40,7 +40,7 @@ type scored-item(global score is integer, global value);
 /// derived automatically from it.
 trait predictable-rng with
   /// Returns a fractional number from 0 up to (but not including) 1.
-  command Random uniform -> random-next<float>;
+  command Random uniform -> random-next<float-64bit>;
 
   /// Returns an integral number between `Min` and `Max`, inclusive on
   /// both ends.

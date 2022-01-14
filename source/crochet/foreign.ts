@@ -100,7 +100,7 @@ export class ForeignInterface {
     return Values.make_integer(this.#universe, x);
   }
 
-  float(x: number) {
+  float_64(x: number) {
     return Values.make_float(this.#universe, x);
   }
 

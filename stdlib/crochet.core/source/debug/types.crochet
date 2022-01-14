@@ -57,10 +57,10 @@ singleton doc-unit-unset is doc-unit;
 type doc-pixels(value is integer) is doc-unit;
 
 /// Value in percentage (context-dependent).
-type doc-percent(value is float) is doc-unit;
+type doc-percent(value is float-64bit) is doc-unit;
 
 /// Value in em units.
-type doc-em(value is float) is doc-unit;
+type doc-em(value is float-64bit) is doc-unit;
 
 /// A 2d point of doc units.
 type doc-point2d(x is doc-unit, y is doc-unit);

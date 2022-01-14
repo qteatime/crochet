@@ -18,7 +18,7 @@ export default (ffi: ForeignInterface) => {
     const value = rand.random();
     return ffi.record(
       new Map([
-        ["value", ffi.float(value)],
+        ["value", ffi.float_64(value)],
         ["seed", ffi.integer(BigInt(rand.seed))],
         ["inc", ffi.integer(BigInt(rand.inc))],
       ])

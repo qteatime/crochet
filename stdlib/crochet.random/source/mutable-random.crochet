@@ -1,7 +1,7 @@
 % crochet
 
 /// Returns a fractional number from 0 up to (but not including) 1.
-command mutable-random uniform -> float do
+command mutable-random uniform -> float-64bit do
   let Result = self.random value uniform;
   self.random <- Result random;
   Result.value

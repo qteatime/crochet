@@ -111,7 +111,7 @@ end
 
 /// The average of all items in the collection. Every item must implement
 /// [trait:arithmetic].
-command (X has foldable-collection, countable-container) average -> float
+command (X has foldable-collection, countable-container) average -> float-64bit
 requires non-empty :: not X is-empty
 do
   X sum / X count;
