@@ -14,26 +14,6 @@ test
 end
 
 
-// -- Records
-implement filterable-collection for record;
-
-/// Produces a record without associations for which the `Predicate`
-/// does not hold.
-command (X is record) keep-if: (Predicate is (association<K, V> -> boolean)) do
-  self fold-from: [->] with: { R, P in
-    condition
-      when Predicate(P) => R at: P key put: P value;
-      otherwise => R;
-    end
-  }
-test
-  assert ([->] keep-if: { P in P value === 2 }) === [->];
-  assert ([a -> 1] keep-if: { P in P value === 2 }) === [->];
-  assert ([a -> 1, b -> 2] keep-if: { P in P value === 2 }) === [b -> 2];
-  assert ([a -> 2, b -> 2] keep-if: { P in P value === 2 }) === [a -> 2, b -> 2];
-end
-
-
 // -- Sets
 implement filterable-collection for set;
 

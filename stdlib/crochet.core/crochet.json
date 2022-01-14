@@ -56,7 +56,6 @@
     "source/collection/indexed.crochet",
     "source/collection/list.crochet",
     "source/collection/map.crochet",
-    "source/collection/record.crochet",
     "source/collection/set.crochet",
     "source/collection/set-algebra.crochet",
     "source/collection/stream.crochet",

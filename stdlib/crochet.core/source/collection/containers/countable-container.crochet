@@ -20,26 +20,6 @@ test
   assert not ([0] is-empty);
 end
 
-// -- Records
-implement countable-container for record;
-
-/// Returns the number of entries in the record.
-command record count
-  = foreign record.count(self)
-test
-  assert [->] count === 0;
-  assert [a -> 1] count === 1;
-  assert [a -> 1, b -> 2, c -> 3] count === 3;
-end
-
-/// True if there are no entries in the record.
-command record is-empty
-  = self count =:= 0
-test
-  assert [->] is-empty;
-  assert not ([a -> 1] is-empty);
-end
-
 // -- Sets
 implement countable-container for set;
 

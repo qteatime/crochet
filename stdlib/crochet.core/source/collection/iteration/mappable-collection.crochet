@@ -12,18 +12,6 @@ test
   assert ([1, 2, 3, 4] map: (_ + 1)) === [2, 3, 4, 5];
 end
 
-// -- Record
-implement mappable-collection for record;
-
-/// Returns a record where all values are transformed by `Fun`.
-command record map: (Fun is (A -> B)) do
-  self fold-from: [->] with: { R, P in R at: P key put: Fun(P) };
-test
-  assert ([a -> 1] map: { P in P value + 1 }) === [a -> 2];
-  assert ([->] map: { P in P value + 1 }) === [->];
-  assert ([a -> 1, b -> 2] map: { P in P value + 1 }) === [a -> 2, b -> 3];
-end
-
 // -- Set
 implement mappable-collection for set;
 

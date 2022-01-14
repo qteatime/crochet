@@ -45,26 +45,6 @@ test
 end
 
 
-// -- Record
-implement foldable-collection for record;
-
-/// Folds a record.
-command record fold-from: Initial with: (Fun is ((A, association<K, V>) -> A)) do
-  self pairs fold-from: Initial with: { A, P in Fun(A, P) };
-test
-  assert ([->] fold-from: [->] with: { A, P in A at: P value put: P key })
-    === [->];
-
-  assert ([a -> "b"] fold-from: [->] with: { A, P in A at: P value put: P key })
-    === [b -> "a"];
-
-  assert ([a -> "b", c -> "d"] fold-from: [->] with: { A, P in A at: P value put: P key })
-    === [b -> "a", d -> "c"];
-
-  assert ([a -> 1, b -> 2] fold-from: [->] with: { A, P in A at: P key put: 0 })
-    === [a -> 0, b -> 0];
-end
-
 // -- Sets
 implement foldable-collection for set;
 
