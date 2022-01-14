@@ -352,7 +352,7 @@ export async function build_package_graph(
         }
         const resolved_dep = new ResolvedPackage(dep_meta, target);
         packages.set(resolved_dep.name, resolved_dep);
-        resolve(resolved_dep);
+        await resolve(resolved_dep);
       }
     }
   }
