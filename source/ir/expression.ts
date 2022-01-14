@@ -22,8 +22,6 @@ export enum OpTag {
   PUSH_STATIC_TYPE, // meta name
 
   PUSH_RECORD, // meta key... (value...)
-  RECORD_AT_PUT, // meta (key value)
-  PROJECT, // meta (object key)
   PROJECT_STATIC, // meta key (object)
   EXTEND_INSTANCE, // meta type fields... (base) (value...)
 
@@ -84,9 +82,7 @@ export type Op =
   | PushNewNamed
   | PushStaticType
   | PushRecord
-  | RecordAtPut
   | ExtendInstance
-  | Project
   | ProjectStatic
   | PushLazy
   | Force
@@ -231,22 +227,6 @@ export class PushRecord extends BaseOp {
   readonly tag = OpTag.PUSH_RECORD;
 
   constructor(readonly meta: Metadata, readonly keys: string[]) {
-    super();
-  }
-}
-
-export class RecordAtPut extends BaseOp {
-  readonly tag = OpTag.RECORD_AT_PUT;
-
-  constructor(readonly meta: Metadata) {
-    super();
-  }
-}
-
-export class Project extends BaseOp {
-  readonly tag = OpTag.PROJECT;
-
-  constructor(readonly meta: Metadata) {
     super();
   }
 }

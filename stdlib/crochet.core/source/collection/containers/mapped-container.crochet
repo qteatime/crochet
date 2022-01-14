@@ -5,8 +5,8 @@
 implement mapped-container for record;
 
 /// Returns the value in the record identified by `Key`, if it exists.
-command record at: (Key is text) =
-  self.[Key]
+command record at: (Key is text) do
+  assert false;
 test
   assert ([a -> 1, b -> 2] at: "a") === 1;
   assert (["a a" -> 1, b -> 2] at: "a a") === 1;
@@ -15,8 +15,8 @@ end
 
 /// Returns the value in the record identified by `Key`, if it exists.
 /// Otherwise returns the provided default value.
-command record at: (Key is text) default: Value =
-  foreign record.at-default(self, Key, Value)
+command record at: (Key is text) default: Value do
+  assert false;
 test
   assert ([a -> 1, b -> 2] at: "a" default: 0) === 1;
   assert (["a a" -> 1, b -> 2] at: "a a" default: 0) === 1;
@@ -26,8 +26,8 @@ test
 end
 
 /// True if the record contains a value associated with the `Key`.
-command record contains-key: (Key is text) =
-  foreign record.has-key(self, Key)
+command record contains-key: (Key is text) do
+  assert false;
 test
   assert [a -> 1, b -> 2] contains-key: "a";
   assert ["a a" -> 1, b -> 2] contains-key: "a a";

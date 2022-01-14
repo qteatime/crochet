@@ -15,21 +15,26 @@ command cli-command as parser do
 end
 
 command cli-options as parser do
-  #parser any-of: (for X in self.options do X as parser end)
-    | many
-    | map: { Xs in new cli-record([ [self.name] -> #cli-parser-result merge: Xs ]) }
-    | recover: { _ in new cli-record([ [self.name] -> new cli-record([->]) ]) };
+  assert false;
+  // #parser any-of: (for X in self.options do X as parser end)
+  //   | many
+  //   | map: { Xs in new cli-record([ [self.name] -> #cli-parser-result merge: Xs ]) }
+  //   | recover: { _ in new cli-record([ [self.name] -> new cli-record([->]) ]) };
 end
 
-command cli-positional as parser =
-  self.arg-type as parser
-    | map: { X in new cli-record([ [self.name] -> X ]) };
+command cli-positional as parser do
+  assert false;
+  // self.arg-type as parser
+  //   | map: { X in new cli-record([ [self.name] -> X ]) };
+end
 
-command cli-option as parser =
-  (#parser equal: self.key) lookahead
-    | and-then: (#parser equal: self.key)
-    | and-then: (self.arg-type as parser)
-    | map: { X in new cli-record([[self.key] -> X]) };
+command cli-option as parser do
+  assert false;
+  // (#parser equal: self.key) lookahead
+  //   | and-then: (#parser equal: self.key)
+  //   | and-then: (self.arg-type as parser)
+  //   | map: { X in new cli-record([[self.key] -> X]) };
+end
 
 command cli-functor as parser =
   (self.arg as parser) map: (cli-functor-apply apply: self.functor to: _);
