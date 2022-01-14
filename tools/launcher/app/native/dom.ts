@@ -107,7 +107,6 @@ export default (ffi: ForeignInterface) => {
       "effect",
       "continue",
       "perform",
-      "dsl",
       "has",
       "trait",
       "implement",

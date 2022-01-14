@@ -249,16 +249,6 @@ type linked-stream-cons(value, rest is thunk<linked-stream<A>>) is linked-stream
 type 'enum = foreign core.enum;
 
 
-// -- The skeleton DSL
-type skeleton-ast = foreign core.skeleton-ast;
-type skeleton-node = foreign core.skeleton-node;
-type skeleton-name = foreign core.skeleton-name;
-type skeleton-literal = foreign core.skeleton-literal;
-type skeleton-list = foreign core.skeleton-list;
-type skeleton-interpolation = foreign core.skeleton-interpolation;
-type skeleton-dynamic = foreign core.skeleton-dynamic;
-
-
 //-- The actions
 
 /// The base type for all actions.

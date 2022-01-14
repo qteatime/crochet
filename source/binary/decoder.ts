@@ -486,14 +486,6 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.ContinueWith(this.decode_meta_id());
       }
 
-      case t.DSL: {
-        return new IR.Dsl(
-          this.decode_meta_id(),
-          this.decode_type(),
-          this.array((_) => this.decode_dsl_node())
-        );
-      }
-
       case t.TRAIT_TEST: {
         return new IR.TraitTest(this.decode_meta_id(), this.decode_trait());
       }
@@ -517,82 +509,6 @@ class CrochetIRDecoder extends BinaryReader {
       default:
         throw unreachable(tag, "Operation");
     }
-  }
-
-  decode_dsl_node(): IR.DslNode {
-    const tag = this.decode_enum_tag(IR.DslNodeTag, "DSL Node");
-    switch (tag) {
-      case IR.DslNodeTag.NODE: {
-        return new IR.DslAstNode(
-          this.decode_dsl_meta(),
-          this.string(),
-          this.array((_) => this.decode_dsl_node()),
-          this.map((_) => [this.string(), this.decode_dsl_node()])
-        );
-      }
-
-      case IR.DslNodeTag.LITERAL: {
-        return new IR.DslAstLiteral(
-          this.decode_dsl_meta(),
-          this.decode_literal()
-        );
-      }
-
-      case IR.DslNodeTag.VARIABLE: {
-        return new IR.DslAstVariable(this.decode_dsl_meta(), this.string());
-      }
-
-      case IR.DslNodeTag.EXPRESSION: {
-        return new IR.DslAstExpression(
-          this.decode_dsl_meta(),
-          this.string(),
-          this.decode_basic_block()
-        );
-      }
-
-      case IR.DslNodeTag.LIST: {
-        return new IR.DslAstNodeList(
-          this.decode_dsl_meta(),
-          this.array((_) => this.decode_dsl_node())
-        );
-      }
-
-      case IR.DslNodeTag.INTERPOLATION: {
-        return new IR.DslAstInterpolation(
-          this.decode_dsl_meta(),
-          this.array((_) => this.decode_dsl_interpolation_part())
-        );
-      }
-
-      default:
-        throw unreachable(tag, `DSL Node`);
-    }
-  }
-
-  decode_dsl_interpolation_part() {
-    const tag = this.decode_enum_tag(
-      IR.DslInterpolationTag,
-      "DSL Interpolation part"
-    );
-    switch (tag) {
-      case IR.DslInterpolationTag.STATIC: {
-        return new IR.DslInterpolationStatic(this.string());
-      }
-
-      case IR.DslInterpolationTag.DYNAMIC: {
-        return new IR.DslInterpolationDynamic(this.decode_dsl_node());
-      }
-
-      default:
-        throw unreachable(tag, "DSL Interpolation tag");
-    }
-  }
-
-  decode_dsl_meta(): IR.DslMeta {
-    const line = this.uint32();
-    const column = this.uint32();
-
-    return { line, column };
   }
 
   decode_simulation_goal() {

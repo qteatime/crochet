@@ -93,8 +93,6 @@
 
     "source/sealing/conversions.crochet",
 
-    "source/skeleton/skeleton.crochet",
-
     "source/text/ascii.crochet",
     "source/text/basic.crochet",
     "source/text/equality.crochet",

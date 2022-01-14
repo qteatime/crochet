@@ -122,26 +122,24 @@ end
 
 command main-html: Root do
   novella with-root: Root do: {
-    novella-dsl do: {
-      game run;
-    }
+    game run;
   }
 end
 
 command game run do
-  dsl novella-dsl with
-    header [
-      title "Cloak of Darkness";
-      subtitle "The classic interactive fiction demo";
-    ];
+  novella show: [
+    novella header: [
+      novella text: "Cloak of Darkness" | title,
+      novella text: "The classic interactive fiction demo" | subtitle,
+    ],
 
-    paragraph
+    novella paragraph:
       "Hurrying through the rainswept November night, you're glad to see the
       bright lights of the Opera House. It's surprising that there aren't
-      more people about but, hey, what do you expect in a cheap demo game...?";
-
-    paragraph @(foyer describe);
-  end
+      more people about but, hey, what do you expect in a cheap demo game...?",
+    
+    novella paragraph: foyer describe,
+  ];
 
   simulate for [player]
   until not on-going state
@@ -175,11 +173,11 @@ end
 action player go-street "Go north, to the street"
 when player at: foyer
 do
-  dsl novella-dsl with
-    paragraph
+  novella show: [
+    novella paragraph: 
       "You've only just arrived, and besides, the weather outside seems to be
       getting worse."
-  end
+  ]
 end
 
 action player look-around "Look around"
@@ -211,22 +209,21 @@ when
 do
   condition
     when N < 2 do
-      dsl novella-dsl with
-        paragraph
+      novella show: [
+        novella paragraph:
           "The message, neatly marked in the sawdust reads...
-           [strong "you won"]";
-      end
-
+           [novella text: "you won" | strong]"
+      ];
       fact won state;
     end
 
     otherwise do
-      dsl novella-dsl with
-        paragraph
+      novella show: [
+        novella paragraph:
           "The message has been carelessly trampled, making it difficult
            to read. You can just distinguish the words...
-           [strong "you have lost"]";
-      end;
+           [novella text: "you have lost" | strong]"
+      ];
       fact lost state;
     end
   end
