@@ -30,8 +30,12 @@ command #serialisation-mode for: nothing =
 command #serialisation-mode for: (Xs is list) =
   (Xs map: (#serialisation-mode for: _)) fold-from: sm-trusted with: (_ or _);
 
-command #serialisation-mode for: (X is record) =
-  (X values map: (#serialisation-mode for: _)) fold-from: sm-trusted with: (_ or _);
+command #serialisation-mode for: (X is record) do
+  #map from: X
+    | values
+    | map: (#serialisation-mode for: _)
+    | fold-from: sm-trusted with: (_ or _);
+end
 
 command #serialisation-mode for: any =
   sm-unsupported;
