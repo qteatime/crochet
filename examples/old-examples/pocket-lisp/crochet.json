@@ -20,8 +20,7 @@
     "crochet.text.parsing.lingua",
     "crochet.debug",
     "crochet.wrapper.node.io",
-    "crochet.wrapper.node.file-system",
-    "crochet.language.cli-arguments"
+    "crochet.wrapper.node.file-system"
   ],
   "capabilities": {
     "requires": [],

@@ -5,7 +5,6 @@
     "crochet.codec.basic",
     "crochet.core",
     "crochet.debug",
-    "crochet.language.cli-arguments",
     "crochet.language.csv",
     "crochet.language.json",
     "crochet.mathematics",

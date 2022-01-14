@@ -40,7 +40,6 @@ export class CrochetForBrowser {
       "crochet.core",
       "crochet.debug",
       "crochet.debug.tracing",
-      "crochet.language.cli-arguments",
       "crochet.language.csv",
       "crochet.language.json",
       "crochet.mathematics",
