@@ -968,14 +968,6 @@ export class Universe {
       Action: CrochetType;
       ActionChoice: CrochetType;
       Effect: CrochetType;
-      Skeleton: {
-        Node: CrochetType;
-        Name: CrochetType;
-        Literal: CrochetType;
-        Dynamic: CrochetType;
-        List: CrochetType;
-        Interpolation: CrochetType;
-      };
     }
   ) {
     this.nothing = new CrochetValue(Tag.NOTHING, types.Nothing, null);

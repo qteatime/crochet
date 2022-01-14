@@ -53,8 +53,6 @@ export enum OpTag {
   HANDLE,
   PERFORM,
   CONTINUE_WITH,
-
-  DSL,
 }
 
 export enum AssertType {
@@ -106,8 +104,7 @@ export type Op =
   | Simulate
   | Handle
   | Perform
-  | ContinueWith
-  | Dsl;
+  | ContinueWith;
 
 export abstract class BaseOp {
   abstract tag: OpTag;
@@ -492,102 +489,4 @@ export class ContinueWith extends BaseOp {
   constructor(readonly meta: Metadata) {
     super();
   }
-}
-
-export class Dsl extends BaseOp {
-  readonly tag = OpTag.DSL;
-
-  constructor(
-    readonly meta: Metadata,
-    readonly type: Type,
-    readonly ast: DslNode[]
-  ) {
-    super();
-  }
-}
-
-export enum DslNodeTag {
-  NODE = 1,
-  LITERAL,
-  VARIABLE,
-  LIST,
-  INTERPOLATION,
-  EXPRESSION,
-}
-
-export type DslNode =
-  | DslAstNode
-  | DslAstLiteral
-  | DslAstVariable
-  | DslAstExpression
-  | DslAstInterpolation
-  | DslAstNodeList;
-
-export type DslMeta = {
-  line: number;
-  column: number;
-};
-
-export class DslAstNode {
-  readonly tag = DslNodeTag.NODE;
-
-  constructor(
-    readonly meta: DslMeta,
-    readonly name: string,
-    readonly children: DslNode[],
-    readonly attributes: Map<string, DslNode>
-  ) {}
-}
-
-export class DslAstLiteral {
-  readonly tag = DslNodeTag.LITERAL;
-
-  constructor(readonly meta: DslMeta, readonly value: Literal) {}
-}
-
-export class DslAstVariable {
-  readonly tag = DslNodeTag.VARIABLE;
-
-  constructor(readonly meta: DslMeta, readonly name: string) {}
-}
-
-export class DslAstNodeList {
-  readonly tag = DslNodeTag.LIST;
-
-  constructor(readonly meta: DslMeta, readonly children: DslNode[]) {}
-}
-
-export class DslAstExpression {
-  readonly tag = DslNodeTag.EXPRESSION;
-
-  constructor(
-    readonly meta: DslMeta,
-    readonly source: string,
-    readonly value: BasicBlock
-  ) {}
-}
-
-export class DslAstInterpolation {
-  readonly tag = DslNodeTag.INTERPOLATION;
-
-  constructor(readonly meta: DslMeta, readonly parts: DslInterpolationPart[]) {}
-}
-
-export enum DslInterpolationTag {
-  STATIC,
-  DYNAMIC,
-}
-
-export type DslInterpolationPart =
-  | DslInterpolationStatic
-  | DslInterpolationDynamic;
-
-export class DslInterpolationStatic {
-  readonly tag = DslInterpolationTag.STATIC;
-  constructor(readonly text: string) {}
-}
-
-export class DslInterpolationDynamic {
-  readonly tag = DslInterpolationTag.DYNAMIC;
-  constructor(readonly node: DslNode) {}
 }

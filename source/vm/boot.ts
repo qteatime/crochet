@@ -274,86 +274,6 @@ export function make_universe() {
     null
   );
 
-  // Skeleton DSL
-  const Skeleton = new CrochetType(
-    null,
-    "skeleton",
-    "",
-    Any,
-    [],
-    [],
-    false,
-    null
-  );
-  const SNode = new CrochetType(
-    null,
-    "skeleton-node",
-    "",
-    Skeleton,
-    ["name", "children", "attributes", "meta"],
-    [
-      new CrochetTypeConstraint(Text, []),
-      new CrochetTypeConstraint(List, []),
-      new CrochetTypeConstraint(Record, []),
-      new CrochetTypeConstraint(Any, []),
-    ],
-    false,
-    null
-  );
-  const SLiteral = new CrochetType(
-    null,
-    "skeleton-literal",
-    "",
-    Skeleton,
-    ["value", "meta"],
-    [new CrochetTypeConstraint(Any, []), new CrochetTypeConstraint(Any, [])],
-    false,
-    null
-  );
-  const SName = new CrochetType(
-    null,
-    "skeleton-name",
-    "",
-    Skeleton,
-    ["name", "meta"],
-    [new CrochetTypeConstraint(Text, []), new CrochetTypeConstraint(Any, [])],
-    false,
-    null
-  );
-  const SDynamic = new CrochetType(
-    null,
-    "skeleton-dynamic",
-    "",
-    Skeleton,
-    ["expression", "meta"],
-    [
-      new CrochetTypeConstraint(functions[0], []),
-      new CrochetTypeConstraint(Any, []),
-    ],
-    false,
-    null
-  );
-  const SList = new CrochetType(
-    null,
-    "skeleton-list",
-    "",
-    Skeleton,
-    ["children", "meta"],
-    [new CrochetTypeConstraint(List, []), new CrochetTypeConstraint(Any, [])],
-    false,
-    null
-  );
-  const SInterpolation = new CrochetType(
-    null,
-    "skeleton-interpolation",
-    "",
-    Skeleton,
-    ["parts", "meta"],
-    [new CrochetTypeConstraint(List, []), new CrochetTypeConstraint(Any, [])],
-    false,
-    null
-  );
-
   world.native_types.define("crochet.core/core.static-type", Type);
   world.native_types.define("crochet.core/core.any", Any);
   world.native_types.define("crochet.core/core.protected", Protected);
@@ -386,17 +306,6 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.enum", Enum);
   world.native_types.define("crochet.core/core.cell", Cell);
   world.native_types.define("crochet.core/core.action", Action);
-
-  world.native_types.define("crochet.core/core.skeleton-ast", Skeleton);
-  world.native_types.define("crochet.core/core.skeleton-node", SNode);
-  world.native_types.define("crochet.core/core.skeleton-name", SName);
-  world.native_types.define("crochet.core/core.skeleton-literal", SLiteral);
-  world.native_types.define("crochet.core/core.skeleton-dynamic", SDynamic);
-  world.native_types.define("crochet.core/core.skeleton-list", SList);
-  world.native_types.define(
-    "crochet.core/core.skeleton-interpolation",
-    SInterpolation
-  );
   world.native_types.define("crochet.core/core.action", Action);
   world.native_types.define("crochet.core/core.action-choice", ActionChoice);
 
@@ -426,14 +335,6 @@ export function make_universe() {
     Action,
     ActionChoice,
     Effect,
-    Skeleton: {
-      Node: SNode,
-      Name: SName,
-      Literal: SLiteral,
-      Dynamic: SDynamic,
-      List: SList,
-      Interpolation: SInterpolation,
-    },
   });
 }
 

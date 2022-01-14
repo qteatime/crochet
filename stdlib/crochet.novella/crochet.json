@@ -8,8 +8,7 @@
     "source/0-types.crochet",
     "source/elements.crochet",
     "source/api.crochet",
-    "source/rendering-html.crochet",
-    "source/dsl.crochet"
+    "source/rendering-html.crochet"
   ],
   "native_sources": ["native/html.js"]
 }

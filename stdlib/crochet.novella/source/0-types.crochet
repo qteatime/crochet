@@ -1,7 +1,6 @@
 % crochet
 
 singleton novella;
-singleton novella-dsl;
 
 type canvas(x);
 
@@ -22,8 +21,4 @@ effect novella with
   show(X is element);
   wait-interaction();
   wait-selection(Reference);
-end
-
-effect novella-dsl with
-  get-state();
 end

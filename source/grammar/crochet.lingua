@@ -132,21 +132,6 @@ type Expression =
   | Handle(pos: Meta, body: Statement[], handlers: Handler[])
   | Perform(pos: Meta, effect: Name, variant: Name, args: Expression[])
   | ContinueWith(pos: Meta, value: Expression)
-  | Dsl(pos: Meta, language: TypeApp, ast: DslAst[])
-
-type DslAst =
-  | Node(pos: Meta, sig: DslSignature<DslAst>[], attrs: DslAttr[])
-  | Lit(pos: Meta, value: Literal)
-  | Var(pos: Meta, name: Name)
-  | List(pos: Meta, values: DslAst[])
-  | Interpolation(pos: Meta, parts: Interpolation<DslAst>)
-  | Dynamic(pos: Meta, value: Expression)
-
-type DslSignature<T> =
-  | Name(name: Name)
-  | Child(value: T)
-
-type DslAttr(pos: Meta, key: Name, value: DslAst)
 
 type ForExpression =
   | Map(pos: Meta, name: Name, stream: Expression, body: ForExpression)
@@ -897,7 +882,6 @@ grammar Crochet : Program {
     | matchSearchExpression
     | forExpression
     | handleExpression
-    | dslExpression
 
   interpolateExpression =
     | x:interpolateText<expression> -> Expression.Interpolate(meta, x)
@@ -915,44 +899,6 @@ grammar Crochet : Program {
 
   token interpolateStatic<e> =
     | (~(e | "\\" | "[" | "]") any)+ 
-
-
-  // -- DSLs
-  dslExpression =
-    | dsl_ t:typeApp with_ x:dslNodeSeq end_
-      -> Expression.Dsl(meta, t, x)
-
-  dslNodeSeq =
-    | xs:list0<dslNode, s<";">> -> xs
-
-  dslNode =
-    | s:dslSignature<dslPrimary> o:dslAttribute*
-      -> DslAst.Node(meta, s, o)
-    | dslPrimary
-
-  dslPrimary =
-    | n:name                      -> DslAst.Var(meta, n)
-    | x:interpolateText<dslNode>  -> DslAst.Interpolation(meta, x)
-    | l:literal                   -> DslAst.Lit(meta, l)
-    | x:dslCrochet                -> DslAst.Dynamic(meta, x)
-    | xs:dslNodeList             -> DslAst.List(meta, xs)
-    | s<"("> x:dslNode s<")">     -> x
-
-  dslNodeList =
-    | s<"["> xs:dslNodeSeq s<"]"> -> xs
-
-  dslCrochet =
-    | s<"@("> x:expression s<")"> -> x
-
-  dslAttribute =
-    | k:attribute v:dslPrimary  -> DslAttr(meta, k, v)
-
-  dslSignature<t> =
-    | n:atom xs:dslSignatureComponent<t>+ -> [DslSignature.Name(n), ...xs]
-
-  dslSignatureComponent<t> =
-    | x:atom          -> DslSignature.Name(x)
-    | n:dslPrimary    -> DslSignature.Child(n)
 
   // -- Literals
   literal =
@@ -1197,7 +1143,6 @@ grammar Crochet : Program {
   handle_ = kw<"handle">
   continue_ = kw<"continue">
   perform_ = kw<"perform">
-  dsl_ = kw<"dsl">
   trait_ = kw<"trait">
   implement_ = kw<"implement">
   has_ = kw<"has">
@@ -1215,6 +1160,6 @@ grammar Crochet : Program {
     | always_ | match_ | then_ | else_ | condition_ | end_ | prelude_ | with_
     | tags_ | rank_ | abstract_ | lazy_ | force_ | context_ | sample_ | of_
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
-    | effect_ | handle_ | continue_ | perform_ | dsl_ | trait_ | implement_ | has_
+    | effect_ | handle_ | continue_ | perform_ | trait_ | implement_ | has_
     | global_ | capability_ | protect_ | otherwise_
 }

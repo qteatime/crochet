@@ -41,7 +41,6 @@ import {
   Lambdas,
   StackTrace,
   Effects,
-  DSL,
   Capability,
   Modules,
 } from "./primitives";
@@ -1034,27 +1033,6 @@ export class Thread {
             op.handlers
           )
         );
-      }
-
-      case t.DSL: {
-        const type = Types.materialise_type(
-          this.universe,
-          this.module,
-          op.type
-        );
-        const stype = Types.get_static_type(this.universe, type);
-        const type_arg = Values.make_static_type(this.universe, stype);
-        const nodes = op.ast.map((x) =>
-          DSL.reify_dsl_node(this.universe, this.module, this.env, x)
-        );
-        const arg = Values.make_list(this.universe, nodes);
-        const command = Commands.get_command(this.universe, "_ evaluate: _");
-        const branch = Commands.select_branch(command, [type_arg, arg]);
-        const new_activation = Commands.prepare_activation(activation, branch, [
-          type_arg,
-          arg,
-        ]);
-        return new JumpSignal(new_activation);
       }
 
       case t.TRAIT_TEST: {
