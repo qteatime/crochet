@@ -1,0 +1,38 @@
+{
+  "name": "crochet.ui.agata",
+  "target": "*",
+  "native_sources": ["native/dom.js"],
+  "sources": [
+    "source/main.crochet",
+
+    "source/core/api.crochet",
+    "source/core/reference.crochet",
+    "source/core/rendering.crochet",
+    "source/core/surface.crochet",
+
+    "source/dom/dom-surface.crochet",
+    "source/dom/dom.crochet",
+    "source/dom/dom-client.crochet",
+    "source/dom/renderer/basic.crochet",
+    "source/dom/renderer/core.crochet",
+    "source/dom/renderer/enums.crochet",
+    "source/dom/renderer/layout.crochet",
+    "source/dom/renderer/measure.crochet",
+
+    "source/measure/equality.crochet",
+    "source/measure/units.crochet",
+
+    "source/widget/basic/base-widget.crochet",
+    "source/widget/basic/committed.crochet",
+    "source/widget/basic/dynamic.crochet",
+    "source/widget/basic/icon.crochet",
+    "source/widget/basic/text.crochet",
+    "source/widget/layout/flex.crochet",
+    "source/widget/layout/flow.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.concurrency", "crochet.text.regex"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

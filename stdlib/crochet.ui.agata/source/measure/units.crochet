@@ -1,0 +1,43 @@
+% crochet
+
+abstract measure;
+
+singleton auto-measure is measure;
+type pixels(value is integer) is measure;
+type em(value is float-64bit) is measure;
+type percent(value is float-64bit) is measure;
+
+
+// -- Constructors
+command #measure auto = auto-measure;
+command #measure pixels: (I is integer) = new pixels(I);
+command #measure em: (I is float-64bit) = new em(I);
+command #measure percent: (I is float-64bit) = new percent(I);
+
+
+// -- Conversions
+trait to-agata-measure with
+  command X as measure -> measure;
+end
+
+implement to-agata-measure for measure;
+command measure as measure = self;
+
+
+command integer as pixels =
+  new pixels(self);
+
+
+command integer as em =
+  new em(self as float-64bit);
+
+command float-64bit as em =
+  new em(self);
+
+
+command integer as percent =
+  new percent(self as float-64bit);
+
+command float-64bit as percent =
+  new percent(self);
+

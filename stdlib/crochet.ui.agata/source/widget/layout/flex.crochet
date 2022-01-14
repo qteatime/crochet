@@ -1,0 +1,247 @@
+% crochet
+
+type widget-flex(items is list<flex-child>, options is flex-options) is widget;
+type flex-child(content is widget, options is flex-child-options);
+
+type flex-options(
+  layout is flex-layout,
+  gap is flex-gap,
+  wrap is flex-wrap,
+  align-items is flex-align,
+  justify-content is flex-justify,
+  align-content is flex-justify,
+);
+
+enum flex-layout =
+  flex-layout-row,
+  flex-layout-row-reverse,
+  flex-layout-column,
+  flex-layout-column-reverse;
+
+enum flex-wrap =
+  flex-wrap-no-wrap,
+  flex-wrap-wrap,
+  flex-wrap-wrap-reverse;
+
+enum flex-align =
+  flex-align-normal,
+  flex-align-flex-start,
+  flex-align-flex-end,
+  flex-align-center,
+  flex-align-stretch,
+  flex-align-baseline;
+
+enum flex-justify =
+  flex-justify-normal,
+  flex-justify-flex-start,
+  flex-justify-flex-end,
+  flex-justify-center,
+  flex-justify-left,
+  flex-justify-right,
+  flex-justify-baseline,
+  flex-justify-space-between,
+  flex-justify-space-around,
+  flex-justify-space-evenly,
+  flex-justify-stretch;
+
+type flex-gap(row is measure, column is measure);
+
+type flex-child-options(
+  grow is integer,
+  shrink is integer,
+  basis is measure,
+);
+
+
+// -- Constructing
+command #widget flex: (Children is list) =
+  new widget-flex(Children map: (internal to-flex-child: _), #flex-options defaults);
+
+command internal to-flex-child: (Child is flex-child) =
+  Child;
+
+command internal to-flex-child: (Child has to-widget) =
+  new flex-child(Child as widget, #flex-child-options defaults);
+
+command #widget flex-column: (Children is list) =
+  #widget flex: Children
+    | layout: "column";
+
+command #widget flex-row: (Children is list) =
+  #widget flex: Children
+    | layout: "row";
+
+command #flex-child with: (Content has to-widget) =
+  new flex-child(Content as widget, #flex-child-options defaults);
+
+
+// -- Setting options
+command widget-flex options: (X is flex-options) =
+  new widget-flex(self.items, X);
+
+command widget-flex layout: X =
+  new widget-flex(self.items, self.options layout: X);
+
+command widget-flex gap: X =
+  new widget-flex(self.items, self.options gap: X);
+
+command widget-flex wrap: X =
+  new widget-flex(self.items, self.options wrap: X);
+
+command widget-flex align-items: X =
+  new widget-flex(self.items, self.options align-items: X);
+
+command widget-flex justify-content: X =
+  new widget-flex(self.items, self.options justify-content: X);
+
+command widget-flex align-content: X =
+  new widget-flex(self.items, self.options align-content: X);
+
+
+command flex-child options: (X is flex-child-options) =
+  new flex-child(self.content, X);
+
+command flex-child grow: X =
+  new flex-child(self.content, self.options grow: X);
+
+command flex-child shrink: X =
+  new flex-child(self.content, self.options shrink: X);
+
+command flex-child basis: X =
+  new flex-child(self.content, self.options basis: X);
+
+
+// -- Flex options
+command #flex-options defaults =
+  new flex-options(
+    layout -> flex-layout-row,
+    gap -> #flex-gap defaults,
+    wrap -> flex-wrap-no-wrap,
+    align-items -> flex-align-normal,
+    justify-content -> flex-justify-normal,
+    align-content -> flex-justify-normal
+  );
+
+command flex-options layout: (Layout is flex-layout) =
+  new flex-options(self with layout -> Layout);
+
+command flex-options layout: (Name is static-text) =
+  self layout: (#flex-layout from-text: Name);
+
+
+command flex-options gap: (Gap is flex-gap) =
+  new flex-options(self with gap -> Gap);
+
+command flex-options gap: (Gap is record) =
+  self gap: (#flex-gap row: Gap.row column: Gap.column);
+
+command flex-options gap: (F is (flex-gap -> flex-gap)) =
+  new flex-options(self with gap -> F(self.gap));
+
+command flex-options gap: (Gap has to-agata-measure) do
+  let Value = Gap as agata-unit;
+  new flex-options(self with gap -> #flex-gap row: Value column: Value);
+end
+
+
+command flex-options wrap: (Wrap is flex-wrap) =
+  new flex-options(self with wrap -> Wrap);
+
+command flex-options wrap: (Name is static-text) =
+  self wrap: (#flex-wrap from-text: Name);
+
+
+command flex-options align-items: (Align is flex-align) =
+  new flex-options(self with align-items -> Align);
+
+command flex-options align-items: (Name is static-text) =
+  self align: (#flex-align from-text: Name);
+
+
+command flex-options justify-content: (Justify is flex-justify) =
+  new flex-options(self with justify -> Justify);
+
+command flex-options justify-content: (Name is static-text) =
+  new flex-options(self with justify -> #flex-justify from-text: Name);
+
+command flex-options align-content: (Justify is flex-justify) =
+  new flex-options(self with align-content -> Justify);
+
+command flex-options align-content: (Name is static-text) =
+  new flex-options(self with justify -> #flex-justify from-text: Name);
+
+
+// -- Flex gap
+command #flex-gap defaults =
+  new flex-gap(#agata-unit pixels: 0, #agata-unit pixels: 0);
+
+command flex-gap row: (Unit has to-agata-measure) =
+  new flex-gap(self with row -> Unit as agata-unit);
+
+command flex-gap column: (Unit has to-agata-measure) =
+  new flex-gap(self with column -> Unit as agata-unit);
+
+
+// -- Flex child options
+command #flex-child-options defaults =
+  new flex-child-options(
+    grow -> 0,
+    shrink -> 0,
+    basis -> #agata-unit auto,
+    align -> flex-child-align-auto
+  );
+
+command flex-child-options grow: (N is integer) =
+  new flex-child-options(self with grow -> N);
+
+command flex-child-options shrink: (N is integer) =
+  new flex-child-options(self with shrink -> N);
+
+command flex-child-options basis: (N has to-agata-measure) =
+  new flex-child-options(self with basis -> N as agata-unit);
+
+
+// -- Constructing enums
+command #flex-justify from-text: (Name is static-text) do
+  condition
+    when Name =:= "flex-start" => flex-justify-flex-start;
+    when Name =:= "flex-end" => flex-justify-flex-end;
+    when Name =:= "center" => flex-justify-center;
+    when Name =:= "left" => flex-justify-left;
+    when Name =:= "right" => flex-justify-right;
+    when Name =:= "normal" => flex-justify-normal;
+    when Name =:= "baseline" => flex-justify-baseline;
+    when Name =:= "space-between" => flex-justify-space-between;
+    when Name =:= "space-around" => flex-justify-space-around;
+    when Name =:= "space-evenly" => flex-justify-space-evenly;
+    when Name =:= "stretch" => flex-justify-stretch;
+  end
+end
+
+command #flex-layout from-text: (Name is static-text) do
+  condition
+    when Name =:= "row" => flex-layout-row;
+    when Name =:= "row-reverse" => flex-layout-row-reverse;
+    when Name =:= "column" => flex-layout-column;
+    when Name =:= "column-reverse" => flex-layout-column-reverse;
+  end
+end
+
+command #flex-wrap from-text: (Name is static-text) do
+  condition
+    when Name =:= "no-wrap" => flex-wrap-no-wrap;
+    when Name =:= "wrap" => flex-wrap-wrap;
+    when Name =:= "wrap-reverse" => flex-wrap-reverse;
+  end
+end
+
+command #flex-align from-text: (Name is static-text) do
+  condition
+    when Name =:= "normal" => flex-align-normal;
+    when Name =:= "flex-start" => flex-align-flex-start;
+    when Name =:= "flex-end" => flex-align-flex-end;
+    when Name =:= "center" => flex-align-center;
+    when Name =:= "stretch" => flex-align-stretch;
+    when Name =:= "baseline" => flex-align-baseline;
+  end
+end

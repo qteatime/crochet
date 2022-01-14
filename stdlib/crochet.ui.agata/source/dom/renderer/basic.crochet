@@ -1,0 +1,28 @@
+% crochet
+
+command dom-renderer render: (W is widget-text) do
+  let E = dom make: "div" class: "agata-text";
+  E append: (dom text: W.contents);
+  E;
+end
+
+
+command dom-renderer render: (W is widget-icon) do
+  let Class = "agata-icon fas fa-[W.name]" flatten-into-plain-text;
+  dom make: "i" class: Class;
+end
+
+
+command dom-renderer render: (W is widget-dynamic) do
+  let Surface = dom make-surface;
+  W.renderer(Surface);
+  Surface;
+end
+
+
+command dom-renderer render: (W is widget-committed)
+requires
+  dom-node :: W.node is dom-node
+do
+  W.node;
+end

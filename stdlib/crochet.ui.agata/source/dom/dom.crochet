@@ -1,0 +1,62 @@
+% crochet
+
+singleton dom;
+protect global dom with internal;
+protect type dom with internal;
+
+type dom-node(box is unknown) is node;
+
+
+// -- DOM operations
+command dom make: (Name is static-text) class: (Class is text) do
+  new dom-node(foreign dom.make(Name, Class));
+end
+
+command dom text: (Text is text) do
+  new dom-node(foreign dom.make-text(Text));
+end
+
+command dom make-surface do
+  new dom-surface(self make: "div" class: "agata-surface");
+end
+
+command dom make-surface-from-native-element: (Element0 is unknown) do
+  let Element = foreign dom.ensure-element(Element0);
+  new dom-surface(new dom-node(Element));
+end
+
+command dom-node set: (Attribute is static-text) to: (Value is text) do
+  foreign dom.set-attribute(self.box, Attribute, Value);
+  self;
+end
+
+command dom-node append: (Child is dom-node) do
+  foreign dom.append(self.box, Child.box);
+  self;
+end
+
+command dom-node prepend: (Child is dom-node) do
+  foreign dom.prepend(self.box, Child.box);
+  self;
+end
+
+command dom-node detach
+requires
+  attached :: self is-attached
+do
+  foreign dom.detach(self.box);
+  self;
+end
+
+command dom-node is-attached =
+  foreign dom.is-attached(self.box);
+
+command dom-node replace-contents: (X is dom-node) do
+  foreign dom.replace-contents(self.box, X.box);
+  self;
+end
+
+command dom-node style: (Style is record) do
+  foreign dom.set-style(self.box, Style);
+  self;
+end

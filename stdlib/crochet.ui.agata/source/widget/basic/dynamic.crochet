@@ -1,0 +1,6 @@
+% crochet
+
+type widget-dynamic(renderer is (surface -> nothing)) is widget;
+
+command #widget dynamic: (Renderer is (surface -> nothing)) =
+  new widget-dynamic(Renderer);

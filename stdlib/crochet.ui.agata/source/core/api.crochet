@@ -1,0 +1,17 @@
+% crochet
+
+effect agata-rendering with
+  get-shared-renderer(); // -> renderer;
+end
+
+effect agata-presentation with
+  show(widget is widget); // -> nothing;
+end
+
+singleton agata;
+
+command agata show: (Widget has to-widget) do
+  perform agata-presentation.show(Widget as widget);
+  self;
+end
+

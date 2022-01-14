@@ -1,0 +1,36 @@
+% crochet
+
+// flex layout
+command dom-renderer to-text: flex-layout-row = "row";
+command dom-renderer to-text: flex-layout-row-reverse = "row-reverse";
+command dom-renderer to-text: flex-layout-column = "column";
+command dom-renderer to-text: flex-layout-column-reverse = "column-reverse";
+
+
+// flex wrap
+command dom-renderer to-text: flex-wrap-no-wrap = "no-wrap";
+command dom-renderer to-text: flex-wrap-wrap = "wrap";
+command dom-renderer to-text: flex-wrap-wrap-reverse = "wrap-reverse";
+
+
+// flex align
+command dom-renderer to-text: flex-align-normal = "normal";
+command dom-renderer to-text: flex-align-flex-start = "flex-start";
+command dom-renderer to-text: flex-align-flex-end = "flex-end";
+command dom-renderer to-text: flex-align-center = "center";
+command dom-renderer to-text: flex-align-stretch = "stretch";
+command dom-renderer to-text: flex-align-baseline = "baseline";
+
+
+// flex justify
+command dom-renderer to-text: flex-justify-normal = "normal";
+command dom-renderer to-text: flex-justify-flex-start = "flex-start";
+command dom-renderer to-text: flex-justify-flex-end = "flex-end";
+command dom-renderer to-text: flex-justify-center = "center";
+command dom-renderer to-text: flex-justify-left = "left";
+command dom-renderer to-text: flex-justify-right = "right";
+command dom-renderer to-text: flex-justify-baseline = "baseline";
+command dom-renderer to-text: flex-justify-space-between = "space-between";
+command dom-renderer to-text: flex-justify-space-around = "space-around";
+command dom-renderer to-text: flex-justify-space-evenly = "space-evenly";
+command dom-renderer to-text: flex-justify-stretch = "stretch";

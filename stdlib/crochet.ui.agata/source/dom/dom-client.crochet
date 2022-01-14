@@ -1,0 +1,19 @@
+% crochet
+
+singleton agata-dom;
+
+command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
+  let Surface = dom make-surface-from-native-element: Root;
+  handle
+    Block();
+  with
+    on agata-presentation.show(Widget) do
+      Surface replace-contents: Widget;
+      continue with nothing;
+    end
+
+    on agata-rendering.get-shared-renderer() do
+      continue with dom-renderer;
+    end
+  end
+end

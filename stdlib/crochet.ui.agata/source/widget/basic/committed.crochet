@@ -1,0 +1,9 @@
+% crochet
+
+type widget-committed(node is node) is widget;
+
+command widget commit do
+  let Renderer = perform agata-rendering.get-shared-renderer();
+  let Node = Renderer render: self;
+  new widget-committed(Node);
+end

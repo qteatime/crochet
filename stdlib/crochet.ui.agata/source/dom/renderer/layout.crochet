@@ -1,0 +1,38 @@
+% crochet
+
+command dom-renderer render: (W is widget-flow) do
+  let E = dom make: "div" class: "agata-flow";
+  for Child in W.items do
+    E append: (self render: Child);
+  end
+  E;
+end
+
+
+command dom-renderer render: (W is widget-flex) do
+  let E = dom make: "div" class: "agata-flex";
+  E style: [
+    row-gap -> self to-unit-text: W.options.gap.row,
+    column-gap -> self to-unit-text: W.options.gap.column,
+    flex-direction -> self to-text: W.options.layout,
+    flex-wrap -> self to-text: W.options.wrap,
+    align-items -> self to-text: W.options.align-items,
+    justify-content -> self to-text: W.options.justify-content,
+    align-content -> self to-text: W.options.align-content,
+  ];
+  for Child in W.items do
+    E append: (self render: Child);
+  end
+  E;
+end
+
+command dom-renderer render: (W is flex-child) do
+  let E = dom make: "div" class: "agata-flex-child";
+  E style: [
+    grow -> E.options.grow to-text,
+    shrink -> E.options.shrink to-text,
+    basis -> self to-unit-text: E.option.basis,
+  ];
+  E append: (self render: W.content);
+  E;
+end
