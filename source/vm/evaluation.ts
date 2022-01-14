@@ -519,6 +519,14 @@ export class Thread {
           this.module,
           op.type
         );
+        if (type0.is_placeholder) {
+          throw new ErrArbitrary(
+            "new-on-placeholder",
+            `Cannot construct a value of type ${Location.type_name(
+              type0
+            )} because it has not been defined yet.`
+          );
+        }
         const type = Capability.free_type(this.module, type0);
         Capability.assert_construct_capability(
           this.universe,
@@ -539,6 +547,14 @@ export class Thread {
           this.module,
           op.type
         );
+        if (type0.is_placeholder) {
+          throw new ErrArbitrary(
+            "new-on-placeholder",
+            `Cannot construct a value of type ${Location.type_name(
+              type0
+            )} because it has not been defined yet.`
+          );
+        }
         const type = Capability.free_type(this.module, type0);
         Capability.assert_construct_capability(
           this.universe,
@@ -583,6 +599,14 @@ export class Thread {
             `Cannot construct a value of type ${Location.type_name(
               type
             )} based on a value of type ${Location.type_name(base.type)}`
+          );
+        }
+        if (type.is_placeholder) {
+          throw new ErrArbitrary(
+            "new-on-placeholder",
+            `Cannot construct a value of type ${Location.type_name(
+              type
+            )} because it has not been defined yet.`
           );
         }
         Values.assert_tag(Tag.INSTANCE, base);

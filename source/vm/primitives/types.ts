@@ -368,7 +368,7 @@ export function resolve_field_layout_with_base(
 }
 
 export function make_placeholder_type(module: CrochetModule, name: string) {
-  return new CrochetType(
+  const type = new CrochetType(
     module,
     name,
     "(placeholder type)",
@@ -378,6 +378,8 @@ export function make_placeholder_type(module: CrochetModule, name: string) {
     false,
     null
   );
+  type.is_placeholder = true;
+  return type;
 }
 
 export function make_placeholder_trait(module: CrochetModule, name: string) {
@@ -422,6 +424,7 @@ export function fulfill_placeholder_type(
   p.types = type.types;
   p.is_static = type.is_static;
   p.meta = type.meta;
+  p.is_placeholder = false;
 
   return placeholder;
 }

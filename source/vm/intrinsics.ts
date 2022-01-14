@@ -139,6 +139,7 @@ export class CrochetTrait {
 
 export class CrochetType {
   public sealed = false;
+  public is_placeholder = false;
   readonly layout: Map<string, number>;
   readonly sub_types: CrochetType[] = [];
   readonly traits = new Set<CrochetTrait>();
