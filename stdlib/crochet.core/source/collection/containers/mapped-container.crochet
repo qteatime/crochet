@@ -1,41 +1,5 @@
 % crochet
 
-// -- Records
-
-implement mapped-container for record;
-
-/// Returns the value in the record identified by `Key`, if it exists.
-command record at: (Key is text) =
-  self.[Key]
-test
-  assert ([a -> 1, b -> 2] at: "a") === 1;
-  assert (["a a" -> 1, b -> 2] at: "a a") === 1;
-  assert ([a -> 1, B -> 2] at: "B") === 2;
-end
-
-/// Returns the value in the record identified by `Key`, if it exists.
-/// Otherwise returns the provided default value.
-command record at: (Key is text) default: Value =
-  foreign record.at-default(self, Key, Value)
-test
-  assert ([a -> 1, b -> 2] at: "a" default: 0) === 1;
-  assert (["a a" -> 1, b -> 2] at: "a a" default: 0) === 1;
-  assert ([a -> 1, B -> 2] at: "B" default: 0) === 2;
-  assert ([->] at: "a" default: 0) === 0;
-  assert ([a -> 1, b -> 2] at: "c" default: 0) === 0;
-end
-
-/// True if the record contains a value associated with the `Key`.
-command record contains-key: (Key is text) =
-  foreign record.has-key(self, Key)
-test
-  assert [a -> 1, b -> 2] contains-key: "a";
-  assert ["a a" -> 1, b -> 2] contains-key: "a a";
-  assert [a -> 1, B -> 2] contains-key: "B";
-  assert not ([a -> 1, b -> 2] contains-key: "c");
-  assert not ([->] contains-key: "a");
-end
-
 // -- Map
 implement mapped-container for map;
 

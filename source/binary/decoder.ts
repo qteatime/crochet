@@ -352,12 +352,6 @@ class CrochetIRDecoder extends BinaryReader {
           this.array((_) => this.string())
         );
 
-      case t.RECORD_AT_PUT:
-        return new IR.RecordAtPut(this.decode_meta_id());
-
-      case t.PROJECT:
-        return new IR.Project(this.decode_meta_id());
-
       case t.PROJECT_STATIC:
         return new IR.ProjectStatic(this.decode_meta_id(), this.string());
 

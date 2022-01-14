@@ -36,8 +36,8 @@ command (X has modifiable-mapped-container) at: Key default: Default update: (Up
     otherwise => self at: Key put: Default;
   end
 test
-  assert ([->] at: "a" default: 1 update: (_ + 1)) === [a -> 1];
-  assert ([a -> 1] at: "a" default: 1 update: (_ + 1)) === [a -> 2];
-  assert ([a -> 1, b -> 2] at: "a" default: 1 update: (_ + 1)) === [a -> 2, b -> 2];
-  assert ([a -> 1, b -> 2] at: "c" default: 1 update: (_ + 1)) === [a -> 1, b -> 2, c -> 1];
+  assert (#map empty | at: "a" default: 1 update: (_ + 1)) === (#map from: [a -> 1]);
+  assert (#map from: [a -> 1] | at: "a" default: 1 update: (_ + 1)) === (#map from: [a -> 2]);
+  assert (#map from: [a -> 1, b -> 2] | at: "a" default: 1 update: (_ + 1)) === (#map from: [a -> 2, b -> 2]);
+  assert (#map from: [a -> 1, b -> 2] | at: "c" default: 1 update: (_ + 1)) === (#map from: [a -> 1, b -> 2, c -> 1]);
 end

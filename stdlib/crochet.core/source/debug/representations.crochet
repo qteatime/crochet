@@ -25,7 +25,7 @@ command debug-representation for: (X is interpolation) perspective: default-pers
     | typed: #interpolation;
 
 command debug-representation for: (X is record) perspective: default-perspective do
-  let Rows = X pairs
+  let Rows = (#map from: X) pairs
               | map: { P in #document table-row: [
                               self for: P key perspective: default-perspective,
                               self for: P value perspective: default-perspective,

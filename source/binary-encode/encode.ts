@@ -266,16 +266,6 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
-      case IR.OpTag.RECORD_AT_PUT: {
-        this.encode_meta_id(x.meta);
-        break;
-      }
-
-      case IR.OpTag.PROJECT: {
-        this.encode_meta_id(x.meta);
-        break;
-      }
-
       case IR.OpTag.PROJECT_STATIC: {
         this.encode_meta_id(x.meta);
         this.string(x.key);

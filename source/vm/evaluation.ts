@@ -870,31 +870,6 @@ export class Thread {
         return _continue;
       }
 
-      case t.RECORD_AT_PUT: {
-        const [record0, key0, value] = this.pop_many(activation, 3);
-        const key = Values.text_to_string(key0);
-        const record = Values.record_at_put(this.universe, record0, key, value);
-        this.push(activation, record);
-        activation.next();
-        return _continue;
-      }
-
-      case t.PROJECT: {
-        const [key0, value0] = this.pop_many(activation, 2);
-        const key = Values.text_to_string(key0);
-        const result = Values.project(value0, key, (value) =>
-          Capability.assert_projection_capability(
-            this.universe,
-            this.module,
-            value,
-            key
-          )
-        );
-        this.push(activation, result);
-        activation.next();
-        return _continue;
-      }
-
       case t.PROJECT_STATIC: {
         const value = this.pop(activation);
         const result = Values.project(value, op.key, (value) =>

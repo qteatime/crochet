@@ -684,28 +684,15 @@ export class LowerToIR {
   }
 
   record_field(x: Ast.RecordField) {
-    return x.match<
-      { static: true; name: string } | { static: false; expr: IR.Op[] }
-    >({
-      FName: (n) => ({
-        static: true,
-        name: n.name,
-      }),
+    return x.match<string>({
+      FName: (n) => n.name,
 
-      FText: (n) => ({
-        static: true,
-        name: parseString(n),
-      }),
-
-      FComputed: (x) => ({
-        static: false,
-        expr: this.expression(x),
-      }),
+      FText: (n) => parseString(n),
     });
   }
 
   record_pairs(xs0: Ast.Pair<Ast.RecordField, Ast.Expression>[]) {
-    const xs1 = xs0.map((x) => {
+    const pairs = xs0.map((x) => {
       return {
         pos: x.pos,
         key: this.record_field(x.key),
@@ -713,22 +700,7 @@ export class LowerToIR {
       };
     });
 
-    const xs_static = xs1
-      .filter((x) => x.key.static)
-      .map((x) => ({
-        key: (x.key as { static: true; name: string }).name,
-        value: x.value,
-      }));
-
-    const xs_dynamic = xs1
-      .filter((x) => !x.key.static)
-      .map((x) => ({
-        pos: this.context.register(x.pos),
-        expr: (x.key as { static: false; expr: IR.Op[] }).expr,
-        value: x.value,
-      }));
-
-    return { pairs: xs_static, dynamic_pairs: xs_dynamic };
+    return pairs;
   }
 
   comprehension(x: Ast.ForExpression): IR.Op[] {
@@ -917,10 +889,7 @@ export class LowerToIR {
         const id = this.context.register(pos);
         const type_id = this.context.register(type0.pos);
         const type = new IR.LocalType(type_id, type0.name);
-        const { pairs, dynamic_pairs } = this.record_pairs(fields0);
-        if (dynamic_pairs.length !== 0) {
-          throw new Error(`internal: invalid AST.`);
-        }
+        const pairs = this.record_pairs(fields0);
         return [
           ...pairs.flatMap((x) => x.value),
           new IR.PushNewNamed(
@@ -935,10 +904,7 @@ export class LowerToIR {
         const id = this.context.register(pos);
         const type_id = this.context.register(type0.pos);
         const type = new IR.LocalType(type_id, type0.name);
-        const { pairs, dynamic_pairs } = this.record_pairs(fields0);
-        if (dynamic_pairs.length !== 0) {
-          throw new Error(`internal: invalid AST.`);
-        }
+        const pairs = this.record_pairs(fields0);
         return [
           ...pairs.flatMap((x) => x.value),
           ...this.expression(base),
@@ -958,7 +924,7 @@ export class LowerToIR {
 
       Record: (pos, pairs0) => {
         const id = this.context.register(pos);
-        const { pairs, dynamic_pairs } = this.record_pairs(pairs0);
+        const pairs = this.record_pairs(pairs0);
 
         return [
           ...pairs.map((x) => x.value).flat(1),
@@ -966,9 +932,6 @@ export class LowerToIR {
             id,
             pairs.map((x) => x.key)
           ),
-          ...dynamic_pairs.flatMap((x) => {
-            return [...x.expr, ...x.value, new IR.RecordAtPut(x.pos)];
-          }),
         ];
       },
 
@@ -976,18 +939,7 @@ export class LowerToIR {
         const id = this.context.register(pos);
         const field = this.record_field(field0);
 
-        if (field.static) {
-          return [
-            ...this.expression(object0),
-            new IR.ProjectStatic(id, field.name),
-          ];
-        } else {
-          return [
-            ...field.expr,
-            ...this.expression(object0),
-            new IR.Project(id),
-          ];
-        }
+        return [...this.expression(object0), new IR.ProjectStatic(id, field)];
       },
 
       Interpolate: (_, value) => {

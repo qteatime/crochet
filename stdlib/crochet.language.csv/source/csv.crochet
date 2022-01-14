@@ -33,18 +33,18 @@ end
 
 command csv-with-header rows = self.rows;
 command csv-with-header header = self.header;
-command csv-with-header rows-as-records do
+command csv-with-header rows-as-maps do
   let Keys = self header contents;
   for Row in self rows do
     let Pairs = Keys zip: Row contents with: { K, V in #association key: K value: V };
-    #record from-pairs: Pairs;
+    #map from: Pairs;
   end
 test
   let Source = "a,b,c\n1,2,3\nd,e,f";
-  let Rows = #csv parse: Source | with-header | rows-as-records;
-  assert Rows =:= [
-    [a -> "1", b -> "2", c -> "3"],
-    [a -> "d", b -> "e", c -> "f"],
+  let Rows = #csv parse: Source | with-header | rows-as-maps;
+  assert Rows === [
+    (#map from: [a -> "1", b -> "2", c -> "3"]),
+    (#map from: [a -> "d", b -> "e", c -> "f"]),
   ];
 end
 

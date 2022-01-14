@@ -9,11 +9,9 @@
       "name": "crochet.debug.tracing",
       "capabilities": ["crochet.debug/internal"]
     },
-    "crochet.language.cli-arguments",
     "crochet.language.csv",
     "crochet.language.json",
     "crochet.mathematics",
-    "crochet.parsing.combinators",
     "crochet.random",
     "crochet.text.parsing.lingua",
     "crochet.time",
