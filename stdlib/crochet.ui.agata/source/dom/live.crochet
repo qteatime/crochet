@@ -1,13 +1,16 @@
 % crochet
 
 type dom-element(node is dom-node) is live-widget;
+type dom-text-input(node is dom-node) is live-widget;
 
-command dom to-live-widget: (Node is dom-node) do
-  let Type = foreign dom.node-type(Node.box);
-  condition
-    when Type =:= "element" => new dom-element(Node);
-  end
-end
+command dom to-live-widget: (W is widget) node: (N is dom-node) =
+  new dom-element(N);
 
-command dom-element outer-html =
-  foreign dom.html(self.node.box);
+command dom to-live-widget: (W is widget-text-input) node: (N is dom-node) =
+  new dom-text-input(N);
+
+
+command dom-text-input value =
+  self.node text-input-value;
+
+

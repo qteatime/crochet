@@ -1,22 +1,26 @@
 % crochet
 
-
+open crochet.concurrency;
 open crochet.ui.agata;
 
 
 implement to-widget for todo;
 command todo as widget do
+  let Input = agata reference: "input";
+  let Value = #observable-cell with-value: "";
   #widget card-container: (
     #widget flex-column: [
       #widget flex-column: self.items
         | gap: { G in G row: (0.5 as em) },
-      #widget card: (
-        #widget flex-row: [
-          #flex-child with: (#widget text: "I need to...")
-            | grow: 1,
-          #widget icon: "plus"
-        ]
-      )
+      #widget divider: "half",
+      #widget flex-row: [
+        #flex-child with: (#widget text-input | placeholder: "I want to..." | value: Value | reference: Input)
+          | grow: 1,
+        #widget space | horizontal: (1.0 as em),
+        #widget icon: "plus"
+      ],
+      #widget divider: "full",
+      Value
     ]
     | gap: { G in G row: (1.0 as em) }
   );

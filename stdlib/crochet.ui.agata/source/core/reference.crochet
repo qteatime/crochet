@@ -1,6 +1,15 @@
 % crochet
 
+open crochet.concurrency;
+
 type reference(name is text);
+type reference-observer(reference is reference, observer is observable-cell<widget>);
 
 command reference materialise =
   perform agata-presentation.get-reference(self);
+
+command reference observe do
+  let Observer = perform agata-presentation.observe-reference(self);
+  new reference-observer(Observer);
+end
+

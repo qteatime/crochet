@@ -1,22 +1,24 @@
 import type { CrochetValue, ForeignInterface } from "../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
-  function get_element(x0: CrochetValue) {
+  function unbox_typed<T extends Function>(
+    x0: CrochetValue,
+    type: T
+  ): T["prototype"] {
     const x = ffi.unbox(x0);
-    if (x instanceof HTMLElement) {
-      return x;
+    if (x instanceof type) {
+      return x as any;
     } else {
-      throw ffi.panic("invalid-type", `Expected native HTMLElement`);
+      throw ffi.panic("invalid-type", `Expected native ${type.name}`);
     }
   }
 
+  function get_element(x0: CrochetValue) {
+    return unbox_typed(x0, HTMLElement);
+  }
+
   function get_node(x0: CrochetValue) {
-    const x = ffi.unbox(x0);
-    if (x instanceof Node) {
-      return x;
-    } else {
-      throw ffi.panic("invalid-type", `Expected native Node`);
-    }
+    return unbox_typed(x0, Node);
   }
 
   ffi.defun("dom.make", (tag, klass) => {
@@ -82,12 +84,19 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(x);
   });
 
-  ffi.defun("dom.node-type", (x0) => {
-    const x = get_element(x0);
-    return ffi.text("element");
+  ffi.defun("dom.input-value", (x0) => {
+    const x = unbox_typed(x0, HTMLInputElement);
+    return ffi.text(x.value);
   });
 
-  ffi.defun("dom.html", (x) => {
-    return ffi.text(get_element(x).outerHTML);
+  ffi.defun("dom.listen", (x0, name, block) => {
+    const x = get_element(x0);
+    x.addEventListener(ffi.text_to_string(name), (ev) => {
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(block, [ffi.box(ev)]);
+        return ffi.nothing;
+      });
+    });
+    return ffi.nothing;
   });
 };

@@ -5,6 +5,8 @@ protect global dom with internal;
 protect type dom with internal;
 
 type dom-node(box is unknown) is node;
+type dom-event(box is unknown);
+
 
 
 // -- DOM operations
@@ -29,6 +31,12 @@ command dom-node set: (Attribute is static-text) to: (Value is text) do
   foreign dom.set-attribute(self.box, Attribute, Value);
   self;
 end
+
+command dom-node set-boolean: (Attribute is static-text) to: true =
+  self set: Attribute to: Attribute;
+
+command dom-node set-boolean: (Attribute is static-text) to: false =
+  self;
 
 command dom-node append: (Child is dom-node) do
   foreign dom.append(self.box, Child.box);
@@ -60,3 +68,11 @@ command dom-node style: (Style is record) do
   foreign dom.set-style(self.box, Style);
   self;
 end
+
+command dom-node on: (Event is static-text) do: (Block is (dom-event -> nothing)) do
+  foreign dom.listen(self.box, Event, { Ev in Block(new dom-event(Ev)) });
+  self;
+end
+
+command dom-node text-input-value =
+  foreign dom.input-value(self.box);

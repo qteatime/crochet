@@ -1,0 +1,24 @@
+% crochet
+
+command dom-renderer render: (W is widget-text-input) do
+  let Node = dom make: "input" class: "agata-text-input"
+              | set: "type" to: "text";
+  
+  Node set: "placeholder" to: W.placeholder value;
+  Node set: "value" to: W.value value;
+  Node set-boolean: "readonly" to: W.read-only value;
+
+  W.placeholder stream subscribe: (Node set: "placeholder" to: _);
+  W.value stream subscribe: (Node set: "value" to: _);
+  W.read-only stream subscribe: (Node set-boolean: "readonly" to: _);
+
+  Node on: "keyup" do: { Event in
+    W.value <- Node text-input-value;
+  };
+
+  Node on: "change" do: { Event in
+    W.value <- Node text-input-value;
+  };
+
+  Node;
+end

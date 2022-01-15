@@ -30,7 +30,7 @@ end
 
 command dom-renderer render: (W is widget-reference) do
   let Node = self render: W.widget;
-  let Live = dom to-live-widget: Node;
+  let Live = dom to-live-widget: W.widget node: Node;
   perform agata-presentation.register-reference(W.reference, Live);
   Node;
 end

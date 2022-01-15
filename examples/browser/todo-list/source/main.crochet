@@ -10,22 +10,8 @@ command main-html: Root do
   timer with-real-timer: {
     agata-dom with-root: Root do: {
       let Todo = new todo([]);
-      let Ref = agata reference: "root";
       let Cell = #observable-cell with-value: Todo;
-      let HTML = #observable-cell with-value: "";
-      agata show: (#widget flex-column: [
-        Cell as widget | reference: Ref,
-        #widget space | vertical: (1.0 as em),
-        #widget divider: "half",
-        #widget space | vertical: (0.5 as em),
-        HTML
-      ]);
-
-      for I in 1 to: 5 do
-        timer sleep: 2 seconds | wait;
-        Cell <- Cell value add: (#todo-item with-title: "Item [I to-text]");
-        HTML <- Ref materialise outer-html;
-      end
+      agata show: Cell;
     };
   }
 end

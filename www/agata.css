@@ -1,7 +1,9 @@
 body {
+  --primary-accent: #039be5;
   --divider-color: #95a5a6;
   --card-color: #fdfdfd;
   --card-background: #f3f3f3;
+  --input-background: #fdfdfd;
 }
 
 .agata-text {
@@ -42,4 +44,21 @@ body {
 
 .agata-divider-style-half {
   width: 50%;
+}
+
+.agata-text-input {
+  outline: none;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  border-bottom: 1px solid var(--primary-accent);
+  background: var(--input-background);
+  caret-color: var(--primary-accent);
+  padding: 0.5em;
+  position: relative;
+}
+
+.agata-text-input:focus {
+  border-bottom-width: 3px;
 }

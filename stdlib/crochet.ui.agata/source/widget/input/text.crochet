@@ -1,0 +1,35 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-text-input(
+  placeholder is observable-cell<text>,
+  read-only is observable-cell<boolean>,
+  value is observable-cell<text>,
+) is widget;
+
+command #widget text-input =
+  new widget-text-input(
+    placeholder -> #observable-cell with-value: "",
+    read-only -> #observable-cell with-value: false,
+    value -> #observable-cell with-value: ""
+  );
+
+command widget-text-input placeholder: (Text is text) =
+  new widget-text-input(self with placeholder -> #observable-cell with-value: Text);
+
+command widget-text-input placeholder: (Cell is observable-cell<text>) =
+  new widget-text-input(self with placeholder -> Cell);
+
+command widget-text-input read-only: (Flag is boolean) =
+  new widget-text-input(self with read-only -> #observable-cell with-value: Flag);
+
+command widget-text-input read-only: (Cell is observable-cell<boolean>) =
+  new widget-text-input(self with read-only -> Cell);
+
+command widget-text-input value: (Text is text) =
+  new widget-text-input(self with value -> #observable-cell with-value: Text);
+
+command widget-text-input value: (Cell is observable-cell<text>) =
+  new widget-text-input(self with value -> Cell);
+
