@@ -10,6 +10,8 @@
     "source/core/rendering.crochet",
     "source/core/surface.crochet",
     "source/core/event.crochet",
+    "source/core/network.crochet",
+    "source/core/image.crochet",
 
     "source/dom/dom-surface.crochet",
     "source/dom/dom.crochet",
@@ -17,6 +19,7 @@
     "source/dom/live.crochet",
     "source/dom/event.crochet",
     "source/dom/dom-widgets.crochet",
+    "source/dom/renderer/image.crochet",
     "source/dom/renderer/basic.crochet",
     "source/dom/renderer/core.crochet",
     "source/dom/renderer/enums.crochet",
@@ -28,6 +31,7 @@
     "source/measure/equality.crochet",
     "source/measure/units.crochet",
 
+    "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",
     "source/widget/basic/committed.crochet",
     "source/widget/basic/dynamic.crochet",

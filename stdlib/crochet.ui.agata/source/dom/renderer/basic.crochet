@@ -74,3 +74,10 @@ command dom-choose-renderer render-current do
     end
   end
 end
+
+
+command dom-renderer render: (Image is widget-image) do
+  let Node = dom make: "img" class: "agata-image";
+  Node set: "src" to: (self to-uri: Image.source);
+  Node;
+end

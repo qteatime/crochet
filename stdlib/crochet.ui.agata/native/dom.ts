@@ -127,4 +127,22 @@ export default (ffi: ForeignInterface) => {
     style.textContent = ffi.text_to_string(css);
     return ffi.box(style);
   });
+
+  ffi.defun("dom.preload-image", (src, fn) => {
+    const img = new Image();
+    img.onload = () => {
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(fn, [ffi.boolean(true)]);
+        return ffi.nothing;
+      });
+    };
+    img.onerror = (error) => {
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(fn, [ffi.boolean(false)]);
+        return ffi.nothing;
+      });
+    };
+    img.src = ffi.text_to_string(src);
+    return ffi.nothing;
+  });
 };

@@ -33,7 +33,7 @@ command main-html: Root do
               | disabled: (New-title map: { X in X trim === "" })
               | clicked: { S in S listener subscribe: { _ in perform todo-ui.add(New-title value) } }
           ]
-          | align-items: "flex-end"
+          | align-items: "flex-end",
         ]);
       with
         on todo-ui.add(Title) do
