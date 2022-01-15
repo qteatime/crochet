@@ -15,7 +15,9 @@ command main-html: Root do
       let HTML = #observable-cell with-value: "";
       agata show: (#widget flex-column: [
         Cell as widget | reference: Ref,
-        #widget text: "",
+        #widget space | vertical: (1.0 as em),
+        #widget divider: "half",
+        #widget space | vertical: (0.5 as em),
         HTML
       ]);
 

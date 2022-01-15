@@ -34,3 +34,8 @@ command dom-renderer to-text: flex-justify-space-between = "space-between";
 command dom-renderer to-text: flex-justify-space-around = "space-around";
 command dom-renderer to-text: flex-justify-space-evenly = "space-evenly";
 command dom-renderer to-text: flex-justify-stretch = "stretch";
+
+
+// divider style
+command dom-renderer to-text: divider-style-full = "agata-divider-style-full";
+command dom-renderer to-text: divider-style-half = "agata-divider-style-half";

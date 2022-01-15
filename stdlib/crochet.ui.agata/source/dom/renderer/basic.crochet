@@ -34,3 +34,18 @@ command dom-renderer render: (W is widget-reference) do
   perform agata-presentation.register-reference(W.reference, Live);
   Node;
 end
+
+
+command dom-renderer render: (W is widget-divider) do
+  let Class = "agata-divider [self to-text: W.style]" flatten-into-plain-text;
+  dom make: "div" class: Class;
+end
+
+
+command dom-renderer render: (W is widget-space) do
+  dom make: "div" class: "agata-space"
+    | style: [
+        width -> self to-unit-text: W.horizontal,
+        height -> self to-unit-text: W.vertical,
+      ];
+end

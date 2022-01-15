@@ -1,3 +1,9 @@
+body {
+  --divider-color: #95a5a6;
+  --card-color: #fdfdfd;
+  --card-background: #f3f3f3;
+}
+
 .agata-text {
 }
 
@@ -16,10 +22,24 @@
   border-radius: 2px;
   padding: 0.5em;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
-  background: #fdfdfd;
+  background: var(--card-color);
 }
 
 .agata-card-container {
-  background: #f3f3f3;
+  background: var(--card-background);
   padding: 0.5em;
+}
+
+.agata-divider {
+  margin: 0 auto;
+  height: 1px;
+  background: var(--divider-color);
+}
+
+.agata-divider-style-full {
+  width: 100%;
+}
+
+.agata-divider-style-half {
+  width: 50%;
 }

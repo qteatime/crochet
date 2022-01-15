@@ -29,6 +29,8 @@
     "source/widget/basic/icon.crochet",
     "source/widget/basic/text.crochet",
     "source/widget/basic/reference.crochet",
+    "source/widget/basic/divider.crochet",
+    "source/widget/basic/space.crochet",
     "source/widget/layout/flex.crochet",
     "source/widget/layout/flow.crochet",
     "source/widget/layout/card.crochet"
