@@ -155,7 +155,7 @@ command flex-options align-items: (Align is flex-align) =
   new flex-options(self with align-items -> Align);
 
 command flex-options align-items: (Name is static-text) =
-  self align: (#flex-align from-text: Name);
+  self align-items: (#flex-align from-text: Name);
 
 
 command flex-options justify-content: (Justify is flex-justify) =
