@@ -139,7 +139,7 @@ command flex-options gap: (F is (flex-gap -> flex-gap)) =
   new flex-options(self with gap -> F(self.gap));
 
 command flex-options gap: (Gap has to-agata-measure) do
-  let Value = Gap as agata-unit;
+  let Value = Gap as measure;
   new flex-options(self with gap -> #flex-gap row: Value column: Value);
 end
 
@@ -173,13 +173,13 @@ command flex-options align-content: (Name is static-text) =
 
 // -- Flex gap
 command #flex-gap defaults =
-  new flex-gap(#agata-unit pixels: 0, #agata-unit pixels: 0);
+  new flex-gap(#measure pixels: 0, #measure pixels: 0);
 
 command flex-gap row: (Unit has to-agata-measure) =
-  new flex-gap(self with row -> Unit as agata-unit);
+  new flex-gap(self with row -> Unit as measure);
 
 command flex-gap column: (Unit has to-agata-measure) =
-  new flex-gap(self with column -> Unit as agata-unit);
+  new flex-gap(self with column -> Unit as measure);
 
 
 // -- Flex child options
@@ -187,8 +187,7 @@ command #flex-child-options defaults =
   new flex-child-options(
     grow -> 0,
     shrink -> 0,
-    basis -> #agata-unit auto,
-    align -> flex-child-align-auto
+    basis -> #measure auto
   );
 
 command flex-child-options grow: (N is integer) =
@@ -198,7 +197,7 @@ command flex-child-options shrink: (N is integer) =
   new flex-child-options(self with shrink -> N);
 
 command flex-child-options basis: (N has to-agata-measure) =
-  new flex-child-options(self with basis -> N as agata-unit);
+  new flex-child-options(self with basis -> N as measure);
 
 
 // -- Constructing enums

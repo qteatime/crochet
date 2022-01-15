@@ -1,0 +1,41 @@
+% crochet
+
+open crochet.ui.agata;
+
+/// An unique identifier for each todo item. Not committed to any serialisation.
+type todo-id;
+
+/// A single todo item
+type todo-item(id is todo-id, title is text, done is boolean);
+
+/// A list of todo items
+type todo(items is list<todo-item>);
+
+
+implement to-widget for todo;
+command todo as widget do
+  #widget flex-column: [
+    #widget flex-column: self.items,
+    #widget card: (
+      #widget flex-row: [
+        #flex-child with: (#widget text: "I need to...")
+          | grow: 1,
+        #widget icon: "plus"
+      ]
+    )
+  ]
+  | gap: { G in G column: (0.5 as em) };
+end
+
+
+implement to-widget for todo-item;
+command todo-item as widget do
+  #widget card: (
+    #widget flex-row: [
+      #widget text: "( )",
+      #flex-child with: (#widget text: self.title)
+        | grow: 1,
+      #widget icon: "trash",
+    ]
+  )
+end

@@ -75,6 +75,7 @@ export class CrochetForNode {
       "crochet.text.parsing.lingua",
       "crochet.text.regex",
       "crochet.time",
+      "crochet.ui.agata",
       "crochet.wrapper.node.file-system",
       "crochet.wrapper.node.http",
       "crochet.wrapper.node.io",

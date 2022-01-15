@@ -1,0 +1,6 @@
+% crochet
+
+type widget-card(content is widget) is widget;
+
+command #widget card: (Content has to-widget) =
+  new widget-card(Content as widget);

@@ -12,7 +12,7 @@
     "source/matches.crochet",
     "source/operations.crochet"
   ],
-  "dependencies": ["crochet.core", "crochet.debug"],
+  "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
     "provides": []
