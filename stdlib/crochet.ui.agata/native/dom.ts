@@ -115,4 +115,16 @@ export default (ffi: ForeignInterface) => {
     });
     return ffi.nothing;
   });
+
+  ffi.defun("dom.add-class", (x0, name) => {
+    const x = get_element(x0);
+    x.classList.add(ffi.text_to_string(name));
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.make-css", (css) => {
+    const style = document.createElement("style");
+    style.textContent = ffi.text_to_string(css);
+    return ffi.box(style);
+  });
 };

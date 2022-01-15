@@ -26,16 +26,22 @@ command todo-item as widget do
   Done stream subscribe: { X in
     perform todo-ui.mark(self.id, X);
   };
+  let Theme = condition
+    when Done value => "todo-done";
+    otherwise => "todo-not-done";
+  end;
 
-  #widget card: (
-    #widget flex-row: [
-      #widget checkbox
-        | checked: Done,
-      #flex-child with: (Title)
-        | grow: 1,
-      #widget button: (#widget icon: "trash")
-        | clicked: { S in S listener subscribe: { _ in perform todo-ui.remove(self.id) } }
-        | disabled: Done
-    ]
+  #dom-widget themed: Theme content: (
+    #widget card: (
+      #widget flex-row: [
+        #widget checkbox
+          | checked: Done,
+        #flex-child with: (Title)
+          | grow: 1,
+        #widget button: (#widget icon: "trash")
+          | clicked: { S in S listener subscribe: { _ in perform todo-ui.remove(self.id) } }
+          | disabled: Done
+      ]
+    )
   )
 end

@@ -15,6 +15,12 @@ command main-html: Root do
 
       handle
         agata show: (#widget flex-column: [
+          #dom-widget css: "
+            .todo-done {
+              text-decoration: line-through;
+              font-style: italic;
+            }
+          ",
           Cell,
           #widget space | vertical: (0.5 as em),
           #widget divider: "half",

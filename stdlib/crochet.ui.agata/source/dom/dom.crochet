@@ -21,6 +21,9 @@ command dom make-surface do
   new dom-surface(self make: "div" class: "agata-surface");
 end
 
+command dom make-css: (Content is text) =
+  new dom-node(foreign dom.make-css(Content));
+
 command dom make-surface-from-native-element: (Element0 is unknown) do
   let Element = foreign dom.ensure-element(Element0);
   new dom-surface(new dom-node(Element));
@@ -89,3 +92,8 @@ end
 
 command dom-node text-input-value =
   foreign dom.input-value(self.box);
+
+command dom-node add-class: (Name is text) do
+  foreign dom.add-class(self.box, Name);
+  self;
+end
