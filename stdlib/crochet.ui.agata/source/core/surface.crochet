@@ -3,7 +3,7 @@
 abstract surface;
 
 trait surface-rendering with
-  command Surface replace-with: (W has to-widget) -> Surface;
+  command Surface replace-contents: (W has to-widget) -> Surface;
   command Surface append: (W has to-widget) -> Surface;
   command Surface prepend: (W has to-widget) -> Surface;
   command Surface on-detached: (() -> nothing) -> Surface;

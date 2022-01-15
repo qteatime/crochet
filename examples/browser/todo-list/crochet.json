@@ -2,8 +2,17 @@
   "name": "crochet.examples.todo-list",
   "target": "*",
   "native_sources": [],
-  "sources": ["source/main.crochet", "source/todo.crochet"],
-  "dependencies": ["crochet.core", "crochet.concurrency", "crochet.ui.agata"],
+  "sources": [
+    "source/main.crochet",
+    "source/todo.crochet",
+    "source/ui.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    "crochet.ui.agata",
+    "crochet.time"
+  ],
   "capabilities": {
     "requires": [],
     "provides": []

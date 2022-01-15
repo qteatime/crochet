@@ -16,7 +16,7 @@ end
 command dom-renderer render: (W is widget-dynamic) do
   let Surface = dom make-surface;
   W.renderer(Surface);
-  Surface;
+  Surface.node;
 end
 
 

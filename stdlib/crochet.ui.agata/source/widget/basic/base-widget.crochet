@@ -46,7 +46,7 @@ type observable-cell-widget(cell is observable-cell, subscriber is cell);
 protect type observable-cell-widget with internal;
 
 command observable-cell-widget setup: (Surface is surface) do
-  Surface replace-with: self.cell value;
+  Surface replace-contents: self.cell value;
 
   Surface on-attached: {
     self maybe-unsubscribe;

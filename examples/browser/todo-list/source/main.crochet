@@ -2,19 +2,21 @@
 
 open crochet.concurrency;
 open crochet.ui.agata;
+open crochet.time;
 
 singleton todo-app;
 
 command main-html: Root do
-  agata-dom with-root: Root do: {
-    agata show: todo-app example-list;
-  };
-end
+  timer with-real-timer: {
+    agata-dom with-root: Root do: {
+      let Todo = new todo([]);
+      let Cell = #observable-cell with-value: Todo;
+      agata show: Cell;
 
-command todo-app example-list do
-  new todo([
-    new todo-item(new todo-id, "A", false),
-    new todo-item(new todo-id, "B", false),
-    new todo-item(new todo-id, "C", false),
-  ])
+      for I in 1 to: 5 do
+        timer sleep: 2 seconds | wait;
+        Cell <- Cell value add: (#todo-item with-title: "Item [I to-text]");
+      end
+    };
+  }
 end

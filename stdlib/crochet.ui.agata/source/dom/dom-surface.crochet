@@ -19,3 +19,13 @@ command dom-surface prepend: (Widget has to-widget) do
   self.node prepend: Node;
   self;
 end
+
+// TODO: implement these
+command dom-surface on-attached: (Block is (() -> nothing)) do
+  Block();
+  self;
+end
+
+command dom-surface on-detached: (Block is (() -> nothing)) do
+  self;
+end
