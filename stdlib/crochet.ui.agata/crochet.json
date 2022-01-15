@@ -13,6 +13,7 @@
     "source/dom/dom-surface.crochet",
     "source/dom/dom.crochet",
     "source/dom/dom-client.crochet",
+    "source/dom/live.crochet",
     "source/dom/renderer/basic.crochet",
     "source/dom/renderer/core.crochet",
     "source/dom/renderer/enums.crochet",
@@ -27,6 +28,7 @@
     "source/widget/basic/dynamic.crochet",
     "source/widget/basic/icon.crochet",
     "source/widget/basic/text.crochet",
+    "source/widget/basic/reference.crochet",
     "source/widget/layout/flex.crochet",
     "source/widget/layout/flow.crochet",
     "source/widget/layout/card.crochet"

@@ -1,4 +1,6 @@
 % crochet
 
-type reference;
+type reference(name is text);
 
+command reference materialise =
+  perform agata-presentation.get-reference(self);

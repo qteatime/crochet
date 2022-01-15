@@ -2,6 +2,7 @@
 
 abstract renderer;
 abstract node;
+abstract live-widget;
 
 trait renderer with
   command Renderer render: widget -> node;

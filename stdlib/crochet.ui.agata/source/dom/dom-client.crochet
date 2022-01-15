@@ -4,6 +4,7 @@ singleton agata-dom;
 
 command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
   let Surface = dom make-surface-from-native-element: Root;
+  let References = #cell with-value: #map empty;
   handle
     Block();
   with
@@ -14,6 +15,16 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
 
     on agata-rendering.get-shared-renderer() do
       continue with dom-renderer;
+    end
+
+    on agata-presentation.register-reference(Reference, Target) do
+      References <- References value at: Reference put: Target;
+      continue with nothing;
+    end
+
+    on agata-presentation.get-reference(Reference) do
+      let Live = References value at: Reference;
+      continue with Live;
     end
   end
 end

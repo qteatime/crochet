@@ -81,4 +81,13 @@ export default (ffi: ForeignInterface) => {
     const x = get_element(x0);
     return ffi.box(x);
   });
+
+  ffi.defun("dom.node-type", (x0) => {
+    const x = get_element(x0);
+    return ffi.text("element");
+  });
+
+  ffi.defun("dom.html", (x) => {
+    return ffi.text(get_element(x).outerHTML);
+  });
 };

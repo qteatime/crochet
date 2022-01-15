@@ -6,6 +6,8 @@ end
 
 effect agata-presentation with
   show(widget is widget); // -> nothing;
+  get-reference(ref is reference); // -> live-widget
+  register-reference(ref is reference, target is live-widget); // -> nothing
 end
 
 singleton agata;
@@ -15,3 +17,6 @@ command agata show: (Widget has to-widget) do
   self;
 end
 
+command agata reference: (Name is static-text) do
+  new reference(Name);
+end

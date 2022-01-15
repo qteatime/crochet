@@ -1,0 +1,13 @@
+% crochet
+
+type dom-element(node is dom-node) is live-widget;
+
+command dom to-live-widget: (Node is dom-node) do
+  let Type = foreign dom.node-type(Node.box);
+  condition
+    when Type =:= "element" => new dom-element(Node);
+  end
+end
+
+command dom-element outer-html =
+  foreign dom.html(self.node.box);
