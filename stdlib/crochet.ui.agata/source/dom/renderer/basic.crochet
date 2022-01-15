@@ -49,3 +49,28 @@ command dom-renderer render: (W is widget-space) do
         height -> self to-unit-text: W.vertical,
       ];
 end
+
+
+command dom-renderer render: (W is widget-choose) do
+  let Node = dom make: "div" class: "agata-choose";
+  let Renderer = new dom-choose-renderer(self, W);
+
+  Node replace-contents: Renderer render-current;
+  W.cell stream subscribe: { _ in Node replace-contents: Renderer render-current };
+
+  Node;
+end
+
+type dom-choose-renderer(renderer is dom-renderer, widget is widget-choose);
+
+command dom-choose-renderer render-current do
+  let Current = self.widget current;
+  condition
+    when Current is ok => self.renderer render: (Current value).widget;
+    when Current is error do
+      let Node = dom make: "div" class: "agata-choose-error";
+      Node append: (dom make-text: "(No content matched)");
+      Node;
+    end
+  end
+end
