@@ -39,7 +39,11 @@ end
 
 
 command dom-renderer render: (W is widget-card) do
-  let E = dom make: "div" class: "agata-card";
-  E append: (self render: W.content);
-  E;
+  dom make: "div" class: "agata-card"
+    | append: (self render: W.content);
+end
+
+command dom-renderer render: (W is widget-card-container) do
+  dom make: "div" class: "agata-card-container"
+    | append: (self render: W.content);
 end

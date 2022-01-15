@@ -1,0 +1,25 @@
+.agata-text {
+}
+
+.agata-icon {
+}
+
+.agata-flow > .agata-flow-child {
+  display: inline-block;
+}
+
+.agata-flex {
+  display: flex;
+}
+
+.agata-card {
+  border-radius: 2px;
+  padding: 0.5em;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
+  background: #fdfdfd;
+}
+
+.agata-card-container {
+  background: #f3f3f3;
+  padding: 0.5em;
+}
