@@ -51,79 +51,66 @@ For example, a "to-do list" component could be written as follows:
     type todo-id;
     type todo(items is cell<list<todo-item>>);
     type todo-item(id is todo-id, title is text, done is boolean);
+    singleton new-todo;
 
-    effect todo with
+    effect todo-ui with
       add(title is text);
       remove(id is todo-id);
       mark(id is todo-id, done is boolean);
     end
 
+    implement to-widget for new-todo;
+    command new-todo as widget do
+      let New-title = #observable-cell with-value: "";
+
+      card: (
+        flex-row: (
+          text-input
+            | placeholder: "Add a task"
+            | value: New-title,
+          icon-button: "plus"
+            | disabled: (New-title map: (_ =/= ""))
+            | clicked: { S in
+                S listener subscribe: { _ in
+                  perform todo-ui.add(New-title value)
+                }
+              }
+        )
+      );
+    end
+
     implement to-widget for todo;
     command todo as widget do
-      let Input = agata reference: "input";
-      let Add = agata reference: "add";
-      handle
-        commit: (
-          flex-column: [
-            ...self.items,
-            card: [
-              flex-row: [
-                icon: "plus",
-                text-input placeholder: "I need to..." | reference: Input
-                  | grow: 1,
-                text-button: "Add" | reference: Add
-              ]
-            ]
-          ]
-          | gap: { G in G horizontal: 0.5 em }
-        );
-      with
-        on agata.key-up(Key) for Input do
-          condition
-            when Key is key-return => perform todo.add(Input materialise value);
-            otherwise => nothing;
-          end
-          continue with nothing;
-        end
-
-        on agata.button-clicked() for Add do
-          perform todo.add(Input materialise value);
-          continue with nothing;
-        end
-      end
+      flex-column: self.items
+        | gap: { G in G horizontal: (0.5 as em) }
     end
 
     implement to-widget for todo-item;
     command todo-item as widget do
-      let Checkbox = agata reference: "checkbox";
-      let Delete = agata reference: "delete";
-      handle
-        commit: (
-          card: [
-            flex-row: [
-              checkbox | reference: Checkbox,
-              flex-child: self.title
-                | grow: 1,
-              icon-button: "trash" | reference: Delete,
-            ]
-          ]
-        );
-      with
-        on agata.checkbox-toggled(Value) for Checkbox do
-          perform todo.mark(self.id, Value);
-          continue with nothing;
-        end
+      let Done = #observable-cell with-value: self.done;
+      Done stream subscribe: { X in perform todo-ui.mark(self.id, X) };
 
-        on agata.button-clicked() for Delete do
-          perform todo.remove(self.id);
-          continue with nothing;
-        end
-      end
+      card: (
+        flex-row: [
+          checkbox | checked: Done,
+          flex-child: self.title
+            | grow: 1,
+          icon-button: "trash"
+            | clicked: { S in
+                S listener subscribe: { _ in
+                  perform todo-ui.remove(self.id)
+                }
+              }
+        ]
+      )
     end
 
-Note that most of the code here is really just checking for actions and
-propagating them. But this isn't a complete application yet, one would
-also need to keep the state around and handle the todo efffects:
+The state is propagated and synchronised with the dataflow-based
+observable cells, and actions that require intervention from outside
+(such as marking todos as done or removing them, as you may want to
+persist those changes somewhere) are communicated through effects.
+
+So, in the outer level, we need to handle these effects:
 
     singleton todo-app;
 
@@ -145,29 +132,33 @@ also need to keep the state around and handle the todo efffects:
       });
 
     command todo-app render do
-      let State = #observable with: new todo([]);
+      let Todo = #observable-cell with: new todo([]);
       handle
-        State
+        commit: (flex-column: [
+          Todo,
+          divider: "half",
+          new-todo
+        ])
       with
         on todo.add(Title) do
           let New-item = #todo-item title: Title;
-          State <- State value add: New-item;
-          continue with New-item;
+          Todo <- Todo value add: New-item;
+          continue with nothing;
         end
 
         on todo.delete(Id) do
-          State <- State value remove: Id;
+          Todo <- Todo value remove: Id;
           continue with nothing;
         end
 
         on todo.mark(Id, Done) do
-          State <- State value mark: Id done: Done;
+          Todo <- Todo value mark: Id done: Done;
           continue with nothing;
         end
       end
     end
 
-Here, the app uses an `observable` value (a reactive mutable cell) as an
+The app uses a `observable` values (a reactive mutable cell) as an
 active view. Changes to this value are re-rendered by the runtime, so the
 code just needs to care about updating its top-level state and letting
 the results trickle down the rendering tree.
@@ -182,26 +173,20 @@ used in the UI code as if they were just regular widgets.
 
 This also goes for other basic values, which means one can write the following:
 
-    let Counter = agata reference: "counter";
-    let State = #observable with: 0;
+    let Clicks = #event-stream empty;
+    let Total = #observable-cell
+                  from-stream: (Clicks from: 0 fold: { N, _ in N + 1 })
+                  initial-value: 0;
 
-    handle
-      flex-column: [
-        "The button was clicked [State] times!",
-        "Increases: [State from: [] fold: (_ append: _)]",
-        text-button: "Click me!" | reference: Counter
-      ]
-    with
-      on agata.button-clicked() for Counter do
-        State <- State value + 1;
-        continue with nothing;
-      end
-    end
+    flex-column: [
+      "The button was clicked [Total] times!",
+      text-button: "Click me!"
+        | clicked: Clicks
+    ]
 
 Which would, after 3 clicks, render something like:
 
     The button was clicked 3 times!
-    Increases: [1, 1, 1]
     <Click me!>
 
 Basing this on observables also means that we can make this work with the

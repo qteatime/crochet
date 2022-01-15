@@ -24,6 +24,12 @@ command #observable-cell with-value: Initial do
   new mutable-observable-cell(State, Stream);
 end
 
+command #observable-cell from-stream: Stream initial-value: Initial do
+  let State = #cell with-value: Initial;
+  new mutable-observable-cell(State, Stream)
+    | read-only;
+end
+
 
 command observable-cell fold-from: (Initial is B) with: (Combine is ((B, A) -> B)) -> observable-cell<B> do
   new foldable-observable-cell(

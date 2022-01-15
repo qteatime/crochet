@@ -115,5 +115,3 @@ do
   self.stream.subscribers <- self.stream.subscribers value remove-if: { X in X =:= Subscriber };
   self;
 end
-
-
