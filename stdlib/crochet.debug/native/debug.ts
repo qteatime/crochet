@@ -41,6 +41,7 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defmachine("debug.write-inspect", function* (value, tag) {
+    console.log("inspect", tag, value);
     yield ffi.push_transcript(tag, value);
     return ffi.nothing;
   });

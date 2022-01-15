@@ -14,6 +14,9 @@ type todo(items is list<todo-item>);
 command todo add: (Item is todo-item) =
   new todo(self.items append: Item);
 
+command todo remove: (Item is todo-id) =
+  new todo(self.items keep-if: { X in not (X.id =:= Item) });
+
 /// Creates a todo item
 command #todo-item with-title: (Title is text) =
   new todo-item(new todo-id, Title, false);

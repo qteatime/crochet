@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.debug;
+
 command dom-renderer render: (W is widget-text-input) do
   let Node = dom make: "input" class: "agata-text-input"
               | set: "type" to: "text";
@@ -9,16 +11,35 @@ command dom-renderer render: (W is widget-text-input) do
   Node set-boolean: "readonly" to: W.read-only value;
 
   W.placeholder stream subscribe: (Node set: "placeholder" to: _);
-  W.value stream subscribe: (Node set: "value" to: _);
+  W.value stream subscribe: (Node set-text-input-value: _);
   W.read-only stream subscribe: (Node set-boolean: "readonly" to: _);
 
   Node on: "keyup" do: { Event in
     W.value <- Node text-input-value;
-  };
+  } capture;
 
   Node on: "change" do: { Event in
     W.value <- Node text-input-value;
-  };
+  } capture;
+
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-button) do
+  let Node = dom make: "button" class: "agata-button";
+
+  Node set-boolean: "disabled" to: W.disabled value;
+  Node set: "title" to: W.accessible-title value;
+
+  Node append: (self render: W.content);
+
+  W.disabled stream subscribe: (Node set-boolean: "disabled" to: _);
+  W.accessible-title stream subscribe: (Node set: "title" to: _);
+  
+  Node on: "click" do: { Event in
+    W.clicked publish: (Event to-click-event);
+  } capture;
 
   Node;
 end

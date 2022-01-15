@@ -1,0 +1,12 @@
+% crochet
+
+open crochet.time;
+
+type dom-event(box is unknown);
+
+command dom-event occurred-at =
+  #instant from-milliseconds-since-unix-epoch: (foreign ev.time(self.box));
+
+
+command dom-event to-click-event =
+  new click-event(self occurred-at);

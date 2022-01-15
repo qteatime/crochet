@@ -10,10 +10,11 @@ effect agata-presentation with
   register-reference(ref is reference, target is live-widget); // -> nothing
 end
 
+
 singleton agata;
 
 command agata show: (Widget has to-widget) do
-  perform agata-presentation.show(Widget as widget);
+  perform agata-presentation.show(Widget as widget | commit);
   self;
 end
 

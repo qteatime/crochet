@@ -1,0 +1,7 @@
+% crochet
+
+open crochet.time;
+
+abstract agata-event;
+
+type click-event(global occurred-at is instant) is agata-event;

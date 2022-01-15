@@ -14,7 +14,7 @@ type mutable-observable-cell(
 type foldable-observable-cell(
   source is observable-cell<A>,
   stream is foldable-event-stream
-);
+) is observable-cell;
 
 
 
@@ -36,7 +36,7 @@ command observable-cell read-only =
   self fold-from: self value with: { S, X in S push: X };
 
 command observable-cell map: (F is (A -> B)) =
-  self fold-from: self value with: { S, X in S push: F(X) };
+  self fold-from: F(self value) with: { S, X in S push: F(X) };
 
 command observable-cell keep-if: (F is (A -> boolean)) initial-value: Initial
 requires

@@ -3,38 +3,38 @@
 open crochet.concurrency;
 open crochet.ui.agata;
 
+effect todo-ui with
+  add(title is text);
+  remove(id is todo-id);
+end
+
 
 implement to-widget for todo;
 command todo as widget do
-  let Input = agata reference: "input";
-  let Value = #observable-cell with-value: "";
   #widget card-container: (
-    #widget flex-column: [
-      #widget flex-column: self.items
-        | gap: { G in G row: (0.5 as em) },
-      #widget divider: "half",
-      #widget flex-row: [
-        #flex-child with: (#widget text-input | placeholder: "I want to..." | value: Value | reference: Input)
-          | grow: 1,
-        #widget space | horizontal: (1.0 as em),
-        #widget icon: "plus"
-      ],
-      #widget divider: "full",
-      Value
-    ]
-    | gap: { G in G row: (1.0 as em) }
+    #widget flex-column: self.items
+      | gap: { G in G row: (0.5 as em) }
   );
 end
 
 
 implement to-widget for todo-item;
 command todo-item as widget do
+  let Done = #observable-cell with-value: self.done;
+  let Title = #observable-cell with-value: self.title;
+
   #widget card: (
     #widget flex-row: [
-      #widget text: "( )",
-      #flex-child with: (#widget text: self.title)
+      Done map: { X in 
+        condition
+          when X => "(X)";
+          otherwise => "( )";
+        end
+      },
+      #flex-child with: (Title)
         | grow: 1,
-      #widget icon: "trash",
+      #widget button: (#widget icon: "trash")
+        | clicked: { S in S listener subscribe: { _ in perform todo-ui.remove(self.id) } }
     ]
   )
 end

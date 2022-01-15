@@ -4,6 +4,9 @@ body {
   --card-color: #fdfdfd;
   --card-background: #f3f3f3;
   --input-background: #fdfdfd;
+  --button-background: var(--primary-accent);
+  --button-disabled-background: var(--divider-color);
+  --button-text: #fafafa;
 }
 
 .agata-text {
@@ -61,4 +64,15 @@ body {
 
 .agata-text-input:focus {
   border-bottom-width: 3px;
+}
+
+.agata-button {
+  background: var(--button-background);
+  padding: 1em 2em;
+  border: none;
+  color: var(--button-text);
+}
+
+.agata-button:disabled {
+  background: var(--button-disabled-background);
 }

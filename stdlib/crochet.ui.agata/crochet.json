@@ -1,7 +1,7 @@
 {
   "name": "crochet.ui.agata",
   "target": "*",
-  "native_sources": ["native/dom.js"],
+  "native_sources": ["native/dom.js", "native/ev.js"],
   "sources": [
     "source/main.crochet",
 
@@ -9,11 +9,13 @@
     "source/core/reference.crochet",
     "source/core/rendering.crochet",
     "source/core/surface.crochet",
+    "source/core/event.crochet",
 
     "source/dom/dom-surface.crochet",
     "source/dom/dom.crochet",
     "source/dom/dom-client.crochet",
     "source/dom/live.crochet",
+    "source/dom/event.crochet",
     "source/dom/renderer/basic.crochet",
     "source/dom/renderer/core.crochet",
     "source/dom/renderer/enums.crochet",
@@ -35,9 +37,16 @@
     "source/widget/layout/flex.crochet",
     "source/widget/layout/flow.crochet",
     "source/widget/layout/card.crochet",
-    "source/widget/input/text.crochet"
+    "source/widget/input/text.crochet",
+    "source/widget/input/button.crochet"
   ],
-  "dependencies": ["crochet.core", "crochet.concurrency", "crochet.text.regex"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    "crochet.text.regex",
+    "crochet.time",
+    "crochet.debug"
+  ],
   "capabilities": {
     "requires": [],
     "provides": []

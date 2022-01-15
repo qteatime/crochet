@@ -39,6 +39,11 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("dom.unset-attribute", (x, attr) => {
+    get_element(x).removeAttribute(ffi.text_to_string(attr));
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.append", (x, y) => {
     get_element(x).appendChild(get_node(y));
     return ffi.nothing;
@@ -87,6 +92,12 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("dom.input-value", (x0) => {
     const x = unbox_typed(x0, HTMLInputElement);
     return ffi.text(x.value);
+  });
+
+  ffi.defun("dom.set-text-input-value", (x0, value) => {
+    const x = unbox_typed(x0, HTMLInputElement);
+    x.value = ffi.text_to_string(value);
+    return ffi.nothing;
   });
 
   ffi.defun("dom.listen", (x0, name, block) => {

@@ -11,7 +11,35 @@ command main-html: Root do
     agata-dom with-root: Root do: {
       let Todo = new todo([]);
       let Cell = #observable-cell with-value: Todo;
-      agata show: Cell;
+      let New-title = #observable-cell with-value: "";
+
+      handle
+        agata show: (#widget flex-column: [
+          Cell,
+          #widget space | vertical: (0.5 as em),
+          #widget divider: "half",
+          #widget space | vertical: (1.0 as em),
+          #widget flex-row: [
+            #flex-child with: (#widget text-input | placeholder: "I want to..." | value: New-title)
+              | grow: 1,
+            #widget space | horizontal: (1.0 as em),
+            #widget button: (#widget icon: "plus")
+              | disabled: (New-title map: { X in X trim === "" })
+              | clicked: { S in S listener subscribe: { _ in perform todo-ui.add(New-title value) } }
+          ]
+        ]);
+      with
+        on todo-ui.add(Title) do
+          New-title <- "";
+          Cell <- Cell value add: (#todo-item with-title: Title);
+          continue with nothing;
+        end
+
+        on todo-ui.remove(Id) do
+          Cell <- Cell value remove: Id;
+          continue with nothing;
+        end
+      end
     };
   }
 end

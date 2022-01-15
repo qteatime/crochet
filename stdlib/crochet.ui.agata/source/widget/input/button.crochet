@@ -1,0 +1,44 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-button(
+  content is widget,
+  accessible-title is observable-cell<text>,
+  disabled is observable-cell<boolean>,
+  clicked is event-stream<click-event>,
+) is widget;
+
+command #widget button: (Content has to-widget) =
+  new widget-button(
+    content -> Content as widget,
+    accessible-title -> #observable-cell with-value: "",
+    disabled -> #observable-cell with-value: false,
+    clicked -> #event-stream empty,
+  );
+
+
+command widget-button accessible-title: (Cell is observable-cell<text>) =
+  new widget-button(self with accessible-title -> Cell);
+
+command widget-button accessible-title: (Title is text) =
+  self accessible-title: (#observable-cell with-value: Title);
+
+
+command widget-button disabled: (Cell is observable-cell<boolean>) =
+  new widget-button(self with disabled -> Cell);
+
+command widget-button disabled: (Disabled is boolean) =
+  self disabled: (#observable-cell with-value: Disabled);
+
+
+command widget-button clicked: (Stream is event-stream) =
+  new widget-button(self with clicked -> Stream);
+
+command widget-button clicked: (F is (event-stream -> A)) do
+  let Result = F(self.clicked);
+  condition
+    when Result is subscriber => self;
+    when Result is event-stream => self clicked: Result;
+  end
+end
