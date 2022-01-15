@@ -17,6 +17,14 @@ command todo add: (Item is todo-item) =
 command todo remove: (Item is todo-id) =
   new todo(self.items keep-if: { X in not (X.id =:= Item) });
 
+command todo mark: (Id is todo-id) done: (Done is boolean) =
+  new todo(self.items map: { Item in
+    condition
+      when Item.id =:= Id => Item done: Done;
+      otherwise => Item;
+    end
+  });
+
 /// Creates a todo item
 command #todo-item with-title: (Title is text) =
   new todo-item(new todo-id, Title, false);
@@ -24,4 +32,5 @@ command #todo-item with-title: (Title is text) =
 command #todo-item with-title: (Title is interpolation) =
   new todo-item(new todo-id, Title flatten-into-plain-text, false);
 
-
+command todo-item done: (Done is boolean) =
+  new todo-item(self with done -> Done);

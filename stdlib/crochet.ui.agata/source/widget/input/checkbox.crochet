@@ -1,0 +1,26 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-checkbox(
+  checked is observable-cell<boolean>,
+  disabled is observable-cell<boolean>,
+) is widget;
+
+command #widget checkbox =
+  new widget-checkbox(
+    checked -> #observable-cell with-value: false,
+    disabled -> #observable-cell with-value: false,
+  );
+
+command widget-checkbox checked: (Cell is observable-cell<boolean>) =
+  new widget-checkbox(self with checked -> Cell);
+
+command widget-checkbox checked: (X is boolean) =
+  self checked: (#observable-cell with-value: X);
+
+command widget-checkbox disabled: (Cell is observable-cell<boolean>) =
+  new widget-checkbox(self with disabled -> Cell);
+
+command widget-checkbox disabled: (X is boolean) =
+  self disabled: (#observable-cell with-value: X);

@@ -48,6 +48,9 @@ command dom-node set-text-input-value: (Value is text) do
   self;
 end
 
+command dom-node input-is-checked =
+  foreign dom.input-is-checked(self.box);
+
 command dom-node append: (Child is dom-node) do
   foreign dom.append(self.box, Child.box);
   self;

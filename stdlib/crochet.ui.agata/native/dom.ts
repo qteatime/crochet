@@ -100,6 +100,11 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("dom.input-is-checked", (x0) => {
+    const x = unbox_typed(x0, HTMLInputElement);
+    return ffi.boolean(x.checked);
+  });
+
   ffi.defun("dom.listen", (x0, name, block) => {
     const x = get_element(x0);
     x.addEventListener(ffi.text_to_string(name), (ev) => {

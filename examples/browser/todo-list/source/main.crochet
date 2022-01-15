@@ -39,6 +39,11 @@ command main-html: Root do
           Cell <- Cell value remove: Id;
           continue with nothing;
         end
+
+        on todo-ui.mark(Id, Done) do
+          Cell <- Cell value mark: Id done: Done;
+          continue with nothing;
+        end
       end
     };
   }
