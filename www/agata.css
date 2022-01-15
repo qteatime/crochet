@@ -76,3 +76,12 @@ body {
 .agata-button:disabled {
   background: var(--button-disabled-background);
 }
+
+.agata-fixed {
+  position: relative;
+  overflow: hidden;
+}
+
+.agata-fixed-child {
+  position: absolute;
+}

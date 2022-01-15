@@ -47,3 +47,40 @@ command dom-renderer render: (W is widget-card-container) do
   dom make: "div" class: "agata-card-container"
     | append: (self render: W.content);
 end
+
+
+command dom-renderer render: (W is widget-fixed) do
+  let Node = dom make: "div" class: "agata-fixed";
+  Node style: [
+    width -> self to-unit-text: W.options.dimension.width,
+    height -> self to-unit-text: W.options.dimension.height,
+  ];
+  for Child in W.items do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is fixed-child) do
+  let Node = dom make: "div" class: "agata-fixed-child";
+  let Anchors = W.position.anchors;
+
+  Node style:
+    (condition
+      when Anchors.x is x-anchor-left =>
+        [left -> self to-unit-text: W.position.x];
+      when Anchors.x is x-anchor-right =>
+        [right -> self to-unit-text: W.position.x];
+    end);
+
+  Node style: 
+    (condition
+      when Anchors.y is y-anchor-top =>
+        [top -> self to-unit-text: W.position.y];
+      when Anchors.y is y-anchor-bottom =>
+        [bottom -> self to-unit-text: W.position.y];
+    end);
+    
+  Node append: (self render: W.content);
+  Node;
+end

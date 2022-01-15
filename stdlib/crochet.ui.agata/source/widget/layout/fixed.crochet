@@ -1,0 +1,140 @@
+% crochet
+
+type widget-fixed(items is list<fixed-child>, options is fixed-options) is widget;
+
+type fixed-options(
+  dimension is dimension,
+);
+
+type fixed-child(
+  content is widget,
+  position is position,
+);
+
+type position(
+  anchors is anchors,
+  x is measure,
+  y is measure,
+);
+
+type anchors(
+  x is x-anchor,
+  y is y-anchor,
+);
+
+enum x-anchor =
+  x-anchor-left,
+  x-anchor-right;
+
+enum y-anchor =
+  y-anchor-top,
+  y-anchor-bottom;
+
+type dimension(
+  width is measure,
+  height is measure,
+);
+
+
+command #widget fixed: Dimension with: (Items is list) =
+  new widget-fixed(Items map: (internal to-fixed-child: _), #fixed-options defaults | dimension: Dimension);
+
+command internal to-fixed-child: (Child is fixed-child) =
+  Child;
+
+command internal to-fixed-child: (Child has to-widget) =
+  new fixed-child(Child as widget, #position zero);
+
+command #fixed-child with: (Content has to-widget) =
+  new fixed-child(Content as widget, #position zero);
+
+command #fixed-options defaults =
+  new fixed-options(
+    dimension -> #dimension zero
+  );
+
+command fixed-child position: (Position is position) =
+  new fixed-child(self with position -> Position);
+
+command fixed-child position: (F is (position -> position)) =
+  self position: F(self.position);
+
+command fixed-options dimension: (Dimension is dimension) =
+  new fixed-options(self with dimension -> Dimension);
+
+command fixed-options dimension: (F is (dimension -> dimension)) =
+  self dimension: F(self.dimension);
+
+
+command #position zero =
+  new position(
+    anchors -> new anchors(x-anchor-left, y-anchor-top),
+    x -> #measure pixels: 0,
+    y -> #measure pixels: 0,
+  );
+
+command position anchors: (X is anchors) =
+  new position(self with anchors -> X);
+
+command position anchors: (F is (anchors -> anchors)) =
+  self anchors: F(self.anchors);
+
+command position x: (X has to-agata-measure)
+requires
+  absolute :: not ((X as measure) =:= auto-measure)
+do
+  new position(self with x -> X as measure);
+end
+
+command position y: (X has to-agata-measure)
+requires
+  absolute :: not ((X as measure) =:= auto-measure)
+do
+  new position(self with y -> X as measure);
+end
+
+
+command anchors x: (X is x-anchor) =
+  new anchors(self with x -> X);
+
+command anchors x: (X is static-text) =
+  self x: (#x-anchor from-text: X);
+
+command anchors y: (Y is y-anchor) =
+  new anchors(self with y -> Y);
+
+command anchors y: (Y is static-text) =
+  self y: (#y-anchor from-text: Y);
+
+
+command #x-anchor from-text: (X is static-text) do
+  condition
+    when X =:= "left" => x-anchor-left;
+    when X =:= "right" => x-anchor-right;
+  end
+end
+
+command #y-anchor from-text: (Y is static-text) do
+  condition
+    when Y =:= "top" => y-anchor-top;
+    when Y =:= "bottom" => y-anchor-bottom;
+  end
+end
+
+
+command #dimension zero =
+  new dimension(#measure pixels: 0, #measure pixels: 0);
+
+command dimension width: (W has to-agata-measure)
+requires
+  absolute :: not ((W as measure) =:= auto-measure)
+do
+  new dimension(self with width -> W as measure);
+end
+
+command dimension height: (W has to-agata-measure)
+requires
+  absolute :: not ((W as measure) =:= auto-measure)
+do
+  new dimension(self with height -> W as measure);
+end

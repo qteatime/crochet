@@ -40,6 +40,7 @@
     "source/widget/layout/flex.crochet",
     "source/widget/layout/flow.crochet",
     "source/widget/layout/card.crochet",
+    "source/widget/layout/fixed.crochet",
     "source/widget/input/text.crochet",
     "source/widget/input/button.crochet",
     "source/widget/input/checkbox.crochet"

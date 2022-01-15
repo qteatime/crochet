@@ -39,3 +39,10 @@ command dom-renderer to-text: flex-justify-stretch = "stretch";
 // divider style
 command dom-renderer to-text: divider-style-full = "agata-divider-style-full";
 command dom-renderer to-text: divider-style-half = "agata-divider-style-half";
+
+
+// anchors
+command dom-renderer to-text: x-anchor-left = "left";
+command dom-renderer to-text: x-anchor-right = "right";
+command dom-renderer to-text: y-anchor-top = "top";
+command dom-renderer to-text: y-anchor-bottom = "bottom";
