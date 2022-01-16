@@ -159,16 +159,16 @@ command flex-options align-items: (Name is static-text) =
 
 
 command flex-options justify-content: (Justify is flex-justify) =
-  new flex-options(self with justify -> Justify);
+  new flex-options(self with justify-content -> Justify);
 
 command flex-options justify-content: (Name is static-text) =
-  new flex-options(self with justify -> #flex-justify from-text: Name);
+  new flex-options(self with justify-content -> #flex-justify from-text: Name);
 
 command flex-options align-content: (Justify is flex-justify) =
   new flex-options(self with align-content -> Justify);
 
 command flex-options align-content: (Name is static-text) =
-  new flex-options(self with justify -> #flex-justify from-text: Name);
+  new flex-options(self with align-content -> #flex-justify from-text: Name);
 
 
 // -- Flex gap
@@ -185,7 +185,7 @@ command flex-gap column: (Unit has to-agata-measure) =
 // -- Flex child options
 command #flex-child-options defaults =
   new flex-child-options(
-    grow -> 0,
+    grow -> 1,
     shrink -> 0,
     basis -> #measure auto
   );
