@@ -192,7 +192,7 @@ export function simple_value(x: CrochetValue): string {
     }
     case Tag.CELL: {
       assert_tag(Tag.CELL, x);
-      return `<cell ${simple_value(x.payload.value)}`;
+      return `<cell ${simple_value(x.payload.value)}>`;
     }
     case Tag.ACTION: {
       assert_tag(Tag.ACTION, x);
