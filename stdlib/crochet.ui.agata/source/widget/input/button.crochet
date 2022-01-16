@@ -42,3 +42,8 @@ command widget-button clicked: (F is (event-stream -> A)) do
     when Result is event-stream => self clicked: Result;
   end
 end
+
+command widget-button on-click: (F is (click-event -> nothing)) do
+  self.clicked listener subscribe: F;
+  self;
+end
