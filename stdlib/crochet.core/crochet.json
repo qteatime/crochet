@@ -87,6 +87,7 @@
     "source/numeric/floating-point.crochet",
     "source/numeric/rounding-strategies.crochet",
     "source/numeric/total-ordering.crochet",
+    "source/numeric/etc.crochet",
 
     "source/result/equality.crochet",
     "source/result/result.crochet",
