@@ -1,0 +1,43 @@
+% crochet
+
+singleton agata-color;
+
+abstract color;
+
+singleton color-unset is color;
+
+type rgba(
+  red is integer,
+  green is integer,
+  blue is integer,
+  alpha is integer,
+) is color;
+
+trait to-agata-color with
+  command Self as color -> color;
+end
+
+
+command agata-color red: (R is integer) green: (G is integer) blue: (B is integer) alpha: (A is integer)
+when
+  byte-red :: (R >= 0) and (R <= 255),
+  byte-green :: (G >= 0) and (G <= 255),
+  byte-blue :: (B >= 0) and (B <= 255),
+  byte-alpha :: (A >= 0) and (A <= 255)
+do
+  new rgba(red, green, blue, alpha);
+end
+
+command agata-color red: R green: G blue: B =
+  #color red: R green: G blue: B alpha: 255;
+
+command agata-color from-hex-code: (Code is static-text) do
+  let Color = foreign color.parse-hex(Code);
+  #color red: Color.red green: Color.green blue: Color.blue alpha: Color.alpha;
+test
+  assert (#color from-hex-code: "#000000") === (#color red: 0 green: 0 blue: 0 alpha: 255);
+  assert (#color from-hex-code: "#ffffff00") === (#color red: 255 green: 255 blue: 255 alpha: 0);
+end
+
+implement to-agata-color for static-text;
+command static-text as color = #color from-hex-code: self;

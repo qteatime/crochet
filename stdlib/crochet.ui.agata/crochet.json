@@ -12,6 +12,11 @@
     "source/core/event.crochet",
     "source/core/network.crochet",
     "source/core/image.crochet",
+    "source/core/measure/equality.crochet",
+    "source/core/measure/units.crochet",
+    "source/core/color/types.crochet",
+    "source/core/font/types.crochet",
+    "source/core/font/builders.crochet",
 
     "source/dom/dom-surface.crochet",
     "source/dom/dom.crochet",
@@ -27,9 +32,6 @@
     "source/dom/renderer/input.crochet",
     "source/dom/renderer/measure.crochet",
     "source/dom/renderer/dom-specific.crochet",
-
-    "source/measure/equality.crochet",
-    "source/measure/units.crochet",
 
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",
