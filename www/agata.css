@@ -6,16 +6,21 @@ body {
   --input-background: var(--white);
 
   --button-border: var(--grey-20);
-  --button-text: var(--blue-30);
+  --button-text: var(--black);
   --button-hover-bg: var(--grey-10);
+  --button-active-bg: var(--grey-20);
   --button-primary-text: var(--white);
   --button-primary-bg: var(--blue-20);
   --button-primary-hover-bg: var(--blue-10);
+  --button-primary-active-bg: var(--blue-30);
   --button-dangerous-text: var(--white);
   --button-dangerous-bg: var(--red-20);
   --button-dangerous-hover-bg: var(--red-10);
+  --button-dangerous-active-bg: var(--red-30);
   --button-disabled-bg: var(--grey-30);
   --button-disabled-text: var(--white);
+  --button-clear-hover-bg: var(--grey-10);
+  --button-clear-active-bg: var(--grey-20);
 
   --white: #fafafa;
   --black: #2f2f2f;
@@ -120,6 +125,10 @@ body {
   background: var(--button-hover-bg);
 }
 
+.agata-button-style-default:active {
+  background: var(--button-active-bg);
+}
+
 .agata-button-style-primary {
   background: var(--button-primary-bg);
   color: var(--button-primary-text);
@@ -129,6 +138,10 @@ body {
   background: var(--button-primary-hover-bg);
 }
 
+.agata-button-style-primary:active {
+  background: var(--button-primary-active-bg);
+}
+
 .agata-button-style-dangerous {
   background: var(--button-dangerous-bg);
   color: var(--button-dangerous-text);
@@ -136,6 +149,18 @@ body {
 
 .agata-button-style-dangerous:hover {
   background: var(--button-dangerous-hover-bg);
+}
+
+.agata-button-style-dangerous:active {
+  background: var(--button-dangerous-active-bg);
+}
+
+.agata-button-style-clear:hover {
+  background: var(--button-clear-hover-bg);
+}
+
+.agata-button-style-clear:active {
+  background: var(--button-clear-active-bg);
 }
 
 .agata-button:disabled {
