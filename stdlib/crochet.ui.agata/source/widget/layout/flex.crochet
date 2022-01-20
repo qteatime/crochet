@@ -47,8 +47,8 @@ enum flex-justify =
 type flex-gap(row is measure, column is measure);
 
 type flex-child-options(
-  grow is integer,
-  shrink is integer,
+  grow, // is integer | nothing,
+  shrink, // is integer | nothing,
   basis is measure,
 );
 
@@ -185,8 +185,8 @@ command flex-gap column: (Unit has to-agata-measure) =
 // -- Flex child options
 command #flex-child-options defaults =
   new flex-child-options(
-    grow -> 1,
-    shrink -> 0,
+    grow -> nothing,
+    shrink -> nothing,
     basis -> #measure auto
   );
 

@@ -1,6 +1,6 @@
 % crochet
 
-command dom-renderer to-unit-text: auto-measure =
+command dom-renderer to-unit-text: measure-auto =
   "auto";
 
 command dom-renderer to-unit-text: (X is pixels) =

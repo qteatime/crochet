@@ -2,14 +2,17 @@
 
 abstract measure;
 
-singleton auto-measure is measure;
-type pixels(value is integer) is measure;
-type em(value is float-64bit) is measure;
-type percent(value is float-64bit) is measure;
+singleton measure-auto is measure;
+singleton measure-unset is measure;
+abstract measure-length is measure;
+type pixels(value is integer) is measure-length;
+type em(value is float-64bit) is measure-length;
+type percent(value is float-64bit) is measure-length;
 
 
 // -- Constructors
-command #measure auto = auto-measure;
+command #measure unset = measure-unset;
+command #measure auto = measure-auto;
 command #measure pixels: (I is integer) = new pixels(I);
 command #measure em: (I is float-64bit) = new em(I);
 command #measure percent: (I is float-64bit) = new percent(I);

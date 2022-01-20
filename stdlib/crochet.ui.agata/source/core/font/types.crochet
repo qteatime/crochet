@@ -39,7 +39,7 @@ command agata-font family: (Families is set<static-text>) =
     weight -> font-weight-inherit,
     style -> font-style-inherit,
     color -> color-unset,
-    size -> auto-measure,
+    size -> measure-auto,
   );
 
 

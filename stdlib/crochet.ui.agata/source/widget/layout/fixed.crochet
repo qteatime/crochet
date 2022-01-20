@@ -13,8 +13,8 @@ type fixed-child(
 
 type position(
   anchors is anchors,
-  x is measure,
-  y is measure,
+  x is measure-length,
+  y is measure-length,
 );
 
 type anchors(
@@ -31,8 +31,8 @@ enum y-anchor =
   y-anchor-bottom;
 
 type dimension(
-  width is measure,
-  height is measure,
+  width is measure-length,
+  height is measure-length,
 );
 
 
@@ -81,14 +81,14 @@ command position anchors: (F is (anchors -> anchors)) =
 
 command position x: (X has to-agata-measure)
 requires
-  absolute :: not ((X as measure) =:= auto-measure)
+  absolute :: not ((X as measure) =:= measure-auto)
 do
   new position(self with x -> X as measure);
 end
 
 command position y: (X has to-agata-measure)
 requires
-  absolute :: not ((X as measure) =:= auto-measure)
+  absolute :: not ((X as measure) =:= measure-auto)
 do
   new position(self with y -> X as measure);
 end
@@ -127,14 +127,14 @@ command #dimension zero =
 
 command dimension width: (W has to-agata-measure)
 requires
-  absolute :: not ((W as measure) =:= auto-measure)
+  absolute :: not ((W as measure) =:= measure-auto)
 do
   new dimension(self with width -> W as measure);
 end
 
 command dimension height: (W has to-agata-measure)
 requires
-  absolute :: not ((W as measure) =:= auto-measure)
+  absolute :: not ((W as measure) =:= measure-auto)
 do
   new dimension(self with height -> W as measure);
 end

@@ -29,13 +29,19 @@ end
 command dom-renderer render: (W is flex-child) do
   let E = dom make: "div" class: "agata-flex-child";
   E style: [
-    flex-grow -> W.options.grow to-text,
-    flex-shrink -> W.options.shrink to-text,
+    flex-grow -> self render-flex-unit: W.options.grow,
+    flex-shrink -> self render-flex-unit: W.options.shrink,
     flex-basis -> self to-unit-text: W.options.basis,
   ];
   E append: (self render: W.content);
   E;
 end
+
+command dom-renderer render-flex-unit: nothing =
+  "unset";
+
+command dom-renderer render-flex-unit: (X is integer) =
+  X to-text;
 
 
 command dom-renderer render: (W is widget-card) do

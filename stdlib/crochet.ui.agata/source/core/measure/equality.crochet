@@ -5,7 +5,7 @@ implement equality for measure;
 command measure === measure =
   false;
 
-command auto-measure === auto-measure =
+command measure-auto === measure-auto =
   true;
 
 command pixels === (That is pixels) =
