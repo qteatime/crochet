@@ -44,6 +44,11 @@ command dom-renderer render: (W is widget-button) do
   Node;
 end
 
+command dom-renderer render: (W is widget-icon-button) do
+  self render: W.button
+    | add-class: "agata-icon-button";
+end
+
 
 command dom-renderer render: (W is widget-checkbox) do
   let Node = dom make: "input" class: "agata-checkbox"

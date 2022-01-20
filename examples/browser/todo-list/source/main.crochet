@@ -29,9 +29,9 @@ command main-html: Root do
             #flex-child with: (#widget text-input | placeholder: "I want to..." | value: New-title)
               | grow: 1,
             #widget space | horizontal: (1.0 as em),
-            #widget button: (#widget icon: "plus")
+            #widget icon-button: "plus"
               | disabled: (New-title map: { X in X trim === "" })
-              | clicked: { S in S listener subscribe: { _ in perform todo-ui.add(New-title value) } }
+              | on-click: { _ in perform todo-ui.add(New-title value) }
           ]
           | align-items: "flex-end",
         ]);

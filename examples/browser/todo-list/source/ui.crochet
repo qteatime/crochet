@@ -38,8 +38,8 @@ command todo-item as widget do
           | checked: Done,
         #flex-child with: (Title)
           | grow: 1,
-        #widget button: (#widget icon: "trash")
-          | clicked: { S in S listener subscribe: { _ in perform todo-ui.remove(self.id) } }
+        #widget icon-button: "trash"
+          | on-click: { _ in perform todo-ui.remove(self.id) }
           | disabled: Done
       ]
     )

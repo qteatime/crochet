@@ -6,7 +6,7 @@ define agata-theme-serif-family = ["Lora", "serif"];
 define agata-theme-mono-family = ["Source Sans Pro", "monospace"];
 
 command agata-theme-fonts body =
-  agata-font family: agata-theme-sans-family,
+  agata-font family: agata-theme-sans-family
     | size: (16 as pixels)
     | color: agata-theme-colors body;
 

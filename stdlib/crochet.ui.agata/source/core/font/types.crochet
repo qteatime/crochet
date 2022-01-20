@@ -17,7 +17,7 @@ enum font-weight =
   font-weight-light,
   font-weight-regular,
   font-weight-medium,
-  font-weight semi-bold,
+  font-weight-semi-bold,
   font-weight-bold,
   font-weight-black;
 

@@ -19,7 +19,7 @@ end
 
 
 command agata-color red: (R is integer) green: (G is integer) blue: (B is integer) alpha: (A is integer)
-when
+requires
   byte-red :: (R >= 0) and (R <= 255),
   byte-green :: (G >= 0) and (G <= 255),
   byte-blue :: (B >= 0) and (B <= 255),
