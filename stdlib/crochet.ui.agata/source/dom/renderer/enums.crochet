@@ -46,3 +46,10 @@ command dom-renderer to-text: x-anchor-left = "left";
 command dom-renderer to-text: x-anchor-right = "right";
 command dom-renderer to-text: y-anchor-top = "top";
 command dom-renderer to-text: y-anchor-bottom = "bottom";
+
+
+// button styles
+command dom-renderer to-class: button-style-default = "agata-button-style-default";
+command dom-renderer to-class: button-style-primary = "agata-button-style-primary";
+command dom-renderer to-class: button-style-dangerous = "agata-button-style-dangerous";
+command dom-renderer to-class: button-style-clear = "agata-button-style-clear";

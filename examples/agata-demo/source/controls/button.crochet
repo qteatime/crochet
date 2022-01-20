@@ -1,0 +1,35 @@
+% crochet
+
+open crochet.ui.agata;
+
+singleton controls-button;
+
+command controls-button row: (Items is list<widget>) =
+  #widget flex-row: Items
+    | wrap: "wrap"
+    | justify-content: "space-between"
+    | gap: { G in G column: (2.0 as em) | row: (1.0 as em) };
+
+implement to-widget for controls-button;
+command controls-button as widget do
+  #widget flex-column: [
+    #widget text: "Button",
+
+    #widget text: "Text buttons",
+    self row: [
+      #widget button: "Outlined",
+
+      #widget button: "Primary"
+        | style: "primary",
+
+      #widget button: "Dangerous"
+        | style: "dangerous",
+
+      #widget button: "Clear"
+        | style: "clear",
+
+      #widget button: "Disabled"
+        | disabled: true
+    ]
+  ];
+end

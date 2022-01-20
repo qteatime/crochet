@@ -1,0 +1,11 @@
+% crochet
+  
+open crochet.concurrency;
+open crochet.ui.agata;
+
+
+command main-html: Root do
+  agata-dom with-root: Root do: {
+    agata show: app;
+  }
+end

@@ -1,0 +1,15 @@
+{
+  "name": "crochet.examples.agata.demo",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet",
+    "source/app.crochet",
+    "source/controls/button.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.concurrency", "crochet.ui.agata"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

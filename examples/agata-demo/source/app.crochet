@@ -1,0 +1,12 @@
+% crochet
+
+open crochet.ui.agata;
+
+singleton app;
+
+implement to-widget for app;
+command app as widget do
+  #widget flex-column: [
+    controls-button
+  ]
+end

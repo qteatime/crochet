@@ -29,6 +29,7 @@ end
 command dom-renderer render: (W is widget-button) do
   let Node = dom make: "button" class: "agata-button";
 
+  Node add-class: (self to-class: W.style);
   Node set-boolean: "disabled" to: W.disabled value;
   Node set: "title" to: W.accessible-title value;
 

@@ -4,6 +4,7 @@ open crochet.concurrency;
 
 type widget-button(
   content is widget,
+  style is button-style,
   accessible-title is observable-cell<text>,
   disabled is observable-cell<boolean>,
   clicked is event-stream<click-event>,
@@ -14,22 +15,40 @@ type widget-icon-button(
   button is widget-button
 ) is widget;
 
+enum button-style =
+  button-style-default,
+  button-style-primary,
+  button-style-dangerous,
+  button-style-clear;
+
+
 command #widget button: (Content has to-widget) =
   new widget-button(
     content -> Content as widget,
     accessible-title -> #observable-cell with-value: "",
     disabled -> #observable-cell with-value: false,
     clicked -> #event-stream empty,
+    style -> button-style-default,
   );
 
 command #widget icon-button: (Icon is widget-icon) =
   new widget-icon-button(
     icon -> Icon,
-    button -> #widget button: Icon
+    button -> #widget button: Icon | style: "clear"
   );
 
 command #widget icon-button: (Name is static-text) =
   self icon-button: (#widget icon: Name);
+
+
+command #button-style from-text: (Name is static-text) do
+  condition
+    when Name =:= "default" => button-style-default;
+    when Name =:= "primary" => button-style-primary;
+    when Name =:= "dangerous" => button-style-dangerous;
+    when Name =:= "clear" => button-style-clear;
+  end
+end
 
 
 command widget-button accessible-title: (Cell is observable-cell<text>) =
@@ -69,3 +88,11 @@ end
 
 command widget-icon-button on-click: F =
   new widget-icon-button(self with button -> self.button on-click: F);
+
+
+command widget-button style: (Style is button-style) =
+  new widget-button(self with style -> Style);
+
+command widget-button style: (Style is static-text) =
+  self style: (#button-style from-text: Style);
+

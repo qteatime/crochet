@@ -1,12 +1,44 @@
 body {
-  --primary-accent: #039be5;
-  --divider-color: #95a5a6;
-  --card-color: #fdfdfd;
-  --card-background: #f3f3f3;
-  --input-background: #fdfdfd;
-  --button-background: var(--primary-accent);
-  --button-disabled-background: var(--divider-color);
-  --button-text: #fafafa;
+  --primary-accent: var(--blue-20);
+  --divider-color: var(--grey-20);
+  --card-color: var(--white);
+  --card-background: var(--grey-10);
+  --input-background: var(--white);
+
+  --button-border: var(--grey-20);
+  --button-text: var(--blue-30);
+  --button-hover-bg: var(--grey-10);
+  --button-primary-text: var(--white);
+  --button-primary-bg: var(--blue-20);
+  --button-primary-hover-bg: var(--blue-10);
+  --button-dangerous-text: var(--white);
+  --button-dangerous-bg: var(--red-20);
+  --button-dangerous-hover-bg: var(--red-10);
+  --button-disabled-bg: var(--grey-30);
+  --button-disabled-text: var(--white);
+
+  --white: #fafafa;
+  --black: #2f2f2f;
+  --grey-10: #e9f5f4;
+  --grey-20: #d0dbda;
+  --grey-30: #b0bab9;
+  --grey-40: #6f7575;
+  --grey-50: #333635;
+  --blue-10: #5bccf5;
+  --blue-20: #51b6db;
+  --blue-30: #459dbd;
+  --blue-40: #2b6275;
+  --blue-50: #142d36;
+  --green-10: #78f5b4;
+  --green-20: #6bdba2;
+  --green-30: #5cbd8b;
+  --green-40: #397556;
+  --green-50: #1a3627;
+  --red-10: #f56e97;
+  --red-20: #db6387;
+  --red-30: #bd5575;
+  --red-40: #753548;
+  --red-50: #361821;
 }
 
 .agata-text {
@@ -67,14 +99,49 @@ body {
 }
 
 .agata-button {
-  background: var(--button-background);
   padding: 1em 2em;
   border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.agata-text-button {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.agata-button-style-default {
+  border: 2px solid var(--button-border);
   color: var(--button-text);
 }
 
+.agata-button-style-default:hover {
+  background: var(--button-hover-bg);
+}
+
+.agata-button-style-primary {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+
+.agata-button-style-primary:hover {
+  background: var(--button-primary-hover-bg);
+}
+
+.agata-button-style-dangerous {
+  background: var(--button-dangerous-bg);
+  color: var(--button-dangerous-text);
+}
+
+.agata-button-style-dangerous:hover {
+  background: var(--button-dangerous-hover-bg);
+}
+
 .agata-button:disabled {
-  background: var(--button-disabled-background);
+  background: var(--button-disabled-bg);
+  border: none;
+  color: var(--button-disabled-text);
 }
 
 .agata-fixed {
