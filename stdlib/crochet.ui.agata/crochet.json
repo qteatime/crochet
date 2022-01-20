@@ -1,7 +1,7 @@
 {
   "name": "crochet.ui.agata",
   "target": "*",
-  "native_sources": ["native/dom.js", "native/ev.js"],
+  "native_sources": ["native/dom.js", "native/ev.js", "native/color.js"],
   "sources": [
     "source/main.crochet",
 
