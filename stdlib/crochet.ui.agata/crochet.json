@@ -17,6 +17,9 @@
     "source/core/color/types.crochet",
     "source/core/font/types.crochet",
     "source/core/font/builders.crochet",
+    "source/core/theme/core.crochet",
+    "source/core/theme/colors.crochet",
+    "source/core/theme/fonts.crochet",
 
     "source/dom/dom-surface.crochet",
     "source/dom/dom.crochet",

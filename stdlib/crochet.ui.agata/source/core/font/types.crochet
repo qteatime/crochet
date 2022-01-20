@@ -30,9 +30,12 @@ enum font-style =
 command agata-font family: (Family is static-text) =
   self family: (#set from: [Family]);
 
-command agata-font family: (Family is set<static-text>) =
+command agata-font family: (Families is list<static-text>) =
+  self family: (#set from: Families);
+
+command agata-font family: (Families is set<static-text>) =
   new font(
-    family -> Family,
+    family -> Families,
     weight -> font-weight-inherit,
     style -> font-style-inherit,
     color -> color-unset,

@@ -1,0 +1,44 @@
+% crochet
+
+command agata-theme-colors black = "2f2f2f" as color;
+command agata-theme-colors white = "fafafa" as color;
+
+// -- Palettes
+command agata-theme-colors grey-10 = "e9f5f4" as color;
+command agata-theme-colors grey-20 = "d0dbda" as color;
+command agata-theme-colors grey-30 = "b0bab9" as color;
+command agata-theme-colors grey-40 = "6f7575" as color;
+command agata-theme-colors grey-50 = "333635" as color;
+
+command agata-theme-colors blue-10 = "5bccf5" as color;
+command agata-theme-colors blue-20 = "51b6db" as color;
+command agata-theme-colors blue-30 = "459dbd" as color;
+command agata-theme-colors blue-40 = "2b6275" as color;
+command agata-theme-colors blue-50 = "142d36" as color;
+
+command agata-theme-colors green-10 = "78f5b4" as color;
+command agata-theme-colors green-20 = "6bdba2" as color;
+command agata-theme-colors green-30 = "5cbd8b" as color;
+command agata-theme-colors green-40 = "397556" as color;
+command agata-theme-colors green-50 = "1a3627" as color;
+
+command agata-theme-colors red-10 = "f56e97" as color;
+command agata-theme-colors red-20 = "db6387" as color;
+command agata-theme-colors red-30 = "bd5575" as color;
+command agata-theme-colors red-40 = "753548" as color;
+command agata-theme-colors red-50 = "361821" as color;
+
+command agata-theme-colors yellow-10 = "f5edc1" as color;
+command agata-theme-colors yellow-20 = "dbd4ad" as color;
+command agata-theme-colors yellow-30 = "bcb695" as color;
+command agata-theme-colors yellow-40 = "75725d" as color;
+command agata-theme-colors yellow-50 = "36342a" as color;
+
+command agata-theme-colors purple-10 = "c5abf5" as color;
+command agata-theme-colors purple-20 = "b19adb" as color;
+command agata-theme-colors purple-30 = "9985bd" as color;
+command agata-theme-colors purple-40 = "5e5275" as color;
+command agata-theme-colors purple-50 = "2b2536" as color;
+
+// -- Common colours
+command agata-theme-colors body = self black;

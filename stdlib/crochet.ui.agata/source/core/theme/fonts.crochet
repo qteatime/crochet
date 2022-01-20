@@ -1,0 +1,18 @@
+% crochet
+
+define agata-theme-sans-family = ["Roboto", "sans-serif"];
+define agata-theme-title-family = ["Roboto", "sans-serif"];
+define agata-theme-serif-family = ["Lora", "serif"];
+define agata-theme-mono-family = ["Source Sans Pro", "monospace"];
+
+command agata-theme-fonts body =
+  agata-font family: agata-theme-sans-family,
+    | size: (16 as pixels)
+    | color: agata-theme-colors body;
+
+command agata-theme-fonts title =
+  agata-font family: agata-theme-title-family
+    | size: (36 as pixels)
+    | weight: "bold"
+    | color: agata-theme-colors title;
+
