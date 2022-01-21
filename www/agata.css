@@ -130,6 +130,7 @@ input {
   font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
+  cursor: pointer;
 }
 
 .agata-button-style-default {
@@ -183,6 +184,7 @@ input {
   background: var(--button-disabled-bg);
   border: none;
   color: var(--button-disabled-text);
+  cursor: default;
 }
 
 .agata-button.agata-icon-button {
