@@ -26,6 +26,11 @@ html {
   --button-clear-hover-bg: var(--grey-10);
   --button-clear-active-bg: var(--grey-20);
 
+  --action-button-border: var(--blue-10);
+  --action-button-bg: var(--grey-10);
+  --action-button-hover-bg: var(--blue-10);
+  --action-button-active-bg: var(--blue-20);
+
   --subtitle-border: var(--grey-20);
 
   --white: #fafafa;
@@ -195,6 +200,39 @@ input {
   border: none;
   color: var(--button-disabled-text);
   cursor: default;
+}
+
+.agata-button.agata-action-button {
+  border-left: 2px solid var(--action-button-border);
+  background: var(--action-button-bg);
+  font-weight: normal;
+  text-transform: none;
+  text-align: left;
+}
+
+.agata-button.agata-action-button:hover {
+  background: var(--action-button-hover-bg);
+}
+
+.agata-button.agata-action-button:active {
+  background: var(--action-button-active-bg);
+}
+
+.agata-action-button .agata-action-button-icon {
+  font-size: 2rem;
+}
+
+.agata-action-button .agata-action-button-title {
+  font-weight: bold;
+  line-height: 1.5em;
+}
+
+.agata-action-button .agata-action-button-description {
+  font-size: 0.9rem;
+}
+
+.agata-button.agata-action-button:disabled {
+  background: var(--button-disabled-bg);
 }
 
 .agata-button.agata-icon-button {

@@ -72,7 +72,7 @@ command module parse-capability: (X is text) do
 end
 
 command module parse-capability: (X is record) do
-  let Valid-name = regex from-text: "^(?:[a-z][a-z0-9\-\.]*/)?[a-z][a-z0-9\-]*$" | compile;
+  let Valid-name = regex from-text: "^(?:\[a-z\]\[a-z0-9\\-\\.\]*/)?\[a-z\]\[a-z0-9\\-\]*$" | compile;
   condition
     when Valid-name can-match: X.name =>
       new purr-valid-capability(

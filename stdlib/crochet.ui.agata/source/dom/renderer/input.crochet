@@ -51,6 +51,34 @@ command dom-renderer render: (W is widget-icon-button) do
     | add-class: "agata-icon-button";
 end
 
+command dom-renderer render: (W is widget-action-button) do
+  let Button = new widget-button(W.button with content -> (
+    condition
+      when W.icon is nothing do
+        #widget flex-column: [
+          #dom-widget themed: "agata-action-button-title" content: W.title,
+          #dom-widget themed: "agata-action-button-description" content: W.description,
+        ];
+      end
+
+      otherwise do
+        #widget flex-row: [
+          #dom-widget themed: "agata-action-button-icon" content: (W.icon size: icon-size-32),
+          #dom-widget themed: "agata-action-button-content" content: (#widget flex-column: [
+            #dom-widget themed: "agata-action-button-title" content: W.title,
+            #dom-widget themed: "agata-action-button-description" content: W.description,
+          ])
+        ]
+        | gap: { G in G column: (#measure em: 0.5) }
+        | align-items: "center"
+      end
+    end
+  ));
+
+  self render: Button
+    | add-class: "agata-action-button";
+end
+
 
 command dom-renderer render: (W is widget-checkbox) do
   let Node = dom make: "input" class: "agata-checkbox"

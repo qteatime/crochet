@@ -45,9 +45,32 @@ command controls-button as widget do
         #widget icon-button: "cat"
           | size: icon-size-48,
         #widget icon-button: "cat"
-          | size: icon-size-64
+          | size: icon-size-64,
+        #widget icon-button: "cat"
+          | disabled: true
+          | size: icon-size-64,
       ]
       | align-items: "flex-end",
+    ],
+
+    #widget section: [
+      #widget title: "Action buttons",
+
+      self row: [
+        #widget action-button: "Title"
+          | icon: "plus"
+          | description: "A description goes here",
+
+        #widget action-button: "Title"
+          | description: "A description goes here",
+
+        #widget action-button: "Title",
+
+        #widget action-button: "Title"
+          | icon: "plus"
+          | description: "A description goes here"
+          | disabled: true,
+      ]
     ]
   ];
 end

@@ -15,6 +15,13 @@ type widget-icon-button(
   button is widget-button
 ) is widget;
 
+type widget-action-button(
+  icon, // is widget-icon | nothing,
+  title is text,
+  description is text,
+  button is widget-button,
+) is widget;
+
 enum button-style =
   button-style-default,
   button-style-primary,
@@ -40,6 +47,14 @@ command #widget icon-button: (Icon is widget-icon) =
 command #widget icon-button: (Name is static-text) =
   self icon-button: (#widget icon: Name);
 
+command #widget action-button: (Title has to-widget) =
+  new widget-action-button(
+    icon -> nothing,
+    title -> Title,
+    description -> "",
+    button -> #widget button: "" | style: "clear",
+  );
+
 
 command #button-style from-text: (Name is static-text) do
   condition
@@ -60,6 +75,9 @@ command widget-button accessible-title: (Title is text) =
 command widget-icon-button accessible-title: Title =
   new widget-icon-button(self with button -> self.button accessible-title: Title);
 
+command widget-action-button accessible-title: Title =
+  new widget-action-button(self with button -> self.button accessible-title: Title);
+
 
 command widget-button disabled: (Cell is observable-cell<boolean>) =
   new widget-button(self with disabled -> Cell);
@@ -69,6 +87,9 @@ command widget-button disabled: (Disabled is boolean) =
 
 command widget-icon-button disabled: Disabled =
   new widget-icon-button(self with button -> self.button disabled: Disabled);
+
+command widget-action-button disabled: Disabled =
+  new widget-action-button(self with button -> self.button disabled: Disabled);
 
 
 command widget-button clicked: (Stream is event-stream) =
@@ -80,6 +101,9 @@ command widget-button clicked: (F is (event-stream -> A)) =
 command widget-icon-button clicked: Stream =
   new widget-icon-button(self with button -> self.button clicked: Stream);
 
+command widget-action-button clicked: Stream =
+  new widget-action-button(self with button -> self.button clicked: Stream);
+
 
 command widget-button on-click: (F is (click-event -> nothing)) do
   self.clicked listener subscribe: F;
@@ -88,6 +112,9 @@ end
 
 command widget-icon-button on-click: F =
   new widget-icon-button(self with button -> self.button on-click: F);
+
+command widget-action-button on-click: F =
+  new widget-action-button(self with button -> self.button on-click: F);
 
 
 command widget-button style: (Style is button-style) =
@@ -99,3 +126,13 @@ command widget-button style: (Style is static-text) =
 
 command widget-icon-button size: Size =
   new widget-icon-button(self with icon -> self.icon size: Size);
+
+
+command widget-action-button icon: (Icon is static-text) =
+  new widget-action-button(self with icon -> #widget icon: Icon);
+
+command widget-action-button icon: (Icon is widget-icon) =
+  new widget-action-button(self with icon -> Icon);
+
+command widget-action-button description: (Description is text) =
+  new widget-action-button(self with description -> Description);
