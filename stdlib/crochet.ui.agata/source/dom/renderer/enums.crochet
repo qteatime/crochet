@@ -81,7 +81,13 @@ command dom-renderer to-font-style: font-style-italic = "italic";
 
 
 // Typography
+command dom-renderer to-css-class: typography-style-page-title = "agata-typography-page-title";
 command dom-renderer to-css-class: typography-style-title = "agata-typography-title";
 command dom-renderer to-css-class: typography-style-subtitle = "agata-typography-subtitle";
 command dom-renderer to-css-class: typography-style-subtitle2 = "agata-typography-subtitle2";
 command dom-renderer to-css-class: typography-style-body = "agata-typography-body";
+
+
+// Section styles
+command dom-renderer to-css-class: section-style-content = "agata-section-style-content";
+command dom-renderer to-css-class: section-style-welcome = "agata-section-style-welcome";

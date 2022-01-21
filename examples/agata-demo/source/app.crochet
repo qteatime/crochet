@@ -7,6 +7,7 @@ singleton app;
 implement to-widget for app;
 command app as widget do
   #widget flex-column: [
+    layout-section,
     controls-button
   ]
 end

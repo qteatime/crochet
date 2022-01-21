@@ -1,0 +1,26 @@
+% crochet
+
+type widget-section(content is list<widget>, style is section-style) is widget;
+
+enum section-style =
+  section-style-content,
+  section-style-welcome;
+
+
+command #widget section: (Style is section-style) with: (Content is list<W has to-widget>) do
+  new widget-section(Content map: (_ as widget), Style);
+end
+
+command #widget section: (Style is static-text) with: Content =
+  #widget section: (#section-style from-text: Style) with: Content;
+
+command #widget section: (Content is list<W has to-widget>) =
+  #widget section: section-style-content with: Content;
+
+
+command #section-style from-text: (Name is static-text) do
+  condition
+    when Name =:= "content" => section-style-content;
+    when Name =:= "welcome" => section-style-welcome;
+  end
+end

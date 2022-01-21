@@ -15,7 +15,7 @@
   </head>
   <body>
     <div id="crochet-container">
-      <div id="crochet" class="crochet-loading">
+      <div id="crochet" class="crochet-loading agata-full-screen">
         <div class="crochet-loading-screen">Loading...</div>
       </div>
     </div>
@@ -38,7 +38,7 @@
             document.location.pathname + "app/crochet.json",
             Crochet.Package.target_web()
           );
-          root.className = "";
+          root.classList.remove("crochet-loading");
           for (const child of root.children) {
             child.remove();
           }

@@ -1,3 +1,7 @@
+html {
+  font-size: 16px;
+}
+
 .agata-root {
   --primary-accent: var(--blue-20);
   --divider-color: var(--grey-20);
@@ -47,10 +51,15 @@
   --red-40: #753548;
   --red-50: #361821;
 
+  --fg: var(--black);
+  --fg-muted: var(--grey-40);
+  --fg-meta: var(--grey-30);
+
+  --bg: var(--white);
+
   font-family: "Roboto", sans-serif;
-  font-size: 16px;
-  color: var(--black);
-  background: var(--white);
+  color: var(--fg);
+  background: var(--bg);
 }
 
 .agata-full-screen {
@@ -129,7 +138,6 @@ input {
 
 .agata-button {
   padding: 1em 2em;
-  font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
   cursor: pointer;
@@ -226,24 +234,50 @@ input {
   position: absolute;
 }
 
+.agata-typography-page-title {
+  font-size: 3rem;
+}
+
 .agata-typography-title {
-  font-weight: bold;
-  font-size: 32px;
-  line-height: 1.5em;
-  margin: 1em 0 0.3em 0;
+  font-size: 2.2rem;
 }
 
 .agata-typography-subtitle {
-  font-weight: 500;
-  font-size: 28px;
-  line-height: 1.5em;
-  margin: 1em 0 0.3em 0;
+  font-size: 1.8rem;
 }
 
 .agata-typography-subtitle2 {
-  font-weight: 500;
-  font-size: 24px;
-  line-height: 1.5em;
-  margin: 1em 0 0.2em 0;
-  border-bottom: 1px solid var(--subtitle-border);
+  font-size: 1.6rem;
+}
+
+.agata-section {
+  margin: 1.5rem 0;
+}
+
+.agata-section-style-welcome {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  padding: 0 2rem;
+}
+
+.agata-section-style-content .agata-typography-title,
+.agata-section-style-content .agata-typography-subtitle {
+  margin: 1.5em 0 0.3em 0;
+  line-height: 1.2em;
+}
+
+.agata-section-style-welcome .agata-typography-title {
+  font-size: 2.2rem;
+  line-height: 1.6em;
+  font-weight: bold;
+}
+
+.agata-section-style-welcome .agata-typography-subtitle {
+  font-size: 1.8rem;
+  line-height: 1.6em;
+  font-weight: 400;
+  color: var(--fg-muted);
 }

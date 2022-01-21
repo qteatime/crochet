@@ -90,3 +90,13 @@ command dom-renderer render: (W is fixed-child) do
   Node append: (self render: W.content);
   Node;
 end
+
+
+command dom-renderer render: (W is widget-section) do
+  let Node = dom make: "section" class: "agata-section";
+  Node add-class: (self to-css-class: W.style);
+  for Child in W.content do
+    Node append: (self render: Child);
+  end
+  Node;
+end

@@ -5,7 +5,8 @@
   "sources": [
     "source/main.crochet",
     "source/app.crochet",
-    "source/controls/button.crochet"
+    "source/controls/button.crochet",
+    "source/layout/section.crochet"
   ],
   "dependencies": ["crochet.core", "crochet.concurrency", "crochet.ui.agata"],
   "capabilities": {

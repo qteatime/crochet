@@ -12,39 +12,42 @@ command controls-button row: (Items is list<widget>) =
 implement to-widget for controls-button;
 command controls-button as widget do
   #widget flex-column: [
-    #widget title: "Button",
-    #widget subtitle: "Text buttons",
+    #widget page-title: "Button",
 
-    self row: [
-      #widget button: "Outlined",
+    #widget section: [
+      #widget title: "Text buttons",
 
-      #widget button: "Primary"
-        | style: "primary",
+      self row: [
+        #widget button: "Outlined",
 
-      #widget button: "Dangerous"
-        | style: "dangerous",
+        #widget button: "Primary"
+          | style: "primary",
 
-      #widget button: "Clear"
-        | style: "clear",
+        #widget button: "Dangerous"
+          | style: "dangerous",
 
-      #widget button: "Disabled"
-        | disabled: true
+        #widget button: "Clear"
+          | style: "clear",
+
+        #widget button: "Disabled"
+          | disabled: true
+      ],
     ],
 
-    #widget subtitle: "Icon buttons",
+    #widget section: [
+      #widget subtitle: "Icon buttons",
 
-    self row: [
-      #widget icon-button: "cat"
-        | size: icon-size-16,
-      #widget icon-button: "cat"
-        | size: icon-size-32,
-      #widget icon-button: "cat"
-        | size: icon-size-48,
-      #widget icon-button: "cat"
-        | size: icon-size-64
+      self row: [
+        #widget icon-button: "cat"
+          | size: icon-size-16,
+        #widget icon-button: "cat"
+          | size: icon-size-32,
+        #widget icon-button: "cat"
+          | size: icon-size-48,
+        #widget icon-button: "cat"
+          | size: icon-size-64
+      ]
+      | align-items: "flex-end",
     ]
-    | align-items: "flex-end",
-
-
   ];
 end

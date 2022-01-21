@@ -1,0 +1,44 @@
+% crochet
+
+open crochet.ui.agata;
+
+singleton layout-section;
+
+implement to-widget for layout-section;
+command layout-section as widget do
+  #widget flex-column: [
+    #widget page-title: "Section",
+
+    #widget section: [
+      #widget title: "Content sections",
+      #widget text:
+        "Used for grouping pieces of related content. Sections also give
+         titles a hierarchy.",
+
+      #widget section: [
+        #widget title: "I am a title",
+        #widget text: "And I am some content",
+      ]
+    ],
+
+    #widget section: [
+      #widget title: "Welcome sections",
+      #widget text:
+        "Used for presenting ways in which the user can get started
+         with the feature---e.g.: a welcome screen.",
+
+      #widget section: "welcome" with: [
+        #widget title: "No existing projects.",
+        #widget subtitle: "Create a new project or import an existing one to get started.",
+
+        #widget space | vertical: (4.0 as em),
+
+        #widget flex-column: [
+          #widget button: "Create project",
+          #widget button: "Import project",
+        ]
+        | gap: { G in G row: (1.0 as em) }
+      ]
+    ]
+  ]
+end
