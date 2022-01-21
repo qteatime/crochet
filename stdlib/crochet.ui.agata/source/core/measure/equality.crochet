@@ -14,5 +14,8 @@ command pixels === (That is pixels) =
 command em === (That is em) =
   self.value === That.value;
 
+command rem === (That is rem) =
+  self.value === That.value;
+
 command percent === (That is percent) =
   self.value === That.value;

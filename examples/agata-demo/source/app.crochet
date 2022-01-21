@@ -10,5 +10,5 @@ command app as widget do
     layout-section,
     controls-button
   ]
-  | with-padding: { X in X all: (2.0 as em) }
+  | with-padding: { X in X all: (2.0 as rem) }
 end

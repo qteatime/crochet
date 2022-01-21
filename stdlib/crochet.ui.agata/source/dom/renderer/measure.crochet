@@ -9,5 +9,8 @@ command dom-renderer to-unit-text: (X is pixels) =
 command dom-renderer to-unit-text: (X is em) =
   "[X.value to-text]em" flatten-into-plain-text;
 
+command dom-renderer to-unit-text: (X is rem) =
+  "[X.value to-text]rem" flatten-into-plain-text;
+
 command dom-renderer to-unit-text: (X is percent) =
   "[X.value to-text]%";

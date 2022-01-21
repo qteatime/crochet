@@ -31,7 +31,7 @@ command layout-section as widget do
         #widget title: "No existing projects.",
         #widget subtitle: "Create a new project or import an existing one to get started.",
 
-        #widget space | vertical: (4.0 as em),
+        #widget space | vertical: (4.0 as rem),
 
         #widget flex-column: [
           #widget action-button: "Create project"
@@ -40,7 +40,7 @@ command layout-section as widget do
           #widget action-button: "Import project"
             | icon: "file",
         ]
-        | gap: { G in G row: (1.0 as em) }
+        | gap: { G in G row: (1.0 as rem) }
       ]
     ]
   ]

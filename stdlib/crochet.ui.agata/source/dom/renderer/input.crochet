@@ -69,7 +69,7 @@ command dom-renderer render: (W is widget-action-button) do
             #dom-widget themed: "agata-action-button-description" content: W.description,
           ])
         ]
-        | gap: { G in G column: (#measure em: 0.5) }
+        | gap: { G in G column: (#measure rem: 0.5) }
         | align-items: "center"
       end
     end
