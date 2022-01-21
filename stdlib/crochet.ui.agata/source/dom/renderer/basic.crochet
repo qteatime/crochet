@@ -8,7 +8,8 @@ end
 
 
 command dom-renderer render: (W is widget-icon) do
-  let Class = "agata-icon fas fa-[W.name]" flatten-into-plain-text;
+  let Size = self to-class: W.size;
+  let Class = "agata-icon fas fa-[W.name] [Size]" flatten-into-plain-text;
   dom make: "i" class: Class;
 end
 

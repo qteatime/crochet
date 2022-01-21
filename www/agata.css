@@ -1,4 +1,4 @@
-body {
+.agata-root {
   --primary-accent: var(--blue-20);
   --divider-color: var(--grey-20);
   --card-color: var(--white);
@@ -44,12 +44,34 @@ body {
   --red-30: #bd5575;
   --red-40: #753548;
   --red-50: #361821;
+
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  color: var(--black);
+  background: var(--white);
 }
 
-.agata-text {
+.agata-full-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.agata-icon {
+/* FIXME: a less excessive reset sheet */
+* {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+}
+
+button,
+input {
+  font-family: "Roboto", sans-serif;
 }
 
 .agata-flow > .agata-flow-child {
@@ -105,13 +127,7 @@ body {
 
 .agata-button {
   padding: 1em 2em;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: inherit;
-}
-
-.agata-text-button {
+  font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -167,6 +183,34 @@ body {
   background: var(--button-disabled-bg);
   border: none;
   color: var(--button-disabled-text);
+}
+
+.agata-button.agata-icon-button {
+  padding: 0;
+}
+
+.agata-icon-size-16 {
+  width: 16px;
+  height: 16px;
+  font-size: 14px;
+}
+
+.agata-icon-size-32 {
+  width: 32px;
+  height: 32px;
+  font-size: 28px;
+}
+
+.agata-icon-size-48 {
+  width: 48px;
+  height: 48px;
+  font-size: 42px;
+}
+
+.agata-icon-size-64 {
+  width: 64px;
+  height: 64px;
+  font-size: 56px;
 }
 
 .agata-fixed {

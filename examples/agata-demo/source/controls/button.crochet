@@ -7,7 +7,6 @@ singleton controls-button;
 command controls-button row: (Items is list<widget>) =
   #widget flex-row: Items
     | wrap: "wrap"
-    | justify-content: "space-between"
     | gap: { G in G column: (2.0 as em) | row: (1.0 as em) };
 
 implement to-widget for controls-button;
@@ -30,6 +29,21 @@ command controls-button as widget do
 
       #widget button: "Disabled"
         | disabled: true
+    ],
+
+    #widget text: "Icon buttons",
+    self row: [
+      #widget icon-button: "cat"
+        | size: icon-size-16,
+      #widget icon-button: "cat"
+        | size: icon-size-32,
+      #widget icon-button: "cat"
+        | size: icon-size-48,
+      #widget icon-button: "cat"
+        | size: icon-size-64
     ]
+    | align-items: "flex-end",
+
+
   ];
 end

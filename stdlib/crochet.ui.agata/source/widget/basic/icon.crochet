@@ -2,16 +2,22 @@
 
 open crochet.text.regex;
 
-type widget-icon(name is text) is widget;
+type widget-icon(name is text, size is icon-size) is widget;
 
 command #widget icon: (Name is static-text)
 requires
   valid-name :: internal valid-icon-name: Name
 do
-  new widget-icon(Name);
+  new widget-icon(
+    name -> Name,
+    size -> icon-size-16
+  );
 end
 
 command internal valid-icon-name: (Name is static-text) do
   let Valid-re = regex from-text: "^\[a-z\\-\]+$" | compile;
   Valid-re can-match: Name;
 end
+
+command widget-icon size: (Size is icon-size) =
+  new widget-icon(self with size -> Size);

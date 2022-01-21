@@ -34,7 +34,7 @@ command #widget button: (Content has to-widget) =
 command #widget icon-button: (Icon is widget-icon) =
   new widget-icon-button(
     icon -> Icon,
-    button -> #widget button: Icon | style: "clear"
+    button -> #widget button: "" | style: "clear"
   );
 
 command #widget icon-button: (Name is static-text) =
@@ -96,3 +96,6 @@ command widget-button style: (Style is button-style) =
 command widget-button style: (Style is static-text) =
   self style: (#button-style from-text: Style);
 
+
+command widget-icon-button size: Size =
+  new widget-icon-button(self with icon -> self.icon size: Size);

@@ -46,7 +46,8 @@ command dom-renderer render: (W is widget-button) do
 end
 
 command dom-renderer render: (W is widget-icon-button) do
-  self render: W.button
+  let Button = new widget-button(W.button with content -> W.icon);
+  self render: Button
     | add-class: "agata-icon-button";
 end
 

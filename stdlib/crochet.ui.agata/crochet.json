@@ -12,6 +12,7 @@
     "source/core/event.crochet",
     "source/core/network.crochet",
     "source/core/image.crochet",
+    "source/core/size.crochet",
     "source/core/measure/equality.crochet",
     "source/core/measure/units.crochet",
     "source/core/color/types.crochet",
