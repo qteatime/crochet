@@ -34,8 +34,11 @@ command layout-section as widget do
         #widget space | vertical: (4.0 as em),
 
         #widget flex-column: [
-          #widget button: "Create project",
-          #widget button: "Import project",
+          #widget action-button: "Create project"
+            | icon: "plus",
+
+          #widget action-button: "Import project"
+            | icon: "file",
         ]
         | gap: { G in G row: (1.0 as em) }
       ]

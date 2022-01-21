@@ -94,6 +94,10 @@ input {
   display: inline-block;
 }
 
+.agata-icon {
+  text-align: center;
+}
+
 .agata-flex {
   display: flex;
 }
@@ -216,10 +220,6 @@ input {
 
 .agata-button.agata-action-button:active {
   background: var(--action-button-active-bg);
-}
-
-.agata-action-button .agata-action-button-icon {
-  font-size: 2rem;
 }
 
 .agata-action-button .agata-action-button-title {
