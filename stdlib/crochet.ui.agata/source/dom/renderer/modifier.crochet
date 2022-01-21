@@ -47,3 +47,9 @@ command dom-renderer render: (W is widget-padding) do
         padding-left -> self to-unit-text: W.left,
       ];
 end
+
+
+command dom-renderer render: (W is widget-text-align) do
+  self render: W.content
+    | style: [text-align -> self to-css-property: W.alignment];
+end

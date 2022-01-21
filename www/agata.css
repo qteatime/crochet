@@ -305,6 +305,14 @@ input {
 .agata-section-style-content .agata-typography-subtitle {
   margin: 1.5em 0 0.3em 0;
   line-height: 1.2em;
+  font-weight: normal;
+  color: var(--fg);
+}
+
+.agata-section-style-welcome .agata-typography-title,
+.agata-section-style-welcome .agata-typography-subtitle {
+  margin: 0;
+  line-height: 1;
 }
 
 .agata-section-style-welcome .agata-typography-title {
