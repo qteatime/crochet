@@ -35,7 +35,7 @@ command agata-font family: (Families is list<static-text>) =
 
 command agata-font family: (Families is set<static-text>) =
   new font(
-    family -> Families,
+    family-set -> Families,
     weight -> font-weight-inherit,
     style -> font-style-inherit,
     color -> color-unset,

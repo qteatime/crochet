@@ -12,9 +12,9 @@ command controls-button row: (Items is list<widget>) =
 implement to-widget for controls-button;
 command controls-button as widget do
   #widget flex-column: [
-    #widget text: "Button",
+    #widget title: "Button",
+    #widget subtitle: "Text buttons",
 
-    #widget text: "Text buttons",
     self row: [
       #widget button: "Outlined",
 
@@ -31,7 +31,8 @@ command controls-button as widget do
         | disabled: true
     ],
 
-    #widget text: "Icon buttons",
+    #widget subtitle: "Icon buttons",
+
     self row: [
       #widget icon-button: "cat"
         | size: icon-size-16,

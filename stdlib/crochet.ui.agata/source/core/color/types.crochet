@@ -25,7 +25,7 @@ requires
   byte-blue :: (B >= 0) and (B <= 255),
   byte-alpha :: (A >= 0) and (A <= 255)
 do
-  new rgba(red, green, blue, alpha);
+  new rgba(R, G, B, A);
 end
 
 command agata-color red: R green: G blue: B =
@@ -33,11 +33,14 @@ command agata-color red: R green: G blue: B =
 
 command agata-color from-hex-code: (Code is static-text) do
   let Color = foreign color.parse-hex(Code);
-  #color red: Color.red green: Color.green blue: Color.blue alpha: Color.alpha;
+  agata-color red: Color.red green: Color.green blue: Color.blue alpha: Color.alpha;
 test
-  assert (#color from-hex-code: "#000000") === (#color red: 0 green: 0 blue: 0 alpha: 255);
-  assert (#color from-hex-code: "#ffffff00") === (#color red: 255 green: 255 blue: 255 alpha: 0);
+  assert (agata-color from-hex-code: "#000000") === (#color red: 0 green: 0 blue: 0 alpha: 255);
+  assert (agata-color from-hex-code: "#ffffff00") === (#color red: 255 green: 255 blue: 255 alpha: 0);
 end
 
 implement to-agata-color for static-text;
-command static-text as color = #color from-hex-code: self;
+command static-text as color = agata-color from-hex-code: self;
+
+implement to-agata-color for color;
+command color as color = self;

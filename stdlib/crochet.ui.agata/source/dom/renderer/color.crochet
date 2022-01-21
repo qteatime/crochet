@@ -1,0 +1,11 @@
+% crochet
+
+command dom-renderer to-css-color: color-unset = "unset";
+
+command dom-renderer to-css-color: (X is rgba) do
+  let R = X.red to-text;
+  let G = X.green to-text;
+  let B = X.blue to-text;
+  let A = (X.alpha / 255.0) to-text;
+  "rgba([R], [G], [B], [A])" flatten-into-plain-text;
+end

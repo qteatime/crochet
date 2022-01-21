@@ -22,6 +22,8 @@
   --button-clear-hover-bg: var(--grey-10);
   --button-clear-active-bg: var(--grey-20);
 
+  --subtitle-border: var(--grey-20);
+
   --white: #fafafa;
   --black: #2f2f2f;
   --grey-10: #e9f5f4;
@@ -222,4 +224,26 @@ input {
 
 .agata-fixed-child {
   position: absolute;
+}
+
+.agata-typography-title {
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 1.5em;
+  margin: 1em 0 0.3em 0;
+}
+
+.agata-typography-subtitle {
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.5em;
+  margin: 1em 0 0.3em 0;
+}
+
+.agata-typography-subtitle2 {
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.5em;
+  margin: 1em 0 0.2em 0;
+  border-bottom: 1px solid var(--subtitle-border);
 }

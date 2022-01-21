@@ -16,3 +16,15 @@ command agata-theme-fonts title =
     | weight: "bold"
     | color: agata-theme-colors title;
 
+command agata-theme-fonts subtitle =
+  agata-font family: agata-theme-title-family
+    | size: (28 as pixels)
+    | weight: "medium"
+    | color: agata-theme-colors subtitle;
+
+command agata-theme-fonts subtitle2 =
+  agata-font family: agata-theme-title-family
+    | size: (24 as pixels)
+    | weight: "medium"
+    | color: agata-theme-colors subtitle2;
+

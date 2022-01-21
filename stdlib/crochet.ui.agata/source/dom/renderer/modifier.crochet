@@ -1,0 +1,38 @@
+% crochet
+
+command dom-renderer render: (W is widget-committed)
+requires
+  dom-node :: W.node is dom-node
+do
+  W.node;
+end
+
+
+command dom-renderer render: (W is widget-reference) do
+  let Node = self render: W.widget;
+  let Live = dom to-live-widget: W.widget node: Node;
+  perform agata-presentation.register-reference(W.reference, Live);
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-format-font) do
+  let Node = self render: W.content;
+  Node style: [
+    font-family -> self render-font-family: W.font.family-set,
+    font-weight -> self to-font-weight: W.font.weight,
+    font-style -> self to-font-style: W.font.style,
+    font-size -> self to-unit-text: W.font.size,
+    color -> self to-css-color: W.font.color,
+  ];
+  Node;
+end
+
+command dom-renderer render-font-family: (Families is set) do
+  condition
+    when Families is-empty => "inherit";
+    otherwise =>
+      #text join: Families values with: ","
+        | flatten-into-plain-text; // FIXME: escape families
+  end
+end

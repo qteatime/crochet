@@ -42,3 +42,6 @@ command agata-theme-colors purple-50 = "2b2536" as color;
 
 // -- Common colours
 command agata-theme-colors body = self black;
+command agata-theme-colors title = self black;
+command agata-theme-colors subtitle = self black;
+command agata-theme-colors subtitle2 = self black;

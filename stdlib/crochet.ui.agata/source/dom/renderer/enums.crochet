@@ -60,3 +60,28 @@ command dom-renderer to-class: icon-size-16 = "agata-icon-size-16";
 command dom-renderer to-class: icon-size-32 = "agata-icon-size-32";
 command dom-renderer to-class: icon-size-48 = "agata-icon-size-48";
 command dom-renderer to-class: icon-size-64 = "agata-icon-size-64";
+
+
+// Font weight
+command dom-renderer to-font-weight: font-weight-inherit = "inherit";
+command dom-renderer to-font-weight: font-weight-thin = "100";
+command dom-renderer to-font-weight: font-weight-ultra-light = "200";
+command dom-renderer to-font-weight: font-weight-light = "300";
+command dom-renderer to-font-weight: font-weight-regular = "400";
+command dom-renderer to-font-weight: font-weight-medium = "500";
+command dom-renderer to-font-weight: font-weight-semi-bold = "600";
+command dom-renderer to-font-weight: font-weight-bold = "700";
+command dom-renderer to-font-weight: font-weight-black = "900";
+
+
+// Font style
+command dom-renderer to-font-style: font-style-inherit = "inherit";
+command dom-renderer to-font-style: font-style-normal = "normal";
+command dom-renderer to-font-style: font-style-italic = "italic";
+
+
+// Typography
+command dom-renderer to-css-class: typography-style-title = "agata-typography-title";
+command dom-renderer to-css-class: typography-style-subtitle = "agata-typography-subtitle";
+command dom-renderer to-css-class: typography-style-subtitle2 = "agata-typography-subtitle2";
+command dom-renderer to-css-class: typography-style-body = "agata-typography-body";

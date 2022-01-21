@@ -21,22 +21,6 @@ command dom-renderer render: (W is widget-dynamic) do
 end
 
 
-command dom-renderer render: (W is widget-committed)
-requires
-  dom-node :: W.node is dom-node
-do
-  W.node;
-end
-
-
-command dom-renderer render: (W is widget-reference) do
-  let Node = self render: W.widget;
-  let Live = dom to-live-widget: W.widget node: Node;
-  perform agata-presentation.register-reference(W.reference, Live);
-  Node;
-end
-
-
 command dom-renderer render: (W is widget-divider) do
   let Class = "agata-divider [self to-text: W.style]" flatten-into-plain-text;
   dom make: "div" class: Class;
@@ -81,4 +65,10 @@ command dom-renderer render: (Image is widget-image) do
   let Node = dom make: "img" class: "agata-image";
   Node set: "src" to: (self to-uri: Image.source);
   Node;
+end
+
+
+command dom-renderer render: (W is widget-typography) do
+  self render: W.content
+    | add-class: (self to-css-class: W.style);
 end
