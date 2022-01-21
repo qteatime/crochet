@@ -1,0 +1,56 @@
+% crochet
+
+type widget-padding(
+  content is widget,
+  top is measure-length,
+  right is measure-length,
+  bottom is measure-length,
+  left is measure-length,
+) is widget;
+
+command widget with-padding: (F is (widget-padding -> widget-padding)) =
+  F(new widget-padding(
+    content -> self,
+    top -> #measure pixels: 0,
+    right -> #measure pixels: 0,
+    bottom -> #measure pixels: 0,
+    left -> #measure pixels: 0,
+  ));
+
+command widget-padding top: (X has to-agata-measure) =
+  new widget-padding(self with top -> X as measure);
+
+command widget-padding right: (X has to-agata-measure) =
+  new widget-padding(self with right -> X as measure);
+
+command widget-padding bottom: (X has to-agata-measure) =
+  new widget-padding(self with bottom -> X as measure);
+
+command widget-padding left: (X has to-agata-measure) =
+  new widget-padding(self with left -> X as measure);
+
+command widget-padding all: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-padding(self with 
+    top -> X,
+    right -> X,
+    bottom -> X,
+    left -> X,
+  );
+end
+
+command widget-padding vertical: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-padding(self with
+    top -> X,
+    bottom -> X,
+  );
+end
+
+command widget-padding horizontal: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-padding(self with
+    left -> X,
+    right -> X,
+  );
+end
