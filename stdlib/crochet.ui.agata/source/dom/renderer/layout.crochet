@@ -100,14 +100,3 @@ command dom-renderer render: (W is widget-section) do
   end
   Node;
 end
-
-
-command dom-renderer render: (W is widget-padding) do
-  self render: W.content
-    | style: [
-        padding-top -> self to-unit-text: W.top,
-        padding-right -> self to-unit-text: W.right,
-        padding-bottom -> self to-unit-text: W.bottom,
-        padding-left -> self to-unit-text: W.left,
-      ];
-end

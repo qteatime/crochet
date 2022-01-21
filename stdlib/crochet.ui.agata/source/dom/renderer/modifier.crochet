@@ -36,3 +36,14 @@ command dom-renderer render-font-family: (Families is set) do
         | flatten-into-plain-text; // FIXME: escape families
   end
 end
+
+
+command dom-renderer render: (W is widget-padding) do
+  self render: W.content
+    | style: [
+        padding-top -> self to-unit-text: W.top,
+        padding-right -> self to-unit-text: W.right,
+        padding-bottom -> self to-unit-text: W.bottom,
+        padding-left -> self to-unit-text: W.left,
+      ];
+end
