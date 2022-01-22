@@ -8,6 +8,7 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
   let Router = #cell with-value: #agata-router empty;
   let References = #cell with-value: #map empty;
   handle
+    internal setup-history-change-listener: self;
     Block();
   with
     on agata-presentation.show(Widget) do
@@ -55,8 +56,20 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
   end
 end
 
+command internal setup-history-change-listener: agata-dom do
+  foreign history.on-state-change({ Ev in
+    let State = foreign ev.navigate-state(Ev);
+    condition
+      when State is nothing => nothing;
+      otherwise do
+        agata navigate: new uri(State.uri);
+      end
+    end
+  } capture);
+end
+
 command agata-dom push-uri: (Uri is uri) do
-  foreign history.push(nothing, "", Uri.location);
+  foreign history.push([tag -> "agata-navigate", uri -> Uri.location], "", Uri.location);
   self;
 end
 

@@ -12,3 +12,4 @@ command static-text as uri = new uri(self);
 
 implement to-uri for uri;
 command uri as uri = self;
+

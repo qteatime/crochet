@@ -6,7 +6,7 @@ singleton controls-button;
 
 implement agata-page for controls-button;
 command controls-button uri-pattern =
-  #uri-pattern from-text: "/controls/button/";
+  #uri-pattern from-text: "#!/controls/button/";
 
 command controls-button instantiate-page: Bindings =
   self;

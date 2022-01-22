@@ -3,8 +3,11 @@
 open crochet.text.regex;
 
 abstract uri-pattern;
-singleton uri-pattern-end is uri-pattern;
-type uri-pattern-path(segment is uri-pattern-segment, rest is uri-pattern) is uri-pattern;
+type uri-pattern-hashbang(path is uri-pattern-path) is uri-pattern;
+
+abstract uri-pattern-path;
+singleton uri-pattern-end is uri-pattern-path;
+type uri-pattern-path-node(segment is uri-pattern-segment, rest is uri-pattern-path) is uri-pattern-path;
 
 abstract uri-pattern-segment;
 type uri-pattern-segment-concrete(segment is text) is uri-pattern-segment;
@@ -15,8 +18,11 @@ type uri-pattern-error-duplicate-variables(source is text, pattern is uri-patter
 
 
 // -- AST reification
+command uri-ast-pattern--hashbang reify =
+  new uri-pattern-hashbang(self.path reify);
+
 command uri-ast-pattern--path reify =
-  new uri-pattern-path(self.segment reify, self.rest reify);
+  new uri-pattern-path-node(self.segment reify, self.rest reify);
 
 command uri-ast-pattern--empty reify =
   uri-pattern-end;
@@ -34,10 +40,14 @@ command uri-pattern regex =
     | pin-start
     | pin-end;
 
+command internal regex: (R is uri-pattern-hashbang) =
+  regex exactly: "#!"
+    | followed-by: (internal regex: R.path);
+
 command internal regex: (R is uri-pattern-end) =
   regex exactly: "/";
 
-command internal regex: (R is uri-pattern-path) =
+command internal regex: (R is uri-pattern-path-node) =
   regex
     | exactly: "/"
     | followed-by: (internal regex: R.segment)
@@ -103,10 +113,13 @@ do
   new uri(Text);
 end
 
+command internal instantiate: (X is uri-pattern-hashbang) bindings: Bindings =
+  "#![internal instantiate: X.path bindings: Bindings]";
+
 command internal instantiate: (X is uri-pattern-end) bindings: Bindings =
   "/";
 
-command internal instantiate: (X is uri-pattern-path) bindings: Bindings do
+command internal instantiate: (X is uri-pattern-path-node) bindings: Bindings do
   let Segment = internal instantiate: X.segment bindings: Bindings;
   let Rest = internal instantiate: X.rest bindings: Bindings;
   "/[Segment][Rest]";
@@ -122,10 +135,13 @@ command internal instantiate: (X is uri-pattern-segment-variable) bindings: Bind
 command uri-pattern matches-equivalent-uris: uri-pattern =
   false;
 
+command uri-pattern-hashbang matches-equivalent-uris: (That is uri-pattern-hashbang) =
+  self.path matches-equivalent-uris: That.path;
+
 command uri-pattern-end matches-equivalent-uris: uri-pattern-end =
   true;
 
-command uri-pattern-path matches-equivalent-uris: (That is uri-pattern-path) =
+command uri-pattern-path-node matches-equivalent-uris: (That is uri-pattern-path-node) =
   (self.segment matches-equivalent-uris: That.segment)
     and (self.rest matches-equivalent-uris: That.rest);
 
@@ -142,10 +158,13 @@ command uri-pattern-segment-variable matches-equivalent-uris: uri-pattern-segmen
 command uri-pattern variables =
   #set from: (self variables-in: internal);
 
+command uri-pattern-hashbang variables-in: internal =
+  self.path variables-in: internal;
+
 command uri-pattern-end variables-in: internal =
   [];
 
-command uri-pattern-path variables-in: internal =
+command uri-pattern-path-node variables-in: internal =
   (self.segment variables-in: internal) ++ (self.rest variables-in: internal);
 
 command uri-pattern-segment-concrete variables-in: internal =

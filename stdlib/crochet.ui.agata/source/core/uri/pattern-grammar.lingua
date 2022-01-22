@@ -1,4 +1,5 @@
 type uri_ast_pattern =
+  | hashbang(path: uri_ast_pattern)
   | path(segment: uri_ast_segment, rest: uri_ast_pattern)
   | empty()
 
@@ -8,7 +9,8 @@ type uri_ast_segment =
 
 grammar pattern_grammar : uri_ast_pattern {
   pattern =
-    | p:path end -> p
+    | "#!" p:path end -> uri_ast_pattern.hashbang(p)
+    | p:path end      -> p
 
   path =
     | "/" s:segment r:path  -> uri_ast_pattern.path(s, r)

@@ -71,7 +71,7 @@ test
 end
 
 /// Replaces the first match with `Text` in the `Corpus`.
-command compiled-regex-pattern substitute-first-by: (Text is text) in: (Corpus is text) -> text do
+command compiled-regex-pattern search-first: (Corpus is text) replace-by: (Text is text) -> text do
   foreign re.replace(self.code, self.flags to-text, Text, Corpus)
 test
   let R1 = regex from-text: "(.)at" | compile;

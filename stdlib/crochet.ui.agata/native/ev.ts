@@ -24,4 +24,22 @@ export default (ffi: ForeignInterface) => {
     ev.preventDefault();
     return ffi.nothing;
   });
+
+  ffi.defun("ev.navigate-state", (ev0) => {
+    const ev = unbox_typed(ev0, PopStateEvent);
+    try {
+      if (ev.state != null && ev.state.tag === "agata-navigate") {
+        return ffi.record(
+          new Map([
+            ["tag", ffi.text("agata-navigate")],
+            ["uri", ffi.text(ev.state.uri)],
+          ])
+        );
+      } else {
+        return ffi.nothing;
+      }
+    } catch (_) {
+      return ffi.nothing;
+    }
+  });
 };
