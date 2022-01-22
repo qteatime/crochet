@@ -3,64 +3,36 @@ html {
 }
 
 .agata-root {
-  --primary-accent: var(--blue-20);
-  --divider-color: var(--grey-20);
-  --card-color: var(--white);
-  --card-background: var(--grey-10);
-  --input-background: var(--white);
+  --blue-grey-10: #e8f0f3;
+  --blue-grey-20: #b1cad6;
+  --blue-grey-30: #7ba6ba;
+  --blue-grey-40: #53869d;
+  --blue-grey-50: #2b6078;
+  --red: #b44a69;
+  --pink: #d03297;
+  --blue: #8ad0e8;
+  --green: #bdd9d3;
+  --orange: #eeb9a2;
 
-  --button-border: var(--grey-20);
-  --button-text: var(--black);
-  --button-hover-bg: var(--grey-10);
-  --button-active-bg: var(--grey-20);
-  --button-primary-text: var(--white);
-  --button-primary-bg: var(--blue-20);
-  --button-primary-hover-bg: var(--blue-10);
-  --button-primary-active-bg: var(--blue-30);
-  --button-dangerous-text: var(--white);
-  --button-dangerous-bg: var(--red-20);
-  --button-dangerous-hover-bg: var(--red-10);
-  --button-dangerous-active-bg: var(--red-30);
-  --button-disabled-bg: var(--grey-30);
-  --button-disabled-text: var(--white);
-  --button-clear-hover-bg: var(--grey-10);
-  --button-clear-active-bg: var(--grey-20);
-
-  --action-button-border: var(--blue-10);
-  --action-button-bg: var(--grey-10);
-  --action-button-hover-bg: var(--blue-10);
-  --action-button-active-bg: var(--blue-20);
-
-  --subtitle-border: var(--grey-20);
+  --pink-fg: #d03297;
+  --pink-bg: #b57ba0;
 
   --white: #fafafa;
   --black: #2f2f2f;
-  --grey-10: #e9f5f4;
-  --grey-20: #d0dbda;
-  --grey-30: #b0bab9;
-  --grey-40: #6f7575;
-  --grey-50: #333635;
-  --blue-10: #5bccf5;
-  --blue-20: #51b6db;
-  --blue-30: #459dbd;
-  --blue-40: #2b6275;
-  --blue-50: #142d36;
-  --green-10: #78f5b4;
-  --green-20: #6bdba2;
-  --green-30: #5cbd8b;
-  --green-40: #397556;
-  --green-50: #1a3627;
-  --red-10: #f56e97;
-  --red-20: #db6387;
-  --red-30: #bd5575;
-  --red-40: #753548;
-  --red-50: #361821;
+
+  --primary-fg: var(--pink-fg);
+  --primary-fg-accent: #c9519e;
+  --primary-bg: var(--pink-bg);
+  --primary-bg-accent: #d780b8;
 
   --fg: var(--black);
-  --fg-muted: var(--grey-40);
-  --fg-meta: var(--grey-30);
+  --fg-invert: var(--white);
+  --fg-muted: var(--blue-grey-50);
+  --fg-meta: var(--blue-grey-40);
 
   --bg: var(--white);
+  --bg-muted: var(--blue-grey-10);
+  --bg-muted-20: var(--blue-grey-20);
 
   font-family: "Roboto", sans-serif;
   color: var(--fg);
@@ -106,18 +78,18 @@ input {
   border-radius: 2px;
   padding: 0.5em;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
-  background: var(--card-color);
+  background: var(--bg);
 }
 
 .agata-card-container {
-  background: var(--card-background);
+  background: var(--bg);
   padding: 0.5em;
 }
 
 .agata-divider {
   margin: 0 auto;
   height: 1px;
-  background: var(--divider-color);
+  background: var(--blue-grey-20);
 }
 
 .agata-divider-style-full {
@@ -134,9 +106,9 @@ input {
   width: 100%;
   box-sizing: border-box;
   border: none;
-  border-bottom: 1px solid var(--primary-accent);
-  background: var(--input-background);
-  caret-color: var(--primary-accent);
+  border-bottom: 1px solid var(--primary-fg);
+  background: var(--white);
+  caret-color: var(--primary-fg);
   padding: 0.5em;
   position: relative;
 }
@@ -147,79 +119,78 @@ input {
 
 .agata-button {
   padding: 1em 2em;
-  font-weight: bold;
   text-transform: uppercase;
   cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.agata-button:not(:disabled):active {
+  outline: 3px solid var(--primary-fg-accent);
 }
 
 .agata-button-style-default {
-  border: 2px solid var(--button-border);
-  color: var(--button-text);
+  border: 1px solid var(--blue-grey-20);
+  color: var(--fg);
 }
 
 .agata-button-style-default:hover {
-  background: var(--button-hover-bg);
-}
-
-.agata-button-style-default:active {
-  background: var(--button-active-bg);
+  background: var(--blue-grey-10);
+  border: 1px solid var(--blue-grey-20);
 }
 
 .agata-button-style-primary {
-  background: var(--button-primary-bg);
-  color: var(--button-primary-text);
+  background: var(--primary-bg);
+  color: var(--fg-invert);
 }
 
 .agata-button-style-primary:hover {
-  background: var(--button-primary-hover-bg);
-}
-
-.agata-button-style-primary:active {
-  background: var(--button-primary-active-bg);
+  background: var(--primary-bg-accent);
 }
 
 .agata-button-style-dangerous {
-  background: var(--button-dangerous-bg);
-  color: var(--button-dangerous-text);
+  background: var(--red);
+  color: var(--fg-invert);
 }
 
 .agata-button-style-dangerous:hover {
-  background: var(--button-dangerous-hover-bg);
-}
-
-.agata-button-style-dangerous:active {
-  background: var(--button-dangerous-active-bg);
+  background: var(--red);
 }
 
 .agata-button-style-clear:hover {
-  background: var(--button-clear-hover-bg);
+  color: var(--primary-fg);
+  text-decoration: underline var(--primary-bg-accent);
 }
 
 .agata-button-style-clear:active {
-  background: var(--button-clear-active-bg);
+  outline: none;
+  text-decoration: underline var(--primary-bg-accent);
 }
 
 .agata-button:disabled {
-  background: var(--button-disabled-bg);
+  color: var(--fg-muted);
+  background: var(--blue-grey-20);
   border: none;
-  color: var(--button-disabled-text);
   cursor: default;
 }
 
 .agata-button.agata-action-button {
-  border-left: 2px solid var(--action-button-border);
-  background: var(--action-button-bg);
+  border: 1px solid var(--primary-fg);
   font-weight: normal;
   text-transform: none;
   text-align: left;
+  text-decoration: none;
 }
 
 .agata-button.agata-action-button:hover {
-  background: var(--action-button-hover-bg);
+  border-left-color: var(--primary-fg-accent);
+  color: var(--primary-fg-accent);
 }
 
-.agata-button.agata-action-button:active {
-  background: var(--action-button-active-bg);
+.agata-button.agata-action-button:disabled {
+  text-decoration: none;
+  background: var(--blue-grey-10);
+  border-color: var(--blue-grey-30);
+  color: var(--fg-muted);
 }
 
 .agata-action-button .agata-action-button-title {
@@ -229,10 +200,12 @@ input {
 
 .agata-action-button .agata-action-button-description {
   font-size: 0.9rem;
+  color: var(--fg-muted);
 }
 
-.agata-button.agata-action-button:disabled {
-  background: var(--button-disabled-bg);
+.agata-button.agata-icon-button:disabled {
+  background: none;
+  color: var(--blue-grey-30);
 }
 
 .agata-button.agata-icon-button {
@@ -358,15 +331,15 @@ input {
 
 .agata-navigation-link.agata-navigation-active {
   font-weight: bold;
-  border-left: 3px solid var(--blue-20);
+  border-left: 3px solid var(--primary-fg);
   padding-left: 7px;
 }
 
 .agata-navigation-link.agata-navigation-active .agata-link {
-  color: var(--blue-30);
+  color: var(--primary-fg);
 }
 
 .agata-navigation-link:hover {
-  border-left: 3px solid var(--blue-10);
+  border-left: 3px solid var(--primary-fg-accent);
   padding-left: 7px;
 }
