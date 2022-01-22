@@ -1,4 +1,6 @@
+import type { CrochetValue } from "./intrinsics";
 import type { TraceEntry } from "./primitives/stack-trace";
+import { simple_value, block } from "./primitives/location";
 
 export class CrochetError extends Error {}
 
@@ -12,9 +14,16 @@ export class ErrNativePanic extends CrochetError {
   constructor(
     readonly tag: string,
     readonly original_message: string,
-    readonly include_trace = true
+    readonly include_trace = true,
+    readonly data: CrochetValue | null = null
   ) {
     super(`${tag}: ${original_message}`);
+    if (data != null) {
+      const repr = simple_value(data);
+      Object.defineProperty(this, "message", {
+        value: this.message + `\n\nAdditional information:\n${block(2, repr)}`,
+      });
+    }
   }
 }
 

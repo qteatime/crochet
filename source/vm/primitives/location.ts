@@ -365,7 +365,7 @@ export function find_good_transcript_write_location(activation0: Activation) {
   return null;
 }
 
-function block(indent: number, text: string) {
+export function block(indent: number, text: string) {
   return text
     .split(/\n/)
     .map((x) => " ".repeat(indent) + x)
