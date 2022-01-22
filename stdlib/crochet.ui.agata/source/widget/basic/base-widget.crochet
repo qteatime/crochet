@@ -28,6 +28,10 @@ command float-64bit as widget =
   #widget text: self to-text;
 
 
+implement to-widget for list;
+command list as widget = #widget fragment: self;
+
+
 implement to-widget for boolean;
 command true as widget = #widget text: "true";
 command false as widget = #widget text: "false";

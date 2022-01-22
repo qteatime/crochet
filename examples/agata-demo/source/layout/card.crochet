@@ -1,0 +1,67 @@
+% crochet
+
+open crochet.ui.agata;
+
+singleton layout-card;
+
+implement agata-page for layout-card;
+
+command layout-card uri-pattern =
+  #uri-pattern from-text: "#!/layout/card/";
+
+command layout-card instantiate-page: Bindings =
+  self;
+
+
+implement to-widget for layout-card;
+command layout-card as widget do
+  app frame: self page;
+end
+
+command layout-card page do
+  #widget flex-column: [
+    #widget page-title: "Card",
+
+    #widget text:
+      "A card is a small box of related information, possibly with an
+       interaction mode.",
+
+    #widget section: [
+      #widget title: "Informational cards",
+      #widget text: "A small box of information with no interaction.",
+
+      #widget space | vertical: (3.0 as rem),
+
+      #widget card: [
+        #card-child image: (agata-network image: "/assets/crochet.examples.agata.demo/img/sun.png"),
+        #card-child header: "A sunny Stockholm",
+        #card-child meta: "10 minutes ago",
+        #card-child body: [
+          "A rare view of the sun not hidden behind clouds.",
+        ],
+        #card-child extra: (
+          #widget flex-row: [
+            #widget icon: "heart",
+            "33 liked"
+          ]
+          | gap: { G in G column: (0.5 as rem) }
+        ),
+      ]
+    ],
+
+    // #widget section: [
+    //   #widget title: "Button cards",
+    //   #widget text: "Cards can work as a button or link.",
+// 
+    //   #widget card-button: [
+    //     #card-child header: "Core",
+    //     #card-child meta: [
+    //       #widget flex-row: ["crochet.core", "experimental"]
+    //     ],
+    //     #card-child body: [
+    //       "The kitchen-sink package for Crochet."
+    //     ]
+    //   ]
+    // ]
+  ]
+end

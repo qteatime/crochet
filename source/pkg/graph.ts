@@ -306,6 +306,10 @@ export class ResolvedPackage {
     return Path.join(this.root, ".binary");
   }
 
+  get assets_root() {
+    return Path.join(this.root, "assets");
+  }
+
   get dependencies() {
     return this.pkg.meta.dependencies.filter((x) =>
       target_compatible(this.target, x.target)

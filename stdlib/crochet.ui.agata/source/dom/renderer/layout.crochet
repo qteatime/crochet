@@ -45,14 +45,32 @@ command dom-renderer render-flex-unit: (X is integer) =
 
 
 command dom-renderer render: (W is widget-card) do
-  dom make: "div" class: "agata-card"
-    | append: (self render: W.content);
+  let Node = dom make: "div" class: "agata-card";
+  for Child in W.content do
+    Node append: (self render: Child);
+  end
+  Node;
 end
 
-command dom-renderer render: (W is widget-card-container) do
-  dom make: "div" class: "agata-card-container"
+command dom-renderer render: (W is card-child-image) =
+  dom make: "div" class: "agata-card-image"
+    | append: (self render: W.image);
+
+command dom-renderer render: (W is card-child-header) =
+  dom make: "div" class: "agata-card-header"
     | append: (self render: W.content);
-end
+
+command dom-renderer render: (W is card-child-body) =
+  dom make: "div" class: "agata-card-body"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-meta) =
+  dom make: "div" class: "agata-card-meta"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-extra) =
+  dom make: "div" class: "agata-card-extra"
+    | append: (self render: W.content);
 
 
 command dom-renderer render: (W is widget-fixed) do

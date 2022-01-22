@@ -1,0 +1,6 @@
+% crochet
+
+type widget-fragment(content is list<widget>) is widget;
+
+command #widget fragment: (Items is list<widget>) =
+  new widget-fragment(Items map: (_ as widget));

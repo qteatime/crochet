@@ -5,6 +5,7 @@ protect global dom with internal;
 protect type dom with internal;
 
 type dom-node(box is unknown) is node;
+type dom-fragment(box is unknown);
 
 
 
@@ -54,12 +55,27 @@ end
 command dom-node input-is-checked =
   foreign dom.input-is-checked(self.box);
 
+command dom-node children-fragment do
+  let Fragment = foreign dom.children-fragment(self.box);
+  new dom-fragment(Fragment);
+end
+
 command dom-node append: (Child is dom-node) do
   foreign dom.append(self.box, Child.box);
   self;
 end
 
+command dom-node append: (Child is dom-fragment) do
+  foreign dom.append(self.box, Child.box);
+  self;
+end
+
 command dom-node prepend: (Child is dom-node) do
+  foreign dom.prepend(self.box, Child.box);
+  self;
+end
+
+command dom-node prepend: (Child is dom-fragment) do
   foreign dom.prepend(self.box, Child.box);
   self;
 end
@@ -76,6 +92,11 @@ command dom-node is-attached =
   foreign dom.is-attached(self.box);
 
 command dom-node replace-contents: (X is dom-node) do
+  foreign dom.replace-contents(self.box, X.box);
+  self;
+end
+
+command dom-node replace-contents: (X is dom-fragment) do
   foreign dom.replace-contents(self.box, X.box);
   self;
 end

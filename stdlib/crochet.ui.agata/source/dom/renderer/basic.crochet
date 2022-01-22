@@ -1,5 +1,14 @@
 % crochet
 
+command dom-renderer render: (W is widget-fragment) do
+  let Node = dom make: "div" class: "agata-fragment";
+  for Child in W.content do
+    Node append: (self render: Child);
+  end
+  Node children-fragment;
+end
+
+
 command dom-renderer render: (W is widget-text) do
   let E = dom make: "div" class: "agata-text";
   E append: (dom text: W.contents);

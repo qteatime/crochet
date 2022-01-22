@@ -15,6 +15,12 @@ export default async (root: string, port: number, www: string) => {
     const dep_pkg = await crochet.fs.read_package(dep.name);
     await crochet.build(dep_pkg.filename);
   }
+  const graph = await Package.build_package_graph(
+    pkg,
+    Package.target_web(),
+    new Set(),
+    (crochet.crochet as any).resolver
+  );
 
   const rpkg = new Package.ResolvedPackage(pkg, Package.target_web());
 
@@ -49,6 +55,14 @@ export default async (root: string, port: number, www: string) => {
 
   app.use("/", express.static(www));
   app.use("/library", express.static(Path.join(repo_root, "stdlib")));
+
+  for (const x of graph.serialise(rpkg)) {
+    const assets = x.assets_root;
+    if (FS.existsSync(assets)) {
+      console.log("Installing assets for", x.name);
+      app.use(`/assets/${encodeURIComponent(x.name)}`, express.static(assets));
+    }
+  }
 
   app.listen(port, () => {
     console.log(`Server started at http://localhost:${port}/`);

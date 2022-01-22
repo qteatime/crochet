@@ -76,14 +76,40 @@ input {
 
 .agata-card {
   border-radius: 2px;
-  padding: 0.5em;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
   background: var(--bg);
+  border: 1px solid var(--blue-grey-10);
+  max-width: 20rem;
 }
 
-.agata-card-container {
-  background: var(--bg);
-  padding: 0.5em;
+.agata-card-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.agata-card-header {
+  padding: 1rem 1rem 0.2rem 1rem;
+  font-size: 1.4rem;
+}
+
+.agata-card-meta {
+  font-size: 0.9rem;
+  padding: 0.2rem 1rem;
+  color: var(--fg-meta);
+}
+
+.agata-card-body {
+  padding: 1.5rem 1rem;
+}
+
+.agata-card-extra {
+  padding: 1rem;
+  border-top: 1px solid var(--blue-grey-10);
+}
+
+.agata-card-extra:not(:last-child) {
+  border-bottom: 1px solid var(--blue-grey-10);
 }
 
 .agata-divider {

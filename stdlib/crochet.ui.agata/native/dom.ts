@@ -27,6 +27,15 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(element);
   });
 
+  ffi.defun("dom.children-fragment", (x0) => {
+    const x = get_element(x0);
+    const f = document.createDocumentFragment();
+    for (const c of x.children) {
+      f.append(c);
+    }
+    return ffi.box(f);
+  });
+
   ffi.defun("dom.make-text", (text) => {
     return ffi.box(document.createTextNode(ffi.text_to_string(text)));
   });

@@ -8,6 +8,7 @@ command main-html: Root do
   agata-dom with-root: Root do: {
     agata register-page: controls-button;
     agata register-page: layout-section;
+    agata register-page: layout-card;
     
     agata register-top-page: layout-section;
   }

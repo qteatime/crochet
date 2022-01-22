@@ -54,6 +54,7 @@
     "source/widget/modifiers/font.crochet",
     "source/widget/modifiers/padding.crochet",
     "source/widget/modifiers/text-align.crochet",
+    "source/widget/basic/fragment.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",
     "source/widget/basic/dynamic.crochet",

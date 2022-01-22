@@ -19,11 +19,16 @@ command app navigation do
   #widget section: [
     #widget navigation: [
       "Layout",
-      #navigation-child link: "Section"
+      #navigation-child
+        | link: "Section"
         | to: layout-section,
+      #navigation-child
+        | link: "Card"
+        | to: layout-card,
 
       "Controls",
-      #navigation-child link: "Buttons"
+      #navigation-child
+        | link: "Buttons"
         | to: controls-button
     ]
   ]
