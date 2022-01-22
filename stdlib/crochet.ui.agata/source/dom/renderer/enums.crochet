@@ -53,6 +53,7 @@ command dom-renderer to-class: button-style-default = "agata-button-style-defaul
 command dom-renderer to-class: button-style-primary = "agata-button-style-primary";
 command dom-renderer to-class: button-style-dangerous = "agata-button-style-dangerous";
 command dom-renderer to-class: button-style-clear = "agata-button-style-clear";
+command dom-renderer to-class: button-style-card = "agata-button-style-card";
 
 
 // Icon sizes

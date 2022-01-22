@@ -49,19 +49,22 @@ command layout-card page do
       ]
     ],
 
-    // #widget section: [
-    //   #widget title: "Button cards",
-    //   #widget text: "Cards can work as a button or link.",
-// 
-    //   #widget card-button: [
-    //     #card-child header: "Core",
-    //     #card-child meta: [
-    //       #widget flex-row: ["crochet.core", "experimental"]
-    //     ],
-    //     #card-child body: [
-    //       "The kitchen-sink package for Crochet."
-    //     ]
-    //   ]
-    // ]
+    #widget section: [
+      #widget title: "Button cards",
+      #widget text: "Cards can work as a button or link.",
+
+      #widget space | vertical: (3 as rem),
+      
+      #widget card-button: [
+        #card-child header: "Core",
+        #card-child meta: [
+          #widget flex-row: ["crochet.core", "experimental"]
+            | justify-content: "space-between"
+        ],
+        #card-child body: [
+          "The kitchen-sink package for Crochet."
+        ]
+      ]
+    ]
   ]
 end

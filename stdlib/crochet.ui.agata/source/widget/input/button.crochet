@@ -26,7 +26,8 @@ enum button-style =
   button-style-default,
   button-style-primary,
   button-style-dangerous,
-  button-style-clear;
+  button-style-clear,
+  button-style-card;
 
 
 command #widget button: (Content has to-widget) =
@@ -37,6 +38,13 @@ command #widget button: (Content has to-widget) =
     clicked -> #event-stream empty,
     style -> button-style-default,
   );
+
+command #widget card-button: (Content is widget-card) =
+  #widget button: Content
+    | style: button-style-card;
+
+command #widget card-button: (Items is list) =
+  #widget card-button: (#widget card: Items);
 
 command #widget icon-button: (Icon is widget-icon) =
   new widget-icon-button(
@@ -62,6 +70,7 @@ command #button-style from-text: (Name is static-text) do
     when Name =:= "primary" => button-style-primary;
     when Name =:= "dangerous" => button-style-dangerous;
     when Name =:= "clear" => button-style-clear;
+    when Name =:= "card" => button-style-card;
   end
 end
 

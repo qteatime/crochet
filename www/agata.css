@@ -80,6 +80,7 @@ input {
   background: var(--bg);
   border: 1px solid var(--blue-grey-10);
   max-width: 20rem;
+  transition: box-shadow ease-out 0.15s;
 }
 
 .agata-card-image img {
@@ -190,6 +191,26 @@ input {
 .agata-button-style-clear:active {
   outline: none;
   text-decoration: underline var(--primary-bg-accent);
+}
+
+.agata-button.agata-button-style-card {
+  padding: unset;
+  text-transform: unset;
+  font-size: unset;
+  outline: unset;
+  border: unset;
+  background: unset;
+  position: relative;
+  transition: top ease-out 0.15s;
+  text-align: left;
+}
+
+.agata-button.agata-button-style-card:hover {
+  top: -0.5rem;
+}
+
+.agata-button.agata-button-style-card:hover .agata-card {
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .agata-button:disabled {
