@@ -4,11 +4,27 @@ open crochet.ui.agata;
 
 singleton app;
 
-implement to-widget for app;
-command app as widget do
-  #widget flex-column: [
-    layout-section,
-    controls-button
+command app frame: (Widget is widget) do
+  #widget flex-row: [
+    #flex-child with: self navigation
+      | basis: (300 as pixels),
+
+    #flex-child with: Widget
+      | grow: 1
   ]
-  | with-padding: { X in X all: (2.0 as rem) }
+end
+
+command app navigation do
+  #widget section: [
+    #widget flex-column: [
+      #widget subtitle: "Layout",
+      #widget link: "Section"
+        | to: layout-section,
+
+      #widget subtitle: "Controls",
+      #widget link: "Buttons"
+        | to: controls-button,
+    ]
+    | gap: (0.5 as rem)
+  ]
 end

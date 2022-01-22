@@ -4,8 +4,20 @@ open crochet.ui.agata;
 
 singleton layout-section;
 
+implement agata-page for layout-section;
+command layout-section uri-pattern =
+  #uri-pattern from-text: "/layout/section";
+
+command layout-section instantiate-page: Bindings =
+  self;
+
+
 implement to-widget for layout-section;
 command layout-section as widget do
+  app frame: self page;
+end
+
+command layout-section page do
   #widget flex-column: [
     #widget page-title: "Section",
 

@@ -72,3 +72,25 @@ command dom-renderer render: (W is widget-typography) do
   self render: W.content
     | add-class: (self to-css-class: W.style);
 end
+
+
+command dom-renderer render: (W is widget-link) do
+  let Node = dom make: "a" class: "agata-link";
+  Node add-class: (self to-css-class: W.target);
+  Node set: "href" to: (self to-href: W.target);
+  Node append: (self render: W.content);
+
+  self handle-link-click: Node target: W.target;
+
+  Node;
+end
+
+command dom-renderer handle-link-click: Node target: link-target =
+  nothing;
+
+command dom-renderer handle-link-click: Node target: (T is link-target-local) do
+  Node on: "click" do: { Event in
+    Event cancel;
+    agata navigate: T.uri;
+  };
+end

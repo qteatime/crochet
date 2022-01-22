@@ -6,6 +6,9 @@ open crochet.ui.agata;
 
 command main-html: Root do
   agata-dom with-root: Root do: {
-    agata show: app;
+    agata register-page: controls-button;
+    agata register-page: layout-section;
+
+    agata navigate: layout-section;
   }
 end

@@ -1,0 +1,50 @@
+% crochet
+
+trait agata-page with
+  requires trait to-widget;
+
+  command Page uri-pattern -> uri-pattern;
+  command Page instantiate-page: (Bindings is map<text, text>) -> (W has to-widget);
+end
+
+effect agata-routing with
+  register(page is (P has agata-page));
+  navigate(uri is uri);
+end
+
+type agata-router(pages is list<P has agata-page>);
+
+type agata-route-result(global page is (P has agata-page), global bindings is map<text, text>);
+
+abstract agata-route-error;
+type agata-route-error-not-found(global router is agata-router, global uri is uri) is agata-route-error;
+
+
+command #agata-router empty =
+  new agata-router([]);
+
+
+command agata-router add-page: (Page has agata-page)
+requires
+  unique-pattern :: do
+                      let Uri = Page uri-pattern;
+                      self.pages none: { P in P uri-pattern matches-equivalent-uris: Uri };
+                    end
+do
+  new agata-router(self with pages -> self.pages append: page);
+end
+
+
+command agata-router route: (Uri is uri) do
+  self.pages
+    | fold-from: (#result error: not-found)
+      with: (self in: internal route: Uri context: _ page: _)
+    | map-error: { X in new agata-route-error-not-found(self, Uri) }
+end
+
+command agata-router in: internal route: Uri context: error page: Page =
+  Page uri-pattern match: Uri
+    | map: { Match in new agata-route-result(Page, Match) };
+
+command agata-router in: internal route: Uri context: (Ctx is ok) page: Page =
+  Ctx;

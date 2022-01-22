@@ -5,6 +5,7 @@ singleton agata-dom;
 command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
   let Surface = dom make-surface-from-native-element: Root;
   Surface.node add-class: "agata-root";
+  let Router = #cell with-value: #agata-router empty;
   let References = #cell with-value: #map empty;
   handle
     Block();
@@ -26,6 +27,28 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
     on agata-presentation.get-reference(Reference) do
       let Live = References value at: Reference;
       continue with Live;
+    end
+
+    on agata-routing.register(Page) do
+      Router <- Router value add-page: Page;
+      continue with nothing;
+    end
+
+    on agata-routing.navigate(Uri) do
+      let Match = Router value route: Uri;
+
+      condition
+        when Match is error do
+          agata alert: "No page defined for [Uri.location]";
+        end
+
+        otherwise do
+          let Page = Match.page instantiate-page: Match.bindings;
+          Surface replace-contents: Page;
+        end
+      end
+
+      continue with nothing;
     end
   end
 end

@@ -18,6 +18,22 @@ command agata show: (Widget has to-widget) do
   self;
 end
 
+command agata register-page: (Page has agata-page) do
+  perform agata-routing.register(Page);
+  self;
+end
+
+command agata navigate: (Uri is uri) do
+  perform agata-routing.navigate(Uri);
+  self;
+end
+
+command agata navigate: (Page has agata-page) bindings: (Bindings is record) =
+  self navigate: (Page uri-pattern instantiate: Bindings);
+
+command agata navigate: (Page has agata-page) =
+  self navigate: Page bindings: [->];
+
 command agata reference: (Name is static-text) do
   new reference(Name);
 end
