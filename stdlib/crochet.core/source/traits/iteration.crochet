@@ -71,6 +71,17 @@ test
   assert ([4, 5, 6] all: (_ > 3)) === true;
 end
 
+/// True if the given `Predicate` does not hold for any of the items
+/// in the collection.
+command (X has foldable-collection) none: (Predicate is (A -> boolean)) -> boolean =
+  X fold-from: true with: { A, B in A and (not Predicate(B)) }
+test
+  assert ([] none: (_ > 3)) === true;
+  assert ([1] none: (_ > 3)) === true;
+  assert ([1, 2, 3] none: (_ > 3)) === true;
+  assert ([4, 5, 6] none: (_ > 3)) === false;
+end
+
 /// True if all of the items in the collection are `true`.
 command (X has foldable-collection) all-true -> boolean do
   X fold-from: true with: (_ and _);
@@ -89,6 +100,16 @@ test
   assert ([true, true] some-true) === true;
   assert ([false] some-true) === false;
   assert ([false, true, false] some-true) === true;
+end
+
+/// True if none of the items in the collection is `true`.
+command (X has foldable-collection) none-true -> boolean =
+  X fold-from: true with: { A, B in A and (not B) }
+test
+  assert ([] none-true) === true;
+  assert ([true, true] none-true) === false;
+  assert ([false] none-true) === true;
+  assert ([false, true, false] none-true) === false;
 end
 
 /// The arithmetic sum of all items in the collection. Every item must
