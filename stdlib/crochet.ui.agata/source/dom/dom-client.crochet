@@ -39,10 +39,11 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
 
       condition
         when Match is error do
-          agata alert: "No page defined for [Uri.location]";
+          agata-dom alert: "No page defined for [Uri.location]";
         end
 
         otherwise do
+          agata-dom push-uri: Uri;
           let Result = Match value;
           let Page = Result.page instantiate-page: Result.bindings;
           Surface replace-contents: Page;
@@ -53,3 +54,16 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
     end
   end
 end
+
+command agata-dom push-uri: (Uri is uri) do
+  foreign history.push(nothing, "", Uri.location);
+  self;
+end
+
+command agata-dom alert: (Message is text) do
+  foreign dom.alert(Message);
+  self;
+end
+
+command agata-dom alert: (Message is interpolation) =
+  self alert: (Message flatten-into-plain-text);

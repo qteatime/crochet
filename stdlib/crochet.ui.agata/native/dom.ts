@@ -158,4 +158,9 @@ export default (ffi: ForeignInterface) => {
     img.src = ffi.text_to_string(src);
     return ffi.nothing;
   });
+
+  ffi.defun("dom.alert", (msg) => {
+    alert(ffi.text_to_string(msg));
+    return ffi.nothing;
+  });
 };
