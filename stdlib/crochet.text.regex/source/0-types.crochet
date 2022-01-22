@@ -169,3 +169,6 @@ type regex-exact(text is text) is regex-pattern;
 /// A pattern that matches the given patterns one after the other, as if they
 /// were juxtaposed.
 type regex-seq(items is list<regex-pattern>) is regex-pattern;
+
+/// A pattern that matches a specific character class.
+type regex-character-class(class is text) is regex-pattern;

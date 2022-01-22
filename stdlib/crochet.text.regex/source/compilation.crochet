@@ -128,6 +128,9 @@ command regex-exact compile-in: module =
 command regex-seq compile-in: module =
   (self.items map: (_ compile-in: module)) as interpolation;  
 
+command regex-character-class compile-in: module =
+  "\\[self.class]";
+
 command regex-id compile-in: module =
   self.name;
 
