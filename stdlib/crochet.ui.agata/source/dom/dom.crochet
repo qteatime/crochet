@@ -86,12 +86,12 @@ command dom-node style: (Style is record) do
 end
 
 command dom-node on: (Event is static-text) do: (Block is (dom-event -> nothing)) do
-  foreign dom.listen(self.box, Event, { Ev in Block(new dom-event(Ev)) });
+  foreign dom.listen(self.box, Event, { Ev in Block(new dom-event(Ev)) } capture);
   self;
 end
 
 command dom-node trap: (Event is static-text) do: (Block is (dom-event -> nothing)) do
-  foreign dom.trap-listen(self.box, Event, { Ev in Block(new dom-event(Ev)) });
+  foreign dom.trap-listen(self.box, Event, { Ev in Block(new dom-event(Ev)) } capture);
   self;
 end
 

@@ -94,7 +94,7 @@ command dom-renderer to-href: (T is link-target-local) = T.uri.location;
 command dom-renderer to-href: (T is link-target-external) = T.uri.location;
 
 command dom-renderer handle-link-click: Node target: link-target-none = nothing;
-command dom-renderer handle-link-click: Node target: link-target-local = nothing;
+command dom-renderer handle-link-click: Node target: link-target-external = nothing;
 
 command dom-renderer handle-link-click: Node target: (T is link-target-local) do
   Node trap: "click" do: { Event in
