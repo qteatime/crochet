@@ -19,4 +19,18 @@ export default (ffi: ForeignInterface) => {
     });
     return ffi.nothing;
   });
+
+  ffi.defun("history.on-hash-change", (fn) => {
+    window.addEventListener("hashchange", (ev) => {
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(fn, [ffi.box(ev)]);
+        return ffi.nothing;
+      });
+    });
+    return ffi.nothing;
+  });
+
+  ffi.defun("history.location-hash", () => {
+    return ffi.text(location.hash);
+  });
 };

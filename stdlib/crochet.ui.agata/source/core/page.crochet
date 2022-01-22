@@ -9,10 +9,16 @@ end
 
 effect agata-routing with
   register(page is (P has agata-page));
+  register-top-page(page is (P has agata-page));
+  register-error-page(page is (P has agata-page));
   navigate(uri is uri);
 end
 
-type agata-router(pages is list<P has agata-page>);
+type agata-router(
+  pages is list<P has agata-page>,
+  top-page is (P has agata-page),
+  error-page is (P has agata-page),
+);
 
 type agata-route-result(global page is (P has agata-page), global bindings is map<text, text>);
 
@@ -20,9 +26,42 @@ abstract agata-route-error;
 type agata-route-error-not-found(global router is agata-router, global uri is uri) is agata-route-error;
 
 
-command #agata-router empty =
-  new agata-router([]);
+abstract default-agata-page;
+implement to-widget for default-agata-page;
 
+singleton default-agata-page-top is default-agata-page;
+implement agata-page for default-agata-page-top;
+
+command default-agata-page-top uri-pattern = #uri-pattern from-text: "#!/";
+command default-agata-page-top as widget = #widget text: "";
+command default-agata-page-top instantiate-page: _ = self;
+
+type default-agata-page-error(uri is uri) is default-agata-page;
+implement agata-page for #default-agata-page-error;
+
+command #default-agata-page-error uri-pattern = #uri-pattern from-text: "#!/";
+
+command #default-agata-page-error instantiate-page: (Bindings is map<text, text>) =
+  new default-agata-page-error(Bindings at: "uri");
+
+command default-agata-page-error as widget do
+  #widget section: [
+    #widget flex-column: [
+      #widget title: "404 Not Found",
+      #widget text: "The page `[self.uri.location]` does not exist.",
+    ]
+    | with-text-aligned: "center"
+  ]
+  | with-padding: { P in P all: (3.0 as rem) };
+end
+
+
+command #agata-router empty =
+  new agata-router(
+    pages -> [],
+    top-page -> default-agata-page-top,
+    error-page -> #default-agata-page-error,
+  );
 
 command agata-router add-page: (Page has agata-page)
 requires
@@ -34,12 +73,30 @@ do
   new agata-router(self with pages -> self.pages append: Page);
 end
 
+command agata-router use-top-page: (Page has agata-page) do
+  new agata-router(self with top-page -> Page);
+end
 
-command agata-router route: (Uri is uri) do
-  self.pages
-    | fold-from: (#result error: not-found)
-      with: (self in: internal route: Uri context: _ page: _)
-    | map-error: { X in new agata-route-error-not-found(self, Uri) }
+command agata-router use-error-page: (Page has agata-page) do
+  new agata-router(self with error-page -> Page);
+end
+
+
+command agata-router route: (Uri is uri) -> agata-route-result do
+  condition
+    when (Uri.location =:= "") or (Uri.location =:= "/") or (Uri.location =:= "#") do
+      new agata-route-result(self.top-page, #map empty);
+    end
+
+    otherwise do
+      self.pages
+        | fold-from: (#result error: not-found)
+          with: (self in: internal route: Uri context: _ page: _)
+        | value-or-else: { Reason in
+            new agata-route-result(self.error-page, #map from: [uri -> Uri]);
+          }
+    end
+  end
 end
 
 command agata-router in: internal route: Uri context: error page: Page =

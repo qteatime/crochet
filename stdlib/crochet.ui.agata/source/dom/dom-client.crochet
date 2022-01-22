@@ -8,8 +8,9 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
   let Router = #cell with-value: #agata-router empty;
   let References = #cell with-value: #map empty;
   handle
-    internal setup-history-change-listener: self;
+    internal setup-history-router: Router surface: Surface;
     Block();
+    internal try-load-current-url: Router;
   with
     on agata-presentation.show(Widget) do
       Surface replace-contents: Widget;
@@ -35,37 +36,47 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
       continue with nothing;
     end
 
+    on agata-routing.register-top-page(Page) do
+      Router <- Router value use-top-page: Page;
+      continue with nothing;
+    end
+
+    on agata-routing.register-error-page(Page) do
+      Router <- Router value use-error-page: Page;
+      continue with nothing;
+    end
+
     on agata-routing.navigate(Uri) do
-      let Match = Router value route: Uri;
-
-      condition
-        when Match is error do
-          agata-dom alert: "No page defined for [Uri.location]";
-        end
-
-        otherwise do
-          agata-dom push-uri: Uri;
-          let Result = Match value;
-          let Page = Result.page instantiate-page: Result.bindings;
-          Surface replace-contents: Page;
-        end
-      end
-
+      internal router: Router surface: Surface render: Uri;
+      agata-dom push-uri: Uri;
       continue with nothing;
     end
   end
 end
 
-command internal setup-history-change-listener: agata-dom do
-  foreign history.on-state-change({ Ev in
-    let State = foreign ev.navigate-state(Ev);
-    condition
-      when State is nothing => nothing;
-      otherwise do
-        agata navigate: new uri(State.uri);
-      end
-    end
-  } capture);
+command internal router: (Router is cell<agata-router>) surface: (Surface is dom-surface) render: (Uri is uri) do
+  let Match = Router value route: Uri;
+  let Page = Match.page instantiate-page: Match.bindings;
+  Surface replace-contents: Page;
+end
+
+command internal setup-history-router: (Router is cell<agata-router>) surface: (Surface is dom-surface) do
+  let Handler = { Ev in
+    let Location = foreign history.location-hash();
+    internal router: Router surface: Surface render: new uri(Location);
+  } capture;
+
+  foreign history.on-hash-change(Handler);
+end
+
+command internal try-load-current-url: (Router is cell<agata-router>) do
+  let Current-hash = foreign history.location-hash();
+  let Uri = new uri(Current-hash);
+  let Match = Router value route: Uri;
+  condition
+    when Match is error => nothing;
+    otherwise => agata navigate: Uri;
+  end
 end
 
 command agata-dom push-uri: (Uri is uri) do
