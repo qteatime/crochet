@@ -175,6 +175,9 @@ command flex-options align-content: (Name is static-text) =
 command #flex-gap defaults =
   new flex-gap(#measure pixels: 0, #measure pixels: 0);
 
+command #flex-gap row: R column: C =
+  #flex-gap defaults | row: R | column: C;
+
 command flex-gap row: (Unit has to-agata-measure) =
   new flex-gap(self with row -> Unit as measure);
 

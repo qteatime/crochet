@@ -6,7 +6,8 @@
     "source/types.crochet",
     "source/transcript.crochet",
     "source/time.crochet",
-    "source/span.crochet"
+    "source/span.crochet",
+    "source/native-debugger.crochet"
   ],
   "native_sources": ["native/debug.js", "native/span.js"],
   "dependencies": ["crochet.core"],

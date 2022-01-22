@@ -31,7 +31,7 @@ requires
                       self.pages none: { P in P uri-pattern matches-equivalent-uris: Uri };
                     end
 do
-  new agata-router(self with pages -> self.pages append: page);
+  new agata-router(self with pages -> self.pages append: Page);
 end
 
 

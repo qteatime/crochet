@@ -7,8 +7,8 @@ singleton uri-pattern-end is uri-pattern;
 type uri-pattern-path(segment is uri-pattern-segment, rest is uri-pattern) is uri-pattern;
 
 abstract uri-pattern-segment;
-type uri-pattern-segment-concrete(segment is static-text) is uri-pattern-segment;
-type uri-pattern-segment-variable(name is static-text) is uri-pattern-segment;
+type uri-pattern-segment-concrete(segment is text) is uri-pattern-segment;
+type uri-pattern-segment-variable(name is text) is uri-pattern-segment;
 
 abstract uri-pattern-error;
 type uri-pattern-error-duplicate-variables(source is text, pattern is uri-pattern, duplicates is list<text>) is uri-pattern-error;
@@ -59,8 +59,8 @@ end
 // -- Constructors
 command #uri-pattern from-text: (Pattern is static-text) do
   pattern-grammar parse: Pattern
-    | map: { X in self reify }
-    | map: (internal for: #uri-pattern original: Pattern check-duplicate-variables: _)
+    | map: (_ reify)
+    | then: (internal for: #uri-pattern original: Pattern check-duplicate-variables: _)
     | value-or-panic: "Invalid pattern";
 end
 
@@ -103,7 +103,7 @@ do
   new uri(Text);
 end
 
-command internal instantitate: (X is uri-pattern-end) bindings: Bindings =
+command internal instantiate: (X is uri-pattern-end) bindings: Bindings =
   "/";
 
 command internal instantiate: (X is uri-pattern-path) bindings: Bindings do

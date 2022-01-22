@@ -17,4 +17,11 @@ export default (ffi: ForeignInterface) => {
     const ev = unbox_typed(ev0, Event);
     return ffi.integer(BigInt(Math.round(ev.timeStamp)));
   });
+
+  ffi.defun("ev.cancel", (ev0) => {
+    const ev = unbox_typed(ev0, Event);
+    ev.stopPropagation();
+    ev.preventDefault();
+    return ffi.nothing;
+  });
 };

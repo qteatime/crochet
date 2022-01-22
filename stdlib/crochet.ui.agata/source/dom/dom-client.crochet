@@ -43,7 +43,8 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
         end
 
         otherwise do
-          let Page = Match.page instantiate-page: Match.bindings;
+          let Result = Match value;
+          let Page = Result.page instantiate-page: Result.bindings;
           Surface replace-contents: Page;
         end
       end

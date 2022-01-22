@@ -59,4 +59,9 @@ export default (ffi: ForeignInterface) => {
     yield ffi.push_transcript(tag, format_time_diff(diff));
     return result;
   });
+
+  ffi.defun("debug.native-breakpoint", () => {
+    debugger;
+    return ffi.nothing;
+  });
 };

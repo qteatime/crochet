@@ -85,12 +85,19 @@ command dom-renderer render: (W is widget-link) do
   Node;
 end
 
-command dom-renderer handle-link-click: Node target: link-target =
-  nothing;
+command dom-renderer to-css-class: link-target-none = "agata-link-target-none";
+command dom-renderer to-css-class: link-target-local = "agata-link-target-local";
+command dom-renderer to-css-class: link-target-external = "agata-link-target-external";
+
+command dom-renderer to-href: link-target-none = "#";
+command dom-renderer to-href: (T is link-target-local) = T.uri.location;
+command dom-renderer to-href: (T is link-target-external) = T.uri.location;
+
+command dom-renderer handle-link-click: Node target: link-target-none = nothing;
+command dom-renderer handle-link-click: Node target: link-target-local = nothing;
 
 command dom-renderer handle-link-click: Node target: (T is link-target-local) do
-  Node on: "click" do: { Event in
-    Event cancel;
+  Node trap: "click" do: { Event in
     agata navigate: T.uri;
   };
 end

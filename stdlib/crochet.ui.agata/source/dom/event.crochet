@@ -10,3 +10,8 @@ command dom-event occurred-at =
 
 command dom-event to-click-event =
   new click-event(self occurred-at);
+
+command dom-event cancel do
+  foreign ev.cancel(self.box);
+  self;
+end

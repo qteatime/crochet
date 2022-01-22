@@ -6,7 +6,7 @@ singleton layout-section;
 
 implement agata-page for layout-section;
 command layout-section uri-pattern =
-  #uri-pattern from-text: "/layout/section";
+  #uri-pattern from-text: "/layout/section/";
 
 command layout-section instantiate-page: Bindings =
   self;

@@ -1,0 +1,8 @@
+% crochet
+
+singleton native-debugger;
+
+command native-debugger stop-here do
+  foreign debug.native-breakpoint();
+  self;
+end

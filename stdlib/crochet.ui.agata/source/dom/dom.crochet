@@ -90,6 +90,11 @@ command dom-node on: (Event is static-text) do: (Block is (dom-event -> nothing)
   self;
 end
 
+command dom-node trap: (Event is static-text) do: (Block is (dom-event -> nothing)) do
+  foreign dom.trap-listen(self.box, Event, { Ev in Block(new dom-event(Ev)) });
+  self;
+end
+
 command dom-node text-input-value =
   foreign dom.input-value(self.box);
 

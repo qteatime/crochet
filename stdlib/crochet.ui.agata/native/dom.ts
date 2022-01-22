@@ -116,6 +116,19 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("dom.trap-listen", (x0, name, block) => {
+    const x = get_element(x0);
+    x.addEventListener(ffi.text_to_string(name), (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(block, [ffi.box(ev)]);
+        return ffi.nothing;
+      });
+    });
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.add-class", (x0, name) => {
     const x = get_element(x0);
     x.classList.add(ffi.text_to_string(name));
