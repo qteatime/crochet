@@ -102,3 +102,8 @@ command dom-node add-class: (Name is text) do
   foreign dom.add-class(self.box, Name);
   self;
 end
+
+command dom-node remove-class: (Name is text) do
+  foreign dom.remove-class(self.box, Name);
+  self;
+end

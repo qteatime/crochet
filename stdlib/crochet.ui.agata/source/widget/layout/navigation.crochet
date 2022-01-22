@@ -1,0 +1,41 @@
+% crochet
+
+type widget-navigation(items is list<navigation-child>) is widget;
+
+abstract navigation-child;
+type navigation-child-header(content is widget) is navigation-child;
+type navigation-child-link(link is widget-link, active-when) is navigation-child;
+
+
+command #widget navigation: (Items is list) do
+  new widget-navigation(Items map: (internal to-navigation-child: _));
+end
+
+command internal to-navigation-child: (X is navigation-child) =
+  X;
+
+command internal to-navigation-child: (X is widget-link) =
+  new navigation-child-link(link -> X, active-when -> nothing);
+
+command internal to-navigation-child: (X is text) =
+  new navigation-child-header(X as widget);
+
+
+command #navigation-child header: (X has to-widget) =
+  new navigation-child-header(X as widget);
+
+command #navigation-child link: (X has to-widget) =
+  new navigation-child-link(link -> #widget link: X, active-when -> nothing);
+
+
+command navigation-child-link active-when: (Pattern is uri-pattern) =
+  new navigation-child-link(self with active-when -> Pattern);
+
+command navigation-child-link to: (Page has agata-page) bindings: (Bindings is record) =
+  new navigation-child-link(self with
+    link -> self.link to: Page bindings: Bindings,
+    active-when -> Page uri-pattern
+  );
+
+command navigation-child-link to: (Page has agata-page) =
+  self to: Page bindings: [->];

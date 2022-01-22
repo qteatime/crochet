@@ -12,6 +12,7 @@ effect agata-routing with
   register-top-page(page is (P has agata-page));
   register-error-page(page is (P has agata-page));
   navigate(uri is uri);
+  get-navigation-events(); // -> event-stream<navigate-event>
 end
 
 type agata-router(

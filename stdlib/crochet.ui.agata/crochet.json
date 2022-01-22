@@ -69,6 +69,7 @@
     "source/widget/layout/card.crochet",
     "source/widget/layout/fixed.crochet",
     "source/widget/layout/section.crochet",
+    "source/widget/layout/navigation.crochet",
     "source/widget/input/text.crochet",
     "source/widget/input/button.crochet",
     "source/widget/input/checkbox.crochet"

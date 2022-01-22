@@ -100,3 +100,32 @@ command dom-renderer render: (W is widget-section) do
   end
   Node;
 end
+
+
+command dom-renderer render: (W is widget-navigation) do
+  let Node = dom make: "nav" class: "agata-navigation";
+  for Child in W.items do
+    Node append: (self render-nav-child: Child);
+  end
+  Node;
+end
+
+command dom-renderer render-nav-child: (X is navigation-child-header) =
+  dom make: "div" class: "agata-navigation-header"
+    | append: (self render: X.content);
+
+command dom-renderer render-nav-child: (X is navigation-child-link) do
+  let Node = dom make: "div" class: "agata-navigation-link";
+  Node append: (self render: X.link);
+
+  let Navigation = perform agata-routing.get-navigation-events();
+  Navigation subscribe: { Event in
+    let Match = X.active-when match: Event.uri;
+    condition
+      when Match is error => Node remove-class: "agata-navigation-active";
+      when Match is ok => Node add-class: "agata-navigation-active";
+    end
+  };
+
+  Node;
+end

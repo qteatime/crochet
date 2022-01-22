@@ -135,6 +135,12 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("dom.remove-class", (x0, name) => {
+    const x = get_element(x0);
+    x.classList.remove(ffi.text_to_string(name));
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.make-css", (css) => {
     const style = document.createElement("style");
     style.textContent = ffi.text_to_string(css);
@@ -162,5 +168,9 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("dom.alert", (msg) => {
     alert(ffi.text_to_string(msg));
     return ffi.nothing;
+  });
+
+  ffi.defun("dom.now", () => {
+    return ffi.integer(BigInt(new Date().getTime()));
   });
 };

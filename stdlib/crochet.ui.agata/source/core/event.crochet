@@ -4,4 +4,11 @@ open crochet.time;
 
 abstract agata-event;
 
-type click-event(global occurred-at is instant) is agata-event;
+type click-event(
+  occurred-at is instant
+) is agata-event;
+
+type navigate-event(
+  occurred-at is instant,
+  global uri is uri
+) is agata-event;

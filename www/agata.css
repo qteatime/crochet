@@ -327,3 +327,46 @@ input {
   font-weight: 400;
   color: var(--fg-muted);
 }
+
+/* Navigation */
+.agata-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem;
+}
+
+.agata-navigation-header,
+.agata-navigation-link {
+  padding-left: 10px;
+}
+
+.agata-navigation-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 1.6em;
+  margin: 1.5em 0 0.2em;
+}
+
+.agata-navigation-link .agata-link {
+  display: block;
+  text-decoration: none;
+  color: var(--fg);
+  line-height: 1.5em;
+  padding: 0.5rem 0 0.2rem 0;
+}
+
+.agata-navigation-link.agata-navigation-active {
+  font-weight: bold;
+  border-left: 3px solid var(--blue-20);
+  padding-left: 7px;
+}
+
+.agata-navigation-link.agata-navigation-active .agata-link {
+  color: var(--blue-30);
+}
+
+.agata-navigation-link:hover {
+  border-left: 3px solid var(--blue-10);
+  padding-left: 7px;
+}
