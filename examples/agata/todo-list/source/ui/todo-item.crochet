@@ -1,0 +1,38 @@
+% crochet
+
+command todo-ui render-item: (Item is todo-item) do
+  let Done = #observable-cell from-stream: self events done initial-value: Item.done;
+
+  #widget card: [
+    #card-child content: [
+      #widget flex-row: [
+        #widget
+          | icon-button: (Done map: (self render-item-toggle: _))
+          | on-click: { _ in self mark: Item.id done: (not Done value) },
+        
+        #flex-child fluid: (Done map: (self render-item-title: Item.title done: _)),
+
+        #widget
+          | icon-button: "trash"
+          | on-click: { _ in self delete-item: Item.id }
+      ]
+      | align-items: "center"
+      | gap: (1.0 as rem)
+    ]
+  ]
+end
+
+
+command todo-ui render-item-toggle: true =
+  #widget icon: "circle" | style: "solid";
+
+command todo-ui render-item-toggle: false =
+  #widget icon: "circle" | style: "regular";
+
+
+command todo-ui render-item-title: Title done: false =
+  Title;
+
+command todo-ui render-item-title: Title done: true =
+  #widget text: Title
+    | with-text-decoration: "line-through";

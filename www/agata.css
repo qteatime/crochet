@@ -259,25 +259,25 @@ input {
   padding: 0;
 }
 
-.agata-icon-size-16 {
-  width: 16px;
-  height: 16px;
-  font-size: 14px;
+.agata-icon-size-small {
+  width: 20px;
+  height: 20px;
+  font-size: 18px;
 }
 
-.agata-icon-size-32 {
+.agata-icon-size-medium {
   width: 32px;
   height: 32px;
   font-size: 28px;
 }
 
-.agata-icon-size-48 {
+.agata-icon-size-large {
   width: 48px;
   height: 48px;
   font-size: 42px;
 }
 
-.agata-icon-size-64 {
+.agata-icon-size-extra-large {
   width: 64px;
   height: 64px;
   font-size: 56px;

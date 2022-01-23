@@ -57,10 +57,10 @@ command dom-renderer to-class: button-style-card = "agata-button-style-card";
 
 
 // Icon sizes
-command dom-renderer to-class: icon-size-16 = "agata-icon-size-16";
-command dom-renderer to-class: icon-size-32 = "agata-icon-size-32";
-command dom-renderer to-class: icon-size-48 = "agata-icon-size-48";
-command dom-renderer to-class: icon-size-64 = "agata-icon-size-64";
+command dom-renderer to-class: icon-size-small = "agata-icon-size-small";
+command dom-renderer to-class: icon-size-medium = "agata-icon-size-medium";
+command dom-renderer to-class: icon-size-large = "agata-icon-size-large";
+command dom-renderer to-class: icon-size-extra-large = "agata-icon-size-extra-large";
 
 
 // Font weight

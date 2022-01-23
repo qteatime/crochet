@@ -10,7 +10,7 @@ requires
 do
   new widget-icon(
     name -> Name,
-    size -> icon-size-16
+    size -> icon-size-medium
   );
 end
 

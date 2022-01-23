@@ -1,7 +1,7 @@
 % crochet
 
 enum icon-size =
-  icon-size-16,
-  icon-size-32,
-  icon-size-48,
-  icon-size-64;
+  icon-size-small,
+  icon-size-medium,
+  icon-size-large,
+  icon-size-extra-large;

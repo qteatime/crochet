@@ -74,6 +74,10 @@ command #widget flex-row: (Children is list) =
 command #flex-child with: (Content has to-widget) =
   new flex-child(Content as widget, #flex-child-options defaults);
 
+command #flex-child fluid: (Content has to-widget) =
+  #flex-child with: Content
+    | grow: 1;
+
 
 // -- Setting options
 command widget-flex options: (X is flex-options) =

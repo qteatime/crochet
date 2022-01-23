@@ -1,0 +1,57 @@
+% crochet
+
+// -- Types --------------------------------------------------------------------
+
+/// An unique identifier for each todo item. Not committed to any serialisation.
+type todo-id;
+
+/// A single todo item.
+type todo-item(id is todo-id, title is text, done is boolean);
+
+
+/// Possible lists of todo items.
+abstract todo-list;
+
+/// A todo list that is manipulated by the user.
+type todo-list-concrete(name is text, items is list<todo-item>) is todo-list;
+
+
+/// A database of todo lits
+type todo-db(lists is list<todo-list>);
+
+// -- Operations on todo lists -------------------------------------------------
+
+/// Creates a concrete todo list
+command #todo-list-concrete with-name: (Name is text) =
+  new todo-list-concrete(Name, []);
+
+/// Adds a todo item
+command todo-list-concrete add: (Item is todo-item) =
+  new todo(self.items append: Item);
+
+/// Removes a todo item
+command todo-list-concrete remove: (Item is todo-id) =
+  new todo(self.items keep-if: { X in not (X.id =:= Item) });
+
+/// Marks a todo item as done or not done
+command todo-list-concrete mark: (Id is todo-id) done: (Done is boolean) =
+  new todo(self.items map: { Item in
+    condition
+      when Item.id =:= Id => Item done: Done;
+      otherwise => Item;
+    end
+  });
+
+
+// -- Operations on todo items -------------------------------------------------
+
+/// Creates a todo item
+command #todo-item with-title: (Title is text) =
+  new todo-item(new todo-id, Title, false);
+
+command #todo-item with-title: (Title is interpolation) =
+  new todo-item(new todo-id, Title flatten-into-plain-text, false);
+
+/// Marks a todo item as done or not done
+command todo-item done: (Done is boolean) =
+  new todo-item(self with done -> Done);
