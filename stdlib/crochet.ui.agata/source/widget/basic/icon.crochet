@@ -2,7 +2,12 @@
 
 open crochet.text.regex;
 
-type widget-icon(name is text, size is icon-size) is widget;
+type widget-icon(name is text, size is icon-size, style is icon-style) is widget;
+
+enum icon-style =
+  icon-style-solid,
+  icon-style-regular;
+
 
 command #widget icon: (Name is static-text)
 requires
@@ -10,7 +15,8 @@ requires
 do
   new widget-icon(
     name -> Name,
-    size -> icon-size-small
+    size -> icon-size-small,
+    style -> icon-style-solid,
   );
 end
 
@@ -19,5 +25,21 @@ command internal valid-icon-name: (Name is static-text) do
   Valid-re can-match: Name;
 end
 
+
+command #icon-style from-text: (Name is static-text) do
+  condition
+    when Name =:= "solid" => icon-style-solid;
+    when Name =:= "regular" => icon-style-regular;
+  end
+end
+
+
 command widget-icon size: (Size is icon-size) =
   new widget-icon(self with size -> Size);
+
+
+command widget-icon style: (Style is icon-style) =
+  new widget-icon(self with style -> Style);
+
+command widget-icon style: (Style is static-text) =
+  self style: (#icon-style from-text: Style);

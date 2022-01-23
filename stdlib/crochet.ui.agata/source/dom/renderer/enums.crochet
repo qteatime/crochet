@@ -49,18 +49,18 @@ command dom-renderer to-text: y-anchor-bottom = "bottom";
 
 
 // button styles
-command dom-renderer to-class: button-style-default = "agata-button-style-default";
-command dom-renderer to-class: button-style-primary = "agata-button-style-primary";
-command dom-renderer to-class: button-style-dangerous = "agata-button-style-dangerous";
-command dom-renderer to-class: button-style-clear = "agata-button-style-clear";
-command dom-renderer to-class: button-style-card = "agata-button-style-card";
+command dom-renderer to-css-class: button-style-default = "agata-button-style-default";
+command dom-renderer to-css-class: button-style-primary = "agata-button-style-primary";
+command dom-renderer to-css-class: button-style-dangerous = "agata-button-style-dangerous";
+command dom-renderer to-css-class: button-style-clear = "agata-button-style-clear";
+command dom-renderer to-css-class: button-style-card = "agata-button-style-card";
 
 
 // Icon sizes
-command dom-renderer to-class: icon-size-small = "agata-icon-size-small";
-command dom-renderer to-class: icon-size-medium = "agata-icon-size-medium";
-command dom-renderer to-class: icon-size-large = "agata-icon-size-large";
-command dom-renderer to-class: icon-size-extra-large = "agata-icon-size-extra-large";
+command dom-renderer to-css-class: icon-size-small = "agata-icon-size-small";
+command dom-renderer to-css-class: icon-size-medium = "agata-icon-size-medium";
+command dom-renderer to-css-class: icon-size-large = "agata-icon-size-large";
+command dom-renderer to-css-class: icon-size-extra-large = "agata-icon-size-extra-large";
 
 
 // Font weight
@@ -103,3 +103,8 @@ command dom-renderer to-css-property: text-alignment-right =
   "right";
 command dom-renderer to-css-property: text-alignment-justify =
   "justify";
+
+
+// Icon styles
+command dom-renderer to-css-class: icon-style-solid = "fas";
+command dom-renderer to-css-class: icon-style-regular = "far";
