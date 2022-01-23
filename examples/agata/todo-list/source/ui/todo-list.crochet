@@ -1,0 +1,41 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.ui.agata;
+
+command todo-ui render-list: (List is todo-list) do
+  let Items = self events items-changed: List.id
+                |> _ map: { X in X.items }
+                |> #observable-cell from-stream: _ initial-value: List all-items;
+  let New-item = #observable-cell with-value: "";
+
+  #widget flex-column: [
+    #widget page-title: List name,
+
+    #flex-child fluid: [
+      self render-list-items: Items
+    ],
+
+    #widget space | vertical: (2 as rem),
+
+    #widget card: [
+      #card-child body: [
+        #widget flex-row: [
+          #widget icon: "plus",
+          #widget text-input
+            | placeholder: "Add an item"
+            | value: New-item
+        ]
+        | gap: (1 as rem)
+        | align-items: "center"
+      ]
+    ]
+  ]
+end
+
+command todo-ui render-list-items: (Items is observable-cell<list<todo-item>>) do
+  Items map: { Xs in
+    #widget flex-column: (Xs map: (self render-item: _))
+      | gap: (0.5 as rem)
+  };
+end

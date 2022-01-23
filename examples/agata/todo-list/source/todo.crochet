@@ -1,9 +1,15 @@
 % crochet
 
+// -- Effects ------------------------------------------------------------------
+effect todo-item with
+  unique-id(); // -> todo-id
+end
+
+
 // -- Types --------------------------------------------------------------------
 
-/// An unique identifier for each todo item. Not committed to any serialisation.
-type todo-id;
+/// An unique identifier for each todo entity.
+type todo-id(value is text);
 
 /// A single todo item.
 type todo-item(id is todo-id, title is text, done is boolean);
@@ -13,44 +19,106 @@ type todo-item(id is todo-id, title is text, done is boolean);
 abstract todo-list;
 
 /// A todo list that is manipulated by the user.
-type todo-list-concrete(name is text, items is list<todo-item>) is todo-list;
+type todo-list-concrete(id is todo-id, name is text, items is list<todo-item>) is todo-list;
 
 
 /// A database of todo lits
 type todo-db(lists is list<todo-list>);
 
+
+// -- Operations on todo databases ---------------------------------------------
+
+/// Finds the list with the given id
+command todo-db find-list: (Id is todo-id) =
+  self.lists find-first: { List in List.id === Id };
+
+/// Adds a new list to the database
+command todo-db add: (List is todo-list)
+requires
+  unique :: not (self.lists some: { X in X.id === List.id })
+do
+  new todo-db(self with lists -> self.lists append: List);
+end
+
+/// Marks one item as done in the lists
+command todo-db mark: (Id is todo-id) done: (Done is boolean) do
+  let Lists = self.lists map: (_ mark: Id done: Done);
+  new todo-db(self with lists -> Lists);
+end
+
+/// Removes one item from the lists
+command todo-db remove-item: (Id is todo-id) do
+  let Lists = self.lists map: (_ remove: Id);
+  new todo-db(self with lists -> Lists);
+end
+
+/// Creates an empty database
+command #todo-db empty =
+  new todo-db([]);
+
+
+// -- Operations on todo ids ---------------------------------------------------
+
+/// Constructs a todo id from its serialisation
+command #todo-id from: (Id is text) =
+  new todo-id(Id);
+
+/// Serialises a todo id
+command todo-id to-text =
+  self.value;
+
+
+implement equality for todo-id;
+command todo-id === (That is todo-id) =
+  self.value =:= That.value;
+
 // -- Operations on todo lists -------------------------------------------------
 
 /// Creates a concrete todo list
-command #todo-list-concrete with-name: (Name is text) =
-  new todo-list-concrete(Name, []);
+command #todo-list-concrete with-name: (Name is text) do
+  let Id = perform todo-item.unique-id();
+  new todo-list-concrete(Id, Name, []);
+end
 
 /// Adds a todo item
-command todo-list-concrete add: (Item is todo-item) =
-  new todo(self.items append: Item);
+command todo-list-concrete add: (Item is todo-item)
+requires
+  unique :: not (self.items some: { X in X.id === Item.id })
+do
+  new todo-list-concrete(self with items -> self.items append: Item);
+end
 
 /// Removes a todo item
 command todo-list-concrete remove: (Item is todo-id) =
-  new todo(self.items keep-if: { X in not (X.id =:= Item) });
+  new todo-list-concrete(self with items -> self.items keep-if: { X in not (X.id === Item) });
 
 /// Marks a todo item as done or not done
 command todo-list-concrete mark: (Id is todo-id) done: (Done is boolean) =
-  new todo(self.items map: { Item in
+  new todo-list-concrete(self with items -> self.items map: { Item in
     condition
-      when Item.id =:= Id => Item done: Done;
+      when Item.id === Id => Item done: Done;
       otherwise => Item;
     end
   });
 
+/// Returns all items of the todo list
+command todo-list-concrete all-items =
+  self.items;
+
+/// Returns the name of the todo list
+command todo-list-concrete name =
+  self.name;
 
 // -- Operations on todo items -------------------------------------------------
 
 /// Creates a todo item
-command #todo-item with-title: (Title is text) =
-  new todo-item(new todo-id, Title, false);
+command #todo-item with-title: (Title is text) do
+  let Id = perform todo-item.unique-id();
+  new todo-item(Id, Title, false);
+end
 
 command #todo-item with-title: (Title is interpolation) =
-  new todo-item(new todo-id, Title flatten-into-plain-text, false);
+  self with-title: Title flatten-into-plain-text;
 
 /// Marks a todo item as done or not done
 command todo-item done: (Done is boolean) =

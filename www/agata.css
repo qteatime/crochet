@@ -390,3 +390,7 @@ input {
   border-left: 3px solid var(--primary-fg-accent);
   padding-left: 7px;
 }
+
+.agata-detached {
+  display: none !important;
+}

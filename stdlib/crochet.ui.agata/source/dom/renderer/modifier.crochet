@@ -56,10 +56,24 @@ end
 
 
 command dom-renderer render: (W is widget-text-decoration) do
+  let D = W.decoration;
   self render: W.content
     | style: [
-        text-decoration-line -> self to-css-property: W.line,
-        text-decoration-color -> self to-css-color: W.color,
-        text-decoration-thickness -> self to-unit-text: W.width,
+        text-decoration-line -> self to-css-property: D.line,
+        text-decoration-color -> self to-css-color: D.color,
+        text-decoration-thickness -> self to-unit-text: D.width,
       ];
+end
+
+open crochet.debug;
+command dom-renderer render: (W is widget-attachment) do
+  let Node = self render: W.content
+              | add-class: "agata-dynamic-attachment";
+  W.attached stream subscribe: { Attached in
+    condition
+      when not Attached => Node add-class: "agata-detached";
+      when Attached => Node remove-class: "agata-detached";
+    end
+  };
+  Node;
 end

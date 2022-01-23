@@ -1,5 +1,8 @@
 % crochet
 
+command dom-renderer to-unit-text: measure-unset =
+  "unset";
+
 command dom-renderer to-unit-text: measure-auto =
   "auto";
 

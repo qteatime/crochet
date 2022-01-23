@@ -5,7 +5,11 @@
   "sources": [
     "source/main.crochet",
     "source/todo.crochet",
-    "source/ui.crochet"
+    "source/ui/frame.crochet",
+    "source/ui/main.crochet",
+    "source/ui/page.crochet",
+    "source/ui/todo-item.crochet",
+    "source/ui/todo-list.crochet"
   ],
   "dependencies": [
     "crochet.core",

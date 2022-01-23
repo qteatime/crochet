@@ -20,7 +20,7 @@ grammar pattern_grammar : uri_ast_pattern {
     | s:plain_segment  -> uri_ast_segment.concrete(s)
 
   
-  token identifier = "a".."z" | "A".."Z" | "0".."9"
+  token identifier = ("a".."z" | "A".."Z" | "0".."9")+
   token plain_segment = (unreserved | sub_delims | pct_encoded)+
   token unreserved = letter | digit | "-" | "." | "_" | "~"
   token sub_delims = "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "="
