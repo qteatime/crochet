@@ -15,8 +15,8 @@ command dom-renderer render: (W is widget-text-input) do
   W.read-only stream subscribe: (Node set-boolean: "readonly" to: _);
 
   Node on: "keyup" do: { Event in
-    W.key-up publish: Event to-keyboard-event;
     W.value <- Node text-input-value;
+    W.key-up publish: Event to-keyboard-event;
   } capture;
 
   Node on: "keydown" do: { Event in

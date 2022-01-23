@@ -16,4 +16,4 @@ command dom-renderer to-unit-text: (X is rem) =
   "[X.value to-text]rem" flatten-into-plain-text;
 
 command dom-renderer to-unit-text: (X is percent) =
-  "[X.value to-text]%";
+  "[X.value to-text]%" flatten-into-plain-text;

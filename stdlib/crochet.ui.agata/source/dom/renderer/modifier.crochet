@@ -76,7 +76,6 @@ command dom-renderer render: (W is widget-text-decoration) do
       ];
 end
 
-open crochet.debug;
 command dom-renderer render: (W is widget-attachment) do
   let Node = self render: W.content
               | add-class: "agata-dynamic-attachment";
@@ -87,4 +86,20 @@ command dom-renderer render: (W is widget-attachment) do
     end
   };
   Node;
+end
+
+
+command dom-renderer render: (W is widget-background) do
+  self render: W.content
+    | style: [background-color -> self to-css-color: W.color];
+end
+
+
+command dom-renderer render: (W is widget-size) do
+  self render: W.content
+    | style: [
+        box-sizing -> "border-box",
+        width -> self to-unit-text: W.width,
+        height -> self to-unit-text: W.height,
+      ];
 end

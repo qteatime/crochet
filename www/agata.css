@@ -45,6 +45,10 @@ html {
   flex-direction: column;
 }
 
+.agata-full-screen > * {
+  flex-grow: 1;
+}
+
 /* FIXME: a less excessive reset sheet */
 * {
   margin: 0;

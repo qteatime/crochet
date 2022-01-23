@@ -45,6 +45,7 @@ command todo-ui render-list: (List is todo-list) do
       ]
     ]
   ]
+  | fill-container-vertically;
 end
 
 command todo-ui render-list-items: (Items is observable-cell<list<todo-item>>) do

@@ -58,6 +58,8 @@
     "source/widget/modifiers/text-decoration.crochet",
     "source/widget/modifiers/attachment.crochet",
     "source/widget/modifiers/margin.crochet",
+    "source/widget/modifiers/background.crochet",
+    "source/widget/modifiers/size.crochet",
     "source/widget/basic/fragment.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",

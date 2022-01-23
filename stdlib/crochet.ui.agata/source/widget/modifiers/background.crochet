@@ -1,0 +1,11 @@
+% crochet
+
+type widget-background(
+  content is widget,
+  color is color
+) is widget;
+
+
+command widget with-background: (Color has to-agata-color) do
+  new widget-background(self, Color);
+end
