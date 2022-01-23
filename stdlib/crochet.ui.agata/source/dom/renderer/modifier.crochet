@@ -53,3 +53,13 @@ command dom-renderer render: (W is widget-text-align) do
   self render: W.content
     | style: [text-align -> self to-css-property: W.alignment];
 end
+
+
+command dom-renderer render: (W is widget-text-decoration) do
+  self render: W.content
+    | style: [
+        text-decoration-line -> self to-css-property: W.line,
+        text-decoration-color -> self to-css-color: W.color,
+        text-decoration-thickness -> self to-unit-text: W.width,
+      ];
+end

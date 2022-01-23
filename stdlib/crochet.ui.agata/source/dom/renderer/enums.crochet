@@ -108,3 +108,10 @@ command dom-renderer to-css-property: text-alignment-justify =
 // Icon styles
 command dom-renderer to-css-class: icon-style-solid = "fas";
 command dom-renderer to-css-class: icon-style-regular = "far";
+
+
+// Line styles
+command dom-renderer to-css-property: text-decoration-line-none = "none";
+command dom-renderer to-css-property: text-decoration-line-underline = "underline";
+command dom-renderer to-css-property: text-decoration-line-overline = "overline";
+command dom-renderer to-css-property: text-decoration-line-line-through = "line-through";
