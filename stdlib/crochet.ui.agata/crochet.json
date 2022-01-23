@@ -57,6 +57,7 @@
     "source/widget/modifiers/text-align.crochet",
     "source/widget/modifiers/text-decoration.crochet",
     "source/widget/modifiers/attachment.crochet",
+    "source/widget/modifiers/margin.crochet",
     "source/widget/basic/fragment.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",

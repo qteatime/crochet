@@ -115,3 +115,8 @@ command dom-renderer to-css-property: text-decoration-line-none = "none";
 command dom-renderer to-css-property: text-decoration-line-underline = "underline";
 command dom-renderer to-css-property: text-decoration-line-overline = "overline";
 command dom-renderer to-css-property: text-decoration-line-line-through = "line-through";
+
+
+// Card styles
+command dom-renderer to-css-class: card-style-narrow = "agata-card-style-narrow";
+command dom-renderer to-css-class: card-style-fluid = "agata-card-style-fluid";

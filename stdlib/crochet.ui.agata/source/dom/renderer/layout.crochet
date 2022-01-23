@@ -46,6 +46,7 @@ command dom-renderer render-flex-unit: (X is integer) =
 
 command dom-renderer render: (W is widget-card) do
   let Node = dom make: "div" class: "agata-card";
+  Node add-class: (self to-css-class: W.style);
   for Child in W.content do
     Node append: (self render: Child);
   end

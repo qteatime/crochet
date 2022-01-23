@@ -79,8 +79,11 @@ input {
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
   background: var(--bg);
   border: 1px solid var(--blue-grey-10);
-  max-width: 20rem;
   transition: box-shadow ease-out 0.15s;
+}
+
+.agata-card-style-narrow {
+  max-width: 20rem;
 }
 
 .agata-card-image img {
@@ -141,7 +144,7 @@ input {
 }
 
 .agata-text-input:focus {
-  border-bottom-width: 3px;
+  box-shadow: 0 1px 1px var(--primary-fg);
 }
 
 .agata-button {

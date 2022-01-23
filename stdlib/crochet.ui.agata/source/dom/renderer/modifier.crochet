@@ -49,6 +49,17 @@ command dom-renderer render: (W is widget-padding) do
 end
 
 
+command dom-renderer render: (W is widget-margin) do
+  self render: W.content
+    | style: [
+        margin-top -> self to-unit-text: W.top,
+        margin-right -> self to-unit-text: W.right,
+        margin-bottom -> self to-unit-text: W.bottom,
+        margin-left -> self to-unit-text: W.left,
+      ];
+end
+
+
 command dom-renderer render: (W is widget-text-align) do
   self render: W.content
     | style: [text-align -> self to-css-property: W.alignment];

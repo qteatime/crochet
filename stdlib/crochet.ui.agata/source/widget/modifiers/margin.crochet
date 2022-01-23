@@ -1,0 +1,56 @@
+% crochet
+
+type widget-margin(
+  content is widget,
+  top is measure-length,
+  right is measure-length,
+  bottom is measure-length,
+  left is measure-length,
+) is widget;
+
+command widget with-margin: (F is (widget-margin -> widget-margin)) =
+  F(new widget-margin(
+    content -> self,
+    top -> #measure pixels: 0,
+    right -> #measure pixels: 0,
+    bottom -> #measure pixels: 0,
+    left -> #measure pixels: 0,
+  ));
+
+command widget-margin top: (X has to-agata-measure) =
+  new widget-margin(self with top -> X as measure);
+
+command widget-margin right: (X has to-agata-measure) =
+  new widget-margin(self with right -> X as measure);
+
+command widget-margin bottom: (X has to-agata-measure) =
+  new widget-margin(self with bottom -> X as measure);
+
+command widget-margin left: (X has to-agata-measure) =
+  new widget-margin(self with left -> X as measure);
+
+command widget-margin all: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-margin(self with 
+    top -> X,
+    right -> X,
+    bottom -> X,
+    left -> X,
+  );
+end
+
+command widget-margin vertical: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-margin(self with
+    top -> X,
+    bottom -> X,
+  );
+end
+
+command widget-margin horizontal: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-margin(self with
+    left -> X,
+    right -> X,
+  );
+end

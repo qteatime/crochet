@@ -47,6 +47,7 @@ command layout-card page do
           | gap: { G in G column: (0.5 as rem) }
         ),
       ]
+      | style: "narrow"
     ],
 
     #widget section: [
@@ -65,6 +66,7 @@ command layout-card page do
           "The kitchen-sink package for Crochet."
         ]
       ]
+      | style: "narrow"
     ]
   ]
 end
