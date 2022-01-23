@@ -52,6 +52,17 @@ command todo-db remove-item: (Id is todo-id) do
   new todo-db(self with lists -> Lists);
 end
 
+/// Adds an item to a list
+command todo-db add: (Item is todo-item) to: (Id is todo-id) do
+  let Lists = self.lists map: { List in
+    condition
+      when List.id === Id => List add: Item;
+      otherwise => List;
+    end
+  };
+  new todo-db(self with lists -> Lists);
+end
+
 /// Creates an empty database
 command #todo-db empty =
   new todo-db([]);

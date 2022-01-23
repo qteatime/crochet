@@ -6,14 +6,19 @@ type widget-text-input(
   placeholder is observable-cell<text>,
   read-only is observable-cell<boolean>,
   value is observable-cell<text>,
+  key-up is event-stream<keyboard-event>,
+  key-down is event-stream<keyboard-event>,
 ) is widget;
 
 command #widget text-input =
   new widget-text-input(
     placeholder -> #observable-cell with-value: "",
     read-only -> #observable-cell with-value: false,
-    value -> #observable-cell with-value: ""
+    value -> #observable-cell with-value: "",
+    key-up -> #event-stream empty,
+    key-down -> #event-stream empty,
   );
+
 
 command widget-text-input placeholder: (Text is text) =
   new widget-text-input(self with placeholder -> #observable-cell with-value: Text);
@@ -21,11 +26,13 @@ command widget-text-input placeholder: (Text is text) =
 command widget-text-input placeholder: (Cell is observable-cell<text>) =
   new widget-text-input(self with placeholder -> Cell);
 
+
 command widget-text-input read-only: (Flag is boolean) =
   new widget-text-input(self with read-only -> #observable-cell with-value: Flag);
 
 command widget-text-input read-only: (Cell is observable-cell<boolean>) =
   new widget-text-input(self with read-only -> Cell);
+
 
 command widget-text-input value: (Text is text) =
   new widget-text-input(self with value -> #observable-cell with-value: Text);
@@ -33,3 +40,20 @@ command widget-text-input value: (Text is text) =
 command widget-text-input value: (Cell is observable-cell<text>) =
   new widget-text-input(self with value -> Cell);
 
+
+command widget-text-input key-up: (Stream is event-stream) =
+  new widget-text-input(self with key-up -> Stream);
+
+command widget-text-input on-key-up: (F is (keyboard-event -> nothing)) do
+  self.key-up listener subscribe: F;
+  self;
+end
+
+
+command widget-text-input key-down: (Stream is event-stream) =
+  new widget-text-input(self with key-down -> Stream);
+
+command widget-text-input on-key-down: (F is (keyboard-event -> nothing)) do
+  self.key-down listener subscribe: F;
+  self;
+end

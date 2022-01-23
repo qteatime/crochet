@@ -8,9 +8,20 @@ command todo-ui render-list: (List is todo-list) do
                 |> _ map: { X in X.items }
                 |> #observable-cell from-stream: _ initial-value: List all-items;
   let New-item = #observable-cell with-value: "";
+  let Key-events = #event-stream empty;
+  Key-events
+    | keep-if: { X in X key =:= key-code-enter }
+    | listener
+    | subscribe: { _ in
+        let Title = New-item value;
+        New-item <- "";
+        self add: (#todo-item with-title: Title) to: List.id;
+      } capture;
 
   #widget flex-column: [
     #widget page-title: List name,
+
+    #widget space | vertical: (2 as rem),
 
     #flex-child fluid: [
       self render-list-items: Items
@@ -25,6 +36,7 @@ command todo-ui render-list: (List is todo-list) do
           #widget text-input
             | placeholder: "Add an item"
             | value: New-item
+            | key-up: Key-events
         ]
         | gap: (1 as rem)
         | align-items: "center"

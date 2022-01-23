@@ -46,4 +46,32 @@ export default (ffi: ForeignInterface) => {
       return ffi.nothing;
     }
   });
+
+  ffi.defun("ev.key-code", (ev) => {
+    return ffi.text(unbox_typed(ev, KeyboardEvent).key);
+  });
+
+  ffi.defun("ev.key-alt", (ev) => {
+    return ffi.boolean(unbox_typed(ev, KeyboardEvent).altKey);
+  });
+
+  ffi.defun("ev.key-ctrl", (ev) => {
+    return ffi.boolean(unbox_typed(ev, KeyboardEvent).ctrlKey);
+  });
+
+  ffi.defun("ev.key-meta", (ev) => {
+    return ffi.boolean(unbox_typed(ev, KeyboardEvent).metaKey);
+  });
+
+  ffi.defun("ev.key-shift", (ev) => {
+    return ffi.boolean(unbox_typed(ev, KeyboardEvent).shiftKey);
+  });
+
+  ffi.defun("ev.key-repeat", (ev) => {
+    return ffi.boolean(unbox_typed(ev, KeyboardEvent).repeat);
+  });
+
+  ffi.defun("ev.key-compose", (ev) => {
+    return ffi.boolean(unbox_typed(ev, KeyboardEvent).isComposing);
+  });
 };

@@ -1,0 +1,14 @@
+% crochet
+
+enum key-code =
+  key-code-unknown,
+  key-code-enter;
+
+
+command #key-code from-text: (Name is text) do
+  condition
+    when Name =:= "Enter" => key-code-enter;
+    otherwise => key-code-unknown;
+  end
+end
+

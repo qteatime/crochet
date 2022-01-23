@@ -5,10 +5,21 @@ open crochet.time;
 abstract agata-event;
 
 type click-event(
-  occurred-at is instant
+  occurred-at is instant,
 ) is agata-event;
 
 type navigate-event(
   occurred-at is instant,
-  global uri is uri
+  global uri is uri,
+) is agata-event;
+
+type keyboard-event(
+  occurred-at is instant,
+  global key is key-code,
+  global with-alt is boolean,
+  global with-ctrl is boolean,
+  global with-meta is boolean,
+  global with-shift is boolean,
+  global is-repeat is boolean,
+  global is-composing is boolean,
 ) is agata-event;

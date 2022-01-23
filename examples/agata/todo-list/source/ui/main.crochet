@@ -47,3 +47,9 @@ command todo-ui delete-item: (Id is todo-id) do
   self.db <- self.db value remove-item: Id;
   (self events).events publish: new ui-event-item-removed(Id);
 end
+
+command todo-ui add: (Item is todo-item) to: (Id is todo-id) do
+  self.db <- self.db value add: Item to: Id;
+  let List = self.db value find-list: Id | value-or-panic: "Unknown list";
+  (self events).events publish: new ui-event-items-changed(List.id, List all-items);
+end

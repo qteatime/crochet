@@ -31,6 +31,7 @@
     "source/core/uri/pattern-grammar.lingua",
     "source/core/uri/pattern.crochet",
     "source/core/uri/uri.crochet",
+    "source/core/keyboard/codes.crochet",
 
     "source/dom/dom-surface.crochet",
     "source/dom/dom.crochet",
