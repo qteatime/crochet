@@ -14,6 +14,7 @@ command main-html: Root do
         let Ui = #todo-ui empty;
         let List = todo-app example-list;
         Ui add-list: List;
+        Ui add-list: (#todo-list-concrete with-name: "Habits");
 
         agata register-page: Ui;
         agata navigate: (Ui uri-pattern instantiate: [id -> List.id to-text]);
@@ -29,7 +30,7 @@ command main-html: Root do
 end
 
 command todo-app example-list do
-  #todo-list-concrete with-name: "Things to-do"
+  #todo-list-concrete with-name: "To-do"
     | add: (#todo-item with-title: "Something")
     | add: (#todo-item with-title: "Some other thing")
     | add: (#todo-item with-title: "More things even");
