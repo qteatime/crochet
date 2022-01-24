@@ -1,0 +1,29 @@
+type uri_ast_pattern =
+  | hashbang(path: uri_ast_pattern)
+  | path(segment: uri_ast_segment, rest: uri_ast_pattern)
+  | empty()
+
+type uri_ast_segment =
+  | concrete(path: text)
+  | variable(name: text)
+
+grammar pattern_grammar : uri_ast_pattern {
+  pattern =
+    | "#!" p:path end -> uri_ast_pattern.hashbang(p)
+
+  path =
+    | "/" s:segment r:path  -> uri_ast_pattern.path(s, r)
+    | "/"                   -> uri_ast_pattern.empty()
+
+  segment =
+    | ":" n:identifier -> uri_ast_segment.variable(n)
+    | s:plain_segment  -> uri_ast_segment.concrete(s)
+
+  
+  token identifier = ("a".."z" | "A".."Z" | "0".."9")+
+  token plain_segment = (unreserved | sub_delims | pct_encoded)+
+  token unreserved = letter | digit | "-" | "." | "_" | "~"
+  token sub_delims = "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "="
+  token pct_encoded = "%" hex_digit hex_digit
+  token hex_digit = "a".."f" | "A".."F" | "0".."9"
+}

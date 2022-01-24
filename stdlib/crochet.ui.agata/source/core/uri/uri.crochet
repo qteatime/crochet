@@ -1,0 +1,15 @@
+% crochet
+
+type uri(location is text);
+
+trait to-uri with
+  command Self as uri -> uri;
+end
+
+
+implement to-uri for static-text;
+command static-text as uri = new uri(self);
+
+implement to-uri for uri;
+command uri as uri = self;
+

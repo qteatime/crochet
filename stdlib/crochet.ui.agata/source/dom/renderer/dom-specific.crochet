@@ -1,0 +1,12 @@
+% crochet
+
+command dom-renderer render: (W is dom-widget-themed) do
+  let Node = self render: W.content;
+  Node add-class: W.class-name;
+  Node;
+end
+
+command dom-renderer render: (W is dom-widget-css) do
+  let Node = dom make-css: W.content;
+  Node;
+end

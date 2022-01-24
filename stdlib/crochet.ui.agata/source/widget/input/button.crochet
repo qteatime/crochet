@@ -1,0 +1,147 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-button(
+  content is widget,
+  style is button-style,
+  accessible-title is observable-cell<text>,
+  disabled is observable-cell<boolean>,
+  clicked is event-stream<click-event>,
+) is widget;
+
+type widget-icon-button(
+  icon is widget-icon,
+  button is widget-button
+) is widget;
+
+type widget-action-button(
+  icon, // is widget-icon | nothing,
+  title is text,
+  description is text,
+  button is widget-button,
+) is widget;
+
+enum button-style =
+  button-style-default,
+  button-style-primary,
+  button-style-dangerous,
+  button-style-clear,
+  button-style-card;
+
+
+command #widget button: (Content has to-widget) =
+  new widget-button(
+    content -> Content as widget,
+    accessible-title -> #observable-cell with-value: "",
+    disabled -> #observable-cell with-value: false,
+    clicked -> #event-stream empty,
+    style -> button-style-default,
+  );
+
+command #widget card-button: (Content is widget-card) =
+  #widget button: Content
+    | style: button-style-card;
+
+command #widget card-button: (Items is list) =
+  #widget card-button: (#widget card: Items);
+
+command #widget icon-button: (Icon is widget-icon) =
+  new widget-icon-button(
+    icon -> Icon,
+    button -> #widget button: "" | style: "clear"
+  );
+
+command #widget icon-button: (Name is static-text) =
+  self icon-button: (#widget icon: Name);
+
+command #widget action-button: (Title has to-widget) =
+  new widget-action-button(
+    icon -> nothing,
+    title -> Title,
+    description -> "",
+    button -> #widget button: "" | style: "clear",
+  );
+
+
+command #button-style from-text: (Name is static-text) do
+  condition
+    when Name =:= "default" => button-style-default;
+    when Name =:= "primary" => button-style-primary;
+    when Name =:= "dangerous" => button-style-dangerous;
+    when Name =:= "clear" => button-style-clear;
+    when Name =:= "card" => button-style-card;
+  end
+end
+
+
+command widget-button accessible-title: (Cell is observable-cell<text>) =
+  new widget-button(self with accessible-title -> Cell);
+
+command widget-button accessible-title: (Title is text) =
+  self accessible-title: (#observable-cell with-value: Title);
+
+command widget-icon-button accessible-title: Title =
+  new widget-icon-button(self with button -> self.button accessible-title: Title);
+
+command widget-action-button accessible-title: Title =
+  new widget-action-button(self with button -> self.button accessible-title: Title);
+
+
+command widget-button disabled: (Cell is observable-cell<boolean>) =
+  new widget-button(self with disabled -> Cell);
+
+command widget-button disabled: (Disabled is boolean) =
+  self disabled: (#observable-cell with-value: Disabled);
+
+command widget-icon-button disabled: Disabled =
+  new widget-icon-button(self with button -> self.button disabled: Disabled);
+
+command widget-action-button disabled: Disabled =
+  new widget-action-button(self with button -> self.button disabled: Disabled);
+
+
+command widget-button clicked: (Stream is event-stream) =
+  new widget-button(self with clicked -> Stream);
+
+command widget-button clicked: (F is (event-stream -> A)) =
+  self clicked: F(self.clicked);
+
+command widget-icon-button clicked: Stream =
+  new widget-icon-button(self with button -> self.button clicked: Stream);
+
+command widget-action-button clicked: Stream =
+  new widget-action-button(self with button -> self.button clicked: Stream);
+
+
+command widget-button on-click: (F is (click-event -> nothing)) do
+  self.clicked listener subscribe: F;
+  self;
+end
+
+command widget-icon-button on-click: F =
+  new widget-icon-button(self with button -> self.button on-click: F);
+
+command widget-action-button on-click: F =
+  new widget-action-button(self with button -> self.button on-click: F);
+
+
+command widget-button style: (Style is button-style) =
+  new widget-button(self with style -> Style);
+
+command widget-button style: (Style is static-text) =
+  self style: (#button-style from-text: Style);
+
+
+command widget-icon-button size: Size =
+  new widget-icon-button(self with icon -> self.icon size: Size);
+
+
+command widget-action-button icon: (Icon is static-text) =
+  new widget-action-button(self with icon -> #widget icon: Icon);
+
+command widget-action-button icon: (Icon is widget-icon) =
+  new widget-action-button(self with icon -> Icon);
+
+command widget-action-button description: (Description is text) =
+  new widget-action-button(self with description -> Description);

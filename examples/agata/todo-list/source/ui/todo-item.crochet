@@ -1,0 +1,53 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.ui.agata;
+
+command todo-ui render-item: (Item is todo-item) do
+  let Mark-stream = self events mark: Item.id;
+  let Done = #observable-cell
+              | from-stream: Mark-stream initial-value: new ui-event-mark(Item.id, Item.done)
+              | map: { X in X.done };
+  let Attached = #observable-cell
+                  | from-stream: (self events item-removed: Item.id) initial-value: true
+                  | map: { _ in false };
+
+
+  #widget card: [
+    #card-child body: [
+      #widget flex-row: [
+        // FIXME: a better integration of specific types + observables is needed
+        (Done map: (self render-item-toggle: _))
+          | map: { Icon in
+              #widget
+                | icon-button: Icon
+                | on-click: { _ in self mark: Item.id done: (not Done value) }  
+            },
+        
+        #flex-child fluid: (Done map: (self render-item-title: Item.title done: _)),
+
+        #widget
+          | icon-button: "trash"
+          | on-click: { _ in self delete-item: Item.id }
+      ]
+      | align-items: "center"
+      | gap: (1.0 as rem)
+    ]
+  ]
+  | with-attachment: Attached
+end
+
+
+command todo-ui render-item-toggle: true =
+  #widget icon: "check-circle" | style: "regular";
+
+command todo-ui render-item-toggle: false =
+  #widget icon: "circle" | style: "regular";
+
+
+command todo-ui render-item-title: Title done: false =
+  Title;
+
+command todo-ui render-item-title: Title done: true =
+  #widget text: Title
+    | with-text-decoration: "line-through";

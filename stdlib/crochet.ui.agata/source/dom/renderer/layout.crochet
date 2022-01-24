@@ -1,0 +1,150 @@
+% crochet
+
+command dom-renderer render: (W is widget-flow) do
+  let E = dom make: "div" class: "agata-flow";
+  for Child in W.items do
+    E append: (self render: Child);
+  end
+  E;
+end
+
+
+command dom-renderer render: (W is widget-flex) do
+  let E = dom make: "div" class: "agata-flex";
+  E style: [
+    row-gap -> self to-unit-text: W.options.gap.row,
+    column-gap -> self to-unit-text: W.options.gap.column,
+    flex-direction -> self to-text: W.options.layout,
+    flex-wrap -> self to-text: W.options.wrap,
+    align-items -> self to-text: W.options.align-items,
+    justify-content -> self to-text: W.options.justify-content,
+    align-content -> self to-text: W.options.align-content,
+  ];
+  for Child in W.items do
+    E append: (self render: Child);
+  end
+  E;
+end
+
+command dom-renderer render: (W is flex-child) do
+  let E = dom make: "div" class: "agata-flex-child";
+  E style: [
+    flex-grow -> self render-flex-unit: W.options.grow,
+    flex-shrink -> self render-flex-unit: W.options.shrink,
+    flex-basis -> self to-unit-text: W.options.basis,
+  ];
+  E append: (self render: W.content);
+  E;
+end
+
+command dom-renderer render-flex-unit: nothing =
+  "unset";
+
+command dom-renderer render-flex-unit: (X is integer) =
+  X to-text;
+
+
+command dom-renderer render: (W is widget-card) do
+  let Node = dom make: "div" class: "agata-card";
+  Node add-class: (self to-css-class: W.style);
+  for Child in W.content do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is card-child-image) =
+  dom make: "div" class: "agata-card-image"
+    | append: (self render: W.image);
+
+command dom-renderer render: (W is card-child-header) =
+  dom make: "div" class: "agata-card-header"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-body) =
+  dom make: "div" class: "agata-card-body"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-meta) =
+  dom make: "div" class: "agata-card-meta"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-extra) =
+  dom make: "div" class: "agata-card-extra"
+    | append: (self render: W.content);
+
+
+command dom-renderer render: (W is widget-fixed) do
+  let Node = dom make: "div" class: "agata-fixed";
+  Node style: [
+    width -> self to-unit-text: W.options.dimension.width,
+    height -> self to-unit-text: W.options.dimension.height,
+  ];
+  for Child in W.items do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is fixed-child) do
+  let Node = dom make: "div" class: "agata-fixed-child";
+  let Anchors = W.position.anchors;
+
+  Node style:
+    (condition
+      when Anchors.x is x-anchor-left =>
+        [left -> self to-unit-text: W.position.x];
+      when Anchors.x is x-anchor-right =>
+        [right -> self to-unit-text: W.position.x];
+    end);
+
+  Node style: 
+    (condition
+      when Anchors.y is y-anchor-top =>
+        [top -> self to-unit-text: W.position.y];
+      when Anchors.y is y-anchor-bottom =>
+        [bottom -> self to-unit-text: W.position.y];
+    end);
+    
+  Node append: (self render: W.content);
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-section) do
+  let Node = dom make: "section" class: "agata-section";
+  Node add-class: (self to-css-class: W.style);
+  for Child in W.content do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-navigation) do
+  let Node = dom make: "nav" class: "agata-navigation";
+  for Child in W.items do
+    Node append: (self render-nav-child: Child);
+  end
+  Node;
+end
+
+command dom-renderer render-nav-child: (X is navigation-child-header) =
+  dom make: "div" class: "agata-navigation-header"
+    | append: (self render: X.content);
+
+command dom-renderer render-nav-child: (X is navigation-child-link) do
+  let Node = dom make: "div" class: "agata-navigation-link";
+  Node append: (self render: X.link);
+
+  let Navigation = perform agata-routing.get-navigation-events();
+  Navigation subscribe: { Event in
+    let Match = X.active-when match: Event.uri;
+    condition
+      when Match is error => Node remove-class: "agata-navigation-active";
+      when Match is ok => Node add-class: "agata-navigation-active";
+    end
+  };
+
+  Node;
+end

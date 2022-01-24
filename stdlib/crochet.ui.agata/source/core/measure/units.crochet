@@ -1,0 +1,55 @@
+% crochet
+
+abstract measure;
+
+singleton measure-auto is measure;
+singleton measure-unset is measure;
+abstract measure-length is measure;
+type pixels(value is integer) is measure-length;
+type rem(value is float-64bit) is measure-length;
+type em(value is float-64bit) is measure-length;
+type percent(value is float-64bit) is measure-length;
+
+
+// -- Constructors
+command #measure unset = measure-unset;
+command #measure auto = measure-auto;
+command #measure pixels: (I is integer) = new pixels(I);
+command #measure em: (I is float-64bit) = new em(I);
+command #measure rem: (I is float-64bit) = new rem(I);
+command #measure percent: (I is float-64bit) = new percent(I);
+
+
+// -- Conversions
+trait to-agata-measure with
+  command X as measure -> measure;
+end
+
+implement to-agata-measure for measure;
+command measure as measure = self;
+
+
+command integer as pixels =
+  new pixels(self);
+
+
+command integer as em =
+  new em(self as float-64bit);
+
+command float-64bit as em =
+  new em(self);
+
+
+command integer as rem =
+  new rem(self as float-64bit);
+
+command float-64bit as rem =
+  new rem(self);
+
+
+command integer as percent =
+  new percent(self as float-64bit);
+
+command float-64bit as percent =
+  new percent(self);
+

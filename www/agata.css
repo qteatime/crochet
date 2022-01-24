@@ -1,0 +1,404 @@
+html {
+  font-size: 16px;
+}
+
+.agata-root {
+  --blue-grey-10: #e8f0f3;
+  --blue-grey-20: #b1cad6;
+  --blue-grey-30: #7ba6ba;
+  --blue-grey-40: #53869d;
+  --blue-grey-50: #2b6078;
+  --red: #b44a69;
+  --pink: #d03297;
+  --blue: #8ad0e8;
+  --green: #bdd9d3;
+  --orange: #eeb9a2;
+
+  --pink-fg: #d03297;
+  --pink-bg: #b57ba0;
+
+  --white: #fafafa;
+  --black: #2f2f2f;
+
+  --primary-fg: var(--pink-fg);
+  --primary-fg-accent: #c9519e;
+  --primary-bg: var(--pink-bg);
+  --primary-bg-accent: #d780b8;
+
+  --fg: var(--black);
+  --fg-invert: var(--white);
+  --fg-muted: var(--blue-grey-50);
+  --fg-meta: var(--blue-grey-40);
+
+  --bg: var(--white);
+  --bg-muted: var(--blue-grey-10);
+  --bg-muted-20: var(--blue-grey-20);
+
+  font-family: "Roboto", sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.agata-full-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.agata-full-screen > * {
+  flex-grow: 1;
+}
+
+/* FIXME: a less excessive reset sheet */
+* {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+}
+
+button,
+input {
+  font-family: "Roboto", sans-serif;
+}
+
+.agata-flow > .agata-flow-child {
+  display: inline-block;
+}
+
+.agata-icon {
+  text-align: center;
+}
+
+.agata-flex {
+  display: flex;
+}
+
+.agata-card {
+  border-radius: 2px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
+  background: var(--bg);
+  border: 1px solid var(--blue-grey-10);
+  transition: box-shadow ease-out 0.15s;
+}
+
+.agata-card-style-narrow {
+  max-width: 20rem;
+}
+
+.agata-card-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.agata-card-header {
+  padding: 1rem 1rem 0.2rem 1rem;
+  font-size: 1.4rem;
+}
+
+.agata-card-meta {
+  font-size: 0.9rem;
+  padding: 0.2rem 1rem;
+  color: var(--fg-meta);
+}
+
+.agata-card-body {
+  padding: 1.5rem 1rem;
+}
+
+.agata-card-extra {
+  padding: 1rem;
+  border-top: 1px solid var(--blue-grey-10);
+}
+
+.agata-card-extra:not(:last-child) {
+  border-bottom: 1px solid var(--blue-grey-10);
+}
+
+.agata-divider {
+  margin: 0 auto;
+  height: 1px;
+  background: var(--blue-grey-20);
+}
+
+.agata-divider-style-full {
+  width: 100%;
+}
+
+.agata-divider-style-half {
+  width: 50%;
+}
+
+.agata-text-input {
+  outline: none;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  border-bottom: 1px solid var(--primary-fg);
+  background: var(--white);
+  caret-color: var(--primary-fg);
+  padding: 0.5em;
+  position: relative;
+}
+
+.agata-text-input:focus {
+  border-color: var(--primary-fg-accent);
+  box-shadow: 0 2px 0px var(--primary-fg-accent);
+}
+
+.agata-button {
+  padding: 1em 2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.agata-button:not(:disabled):active {
+  outline: 3px solid var(--primary-fg-accent);
+}
+
+.agata-button-style-default {
+  border: 1px solid var(--blue-grey-20);
+  color: var(--fg);
+}
+
+.agata-button-style-default:hover {
+  background: var(--blue-grey-10);
+  border: 1px solid var(--blue-grey-20);
+}
+
+.agata-button-style-primary {
+  background: var(--primary-bg);
+  color: var(--fg-invert);
+}
+
+.agata-button-style-primary:hover {
+  background: var(--primary-bg-accent);
+}
+
+.agata-button-style-dangerous {
+  background: var(--red);
+  color: var(--fg-invert);
+}
+
+.agata-button-style-dangerous:hover {
+  background: var(--red);
+}
+
+.agata-button-style-clear:hover {
+  color: var(--primary-fg);
+  text-decoration: underline var(--primary-bg-accent);
+}
+
+.agata-button-style-clear:active {
+  outline: none;
+  text-decoration: underline var(--primary-bg-accent);
+}
+
+.agata-button.agata-button-style-card {
+  padding: unset;
+  text-transform: unset;
+  font-size: unset;
+  outline: unset;
+  border: unset;
+  background: unset;
+  position: relative;
+  transition: top ease-out 0.15s;
+  text-align: left;
+}
+
+.agata-button.agata-button-style-card:hover {
+  top: -0.5rem;
+}
+
+.agata-button.agata-button-style-card:hover .agata-card {
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.agata-button:disabled {
+  color: var(--fg-muted);
+  background: var(--blue-grey-20);
+  border: none;
+  cursor: default;
+}
+
+.agata-button.agata-action-button {
+  border: 1px solid var(--primary-fg);
+  font-weight: normal;
+  text-transform: none;
+  text-align: left;
+  text-decoration: none;
+}
+
+.agata-button.agata-action-button:hover {
+  border-left-color: var(--primary-fg-accent);
+  color: var(--primary-fg-accent);
+}
+
+.agata-button.agata-action-button:disabled {
+  text-decoration: none;
+  background: var(--blue-grey-10);
+  border-color: var(--blue-grey-30);
+  color: var(--fg-muted);
+}
+
+.agata-action-button .agata-action-button-title {
+  font-weight: bold;
+  line-height: 1.5em;
+}
+
+.agata-action-button .agata-action-button-description {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+}
+
+.agata-button.agata-icon-button:disabled {
+  background: none;
+  color: var(--blue-grey-30);
+}
+
+.agata-button.agata-icon-button {
+  padding: 0;
+}
+
+.agata-icon-size-small {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.agata-icon-size-medium {
+  width: 2rem;
+  height: 2rem;
+  font-size: 2rem;
+}
+
+.agata-icon-size-large {
+  width: 3rem;
+  height: 3rem;
+  font-size: 3rem;
+}
+
+.agata-icon-size-extra-large {
+  width: 4rem;
+  height: 4rem;
+  font-size: 4rem;
+}
+
+.agata-fixed {
+  position: relative;
+  overflow: hidden;
+}
+
+.agata-fixed-child {
+  position: absolute;
+}
+
+.agata-typography-page-title {
+  font-size: 3rem;
+}
+
+.agata-typography-title {
+  font-size: 2.2rem;
+}
+
+.agata-typography-subtitle {
+  font-size: 1.8rem;
+}
+
+.agata-typography-subtitle2 {
+  font-size: 1.6rem;
+}
+
+.agata-section {
+  margin: 1.5rem 0;
+}
+
+.agata-section-style-welcome {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  padding: 0 2rem;
+}
+
+.agata-section-style-content .agata-typography-title,
+.agata-section-style-content .agata-typography-subtitle {
+  margin: 1.5em 0 0.3em 0;
+  line-height: 1.2em;
+  font-weight: normal;
+  color: var(--fg);
+}
+
+.agata-section-style-welcome .agata-typography-title,
+.agata-section-style-welcome .agata-typography-subtitle {
+  margin: 0;
+  line-height: 1;
+}
+
+.agata-section-style-welcome .agata-typography-title {
+  font-size: 2.2rem;
+  line-height: 1.6em;
+  font-weight: bold;
+}
+
+.agata-section-style-welcome .agata-typography-subtitle {
+  font-size: 1.8rem;
+  line-height: 1.6em;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+/* Navigation */
+.agata-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem;
+}
+
+.agata-navigation-header,
+.agata-navigation-link {
+  padding-left: 10px;
+}
+
+.agata-navigation-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 1.6em;
+  margin: 1.5em 0 0.2em;
+}
+
+.agata-navigation-link .agata-link {
+  display: block;
+  text-decoration: none;
+  color: var(--fg);
+  line-height: 1.5em;
+  padding: 0.5rem 0 0.2rem 0;
+}
+
+.agata-navigation-link.agata-navigation-active {
+  font-weight: bold;
+  border-left: 3px solid var(--primary-fg);
+  padding-left: 7px;
+}
+
+.agata-navigation-link.agata-navigation-active .agata-link {
+  color: var(--primary-fg);
+}
+
+.agata-navigation-link:hover {
+  border-left: 3px solid var(--primary-fg-accent);
+  padding-left: 7px;
+}
+
+.agata-detached {
+  display: none !important;
+}

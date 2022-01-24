@@ -481,7 +481,7 @@ export function verify_package_traits(pkg: CrochetPackage) {
       `Package ${
         pkg.name
       } cannot be loaded because it's missing the following trait definitions: ${[
-        ...pkg.missing_types.own_bindings.keys(),
+        ...pkg.missing_traits.own_bindings.keys(),
       ].join(", ")}`
     );
   }

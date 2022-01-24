@@ -1,0 +1,103 @@
+% crochet
+
+open crochet.debug;
+
+command dom-renderer render: (W is widget-text-input) do
+  let Node = dom make: "input" class: "agata-text-input"
+              | set: "type" to: "text";
+  
+  Node set: "placeholder" to: W.placeholder value;
+  Node set: "value" to: W.value value;
+  Node set-boolean: "readonly" to: W.read-only value;
+
+  W.placeholder stream subscribe: (Node set: "placeholder" to: _);
+  W.value stream subscribe: (Node set-text-input-value: _);
+  W.read-only stream subscribe: (Node set-boolean: "readonly" to: _);
+
+  Node on: "keyup" do: { Event in
+    W.value <- Node text-input-value;
+    W.key-up publish: Event to-keyboard-event;
+  } capture;
+
+  Node on: "keydown" do: { Event in
+    W.key-down publish: Event to-keyboard-event;
+  } capture;
+
+  Node on: "change" do: { Event in
+    W.value <- Node text-input-value;
+  } capture;
+
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-button) do
+  let Node = dom make: "button" class: "agata-button";
+
+  Node add-class: (self to-css-class: W.style);
+  Node set-boolean: "disabled" to: W.disabled value;
+  Node set: "title" to: W.accessible-title value;
+
+  Node append: (self render: W.content);
+
+  W.disabled stream subscribe: (Node set-boolean: "disabled" to: _);
+  W.accessible-title stream subscribe: (Node set: "title" to: _);
+  
+  Node on: "click" do: { Event in
+    W.clicked publish: (Event to-click-event);
+  } capture;
+
+  Node;
+end
+
+command dom-renderer render: (W is widget-icon-button) do
+  let Button = new widget-button(W.button with content -> W.icon);
+  self render: Button
+    | add-class: "agata-icon-button";
+end
+
+command dom-renderer render: (W is widget-action-button) do
+  let Button = new widget-button(W.button with content -> (
+    condition
+      when W.icon is nothing do
+        #widget flex-column: [
+          #dom-widget themed: "agata-action-button-title" content: W.title,
+          #dom-widget themed: "agata-action-button-description" content: W.description,
+        ];
+      end
+
+      otherwise do
+        #widget flex-row: [
+          #dom-widget themed: "agata-action-button-icon" content: (W.icon size: icon-size-medium),
+          #dom-widget themed: "agata-action-button-content" content: (#widget flex-column: [
+            #dom-widget themed: "agata-action-button-title" content: W.title,
+            #dom-widget themed: "agata-action-button-description" content: W.description,
+          ])
+        ]
+        | gap: { G in G column: (#measure rem: 0.5) }
+        | align-items: "center"
+      end
+    end
+  ));
+
+  self render: Button
+    | add-class: "agata-action-button";
+end
+
+
+command dom-renderer render: (W is widget-checkbox) do
+  let Node = dom make: "input" class: "agata-checkbox"
+              | set: "type" to: "checkbox";
+
+  Node set-boolean: "checked" to: W.checked value;
+  Node set-boolean: "disabled" to: W.disabled value;
+
+  W.checked stream subscribe: (Node set-boolean: "checked" to: _);
+  W.disabled stream subscribe: (Node set-boolean: "disabled" to: _);
+
+  Node on: "change" do: { _ in
+    W.checked <- Node input-is-checked;
+  };
+
+  Node;
+end

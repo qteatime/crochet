@@ -1,0 +1,11 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-attachment(content is widget, attached is observable-cell<boolean>) is widget;
+
+command widget with-attachment: (Attached is observable-cell<boolean>) =
+  new widget-attachment(self, Attached);
+
+command widget with-attachment: (Attached is boolean) =
+  self with-attachment: (#observable-cell with-value: Attached);

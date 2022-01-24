@@ -3,8 +3,10 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Crochet</title>
+    <link rel="stylesheet" href="agata.css" />
     <link rel="stylesheet" href="crochet.css" />
     <link rel="stylesheet" href="./fa-solid.css" />
+    <link rel="stylesheet" href="./fa-regular.css" />
     <link rel="stylesheet" href="./fontawesome.min.css" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
@@ -14,7 +16,7 @@
   </head>
   <body>
     <div id="crochet-container">
-      <div id="crochet" class="crochet-loading">
+      <div id="crochet" class="crochet-loading agata-full-screen">
         <div class="crochet-loading-screen">Loading...</div>
       </div>
     </div>
@@ -37,7 +39,7 @@
             document.location.pathname + "app/crochet.json",
             Crochet.Package.target_web()
           );
-          root.className = "";
+          root.classList.remove("crochet-loading");
           for (const child of root.children) {
             child.remove();
           }

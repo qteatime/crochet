@@ -1,0 +1,7 @@
+% crochet
+
+type widget-image(source is image) is widget;
+
+command #widget image: (Source is image) =
+  new widget-image(Source);
+

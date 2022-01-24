@@ -306,6 +306,10 @@ export class ResolvedPackage {
     return Path.join(this.root, ".binary");
   }
 
+  get assets_root() {
+    return Path.join(this.root, "assets");
+  }
+
   get dependencies() {
     return this.pkg.meta.dependencies.filter((x) =>
       target_compatible(this.target, x.target)
@@ -352,7 +356,7 @@ export async function build_package_graph(
         }
         const resolved_dep = new ResolvedPackage(dep_meta, target);
         packages.set(resolved_dep.name, resolved_dep);
-        resolve(resolved_dep);
+        await resolve(resolved_dep);
       }
     }
   }

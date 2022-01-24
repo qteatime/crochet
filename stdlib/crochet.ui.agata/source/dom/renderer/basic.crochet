@@ -1,0 +1,113 @@
+% crochet
+
+command dom-renderer render: (W is widget-fragment) do
+  let Node = dom make: "div" class: "agata-fragment";
+  for Child in W.content do
+    Node append: (self render: Child);
+  end
+  Node children-fragment;
+end
+
+
+command dom-renderer render: (W is widget-text) do
+  let E = dom make: "div" class: "agata-text";
+  E append: (dom text: W.contents);
+  E;
+end
+
+
+command dom-renderer render: (W is widget-icon) do
+  let Size = self to-css-class: W.size;
+  let Style = self to-css-class: W.style;
+  let Class = "agata-icon [Style] fa-[W.name] [Size]" flatten-into-plain-text;
+  dom make: "i" class: Class;
+end
+
+
+command dom-renderer render: (W is widget-dynamic) do
+  let Surface = dom make-surface;
+  W.renderer(Surface);
+  Surface.node;
+end
+
+
+command dom-renderer render: (W is widget-divider) do
+  let Class = "agata-divider [self to-text: W.style]" flatten-into-plain-text;
+  dom make: "div" class: Class;
+end
+
+
+command dom-renderer render: (W is widget-space) do
+  dom make: "div" class: "agata-space"
+    | style: [
+        width -> self to-unit-text: W.horizontal,
+        height -> self to-unit-text: W.vertical,
+      ];
+end
+
+
+command dom-renderer render: (W is widget-choose) do
+  let Node = dom make: "div" class: "agata-choose";
+  let Renderer = new dom-choose-renderer(self, W);
+
+  Node replace-contents: Renderer render-current;
+  W.cell stream subscribe: { _ in Node replace-contents: Renderer render-current };
+
+  Node;
+end
+
+type dom-choose-renderer(renderer is dom-renderer, widget is widget-choose);
+
+command dom-choose-renderer render-current do
+  let Current = self.widget current;
+  condition
+    when Current is ok => self.renderer render: (Current value).widget;
+    when Current is error do
+      let Node = dom make: "div" class: "agata-choose-error";
+      Node append: (dom make-text: "(No content matched)");
+      Node;
+    end
+  end
+end
+
+
+command dom-renderer render: (Image is widget-image) do
+  let Node = dom make: "img" class: "agata-image";
+  Node set: "src" to: (self to-uri: Image.source);
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-typography) do
+  self render: W.content
+    | add-class: (self to-css-class: W.style);
+end
+
+
+command dom-renderer render: (W is widget-link) do
+  let Node = dom make: "a" class: "agata-link";
+  Node add-class: (self to-css-class: W.target);
+  Node set: "href" to: (self to-href: W.target);
+  Node append: (self render: W.content);
+
+  self handle-link-click: Node target: W.target;
+
+  Node;
+end
+
+command dom-renderer to-css-class: link-target-none = "agata-link-target-none";
+command dom-renderer to-css-class: link-target-local = "agata-link-target-local";
+command dom-renderer to-css-class: link-target-external = "agata-link-target-external";
+
+command dom-renderer to-href: link-target-none = "#";
+command dom-renderer to-href: (T is link-target-local) = T.uri.location;
+command dom-renderer to-href: (T is link-target-external) = T.uri.location;
+
+command dom-renderer handle-link-click: Node target: link-target-none = nothing;
+command dom-renderer handle-link-click: Node target: link-target-external = nothing;
+
+command dom-renderer handle-link-click: Node target: (T is link-target-local) do
+  Node trap: "click" do: { Event in
+    agata navigate: T.uri;
+  };
+end

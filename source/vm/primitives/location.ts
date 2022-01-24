@@ -131,7 +131,11 @@ export function simple_value(x: CrochetValue): string {
       const fields = x.payload.map(
         (v, i) => `${x.type.fields[i]} -> ${simple_value(v)}`
       );
-      return `<${type_name(x.type)}: ${fields.join(", ")}>`;
+      if (fields.length > 0) {
+        return `<${type_name(x.type)}>(\n${block(2, fields.join("\n"))}\n)`;
+      } else {
+        return `<${type_name(x.type)}>`;
+      }
     }
     case Tag.INTERPOLATION: {
       assert_tag(Tag.INTERPOLATION, x);
@@ -159,7 +163,7 @@ export function simple_value(x: CrochetValue): string {
       const pairs = [...x.payload.entries()].map(
         ([k, v]) => `${k} -> ${simple_value(v)}`
       );
-      return `[${pairs.join(", ")}]`;
+      return `[\n${block(2, pairs.join(",\n"))}\n]`;
     }
     case Tag.TEXT: {
       return `"${x.payload}"`;
@@ -174,7 +178,10 @@ export function simple_value(x: CrochetValue): string {
     }
     case Tag.LIST: {
       assert_tag(Tag.LIST, x);
-      return `[${x.payload.map((x) => simple_value(x)).join(", ")}]`;
+      return `[\n${block(
+        2,
+        x.payload.map((x) => simple_value(x)).join(", ")
+      )}\n]`;
     }
     case Tag.TYPE: {
       assert_tag(Tag.TYPE, x);
@@ -185,7 +192,7 @@ export function simple_value(x: CrochetValue): string {
     }
     case Tag.CELL: {
       assert_tag(Tag.CELL, x);
-      return `<cell ${simple_value(x.payload.value)}`;
+      return `<cell ${simple_value(x.payload.value)}>`;
     }
     case Tag.ACTION: {
       assert_tag(Tag.ACTION, x);
@@ -356,4 +363,11 @@ export function find_good_transcript_write_location(activation0: Activation) {
   }
 
   return null;
+}
+
+export function block(indent: number, text: string) {
+  return text
+    .split(/\n/)
+    .map((x) => " ".repeat(indent) + x)
+    .join("\n");
 }

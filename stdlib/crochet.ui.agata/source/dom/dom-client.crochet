@@ -1,0 +1,125 @@
+% crochet
+
+open crochet.time;
+open crochet.concurrency;
+
+singleton agata-dom;
+
+type dom-routing(
+  router is cell<router>,
+  events is event-stream<navigate-event>,
+  surface is dom-surface,
+);
+
+command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
+  let Surface = dom make-surface-from-native-element: Root;
+  Surface.node add-class: "agata-root";
+  let Router = new dom-routing(
+    router -> #cell with-value: #agata-router empty,
+    events -> #event-stream empty,
+    surface -> Surface,
+  );
+  let References = #cell with-value: #map empty;
+  handle
+    Router setup-history-router;
+    Block();
+    Router try-load-current-url;
+  with
+    on agata-presentation.show(Widget) do
+      Surface replace-contents: Widget;
+      continue with nothing;
+    end
+
+    on agata-rendering.get-shared-renderer() do
+      continue with dom-renderer;
+    end
+
+    on agata-presentation.register-reference(Reference, Target) do
+      References <- References value at: Reference put: Target;
+      continue with nothing;
+    end
+
+    on agata-presentation.get-reference(Reference) do
+      let Live = References value at: Reference;
+      continue with Live;
+    end
+
+    on agata-routing.register(Page) do
+      Router add-page: Page;
+      continue with nothing;
+    end
+
+    on agata-routing.register-top-page(Page) do
+      Router use-top-page: Page;
+      continue with nothing;
+    end
+
+    on agata-routing.register-error-page(Page) do
+      Router use-error-page: Page;
+      continue with nothing;
+    end
+
+    on agata-routing.navigate(Uri) do
+      Router render: Uri;
+      agata-dom push-uri: Uri;
+      continue with nothing;
+    end
+
+    on agata-routing.get-navigation-events() do
+      continue with Router.events listener;
+    end
+  end
+end
+
+// -- Routing
+command dom-routing add-page: Page do
+  self.router <- self.router value add-page: Page;
+  self;
+end
+
+command dom-routing use-top-page: Page do
+  self.router <- self.router value use-top-page: Page;
+  self;
+end
+
+command dom-routing use-error-page: Page do
+  self.router <- self.router value use-error-page: Page;
+  self;
+end
+
+command dom-routing render: (Uri is uri) do
+  let Now = #instant from-milliseconds-since-unix-epoch: (foreign dom.now());
+  let Match = self.router value route: Uri;
+  let Page = Match.page instantiate-page: Match.bindings;
+  self.surface replace-contents: Page;
+  self.events publish: new navigate-event(Now, Uri);
+end
+
+command dom-routing setup-history-router do
+  let Handler = { Ev in
+    let Location = foreign history.location-hash();
+    self render: new uri(Location);
+  } capture;
+
+  foreign history.on-hash-change(Handler);
+end
+
+command dom-routing try-load-current-url do
+  let Current-hash = foreign history.location-hash();
+  let Uri = new uri(Current-hash);
+  self render: Uri;
+end
+
+// -- Other
+command agata-dom push-uri: (Uri is uri) do
+  foreign history.push([tag -> "agata-navigate", uri -> Uri.location], "", Uri.location);
+  self;
+end
+
+command agata-dom alert: (Message is text) do
+  foreign dom.alert(Message);
+  self;
+end
+
+command agata-dom alert: (Message is interpolation) =
+  self alert: (Message flatten-into-plain-text);

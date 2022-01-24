@@ -1,0 +1,30 @@
+% crochet
+
+open crochet.time;
+
+type dom-event(box is unknown);
+
+command dom-event occurred-at =
+  #instant from-milliseconds-since-unix-epoch: (foreign ev.time(self.box));
+
+
+command dom-event to-click-event =
+  new click-event(self occurred-at);
+
+command dom-event to-keyboard-event do
+  new keyboard-event(
+    occurred-at -> self occurred-at,
+    key -> #key-code from-text: (foreign ev.key-code(self.box)),
+    with-alt -> foreign ev.key-alt(self.box),
+    with-ctrl -> foreign ev.key-ctrl(self.box),
+    with-meta -> foreign ev.key-meta(self.box),
+    with-shift -> foreign ev.key-shift(self.box),
+    is-repeat -> foreign ev.key-repeat(self.box),
+    is-composing -> foreign ev.key-compose(self.box),
+  );
+end
+
+command dom-event cancel do
+  foreign ev.cancel(self.box);
+  self;
+end

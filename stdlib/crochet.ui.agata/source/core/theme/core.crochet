@@ -1,0 +1,9 @@
+% crochet
+
+singleton agata-theme;
+singleton agata-theme-fonts;
+singleton agata-theme-colors;
+
+command agata-theme font = agata-theme-fonts;
+command agata-theme color = agata-theme-colors;
+

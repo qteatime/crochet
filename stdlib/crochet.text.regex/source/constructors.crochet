@@ -299,3 +299,44 @@ command regex-pattern preceded-by: (That is regex-pattern) =
 /// later matches `Suffix`.
 command regex-pattern between: (Prefix is regex-pattern) and: (Suffix is regex-pattern) =
   regex sequence: [Prefix, self, That];
+
+
+// -- Convenience constructors
+command regex letter =
+  new regex-character-class("w")
+test
+  let Re = regex letter compile;
+  assert Re can-match: "a";
+  assert Re can-match: "g";
+  assert not (Re can-match: "0");
+end
+
+command regex digit =
+  new regex-character-class("d")
+test
+  let Re = regex digit compile;
+  assert Re can-match: "0";
+  assert Re can-match: "7";
+  assert not (Re can-match: "A");
+end
+
+command regex space =
+  new regex-character-class("s")
+test
+  let Re = regex space compile;
+  assert Re can-match: " ";
+  assert Re can-match: "\t";
+  assert not (Re can-match: "cat");
+end
+
+command regex hex-digit =
+  regex digit 
+    or (regex character-between: "a" and: "f")
+    or (regex character-between: "A" and: "F")
+test
+  let Re = regex hex-digit compile;
+  assert Re can-match: "9";
+  assert Re can-match: "c";
+  assert Re can-match: "F";
+  assert not (Re can-match: "g");
+end

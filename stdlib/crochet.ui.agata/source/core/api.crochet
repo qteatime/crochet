@@ -1,0 +1,49 @@
+% crochet
+
+effect agata-rendering with
+  get-shared-renderer(); // -> renderer;
+end
+
+effect agata-presentation with
+  show(widget is widget); // -> nothing;
+  get-reference(ref is reference); // -> live-widget
+  register-reference(ref is reference, target is live-widget); // -> nothing
+end
+
+
+singleton agata;
+
+command agata show: (Widget has to-widget) do
+  perform agata-presentation.show(Widget as widget | commit);
+  self;
+end
+
+command agata register-page: (Page has agata-page) do
+  perform agata-routing.register(Page);
+  self;
+end
+
+command agata register-top-page: (Page has agata-page) do
+  perform agata-routing.register-top-page(Page);
+  self;
+end
+
+command agata register-error-page: (Page has agata-page) do
+  perform agata-routing.register-error-page(Page);
+  self;
+end
+
+command agata navigate: (Uri is uri) do
+  perform agata-routing.navigate(Uri);
+  self;
+end
+
+command agata navigate: (Page has agata-page) bindings: (Bindings is record) =
+  self navigate: (Page uri-pattern instantiate: Bindings);
+
+command agata navigate: (Page has agata-page) =
+  self navigate: Page bindings: [->];
+
+command agata reference: (Name is static-text) do
+  new reference(Name);
+end

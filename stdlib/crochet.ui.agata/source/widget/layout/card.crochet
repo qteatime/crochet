@@ -1,0 +1,55 @@
+% crochet
+
+type widget-card(content is list<card-child>, style is card-style) is widget;
+
+enum card-style =
+  card-style-narrow,
+  card-style-fluid;
+
+abstract card-child;
+type card-child-image(image is widget-image) is card-child;
+type card-child-header(content is widget) is card-child;
+type card-child-body(content is widget) is card-child;
+type card-child-meta(content is widget) is card-child;
+type card-child-extra(content is widget) is card-child;
+
+command #widget card: (Content is list) =
+  new widget-card(
+    content -> Content map: (internal to-card-child: _),
+    style -> card-style-fluid
+  );
+
+command internal to-card-child: (X is card-child) = X;
+
+command widget-card style: (Style is card-style) =
+  new widget-card(self with style -> Style);
+
+command widget-card style: (Style is static-text) =
+  self style: (#card-style from-text: Name);
+
+command #card-style from-text: (Name is static-text) do
+  condition
+    when Name =:= "narrow" => card-style-narrow;
+    when Name =:= "fluid" => card-style-fluid;
+  end
+end
+
+
+command #card-child image: (X is widget-image) =
+  new card-child-image(X);
+
+command #card-child image: (X is network-image) =
+  self image: (#widget image: X);
+
+command #card-child header: (X has to-widget) =
+  new card-child-header(X as widget);
+
+command #card-child body: (X has to-widget) =
+  new card-child-body(X as widget);
+
+command #card-child meta: (X has to-widget) =
+  new card-child-meta(X as widget);
+
+command #card-child extra: (X has to-widget) =
+  new card-child-extra(X as widget);
+

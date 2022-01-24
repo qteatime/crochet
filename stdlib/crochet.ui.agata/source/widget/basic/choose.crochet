@@ -1,0 +1,23 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-choose(cell is observable-cell<A>, cases is list<choose-case>) is widget;
+type choose-case(
+  'condition is (A -> boolean),
+  widget is widget
+);
+
+command #widget given: (Cell is observable-cell<A>) =
+  new widget-choose(Cell, []);
+
+command widget-choose when: (Predicate is (A -> boolean)) use: (Widget has to-widget) =
+  new widget-choose(self with cases -> self.cases append: new choose-case(Predicate, Widget as widget));
+
+command widget-choose otherwise: (Widget has to-widget) =
+  self when: { _ in true } use: Widget;
+
+command widget-choose current do
+  let Value = self.cell value;
+  self.cases find-first: { C in C.'condition(Value) };
+end

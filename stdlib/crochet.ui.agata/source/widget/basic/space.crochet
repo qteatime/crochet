@@ -1,0 +1,13 @@
+% crochet
+
+type widget-space(horizontal is measure, vertical is measure) is widget;
+
+command #widget space =
+  new widget-space(#measure pixels: 0, #measure pixels: 0);
+
+
+command widget-space horizontal: (X has to-agata-measure) =
+  new widget-space(self with horizontal -> X as measure);
+
+command widget-space vertical: (X has to-agata-measure) =
+  new widget-space(self with vertical -> X as measure);

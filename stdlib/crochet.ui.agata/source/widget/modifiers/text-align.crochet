@@ -1,0 +1,25 @@
+% crochet
+
+type widget-text-align(content is widget, alignment is text-alignment) is widget;
+
+enum text-alignment =
+  text-alignment-left,
+  text-alignment-center,
+  text-alignment-right,
+  text-alignment-justify;
+
+command widget with-text-aligned: (Alignment is text-alignment) =
+  new widget-text-align(self, Alignment);
+
+command widget with-text-aligned: (Alignment is static-text) =
+  self with-text-aligned: (#text-alignment from-text: Alignment);
+
+
+command #text-alignment from-text: (Name is static-text) do
+  condition
+    when Name =:= "left" => text-alignment-left;
+    when Name =:= "center" => text-alignment-center;
+    when Name =:= "right" => text-alignment-right;
+    when Name =:= "justify" => text-alignment-justify;
+  end
+end

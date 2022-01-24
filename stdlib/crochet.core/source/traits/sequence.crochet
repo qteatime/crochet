@@ -1,5 +1,48 @@
 % crochet
 
+/// A sequence that contains up to N first elements from the original one.
+command (X has sequence, appendable-sequence, countable-container) take: (N is integer)
+requires
+  non-zero :: N >= 0
+do
+  let Go = { Xs, N in
+    condition
+      when Xs is-empty => [];
+      when N =:= 0 => [];
+      otherwise => Go(Xs rest, N - 1) prepend: Xs first;
+    end
+  };
+  Go(X, N);
+test
+  assert ([1, 2, 3] take: 0) === [];
+  assert ([1, 2, 3] take: 1) === [1];
+  assert ([1, 2, 3] take: 2) === [1, 2];
+  assert ([1, 2, 3] take: 3) === [1, 2, 3];
+  assert ([1, 2, 3] take: 5) === [1, 2, 3];
+end
+
+/// A sequence that does not contain the first N elements from the original one.
+command (X has sequence, appendable-sequence, countable-container) drop: (N is integer)
+requires
+  non-zero :: N >= 0
+do
+  let Go = { Xs, N in
+    condition
+      when Xs is-empty => [];
+      when N =:= 0 => Xs;
+      otherwise => Go(Xs rest, N - 1);
+    end
+  };
+  Go(X, N);
+test
+  assert ([1, 2, 3] drop: 0) === [1, 2, 3];
+  assert ([1, 2, 3] drop: 1) === [2, 3];
+  assert ([1, 2, 3] drop: 2) === [3];
+  assert ([1, 2, 3] drop: 3) === [];
+  assert ([1, 2, 3] drop: 5) === [];
+end
+
+
 /// A sequence that contains elements from the first one up until the `Predicate`
 /// stops holding.
 command (X has sequence, appendable-sequence, countable-container) take-while: (Predicate is (A -> boolean)) do

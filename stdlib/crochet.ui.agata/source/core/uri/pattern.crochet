@@ -1,0 +1,195 @@
+% crochet
+
+open crochet.text.regex;
+
+abstract uri-pattern;
+type uri-pattern-hashbang(path is uri-pattern-path) is uri-pattern;
+
+abstract uri-pattern-path;
+singleton uri-pattern-end is uri-pattern-path;
+type uri-pattern-path-node(segment is uri-pattern-segment, rest is uri-pattern-path) is uri-pattern-path;
+
+abstract uri-pattern-segment;
+type uri-pattern-segment-concrete(segment is text) is uri-pattern-segment;
+type uri-pattern-segment-variable(name is text) is uri-pattern-segment;
+
+abstract uri-pattern-error;
+type uri-pattern-error-duplicate-variables(source is text, pattern is uri-pattern, duplicates is list<text>) is uri-pattern-error;
+
+
+// -- AST reification
+command uri-ast-pattern--hashbang reify =
+  new uri-pattern-hashbang(self.path reify);
+
+command uri-ast-pattern--path reify =
+  new uri-pattern-path-node(self.segment reify, self.rest reify);
+
+command uri-ast-pattern--empty reify =
+  uri-pattern-end;
+
+command uri-ast-segment--concrete reify =
+  new uri-pattern-segment-concrete(self.path);
+
+command uri-ast-segment--variable reify =
+  new uri-pattern-segment-variable(self.name);
+
+
+// -- Pattern regexes
+command uri-pattern regex =
+  internal regex: self
+    | pin-start
+    | pin-end;
+
+command internal regex: (R is uri-pattern-hashbang) =
+  regex exactly: "#!"
+    | followed-by: (internal regex: R.path);
+
+command internal regex: (R is uri-pattern-end) =
+  regex exactly: "/";
+
+command internal regex: (R is uri-pattern-path-node) =
+  regex
+    | exactly: "/"
+    | followed-by: (internal regex: R.segment)
+    | followed-by: (internal regex: R.rest);
+
+command internal regex: (R is uri-pattern-segment-concrete) =
+  regex exactly: R.segment;
+
+command internal regex: (R is uri-pattern-segment-variable) do
+  let Unreserved = regex letter or regex digit or (regex any-of: ["-", ".", "_", "~"]);
+  let Sub-delim = regex any-of: ["!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "="];
+  let Pct-encoded = regex exactly: "%" | followed-by: (regex hex-digit repeat-exactly: 2);
+  (Unreserved or Sub-delim or Pct-encoded)
+    | one-or-more
+    | capture: R.name;
+end
+
+
+// -- Constructors
+command #uri-pattern from-text: (Pattern is static-text) do
+  pattern-grammar parse: Pattern
+    | map: (_ reify)
+    | then: (internal for: #uri-pattern original: Pattern check-duplicate-variables: _)
+    | value-or-panic: "Invalid pattern";
+end
+
+command internal for: #uri-pattern original: Text check-duplicate-variables: Pattern do
+  let Variables = Pattern variables-in: internal;
+  let Frequencies = Variables frequencies;
+  let Duplicates = Frequencies entries keep-if: { X in X value > 1 };
+  condition
+    when Duplicates is-empty =>
+      #result ok: Pattern;
+
+    otherwise =>
+      #result error: new uri-pattern-error-duplicate-variables(
+        source -> Text,
+        pattern -> Pattern,
+        duplicates -> Duplicates map: (_ key)
+      );
+  end
+end
+
+
+// -- Operations
+command uri-pattern match: (Uri is uri) do
+  self regex compile
+    | search-first: Uri.location
+    | map: (_ named-captures)
+    | map: (#map from: _);
+end
+
+
+command uri-pattern substitute: (Bindings is record) =
+  self substitute: (#map from: Bindings);
+
+command uri-pattern-hashbang substitute: (Bindings is map<text, text>) =
+  new uri-pattern-hashbang(self.path substitute: Bindings);
+
+command uri-pattern-end substitute: (Bindings is map<text, text>) =
+  self;
+
+command uri-pattern-path-node substitute: (Bindings is map<text, text>) =
+  new uri-pattern-path-node(self.segment substitute: Bindings, self.rest substitute: Bindings);
+
+command uri-pattern-segment-concrete substitute: (Bindings is map<text, text>) =
+  self;
+
+command uri-pattern-segment-variable substitute: (Bindings is map<text, text>) do
+  let Value = foreign uri.encode-segment(Bindings at: self.name);
+  new uri-pattern-segment-concrete(Value);
+end
+
+
+command uri-pattern instantiate: (Bindings is record) =
+  self instantiate: (#map from: Bindings);
+
+command uri-pattern instantiate: (Bindings is map<text, text>) -> uri
+requires
+  complete-bindings ::
+    (self variables) is-subset: (#set from: Bindings keys)
+do
+  let Text = self substitute: Bindings
+              | to-text: internal
+              | flatten-into-plain-text;
+  new uri(Text);
+end
+
+
+command uri-pattern-hashbang to-text: internal =
+  "#![self.path to-text: internal]";
+
+command uri-pattern-end to-text: internal =
+  "/";
+
+command uri-pattern-path-node to-text: internal =
+  "/[self.segment to-text: internal][self.rest to-text: internal]";
+
+command uri-pattern-segment-concrete to-text: internal =
+  self.segment;
+
+command uri-pattern-segment-variable to-text: internal =
+  ":[self.name]";
+
+
+command uri-pattern matches-equivalent-uris: uri-pattern =
+  false;
+
+command uri-pattern-hashbang matches-equivalent-uris: (That is uri-pattern-hashbang) =
+  self.path matches-equivalent-uris: That.path;
+
+command uri-pattern-end matches-equivalent-uris: uri-pattern-end =
+  true;
+
+command uri-pattern-path-node matches-equivalent-uris: (That is uri-pattern-path-node) =
+  (self.segment matches-equivalent-uris: That.segment)
+    and (self.rest matches-equivalent-uris: That.rest);
+
+command uri-pattern-segment matches-equivalent-uris: uri-pattern-segment =
+  false;
+
+command uri-pattern-segment-concrete matches-equivalent-uris: (That is uri-pattern-segment-concrete) =
+  self.segment =:= That.segment;
+
+command uri-pattern-segment-variable matches-equivalent-uris: uri-pattern-segment-variable =
+  true;
+
+
+command uri-pattern variables =
+  #set from: (self variables-in: internal);
+
+command uri-pattern-hashbang variables-in: internal =
+  self.path variables-in: internal;
+
+command uri-pattern-end variables-in: internal =
+  [];
+
+command uri-pattern-path-node variables-in: internal =
+  (self.segment variables-in: internal) ++ (self.rest variables-in: internal);
+
+command uri-pattern-segment-concrete variables-in: internal =
+  [];
+
+command uri-pattern-segment-variable variables-in: internal =
+  [self.name];

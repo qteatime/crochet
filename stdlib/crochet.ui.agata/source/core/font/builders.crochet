@@ -1,0 +1,23 @@
+% crochet
+
+
+command font weight: (W is font-weight) =
+  new font(self with weight -> W);
+
+command font weight: (W is static-text) =
+  self weight: (#font-weight from-text: W);
+
+
+command font style: (X is font-style) =
+  new font(self with style -> X);
+
+command font style: (X is static-text) =
+  self style: (#font-style from-text: X);
+
+
+command font color: (X has to-agata-color) =
+  new font(self with color -> X as color);
+
+
+command font size: (X has to-agata-measure) =
+  new font(self with size -> X as measure);

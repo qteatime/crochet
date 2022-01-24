@@ -1,0 +1,70 @@
+% crochet
+
+open crochet.concurrency;
+
+type todo-ui(db is cell<todo-db>, global events is todo-ui-events);
+type todo-ui-events(events is event-stream<ui-event>);
+
+abstract ui-event;
+type ui-event-mark(id is todo-id, done is boolean) is ui-event;
+type ui-event-item-removed(id is todo-id) is ui-event;
+type ui-event-items-changed(id is todo-id, items is list<todo-item>) is ui-event;
+type ui-event-lists-changed(lists is list<todo-list>) is ui-event;
+
+
+command todo-ui-events mark: (Id is todo-id) =
+  self.events listener keep-if: { X in 
+    condition
+      when X is ui-event-mark => X.id === Id;
+      otherwise => false;
+    end
+  };
+
+command todo-ui-events items-changed: (Id is todo-id) =
+  self.events listener keep-if: { X in
+    condition
+      when X is ui-event-items-changed => X.id === Id;
+      otherwise => false;
+    end
+  };
+
+command todo-ui-events item-removed: (Id is todo-id) =
+  self.events listener keep-if: { X in
+    condition
+      when X is ui-event-item-removed => X.id === Id;
+      otherwise => false;
+    end
+  };
+
+command todo-ui-events lists-changed =
+  self.events listener keep-if: { X in X is ui-event-lists-changed };
+
+
+command #todo-ui empty =
+  new todo-ui(
+    db -> #cell with-value: (#todo-db empty),
+    events -> new todo-ui-events(
+      events -> #event-stream empty
+    )
+  );
+
+command todo-ui add-list: (List is todo-list) do
+  self.db <- self.db value add: List;
+  (self events).events publish: new ui-event-lists-changed((self.db value).lists);
+end
+
+command todo-ui mark: (Id is todo-id) done: (Done is boolean) do
+  self.db <- self.db value mark: Id done: Done;
+  (self events).events publish: new ui-event-mark(Id, Done);
+end
+
+command todo-ui delete-item: (Id is todo-id) do
+  self.db <- self.db value remove-item: Id;
+  (self events).events publish: new ui-event-item-removed(Id);
+end
+
+command todo-ui add: (Item is todo-item) to: (Id is todo-id) do
+  self.db <- self.db value add: Item to: Id;
+  let List = self.db value find-list: Id | value-or-panic: "Unknown list";
+  (self events).events publish: new ui-event-items-changed(List.id, List all-items);
+end

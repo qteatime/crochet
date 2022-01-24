@@ -1,0 +1,6 @@
+% crochet
+
+type widget-reference(reference is reference, widget is widget) is widget;
+
+command widget with-reference: (Ref is reference) =
+  new widget-reference(Ref, self);

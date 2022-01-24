@@ -116,7 +116,7 @@ end
 command ok value-or-panic: Reason =
   self value;
 command error value-or-panic: Reason =
-  panic message: Reason;
+  panic message: Reason data: self;
 
 test "result value-or-panic: Reason" do
   assert (#result ok: 1 | value-or-panic: "Okay!") === 1;

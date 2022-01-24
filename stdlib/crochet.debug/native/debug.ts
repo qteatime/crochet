@@ -36,11 +36,17 @@ export default (ffi: ForeignInterface) => {
   }
 
   ffi.defmachine("debug.write", function* (text, tag) {
+    console.log("write", ffi.to_debug_string(tag), ffi.text_to_string(text));
     yield ffi.push_transcript(tag, ffi.text_to_string(text));
     return ffi.nothing;
   });
 
   ffi.defmachine("debug.write-inspect", function* (value, tag) {
+    console.log(
+      "inspect",
+      ffi.to_debug_string(tag),
+      ffi.to_debug_string(value)
+    );
     yield ffi.push_transcript(tag, value);
     return ffi.nothing;
   });
@@ -52,5 +58,10 @@ export default (ffi: ForeignInterface) => {
     const diff = us_end - us_start;
     yield ffi.push_transcript(tag, format_time_diff(diff));
     return result;
+  });
+
+  ffi.defun("debug.native-breakpoint", () => {
+    debugger;
+    return ffi.nothing;
   });
 };

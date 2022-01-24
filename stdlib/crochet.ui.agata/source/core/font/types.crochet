@@ -1,0 +1,66 @@
+% crochet
+
+singleton agata-font;
+
+type font(
+  family-set is set<text>,
+  weight is font-weight,
+  style is font-style,
+  color is color,
+  size is measure,
+);
+
+enum font-weight =
+  font-weight-inherit,
+  font-weight-thin,
+  font-weight-ultra-light,
+  font-weight-light,
+  font-weight-regular,
+  font-weight-medium,
+  font-weight-semi-bold,
+  font-weight-bold,
+  font-weight-black;
+
+enum font-style =
+  font-style-inherit,
+  font-style-normal,
+  font-style-italic;
+
+
+command agata-font family: (Family is static-text) =
+  self family: (#set from: [Family]);
+
+command agata-font family: (Families is list<static-text>) =
+  self family: (#set from: Families);
+
+command agata-font family: (Families is set<static-text>) =
+  new font(
+    family-set -> Families,
+    weight -> font-weight-inherit,
+    style -> font-style-inherit,
+    color -> color-unset,
+    size -> measure-auto,
+  );
+
+
+command #font-weight from-text: (Name is static-text) do
+  condition
+    when Name =:= "inherit" => font-weight-inherit;
+    when Name =:= "thin" => font-weight-thin;
+    when Name =:= "ultra-light" => font-weight-ultra-light;
+    when Name =:= "light" => font-weight-light;
+    when Name =:= "regular" => font-weight-regular;
+    when Name =:= "medium" => font-weight-medium;
+    when Name =:= "semi-bold" => font-weight-semi-bold;
+    when Name =:= "bold" => font-weight-bold;
+    when Name =:= "black" => font-weight-black;
+  end
+end
+
+command #font-style from-text: (Name is static-text) do
+  condition
+    when Name =:= "inherit" => font-style-inherit;
+    when Name =:= "normal" => font-style-normal;
+    when Name =:= "italic" => font-style-italic;
+  end
+end

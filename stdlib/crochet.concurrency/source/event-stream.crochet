@@ -87,6 +87,13 @@ command foldable-event-stream-state skip = event-publication-skip;
 command foldable-event-stream-state push: Value = new event-publication-push(Value);
 
 
+command event-stream-listener map: F =
+  self.stream map: F;
+
+command event-stream-listener keep-if: F =
+  self.stream keep-if: F;
+
+
 command base-event-stream listener =
   new event-stream-listener(self);
 
@@ -115,5 +122,3 @@ do
   self.stream.subscribers <- self.stream.subscribers value remove-if: { X in X =:= Subscriber };
   self;
 end
-
-

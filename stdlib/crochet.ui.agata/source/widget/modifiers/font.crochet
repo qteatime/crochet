@@ -1,0 +1,6 @@
+% crochet
+
+type widget-format-font(content is widget, font is font) is widget;
+
+command widget with-font: (Font is font) =
+  new widget-format-font(self, Font);

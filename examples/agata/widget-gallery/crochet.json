@@ -1,0 +1,17 @@
+{
+  "name": "crochet.examples.agata.widget-gallery",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet",
+    "source/app.crochet",
+    "source/controls/button.crochet",
+    "source/layout/section.crochet",
+    "source/layout/card.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.concurrency", "crochet.ui.agata"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

@@ -1,0 +1,14 @@
+% crochet
+
+open crochet.ui.agata;
+
+implement agata-page for todo-ui;
+
+command todo-ui uri-pattern =
+  #uri-pattern from-text: "#!/lists/:id/";
+
+command todo-ui instantiate-page: (Bindings is map<text, text>) do
+  let Id = #todo-id from: (Bindings at: "id");
+  let List = self.db value find-list: Id | value-or-panic: "No list [Id to-text]";
+  self with-frame: (self render-list: List);
+end

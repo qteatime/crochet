@@ -1,0 +1,35 @@
+% crochet
+
+open crochet.ui.agata;
+
+singleton app;
+
+command app frame: (Widget is widget) do
+  #widget flex-row: [
+    #flex-child with: self navigation
+      | basis: (300 as pixels),
+
+    #flex-child with: Widget
+      | grow: 1
+  ]
+  | with-padding: { P in P all: (2.0 as rem) };
+end
+
+command app navigation do
+  #widget section: [
+    #widget navigation: [
+      "Layout",
+      #navigation-child
+        | link: "Section"
+        | to: layout-section,
+      #navigation-child
+        | link: "Card"
+        | to: layout-card,
+
+      "Controls",
+      #navigation-child
+        | link: "Buttons"
+        | to: controls-button
+    ]
+  ]
+end

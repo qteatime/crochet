@@ -1,0 +1,41 @@
+% crochet
+
+/// Inverts the sign of a number
+command integer negate =
+  self * -1
+test
+  assert 0 negate === 0;
+  assert 1 negate === -1;
+  assert -1 negate === 1;
+end
+
+command float-64bit negate =
+  self * -1.0
+test
+  assert 0.0 negate === 0.0;
+  assert 1.0 negate === -1.0;
+  assert -1.0 negate === 1.0;
+end
+
+/// The absolute value of a number
+command integer absolute do
+  condition
+    when self < 0 => self negate;
+    otherwise => self;
+  end
+test
+  assert 0 absolute === 0;
+  assert 1 absolute === 1;
+  assert -1 absolute === 1;
+end
+
+command float-64bit absolute do
+  condition
+    when self < 0.0 => self negate;
+    otherwise => self;
+  end
+test
+  assert 0.0 absolute === 0.0;
+  assert 1.0 absolute === 1.0;
+  assert -1.0 absolute === 1.0;
+end

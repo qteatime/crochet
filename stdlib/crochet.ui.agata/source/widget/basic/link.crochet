@@ -1,0 +1,24 @@
+% crochet
+
+type widget-link(content is widget, target is link-target) is widget;
+
+abstract link-target;
+singleton link-target-none is link-target;
+type link-target-local(uri is uri) is link-target;
+type link-target-external(uri is uri) is link-target;
+
+
+command #widget link: (Content has to-widget) =
+  new widget-link(Content as widget, link-target-none);
+
+command widget-link to-local: (Uri has to-uri) =
+  new widget-link(self with target -> new link-target-local(Uri as uri));
+
+command widget-link to-external: (Uri has to-uri) =
+  new widget-link(self with target -> new link-target-external(Uri as uri));
+
+command widget-link to: (Page has agata-page) bindings: (Bindings is record) =
+  self to-local: (Page uri-pattern instantiate: Bindings);
+
+command widget-link to: (Page has agata-page) =
+  self to: Page bindings: [->];

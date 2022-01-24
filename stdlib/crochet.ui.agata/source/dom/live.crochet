@@ -1,0 +1,16 @@
+% crochet
+
+type dom-element(node is dom-node) is live-widget;
+type dom-text-input(node is dom-node) is live-widget;
+
+command dom to-live-widget: (W is widget) node: (N is dom-node) =
+  new dom-element(N);
+
+command dom to-live-widget: (W is widget-text-input) node: (N is dom-node) =
+  new dom-text-input(N);
+
+
+command dom-text-input value =
+  self.node text-input-value;
+
+

@@ -1,0 +1,88 @@
+% crochet
+
+open crochet.ui.agata;
+
+singleton controls-button;
+
+implement agata-page for controls-button;
+command controls-button uri-pattern =
+  #uri-pattern from-text: "#!/controls/button/";
+
+command controls-button instantiate-page: Bindings =
+  self;
+
+
+command controls-button row: (Items is list<widget>) =
+  #widget flex-row: Items
+    | wrap: "wrap"
+    | gap: { G in G column: (2.0 as em) | row: (1.0 as em) };
+
+implement to-widget for controls-button;
+command controls-button as widget do
+  app frame: self page;
+end
+
+command controls-button page do
+  #widget flex-column: [
+    #widget page-title: "Button",
+
+    #widget section: [
+      #widget title: "Text buttons",
+
+      self row: [
+        #widget button: "Outlined",
+
+        #widget button: "Primary"
+          | style: "primary",
+
+        #widget button: "Dangerous"
+          | style: "dangerous",
+
+        #widget button: "Clear"
+          | style: "clear",
+
+        #widget button: "Disabled"
+          | disabled: true
+      ],
+    ],
+
+    #widget section: [
+      #widget subtitle: "Icon buttons",
+
+      self row: [
+        #widget icon-button: "cat"
+          | size: icon-size-small,
+        #widget icon-button: "cat"
+          | size: icon-size-medium,
+        #widget icon-button: "cat"
+          | size: icon-size-large,
+        #widget icon-button: "cat"
+          | size: icon-size-extra-large,
+        #widget icon-button: "cat"
+          | disabled: true
+          | size: icon-size-extra-large,
+      ]
+      | align-items: "flex-end",
+    ],
+
+    #widget section: [
+      #widget title: "Action buttons",
+
+      self row: [
+        #widget action-button: "Title"
+          | icon: "plus"
+          | description: "A description goes here",
+
+        #widget action-button: "Title"
+          | description: "A description goes here",
+
+        #widget action-button: "Title",
+
+        #widget action-button: "Title"
+          | icon: "plus"
+          | description: "A description goes here"
+          | disabled: true,
+      ]
+    ]
+  ];
+end

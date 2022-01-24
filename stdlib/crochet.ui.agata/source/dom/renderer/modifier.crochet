@@ -1,0 +1,105 @@
+% crochet
+
+command dom-renderer render: (W is widget-committed)
+requires
+  dom-node :: W.node is dom-node
+do
+  W.node;
+end
+
+
+command dom-renderer render: (W is widget-reference) do
+  let Node = self render: W.widget;
+  let Live = dom to-live-widget: W.widget node: Node;
+  perform agata-presentation.register-reference(W.reference, Live);
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-format-font) do
+  let Node = self render: W.content;
+  Node style: [
+    font-family -> self render-font-family: W.font.family-set,
+    font-weight -> self to-font-weight: W.font.weight,
+    font-style -> self to-font-style: W.font.style,
+    font-size -> self to-unit-text: W.font.size,
+    color -> self to-css-color: W.font.color,
+  ];
+  Node;
+end
+
+command dom-renderer render-font-family: (Families is set) do
+  condition
+    when Families is-empty => "inherit";
+    otherwise =>
+      #text join: Families values with: ","
+        | flatten-into-plain-text; // FIXME: escape families
+  end
+end
+
+
+command dom-renderer render: (W is widget-padding) do
+  self render: W.content
+    | style: [
+        padding-top -> self to-unit-text: W.top,
+        padding-right -> self to-unit-text: W.right,
+        padding-bottom -> self to-unit-text: W.bottom,
+        padding-left -> self to-unit-text: W.left,
+      ];
+end
+
+
+command dom-renderer render: (W is widget-margin) do
+  self render: W.content
+    | style: [
+        margin-top -> self to-unit-text: W.top,
+        margin-right -> self to-unit-text: W.right,
+        margin-bottom -> self to-unit-text: W.bottom,
+        margin-left -> self to-unit-text: W.left,
+      ];
+end
+
+
+command dom-renderer render: (W is widget-text-align) do
+  self render: W.content
+    | style: [text-align -> self to-css-property: W.alignment];
+end
+
+
+command dom-renderer render: (W is widget-text-decoration) do
+  let D = W.decoration;
+  self render: W.content
+    | style: [
+        text-decoration-line -> self to-css-property: D.line,
+        text-decoration-color -> self to-css-color: D.color,
+        text-decoration-thickness -> self to-unit-text: D.width,
+      ];
+end
+
+command dom-renderer render: (W is widget-attachment) do
+  let Node = self render: W.content
+              | add-class: "agata-dynamic-attachment";
+  W.attached stream subscribe: { Attached in
+    condition
+      when not Attached => Node add-class: "agata-detached";
+      when Attached => Node remove-class: "agata-detached";
+    end
+  };
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-background) do
+  self render: W.content
+    | style: [background-color -> self to-css-color: W.color];
+end
+
+
+command dom-renderer render: (W is widget-size) do
+  self render: W.content
+    | style: [
+        box-sizing -> "border-box",
+        width -> self to-unit-text: W.width,
+        height -> self to-unit-text: W.height,
+      ];
+end

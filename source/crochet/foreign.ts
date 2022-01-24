@@ -255,8 +255,8 @@ export class ForeignInterface {
     throw new ErrNativePanic(tag, message, false);
   }
 
-  panic(tag: string, message: string) {
-    throw new ErrNativePanic(tag, message);
+  panic(tag: string, message: string, data: CrochetValue | null = null) {
+    throw new ErrNativePanic(tag, message, true, data);
   }
 
   // == Tests

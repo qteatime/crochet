@@ -1,0 +1,51 @@
+% crochet
+
+type widget-text-decoration(content is widget, decoration is text-decoration) is widget;
+
+type text-decoration(
+  line is text-decoration-line,
+  color is color,
+  width is measure
+);
+
+enum text-decoration-line =
+  text-decoration-line-none,
+  text-decoration-line-underline,
+  text-decoration-line-overline,
+  text-decoration-line-line-through;
+
+command widget with-text-decoration: (Decoration is text-decoration) =
+  new widget-text-decoration(self, Decoration);
+
+command widget with-text-decoration: (Line is static-text) =
+  new widget-text-decoration(self, #text-decoration line: Line);
+
+command widget without-text-decoration =
+  new widget-text-decoration(self, #text-decoration none);
+
+
+command #text-decoration line: (Line is text-decoration-line) =
+  new text-decoration(
+    line -> Line,
+    color -> color-unset,
+    width -> measure-unset,
+  );
+
+command #text-decoration line: (Line is static-text) =
+  #text-decoration line: (#text-decoration-line from-text: Line);
+
+
+command #text-decoration-line from-text: (Name is static-text) do
+  condition
+    when Name =:= "none" => text-decoration-line-none;
+    when Name =:= "underline" => text-decoration-line-underline;
+    when Name =:= "overline" => text-decoration-line-overline;
+    when Name =:= "line-through" => text-decoration-line-line-through;
+  end
+end
+
+command text-decoration color: (Color has to-agata-color) =
+  new text-decoration(self with color -> Color as color);
+
+command text-decoration width: (Width has to-agata-measure) =
+  new text-decoration(self with width -> Width as measure);

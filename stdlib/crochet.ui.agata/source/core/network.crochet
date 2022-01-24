@@ -1,0 +1,6 @@
+% crochet
+
+singleton agata-network;
+
+command agata-network image: (Uri is static-text) =
+  new network-image(Uri);

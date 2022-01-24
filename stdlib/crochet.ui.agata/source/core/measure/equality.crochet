@@ -1,0 +1,21 @@
+% crochet
+
+implement equality for measure;
+
+command measure === measure =
+  false;
+
+command measure-auto === measure-auto =
+  true;
+
+command pixels === (That is pixels) =
+  self.value === That.value;
+
+command em === (That is em) =
+  self.value === That.value;
+
+command rem === (That is rem) =
+  self.value === That.value;
+
+command percent === (That is percent) =
+  self.value === That.value;

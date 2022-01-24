@@ -1,0 +1,21 @@
+% crochet
+
+type widget-size(content is widget, width is measure, height is measure) is widget;
+
+command widget with-width: (W has to-agata-measure) height: (H has to-agata-measure) =
+  new widget-size(self, W, H);
+
+command widget with-width: (W has to-agata-measure) =
+  new widget-size(self, W, measure-unset);
+
+command widget with-height: (H has to-agata-measure) =
+  new widget-size(self, measure-unset, H);
+
+command widget fill-container =
+  new widget-size(self, #measure percent: 100.0, #measure percent: 100.0);
+
+command widget fill-container-horizontally =
+  new widget-size(self, #measure percent: 100.0, measure-unset);
+
+command widget fill-container-vertically =
+  new widget-size(self, measure-unset, #measure percent: 100.0);
