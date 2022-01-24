@@ -101,6 +101,27 @@ command uri-pattern match: (Uri is uri) do
 end
 
 
+command uri-pattern substitute: (Bindings is record) =
+  self substitute: (#map from: Bindings);
+
+command uri-pattern-hashbang substitute: (Bindings is map<text, text>) =
+  new uri-pattern-hashbang(self.path substitute: Bindings);
+
+command uri-pattern-end substitute: (Bindings is map<text, text>) =
+  self;
+
+command uri-pattern-path-node substitute: (Bindings is map<text, text>) =
+  new uri-pattern-path-node(self.segment substitute: Bindings, self.rest substitute: Bindings);
+
+command uri-pattern-segment-concrete substitute: (Bindings is map<text, text>) =
+  self;
+
+command uri-pattern-segment-variable substitute: (Bindings is map<text, text>) do
+  let Value = foreign uri.encode-segment(Bindings at: self.name);
+  new uri-pattern-segment-concrete(Value);
+end
+
+
 command uri-pattern instantiate: (Bindings is record) =
   self instantiate: (#map from: Bindings);
 
@@ -109,27 +130,27 @@ requires
   complete-bindings ::
     (self variables) is-subset: (#set from: Bindings keys)
 do
-  let Text = internal instantiate: self bindings: Bindings | flatten-into-plain-text;
+  let Text = self substitute: Bindings
+              | to-text: internal
+              | flatten-into-plain-text;
   new uri(Text);
 end
 
-command internal instantiate: (X is uri-pattern-hashbang) bindings: Bindings =
-  "#![internal instantiate: X.path bindings: Bindings]";
 
-command internal instantiate: (X is uri-pattern-end) bindings: Bindings =
+command uri-pattern-hashbang to-text: internal =
+  "#![self.path to-text: internal]";
+
+command uri-pattern-end to-text: internal =
   "/";
 
-command internal instantiate: (X is uri-pattern-path-node) bindings: Bindings do
-  let Segment = internal instantiate: X.segment bindings: Bindings;
-  let Rest = internal instantiate: X.rest bindings: Bindings;
-  "/[Segment][Rest]";
-end
+command uri-pattern-path-node to-text: internal =
+  "/[self.segment to-text: internal][self.rest to-text: internal]";
 
-command internal instantiate: (X is uri-pattern-segment-concrete) bindings: Bindings =
-  X.segment;
+command uri-pattern-segment-concrete to-text: internal =
+  self.segment;
 
-command internal instantiate: (X is uri-pattern-segment-variable) bindings: Bindings =
-  foreign uri.encode-segment(Bindings at: X.name);
+command uri-pattern-segment-variable to-text: internal =
+  ":[self.name]";
 
 
 command uri-pattern matches-equivalent-uris: uri-pattern =

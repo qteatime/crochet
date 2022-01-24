@@ -34,7 +34,7 @@ command navigation-child-link active-when: (Pattern is uri-pattern) =
 command navigation-child-link to: (Page has agata-page) bindings: (Bindings is record) =
   new navigation-child-link(self with
     link -> self.link to: Page bindings: Bindings,
-    active-when -> Page uri-pattern
+    active-when -> Page uri-pattern substitute: Bindings
   );
 
 command navigation-child-link to: (Page has agata-page) =
