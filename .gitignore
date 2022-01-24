@@ -19,3 +19,4 @@ tools/launcher/www/crochet.js
 tools/launcher/www/crochet-ipc.js
 tools/launcher/www/monaco/
 *.lingua.crochet
+*:Zone.Identifier
