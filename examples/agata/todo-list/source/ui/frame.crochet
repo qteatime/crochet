@@ -5,10 +5,13 @@ open crochet.concurrency;
 
 command todo-ui with-frame: (Content is widget) do
   #widget flex-row: [
+    #flex-child with: self render-lists
+      | basis: (30 as rem),
+
     #flex-child fluid: (
       Content
         | with-padding: { P in P all: (2 as rem) }
-    )
+        | with-background: (agata-theme-colors bg-muted)
+    ),
   ]
-  | with-background: (agata-theme-colors bg-muted);
 end

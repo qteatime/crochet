@@ -9,20 +9,35 @@ abstract ui-event;
 type ui-event-mark(id is todo-id, done is boolean) is ui-event;
 type ui-event-item-removed(id is todo-id) is ui-event;
 type ui-event-items-changed(id is todo-id, items is list<todo-item>) is ui-event;
-type ui-event-list-added(list is todo-list) is ui-event;
+type ui-event-lists-changed(lists is list<todo-list>) is ui-event;
 
 
 command todo-ui-events mark: (Id is todo-id) =
-  self.events listener keep-if: { X in (X is ui-event-mark) and (X.id === Id) };
+  self.events listener keep-if: { X in 
+    condition
+      when X is ui-event-mark => X.id === Id;
+      otherwise => false;
+    end
+  };
 
 command todo-ui-events items-changed: (Id is todo-id) =
-  self.events listener keep-if: { X in (X is ui-event-items-changed) and (X.id === Id) };
+  self.events listener keep-if: { X in
+    condition
+      when X is ui-event-items-changed => X.id === Id;
+      otherwise => false;
+    end
+  };
 
 command todo-ui-events item-removed: (Id is todo-id) =
-  self.events listener keep-if: { X in (X is ui-event-item-removed) and (X.id === Id) };
+  self.events listener keep-if: { X in
+    condition
+      when X is ui-event-item-removed => X.id === Id;
+      otherwise => false;
+    end
+  };
 
-command todo-ui-events list-added =
-  self.events listener keep-if: { X in (X is ui-event-list-added) };
+command todo-ui-events lists-changed =
+  self.events listener keep-if: { X in X is ui-event-lists-changed };
 
 
 command #todo-ui empty =
@@ -35,7 +50,7 @@ command #todo-ui empty =
 
 command todo-ui add-list: (List is todo-list) do
   self.db <- self.db value add: List;
-  (self events).events publish: new ui-event-list-added(List);
+  (self events).events publish: new ui-event-lists-changed((self.db value).lists);
 end
 
 command todo-ui mark: (Id is todo-id) done: (Done is boolean) do

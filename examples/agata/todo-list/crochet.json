@@ -9,7 +9,8 @@
     "source/ui/main.crochet",
     "source/ui/page.crochet",
     "source/ui/todo-item.crochet",
-    "source/ui/todo-list.crochet"
+    "source/ui/todo-list.crochet",
+    "source/ui/lists-panel.crochet"
   ],
   "dependencies": [
     "crochet.core",

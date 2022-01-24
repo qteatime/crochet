@@ -1,0 +1,56 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.ui.agata;
+
+command todo-ui render-lists do
+  #widget flex-column: [
+    #flex-child fluid: (self render-all-lists),
+    #widget space | vertical: (1 as rem),
+    #widget divider: "full",
+    self render-new-list-widget
+  ]
+  | fill-container-vertically;
+end
+
+command todo-ui render-all-lists do
+  let Lists-stream = self events lists-changed
+                      | map: { X in X.lists };
+  let Lists = #observable-cell from-stream: Lists-stream initial-value: (self.db value).lists;
+
+  Lists map: { Xs in
+    #widget navigation: (Xs map: (self render-list-nav-link: _))
+  };
+end
+
+command todo-ui render-list-nav-link: (List is todo-list) do
+  #navigation-child link: List name
+    | to: self bindings: [id -> List.id to-text];
+end
+
+command todo-ui render-new-list-widget do
+  let Name = #observable-cell with-value: "";
+  let Key-events = #event-stream empty;
+  Key-events
+    | keep-if: { X in X key =:= key-code-enter }
+    | listener
+    | subscribe: { _ in
+        let List = #todo-list-concrete with-name: Name value;
+        Name <- "";
+        self add-list: List;
+        agata navigate: self bindings: [id -> List.id to-text];
+      } capture;
+
+  #widget flex-row: [
+    #widget icon: "plus",
+    #flex-child fluid: (
+      #widget text-input
+        | placeholder: "Add a list"
+        | value: Name
+        | key-up: Key-events
+    )
+  ]
+  | gap: (1 as rem)
+  | align-items: "center"
+  | with-padding: { P in P all: (0.5 as rem) };
+end

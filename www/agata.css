@@ -148,7 +148,8 @@ input {
 }
 
 .agata-text-input:focus {
-  box-shadow: 0 1px 1px var(--primary-fg);
+  border-color: var(--primary-fg-accent);
+  box-shadow: 0 2px 0px var(--primary-fg-accent);
 }
 
 .agata-button {
