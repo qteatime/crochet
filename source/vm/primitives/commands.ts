@@ -169,3 +169,10 @@ export function get_command(universe: Universe, name: string) {
   }
   return command;
 }
+
+export function resolve_dispatch(universe: Universe) {
+  const commands = universe.world.commands;
+  for (const command of commands.bindings.values()) {
+    command.branches.sort((b1, b2) => compare_branches(b1, b2));
+  }
+}

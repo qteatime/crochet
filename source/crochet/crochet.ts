@@ -194,6 +194,7 @@ export class BootedCrochet {
     for (const x of this.graph.serialise(pkg)) {
       this.reify_capability_grants(x);
     }
+    VM.Commands.resolve_dispatch(this.universe);
 
     if (!safe_mode) {
       await VM.run_prelude(this.universe);
