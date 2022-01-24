@@ -29,7 +29,8 @@
     "feature/actions.crochet",
     "feature/effects.crochet",
     "feature/traits.crochet",
-    "feature/capabilities.crochet"
+    "feature/capabilities.crochet",
+    "regression/placeholder-dispatch.crochet"
   ],
   "capabilities": {
     "requires": ["crochet.debug/internal"],
