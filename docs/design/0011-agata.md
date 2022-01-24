@@ -48,6 +48,9 @@ Agata's language has a few core components:
 
 For example, a "to-do list" component could be written as follows:
 
+    open crochet.concurrency;
+    open crochet.ui.agata;
+
     type todo-id;
     type todo(items is cell<list<todo-item>>);
     type todo-item(id is todo-id, title is text, done is boolean);
@@ -63,25 +66,21 @@ For example, a "to-do list" component could be written as follows:
     command new-todo as widget do
       let New-title = #observable-cell with-value: "";
 
-      card: (
-        flex-row: (
-          text-input
+      #widget card: (
+        #widget flex-row: (
+          #widget text-input
             | placeholder: "Add a task"
             | value: New-title,
-          icon-button: "plus"
+          #widget icon-button: "plus"
             | disabled: (New-title map: (_ =/= ""))
-            | clicked: { S in
-                S listener subscribe: { _ in
-                  perform todo-ui.add(New-title value)
-                }
-              }
+            | on-click: { _ in perform todo-ui.add(New-title value) }
         )
       );
     end
 
     implement to-widget for todo;
     command todo as widget do
-      flex-column: self.items
+      #widget flex-column: self.items
         | gap: { G in G horizontal: (0.5 as em) }
     end
 
@@ -90,17 +89,13 @@ For example, a "to-do list" component could be written as follows:
       let Done = #observable-cell with-value: self.done;
       Done stream subscribe: { X in perform todo-ui.mark(self.id, X) };
 
-      card: (
-        flex-row: [
-          checkbox | checked: Done,
-          flex-child: self.title
-            | grow: 1,
-          icon-button: "trash"
-            | clicked: { S in
-                S listener subscribe: { _ in
-                  perform todo-ui.remove(self.id)
-                }
-              }
+      #widget card: (
+        #widget flex-row: [
+          #widget checkbox
+            | checked: Done,
+          #flex-child fluid: self.title,
+          #widget icon-button: "trash"
+            | on-click: { _ in perform todo-ui.remove(self.id) }
         ]
       )
     end
@@ -134,11 +129,11 @@ So, in the outer level, we need to handle these effects:
     command todo-app render do
       let Todo = #observable-cell with: new todo([]);
       handle
-        commit: (flex-column: [
+        #widget flex-column: [
           Todo,
-          divider: "half",
+          #widget divider: "half",
           new-todo
-        ])
+        ] | commit;
       with
         on todo.add(Title) do
           let New-item = #todo-item title: Title;
@@ -173,16 +168,15 @@ used in the UI code as if they were just regular widgets.
 
 This also goes for other basic values, which means one can write the following:
 
-    let Clicks = #event-stream empty;
-    let Total = #observable-cell
-                  from-stream: (Clicks from: 0 fold: { N, _ in N + 1 })
-                  initial-value: 0;
+      let Clicks = #event-stream empty;
+      let Total = #observable-cell from-stream: Clicks initial-value: 0
+                    | fold-with: { S, _ in S push: (S state + 1) };
 
-    flex-column: [
-      "The button was clicked [Total] times!",
-      text-button: "Click me!"
-        | clicked: Clicks
-    ]
+      #widget flex-column: [
+        "The button was clicked [Total] times!",
+        #widget button: "Click me!"
+          | clicked: Clicks
+      ]
 
 Which would, after 3 clicks, render something like:
 

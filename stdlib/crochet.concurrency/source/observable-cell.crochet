@@ -38,6 +38,10 @@ command observable-cell fold-from: (Initial is B) with: (Combine is ((B, A) -> B
   );
 end
 
+command observable-cell fold-with: (Combine is ((B, B) -> B)) -> observable-cell<B> do
+  self fold-from: self value with: Combine;
+end
+
 command observable-cell read-only =
   self fold-from: self value with: { S, X in S push: X };
 
