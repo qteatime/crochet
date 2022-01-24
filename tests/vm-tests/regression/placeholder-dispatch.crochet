@@ -1,0 +1,22 @@
+% crochet
+
+// Historically, Crochet assumed that all declarations were ordered.
+// This means that dispatch was resolved at the point new branches
+// were added, which was fine then. But with placeholder types, this
+// is now wrong. If you define a command over yet-to-be-defined types
+// and then define a hierarchy later, the command's dispatch would not
+// be resolved again.
+
+command base-type do-something = 1;
+command sub-type do-something = 2;
+command other-type do-something = 3;
+
+singleton base-type;
+singleton sub-type is base-type;
+singleton other-type is base-type;
+
+test "Dispatch is properly resolved with placeholders" do
+  assert base-type do-something =:= 1;
+  assert sub-type do-something =:= 2;
+  assert other-type do-something =:= 3;
+end
