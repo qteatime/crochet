@@ -100,4 +100,12 @@ export default (ffi: ForeignInterface) => {
     const result = yield ffi.await(get_deferred(x).promise);
     return result;
   });
+
+  ffi.defun("promise.spawn", (fn) => {
+    ffi.run_asynchronously(function* () {
+      yield ffi.apply(fn, []);
+      return ffi.nothing;
+    });
+    return ffi.nothing;
+  });
 };

@@ -11,6 +11,12 @@ command #deferred make =
 command #deferred make: State =
   new deferred(foreign promise.defer(State));
 
+command #deferred promise: (Block is (deferred -> nothing)) -> promise<A> do
+  let Deferred = #deferred make;
+  foreign promise.spawn({ Block(Deferred) } capture);
+  Deferred promise;
+end
+
 command deferred is-resolved =
   foreign promise.is-resolved(self.box);
 
