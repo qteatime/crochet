@@ -113,10 +113,13 @@ end
 /// Retrieves the value of a successful [type:result]. If the [type:result]
 /// is a failure, stops the program in a panic, with the given
 /// panic message as the reason.
-command ok value-or-panic: Reason =
+command ok value-or-panic: Reason data: Data =
   self value;
-command error value-or-panic: Reason =
-  panic message: Reason data: self;
+command error value-or-panic: Reason data: Data =
+  panic message: Reason data: [reason -> self, user-data -> Data];
+
+command ok value-or-panic: Reason = self value-or-panic: Reason data: nothing;
+command error value-or-panic: Reason = self value-or-panic: Reason data: nothing;
 
 test "result value-or-panic: Reason" do
   assert (#result ok: 1 | value-or-panic: "Okay!") === 1;

@@ -1,0 +1,83 @@
+% crochet
+
+// See https://url.spec.whatwg.org/
+
+abstract url;
+
+type url-native(box is unknown); // native URL
+
+abstract url-error;
+type url-error-no-username(url is url);
+type url-error-no-password(url is url);
+type url-error-no-port(url is url);
+
+
+// -- Constructors
+command #url from-text: (Url is static-text) =
+  new url-native(foreign url.parse(Url));
+
+
+// -- Components
+command url-native protocol -> text =
+  foreign url.protocol(self.box)
+test
+  assert (#url from-text: "http://example.com") protocol =:= "http:";
+  assert (#url from-text: "https://example.com") protocol =:= "https:";
+end
+
+command url-native username -> result<text> do
+  let Result = foreign url.username(self.box);
+  condition
+    when Result is nothing => #result error: new url-error-no-username(self);
+    otherwise => #result ok: Result;
+  end
+test
+  assert (#url from-text: "http://example.com/") username === (#result error: not-found);
+  assert (#url from-text: "http://user:pwd@example.com/") username === (#result ok: "user");
+end
+
+command url-native password -> result<text> do
+  let Result = foreign url.password(self.box);
+  condition
+    when Result is nothing => #result error: new url-error-no-password(self);
+    otherwise => #result ok: Result;
+  end
+test
+  assert (#url from-text: "http://example.com/") password === (#result error: not-found);
+  assert (#url from-text: "http://user:pwd@example.com/") password === (#result ok: "pwd");
+end
+
+command url-native hostname -> text =
+  foreign url.hostname(self.box)
+test
+  assert (#url from-text: "http://example.com/") hostname =:= "example.com";
+  assert (#url from-text: "http://example.com:80") hostname =:= "example.com";
+end
+
+command url-native port -> result<integer> do
+  let Result = url.port(self.box);
+  condition
+    when Result is nothing => #result error: new url-error-no-port(self);
+    otherwise => #result ok: Result;
+  end
+end
+
+command url-native path -> url-path =
+  #url-path from-text: (foreign url.pathname(self.box))
+test
+  assert (#url from-text: "http://example.com") path === (#url-path from-text: "/")
+  assert (#url from-text: "http://example.com/") path === (#url-path from-text: "/");
+  assert (#url from-text: "http://example.com/a/b/c") path === (#url-path from-text: "/a/b/c");
+end
+
+
+command url-native hash =
+  foreign url.hash(self.box)
+test
+  assert (#url from-text: "http://example.com/#abc") hash =:= "#abc";
+  assert (#url from-text: "http://example.com/") hash =:= "";
+end
+
+
+
+

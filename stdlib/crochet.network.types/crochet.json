@@ -1,0 +1,16 @@
+{
+  "name": "crochet.network.types",
+  "target": "*",
+  "native_sources": ["native/url.js"],
+  "sources": [
+    "source/internal.crochet",
+    "source/url/url-path-grammar.lingua",
+    "source/url/url-path.crochet",
+    "source/url/url.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.text.parsing.lingua"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

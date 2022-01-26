@@ -32,31 +32,6 @@ export class CrochetForBrowser {
     this.crochet = new Crochet(false, this.fs, this.signal);
   }
 
-  get trusted_core() {
-    // TODO: restrict TCB (needs safer native modules support)
-    return new Set([
-      "crochet.codec.basic",
-      "crochet.concurrency",
-      "crochet.core",
-      "crochet.debug",
-      "crochet.debug.tracing",
-      "crochet.language.csv",
-      "crochet.language.json",
-      "crochet.mathematics",
-      "crochet.novella",
-      "crochet.random",
-      "crochet.text.parsing.lingua",
-      "crochet.text.regex",
-      "crochet.time",
-      "crochet.ui.agata",
-      "crochet.wrapper.node.file-system",
-      "crochet.wrapper.node.http",
-      "crochet.wrapper.node.io",
-      "crochet.wrapper.node.os",
-      "crochet.wrapper.node.shell",
-    ]);
-  }
-
   get system() {
     if (this._booted_system == null) {
       throw new Error(`Crochet not yet booted`);
@@ -158,7 +133,7 @@ export class CrochetForBrowser {
   }
 
   private is_trusted(pkg: Package.Package) {
-    return this.trusted_core.has(pkg.meta.name);
+    return this.crochet.trusted_core.has(pkg.meta.name);
   }
 
   fs: IFileSystem = {

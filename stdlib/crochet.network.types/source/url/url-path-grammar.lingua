@@ -1,0 +1,30 @@
+type url_path_ast =
+  | path(segment: text, previous: url_path_ast)
+  | back(previous: url_path_ast)
+  | id(previous: url_path_ast)
+  | slash(previous: url_path_ast)
+  | root()
+  | relative()
+
+grammar url_path_grammar : url_path_ast {
+  url_path =
+    | p:path end -> p
+
+  path =
+    | p:path "/" ".."       -> url_path_ast.back(p)
+    | p:path "/" "."        -> url_path_ast.id(p)
+    | p:path "/" s:segment  -> url_path_ast.path(s, p)
+    | p:path "/"            -> url_path_ast.slash(p)
+    | ".."                  -> url_path_ast.back(url_path_ast.relative())
+    | "."                   -> url_path_ast.relative()
+    |                       -> url_path_ast.root()
+
+  segment =
+    | s:plain_segment  -> s
+
+  token plain_segment = (unreserved | sub_delims | pct_encoded)+
+  token unreserved = letter | digit | "-" | "." | "_" | "~"
+  token sub_delims = "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "="
+  token pct_encoded = "%" hex_digit hex_digit
+  token hex_digit = "a".."f" | "A".."F" | "0".."9"
+}
