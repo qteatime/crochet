@@ -40,7 +40,7 @@ export default (ffi: ForeignInterface) => {
     } else {
       return ffi.integer(BigInt(url.port));
     }
-  }))
+  });
 
   ffi.defun("url.query", (url0) => {
     const url = ffi.unbox_typed(URL, url0);
