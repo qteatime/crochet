@@ -6,6 +6,7 @@
     "source/internal.crochet",
     "source/url/url-path-grammar.lingua",
     "source/url/url-path.crochet",
+    "source/url/url-query.crochet",
     "source/url/url.crochet"
   ],
   "dependencies": ["crochet.core", "crochet.text.parsing.lingua"],

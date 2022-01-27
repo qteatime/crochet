@@ -95,7 +95,7 @@ command url-path === (That is url-path) =
 command internal eq: url-path and: url-path = false;
 
 command internal eq: (This is url-path-node) and: (That is url-path-node) =
-  (internal eq: This.segment and: That.segment)
+  (This.segment =:= That.segment)
     and (internal eq: This.previous and: That.previous);
 
 command internal eq: (This is url-path-slash) and: (That is url-path-slash) =
@@ -128,6 +128,9 @@ command url-path-slash is-relative = self.previous is-relative;
 command url-path-root is-relative = false;
 command url-path-relative is-relative = true;
 
+
+command url-path-slash / Segment =
+  self previous / Segment;
 
 command url-path / (Segment is static-text) =
   condition

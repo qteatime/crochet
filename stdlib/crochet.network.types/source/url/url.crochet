@@ -4,12 +4,20 @@
 
 abstract url;
 
-type url-native(box is unknown); // native URL
+type url-native(box is unknown) is url; // native URL
 
 abstract url-error;
 type url-error-no-username(url is url);
 type url-error-no-password(url is url);
 type url-error-no-port(url is url);
+
+
+implement equality for url-error;
+command url-error === url-error = false;
+
+command url-error-no-username === (That is url-error-no-username) = self.url === That.url;
+command url-error-no-password === (That is url-error-no-password) = self.url === That.url;
+command url-error-no-port === (That is url-error-no-port) = self.url === That.url;
 
 
 // -- Constructors
@@ -28,22 +36,24 @@ end
 command url-native username -> result<text> do
   let Result = foreign url.username(self.box);
   condition
-    when Result is nothing => #result error: new url-error-no-username(self);
+    when Result =:= "" => #result error: new url-error-no-username(self);
     otherwise => #result ok: Result;
   end
 test
-  assert (#url from-text: "http://example.com/") username === (#result error: not-found);
+  assert (#url from-text: "http://example.com/") username
+          === (#result error: new url-error-no-username(#url from-text: "http://example.com/"));
   assert (#url from-text: "http://user:pwd@example.com/") username === (#result ok: "user");
 end
 
 command url-native password -> result<text> do
   let Result = foreign url.password(self.box);
   condition
-    when Result is nothing => #result error: new url-error-no-password(self);
+    when Result =:= "" => #result error: new url-error-no-password(self);
     otherwise => #result ok: Result;
   end
 test
-  assert (#url from-text: "http://example.com/") password === (#result error: not-found);
+  assert (#url from-text: "http://example.com/") password
+          === (#result error: new url-error-no-password(#url from-text: "http://example.com/"));
   assert (#url from-text: "http://user:pwd@example.com/") password === (#result ok: "pwd");
 end
 
@@ -55,17 +65,21 @@ test
 end
 
 command url-native port -> result<integer> do
-  let Result = url.port(self.box);
+  let Result = foreign url.port(self.box);
   condition
     when Result is nothing => #result error: new url-error-no-port(self);
     otherwise => #result ok: Result;
   end
+test
+  assert (#url from-text: "http://example.com/") port
+          === (#result error: new url-error-no-port(#url from-text: "http://example.com"));
+  assert (#url from-text: "http://example.com:8000/") port === (#result ok: 8000);
 end
 
 command url-native path -> url-path =
   #url-path from-text: (foreign url.pathname(self.box))
 test
-  assert (#url from-text: "http://example.com") path === (#url-path from-text: "/")
+  assert (#url from-text: "http://example.com") path === (#url-path from-text: "/");
   assert (#url from-text: "http://example.com/") path === (#url-path from-text: "/");
   assert (#url from-text: "http://example.com/a/b/c") path === (#url-path from-text: "/a/b/c");
 end
@@ -79,5 +93,44 @@ test
 end
 
 
+command url-native query =
+  new url-query-native(foreign url.query(self.box))
+test
+  assert (#url from-text: "http://example.com/") query === (#url-query empty);
+  assert (#url from-text: "http://example.com/?") query === (#url-query empty);
+  assert (#url from-text: "http://example.com/?a=1&b=2") query === (#url-query empty | at: "a" put: "1" | at: "b" put: "2");
+  assert (#url from-text: "http://example.com/?a=1&a=2") query === (#url-query empty | at: "a" append: "1" | at: "a" append: "2");
+end
 
 
+// -- Modifying
+command url-native / Segment do
+  let Path = self path / Segment;
+  new url-native(foreign url.set-path(self.box, Path to-text));
+test
+  assert ((#url from-text: "http://example.com/a/b") / "c") === (#url from-text: "http://example.com/a/b/c");
+  assert ((#url from-text: "http://example.com/a/b") / "..") === (#url from-text: "http://example.com/a");
+  assert ((#url from-text: "http://example.com/") / "a" / "b" | to-text) =:= "http://example.com/a/b";
+end
+
+command url-native with-query: (F is (url-query -> url-query)) do
+  let Query = F(self query);
+  let Url =
+    condition
+      when Query is url-query-native => foreign url.set-query(self.box, Query.box);
+    end;
+  new url-native(Url);
+end
+
+command url-native with-hash: (Hash is text) =
+  new url-native(foreign url.set-hash(self.box, Hash));
+
+
+// -- Serialisation
+command url-native to-text =
+  foreign url.to-text(self.box);
+
+
+implement equality for url;
+command url-native === (That is url-native) =
+  self to-text =:= That to-text;

@@ -1,0 +1,77 @@
+% crochet
+
+abstract url-query;
+type url-query-native(box is unknown); // URLSearchParams
+
+
+command #url-query empty =
+  new url-query-native(foreign url.query-empty());
+
+command url-query-native keys =
+  foreign url.query-keys(self.box);
+
+command url-query-native values =
+  foreign url.query-values(self.box);
+
+command url-query-native entries do
+  let Entries = foreign url.query-entries(self.box);
+  Entries map: { X in #association key: X first value: X second };
+end
+
+
+command url-query-native to-text =
+  foreign url.query-text(self.box);
+
+
+implement countable-container for url-query;
+command url-query-native count =
+  foreign url-query-count(self.box);
+
+
+implement mapped-container for url-query;
+command url-query-native at: (Key is text)
+requires
+  contains :: self contains-key: Key
+do
+  foreign url.query-at(self.box, Key);
+end
+
+command url-query-native contains-key: (Keys is text) =
+  foreign url.query-contains(self.box, Key);
+
+command url-query-native all-at: (Key is text)
+requires
+  contains :: self contains-key: Key
+do
+  foreign url.query-all-at(self.box, Key);
+end
+
+
+implement modifiable-mapped-container for url-query;
+command url-query-native at: (Key is text) put: (Value is text) =
+  new url-query-native(foreign url.query-put(self.box, Key, Value));
+
+command url-query-native remove-at: (Key is text) =
+  new url-query-native(foreign url.query-remove(self.box, Key));
+
+command url-query-native at: (Key is text) append: (Value is text) =
+  new url-query-native(foreign url.query-append(self.box, Key, Value));
+
+
+implement foldable-collection for url-query-native;
+command url-query-native fold-from: Initial with: (Combine is ((association<text, text>, B) -> B)) -> B do
+  self entries fold-from: Initial with: Combine;
+end
+
+command url-query-native fold-right-from: Initial with: (Combine is ((association<text, text>, B) -> B)) -> B do
+  self entries fold-right-from: Initial with: Combine;
+end
+
+
+command url-query-native sort =
+  new url-query-native(foreign url.query-sort(self.box));
+
+
+implement equality for url-query;
+command url-query-native === (That is url-query-native) =
+  self to-text =:= That to-text;

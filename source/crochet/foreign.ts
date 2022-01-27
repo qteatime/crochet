@@ -247,8 +247,9 @@ export class ForeignInterface {
   }
 
   unbox_typed<T extends Function>(type: T, x: CrochetValue): T["prototype"] {
-    if (x instanceof type) {
-      return x;
+    const unboxed = Values.unbox(x);
+    if (unboxed instanceof type) {
+      return unboxed;
     } else {
       throw this.panic(
         "invalid-type",
