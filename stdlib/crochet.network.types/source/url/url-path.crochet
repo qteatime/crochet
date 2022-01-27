@@ -1,0 +1,169 @@
+% crochet
+
+abstract url-path;
+type url-path-id(global previous is url-path) is url-path;
+type url-path-back(global previous is url-path) is url-path;
+type url-path-node(global segment is text, global previous is url-path) is url-path;
+type url-path-slash(global previous is url-path) is url-path;
+singleton url-path-root is url-path;
+singleton url-path-relative is url-path;
+
+command #url-path try-from-text: (Path is text) do
+  url-path-grammar parse: Path
+    | map: (_ reify);
+end
+
+command #url-path from-text: (Path is text) do
+  #url-path try-from-text: Path | value-or-panic: "invalid path" data: [path -> Path];
+end
+
+
+command url-path-ast--path reify =
+  new url-path-node(foreign url.decode-component(self.segment), self.previous reify);
+
+command url-path-ast--slash reify =
+  new url-path-slash(self.previous reify);
+
+command url-path-ast--back reify =
+  new url-path-back(self.previous reify);
+
+command url-path-ast--id reify =
+  new url-path-id(self.previous reify);
+
+command url-path-ast--root reify =
+  url-path-root;
+
+command url-path-ast--relative reify =
+  url-path-relative;
+
+
+command url-path-id normalise =
+  self.previous normalise;
+
+command url-path-back normalise
+requires
+  non-root-previous :: not (self.previous is url-path-root)
+do
+  let Previous = self.previous normalise;
+  assert not (Previous is url-path-root);
+  condition
+    when Previous is url-path-relative => self;
+    when Previous is url-path-back => new url-path-back(Previous);
+    otherwise => Previous previous;
+  end
+end
+
+command url-path-node normalise =
+  new url-path-node(self.segment, self.previous normalise);
+
+command url-path-slash normalise =
+  new url-path-slash(self.previous normalise);
+
+command url-path-root normalise = self;
+command url-path-relative normalise = self;
+
+
+command url-path to-text =
+  self
+    | normalise
+    | to-text: internal
+    | flatten-into-plain-text;
+
+command url-path-node to-text: internal do
+  let Segment = foreign url.encode-component(self.segment);
+  "[self.previous to-text: internal]/[Segment]";
+end
+
+command url-path-slash to-text: internal do
+  "[self.previous to-text: internal]/";
+end
+
+command url-path-back to-text: internal =
+  "[self.previous to-text: internal]/..";
+
+command url-path-id to-text: internal =
+  "[self.previous to-text: internal]/.";
+
+command url-path-root to-text: internal =
+  "";
+  
+
+implement equality for url-path;
+command url-path === (That is url-path) =
+  internal eq: self normalise and: That normalise;
+
+command internal eq: url-path and: url-path = false;
+
+command internal eq: (This is url-path-node) and: (That is url-path-node) =
+  (This.segment =:= That.segment)
+    and (internal eq: This.previous and: That.previous);
+
+command internal eq: (This is url-path-slash) and: (That is url-path-slash) =
+  (internal eq: This.previous and: That.previous);
+
+command internal eq: (This is url-path-id) and: (That is url-path-id) =
+  internal eq: This.previous and: That.previous;
+
+command internal eq: (This is url-path-back) and: (That is url-path-back) =
+  internal eq: This.previous and: That.previous;
+
+command internal eq: url-path-root and: url-path-root =
+  true;
+
+command internal eq: url-path-relative and: url-path-relative =
+  true;
+
+
+command url-path-id is-absolute = self.previous is-absolute;
+command url-path-back is-absolute = self.previous is-absolute;
+command url-path-node is-absolute = self.previous is-absolute;
+command url-path-slash is-absolute = self.previous is-absolute;
+command url-path-root is-absolute = true;
+command url-path-relative is-absolute = false;
+
+command url-path-id is-relative = self.previous is-relative;
+command url-path-back is-relative = self.previous is-relative;
+command url-path-node is-relative = self.previous is-relative;
+command url-path-slash is-relative = self.previous is-relative;
+command url-path-root is-relative = false;
+command url-path-relative is-relative = true;
+
+
+command url-path-slash / Segment =
+  self previous / Segment;
+
+command url-path / (Segment is static-text) =
+  condition
+    when Segment =:= ".." do
+      assert not (self is url-path-root);
+      new url-path-back(self);
+    end
+
+    when Segment =:= "." =>
+      self;
+
+    otherwise =>
+      new url-path-node(foreign url.decode-component(Segment), self);
+  end;
+
+command url-path / (Path is url-path)
+requires
+  relative :: Path is-relative
+do
+  internal cat: self and: Path;
+end
+
+command internal cat: (A is url-path) and: (B is url-path-relative) =
+  new url-path-id(A);
+
+command internal cat: (A is url-path) and: (B is url-path-id) =
+  new url-path-id(internal cat: A and: B.previous);
+
+command internal cat: (A is url-path) and: (B is url-path-back) =
+  new url-path-back(internal cat: A and: B.previous);
+
+command internal cat: (A is url-path) and: (B is url-path-node) =
+  new url-path-node(B.segment, internal cat: A and: B.previous);
+
+command internal cat: (A is url-path) and: (B is url-path-slash) =
+  new url-path-slash(internal cat: A and: B.previous);

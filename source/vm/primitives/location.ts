@@ -188,7 +188,12 @@ export function simple_value(x: CrochetValue): string {
       return `${type_name(x.type)}`;
     }
     case Tag.UNKNOWN: {
-      return `<unknown>`;
+      assert_tag(Tag.UNKNOWN, x);
+      const repr =
+        x.payload instanceof CrochetValue
+          ? simple_value(x.payload)
+          : `native ${inspect(x.payload, false, 3)}`;
+      return `<unknown>(${repr})`;
     }
     case Tag.CELL: {
       assert_tag(Tag.CELL, x);

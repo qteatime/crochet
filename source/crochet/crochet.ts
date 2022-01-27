@@ -105,6 +105,32 @@ export class Crochet {
     readonly signal: ISignal
   ) {}
 
+  get trusted_core() {
+    // TODO: restrict TCB (needs safer native modules support)
+    return new Set([
+      "crochet.codec.basic",
+      "crochet.concurrency",
+      "crochet.core",
+      "crochet.debug",
+      "crochet.debug.tracing",
+      "crochet.language.csv",
+      "crochet.language.json",
+      "crochet.mathematics",
+      "crochet.network.types",
+      "crochet.novella",
+      "crochet.random",
+      "crochet.text.parsing.lingua",
+      "crochet.text.regex",
+      "crochet.time",
+      "crochet.ui.agata",
+      "crochet.wrapper.node.file-system",
+      "crochet.wrapper.node.http",
+      "crochet.wrapper.node.io",
+      "crochet.wrapper.node.os",
+      "crochet.wrapper.node.shell",
+    ]);
+  }
+
   async boot(root: string, target: Package.Target) {
     const pkg = await this.get_package(root);
     const graph = await Package.build_package_graph(

@@ -59,31 +59,6 @@ export class CrochetForNode {
     return Path.join(__dirname, rootRelative, "stdlib");
   }
 
-  get trusted_core() {
-    // TODO: restrict TCB (needs safer native modules support)
-    return new Set([
-      "crochet.codec.basic",
-      "crochet.concurrency",
-      "crochet.core",
-      "crochet.debug",
-      "crochet.debug.tracing",
-      "crochet.language.csv",
-      "crochet.language.json",
-      "crochet.mathematics",
-      "crochet.novella",
-      "crochet.random",
-      "crochet.text.parsing.lingua",
-      "crochet.text.regex",
-      "crochet.time",
-      "crochet.ui.agata",
-      "crochet.wrapper.node.file-system",
-      "crochet.wrapper.node.http",
-      "crochet.wrapper.node.io",
-      "crochet.wrapper.node.os",
-      "crochet.wrapper.node.shell",
-    ]);
-  }
-
   get system() {
     if (this._booted_system == null) {
       throw new Error(`Crochet not yet booted`);
@@ -383,7 +358,7 @@ export class CrochetForNode {
   private async register_standard_library() {
     const pkgs = await this.register_directory(this.stdlib_path);
     for (const pkg of pkgs) {
-      if (this.trusted_core.has(pkg.meta.name)) {
+      if (this.crochet.trusted_core.has(pkg.meta.name)) {
         this.crochet.trust(pkg);
       }
     }

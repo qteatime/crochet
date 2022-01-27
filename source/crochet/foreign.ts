@@ -246,6 +246,24 @@ export class ForeignInterface {
     return Values.unbox(x);
   }
 
+  unbox_typed<T extends Function>(type: T, x: CrochetValue): T["prototype"] {
+    const unboxed = Values.unbox(x);
+    if (unboxed instanceof type) {
+      return unboxed;
+    } else {
+      throw this.panic(
+        "invalid-type",
+        `Invalid type to unbox (${type.name ?? "(native type)"})`,
+        this.record(
+          new Map([
+            ["type", this.box(type)],
+            ["value", x],
+          ])
+        )
+      );
+    }
+  }
+
   // == Operations
   intrinsic_equals(x: CrochetValue, y: CrochetValue) {
     return Values.equals(x, y);
