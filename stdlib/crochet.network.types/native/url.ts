@@ -70,7 +70,7 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("url.set-path", (url0, path) => {
     const url1 = ffi.unbox_typed(URL, url0);
-    const url = new URL(url1);
+    const url = new URL(url1.href);
     url.pathname = ffi.text_to_string(path);
     return ffi.box(url);
   });
@@ -78,14 +78,14 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("url.set-query", (url0, query0) => {
     const url1 = ffi.unbox_typed(URL, url0);
     const query = ffi.unbox_typed(URLSearchParams, query0);
-    const url = new URL(url1);
+    const url = new URL(url1.href);
     url.search = query.toString();
     return ffi.box(url);
   });
 
   ffi.defun("url.set-hash", (url0, hash) => {
     const url1 = ffi.unbox_typed(URL, url0);
-    const url = new URL(url1);
+    const url = new URL(url1.href);
     url.hash = ffi.text_to_string(hash);
     return ffi.box(url);
   });
