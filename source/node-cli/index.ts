@@ -8,10 +8,16 @@ import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
 import Server from "./server";
 import * as Packaging from "./package";
-import type { Target } from "../pkg";
+import {
+  missing_capabilities,
+  ResolvedPackage,
+  Target,
+  target_web,
+} from "../pkg";
 import * as ChildProcess from "child_process";
 import { serve_docs } from "./docs";
 import { Ok, try_parse } from "../utils/spec";
+import { StorageConfig } from "../storage";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -317,6 +323,36 @@ async function repl([file0]: string[], options: Options) {
 }
 
 async function run_web([file]: string[], options: Options) {
+  const crochet = new CrochetForNode(
+    options.disclose_debug,
+    [],
+    new Set([]),
+    true,
+    false
+  );
+  const pkg = crochet.read_package_from_file(file);
+  const rpkg = new ResolvedPackage(pkg, target_web());
+  const required = [...pkg.meta.capabilities.requires.values()];
+  const cap_map = new Map(required.map((x) => [x, [rpkg]]));
+  const config = StorageConfig.load();
+  const previous = config.grants(pkg.meta.name)?.capabilities ?? null;
+
+  if (previous == null) {
+    await crochet.request_new_capabilities(config, cap_map, pkg);
+  } else if (required.length !== 0) {
+    const req_set = new Set(required);
+    const missing = missing_capabilities(new Set(previous), req_set);
+    if (missing.size !== 0) {
+      await crochet.request_updated_capabilities(
+        previous,
+        missing,
+        config,
+        cap_map,
+        pkg
+      );
+    }
+  }
+
   await Server(file, options.web.port, options.web.www_root);
 }
 

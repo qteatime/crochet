@@ -65,6 +65,10 @@ export default async (root: string, port: number, www: string) => {
   }
 
   app.listen(port, () => {
-    console.log(`Server started at http://localhost:${port}/`);
+    const caps = [...pkg.meta.capabilities.requires.values()].join(",");
+    const url = new URL("http://localhost");
+    url.port = String(port);
+    url.searchParams.set("capabilities", caps);
+    console.log(`Server started at ${url.toString()}`);
   });
 };
