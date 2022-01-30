@@ -156,22 +156,24 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(style);
   });
 
-  ffi.defun("dom.preload-image", (src, fn) => {
-    const img = new Image();
-    img.onload = () => {
-      ffi.run_asynchronously(function* () {
-        yield ffi.apply(fn, [ffi.boolean(true)]);
-        return ffi.nothing;
-      });
-    };
-    img.onerror = (error) => {
-      ffi.run_asynchronously(function* () {
-        yield ffi.apply(fn, [ffi.boolean(false)]);
-        return ffi.nothing;
-      });
-    };
-    img.src = ffi.text_to_string(src);
-    return ffi.nothing;
+  ffi.defmachine("dom.preload-image", function* (src, fn) {
+    const p: Promise<CrochetValue> = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        ffi.run_asynchronously(function* () {
+          resolve(ffi.boolean(true));
+          return ffi.nothing;
+        });
+      };
+      img.onerror = (error) => {
+        ffi.run_asynchronously(function* () {
+          resolve(ffi.boolean(false));
+          return ffi.nothing;
+        });
+      };
+      img.src = ffi.text_to_string(src);
+    });
+    return yield ffi.await(p);
   });
 
   ffi.defun("dom.alert", (msg) => {
