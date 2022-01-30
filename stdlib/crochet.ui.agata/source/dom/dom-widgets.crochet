@@ -1,8 +1,11 @@
 % crochet
 
 abstract dom-widget is widget;
+protect type dom-widget with arbitrary-css;
+
 type dom-widget-themed(content is widget, class-name is text) is dom-widget;
 type dom-widget-css(content is text) is dom-widget;
+
 
 command #dom-widget themed: (Theme is text) content: (Content has to-widget) =
   new dom-widget-themed(Content as widget, Theme);

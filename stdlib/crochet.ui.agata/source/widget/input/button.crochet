@@ -49,7 +49,7 @@ command #widget card-button: (Items is list) =
 command #widget icon-button: (Icon is widget-icon) =
   new widget-icon-button(
     icon -> Icon,
-    button -> #widget button: "" | style: "clear"
+    button -> #widget button: "" | style: button-style-clear
   );
 
 command #widget icon-button: (Name is static-text) =
@@ -60,7 +60,7 @@ command #widget action-button: (Title has to-widget) =
     icon -> nothing,
     title -> Title,
     description -> "",
-    button -> #widget button: "" | style: "clear",
+    button -> #widget button: "" | style: button-style-clear,
   );
 
 

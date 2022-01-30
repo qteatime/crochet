@@ -11,7 +11,7 @@
   ],
   "dependencies": ["crochet.core", "crochet.concurrency", "crochet.ui.agata"],
   "capabilities": {
-    "requires": [],
+    "requires": ["crochet.ui.agata/ui-control", "crochet.ui.agata/network"],
     "provides": []
   }
 }

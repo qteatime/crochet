@@ -1,6 +1,8 @@
 % crochet
 
 singleton agata-network;
+protect type agata-network with network;
+protect global agata-network with network;
 
 command agata-network image: (Uri is static-text) =
   new network-image(Uri);

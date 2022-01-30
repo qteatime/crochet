@@ -20,7 +20,7 @@
     "crochet.debug"
   ],
   "capabilities": {
-    "requires": [],
+    "requires": ["crochet.ui.agata/ui-control"],
     "provides": []
   }
 }

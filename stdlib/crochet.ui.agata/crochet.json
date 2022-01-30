@@ -9,7 +9,7 @@
     "native/uri.js"
   ],
   "sources": [
-    "source/main.crochet",
+    "source/capabilities.crochet",
 
     "source/core/api.crochet",
     "source/core/reference.crochet",
@@ -91,6 +91,6 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": ["network", "ui-control", "arbitrary-fonts", "arbitrary-css"]
   }
 }

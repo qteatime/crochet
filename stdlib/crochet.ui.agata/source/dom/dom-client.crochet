@@ -4,6 +4,8 @@ open crochet.time;
 open crochet.concurrency;
 
 singleton agata-dom;
+protect type agata-dom with ui-control;
+protect global agata-dom with ui-control;
 
 type dom-routing(
   router is cell<router>,
