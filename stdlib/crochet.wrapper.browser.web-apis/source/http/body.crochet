@@ -1,0 +1,49 @@
+% crochet
+
+open crochet.language.json;
+
+abstract http-body;
+
+singleton http-body-none is http-body;
+type http-body-text(value is text) is http-body;
+type http-body-json(value) is http-body;
+
+trait to-http-body with
+  command X as http-body -> http-body;
+end
+
+implement to-http-body for http-body;
+command http-body as http-body = self;
+
+implement to-http-body for text;
+command text as http-body = #http-body text: self;
+
+implement to-http-body for nothing;
+command nothing as http-body = http-body-none;
+
+
+
+command #http-body none =
+  http-body-none;
+
+
+command #http-body text: (Value is text) =
+  new http-body-text(Value);
+
+command #http-body text: (Value is interpolation) =
+  #http-body text: Value flatten-into-plain-text;
+
+
+command #http-body json: Value =
+  new http-body-json(Value);
+
+
+command internal serialise-http-body: (Body is http-body-none) =
+  nothing;
+
+command internal serialise-http-body: (Body is http-body-text) =
+  self.value;
+
+command internal serialise-http-body: (Body is http-body-json) =
+  #json serialise: Body;
+

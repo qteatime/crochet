@@ -290,6 +290,14 @@ export class ForeignInterface {
     return x.tag === Tag.LIST;
   }
 
+  is_text(x: CrochetValue) {
+    return x.tag === Tag.TEXT;
+  }
+
+  is_nothing(x: CrochetValue) {
+    return x.tag === Tag.NOTHING;
+  }
+
   is_thunk_forced(x: CrochetValue) {
     return Values.is_thunk_forced(x);
   }

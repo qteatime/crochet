@@ -123,6 +123,7 @@ export class Crochet {
       "crochet.text.regex",
       "crochet.time",
       "crochet.ui.agata",
+      "crochet.wrapper.browser.web-apis",
       "crochet.wrapper.node.file-system",
       "crochet.wrapper.node.http",
       "crochet.wrapper.node.io",

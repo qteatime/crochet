@@ -1,0 +1,116 @@
+% crochet
+
+enum http-request-state =
+  http-request-state-in-flight,
+  http-request-state-done,
+  http-request-state-failed,
+  http-request-state-aborted;
+
+type sent-http-request(
+  request is http-request,
+  state is cell<http-request-state>,
+  abort is unknown, // AbortController
+  response is unknown, // Promise<Response>
+);
+
+command http-request send do
+  let Method = internal http-method-name: self.method;
+  let Body = internal http-body: self.method;
+  let Headers = internal http-headers: self.headers body: Body;
+  let Cache = internal http-cache: self.cache;
+  let Mode = internal http-mode: self.mode;
+  let Credentials = internal http-credentials: self.credentials;
+  let Redirect = internal http-redirect: self.redirect;
+  let Referrer = internal http-referrer: self.referrer;
+  let Integrity = internal http-integrity: self.integrity;
+
+  let Result = foreign http.fetch(
+    self.url to-text,
+    Method,
+    internal serialise-http-body: Body,
+    Headers,
+    Cache,
+    Mode,
+    Credentials,
+    Redirect,
+    Referrer,
+    Integrity,
+  );
+
+  new sent-http-request(
+    request -> self,
+    state -> #cell with-value: http-request-state-in-flight,
+    abort -> Result.abort,
+    response -> Result.response,
+  );
+end
+
+
+command internal http-method-name: http-head = "HEAD";
+command internal http-method-name: http-get = "GET";
+command internal http-method-name: http-post = "POST";
+command internal http-method-name: http-delete = "DELETE";
+command internal http-method-name: http-put = "PUT";
+command internal http-method-name: http-patch = "PATCH";
+
+
+command internal http-body: http-head = http-body-none;
+command internal http-body: http-get = http-body-none;
+command internal http-body: (Method is http-method) = Method.body;
+
+
+command internal http-cache: http-cache-default = "default";
+command internal http-cache: http-cache-no-store = "no-store";
+command internal http-cache: http-cache-reload = "reload";
+command internal http-cache: http-cache-no-cache = "no-cache";
+command internal http-cache: http-cache-force-cache = "force-cache";
+command internal http-cache: http-cache-only-if-cached = "only-if-cached";
+
+
+command internal http-mode: http-mode-cors = "cors";
+command internal http-mode: http-mode-no-cors = "no-cors";
+command internal http-mode: http-mode-same-origin = "same-origin";
+command internal http-mode: http-mode-navigate = "navigate";
+
+
+command internal http-credentials: http-credentials-omit = "omit";
+command internal http-credentials: http-credentials-same-origin = "same-origin";
+command internal http-credentials: http-credentials-include = "include";
+
+
+command internal http-redirect: http-redirect-follow = "follow";
+command internal http-redirect: http-redirect-error = "error";
+command internal http-redirect: http-redirect-manual = "manual";
+
+
+command internal http-referrer: http-referrer-no-referrer = "";
+command internal http-referrer: http-referrer-client = "about:client";
+command internal http-referrer: http-referrer-url = self.url to-text;
+
+
+command internal http-integrity: http-integrity-skip = nothing;
+command internal http-integrity: http-integrity-check = self.hash;
+
+
+command sent-http-request state =
+  self.state value;
+
+command sent-http-request abort
+requires
+  in-flight :: self.state =:= http-request-state-in-flight
+do
+  foreign http.abort(self.abort);
+  self.state <- http-request-state-aborted;
+  self;
+end
+
+command sent-http-request response do
+  let Response = foreign http.wait-response(self.response);
+  condition
+    when Response.ok =>
+      #result ok: new http-response(Response.value);
+
+    otherwise =>
+      #result error: (internal lift-http-error-reason: Response.reason request: self.request);
+  end
+end

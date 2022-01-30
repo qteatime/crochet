@@ -1,0 +1,88 @@
+% crochet
+
+abstract http-header-value;
+type http-header-text(value is text) is http-header-value;
+type http-header-secret(value is secret<http-header-value>) is http-header-value;
+
+type http-header(name is text, value is (X has to-http-header-value));
+type http-headers(headers is map<text, http-header>);
+
+trait to-http-header-value with
+  command X as http-header-value -> http-header-value;
+end
+
+implement to-http-header-value for http-header-value;
+command http-header-value as http-header-value = self;
+
+implement to-http-header-value for text;
+command text as http-header-value = new http-header-text(self);
+
+define sensitive-header-seal =
+  lazy (#secret-seal description: "sensitive HTTP header");
+
+define sensitive-headers = [
+  "www-authenticate",
+  "authorization",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "cookie",
+  "set-cookie",
+  "cookie2",
+  "set-cookie2"
+];
+
+command #http-headers empty =
+  new http-headers(#map empty);
+
+command http-headers at: (Key0 is text) put: (Value0 has to-http-header-value)
+requires
+  ascii :: Key0 is-ascii
+do
+  let Key = Key0 ascii to-lower-case to-text;
+  let Value = Value0 as http-header-value;
+  condition
+    when (sensitive-headers contains: Key) and (not (Value is http-header-secret)) =>
+      self at: Key0 put-sensitive: Value;
+
+    otherwise =>
+      new http-headers(self with headers -> self.headers at: Key put: Value);
+  end
+end
+
+command http-headers at: (Key0 is text) put-sensitive: (Value0 has to-http-header-value)
+requires
+  ascii :: Key0 is-ascii
+do
+  let Key = Key0 ascii to-lower-case to-text;
+  let Value =
+    Value0 as http-header-value
+      |> #secret value: _ seal: (force sensitive-header-seal)
+      |> { X in new http-header-secret(X) };
+  new http-headers(self with headers -> self.headers at: Key put: Value);
+end
+
+
+command internal serialise-header-value: (X is http-header-text) =
+  X.value;
+
+command internal serialise-header-value: (X is http-header-secret) =
+  internal serialise-header-value: (X.value unseal: (force sensitive-header-seal));
+
+
+command internal serialise-headers: (X is http-headers) =
+  X.headers entries
+    | map: { Pair in [Pair first, internal serialise-header-value: Pair second] };
+
+
+command internal http-headers: Headers body: (Body is http-body-text) =
+  Headers
+    |> _ at: "content-type" put: "text/plain"
+    |> internal serialise-headers: _;
+
+command internal http-headers: Headers body: (Body is http-body-json) =
+  Headers
+    |> _ at: "content-type" put: "application/json"
+    |> internal serialise-headers: _;
+
+command internal http-headers: Headers body: http-body-none =
+  internal serialise-headers: Headers;
