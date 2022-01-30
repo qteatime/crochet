@@ -1,5 +1,9 @@
 % crochet
 
+/// Represents a secret value
+command #document secret: Value seal: (Seal is secret-seal) =
+  new doc-secret(Value, Seal);
+
 /// Represents nothing
 command #document empty =
   doc-empty;
