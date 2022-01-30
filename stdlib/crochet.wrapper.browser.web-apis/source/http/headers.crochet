@@ -61,28 +61,3 @@ do
   new http-headers(self with headers -> self.headers at: Key put: Value);
 end
 
-
-command internal serialise-header-value: (X is http-header-text) =
-  X.value;
-
-command internal serialise-header-value: (X is http-header-secret) =
-  internal serialise-header-value: (X.value unseal: (force sensitive-header-seal));
-
-
-command internal serialise-headers: (X is http-headers) =
-  X.headers entries
-    | map: { Pair in [Pair first, internal serialise-header-value: Pair second] };
-
-
-command internal http-headers: Headers body: (Body is http-body-text) =
-  Headers
-    |> _ at: "content-type" put: "text/plain"
-    |> internal serialise-headers: _;
-
-command internal http-headers: Headers body: (Body is http-body-json) =
-  Headers
-    |> _ at: "content-type" put: "application/json"
-    |> internal serialise-headers: _;
-
-command internal http-headers: Headers body: http-body-none =
-  internal serialise-headers: Headers;

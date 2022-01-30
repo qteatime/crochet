@@ -1,116 +1,143 @@
 % crochet
 
-enum http-request-state =
-  http-request-state-in-flight,
-  http-request-state-done,
-  http-request-state-failed,
-  http-request-state-aborted;
+open crochet.concurrency;
 
-type sent-http-request(
+abstract http-request-state;
+
+singleton http-request-state-in-flight is http-request-state;
+type http-request-state-waiting(deferred is deferred) is http-request-state;
+type http-request-state-ok(response is http-response) is http-request-state;
+type http-request-state-failed(reason is http-error) is http-request-state;
+singleton http-request-state-aborted is http-request-state;
+
+abstract sent-http-request;
+
+type native-sent-http-request(
   request is http-request,
   state is cell<http-request-state>,
   abort is unknown, // AbortController
   response is unknown, // Promise<Response>
-);
+) is sent-http-request;
 
-command http-request send do
-  let Method = internal http-method-name: self.method;
-  let Body = internal http-body: self.method;
-  let Headers = internal http-headers: self.headers body: Body;
-  let Cache = internal http-cache: self.cache;
-  let Mode = internal http-mode: self.mode;
-  let Credentials = internal http-credentials: self.credentials;
-  let Redirect = internal http-redirect: self.redirect;
-  let Referrer = internal http-referrer: self.referrer;
-  let Integrity = internal http-integrity: self.integrity;
-
-  let Result = foreign http.fetch(
-    self.url to-text,
-    Method,
-    internal serialise-http-body: Body,
-    Headers,
-    Cache,
-    Mode,
-    Credentials,
-    Redirect,
-    Referrer,
-    Integrity,
-  );
-
-  new sent-http-request(
-    request -> self,
-    state -> #cell with-value: http-request-state-in-flight,
-    abort -> Result.abort,
-    response -> Result.response,
-  );
-end
+type pure-sent-http-request(
+  request is http-request,
+  state is cell<http-request-state>
+) is sent-http-request;
 
 
-command internal http-method-name: http-head = "HEAD";
-command internal http-method-name: http-get = "GET";
-command internal http-method-name: http-post = "POST";
-command internal http-method-name: http-delete = "DELETE";
-command internal http-method-name: http-put = "PUT";
-command internal http-method-name: http-patch = "PATCH";
-
-
-command internal http-body: http-head = http-body-none;
-command internal http-body: http-get = http-body-none;
-command internal http-body: (Method is http-method) = Method.body;
-
-
-command internal http-cache: http-cache-default = "default";
-command internal http-cache: http-cache-no-store = "no-store";
-command internal http-cache: http-cache-reload = "reload";
-command internal http-cache: http-cache-no-cache = "no-cache";
-command internal http-cache: http-cache-force-cache = "force-cache";
-command internal http-cache: http-cache-only-if-cached = "only-if-cached";
-
-
-command internal http-mode: http-mode-cors = "cors";
-command internal http-mode: http-mode-no-cors = "no-cors";
-command internal http-mode: http-mode-same-origin = "same-origin";
-command internal http-mode: http-mode-navigate = "navigate";
-
-
-command internal http-credentials: http-credentials-omit = "omit";
-command internal http-credentials: http-credentials-same-origin = "same-origin";
-command internal http-credentials: http-credentials-include = "include";
-
-
-command internal http-redirect: http-redirect-follow = "follow";
-command internal http-redirect: http-redirect-error = "error";
-command internal http-redirect: http-redirect-manual = "manual";
-
-
-command internal http-referrer: http-referrer-no-referrer = "";
-command internal http-referrer: http-referrer-client = "about:client";
-command internal http-referrer: http-referrer-url = self.url to-text;
-
-
-command internal http-integrity: http-integrity-skip = nothing;
-command internal http-integrity: http-integrity-check = self.hash;
-
-
-command sent-http-request state =
+// -- Native
+command native-sent-http-request state =
   self.state value;
 
-command sent-http-request abort
+command native-sent-http-request abort
 requires
-  in-flight :: self.state =:= http-request-state-in-flight
+  in-flight :: (self state is http-request-state-in-flight)
+                or (self state is http-request-state-waiting)
 do
   foreign http.abort(self.abort);
   self.state <- http-request-state-aborted;
   self;
 end
 
-command sent-http-request response do
-  let Response = foreign http.wait-response(self.response);
-  condition
-    when Response.ok =>
-      #result ok: new http-response(Response.value);
+command native-sent-http-request response do
+  internal get-response: self state: self state;
+end
 
-    otherwise =>
-      #result error: (internal lift-http-error-reason: Response.reason request: self.request);
+command internal get-response: (Request is native-sent-http-request) state: http-request-state-in-flight do
+  let Deferred = #deferred make;
+  Request.state <- new http-request-state-waiting(Deferred);
+  let Result = foreign http.wait-response(Request.response);
+  condition
+    when Result.ok do
+      let Response = new native-http-response(Result.value);
+      Request.state <- new http-request-state-ok(Response);
+      Deferred resolve: Response;
+      #result ok: Response;
+    end
+
+    when Result.aborted do
+      let Error = new http-error-aborted(Request.request);
+      Request.state <- http-request-state-aborted;
+      Deferred cancel;
+      #result error: Error;
+    end
+
+    otherwise do
+      let Error = (internal lift-http-error-reason: Result.reason request: Request.request);
+      Request.state <- new http-request-state-failed(Error);
+      Deferred reject: Error;
+      #result error: Error;
+    end
   end
+end
+
+command internal get-response: (Request is native-sent-http-request) state: (S is http-request-state-waiting) do
+  S promise
+    | on-resolved: { Response in #result ok: Response }
+      on-rejected: { Reason in #result error: Reason }
+      on-cancelled: { #result error: new http-error-aborted(Request.request) };
+end
+
+command internal get-response: (Request is native-sent-http-request) state: (S is http-request-state-ok) do
+  #result ok: S.response;
+end
+
+command internal get-response: (Request is native-sent-http-request) state: (S is http-request-state-failed) do
+  #result error: S.reason;
+end
+
+command internal get-response: (Request is native-sent-http-request) state: (S is http-request-state-aborted) do
+  #result error: new http-error-aborted(Request.request);
+end
+
+
+// -- Pure
+command #pure-sent-http-request for: (Request is http-request) =
+  new pure-sent-http-request(
+    request -> Request,
+    state -> #cell with-value: http-request-state-in-flight
+  );
+
+command pure-sent-http-request state =
+  self.state value;
+
+command pure-sent-http-request abort
+requires
+  in-flight :: self state is http-request-state-in-flight
+do
+  self.state <- http-request-state-aborted;
+  self;
+end
+
+command pure-sent-http-request response
+requires
+  not-in-flight :: not (self state is http-request-state-in-flight)
+do
+  condition
+    when self state is http-request-state-ok =>
+      #result ok: (self state).response;
+
+    when self state is http-request-state-failed =>
+      #result error: (self state).reason;
+
+    when self state is http-request-state-aborted =>
+      #result error: new http-error-aborted(self.request);
+  end
+end
+
+command pure-sent-http-request response: (Response is http-response)
+requires
+  in-flight :: self state is http-request-state-in-flight
+do
+  self.state <- new http-request-state-ok(Response);
+  self;
+end
+
+command pure-sent-http-request fail: (Error is http-error)
+requires
+  in-flight :: self state is http-request-state-in-flight,
+  not-abort :: not (Error is http-error-abort)
+do
+  self.state <- new http-request-state-failed(Error);
+  self;
 end

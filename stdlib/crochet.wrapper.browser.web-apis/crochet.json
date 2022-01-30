@@ -5,14 +5,18 @@
   "sources": [
     "source/capabilities.crochet",
     "source/http/body.crochet",
+    "source/http/effects.crochet",
+    "source/http/error.crochet",
     "source/http/headers.crochet",
+    "source/http/native-serialisation.crochet",
+    "source/http/pure-client.crochet",
     "source/http/request.crochet",
-    "source/http/sent-request.crochet",
     "source/http/response.crochet",
-    "source/http/error.crochet"
+    "source/http/sent-request.crochet"
   ],
   "dependencies": [
     "crochet.core",
+    "crochet.time",
     "crochet.network.types",
     "crochet.concurrency",
     "crochet.language.json"

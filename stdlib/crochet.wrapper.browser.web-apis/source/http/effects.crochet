@@ -1,0 +1,91 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.time;
+
+effect http with
+  send(request is http-request); // -> sent-http-request
+end
+
+singleton http;
+protect type http with http;
+protect global http with http;
+protect effect http with http;
+
+
+command http send: (Request is http-request) =
+  perform http.send(Request);
+
+command http with-real-client: (Block is (() -> A)) -> A do
+  handle
+    Block();
+  with
+    on http.send(Request) do
+      let Method = internal http-method-name: Request.method;
+      let Body = internal http-body: Request.method;
+      let Headers = internal http-headers: Request.headers body: Body;
+      let Cache = internal http-cache: Request.cache;
+      let Mode = internal http-mode: Request.mode;
+      let Credentials = internal http-credentials: Request.credentials;
+      let Redirect = internal http-redirect: Request.redirect;
+      let Referrer = internal http-referrer: Request.referrer;
+      let Integrity = internal http-integrity: Request.integrity;
+
+      let Result = foreign http.fetch(
+        Request.url to-text,
+        Method,
+        internal serialise-http-body: Body,
+        Headers,
+        Cache,
+        Mode,
+        Credentials,
+        Redirect,
+        Referrer,
+        Integrity,
+      );
+
+      let Sent =
+        new native-sent-http-request(
+          request -> Request,
+          state -> #cell with-value: http-request-state-in-flight,
+          abort -> Result.abort,
+          response -> Result.response,
+        );
+
+      continue with Sent;
+    end
+  end
+end
+
+command http with-pure-client: (Client is pure-client) do: (Block is (() -> A)) -> A do
+  handle
+    Block();
+  with
+    on http.send(Request) do
+      let Sent = Client send: Request;
+      let Reply = Client at: Request.url;
+      condition
+        when Client has-latency do
+          #deferred promise: {
+            timer sleep: Client latency | wait;
+            internal resolve-pure-request: Sent with: Reply;
+          };
+        end
+
+        otherwise do
+          internal resolve-pure-request: Sent with: Reply;
+        end
+      end
+
+      continue with Sent;
+    end
+  end
+end
+
+command internal resolve-pure-request: (Sent is pure-sent-http-request) with: (Response is ok) do
+  Sent response: Response value;
+end
+
+command internal resolve-pure-request: (Sent is pure-sent-http-request) with: (Error is error) do
+  Sent fail: Error reason;
+end

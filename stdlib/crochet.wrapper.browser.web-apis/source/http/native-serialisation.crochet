@@ -1,0 +1,84 @@
+% crochet
+
+// -- Request options
+command internal http-method-name: http-head = "HEAD";
+command internal http-method-name: http-get = "GET";
+command internal http-method-name: http-post = "POST";
+command internal http-method-name: http-delete = "DELETE";
+command internal http-method-name: http-put = "PUT";
+command internal http-method-name: http-patch = "PATCH";
+
+
+command internal http-cache: http-cache-default = "default";
+command internal http-cache: http-cache-no-store = "no-store";
+command internal http-cache: http-cache-reload = "reload";
+command internal http-cache: http-cache-no-cache = "no-cache";
+command internal http-cache: http-cache-force-cache = "force-cache";
+command internal http-cache: http-cache-only-if-cached = "only-if-cached";
+
+
+command internal http-mode: http-mode-cors = "cors";
+command internal http-mode: http-mode-no-cors = "no-cors";
+command internal http-mode: http-mode-same-origin = "same-origin";
+command internal http-mode: http-mode-navigate = "navigate";
+
+
+command internal http-credentials: http-credentials-omit = "omit";
+command internal http-credentials: http-credentials-same-origin = "same-origin";
+command internal http-credentials: http-credentials-include = "include";
+
+
+command internal http-redirect: http-redirect-follow = "follow";
+command internal http-redirect: http-redirect-error = "error";
+command internal http-redirect: http-redirect-manual = "manual";
+
+
+command internal http-referrer: http-referrer-no-referrer = "";
+command internal http-referrer: http-referrer-client = "about:client";
+command internal http-referrer: http-referrer-url = self.url to-text;
+
+
+command internal http-integrity: http-integrity-skip = nothing;
+command internal http-integrity: http-integrity-check = self.hash;
+
+
+// -- Request body
+command internal http-body: http-head = http-body-none;
+command internal http-body: http-get = http-body-none;
+command internal http-body: (Method is http-method) = Method.body;
+
+command internal serialise-http-body: (Body is http-body-none) =
+  nothing;
+
+command internal serialise-http-body: (Body is http-body-text) =
+  self.value;
+
+command internal serialise-http-body: (Body is http-body-json) =
+  #json serialise: Body;
+
+
+// -- Request headers
+command internal serialise-header-value: (X is http-header-text) =
+  X.value;
+
+command internal serialise-header-value: (X is http-header-secret) =
+  internal serialise-header-value: (X.value unseal: (force sensitive-header-seal));
+
+
+command internal serialise-headers: (X is http-headers) =
+  X.headers entries
+    | map: { Pair in [Pair first, internal serialise-header-value: Pair second] };
+
+
+command internal http-headers: Headers body: (Body is http-body-text) =
+  Headers
+    |> _ at: "content-type" put: "text/plain"
+    |> internal serialise-headers: _;
+
+command internal http-headers: Headers body: (Body is http-body-json) =
+  Headers
+    |> _ at: "content-type" put: "application/json"
+    |> internal serialise-headers: _;
+
+command internal http-headers: Headers body: http-body-none =
+  internal serialise-headers: Headers;

@@ -1,0 +1,36 @@
+% crochet
+
+open crochet.time;
+open crochet.network.types;
+
+type pure-client(
+  global latency is duration,
+  responses is map<text, result<pure-http-response, http-error>>,
+);
+
+command #pure-client empty =
+  new pure-client(
+    latency -> 0 milliseconds,
+    responses -> #map empty,
+  );
+
+command pure-client has-latency =
+  self.latency to-milliseconds > 0;
+
+command pure-client latency: (Latency is duration) =
+  new pure-client(self with latency -> Latency);
+
+command pure-client given: (Url is url) respond: (Response is pure-http-response) =
+  new pure-client(self with responses -> self.responses at: Url to-text put: (#result ok: Response));
+
+command pure-client given: (Url is url) fail-with: (Error is http-error) =
+  new pure-client(self with responses -> self.responses at: Url to-text put: (#result error: Error));
+
+command pure-client at: (Url is url) =
+  self.responses at: Url to-text;
+
+command pure-client send: (Request is http-request) =
+  new pure-sent-http-request(
+    request -> Request,
+    state -> #cell with-value: http-request-state-in-flight,
+  );

@@ -1,24 +1,49 @@
 % crochet
 
-type http-response(
-  box is unknown, // Response
-);
+abstract http-response;
 
-type http-response-body(
-  response is http-response,
-);
+type native-http-response(
+  box is unknown, // Response
+) is http-response;
+
+type pure-http-response(
+  status is integer,
+  body is http-response-body
+) is http-response;
+
+
+abstract http-response-body;
+
+type http-response-body-plain(value is text) is http-response-body;
+type native-http-response-body(response is http-response) is http-response-body;
 
 
 command http-response status =
   foreign http.status(self.box);
 
 command http-response body =
-  new http-response-body(self);
+  new native-http-response-body(self);
 
 
-command http-response-body text =
+command native-http-response-body text =
   foreign http.response-text(self.response.box);
 
 command http-response-body json =
   #json parse: self text;
 
+command http-response-body-plain text =
+  self.value;
+
+
+command #http-response status: (Status is integer) body: (Body is http-response-body) =
+  new pure-http-response(
+    status -> Status,
+    body -> Body,
+  );
+
+command pure-http-response status = self.status;
+command pure-http-response body = self.body;
+
+
+command #http-response-body plain: (Text is text) =
+  new http-response-body-plain(Text);

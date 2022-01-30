@@ -2,6 +2,7 @@
 
 abstract http-error;
 
+type http-error-aborted(request is http-request) is http-error;
 type http-error-arbitrary(reason is text, request is http-request) is http-error;
 
 

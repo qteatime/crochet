@@ -83,6 +83,12 @@ export default (ffi: ForeignInterface) => {
       return ffi.record(
         new Map([
           ["ok", ffi.boolean(false)],
+          [
+            "aborted",
+            ffi.boolean(
+              error instanceof DOMException && error.name === "AbortError"
+            ),
+          ],
           ["reason", ffi.text(String(error))],
         ])
       );

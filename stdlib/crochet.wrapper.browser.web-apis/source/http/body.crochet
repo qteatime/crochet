@@ -37,13 +37,3 @@ command #http-body text: (Value is interpolation) =
 command #http-body json: Value =
   new http-body-json(Value);
 
-
-command internal serialise-http-body: (Body is http-body-none) =
-  nothing;
-
-command internal serialise-http-body: (Body is http-body-text) =
-  self.value;
-
-command internal serialise-http-body: (Body is http-body-json) =
-  #json serialise: Body;
-
