@@ -1,0 +1,24 @@
+% crochet
+
+type http-response(
+  box is unknown, // Response
+);
+
+type http-response-body(
+  response is http-response,
+);
+
+
+command http-response status =
+  foreign http.status(self.box);
+
+command http-response body =
+  new http-response-body(self);
+
+
+command http-response-body text =
+  foreign http.response-text(self.response.box);
+
+command http-response-body json =
+  #json parse: self text;
+

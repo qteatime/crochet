@@ -12,6 +12,8 @@ end
 
 
 singleton agata;
+protect type agata with ui-control;
+protect global agata with ui-control;
 
 command agata show: (Widget has to-widget) do
   perform agata-presentation.show(Widget as widget | commit);

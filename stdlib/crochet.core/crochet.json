@@ -93,6 +93,7 @@
     "source/result/result.crochet",
 
     "source/sealing/conversions.crochet",
+    "source/sealing/secret.crochet",
 
     "source/text/ascii.crochet",
     "source/text/basic.crochet",

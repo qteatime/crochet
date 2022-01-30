@@ -24,6 +24,17 @@ command debug-representation for: (X is interpolation) perspective: default-pers
   #document flow: (X parts map: (self for: _ perspective: default-perspective))
     | typed: #interpolation;
 
+command debug-representation for: (X is secret) perspective: (P is default-perspective) do
+  let Value = self for: X.value perspective: P;
+  let Seal = self for: X.seal perspective: P;
+  #document secret: Value seal: Seal
+    | typed: #secret;
+end
+
+command debug-representation for: (X is secret-seal) perspective: (P is default-perspective) =
+  #document text: X.description
+    | typed: #secret-seal;
+
 command debug-representation for: (X is record) perspective: default-perspective do
   let Rows = (#map from: X) pairs
               | map: { P in #document table-row: [

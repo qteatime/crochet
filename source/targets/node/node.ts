@@ -283,7 +283,7 @@ export class CrochetForNode {
     async report_test(message) {},
   };
 
-  private async request_new_capabilities(
+  async request_new_capabilities(
     config: StorageConfig,
     requirements: Map<Package.Capability, Package.ResolvedPackage[]>,
     root: Package.Package
@@ -309,7 +309,7 @@ export class CrochetForNode {
     }
   }
 
-  private async request_updated_capabilities(
+  async request_updated_capabilities(
     previous: Package.Capability[],
     missing_set: Set<Package.Capability>,
     config: StorageConfig,

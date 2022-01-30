@@ -196,6 +196,13 @@ command debug-serialisation for: (X is doc-timeline) =
     frames -> X.frames map: (self for: _)
   ];
 
+command debug-serialisation for: (X is doc-secret) =
+  [
+    tag -> "secret",
+    value -> self for: X.value,
+    seal -> self for: X.seal,
+  ];
+
 // -- Units
 command debug-serialisation for: (X is doc-point2d) =
   [

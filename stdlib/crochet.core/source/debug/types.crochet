@@ -295,3 +295,6 @@ type doc-box(
 
 /// A document that provides a timeline
 type doc-timeline(frames is list<document>) is document;
+
+/// A document that provides a secret value
+type doc-secret(value is document, seal is document) is document;

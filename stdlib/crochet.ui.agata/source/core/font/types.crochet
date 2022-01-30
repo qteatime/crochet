@@ -1,6 +1,8 @@
 % crochet
 
 singleton agata-font;
+protect type agata-font with arbitrary-fonts;
+protect global agata-font with arbitrary-fonts;
 
 type font(
   family-set is set<text>,

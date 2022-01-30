@@ -10,12 +10,9 @@ abstract network-error;
 type arbitrary-network-error(image is network-image) is network-error;
 
 command network-image preload do
-  let Deferred = #deferred make;
-  foreign dom.preload-image(self.uri, { Result in
-    condition
-      when Result is true => Deferred resolve: nothing;
-      when Result is text => Deferred reject: new arbitrary-network-error(self);
-    end
-  } capture);
-  Deferred promise;
+  let Ok = foreign dom.preload-image(self.uri);
+  condition
+    when Ok => #result ok: self;
+    otherwise => #result error: new arbitrary-network-error(self);
+  end
 end

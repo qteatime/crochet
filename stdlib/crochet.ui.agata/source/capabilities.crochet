@@ -1,0 +1,21 @@
+% crochet
+  
+capability internal;
+
+singleton internal;
+protect global internal with internal;
+protect type internal with internal;
+
+
+/// Allows constructing widgets that make network requests (e.g.: URL-based images).
+capability network;
+
+/// Allows control over rendering and setup. This should only be granted to
+/// top-level applications, usually.
+capability ui-control;
+
+/// Allows control over loading arbitrary fonts. Particularly dangerous.
+capability arbitrary-fonts;
+
+/// Allows arbitrary CSS. Particularly dangerous.
+capability arbitrary-css;

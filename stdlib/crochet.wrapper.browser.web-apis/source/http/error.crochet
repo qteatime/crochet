@@ -1,0 +1,9 @@
+% crochet
+
+abstract http-error;
+
+type http-error-arbitrary(reason is text, request is http-request) is http-error;
+
+
+command internal lift-http-error-reason: Reason request: Request =
+  new http-error-arbitrary(Reason, Request);

@@ -25,7 +25,7 @@ command widget-card style: (Style is card-style) =
   new widget-card(self with style -> Style);
 
 command widget-card style: (Style is static-text) =
-  self style: (#card-style from-text: Name);
+  self style: (#card-style from-text: Style);
 
 command #card-style from-text: (Name is static-text) do
   condition

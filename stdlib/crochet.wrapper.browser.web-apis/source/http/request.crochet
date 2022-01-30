@@ -1,0 +1,119 @@
+% crochet
+
+open crochet.network.types;
+
+type http-request(
+  url is url,
+  method is http-method,
+  headers is http-headers,
+  cache is http-cache,
+  mode is http-mode,
+  credentials is http-credentials,
+  redirect is http-redirect,
+  referrer is http-referrer,
+  integrity is http-integrity
+);
+
+protect type http-request with http;
+
+abstract http-method;
+singleton http-head is http-method;
+singleton http-get is http-method;
+type http-post(body is http-body) is http-method;
+type http-delete(body is http-body) is http-method;
+type http-put(body is http-body) is http-method;
+type http-patch(body is http-body) is http-method;
+
+enum http-mode =
+  http-mode-cors,
+  http-mode-no-cors,
+  http-mode-same-origin,
+  http-mode-navigate;
+
+enum http-credentials =
+  http-credentials-omit,
+  http-credentials-same-origin,
+  http-credentials-include;
+
+enum http-redirect =
+  http-redirect-follow,
+  http-redirect-error,
+  http-redirect-manual;
+
+enum http-cache =
+  http-cache-default,
+  http-cache-no-store,
+  http-cache-reload,
+  http-cache-no-cache,
+  http-cache-force-cache,
+  http-cache-only-if-cached;
+
+abstract http-referrer;
+singleton http-referrer-no-referrer is http-referrer;
+singleton http-referrer-client is http-referrer;
+type http-referrer-url(url is url) is http-referrer;
+
+
+abstract http-integrity;
+singleton http-integrity-skip is http-integrity;
+type http-integrity-check(hash is text) is http-integrity;
+
+
+command #http-request url: (Url is static-text) =
+  #http-request url: (#url from-text: Url);
+
+command #http-request url: (Url is url) =
+  new http-request(
+    url -> Url,
+    method -> http-get,
+    headers -> #http-headers empty,
+    cache -> http-cache-default,
+    mode -> http-mode-cors,
+    credentials -> http-credentials-same-origin,
+    redirect -> http-redirect-follow,
+    referrer -> http-referrer-client,
+    integrity -> http-integrity-skip,
+  );
+
+command http-request method: (M is http-method) =
+  new http-request(self with method -> M);
+
+command http-request get = self method: http-get;
+command http-request head = self method: http-head;
+command http-request post: (Body has to-http-body) = self method: new http-post(Body as http-body);
+command http-request delete: (Body has to-http-body) = self method: new http-delete(Body as http-body);
+command http-request put: (Body has to-http-body) = self method: new http-put(Body as http-body);
+command http-request patch: (Body has to-http-body) = self method: new http-post(Body as http-body);
+
+command http-request mode: (Mode is http-mode) =
+  new http-request(self with mode -> Mode);
+
+command http-request credentials: (Credentials is http-credentials) =
+  new http-request(self with credentials -> Credentials);
+
+command http-request redirect: (Redirect is http-redirect) =
+  new http-request(self with redirect -> Redirect);
+
+command http-request referrer: (Referrer is http-referrer) =
+  new http-request(self with referrer -> Referrer);
+
+command http-request integrity: (Integrity is http-integrity) =
+  new http-request(self with integrity -> Integrity);
+
+command http-request cache-mode: (Mode is http-cache) =
+  new http-request(self with cache -> Mode);
+
+command http-request headers: (Headers is http-headers) =
+  new http-request(self with headers -> Headers);
+
+command http-request headers: (F is (http-headers -> http-headers)) =
+  new http-request(self with headers -> F(self.headers));
+
+command http-request headers: (Headers0 is record) do
+  let Headers =
+    #map from: Headers0
+      |> _ pairs
+      |> _ fold-from: #http-headers empty with: { H, P in H at: P first put: P second };
+  new http-request(self with headers -> Headers);
+end
+
