@@ -3,7 +3,7 @@
   "target": "browser",
   "native_sources": ["native/http.js"],
   "sources": [
-    "source/internal.crochet",
+    "source/capabilities.crochet",
     "source/http/body.crochet",
     "source/http/headers.crochet",
     "source/http/request.crochet",
@@ -19,6 +19,6 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": ["http"]
   }
 }

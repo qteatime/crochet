@@ -14,6 +14,8 @@ type http-request(
   integrity is http-integrity
 );
 
+protect type http-request with http;
+
 abstract http-method;
 singleton http-head is http-method;
 singleton http-get is http-method;
