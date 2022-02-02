@@ -7,7 +7,7 @@ enum card-style =
   card-style-fluid;
 
 abstract card-child;
-type card-child-image(image is widget-image) is card-child;
+type card-child-image(image is widget) is card-child;
 type card-child-header(content is widget) is card-child;
 type card-child-body(content is widget) is card-child;
 type card-child-meta(content is widget) is card-child;
@@ -40,6 +40,9 @@ command #card-child image: (X is widget-image) =
 
 command #card-child image: (X is image) =
   self image: (#widget image: X);
+
+command #card-child image: (X is widget-icon) =
+  new card-child-image(X);
 
 command #card-child header: (X has to-widget) =
   new card-child-header(X as widget);

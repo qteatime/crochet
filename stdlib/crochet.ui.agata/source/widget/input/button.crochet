@@ -39,7 +39,7 @@ command #widget button: (Content has to-widget) =
     style -> button-style-default,
   );
 
-command #widget card-button: (Content is widget-card) =
+command #widget card-button: (Content is widget) =
   #widget button: Content
     | style: button-style-card;
 

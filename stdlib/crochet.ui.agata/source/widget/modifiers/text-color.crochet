@@ -1,0 +1,6 @@
+% crochet
+
+type widget-text-color(content is widget, color is color) is widget;
+
+command widget with-text-color: (Color has to-agata-color) =
+  new widget-text-color(self, Color as color);

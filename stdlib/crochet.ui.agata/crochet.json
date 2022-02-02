@@ -60,6 +60,7 @@
     "source/widget/modifiers/margin.crochet",
     "source/widget/modifiers/background.crochet",
     "source/widget/modifiers/size.crochet",
+    "source/widget/modifiers/text-color.crochet",
     "source/widget/basic/fragment.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",
@@ -77,6 +78,7 @@
     "source/widget/layout/fixed.crochet",
     "source/widget/layout/section.crochet",
     "source/widget/layout/navigation.crochet",
+    "source/widget/layout/appbar.crochet",
     "source/widget/input/text.crochet",
     "source/widget/input/button.crochet",
     "source/widget/input/checkbox.crochet"

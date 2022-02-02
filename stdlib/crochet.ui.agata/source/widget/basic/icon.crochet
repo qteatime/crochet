@@ -2,7 +2,12 @@
 
 open crochet.text.regex;
 
-type widget-icon(name is text, size is icon-size, style is icon-style) is widget;
+type widget-icon(
+  name is text,
+  size is icon-size,
+  style is icon-style,
+  color is color,
+) is widget;
 
 enum icon-style =
   icon-style-solid,
@@ -17,6 +22,7 @@ do
     name -> Name,
     size -> icon-size-small,
     style -> icon-style-solid,
+    color -> color-unset,
   );
 end
 
@@ -43,3 +49,6 @@ command widget-icon style: (Style is icon-style) =
 
 command widget-icon style: (Style is static-text) =
   self style: (#icon-style from-text: Style);
+
+command widget-icon color: (Color has to-agata-color) =
+  new widget-icon(self with color -> Color as color);
