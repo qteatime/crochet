@@ -20,7 +20,8 @@ command dom-renderer render: (W is widget-icon) do
   let Size = self to-css-class: W.size;
   let Style = self to-css-class: W.style;
   let Class = "agata-icon [Style] fa-[W.name] [Size]" flatten-into-plain-text;
-  dom make: "i" class: Class;
+  dom make: "i" class: Class
+    | style: [color -> self to-css-color: W.color];
 end
 
 

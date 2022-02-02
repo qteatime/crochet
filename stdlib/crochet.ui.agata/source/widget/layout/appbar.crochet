@@ -1,0 +1,6 @@
+% crochet
+
+type widget-appbar(content is widget) is widget;
+
+command #widget appbar: (Content has to-widget) =
+  new widget-appbar(Content as widget);

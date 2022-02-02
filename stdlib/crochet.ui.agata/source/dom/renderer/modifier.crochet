@@ -103,3 +103,11 @@ command dom-renderer render: (W is widget-size) do
         height -> self to-unit-text: W.height,
       ];
 end
+
+
+command dom-renderer render: (W is widget-text-color) do
+  self render: W.content
+    | style: [
+        color -> self to-css-color: W.color
+      ];
+end

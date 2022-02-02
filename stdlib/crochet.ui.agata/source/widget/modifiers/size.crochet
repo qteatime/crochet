@@ -2,20 +2,30 @@
 
 type widget-size(content is widget, width is measure, height is measure) is widget;
 
-command widget with-width: (W has to-agata-measure) height: (H has to-agata-measure) =
-  new widget-size(self, W, H);
-
-command widget with-width: (W has to-agata-measure) =
-  new widget-size(self, W, measure-unset);
-
-command widget with-height: (H has to-agata-measure) =
-  new widget-size(self, measure-unset, H);
+command widget with-size: (F is (widget-size -> widget-size)) =
+  F(new widget-size(self, measure-unset, measure-unset));
 
 command widget fill-container =
-  new widget-size(self, #measure percent: 100.0, #measure percent: 100.0);
+  self with-size: { S in S fill-container };
 
 command widget fill-container-horizontally =
-  new widget-size(self, #measure percent: 100.0, measure-unset);
+  self with-size: { S in S fill-container-horizontally };
 
 command widget fill-container-vertically =
-  new widget-size(self, measure-unset, #measure percent: 100.0);
+  self with-size: { S in S fill-container-vertically };
+
+
+command widget-size width: (W has to-agata-measure) =
+  new widget-size(self with width -> W as measure);
+
+command widget-size height: (H has to-agata-measure) =
+  new widget-size(self with height -> H as measure);
+
+command widget-size fill-container =
+  new widget-size(self with width -> #measure percent: 100.0, height -> #measure percent: 100.0);
+
+command widget-size fill-container-horizontally =
+  new widget-size(self with width -> #measure percent: 100.0);
+
+command widget-size fill-container-vertically =
+  new widget-size(self with height -> #measure percent: 100.0);
