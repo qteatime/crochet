@@ -630,6 +630,31 @@ export default (ffi: ForeignInterface) => {
             ]),
           ]);
 
+        case "secret": {
+          return render(
+            {
+              tag: "group",
+              compact: {
+                tag: "flow",
+                items: [
+                  {
+                    tag: "plain-text",
+                    value: "(sensitive data: ",
+                  },
+                  data.seal,
+                  {
+                    tag: "plain-text",
+                    value: ")",
+                  },
+                ],
+              },
+              expanded: data,
+            },
+            true,
+            context
+          );
+        }
+
         case "group": {
           let state = compact;
           const button = h("div", { class: "value-lens-group-button" }, [
