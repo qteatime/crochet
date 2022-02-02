@@ -115,6 +115,8 @@ end
 /// panic message as the reason.
 command ok value-or-panic: Reason data: Data =
   self value;
+command error value-or-panic: Reason data: (Data is thunk) =
+  self value-or-panic: Reason data: (force Data);
 command error value-or-panic: Reason data: Data =
   panic message: Reason data: [reason -> self, user-data -> Data];
 
