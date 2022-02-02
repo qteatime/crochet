@@ -1,8 +1,6 @@
 % crochet
 
 trait agata-page with
-  requires trait to-widget;
-
   command Page uri-pattern -> uri-pattern;
   command Page instantiate-page: (Bindings is map<text, text>) -> (W has to-widget);
 end
