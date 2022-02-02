@@ -96,6 +96,11 @@ input {
   height: auto;
 }
 
+.agata-card-image .agata-icon {
+  display: block;
+  margin: 0.5em auto;
+}
+
 .agata-card-header {
   padding: 1rem 1rem 0.2rem 1rem;
   font-size: 1.4rem;
@@ -218,7 +223,7 @@ input {
 }
 
 .agata-button.agata-button-style-card:hover .agata-card {
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 2px 4px var(--primary-fg-accent);
 }
 
 .agata-button:disabled {
@@ -401,4 +406,12 @@ input {
 
 .agata-detached {
   display: none !important;
+}
+
+.agata-appbar {
+  box-shadow: 0px 1px 1px rgb(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--blue-grey-10);
+  padding: 1rem 3rem;
+  position: relative;
+  z-index: 1;
 }
