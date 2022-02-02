@@ -4,7 +4,9 @@
 command panic message: (Message is text) tag: (Tag is text) data: Data =
   foreign etc.panic(Tag, Message, Data);
 
-/// Stops the program with a panic message.
+command panic message: (Message is text) tag: (Tag is text) data: (Data is thunk) =
+  self message: Message tag: Tag data: (force Data);
+
 command panic message: (Message is interpolation) tag: Tag data: Data =
   panic message: Message flatten-into-plain-text tag: Tag data: Data;
 
