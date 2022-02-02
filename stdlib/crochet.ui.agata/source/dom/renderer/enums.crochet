@@ -120,3 +120,10 @@ command dom-renderer to-css-property: text-decoration-line-line-through = "line-
 // Card styles
 command dom-renderer to-css-class: card-style-narrow = "agata-card-style-narrow";
 command dom-renderer to-css-class: card-style-fluid = "agata-card-style-fluid";
+
+
+// Overflow styles
+command dom-renderer to-css-property: overflow-style-hidden = "hidden";
+command dom-renderer to-css-property: overflow-style-visible = "visible";
+command dom-renderer to-css-property: overflow-style-auto = "auto";
+command dom-renderer to-css-property: overflow-style-scroll = "scroll";

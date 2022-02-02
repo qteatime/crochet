@@ -1,0 +1,25 @@
+% crochet
+
+type widget-box-overflow(content is widget, overflow is overflow-style) is widget;
+
+enum overflow-style =
+  overflow-style-hidden,
+  overflow-style-visible,
+  overflow-style-auto,
+  overflow-style-scroll;
+
+command widget with-box-overflow: (Overflow is overflow-style) =
+  new widget-box-overflow(self, Overflow);
+
+command widget with-box-overflow: (Overflow is static-text) =
+  self with-box-overflow: (#overflow-style from-text: Overflow);
+
+
+command #overflow-style from-text: (Name is static-text) do
+  condition
+    when Name =:= "hidden" => overflow-style-hidden;
+    when Name =:= "visible" => overflow-style-visible;
+    when Name =:= "auto" => overflow-style-auto;
+    when Name =:= "scroll" => overflow-style-scroll;
+  end
+end
