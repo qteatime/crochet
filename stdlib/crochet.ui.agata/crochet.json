@@ -61,6 +61,7 @@
     "source/widget/modifiers/background.crochet",
     "source/widget/modifiers/size.crochet",
     "source/widget/modifiers/text-color.crochet",
+    "source/widget/modifiers/box-overflow.crochet",
     "source/widget/basic/fragment.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",

@@ -111,3 +111,10 @@ command dom-renderer render: (W is widget-text-color) do
         color -> self to-css-color: W.color
       ];
 end
+
+
+command dom-renderer render: (W is widget-box-overflow) =
+  self render: W.content
+    | style: [
+        overflow -> self to-css-property: W.overflow
+      ];
