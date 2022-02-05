@@ -2,6 +2,7 @@ import { inspect } from "util";
 import { CrochetActivation, NativeActivation } from "..";
 import * as IR from "../../ir";
 import { unreachable } from "../../utils/utils";
+import * as im from "immutable";
 import {
   Activation,
   ActivationTag,
@@ -192,6 +193,8 @@ export function simple_value(x: CrochetValue): string {
       const repr =
         x.payload instanceof CrochetValue
           ? simple_value(x.payload)
+          : im.isImmutable(x.payload)
+          ? immutable_repr(x.payload)
           : `native ${inspect(x.payload, false, 3)}`;
       return `<unknown>(${repr})`;
     }
@@ -213,6 +216,36 @@ export function simple_value(x: CrochetValue): string {
     }
     default:
       throw unreachable(x.tag, `Value ${x}`);
+  }
+}
+
+function immutable_repr(x: unknown) {
+  if (im.isList(x)) {
+    return `<native list>[\n${block(
+      2,
+      x
+        .toArray()
+        .map((x) => simple_value(x as any))
+        .join(", ")
+    )}\n]`;
+  } else if (im.isMap(x)) {
+    if (x.size === 0) {
+      return "<native map>[->]";
+    }
+    const pairs = [...x.entries()].map(
+      ([k, v]) => `${simple_value(k as any)} -> ${simple_value(v as any)}`
+    );
+    return `<native map>[\n${block(2, pairs.join(",\n"))}\n]`;
+  } else if (im.isSet(x)) {
+    return `<native set>[\n${block(
+      2,
+      x
+        .toArray()
+        .map((x) => simple_value(x as any))
+        .join(", ")
+    )}\n]`;
+  } else {
+    return `<native collection>`;
   }
 }
 
