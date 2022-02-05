@@ -1,0 +1,77 @@
+% crochet
+
+type json-serialisation(
+  type-to-tag is map<static-type, text>,
+  tag-to-type is map<text, static-type>,
+);
+
+command #json-serialisation empty =
+  new json-serialisation(#map empty, #map empty);
+
+command json-serialisation tag: (Tag is text) type: (Type is static-type)
+requires
+  unique-map :: (not (self.type-to-tag contains-key: Type))
+                  and (not (self.tag-to-type contains-key: Tag))
+do
+  new json-serialisation(
+    self.type-to-tag at: Type put: Tag,
+    self.tag-to-type at: Tag put: Type,
+  );
+end
+
+command #json-serialisation defaults =
+  #json-serialisation empty
+    | tag: "integer" type: #integer
+    | tag: "map" type: #map
+    | tag: "set" type: #set;
+
+
+command json-serialisation lower: (Value is json-type) =
+  Value;
+
+command json-serialisation lower: nothing =
+  json-null;
+
+command json-serialisation lower: (Value is boolean) =
+  #json-type boolean: Value;
+
+command json-serialisation lower: (Value is float-64bit) =
+  #json-type number: Value;
+
+command json-serialisation lower: (Value is unsafe-arbitrary-text) =
+  #json-type text: Value;
+
+command json-serialisation lower: (Value is list) =
+  #json-type list: (Value map: (self lower: _));
+
+command json-serialisation lower: (Value is record) =
+  #map from: Value
+    |> _ map: { X in self lower: X value }
+    |> #json-type record: _;
+
+
+command json-serialisation reify: json-null =
+  nothing;
+
+command json-serialisation reify: (Value is json-boolean) =
+  Value value;
+
+command json-serialisation reify: (Value is json-number) =
+  Value value;
+
+command json-serialisation reify: (Value is json-text) =
+  Value value;
+
+command json-serialisation reify: (Value is json-list) =
+  Value values map: (self reify: _);
+
+command json-serialisation reify: (Entries is json-record) =
+  Value value map: { X in self reify: X value };
+
+command json-serialisation reify: (Value is json-typed) =
+  self reify: Value value tag: Value.tag;
+
+command json-serialisation reify: (Value is json-typed-plain) do
+  let Type = self.tag-to-type at: Value.tag;
+  self reify: Value value tag: Type;
+end

@@ -1,0 +1,45 @@
+% crochet
+
+abstract json-type;
+type json-typed-plain(tag is text, global value is json-type) is json-type;
+type json-typed(tag is static-type, global value is json-type) is json-type;
+type json-boolean(global value is boolean) is json-type;
+type json-number(global value is float-64bit) is json-type;
+type json-text(global value is unsafe-arbitrary-text) is json-type;
+type json-list(global values is list<json-type>) is json-type;
+type json-record(global value is map<text, json-type>) is json-type;
+singleton json-null is json-type;
+
+trait to-json with
+  command json-serialisation lower: (Value is A) -> json-type;
+end
+
+trait from-json with
+  command json-serialisation reify: (Value is json-type) tag: (Type is static-type) -> A;
+end
+
+
+// -- Constructors
+command #json-type tag: (Tag is static-type) value: (Value is json-type) =
+  new json-typed(Tag, Value);
+
+command #json-type null =
+  json-null;
+
+command #json-type boolean: (X is boolean) =
+  new json-boolean(X);
+
+command #json-type number: (X is float-64bit) =
+  new json-number(X);
+
+command #json-type text: (X is unsafe-arbitrary-text) =
+  new json-text(X);
+
+command #json-type list: (Xs is list<json-type>) =
+  new json-list(Xs);
+
+command #json-type record: (X is record) =
+  new json-record(#map from: X);
+
+command #json-type record: (X is map<text, json-type>) =
+  new json-record(X);

@@ -2,98 +2,29 @@
 
 /// The default entry-point for JSON parsing and writing. Guarantees safety
 /// and equivalence of semantics between Crochet's values and JSON.
-abstract json;
+type json(serialisation is json-serialisation);
 
 
-// -- Making sure we choose the right semantics for serialising JSON
-local enum serialisation-mode =
-  sm-untrusted,
-  sm-trusted,
-  sm-unsupported;
+// -- Constructors
+command #json bare =
+  new json(#json-serialisation empty);
 
-/// Returns the mode of serialisation for a given value (recursively)
-command #serialisation-mode for: float-64bit =
-  sm-trusted;
+command #json defaults =
+  new json(#json-serialisation defaults);
 
-command #serialisation-mode for: boolean =
-  sm-trusted;
-
-command #serialisation-mode for: text =
-  sm-trusted;
-
-command #serialisation-mode for: untrusted-text =
-  sm-untrusted;
-
-command #serialisation-mode for: nothing =
-  sm-trusted;
-
-command #serialisation-mode for: (Xs is list) =
-  (Xs map: (#serialisation-mode for: _)) fold-from: sm-trusted with: (_ or _);
-
-command #serialisation-mode for: (X is record) do
-  #map from: X
-    | values
-    | map: (#serialisation-mode for: _)
-    | fold-from: sm-trusted with: (_ or _);
-end
-
-command #serialisation-mode for: any =
-  sm-unsupported;
-
-test "Computing serialisation mode" do
-  assert (#serialisation-mode for: 1.0) === sm-trusted;
-  assert (#serialisation-mode for: "a") === sm-trusted;
-  assert (#serialisation-mode for: nothing) === sm-trusted;
-  assert (#serialisation-mode for: true) === sm-trusted;
-
-  let Untrusted = foreign json.untrusted("a");
-  assert (#serialisation-mode for: Untrusted) === sm-untrusted;
-
-  assert (#serialisation-mode for: [1.0, "a", nothing, true]) === sm-trusted;
-  assert (#serialisation-mode for: [1.0, "a", [Untrusted], true]) === sm-untrusted;
-
-  assert (#serialisation-mode for: [a -> 1.0, b -> "a"]) === sm-trusted;
-  assert (#serialisation-mode for: [a -> 1.0, b -> [Untrusted]]) === sm-untrusted;
-
-  assert (#serialisation-mode for: 1) === sm-unsupported;
-  assert (#serialisation-mode for: [1.0, "a", #serialisation-mode]) === sm-unsupported;
-end
-
-/// Combines serialisation modes
-command sm-trusted or sm-trusted = sm-trusted;
-
-command sm-unsupported or serialisation-mode = sm-unsupported;
-command serialisation-mode or sm-unsupported = sm-unsupported;
-
-command sm-untrusted or sm-untrusted = sm-untrusted;
-command sm-untrusted or sm-trusted = sm-untrusted;
-command sm-trusted or sm-untrusted = sm-untrusted;
-
-test "Serialisation modes" do
-  assert (sm-trusted or sm-trusted) === sm-trusted;
-  
-  for Mode in [sm-untrusted, sm-trusted] do
-    assert (sm-untrusted or Mode) === sm-untrusted;
-    assert (Mode or sm-untrusted) === sm-untrusted;
-  end
-
-  for Mode in [sm-untrusted, sm-trusted, sm-unsupported] do
-    assert (sm-unsupported or Mode) === sm-unsupported;
-    assert (Mode or sm-unsupported) === sm-unsupported;
-  end
-end
 
 // -- JSON operations
 
+
 /// Parses a piece of JSON text and returns the equivalent Crochet values
 /// for it.
-command #json parse: (Value is text) do
+command json parse: (Value is text) do
   foreign json.parse(Value, true)
 test
-  assert (#json parse: "1234") === 1234.0;
-  assert (#json parse: "\"abc\"") === "abc";
-  assert (#json parse: "\[123, null, \[true, false\]\]") === [123.0, nothing, [true, false]];
-  assert (#json parse: "{\"a\": \[1, 2\], \"b\": {\"c\": 3}}") === [
+  assert (#json bare parse: "1234") === 1234.0;
+  assert (#json bare parse: "\"abc\"") === "abc";
+  assert (#json bare parse: "\[123, null, \[true, false\]\]") === [123.0, nothing, [true, false]];
+  assert (#json bare parse: "{\"a\": \[1, 2\], \"b\": {\"c\": 3}}") === [
     a -> [1.0, 2.0],
     b -> [c -> 3.0]
   ];
@@ -104,8 +35,8 @@ end
 command #json parse: (Value is untrusted-text) do
   foreign json.parse(Value, false);
 test
-  assert (#json parse: (foreign json.untrusted("\"abc\""))) is untrusted-text;
-  let Result = #json parse: (foreign json.untrusted("\[\"abc\"\]"));
+  assert (#json bare parse: (foreign json.untrusted("\"abc\""))) is untrusted-text;
+  let Result = #json bare parse: (foreign json.untrusted("\[\"abc\"\]"));
   assert Result first is untrusted-text;
 end
 
@@ -115,19 +46,16 @@ end
 /// Does no formatting—which is reasonable for computers, but not if you want
 /// the output to be used by humans. See [command:_ pretty-print: _ indentation: _]
 /// for the formatting alternative.
-command #json serialise: Value -> unsafe-arbitrary-text do
-  let Mode = #serialisation-mode for: Value;
-  condition
-    when Mode =:= sm-trusted => foreign json.serialise(Value, true);
-    when Mode =:= sm-untrusted => foreign json.serialise(Value, false);
-  end
+command json serialise: Value -> unsafe-arbitrary-text do
+  let Json = internal repo: self.serialisation lower: Value;
+  foreign json.serialise(Json.value, Json.trusted);
 test
-  assert (#json serialise: 1234.0) === "1234";
-  assert (#json serialise: "abc") === "\"abc\"";
-  assert (#json serialise: [123.0, nothing, [true, false]]) === "\[123,null,\[true,false\]\]";
-  assert (#json serialise: [a -> [1.0, 2.0], b -> [c -> 3.0]]) === "{\"a\":\[1,2\],\"b\":{\"c\":3}}";
+  assert (#json bare serialise: 1234.0) === "1234";
+  assert (#json bare serialise: "abc") === "\"abc\"";
+  assert (#json bare serialise: [123.0, nothing, [true, false]]) === "\[123,null,\[true,false\]\]";
+  assert (#json bare serialise: [a -> [1.0, 2.0], b -> [c -> 3.0]]) === "{\"a\":\[1,2\],\"b\":{\"c\":3}}";
   let Untrusted = foreign json.untrusted("abc");
-  assert (#json serialise: [a -> [1.0, Untrusted]]) is untrusted-text;
+  assert (#json bare serialise: [a -> [1.0, Untrusted]]) is untrusted-text;
 end
 
 /// Converts a simple Crochet value to a JSON piece of text, and formats the
@@ -139,13 +67,10 @@ end
 command #json pretty-print: Value indentation: (Indent is integer) -> unsafe-arbitrary-text
 requires positive-indentation :: Indent >= 0
 do
-  let Mode = #serialisation-mode for: Value;
-  condition
-    when Mode =:= sm-trusted => foreign json.pretty-print(Value, Indent, true);
-    when Mode =:= sm-untrusted => foreign json.pretty-print(Value, Indent, false);
-  end
+  let Json = internal repo: self.serialisation lower: Value;
+  foreign json.pretty-print(Json.value, Indent, Json.trusted);
 test
-  assert (#json pretty-print: [1.0, 2.0, 3.0] indentation: 2) === "\[\n  1,\n  2,\n  3\n\]";
+  assert (#json bare pretty-print: [1.0, 2.0, 3.0] indentation: 2) === "\[\n  1,\n  2,\n  3\n\]";
   let Untrusted = foreign json.untrusted("abc");
-  assert (#json pretty-print: [1.0, Untrusted] indentation: 2) is untrusted-text;
+  assert (#json bare pretty-print: [1.0, Untrusted] indentation: 2) is untrusted-text;
 end

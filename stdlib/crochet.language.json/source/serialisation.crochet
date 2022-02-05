@@ -1,0 +1,55 @@
+% crochet
+
+effect json-lowering with
+  mark-untrusted();
+end
+
+command internal repo: (R is json-serialisation) lower: Value0 do
+  let Trusted = #cell with-value: true;
+  let Value = R lower: Value0;
+  handle
+    let Json = internal repo: R do-lower: Value;
+    [value -> Json, trusted -> Trusted value];
+  with
+    on json-lowering.mark-untrusted() do
+      Trusted <- false;
+      continue with nothing;
+    end
+  end
+end
+
+command internal repo: (R is json-serialisation) do-lower: (X is json-typed-plain) =
+  foreign json.typed(X.tag, self repo: R do-lower: X.value);
+
+command internal repo: (R is json-serialisation) do-lower: (X is json-typed) do
+  let Tag = R.type-to-tag at: X.tag;
+  foreign json.typed(Tag, self repo: R do-lower: X.value);
+end
+
+command internal repo: json-serialisation do-lower: json-null =
+  foreign json.null();
+
+command internal repo: json-serialisation do-lower: (X is json-boolean) =
+  foreign json.boolean(X value);
+
+command internal repo: json-serialisation do-lower: (X is json-number) =
+  foreign json.number(X value);
+
+command internal repo: json-serialisation do-lower: (X is json-text) do
+  condition
+    when X value is untrusted-text => perform json-lowering.mark-untrusted();
+    otherwise => nothing;
+  end
+
+  foreign json.text(X value);
+end
+
+command internal repo: (R is json-serialisation) do-lower: (X is json-list) =
+  foreign json.list(X values map: (self repo: R do-lower: _));
+
+command internal repo: (R is json-serialisation) do-lower: (X is json-record) =
+  foreign json.record(
+    X value entries map: { Entry in
+      [Entry key, self repo: R do-lower: Entry value];
+    }
+  );

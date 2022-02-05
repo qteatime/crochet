@@ -69,6 +69,10 @@ test
   assert (#integer try-parse: "nope") is error;
 end
 
+command #integer parse: (X is text) =
+  #integer try-parse: X
+    | value-or-panic: "invalid integer";
+
 /// Attempts to parse a piece of text as a floating point number. The
 /// grammar is similar to the JavaScript's floating point grammar.
 command #float-64bit try-parse: (X is text) -> result do
@@ -85,6 +89,10 @@ test
   assert (#float-64bit try-parse: "nope") is error;
 end
   
+command #float-64bit parse: (X is text) =
+  #float-64bit try-parse: X
+    | value-or-panic: "invalid float";
+
 /// Converts an integer to a piece of trusted text.
 command integer to-text = foreign integer.to-text(self);
 

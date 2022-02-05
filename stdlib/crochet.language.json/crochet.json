@@ -4,7 +4,14 @@
   "stability": "experimental",
   "native_sources": ["native/json.js"],
   "dependencies": ["crochet.core"],
-  "sources": ["source/json.crochet"],
+  "sources": [
+    "source/capabilities.crochet",
+    "source/json.crochet",
+    "source/types.crochet",
+    "source/custom-serialisation.crochet",
+    "source/trait-instances.crochet",
+    "source/serialisation.crochet"
+  ],
   "capabilities": {
     "requires": [],
     "provides": []
