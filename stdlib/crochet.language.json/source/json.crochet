@@ -12,6 +12,9 @@ command #json bare =
 command #json defaults =
   new json(#json-serialisation defaults);
 
+command #json with-serialisation: (Serialisation is json-serialisation) =
+  new json(Serialisation);
+
 
 // -- JSON operations
 
