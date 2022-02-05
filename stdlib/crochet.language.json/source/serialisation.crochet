@@ -53,3 +53,41 @@ command internal repo: (R is json-serialisation) do-lower: (X is json-record) =
       [Entry key, self repo: R do-lower: Entry value];
     }
   );
+
+
+command internal repo: (R is json-serialisation) trusted: (Trusted is boolean) reify: (X is unknown) do
+  let Type = foreign json.get-type(X);
+  condition
+    when Type =:= "null" =>
+      nothing;
+
+    when Type =:= "number" =>
+      foreign json.get-number(X);
+
+    when Type =:= "boolean" =>
+      foreign json.get-boolean(X);
+    
+    when (Type =:= "text") and Trusted =>
+      foreign json.get-text(X);
+    
+    when (Type =:= "text") and (not Trusted) =>
+      foreign json.untrusted(foreign json.get-text(X));
+
+    when Type =:= "list" =>
+      (foreign json.get-list(X)) map: (self repo: R trusted: Trusted reify: _);
+
+    when Type =:= "record" =>
+      (foreign json.get-record-entries(X))
+        |> _ map: { X in
+             #association key: X first value: (self repo: R trusted: Trusted reify: X second);
+           }
+        |> #map from: _;
+
+    when Type =:= "typed" do
+      let Type-tag = R.tag-to-type at: (foreign json.get-typed-tag(X));
+      (foreign json.get-typed-value(X))
+        |> self repo: R trusted: Trusted reify: _
+        |> R reify: _ tag: Type-tag;
+    end
+  end
+end

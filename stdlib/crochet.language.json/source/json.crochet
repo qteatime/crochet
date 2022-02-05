@@ -2,18 +2,19 @@
 
 /// The default entry-point for JSON parsing and writing. Guarantees safety
 /// and equivalence of semantics between Crochet's values and JSON.
-type json(serialisation is json-serialisation);
+singleton json;
+type extended-json(serialisation is json-serialisation) is json;
 
 
 // -- Constructors
-command #json bare =
-  new json(#json-serialisation empty);
+command #extended-json bare =
+  new extended-json(#json-serialisation empty);
 
-command #json defaults =
-  new json(#json-serialisation defaults);
+command #extended-json defaults =
+  new extended-json(#json-serialisation defaults);
 
-command #json with-serialisation: (Serialisation is json-serialisation) =
-  new json(Serialisation);
+command #extended-json with-serialisation: (Serialisation is json-serialisation) =
+  new extended-json(Serialisation);
 
 
 // -- JSON operations
@@ -21,26 +22,31 @@ command #json with-serialisation: (Serialisation is json-serialisation) =
 
 /// Parses a piece of JSON text and returns the equivalent Crochet values
 /// for it.
-command json parse: (Value is text) do
-  foreign json.parse(Value, true)
+command json parse: (Value is unsafe-arbitrary-text) do
+  let Trusted = Value is text;
+  let Parsed = foreign json.parse(Value, false);
+  internal repo: #json-serialisation empty trusted: Trusted reify: Parsed;
 test
-  assert (#json bare parse: "1234") === 1234.0;
-  assert (#json bare parse: "\"abc\"") === "abc";
-  assert (#json bare parse: "\[123, null, \[true, false\]\]") === [123.0, nothing, [true, false]];
-  assert (#json bare parse: "{\"a\": \[1, 2\], \"b\": {\"c\": 3}}") === [
+  assert (json parse: "1234") === 1234.0;
+  assert (json parse: "\"abc\"") === "abc";
+  assert (json parse: "\[123, null, \[true, false\]\]") === [123.0, nothing, [true, false]];
+  assert (json parse: "{\"a\": \[1, 2\], \"b\": {\"c\": 3}}") === (#map from: [
     a -> [1.0, 2.0],
-    b -> [c -> 3.0]
-  ];
+    b -> #map from: [c -> 3.0]
+  ]);
+
+  assert (json parse: (foreign json.untrusted("\"abc\""))) is untrusted-text;
+  let Result = json parse: (foreign json.untrusted("\[\"abc\"\]"));
+  assert Result first is untrusted-text;
 end
 
 /// Parses a piece of JSON text and returns the equivalent Crochet values
-/// for it. All of the text in the result will likewise be untrusted.
-command #json parse: (Value is untrusted-text) do
-  foreign json.parse(Value, false);
-test
-  assert (#json bare parse: (foreign json.untrusted("\"abc\""))) is untrusted-text;
-  let Result = #json bare parse: (foreign json.untrusted("\[\"abc\"\]"));
-  assert Result first is untrusted-text;
+/// for it. Can also handle parsing of extended JSON values according to the
+/// serialisation rules defined for the [type:extended-json] instance.
+command extended-json parse: (Value is unsafe-arbitrary-text) do
+  let Trusted = Value is text;
+  let Parsed = foreign json.parse(Value, true);
+  internal repo: self.serialisation trusted: Trusted reify: Parsed;
 end
 
 /// Converts a simple Crochet value to a JSON piece of text. If the input
@@ -49,17 +55,20 @@ end
 /// Does no formatting—which is reasonable for computers, but not if you want
 /// the output to be used by humans. See [command:_ pretty-print: _ indentation: _]
 /// for the formatting alternative.
-command json serialise: Value -> unsafe-arbitrary-text do
+command extended-json serialise: Value -> unsafe-arbitrary-text do
   let Json = internal repo: self.serialisation lower: Value;
   foreign json.serialise(Json.value, Json.trusted);
 test
-  assert (#json bare serialise: 1234.0) === "1234";
-  assert (#json bare serialise: "abc") === "\"abc\"";
-  assert (#json bare serialise: [123.0, nothing, [true, false]]) === "\[123,null,\[true,false\]\]";
-  assert (#json bare serialise: [a -> [1.0, 2.0], b -> [c -> 3.0]]) === "{\"a\":\[1,2\],\"b\":{\"c\":3}}";
+  assert (json serialise: 1234.0) === "1234";
+  assert (json serialise: "abc") === "\"abc\"";
+  assert (json serialise: [123.0, nothing, [true, false]]) === "\[123,null,\[true,false\]\]";
+  assert (json serialise: [a -> [1.0, 2.0], b -> [c -> 3.0]]) === "{\"a\":\[1,2\],\"b\":{\"c\":3}}";
   let Untrusted = foreign json.untrusted("abc");
-  assert (#json bare serialise: [a -> [1.0, Untrusted]]) is untrusted-text;
+  assert (json serialise: [a -> [1.0, Untrusted]]) is untrusted-text;
 end
+
+command json serialise: Value -> unsafe-arbitrary-text =
+  #extended-json bare serialise: Value;
 
 /// Converts a simple Crochet value to a JSON piece of text, and formats the
 /// output in a more human-readable way. See [command:_ serialise: _] for the
@@ -67,13 +76,16 @@ end
 ///
 /// Note that if the input contains untrusted text, then the output will also
 /// be an untrusted text.
-command #json pretty-print: Value indentation: (Indent is integer) -> unsafe-arbitrary-text
+command extended-json pretty-print: Value indentation: (Indent is integer) -> unsafe-arbitrary-text
 requires positive-indentation :: Indent >= 0
 do
   let Json = internal repo: self.serialisation lower: Value;
   foreign json.pretty-print(Json.value, Indent, Json.trusted);
 test
-  assert (#json bare pretty-print: [1.0, 2.0, 3.0] indentation: 2) === "\[\n  1,\n  2,\n  3\n\]";
+  assert (json pretty-print: [1.0, 2.0, 3.0] indentation: 2) === "\[\n  1,\n  2,\n  3\n\]";
   let Untrusted = foreign json.untrusted("abc");
-  assert (#json bare pretty-print: [1.0, Untrusted] indentation: 2) is untrusted-text;
+  assert (json pretty-print: [1.0, Untrusted] indentation: 2) is untrusted-text;
 end
+
+command json pretty-print: Value indentation: (Indent is integer) -> unsafe-arbitrary-text =
+  #extended-json bare pretty-print: Value indentation: Indent;
