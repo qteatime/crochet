@@ -1,4 +1,4 @@
-import { CrochetCapability, CrochetProtectedValue } from "..";
+import { CrochetCapability, CrochetPackage, CrochetProtectedValue } from "..";
 import * as IR from "../../ir";
 import { clone_map, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
@@ -55,6 +55,14 @@ export function make_static_text(universe: Universe, x: string) {
 
 export function make_list(universe: Universe, xs: CrochetValue[]) {
   return new CrochetValue(Tag.LIST, universe.types.List, xs);
+}
+
+export function make_package_value(
+  universe: Universe,
+  type: CrochetType,
+  pkg: CrochetPackage
+) {
+  return new CrochetValue(Tag.ANY_PACKAGE, type, pkg);
 }
 
 export function make_interpolation(

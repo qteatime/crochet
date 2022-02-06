@@ -16,7 +16,8 @@
     "native/set.js",
     "native/seal.js",
     "native/map.js",
-    "native/fun.js"
+    "native/fun.js",
+    "native/pkg.js"
   ],
   "sources": [
     "source/0-types.crochet",
@@ -108,7 +109,9 @@
     "source/traits/iteration.crochet",
     "source/traits/ordering.crochet",
     "source/traits/sequence.crochet",
-    "source/traits/set-algebra.crochet"
+    "source/traits/set-algebra.crochet",
+
+    "source/package/core.crochet"
   ],
   "capabilities": {
     "requires": [],

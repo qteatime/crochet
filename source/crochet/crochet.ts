@@ -242,7 +242,7 @@ export class BootedCrochet {
 
   private async load_package(pkg: Package.ResolvedPackage) {
     logger.debug(`Loading package ${pkg.name}`);
-    const cpkg = VM.World.get_or_make_package(this.universe.world, pkg);
+    const cpkg = VM.World.get_or_make_package(this.universe, pkg);
 
     if (!this.crochet.safe_mode) {
       for (const x of pkg.native_sources) {

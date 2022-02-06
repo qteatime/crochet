@@ -31,6 +31,7 @@ export enum Tag {
   ACTION_CHOICE,
   UNKNOWN,
   PROTECTED,
+  ANY_PACKAGE,
 }
 
 export type PayloadType = {
@@ -54,6 +55,7 @@ export type PayloadType = {
   [Tag.ACTION_CHOICE]: ActionChoice;
   [Tag.UNKNOWN]: unknown;
   [Tag.PROTECTED]: CrochetProtectedValue;
+  [Tag.ANY_PACKAGE]: CrochetPackage;
 };
 
 export interface ActionChoice {
@@ -968,6 +970,7 @@ export class Universe {
       Action: CrochetType;
       ActionChoice: CrochetType;
       Effect: CrochetType;
+      Package: CrochetType;
     }
   ) {
     this.nothing = new CrochetValue(Tag.NOTHING, types.Nothing, null);

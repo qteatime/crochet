@@ -274,6 +274,18 @@ export function make_universe() {
     null
   );
 
+  // Packages
+  const Package = new CrochetType(
+    null,
+    "any-package",
+    "",
+    Any,
+    [],
+    [],
+    false,
+    null
+  );
+
   world.native_types.define("crochet.core/core.static-type", Type);
   world.native_types.define("crochet.core/core.any", Any);
   world.native_types.define("crochet.core/core.protected", Protected);
@@ -308,6 +320,7 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.action", Action);
   world.native_types.define("crochet.core/core.action", Action);
   world.native_types.define("crochet.core/core.action-choice", ActionChoice);
+  world.native_types.define("crochet.core/core.package", Package);
 
   return new Universe(new CrochetTrace(), world, XorShift.new_random(), {
     Any,
@@ -335,6 +348,7 @@ export function make_universe() {
     Action,
     ActionChoice,
     Effect,
+    Package,
   });
 }
 

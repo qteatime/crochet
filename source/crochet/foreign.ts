@@ -264,6 +264,11 @@ export class ForeignInterface {
     }
   }
 
+  get_underlying_package(x: CrochetValue) {
+    Values.assert_tag(Tag.ANY_PACKAGE, x);
+    return x.payload;
+  }
+
   // == Operations
   intrinsic_equals(x: CrochetValue, y: CrochetValue) {
     return Values.equals(x, y);

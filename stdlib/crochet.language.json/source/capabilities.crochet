@@ -1,7 +1,7 @@
 % crochet
 
 singleton internal;
-capability internal;
 
 protect type internal with internal;
 protect global internal with internal;
+

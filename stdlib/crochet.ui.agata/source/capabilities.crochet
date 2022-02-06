@@ -1,6 +1,4 @@
 % crochet
-  
-capability internal;
 
 singleton internal;
 protect global internal with internal;

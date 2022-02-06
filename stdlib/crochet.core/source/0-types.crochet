@@ -16,9 +16,6 @@ capability untainting;
 /// Allows constructing mutable memory cells.
 capability mutability;
 
-/// Used for internal types.
-capability internal;
-
 singleton internal;
 protect type internal with internal;
 protect global internal with internal;

@@ -30,6 +30,7 @@
     "feature/effects.crochet",
     "feature/traits.crochet",
     "feature/capabilities.crochet",
+    "feature/internal.crochet",
     "regression/placeholder-dispatch.crochet"
   ],
   "capabilities": {
