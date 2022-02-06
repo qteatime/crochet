@@ -1,0 +1,47 @@
+% crochet
+
+local type point2d(x is integer, y is integer);
+
+implement to-json for point2d;
+command json-serialisation lower: (X is point2d) =
+  #json-type tag: #point2d value: (self lower: [x -> X.x, y -> X.y]);
+
+implement from-json for point2d;
+command json-serialisation reify: (X is map) tag: #point2d =
+  new point2d(X at: "x", X at: "y");
+
+implement equality for point2d;
+command point2d === (That is point2d) =
+  (self.x === That.x) and (self.y === That.y);
+
+test "Parsing and serialising custom structures" do
+  let Domain =
+    #json-serialisation defaults
+      | tag: "point2d" brand: #point2d;
+  let Json = #extended-json with-serialisation: Domain;
+  assert new point2d(1, 2) === (Json parse: (Json serialise: new point2d(1, 2)))
+end
+
+
+local singleton strong-brand;
+local type secure(token is text);
+
+implement to-json for secure;
+command json-serialisation lower: (X is secure) =
+  #json-type tag: strong-brand value: (self lower: X.token);
+
+implement from-json for secure;
+command json-serialisation reify: (X is text) tag: strong-brand =
+  new secure(X);
+
+implement equality for secure;
+command secure === (That is secure) =
+  self.token === That.token;
+
+test "Parsing and serialising with non-static-type brands" do
+  let Domain =
+    #json-serialisation defaults
+      | tag: "secure" brand: strong-brand;
+  let Json = #extended-json with-serialisation: Domain;
+  assert new secure("a") === (Json parse: (Json serialise: new secure("a")))
+end

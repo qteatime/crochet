@@ -10,7 +10,8 @@
     "source/types.crochet",
     "source/custom-serialisation.crochet",
     "source/trait-instances.crochet",
-    "source/serialisation.crochet"
+    "source/serialisation.crochet",
+    "test/custom-serialisation.crochet"
   ],
   "capabilities": {
     "requires": [],

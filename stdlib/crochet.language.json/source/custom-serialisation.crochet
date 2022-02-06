@@ -1,29 +1,29 @@
 % crochet
 
 type json-serialisation(
-  type-to-tag is map<static-type, text>,
-  tag-to-type is map<text, static-type>,
+  brand-to-tag is map<any, text>,
+  tag-to-brand is map<text, any>,
 );
 
 command #json-serialisation empty =
   new json-serialisation(#map empty, #map empty);
 
-command json-serialisation tag: (Tag is text) type: (Type is static-type)
+command json-serialisation tag: (Tag is text) brand: Brand
 requires
-  unique-map :: (not (self.type-to-tag contains-key: Type))
-                  and (not (self.tag-to-type contains-key: Tag))
+  unique-map :: (not (self.brand-to-tag contains-key: Brand))
+                  and (not (self.tag-to-brand contains-key: Tag))
 do
   new json-serialisation(
-    self.type-to-tag at: Type put: Tag,
-    self.tag-to-type at: Tag put: Type,
+    self.brand-to-tag at: Brand put: Tag,
+    self.tag-to-brand at: Tag put: Brand,
   );
 end
 
 command #json-serialisation defaults =
   #json-serialisation empty
-    | tag: "integer" type: #integer
-    | tag: "map" type: #map
-    | tag: "set" type: #set;
+    | tag: "integer" brand: #integer
+    | tag: "map" brand: #map
+    | tag: "set" brand: #set;
 
 
 command json-serialisation lower: (Value is json-type) =

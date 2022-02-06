@@ -2,7 +2,7 @@
 
 abstract json-type;
 type json-typed-plain(tag is text, global value is json-type) is json-type;
-type json-typed(tag is static-type, global value is json-type) is json-type;
+type json-typed(tag, global value is json-type) is json-type;
 type json-boolean(global value is boolean) is json-type;
 type json-number(global value is float-64bit) is json-type;
 type json-text(global value is unsafe-arbitrary-text) is json-type;
@@ -15,12 +15,12 @@ trait to-json with
 end
 
 trait from-json with
-  command json-serialisation reify: Value tag: (Type is static-type) -> A;
+  command json-serialisation reify: Value tag: Tag -> A;
 end
 
 
 // -- Constructors
-command #json-type tag: (Tag is static-type) value: (Value is json-type) =
+command #json-type tag: Tag value: (Value is json-type) =
   new json-typed(Tag, Value);
 
 command #json-type null =

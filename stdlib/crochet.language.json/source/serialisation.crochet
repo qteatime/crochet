@@ -22,7 +22,7 @@ command internal repo: (R is json-serialisation) do-lower: (X is json-typed-plai
   foreign json.typed(X.tag, self repo: R do-lower: X.value);
 
 command internal repo: (R is json-serialisation) do-lower: (X is json-typed) do
-  let Tag = R.type-to-tag at: X.tag;
+  let Tag = R.brand-to-tag at: X.tag;
   foreign json.typed(Tag, self repo: R do-lower: X.value);
 end
 
@@ -84,7 +84,7 @@ command internal repo: (R is json-serialisation) trusted: (Trusted is boolean) r
         |> #map from: _;
 
     when Type =:= "typed" do
-      let Type-tag = R.tag-to-type at: (foreign json.get-typed-tag(X));
+      let Type-tag = R.tag-to-brand at: (foreign json.get-typed-tag(X));
       (foreign json.get-typed-value(X))
         |> self repo: R trusted: Trusted reify: _
         |> R reify: _ tag: Type-tag;
