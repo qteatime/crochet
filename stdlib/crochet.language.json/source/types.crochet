@@ -15,7 +15,7 @@ trait to-json with
 end
 
 trait from-json with
-  command json-serialisation reify: (Value is json-type) tag: (Type is static-type) -> A;
+  command json-serialisation reify: Value tag: (Type is static-type) -> A;
 end
 
 
