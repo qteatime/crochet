@@ -94,16 +94,16 @@ export default (ffi: ForeignInterface) => {
         return new JsonText(value);
       } else if (Array.isArray(value)) {
         return new JsonList(value);
-      } else if (extended && typeof value === "object" && "@type" in value) {
-        if (!((value as any)["@type"] instanceof JsonText)) {
+      } else if (extended && "@type" in (value as any)) {
+        const v = value as { "@type": any; value: Json };
+        if (!(v["@type"] instanceof JsonText)) {
           throw ffi.panic("invalid-type", "expected text");
         }
-        if (!("value" in value)) {
+        if (!("value" in v) || !(v.value instanceof Json)) {
           throw ffi.panic("invalid-type", "expected a proper typed json");
         }
-        const type = ((value as any)["@type"] as JsonText).value;
-        const v = (value as any).value;
-        return new JsonTyped(type, v);
+        const type = (v["@type"] as JsonText).value;
+        return new JsonTyped(type, v.value);
       } else {
         return new JsonRecord(Object.entries(value as any));
       }
