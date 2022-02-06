@@ -25,7 +25,8 @@ implement equality for set;
 
 /// True if two sets have equal values.
 command set === (That is set) do
-  foreign set.equals(self.box, That.box);
+  (self count =:= That count)
+    and (self values all: (That contains: _));
 test
   assert (#set from: [1, 2, 3]) === (#set from: [1, 2, 3]);
   assert (#set from: [3, 2, 1]) === (#set from: [3, 2, 1]);
@@ -38,10 +39,20 @@ implement equality for map;
 
 /// True if two maps have equal values.
 command map === (That is map) do
-  foreign map.equals(self.box, That.box);
+  (self count =:= That count)
+    and (self entries all: { Pair in
+          condition
+            when That contains-key: Pair key => (That at: Pair key) === Pair value;
+            otherwise => false;
+          end
+        });
 test
   assert #map empty === #map empty;
   assert (#map empty | at: 1 put: 2 | at: 3 put: 4) === (#map empty | at: 3 put: 4 | at: 1 put: 2);
   assert not ((#map empty | at: 1 put: 2 | at: 3 put: 4) === (#map empty | at: 1 put: 2));
   assert not ((#map empty | at: 1 put: 2) === (#map empty | at: 3 put: 4));
+  
+  let A = #map from: [a -> [1.0, 2.0], b -> #map from: [c -> 3.0]];
+  let B = #map from: [a -> [1.0, 2.0], b -> #map from: [c -> 3.0]];
+  assert A === B;
 end

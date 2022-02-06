@@ -1,0 +1,41 @@
+% crochet
+
+implement to-json for integer;
+command json-serialisation lower: (Value is integer) =
+  #json-type tag: #integer value: (#json-type text: Value to-text);
+
+implement from-json for #integer;
+command json-serialisation reify: (X is json-text) tag: #integer =
+  #integer parse: X value;
+
+
+implement to-json for map;
+command json-serialisation lower: (Value is map<A, B>) =
+  #json-type tag: #map value: (
+    #json-type list: (
+      Value entries map: { Pair in
+        #json-type record: [key -> self lower: Pair key, value -> self lower: Pair value]
+      }
+    )
+  );
+
+implement from-json for map;
+command json-serialisation reify: (X is json-list) tag: #map do
+  let Entries = X values map: { X in
+    let Entry = self reify: X;
+    #association key: Entry.key value: Entry.value;
+  };
+  #map from: Entries;
+end
+
+
+implement to-json for set;
+command json-serialisation lower: (Value is set<A>) do
+  let Values = Value values map: (self lower: _);
+  #json-type tag: #set value: (#json-type list: Values);
+end
+
+implement from-json for set;
+command json-serialisation reify: (X is json-list) tag: #set =
+  X values map: (self reify: _)
+    |> #set from: _;
