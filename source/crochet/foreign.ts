@@ -46,7 +46,7 @@ import {
   Universe,
   Values,
 } from "../vm";
-import * as UUID from "uuid";
+import { random_uuid } from "../utils/uuid";
 
 export type { Machine, CrochetValue };
 export type { ISet, IList, IMap };
@@ -424,7 +424,7 @@ export class ForeignInterface {
   }
 
   uuid4() {
-    return UUID.v4();
+    return random_uuid();
   }
 
   // == Tracing (only exposed for debug package)

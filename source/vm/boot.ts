@@ -33,7 +33,7 @@ import {
 import { Contexts } from "./simulation";
 import { CrochetTrace } from "./tracing";
 
-export function make_universe() {
+export function make_universe(token: string) {
   const world = new CrochetWorld();
 
   // Core types
@@ -322,7 +322,7 @@ export function make_universe() {
   world.native_types.define("crochet.core/core.action-choice", ActionChoice);
   world.native_types.define("crochet.core/core.package", Package);
 
-  return new Universe(new CrochetTrace(), world, XorShift.new_random(), {
+  return new Universe(token, new CrochetTrace(), world, XorShift.new_random(), {
     Any,
     Unknown,
     Protected,

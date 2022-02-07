@@ -14,7 +14,7 @@ import {
   CrochetType,
   debug_representations,
 } from "../vm";
-import * as UUID from "uuid";
+import { random_uuid } from "../utils/uuid";
 
 export type TestReportMessage =
   | TRM_Started
@@ -100,6 +100,7 @@ export class Crochet {
   readonly registered_packages: Map<string, Package.Package> = new Map();
 
   constructor(
+    readonly tokens: { universe: string; packages: Map<string, string> },
     readonly safe_mode: boolean,
     readonly fs: IFileSystem,
     readonly signal: ISignal
@@ -205,7 +206,7 @@ export class BootedCrochet {
   readonly universe: VM.Universe;
 
   constructor(readonly crochet: Crochet, readonly graph: Package.PackageGraph) {
-    this.universe = VM.make_universe();
+    this.universe = VM.make_universe(crochet.tokens.universe);
   }
 
   async initialise(root: string, safe_mode: boolean) {
@@ -265,6 +266,11 @@ export class BootedCrochet {
     if (cpkg == null) {
       throw new Error(`The package ${pkg.name} is not loaded.`);
     }
+
+    cpkg.set_token(
+      this.crochet.tokens.packages.get(cpkg.name) || random_uuid()
+    );
+
     for (const x of pkg.granted_capabilities) {
       if (intrinsics.has(x)) {
         continue;
@@ -335,7 +341,7 @@ export class BootedCrochet {
     for (const [group, modules] of tests) {
       for (const [module, tests] of modules) {
         for (const test of tests) {
-          const test_id = UUID.v4();
+          const test_id = random_uuid();
           await this.crochet.signal.report_test(
             new TRM_Test_Started(run_id, test_id, group, module, test.title)
           );

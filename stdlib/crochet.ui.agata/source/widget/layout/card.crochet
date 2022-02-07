@@ -38,7 +38,7 @@ end
 command #card-child image: (X is widget-image) =
   new card-child-image(X);
 
-command #card-child image: (X is network-image) =
+command #card-child image: (X is image) =
   self image: (#widget image: X);
 
 command #card-child header: (X has to-widget) =

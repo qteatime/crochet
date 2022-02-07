@@ -33,7 +33,7 @@ command layout-card page do
       #widget space | vertical: (3.0 as rem),
 
       #widget card: [
-        #card-child image: (agata-network image: "/assets/crochet.examples.agata.widget-gallery/img/sun.png"),
+        #card-child image: (#image from-asset: (package assets at: "img/sun.png")),
         #card-child header: "A sunny Stockholm",
         #card-child meta: "10 minutes ago",
         #card-child body: [

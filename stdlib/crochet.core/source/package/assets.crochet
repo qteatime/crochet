@@ -1,0 +1,17 @@
+% crochet
+
+capability asset-location;
+singleton asset-location;
+protect type asset-location with asset-location;
+protect global asset-location with asset-location;
+
+
+type package-assets(pkg is any-package);
+type package-asset(pkg is any-package, path is text);
+
+command package-assets at: (Path is static-text) =
+  new package-asset(self.pkg, foreign pkg.asset(self.pkg, Path));
+
+
+
+

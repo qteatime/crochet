@@ -9,6 +9,7 @@ import {
   restrict_capabilities,
   target_compatible,
 } from "./ops";
+import { target_any } from ".";
 
 export interface IPackageResolution {
   get_package(name: string): Promise<Package>;
@@ -335,6 +336,10 @@ export class ResolvedPackage {
   get provided_capabilities() {
     const provided = [...this.pkg.meta.capabilities.provides];
     return new Set(provided.map((x) => `${this.name}/${x.name}`));
+  }
+
+  get assets() {
+    return this.pkg.meta.assets;
   }
 }
 

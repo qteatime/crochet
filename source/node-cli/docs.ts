@@ -26,6 +26,7 @@ import {
 } from "../vm/primitives/location";
 import { get_annotated_source, get_source_slice } from "../vm/primitives/meta";
 import type * as Express from "express";
+import { random_uuid } from "../utils/uuid";
 
 const doc_root = Path.resolve(__dirname, "../../tools/docs");
 const www_root = Path.resolve(__dirname, "../../www");
@@ -82,7 +83,14 @@ export async function serve_docs(
   filename: string,
   target0: Package.Target | null
 ) {
-  const crochet = new CrochetForNode(false, [], new Set([]), false, true);
+  const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
+    false,
+    [],
+    new Set([]),
+    false,
+    true
+  );
   const pkg = crochet.read_package_from_file(filename);
   const target = target0 ?? pkg.meta.target;
   await crochet.boot(pkg, target);

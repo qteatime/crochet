@@ -5,7 +5,7 @@ import { Namespace, PassthroughNamespace } from "./namespaces";
 // Only imported so callbacks get the correct type here
 import type { Pattern } from "./logic/unification";
 import type { CrochetTrace } from "./tracing/trace";
-import { hash, isImmutable } from "immutable";
+import type { ResolvedPackage } from "../pkg";
 
 export type Primitive = boolean | null | bigint | number;
 
@@ -378,12 +378,14 @@ export class CrochetPackage {
   readonly capabilities: PassthroughNamespace<CrochetCapability>;
   readonly dependencies = new Set<string>();
   readonly granted_capabilities = new Set<CrochetCapability>();
+  private _token: string;
 
   constructor(
     readonly world: CrochetWorld,
-    readonly name: string,
-    readonly filename: string
+    readonly metadata: ResolvedPackage
   ) {
+    this._token = "";
+    const name = this.metadata.name;
     this.missing_traits = new Namespace(null, null, null);
     this.missing_types = new Namespace(null, null, null);
     this.missing_capabilities = new Namespace(null, null, null);
@@ -395,6 +397,22 @@ export class CrochetPackage {
     this.actions = new PassthroughNamespace(world.actions, name);
     this.contexts = new PassthroughNamespace(world.contexts, name);
     this.capabilities = new PassthroughNamespace(world.capabilities, name);
+  }
+
+  get name() {
+    return this.metadata.name;
+  }
+
+  get filename() {
+    return this.metadata.filename;
+  }
+
+  set_token(token: string) {
+    this._token = token;
+  }
+
+  get token() {
+    return this._token;
   }
 }
 
@@ -941,6 +959,7 @@ export class Universe {
   readonly trusted_base = new Set<CrochetPackage>();
 
   constructor(
+    readonly token: string,
     readonly trace: CrochetTrace,
     readonly world: CrochetWorld,
     readonly random: XorShift,

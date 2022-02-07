@@ -22,7 +22,7 @@ import {
   string,
 } from "../utils/spec";
 import * as Spec from "../utils/spec";
-import { provide_capability } from ".";
+import { asset, provide_capability } from ".";
 
 function set<T>(x: AnySpec<T>) {
   return map_spec(array(x), (xs) => new Set(xs));
@@ -86,6 +86,12 @@ export const dependency_spec = anyOf([
   ),
 ]);
 
+export const asset_spec = anyOf([
+  map_spec(string, (x) => {
+    return asset({ path: x });
+  }),
+]);
+
 export const package_spec = spec(
   {
     name: string,
@@ -93,6 +99,7 @@ export const package_spec = spec(
     sources: array(file_spec),
     native_sources: optional(array(file_spec), []),
     dependencies: optional(array(dependency_spec), []),
+    assets: optional(array(asset_spec), []),
     capabilities: optional(
       capabilities_spec,
       capabilities({

@@ -4,6 +4,7 @@ export type PackageMeta = {
   readonly sources: File[];
   readonly native_sources: File[];
   readonly dependencies: Dependency[];
+  readonly assets: Asset[];
   readonly capabilities: Capabilities;
 };
 export type Package = {
@@ -48,6 +49,10 @@ export type Capabilities = {
   readonly provides: Set<ProvideCapability>;
 };
 
+export type Asset = {
+  readonly path: string;
+};
+
 export type ProvideCapability = {
   name: string;
   description: string;
@@ -86,5 +91,9 @@ export function provide_capability(x: ProvideCapability): ProvideCapability {
 }
 
 export function capabilities(x: Capabilities): Capabilities {
+  return x;
+}
+
+export function asset(x: Asset): Asset {
   return x;
 }

@@ -17,7 +17,7 @@ export function get_or_make_package(universe: Universe, pkg: ResolvedPackage) {
   if (result != null) {
     return result;
   } else {
-    const cpkg = new CrochetPackage(world, pkg.name, pkg.filename);
+    const cpkg = new CrochetPackage(world, pkg);
     for (const dep of pkg.dependencies) {
       cpkg.dependencies.add(dep.name);
     }

@@ -1,4 +1,5 @@
 import * as Package from "../pkg";
+import { random_uuid } from "../utils/uuid";
 import { CrochetForNode } from "./node";
 
 export class CrochetForBench extends CrochetForNode {
@@ -6,7 +7,14 @@ export class CrochetForBench extends CrochetForNode {
     readonly _sdtlib_path: string,
     readonly capabilities: Set<Package.Capability>
   ) {
-    super(true, [], capabilities, false, false);
+    super(
+      { universe: random_uuid(), packages: new Map() },
+      true,
+      [],
+      capabilities,
+      false,
+      false
+    );
   }
 
   get stdlib_path() {

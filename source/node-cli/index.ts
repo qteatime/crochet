@@ -18,6 +18,7 @@ import * as ChildProcess from "child_process";
 import { serve_docs } from "./docs";
 import { Ok, try_parse } from "../utils/spec";
 import { StorageConfig } from "../storage";
+import { random_uuid } from "../utils/uuid";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -263,6 +264,7 @@ async function show_ir([file]: string[], options: Options) {
 
 async function run([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
     options.disclose_debug,
     [],
     options.capabilities,
@@ -282,6 +284,7 @@ async function run([file]: string[], options: Options) {
 
 async function test([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
     options.disclose_debug,
     [],
     options.capabilities,
@@ -298,6 +301,7 @@ async function test([file]: string[], options: Options) {
 
 async function build([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
     options.disclose_debug,
     [],
     new Set([]),
@@ -309,6 +313,7 @@ async function build([file]: string[], options: Options) {
 
 async function repl([file0]: string[], options: Options) {
   const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
     options.disclose_debug,
     [],
     new Set([]),
@@ -324,6 +329,7 @@ async function repl([file0]: string[], options: Options) {
 
 async function run_web([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
     options.disclose_debug,
     [],
     new Set([]),
