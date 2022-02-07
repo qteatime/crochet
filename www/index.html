@@ -20,23 +20,28 @@
         <div class="crochet-loading-screen">Loading...</div>
       </div>
     </div>
+    <script id="crochet-config" type="text/plain">
+      {{crochet_config}}
+    </script>
     <script src="crochet.js"></script>
     <script>
       void (async function () {
+        const config_root = document.querySelector("#crochet-config");
+        const config = JSON.parse(config_root.textContent);
+        config_root.remove();
         const root = document.querySelector("#crochet");
-        const query = new URL(document.location.href).searchParams;
-        const capabilities = (query.get("capabilities") || "")
-          .split(",")
-          .map((x) => x.trim())
-          .filter((x) => x !== "");
         try {
           const crochet = new Crochet.CrochetForBrowser(
-            document.location.pathname + "library",
-            new Set(capabilities),
+            {
+              universe: config.token,
+              packages: new Map(Object.entries(config.package_tokens)),
+            },
+            config.library_root,
+            new Set(config.capabilities),
             false
           );
           await crochet.boot_from_file(
-            document.location.pathname + "app/crochet.json",
+            config.app_root,
             Crochet.Package.target_web()
           );
           root.classList.remove("crochet-loading");

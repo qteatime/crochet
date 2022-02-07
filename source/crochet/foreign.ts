@@ -46,7 +46,7 @@ import {
   Universe,
   Values,
 } from "../vm";
-import * as UUID from "uuid";
+import { random_uuid } from "../utils/uuid";
 
 export type { Machine, CrochetValue };
 export type { ISet, IList, IMap };
@@ -264,6 +264,11 @@ export class ForeignInterface {
     }
   }
 
+  get_underlying_package(x: CrochetValue) {
+    Values.assert_tag(Tag.ANY_PACKAGE, x);
+    return x.payload;
+  }
+
   // == Operations
   intrinsic_equals(x: CrochetValue, y: CrochetValue) {
     return Values.equals(x, y);
@@ -419,7 +424,7 @@ export class ForeignInterface {
   }
 
   uuid4() {
-    return UUID.v4();
+    return random_uuid();
   }
 
   // == Tracing (only exposed for debug package)

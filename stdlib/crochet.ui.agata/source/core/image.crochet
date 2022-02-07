@@ -5,6 +5,7 @@ open crochet.concurrency;
 abstract image;
 
 type network-image(uri is text) is image;
+type asset-image(asset is package-asset) is image;
 
 abstract network-error;
 type arbitrary-network-error(image is network-image) is network-error;
@@ -16,3 +17,7 @@ command network-image preload do
     otherwise => #result error: new arbitrary-network-error(self);
   end
 end
+
+
+command #image from-asset: (Asset is package-asset) =
+  new asset-image(Asset);

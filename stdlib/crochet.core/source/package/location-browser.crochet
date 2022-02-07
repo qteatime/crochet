@@ -1,0 +1,4 @@
+% crochet
+
+command asset-location resolve: (Asset is package-asset) =
+  foreign pkg.asset-location-web(Asset.pkg, Asset.path);

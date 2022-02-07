@@ -1,0 +1,10 @@
+% crochet
+
+test "Internal packages are defined by the VM" do
+  assert package name =:= "crochet.internal.vm.tests";
+end
+
+
+// -- Internal capability exists without being defined here
+type internal-test;
+protect type internal-test with internal;

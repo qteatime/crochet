@@ -3,6 +3,7 @@ import * as FS from "fs";
 import * as Package from "../pkg";
 import { CrochetForNode, build, build_file } from "../targets/node";
 import { unreachable } from "../utils/utils";
+import { random_uuid } from "../utils/uuid";
 
 export enum PackageType {
   BROWSER,
@@ -26,7 +27,14 @@ export async function package_app(
   target0: Package.Target | null,
   out_dir0: string
 ) {
-  const crochet = new CrochetForNode(false, [], new Set([]), false, false);
+  const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
+    false,
+    [],
+    new Set([]),
+    false,
+    false
+  );
   const pkg = crochet.read_package_from_file(filename);
   const out_dir = Path.join(out_dir0, pkg.meta.name);
   const target = target0 ?? pkg.meta.target;

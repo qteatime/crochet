@@ -4,7 +4,6 @@ open crochet.debug;
 
 singleton internal;
 
-capability internal;
 protect global internal with internal;
 protect type internal with internal;
 

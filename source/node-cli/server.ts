@@ -3,12 +3,26 @@ import * as FS from "fs";
 import * as Package from "../pkg";
 import type * as Express from "express";
 import { CrochetForNode, build_file } from "../targets/node";
+import { random_uuid } from "../utils/uuid";
 
 const repo_root = Path.resolve(__dirname, "../../");
 
 export default async (root: string, port: number, www: string) => {
+  const template = (config: unknown) => {
+    const config_str = JSON.stringify(config).replace(/</g, "\\u003c");
+    const source = FS.readFileSync(Path.join(www, "index.html"), "utf-8");
+    return source.replace(/{{crochet_config}}/g, (_) => config_str);
+  };
+
   console.log("Building all dependencies...");
-  const crochet = new CrochetForNode(false, [], new Set([]), false, true);
+  const crochet = new CrochetForNode(
+    { universe: random_uuid(), packages: new Map() },
+    false,
+    [],
+    new Set([]),
+    false,
+    true
+  );
   const pkg = crochet.read_package_from_file(root);
   await crochet.build(root);
   for (const dep of pkg.meta.dependencies) {
@@ -53,22 +67,35 @@ export default async (root: string, port: number, www: string) => {
     res.sendFile(Path.resolve(root));
   });
 
+  app.get("/", (req, res) => {
+    const config = {
+      token: random_uuid(),
+      library_root: "/library",
+      app_root: "/app/crochet.json",
+      asset_root: "/assets",
+      capabilities: [...pkg.meta.capabilities.requires.values()],
+      package_tokens: Object.fromEntries([...pkg_tokens.entries()]),
+    };
+    res.send(template(config));
+  });
+
   app.use("/", express.static(www));
   app.use("/library", express.static(Path.join(repo_root, "stdlib")));
 
+  const pkg_tokens = new Map();
   for (const x of graph.serialise(rpkg)) {
     const assets = x.assets_root;
+    const token = random_uuid();
+    pkg_tokens.set(x.name, token);
     if (FS.existsSync(assets)) {
       console.log("Installing assets for", x.name);
-      app.use(`/assets/${encodeURIComponent(x.name)}`, express.static(assets));
+      app.use(`/assets/${token}`, express.static(assets));
     }
   }
 
   app.listen(port, () => {
-    const caps = [...pkg.meta.capabilities.requires.values()].join(",");
     const url = new URL("http://localhost");
     url.port = String(port);
-    url.searchParams.set("capabilities", caps);
     console.log(`Server started at ${url.toString()}`);
   });
 };

@@ -90,7 +90,7 @@
     "crochet.text.parsing.lingua"
   ],
   "capabilities": {
-    "requires": [],
+    "requires": ["crochet.core/asset-location"],
     "provides": ["network", "ui-control", "arbitrary-fonts", "arbitrary-css"]
   }
 }

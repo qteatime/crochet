@@ -214,6 +214,10 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.PROTECTED, x);
       return `<protected ${simple_value(x.payload.value)}>`;
     }
+    case Tag.ANY_PACKAGE: {
+      assert_tag(Tag.ANY_PACKAGE, x);
+      return `<package ${x.payload.name}>`;
+    }
     default:
       throw unreachable(x.tag, `Value ${x}`);
   }

@@ -1,0 +1,9 @@
+% crochet
+
+type any-package = foreign core.package;
+
+command any-package name =
+  foreign pkg.name(self);
+
+command any-package assets =
+  new package-assets(self);

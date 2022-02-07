@@ -21,6 +21,7 @@ import {
   TraceEvent,
   Location,
 } from "../../vm";
+import { random_uuid } from "../../utils/uuid";
 
 const rootRelative = process.env.WEBPACK ? "" : "../../../";
 
@@ -31,13 +32,14 @@ export class CrochetForNode {
   private _ffi: ForeignInterface | null = null;
 
   constructor(
+    token: { universe: string; packages: Map<string, string> },
     disclose_debug: boolean,
     readonly library_paths: string[],
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean,
     readonly safe_mode: boolean
   ) {
-    this.crochet = new Crochet(safe_mode, this.fs, this.signal);
+    this.crochet = new Crochet(token, safe_mode, this.fs, this.signal);
   }
 
   render_entry = (entry: TraceEvent) => {

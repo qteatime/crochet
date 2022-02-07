@@ -16,6 +16,7 @@ import {
 import { CrochetValue, CrochetTest } from "../../vm";
 import { EventStream } from "../../utils/event";
 import { defer } from "../../utils/utils";
+import { random_uuid } from "../../utils/uuid";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
@@ -25,11 +26,12 @@ export class CrochetForBrowser {
   readonly test_report = new EventStream<TestReportMessage>();
 
   constructor(
+    token: { universe: string; packages: Map<string, string> },
     readonly library_base: string,
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean
   ) {
-    this.crochet = new Crochet(false, this.fs, this.signal);
+    this.crochet = new Crochet(token, false, this.fs, this.signal);
   }
 
   get system() {
