@@ -18,7 +18,14 @@ export class App {
 
   async build() {
     console.log("Building all dependencies...");
-    const crochet = new CrochetForNode(false, [], new Set([]), false, true);
+    const crochet = new CrochetForNode(
+      { universe: "", packages: new Map() },
+      false,
+      [],
+      new Set([]),
+      false,
+      true
+    );
     await crochet.build(this.pkg.filename);
     for (const dep of this.pkg.meta.dependencies) {
       const dep_pkg = await crochet.fs.read_package(dep.name);
@@ -27,7 +34,14 @@ export class App {
   }
 
   async docs() {
-    const crochet = new CrochetForNode(false, [], new Set([]), false, true);
+    const crochet = new CrochetForNode(
+      { universe: "", packages: new Map() },
+      false,
+      [],
+      new Set([]),
+      false,
+      true
+    );
     const pkg = crochet.read_package_from_file(this.pkg.filename);
     const target = pkg.meta.target;
     await crochet.boot(pkg, target);

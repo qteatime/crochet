@@ -23,6 +23,7 @@ export class Client {
 
   async instantiate() {
     const crochet = new Crochet.CrochetForBrowser(
+      { universe: "", packages: new Map() },
       `/${this.id}/library`,
       new Set(this.capabilities),
       false
