@@ -8,6 +8,8 @@ type uint32 = number;
 
 export enum OpTag {
   DROP = 1,
+  DUPLICATE,
+  DIG,
 
   LET, // meta name (value)
 
@@ -69,6 +71,8 @@ export class BasicBlock {
 
 export type Op =
   | Drop
+  | Duplicate
+  | Dig
   | Let
   | PushVariable
   | PushSelf
@@ -115,6 +119,22 @@ export class Drop extends BaseOp {
   readonly tag = OpTag.DROP;
 
   constructor(readonly meta: Metadata) {
+    super();
+  }
+}
+
+export class Duplicate extends BaseOp {
+  readonly tag = OpTag.DUPLICATE;
+
+  constructor(readonly meta: Metadata) {
+    super();
+  }
+}
+
+export class Dig extends BaseOp {
+  readonly tag = OpTag.DIG;
+
+  constructor(readonly meta: Metadata, readonly offset: number) {
     super();
   }
 }

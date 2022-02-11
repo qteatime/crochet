@@ -445,6 +445,17 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.OpTag.DUPLICATE: {
+        this.encode_meta_id(x.meta);
+        break;
+      }
+
+      case IR.OpTag.DIG: {
+        this.encode_meta_id(x.meta);
+        this.uint32(x.offset);
+        break;
+      }
+
       default:
         throw unreachable(x, `Expression Op`);
     }

@@ -1051,6 +1051,24 @@ export class Thread {
         return _continue;
       }
 
+      case t.DUPLICATE: {
+        const value = this.peek(activation);
+        this.push(activation, value);
+        activation.next();
+        return _continue;
+      }
+
+      case t.DIG: {
+        const top = this.pop_many(activation, op.offset);
+        const value = this.pop(activation);
+        for (const v of top) {
+          this.push(activation, v);
+        }
+        this.push(activation, value);
+        activation.next();
+        return _continue;
+      }
+
       default:
         throw unreachable(op, `Operation`);
     }
@@ -1110,6 +1128,16 @@ export class Thread {
         `The variable ${name} is already defined`
       );
     }
+  }
+
+  peek(activation: CrochetActivation) {
+    if (activation.stack.length === 0) {
+      throw new ErrArbitrary(
+        "vm:empty-stack",
+        `Trying to get a value from an empty stack`
+      );
+    }
+    return activation.stack[activation.stack.length - 1]!;
   }
 
   pop(activation: CrochetActivation) {
