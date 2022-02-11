@@ -33,6 +33,9 @@ export function derive_plugin([trait]: [string], ast: IR.Declaration[]) {
     case "equality":
       return derive_equality(ast);
 
+    case "json":
+      return derive_json(ast);
+
     default:
       throw new Error(`Unknown derivation ${trait}`);
   }
@@ -73,6 +76,75 @@ export function derive_equality(ast: IR.Declaration[]) {
             ),
             new IR.Invoke(meta, "_ and _", 2),
           ]),
+          new IR.Return(meta),
+        ])
+      ),
+    ];
+  }
+
+  const types = ast.flatMap((x) => (x instanceof IR.DType ? [x] : []));
+  return [...ast, ...types.flatMap((x) => do_derive(x))];
+}
+
+export function derive_json(ast: IR.Declaration[]) {
+  function do_derive(type: IR.DType) {
+    const meta = type.meta;
+    const tname = new IR.LocalType(meta, type.name);
+    const tconstraint = new IR.TypeConstraintType(meta, tname);
+    const serialisation = new IR.TypeConstraintType(
+      meta,
+      new IR.GlobalType(meta, "crochet.language.json", "json-serialisation")
+    );
+    return [
+      new IR.DOpen(meta, "crochet.language.json"),
+      new IR.DImplementTrait(meta, new IR.LocalTrait(meta, "to-json"), tname),
+      new IR.DCommand(
+        meta,
+        "Serialises the value as JSON",
+        "_ lower: _",
+        ["Json", "Value"],
+        [serialisation, tconstraint],
+        new IR.BasicBlock([
+          new IR.PushStaticType(meta, new IR.StaticType(meta, "json-type")),
+          new IR.PushStaticType(meta, new IR.StaticType(meta, type.name)),
+          new IR.PushVariable(meta, "Json"),
+          ...type.fields.flatMap((field) => [
+            new IR.PushVariable(meta, "Json"),
+            new IR.PushVariable(meta, "Value"),
+            new IR.ProjectStatic(meta, field),
+            new IR.Invoke(meta, "_ lower: _", 2),
+          ]),
+          new IR.PushRecord(meta, type.fields),
+          new IR.Invoke(meta, "_ lower: _", 2),
+          new IR.Invoke(meta, "_ tag: _ value: _", 3),
+          new IR.Return(meta),
+        ])
+      ),
+      new IR.DImplementTrait(
+        meta,
+        new IR.LocalTrait(meta, "from-json"),
+        new IR.StaticType(meta, type.name)
+      ),
+      new IR.DCommand(
+        meta,
+        `Parses JSON data as [type:${type.name}]`,
+        "_ reify: _ tag: _",
+        ["Json", "Value", "_"],
+        [
+          serialisation,
+          new IR.TypeConstraintType(
+            meta,
+            new IR.GlobalType(meta, "crochet.core", "map")
+          ),
+          new IR.TypeConstraintType(meta, new IR.StaticType(meta, type.name)),
+        ],
+        new IR.BasicBlock([
+          ...type.fields.flatMap((field) => [
+            new IR.PushVariable(meta, "Value"),
+            new IR.PushLiteral(new IR.LiteralText(field)),
+            new IR.Invoke(meta, "_ at: _", 2),
+          ]),
+          new IR.PushNew(meta, tname, type.fields.length),
           new IR.Return(meta),
         ])
       ),

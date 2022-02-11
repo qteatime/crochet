@@ -1,6 +1,7 @@
 % crochet
 
-// Deriving equality
+// -- Equality
+
 @| derive: "equality"
 local type point2d(x is integer, y is integer);
 
@@ -13,7 +14,7 @@ test "equality derivation" do
   assert not (P1 === P3);
 end
 
-// Equality works with non-structural types as well
+// Non-structural types
 local type opaque;
 
 @| derive: "equality"
@@ -31,4 +32,40 @@ test "equality derivation with non-structural types" do
   assert A1 === A2;
   assert A1 =/= A3;
   assert A1 =/= A4;
+end
+
+
+// -- JSON
+abstract json;
+
+@| derive: "json"
+@| derive: "equality"
+local type json-integer(x is integer) is json;
+
+@| derive: "json"
+@| derive: "equality"
+local type json-list(xs is list<json>) is json;
+
+test "JSON serialisation" do
+  let Domain = #json-serialisation defaults
+    | tag: "json-integer" brand: #json-integer
+    | tag: "json-list" brand: #json-list;
+
+  let Json = #extended-json with-serialisation: Domain;
+
+  let V1 = new json-list([
+    new json-integer(1),
+    new json-integer(2),
+    new json-integer(3),
+  ]);
+
+  let V2 = new json-list([
+    new json-integer(3),
+    new json-integer(2),
+    new json-integer(1),
+  ]);
+
+  assert (Json serialise: new json-integer(1)) === <<{"@type":"json-integer","value":{"x":{"@type":"integer","value":"1"}}}>>;
+  assert (Json parse: (Json serialise: V1)) === V1;
+  assert (Json parse: (Json serialise: V1)) =/= V2;
 end
