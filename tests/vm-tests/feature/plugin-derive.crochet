@@ -1,0 +1,34 @@
+% crochet
+
+// Deriving equality
+@| derive: "equality"
+local type point2d(x is integer, y is integer);
+
+test "equality derivation" do
+  let P1 = new point2d(10, 20);
+  let P2 = new point2d(10, 20);
+  let P3 = new point2d(20, 30);
+  assert P1 has equality;
+  assert P1 === P2;
+  assert not (P1 === P3);
+end
+
+// Equality works with non-structural types as well
+local type opaque;
+
+@| derive: "equality"
+local type strong(key is opaque, value is integer);
+
+test "equality derivation with non-structural types" do
+  let O1 = new opaque;
+  let O2 = new opaque;
+
+  let A1 = new strong(O1, 1);
+  let A2 = new strong(O1, 1);
+  let A3 = new strong(O2, 1);
+  let A4 = new strong(O1, 2);
+
+  assert A1 === A2;
+  assert A1 =/= A3;
+  assert A1 =/= A4;
+end

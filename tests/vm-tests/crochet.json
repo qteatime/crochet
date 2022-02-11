@@ -31,6 +31,7 @@
     "feature/traits.crochet",
     "feature/capabilities.crochet",
     "feature/internal.crochet",
+    "feature/plugin-derive.crochet",
     "regression/placeholder-dispatch.crochet"
   ],
   "capabilities": {

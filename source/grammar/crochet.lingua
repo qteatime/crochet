@@ -31,6 +31,7 @@ type Declaration =
   | Effect(pos: Meta, cmeta: Metadata, name: Name, cases: EffectCase[])
   | Capability(pos: Meta, cmeta: Metadata, name: Name)
   | Protect(pos: Meta, capability: Name, entity: ProtectEntity)
+  | Decorated(pos: Meta, signature: Signature<Literal>, declaration: Declaration)
 
 type ProtectEntity =
   | Type(pos: Meta, name: Name)
@@ -246,6 +247,7 @@ grammar Crochet : Program {
     |       -> []
 
   declaration =
+    | decoratedDeclaration
     | relationDeclaration
     | doDeclaration
     | commandDeclaration
@@ -262,6 +264,10 @@ grammar Crochet : Program {
     | traitImplementDeclaration
     | capabilityDeclaration
     | protectDeclaration
+
+  decoratedDeclaration =
+    | s<"@|"> space* s:decoratorSignature<literal> space* d:declaration
+      -> Declaration.Decorated(meta, s, d)
 
   capabilityDeclaration =
     | m:declarationMeta capability_ n:atom s<";">
@@ -947,6 +953,9 @@ grammar Crochet : Program {
 
   // -- Higher-order
   named<n> = x:s<n> -> Name(meta, x)
+
+  decoratorSignature<t> =
+    | logicSignature<t>
 
   logicSignature<t> =
     | s:t kws:signaturePair<t>+       -> Signature.Keyword(meta, s, kws)

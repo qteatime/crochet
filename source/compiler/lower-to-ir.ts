@@ -1,6 +1,7 @@
 import * as Ast from "../generated/crochet-grammar";
 import * as IR from "../ir";
 import { cast, force_cast, unreachable } from "../utils/utils";
+import { run_plugin } from "./macros";
 import {
   resolve_escape,
   parseNumber,
@@ -1834,6 +1835,11 @@ export class LowerToIR {
         });
 
         return [new IR.DProtect(id, capability.name, type, entity_name)];
+      },
+
+      Decorated: (pos, signature, decl) => {
+        const irs = this.declaration(decl, context);
+        return run_plugin(signature, irs);
       },
     });
   }

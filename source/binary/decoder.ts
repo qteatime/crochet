@@ -506,6 +506,14 @@ class CrochetIRDecoder extends BinaryReader {
         );
       }
 
+      case t.DUPLICATE: {
+        return new IR.Duplicate(this.decode_meta_id());
+      }
+
+      case t.DIG: {
+        return new IR.Dig(this.decode_meta_id(), this.uint32());
+      }
+
       default:
         throw unreachable(tag, "Operation");
     }
