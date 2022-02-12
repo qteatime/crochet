@@ -1,0 +1,235 @@
+% crochet
+
+// CSP-style channels, with custom buffering behaviours
+type channel(buffer is channel-buffer);
+
+abstract channel-buffer;
+
+type channel-buffer-sized(
+  size is integer,
+  buffered is cell<list<A>>,
+  writers is cell<list<channel-write-request<A>>>,
+  readers is cell<list<deferred<A>>>
+) is channel-buffer;
+
+type channel-write-request(value is A, deferred is deferred<A>);
+type channel-buffered-request(value is A);
+
+// Constructors
+command #channel with-buffer: (Buffer is channel-buffer) =
+  new channel(Buffer);
+
+command #channel with-buffer-size: (Size is integer) =
+  #channel with-buffer: (#channel-buffer-sized with-size: Size);
+
+command #channel-buffer-sized with-size: (Size is integer) =
+  new channel-buffer-sized(
+    size -> Size,
+    buffered -> #cell with-value: [],
+    writers -> #cell with-value: [],
+    readers -> #cell with-value: [],
+  );
+
+
+// Synchronisation
+command channel put: Value do
+  self.buffer put: Value;
+end
+
+command channel read do
+  self.buffer read;
+end
+
+command channel-buffer-sized put: Value do
+  #deferred promise: { D in
+    let Read = package get-next-read: self;
+    condition
+      when Read is deferred do
+        Read resolve: Value;
+        D resolve: nothing;
+      end
+
+      when self.buffered value count < self.size do
+        package on: self buffer: Value;
+        D resolve: nothing;
+      end
+
+      otherwise do
+        package on: self queue-write: new channel-write-request(Value, D);
+      end
+    end
+  }
+end
+
+command channel-buffer-sized read do
+  #deferred promise: { D in
+    let Writer = package get-next-writer-buffered: self;
+    condition
+      when Writer is channel-buffered-request do
+        D resolve: Writer.value;
+      end
+
+      when Writer is channel-write-request do
+        Writer.deferred resolve: nothing;
+        D resolve: Writer.value;
+      end
+
+      otherwise do
+        package on: self queue-read: D;
+      end
+    end
+  };
+end
+
+
+command package on: (C is channel-buffer-sized) buffer: Value do
+  let Buffered = C.buffered value;
+  let Result = C.buffered compare: Buffered and-set: (Buffered append: Value);
+  condition
+    when Result => nothing;
+    otherwise => package on: C buffer: Value;
+  end
+end
+
+command package on: (C is channel-buffer-sized) queue-write: (Request is channel-write-request<A>) do
+  let Writers = C.writers value;
+  let New-writers = Writers append: Request;
+  let Result = C.writers compare: Writers and-set: New-writers;
+  condition
+    when Result => nothing;
+    otherwise => package on: C queue-write: Request;
+  end
+end
+
+command package on: (C is channel-buffer-sized) queue-read: (Read is deferred<A>) do
+  let Readers = C.readers value;
+  let New-readers = Readers append: Read;
+  let Result = C.readers compare: Readers and-set: New-readers;
+  condition
+    when Result => nothing;
+    otherwise => package on: C queue-read: Read;
+  end
+end
+
+command package get-next-read: (C is channel-buffer-sized) do
+  let Readers = C.readers value;
+  condition
+    when Readers is-empty => nothing;
+
+    otherwise do
+      let Reader = Readers first;
+      let Result = C.readers compare: Readers and-set: Readers rest;
+      condition
+        when Result => Reader;
+        otherwise => package get-next-read: C;
+      end
+    end
+  end
+end
+
+command package get-next-writer-buffered: (C is channel-buffer-sized) do
+  let Buffered = C.buffered value;
+  condition
+    when Buffered is-empty => package get-next-writer: C;
+    otherwise do
+      let Result = C.buffered compare: Buffered and-set: Buffered rest;
+      condition
+        when Result => new channel-buffered-request(Buffered first);
+        otherwise => package get-next-writer-buffered: C;
+      end
+    end
+  end
+end
+
+command package get-next-writer: (C is channel-buffer-sized) do
+  let Writers = C.writers value;
+  condition
+    when Writers is-empty => nothing;
+
+    otherwise do
+      let Writer = Writers first;
+      let Result = C.writers compare: Writers and-set: Writers rest;
+      condition
+        when Result => Writer;
+        otherwise => package get-next-writer: C;
+      end
+    end
+  end
+end
+
+
+test "Coordinating processes with buffered channels" do
+  let Channel = #channel with-buffer-size: 3;
+  let Output = #cell with-value: [];
+
+  let Show = { V in Output <- Output value append: V };
+
+  let P1 = #deferred promise: { D in
+    Channel put: 1 | wait;
+    Show("put 1");
+    D resolve: nothing;
+  };
+
+  let P2 = #deferred promise: { D in
+    Channel put: 2 | wait;
+    Show("put 2");
+    D resolve: nothing;
+  };
+
+  let P3 = #deferred promise: { D in
+    Channel put: 3 | wait;
+    Show("put 3");
+    D resolve: nothing;
+  };
+
+  let P4 = #deferred promise: { D in
+    Channel put: 4 | wait;
+    Show("put 4");
+    D resolve: nothing;
+  };
+
+  let P5 = #deferred promise: { D in
+    Channel put: 5 | wait;
+    Show("put 5");
+    D resolve: nothing;
+  };
+
+  let P6 = #deferred promise: { D in
+    Show(Channel read wait);
+    Show("read 1");
+    Show(Channel read wait);
+    Show("read 2");
+    Show(Channel read wait);
+    Show("read 3");
+    Show(Channel read wait);
+    Show("read 4");
+    Show(Channel read wait);
+    Show("read 5");
+    D resolve: nothing;
+  };
+
+  P1 wait;
+  P2 wait;
+  P3 wait;
+  P4 wait;
+  P5 wait;
+  P6 wait;
+
+  assert Output value =:= [
+    "put 1",
+    "put 2",
+    "put 3",
+    1,
+    "read 1",
+    2,
+    "read 2",
+    3,
+    "read 3",
+    "put 4",
+    4,
+    "read 4",
+    "put 5",
+    5,
+    "read 5",
+  ];
+end
