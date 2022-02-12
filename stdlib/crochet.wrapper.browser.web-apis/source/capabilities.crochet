@@ -11,3 +11,6 @@ capability http;
 
 /// Allows getting the current page URL
 capability document-location;
+
+/// Allows access to websockets
+capability websocket;

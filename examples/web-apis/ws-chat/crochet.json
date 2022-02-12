@@ -1,0 +1,26 @@
+{
+  "name": "crochet.examples.web-apis.ws-chat",
+  "target": "*",
+  "native_sources": [],
+  "sources": ["source/main.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    {
+      "name": "crochet.ui.agata",
+      "capabilities": ["crochet.core/asset-location"]
+    },
+    "crochet.wrapper.browser.web-apis",
+    "crochet.network.types",
+    "crochet.language.json",
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": [
+      "crochet.wrapper.browser.web-apis/websocket",
+      "crochet.core/asset-location",
+      "crochet.ui.agata/ui-control"
+    ],
+    "provides": []
+  }
+}

@@ -37,11 +37,21 @@ command actor send: (Message is actor-message) do
   self;
 end
 
+command actor current-state =
+  self.state value;
+
+
 command actor-state done =
   amr-done;
 
 command actor-state transition: (New-state is actor-state) =
   new amr-transition(New-state);
+
+command actor-state on-enter =
+  nothing;
+
+command actor-state on-leave =
+  nothing;
 
 
 // -- Message dispatching
@@ -99,5 +109,7 @@ command actor-internal handle-result: amr-done do
 end
 
 command actor-internal handle-result: (R is amr-transition) do
+  self.state value on-leave;
   self.state <- R.new-state;
+  R.new-state on-enter;
 end

@@ -1,0 +1,226 @@
+% crochet
+
+open crochet.ui.agata;
+open crochet.concurrency;
+open crochet.debug;
+open crochet.network.types;
+open crochet.wrapper.browser.web-apis;
+open crochet.language.json;
+
+type app(ws is websocket, actor is actor, stream is event-stream);
+
+abstract app-state is actor-state;
+singleton app-state-not-connected is app-state;
+type app-state-connected(name is text) is app-state;
+
+effect chat with
+  get-app();
+end
+
+command package app = perform chat.get-app();
+command package ws = (package app).ws;
+command package actor = (package app).actor;
+command package stream = (package app).stream;
+
+// Actor
+command app-state-not-connected accepts: message-connect = true;
+command app-state-not-connected handle: (M is message-connect) do
+  package ws send: (package json serialise: M);
+  self done;
+end
+
+command app-state-not-connected accepts: message-connected = true;
+command app-state-not-connected handle: (M is message-connected) do
+  self transition: new app-state-connected(M.name);
+end
+
+command app-state-connected on-enter do          
+  agata show: screen-chat;
+end
+
+command app-state-connected accepts: message-send = true;
+command app-state-connected handle: (M is message-send) do
+  package ws send: (package json serialise: M);
+  self done;
+end
+
+command app-state-connected accepts: message-received = true;
+command app-state-connected handle: (M is message-received) do
+  package stream publish: M;
+  self done;
+end
+
+command app-state-connected accepts: message-joined = true;
+command app-state-connected handle: (M is message-joined) do
+  package stream publish: M;
+  self done;
+end
+
+
+command main-html: Root do
+  let App = #cell with-value: nothing;
+
+  handle
+    agata-dom with-root: Root do: {
+      let Ws = #websocket open: (#url from-text: "ws://localhost:8081");
+      let Actor = root-zone spawn: app-state-not-connected;
+      Ws listener
+        | keep-if: { Event in Event is websocket-message-received }
+        | subscribe: { Event in
+            let Message = package json parse: Event message;
+            Actor send: Message;
+          } capture;
+      App <- new app(ws -> Ws, actor -> Actor, stream -> #event-stream empty);
+      agata show: screen-loading;
+    };
+  with
+    on chat.get-app() => continue with App value;
+  end
+end
+
+// Messages
+abstract message is actor-message;
+
+@| derive: "json"
+@| derive: "equality"
+type message-connect(name is text) is message;
+
+@| derive: "json"
+@| derive: "equality"
+type message-connected(name is text) is message;
+
+@| derive: "json"
+@| derive: "equality"
+type message-joined(name is text) is message;
+
+@| derive: "json"
+@| derive: "equality"
+type message-send(message is text) is message;
+
+@| derive: "json"
+@| derive: "equality"
+type message-received(name is text, message is text) is message;
+
+
+define json-domain = lazy (
+  #json-serialisation defaults
+    | tag: "connect" brand: #message-connect
+    | tag: "connected" brand: #message-connected
+    | tag: "joined" brand: #message-joined
+    | tag: "send" brand: #message-send
+    | tag: "received" brand: #message-received
+);
+
+define json = lazy (
+  #extended-json with-serialisation: (force json-domain)
+);
+
+command package json = force json;
+
+
+// Screens
+singleton screen-loading;
+
+implement to-widget for screen-loading;
+command screen-loading as widget do
+  #deferred promise: { D in
+    package ws connect wait;
+    agata show: screen-login;
+    D resolve: nothing;
+  } capture;
+
+  #widget flex-column: [
+    "Connecting..."
+  ]
+  | justify-content: "center"
+  | align-items: "center"
+  | fill-container;
+end
+
+
+singleton screen-login;
+
+implement to-widget for screen-login;
+command screen-login as widget do
+  let Name = #observable-cell with-value: "";
+  let Connecting = #observable-cell with-value: false;
+  #widget flex-column: [
+    #widget section: [
+      #widget title: "Choose a name to start chatting",
+      #widget text-input
+        | placeholder: "fluffy-pink"
+        | value: Name,
+      #widget button: "Start chatting"
+        | disabled: Connecting
+        | on-click: { _ in
+            Connecting <- true;
+            package actor send: new message-connect(Name value);
+          } capture
+        | fill-container-horizontally
+        | with-margin: { M in M top: (1 as rem) }
+    ]
+    | with-width: (500 as pixels)
+  ]
+  | gap: (1 as rem)
+  | justify-content: "center"
+  | align-items: "center"
+  | fill-container
+end
+
+
+singleton screen-chat;
+
+implement to-widget for screen-chat;
+command screen-chat as widget do
+  let Message = #observable-cell with-value: "";
+  let Received = package stream listener
+                  |> _ keep-if: { X in (X is message-received) or (X is message-joined) }
+                  |> #observable-cell collect-stream: _;
+  let Key-events = #event-stream empty;
+  Key-events
+    | keep-if: { X in X key =:= key-code-enter }
+    | listener
+    | subscribe: { _ in
+        let To-send = new message-send(Message value);
+        Message <- "";
+        package actor send: To-send;
+      } capture;
+
+  #widget flex-column: [
+    #flex-child fluid: (
+      Received map: { Xs in 
+        #widget flex-column: Xs
+      }
+    ),
+
+    #widget divider: "full",
+    
+    #widget text-input
+      | value: Message
+      | key-up: Key-events
+  ]
+  | with-background: (agata-theme-colors bg-muted)
+  | fill-container;
+end
+
+implement to-widget for message-received;
+command message-received as widget do
+  #widget card: [
+    #card-child header: self.name,
+    #card-child body: self.message
+  ]
+  | style: "fluid"
+  | with-margin: { M in M all: (0.5 as rem) };
+end
+
+implement to-widget for message-joined;
+command message-joined as widget do
+  #widget card: [
+    #card-child meta: (
+      ("[self.name] joined the chat" as widget)
+        | with-padding: { P in P all: (0.5 as rem) }
+    )
+  ]
+  | style: "fluid"
+  | with-margin: { M in M all: (0.5 as rem) };
+end
