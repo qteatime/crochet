@@ -21,7 +21,7 @@ command url-error-no-port === (That is url-error-no-port) = self.url === That.ur
 
 
 // -- Constructors
-command #url from-text: (Url is static-text) =
+command #url from-text: (Url is text) =
   new url-native(foreign url.parse(Url));
 
 

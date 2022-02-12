@@ -8,3 +8,6 @@ protect global internal with internal;
 
 /// Allows creating and sending http requests
 capability http;
+
+/// Allows getting the current page URL
+capability document-location;

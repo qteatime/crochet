@@ -1,7 +1,7 @@
 {
   "name": "crochet.wrapper.browser.web-apis",
   "target": "browser",
-  "native_sources": ["native/http.js"],
+  "native_sources": ["native/http.js", "native/document.js"],
   "sources": [
     "source/capabilities.crochet",
     "source/http/body.crochet",
@@ -12,7 +12,8 @@
     "source/http/pure-client.crochet",
     "source/http/request.crochet",
     "source/http/response.crochet",
-    "source/http/sent-request.crochet"
+    "source/http/sent-request.crochet",
+    "source/document/location.crochet"
   ],
   "dependencies": [
     "crochet.core",
@@ -23,6 +24,6 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": ["http"]
+    "provides": ["http", "document-location"]
   }
 }

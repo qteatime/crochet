@@ -1,0 +1,10 @@
+% crochet
+
+open crochet.network.types;
+
+singleton document-location;
+protect global document-location with document-location;
+protect type document-location with document-location;
+
+command document-location current =
+  #url from-text: (foreign document.location());
