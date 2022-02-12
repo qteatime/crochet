@@ -66,8 +66,8 @@ input {
   font-family: "Roboto", sans-serif;
 }
 
-.agata-flow > .agata-flow-child {
-  display: inline-block;
+.agata-flow > * {
+  display: inline;
 }
 
 .agata-icon {

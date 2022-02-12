@@ -1,0 +1,126 @@
+% crochet
+
+open crochet.network.types;
+open crochet.concurrency;
+
+type websocket(
+  channel is unknown,
+  stream is event-stream<websocket-message>,
+);
+
+protect type websocket with websocket;
+
+abstract websocket-message;
+type websocket-message-received(global message is text) is websocket-message;
+type websocket-message-error(global reason is websocket-error) is websocket-message;
+singleton websocket-message-open is websocket-message;
+singleton websocket-message-closed is websocket-message;
+
+abstract websocket-error;
+singleton websocket-error-closed is websocket-error;
+type websocket-error-arbitrary(global reason) is websocket-error;
+
+enum websocket-state =
+  websocket-state-connecting,
+  websocket-state-open,
+  websocket-state-closing,
+  websocket-state-closed;
+
+// Opening connections
+command #websocket open: (Url is url) protocols: (Protocols is list<text>) do
+  let Channel = foreign ws.open(Url to-text, Protocols);
+  let Events = #event-stream empty;
+
+  foreign ws.listen(Channel, "open", { Event in
+    Events publish: websocket-message-open;
+  } capture);
+
+  foreign ws.listen(Channel, "message", { Event in
+    Events publish: new websocket-message-received(foreign ws.event-message(Event));
+  } capture);
+
+  foreign ws.listen(Channel, "error", { Event in
+    Events publish: new websocket-message-error(new websocket-error-arbitrary("error"));
+  } capture);
+
+  foreign ws.listen(Channel, "close", { Event in
+    Events publish: websocket-message-closed;
+  } capture);
+
+  new websocket(Channel, Events);
+end
+
+command #websocket open: Url =
+  #websocket open: Url protocols: [];
+
+
+command websocket connect do
+  #deferred promise: { D in 
+    let State = self state;
+    condition
+      when State =:= websocket-state-connecting do
+        let Subscriber = self.stream listener subscribe: { Event in
+          condition
+            when Event is websocket-message-error do
+              self.stream listener unsubscribe: Subscriber;
+              D reject: Event reason;
+            end
+
+            when Event is websocket-message-closed do
+              self.stream listener unsubscribe: Subscriber;
+              D reject: websocket-error-closed;
+            end
+
+            when Event is websocket-message-open do
+              self.stream listener unsubscribe: Subscriber;
+              D resolve: self;
+            end
+
+            otherwise => nothing;
+          end
+        } capture;
+      end
+
+      when State =:= websocket-state-open => D resolve: self;
+      when State =:= websocket-state-closing => D reject: websocket-error-closed;
+      when State =:= websocket-state-closed => D reject: websocket-error-closed;
+    end
+  };
+end
+
+
+// Querying the socket states
+command websocket state do
+  let State = foreign ws.state(self.channel);
+  condition
+    when State =:= 0 => websocket-state-connecting;
+    when State =:= 1 => websocket-state-open;
+    when State =:= 2 => websocket-state-closing;
+    when State =:= 3 => websocket-state-closed;
+  end
+end
+
+command websocket protocol
+requires
+  is-open :: self state =:= websocket-state-open
+do
+  foreign ws.protocol(self.channel);
+end
+
+
+// Operations on the socket
+command websocket send: (Data is text)
+requires
+  is-open :: self state =:= websocket-state-open
+do
+  foreign ws.send(self.channel, Data);
+  self;
+end
+
+command websocket close do
+  foreign ws.close(self.channel);
+  self;
+end
+
+command websocket listener =
+  self.stream listener;

@@ -115,10 +115,16 @@ command event-stream-listener subscribe: (Block is (A -> nothing)) do
   Subscriber;
 end
 
-command event-stream unsubscribe: (Subscriber is subscriber)
+command event-stream-listener unsubscribe: (Subscriber is subscriber)
 requires
   has-subscriber :: self.stream.subscribers value contains: Subscriber
 do
   self.stream.subscribers <- self.stream.subscribers value remove-if: { X in X =:= Subscriber };
   self;
 end
+
+command event-stream subscribe: F =
+  self listener subscribe: F;
+
+command event-stream unsubscribe: F =
+  self listener unsubscribe: F;

@@ -31,6 +31,15 @@ command #observable-cell from-stream: Stream initial-value: Initial do
 end
 
 
+command #observable-cell collect-stream: Stream0 initial-value: (Initial is list) do
+  #observable-cell from-stream: Stream0 initial-value: Initial
+    | fold-from: Initial with: { S, X in S push: (S state append: X) };
+end
+
+command #observable-cell collect-stream: Stream =
+  #observable-cell collect-stream: Stream initial-value: [];
+
+
 command observable-cell fold-from: (Initial is B) with: (Combine is ((B, A) -> B)) -> observable-cell<B> do
   new foldable-observable-cell(
     self,

@@ -5,11 +5,11 @@ open crochet.text.regex;
 abstract uri-pattern;
 type uri-pattern-hashbang(path is uri-pattern-path) is uri-pattern;
 
-abstract uri-pattern-path;
+abstract uri-pattern-path is uri-pattern;
 singleton uri-pattern-end is uri-pattern-path;
 type uri-pattern-path-node(segment is uri-pattern-segment, rest is uri-pattern-path) is uri-pattern-path;
 
-abstract uri-pattern-segment;
+abstract uri-pattern-segment is uri-pattern;
 type uri-pattern-segment-concrete(segment is text) is uri-pattern-segment;
 type uri-pattern-segment-variable(name is text) is uri-pattern-segment;
 

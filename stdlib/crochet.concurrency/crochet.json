@@ -5,6 +5,7 @@
   "sources": [
     "source/internal.crochet",
     "source/actor.crochet",
+    "source/channel.crochet",
     "source/event-stream.crochet",
     "source/observable-cell.crochet",
     "source/promise.crochet",

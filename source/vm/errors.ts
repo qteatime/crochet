@@ -28,23 +28,30 @@ export class ErrNativePanic extends CrochetError {
 }
 
 export class CrochetEvaluationError extends CrochetError {
-  readonly source: Error;
-  readonly trace: TraceEntry[];
+  static readonly show_native_trace = false;
+
+  readonly source!: Error;
+  readonly trace!: TraceEntry[];
 
   constructor(source: Error, trace: TraceEntry[], formatted_trace: string) {
-    let native_trace = source instanceof Error ? source.stack ?? "" : "";
-    if (native_trace != "") {
-      const trace = native_trace.replace(/^.*?\n\s*at /, "");
-      native_trace = `\n\nArising from the native code:\n${trace}`;
-    }
+    // let native_trace = source instanceof Error ? source.stack ?? "" : "";
+    // if (native_trace != "") {
+    //   const trace = native_trace.replace(/^.*?\n\s*at /, "");
+    //   native_trace = `\n\nArising from the native code:\n${trace}`;
+    // }
+
     const include_trace =
       source instanceof ErrNativePanic ? source.include_trace : true;
     const suffix = include_trace
-      ? ["\n\n", "Arising from:\n", formatted_trace, "\n", native_trace]
+      ? ["\n\n", "Arising from:\n", formatted_trace]
       : [];
 
     super([source.message, ...suffix].join(""));
-    this.source = source;
-    this.trace = trace;
+    Object.defineProperty(this, "source", {
+      value: source,
+    });
+    Object.defineProperty(this, "trace", {
+      value: trace,
+    });
   }
 }
