@@ -20,6 +20,7 @@ import {
   TELog,
   TraceEvent,
   Location,
+  CrochetEvaluationError,
 } from "../../vm";
 import { random_uuid } from "../../utils/uuid";
 
@@ -43,14 +44,14 @@ export class CrochetForNode {
   }
 
   render_entry = (entry: TraceEvent) => {
-    if (entry instanceof TELog) {
-      const message = entry.value;
-      if (typeof message === "string") {
-        console.log(`[${entry.log_tag}] ${message}`);
-      } else {
-        console.log(`[${entry.log_tag}] ${Location.simple_value(message)}`);
-      }
-    }
+    // if (entry instanceof TELog) {
+    //   const message = entry.value;
+    //   if (typeof message === "string") {
+    //     console.log(`[${entry.log_tag}] ${message}`);
+    //   } else {
+    //     console.log(`[${entry.log_tag}] ${Location.simple_value(message)}`);
+    //   }
+    // }
   };
 
   get search_paths() {
@@ -156,7 +157,11 @@ export class CrochetForNode {
             }
             console.log("-".repeat(3));
             console.log(`[ERROR] ${test.title}`);
-            console.log(error.stack ?? error);
+            console.log(
+              error instanceof CrochetEvaluationError
+                ? error.message
+                : error.stack ?? String(error)
+            );
             console.log("-".repeat(3));
             failures.push(error);
           }
