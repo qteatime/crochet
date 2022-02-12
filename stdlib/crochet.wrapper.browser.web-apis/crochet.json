@@ -14,7 +14,8 @@
     "source/http/response.crochet",
     "source/http/sent-request.crochet",
     "source/document/location.crochet",
-    "source/websocket/core.crochet"
+    "source/websocket/core.crochet",
+    "source/websocket/effects.crochet"
   ],
   "dependencies": [
     "crochet.core",
@@ -25,6 +26,11 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": ["http", "document-location", "websocket"]
+    "provides": [
+      "http",
+      "document-location",
+      "use-websockets",
+      "manage-websockets"
+    ]
   }
 }

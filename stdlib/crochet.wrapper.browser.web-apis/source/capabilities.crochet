@@ -13,4 +13,5 @@ capability http;
 capability document-location;
 
 /// Allows access to websockets
-capability websocket;
+capability use-websockets;
+capability manage-websockets;

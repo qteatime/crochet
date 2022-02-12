@@ -1,0 +1,115 @@
+% crochet
+
+open crochet.network.types;
+open crochet.concurrency;
+
+effect websocket with
+  connect(url is url, protocols is list<text>);
+  send(socket is websocket, message is text);
+  close(socket is websocket);
+  get-protocol(socket is websocket);
+end
+
+singleton websocket-handler;
+protect type websocket-handler with manage-websockets;
+protect global websocket-handler with manage-websockets;
+
+command websocket-handler with-real-handler: (Block is (() -> A)) -> A do
+  handle
+    Block();
+  with
+    on websocket.connect(Url, Protocols) do
+      let Channel = foreign ws.open(Url to-text, Protocols);
+      let Events = #event-stream empty;
+      let State = #cell with-value: websocket-state-connecting;
+
+      foreign ws.listen(Channel, "open", { Event in
+        State <- websocket-state-open;
+        Events publish: websocket-message-open;
+      } capture);
+
+      foreign ws.listen(Channel, "message", { Event in
+        Events publish: new websocket-message-received(foreign ws.event-message(Event));
+      } capture);
+
+      foreign ws.listen(Channel, "error", { Event in
+        State <- websocket-state-closed;
+        Events publish: new websocket-message-error(new websocket-error-unknown);
+      } capture);
+
+      foreign ws.listen(Channel, "close", { Event in
+        State <- websocket-state-closed;
+        Events publish: websocket-message-closed;
+      } capture);
+
+      continue with [channel -> Channel, events -> Events, state -> State];
+    end
+
+    on websocket.send(Socket, Message) do
+      foreign ws.send(Socket.channel, Message);
+      continue with nothing;
+    end
+
+    on websocket.close(Socket) do
+      foreign ws.close(Socket.channel);
+      continue with nothing;
+    end
+
+    on websocket.get-protocol(Socket) do
+      continue with ws.protocol(Socket.channel);
+    end
+  end
+end
+
+
+command websocket-handler 
+          with-pure-handler: (Handlers is (websocket-publisher -> record))
+          do: (Block is ((websocket-publisher) -> A)) 
+          -> A
+do
+  let Publisher = new websocket-publisher;
+  Handlers(Publisher);
+  handle
+    Block(Publisher);
+  with
+    on websocket.connect(Url, Protocols) do
+      continue with Handlers.connect(Url, Protocols);
+    end
+
+    on websocket.send(Socket, Message) do
+      Handlers.send(Socket, Message);
+      continue with nothing;
+    end
+
+    on websocket.close(Socket) do
+      Handlers.close(Socket);
+      continue with nothing;
+    end
+
+    on websocket.get-protocol(Socket) do
+      continue with Handlers.get-protocol(Socket);
+    end
+  end
+end
+
+
+type websocket-publisher;
+
+command websocket-publisher close: (Socket is websocket) do
+  Socket.stream publish: websocket-message-closed;
+  self;
+end
+
+command websocket-publisher open: (Socket is websocket) do
+  Socket.stream publish: websocket-message-open;
+  self;
+end
+
+command websocket-publisher send: (Socket is websocket) message: (Data is text) do
+  Socket.stream publish: new websocket-message-received(Data);
+  self;
+end
+
+command websocket-publisher error: (Socket is websocket) do
+  Socket.stream publish: new websocket-message-error(websocket-error-unknown);
+end

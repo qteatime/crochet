@@ -17,7 +17,8 @@
   ],
   "capabilities": {
     "requires": [
-      "crochet.wrapper.browser.web-apis/websocket",
+      "crochet.wrapper.browser.web-apis/use-websockets",
+      "crochet.wrapper.browser.web-apis/manage-websockets",
       "crochet.core/asset-location",
       "crochet.ui.agata/ui-control"
     ],

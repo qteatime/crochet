@@ -5,10 +5,11 @@ open crochet.concurrency;
 
 type websocket(
   channel is unknown,
+  state is cell<websocket-state>,
   stream is event-stream<websocket-message>,
 );
 
-protect type websocket with websocket;
+protect type websocket with use-websockets;
 
 abstract websocket-message;
 type websocket-message-received(global message is text) is websocket-message;
@@ -18,7 +19,7 @@ singleton websocket-message-closed is websocket-message;
 
 abstract websocket-error;
 singleton websocket-error-closed is websocket-error;
-type websocket-error-arbitrary(global reason) is websocket-error;
+singleton websocket-error-unknown is websocket-error;
 
 enum websocket-state =
   websocket-state-connecting,
@@ -28,26 +29,31 @@ enum websocket-state =
 
 // Opening connections
 command #websocket open: (Url is url) protocols: (Protocols is list<text>) do
-  let Channel = foreign ws.open(Url to-text, Protocols);
-  let Events = #event-stream empty;
+  let Connection = perform websocket.connect(Url, Protocols);
 
-  foreign ws.listen(Channel, "open", { Event in
-    Events publish: websocket-message-open;
-  } capture);
+  Connection.events listener subscribe: { M in
+    condition
+      when M is websocket-message-open do
+        Connection.state <- websocket-state-open;
+      end
 
-  foreign ws.listen(Channel, "message", { Event in
-    Events publish: new websocket-message-received(foreign ws.event-message(Event));
-  } capture);
+      when M is websocket-message-closed do
+        Connection.state <- websocket-state-closed;
+      end
 
-  foreign ws.listen(Channel, "error", { Event in
-    Events publish: new websocket-message-error(new websocket-error-arbitrary("error"));
-  } capture);
+      when M is websocket-message-error do
+        Connection.state <- websocket-state-closed;
+      end
 
-  foreign ws.listen(Channel, "close", { Event in
-    Events publish: websocket-message-closed;
-  } capture);
+      otherwise do nothing end
+    end
+  };
 
-  new websocket(Channel, Events);
+  new websocket(
+    channel -> Connection.channel,
+    state -> Connection.state,
+    stream -> Connection.events,
+  );
 end
 
 command #websocket open: Url =
@@ -90,21 +96,14 @@ end
 
 
 // Querying the socket states
-command websocket state do
-  let State = foreign ws.state(self.channel);
-  condition
-    when State =:= 0 => websocket-state-connecting;
-    when State =:= 1 => websocket-state-open;
-    when State =:= 2 => websocket-state-closing;
-    when State =:= 3 => websocket-state-closed;
-  end
-end
+command websocket state =
+  self.state value;
 
 command websocket protocol
 requires
   is-open :: self state =:= websocket-state-open
 do
-  foreign ws.protocol(self.channel);
+  perform websocket.get-protocol(self);
 end
 
 
@@ -113,14 +112,16 @@ command websocket send: (Data is text)
 requires
   is-open :: self state =:= websocket-state-open
 do
-  foreign ws.send(self.channel, Data);
+  perform websocket.send(self, Data);
   self;
 end
 
 command websocket close do
-  foreign ws.close(self.channel);
+  self.state <- websocket-state-closing;
+  perform websocket.close(self);
   self;
 end
 
 command websocket listener =
   self.stream listener;
+
