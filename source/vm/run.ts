@@ -17,6 +17,7 @@ import {
   Universe,
   _done,
 } from "./intrinsics";
+import { make_global_handler_stack } from "./primitives/effect";
 
 export async function run_command(
   universe: Universe,
@@ -29,7 +30,7 @@ export async function run_command(
     null,
     env,
     _done,
-    new HandlerStack(null, []),
+    make_global_handler_stack(universe),
     new IR.BasicBlock([new IR.Invoke(0, name, args.length), new IR.Return(0)])
   );
   const state = new State(universe, activation, universe.random);
@@ -65,7 +66,7 @@ export async function run_test(universe: Universe, test: CrochetTest) {
     test,
     env,
     _done,
-    new HandlerStack(null, []),
+    make_global_handler_stack(universe),
     test.body
   );
   const state = new State(universe, activation, universe.random);
@@ -84,7 +85,7 @@ export async function run_block(
     null,
     env,
     _done,
-    new HandlerStack(null, []),
+    make_global_handler_stack(universe),
     block
   );
   const state = new State(universe, activation, universe.random);
@@ -110,7 +111,7 @@ export function run_native_sync(
     fn,
     env,
     machine,
-    new HandlerStack(null, []),
+    make_global_handler_stack(universe),
     _done
   );
   const state = new State(universe, activation, universe.random);
@@ -136,7 +137,7 @@ export async function run_native(
     fn,
     env,
     machine,
-    new HandlerStack(null, []),
+    make_global_handler_stack(universe),
     _done
   );
   const state = new State(universe, activation, universe.random);

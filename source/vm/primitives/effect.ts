@@ -169,6 +169,16 @@ class EffectContext {
   }
 }
 
+function materialise_handler(
+  module: CrochetModule,
+  env: Environment,
+  handler: IR.HandlerCaseOn
+) {
+  const type0 = materialise_effect(module, handler.effect, handler.variant);
+  const type = Capability.free_effect(module, type0);
+  return new Handler(type, handler.parameters, env, handler.block);
+}
+
 export function evaluate_handle(
   ctx: EffectContext,
   handler: IR.HandlerCase
@@ -176,15 +186,7 @@ export function evaluate_handle(
   const t = IR.HandlerCaseTag;
   switch (handler.tag) {
     case t.ON: {
-      const type0 = materialise_effect(
-        ctx.module,
-        handler.effect,
-        handler.variant
-      );
-      const type = Capability.free_effect(ctx.module, type0);
-      ctx.add_handler(
-        new Handler(type, handler.parameters, ctx.env, handler.block)
-      );
+      ctx.add_handler(materialise_handler(ctx.module, ctx.env, handler));
       return ctx;
     }
 
@@ -286,4 +288,48 @@ export function make_default_handler(
     );
   }
   universe.world.default_handlers.add(handler);
+}
+
+export function make_global_handler_stack(universe: Universe) {
+  function to_global_handler_case(
+    p: CrochetHandler,
+    h: IR.HandlerCase
+  ): Handler[] {
+    const t = IR.HandlerCaseTag;
+    switch (h.tag) {
+      case t.ON: {
+        const env = new Environment(null, null, p.module, null);
+        return [materialise_handler(p.module, env, h)];
+      }
+      case t.USE: {
+        if (h.arity !== 0 || h.values.ops.length !== 0) {
+          throw new ErrArbitrary(
+            "global-handler-use-with-initialisation",
+            `Cannot use ${h.name} from ${p.name} in ${module_location(
+              p.module
+            )} globally because it would require running arbitrary initialisation code.`
+          );
+        }
+        const handler = get_handler(p.module, h.name);
+        return to_global_handler(handler);
+      }
+    }
+  }
+
+  function to_global_handler(h: CrochetHandler): Handler[] {
+    if (h.initialisation.ops.length !== 0) {
+      throw new ErrArbitrary(
+        "global-handler-with-initialisation",
+        `Cannot install ${h.name} from ${module_location(
+          h.module
+        )} globally because it would require running arbitrary initialisation code.`
+      );
+    }
+
+    return h.handlers.flatMap((x) => to_global_handler_case(h, x));
+  }
+
+  const handlers = [...universe.world.default_handlers];
+  const stack = new HandlerStack(null, handlers.flatMap(to_global_handler));
+  return stack;
 }
