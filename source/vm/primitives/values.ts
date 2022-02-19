@@ -122,6 +122,23 @@ export function make_record(
   );
 }
 
+export function extend_record(
+  universe: Universe,
+  base_value: CrochetValue,
+  keys: string[],
+  values: CrochetValue[]
+) {
+  const base = get_map(base_value);
+  const result = new Map();
+  for (const [k, v] of base.entries()) {
+    result.set(k, v);
+  }
+  for (const [k, v] of zip(keys, values)) {
+    result.set(k, v);
+  }
+  return new CrochetValue(Tag.RECORD, universe.types.Record, result);
+}
+
 export function make_record_from_map(
   universe: Universe,
   value: Map<string, CrochetValue>

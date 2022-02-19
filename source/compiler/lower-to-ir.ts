@@ -928,8 +928,22 @@ export class LowerToIR {
         const pairs = this.record_pairs(pairs0);
 
         return [
-          ...pairs.map((x) => x.value).flat(1),
+          ...pairs.flatMap((x) => x.value),
           new IR.PushRecord(
+            id,
+            pairs.map((x) => x.key)
+          ),
+        ];
+      },
+
+      ExtendRecord: (pos, base, pairs0) => {
+        const id = this.context.register(pos);
+        const pairs = this.record_pairs(pairs0);
+
+        return [
+          ...this.expression(base),
+          ...pairs.flatMap((x) => x.value),
+          new IR.ExtendRecord(
             id,
             pairs.map((x) => x.key)
           ),
