@@ -66,9 +66,6 @@ interface Options {
     package?: string;
     show_success: boolean;
   };
-  launcher: {
-    project_directory: string | null;
-  };
   app_args: string[];
 }
 
@@ -90,9 +87,6 @@ function parse_options(args0: string[]) {
   };
   options.packaging = {
     out_dir: "packages",
-  };
-  options.launcher = {
-    project_directory: null,
   };
   options.docs = {
     port: 8080,
@@ -167,12 +161,6 @@ function parse_options(args0: string[]) {
       case "--disclose-debug": {
         options.disclose_debug = true;
         current++;
-        continue;
-      }
-
-      case "--project-directory": {
-        options.launcher.project_directory = args0[current + 1] ?? null;
-        current += 2;
         continue;
       }
 
@@ -502,7 +490,6 @@ function help(command?: string) {
           "  crochet repl <crochet.json>\n",
           "  crochet test <crochet.json> [--test-title PATTERN --test-module PATTERN --test-package PATTERN --test-show-ok]\n",
           "  crochet build <crochet.json>\n",
-          "  crochet launcher:server <crochet.json> [--project-directory DIR]\n",
           "  crochet show-ir <file.crochet>\n",
           "  crochet show-ast <file.crochet>\n",
           "  crochet new <name>\n",
@@ -566,11 +553,6 @@ void (async function main() {
         return await repl(args, options);
       case "new":
         return await new_package(args, options);
-      case "launcher:server": {
-        const server = require("../../tools/launcher/build/launcher");
-        await server.start_servers({ ...options.launcher, port: 8000 });
-        break;
-      }
       case "version": {
         const version = require("../../package.json").version;
         console.log(`Crochet version ${version}`);

@@ -1,7 +1,0 @@
-% crochet
-
-command pt-node title = "Node";
-command pt-node code = "node";
-
-command pt-browser title = "Browser";
-command pt-browser code = "browser";

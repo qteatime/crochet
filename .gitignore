@@ -1,12 +1,9 @@
 node_modules/
 build/
+bin/
 .vscode/
 examples/*/www
-.ionide/
-obj/
-bin/
 dist/
-.fable/
 www/crochet.js
 tsconfig.tsbuildinfo
 versions/current.js
@@ -15,8 +12,5 @@ versions/current.js
 stdlib/**/*.js
 tools/**/native/*.js
 _build
-tools/launcher/www/crochet.js
-tools/launcher/www/crochet-ipc.js
-tools/launcher/www/monaco/
 *.lingua.crochet
 *:Zone.Identifier
