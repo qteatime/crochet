@@ -11,6 +11,8 @@ import {
   signatureValues,
   materialiseSignature,
   compileNamespace,
+  handlerName,
+  handlerArgs,
 } from "./utils";
 
 type uint32 = number;
@@ -1214,18 +1216,33 @@ export class LowerToIR {
     });
   }
 
-  handlers(handlers: Ast.Handler[]) {
+  handlers(handlers: Ast.HandlerSpec[]) {
     return handlers.map((x) => this.handler(x));
   }
 
-  handler(handler: Ast.Handler) {
-    return new IR.HandlerCase(
-      this.context.register(handler.pos),
-      handler.name.name,
-      handler.variant.name,
-      handler.args.map((x) => x.name),
-      new IR.BasicBlock(this.fun_body(handler.body))
-    );
+  handler(handler: Ast.HandlerSpec) {
+    return handler.match<IR.HandlerCase>({
+      Use: (pos, name, config) => {
+        return new IR.HandlerCaseUse(
+          this.context.register(pos),
+          handlerName(name, config),
+          handlerArgs(config).length,
+          new IR.BasicBlock(
+            handlerArgs(config).flatMap((x) => this.expression(x))
+          )
+        );
+      },
+
+      On: (pos, name, variant, args, body) => {
+        return new IR.HandlerCaseOn(
+          this.context.register(pos),
+          name.name,
+          variant.name,
+          args.map((x) => x.name),
+          new IR.BasicBlock(this.fun_body(body))
+        );
+      },
+    });
   }
 
   statements(xs: Ast.Statement[]) {
@@ -1846,6 +1863,10 @@ export class LowerToIR {
           Trait: (_, name) => {
             return [IR.ProtectEntityTag.TRAIT, name.name];
           },
+
+          Handler: (_, name, sig) => {
+            return [IR.ProtectEntityTag.HANDLER, handlerName(name, sig)];
+          },
         });
 
         return [new IR.DProtect(id, capability.name, type, entity_name)];
@@ -1854,6 +1875,31 @@ export class LowerToIR {
       Decorated: (pos, signature, decl) => {
         const irs = this.declaration(decl, context);
         return run_plugin(signature, irs);
+      },
+
+      DefaultHandler: (pos, name) => {
+        return [
+          new IR.DDefaultHandler(
+            this.context.register(pos),
+            handlerName(name, null)
+          ),
+        ];
+      },
+
+      Handler: (pos, cmeta, name, sig, init, specs) => {
+        const { types, parameters } = this.parameters(handlerArgs(sig));
+
+        return [
+          new IR.DHandler(
+            this.context.register(pos),
+            this.documentation(cmeta),
+            handlerName(name, sig),
+            parameters,
+            types,
+            this.statements(init),
+            this.handlers(specs)
+          ),
+        ];
       },
     });
   }

@@ -32,16 +32,27 @@ type Declaration =
   | Capability(pos: Meta, cmeta: Metadata, name: Name)
   | Protect(pos: Meta, capability: Name, entity: ProtectEntity)
   | Decorated(pos: Meta, signature: Signature<Literal>, declaration: Declaration)
+  | Handler( pos: Meta
+           , cmeta: Metadata
+           , name: Name
+           , signature: Signature<Parameter>?
+           , initialisation: Statement[]
+           , specs: HandlerSpec[]
+           )
+  | DefaultHandler(pos: Meta, name: Name)
 
 type ProtectEntity =
   | Type(pos: Meta, name: Name)
   | Trait(pos: Meta, name: Name)
   | Effect(pos: Meta, name: Name)
   | Definition(pos: Meta, name: Name)
+  | Handler(pos: Meta, name: Name, signature: Signature<unknown>?)
 
 type EffectCase(pos: Meta, cmeta: Metadata, name: Name, params: Parameter[])
 
-type Handler(pos: Meta, name: Name, variant: Name, args: Name[], body: Statement[])
+type HandlerSpec =
+  | Use(pos: Meta, name: Name, config: Signature<Expression>?)
+  | On(pos: Meta, name: Name, variant: Name, args: Name[], body: Statement[])
 
 type TrailingTest(pos: Meta, body: Statement[])
 
@@ -131,7 +142,7 @@ type Expression =
   | ForeignInvoke(pos: Meta, name: Namespace, args: Expression[])
   | Parens(pos: Meta, value: Expression)
   | Lit(value: Literal)
-  | Handle(pos: Meta, body: Statement[], handlers: Handler[])
+  | Handle(pos: Meta, body: Statement[], handlers: HandlerSpec[])
   | Perform(pos: Meta, effect: Name, variant: Name, args: Expression[])
   | ContinueWith(pos: Meta, value: Expression)
 
@@ -265,6 +276,17 @@ grammar Crochet : Program {
     | traitImplementDeclaration
     | capabilityDeclaration
     | protectDeclaration
+    | handlerDeclaration
+
+  handlerDeclaration =
+    | m:declarationMeta handler_ n:atom s:handlerSignature<parameter>? b:handlerBody with_ xs:handlers end_ 
+      -> Declaration.Handler(meta, m, n, s, b, xs)
+    | default_ handler_ n:atom s<";">
+      -> Declaration.DefaultHandler(meta, n)
+
+  handlerBody =
+    | do_ xs:statements   -> xs
+    |                     -> []
 
   decoratedDeclaration =
     | s<"@|"> space* s:decoratorSignature<literal> space* d:declaration
@@ -279,10 +301,11 @@ grammar Crochet : Program {
       -> Declaration.Protect(meta, c, e)
 
   protectEntity =
-    | type_ n:atom    -> ProtectEntity.Type(meta, n)
-    | effect_ n:atom  -> ProtectEntity.Effect(meta, n)
-    | global_ n:atom  -> ProtectEntity.Definition(meta, n)
-    | trait_ n:atom   -> ProtectEntity.Trait(meta, n)
+    | type_ n:atom                                    -> ProtectEntity.Type(meta, n)
+    | effect_ n:atom                                  -> ProtectEntity.Effect(meta, n)
+    | global_ n:atom                                  -> ProtectEntity.Definition(meta, n)
+    | trait_ n:atom                                   -> ProtectEntity.Trait(meta, n)
+    | handler_ n:atom s:handlerSignature<null_hole>?  -> ProtectEntity.Handler(meta, n, s)
 
   traitDeclaration =
     | m:declarationMeta trait_ n:atom with_ cs:traitInstruction+ end_
@@ -873,8 +896,11 @@ grammar Crochet : Program {
     | xs:one_handler+ -> xs
 
   one_handler =
+    | use_ n:atom s:handlerSignature<invokeInfixExpression>? s<";">
+      -> HandlerSpec.Use(meta, n, s)
+
     | on_ n:atom s<"."> v:atom s<"("> xs:list0<name, s<",">> s<")"> b:eblock
-      -> Handler(meta, n, v, xs, b)
+      -> HandlerSpec.On(meta, n, v, xs, b)
 
   atomicExpression =
     | a:atom                                -> Expression.Global(meta, a)
@@ -937,6 +963,9 @@ grammar Crochet : Program {
   hole =
     | x:s<"_"> ~name_rest   -> Expression.Hole(meta)
 
+  null_hole =
+    | s<"_"> ~name_rest     -> null
+
   // -- Token -> Rule & Basics
   atom =
     | s<"'"> x:t_atom               -> Name(meta, x)
@@ -955,6 +984,9 @@ grammar Crochet : Program {
 
   // -- Higher-order
   named<n> = x:s<n> -> Name(meta, x)
+
+  handlerSignature<t> =
+    | kws:signaturePair<t>+           -> Signature.KeywordSelfless(meta, kws)
 
   decoratorSignature<t> =
     | logicSignature<t>
@@ -1161,6 +1193,9 @@ grammar Crochet : Program {
   capability_ = kw<"capability">
   protect_ = kw<"protect">
   otherwise_ = kw<"otherwise">
+  handler_ = kw<"handler">
+  use_ = kw<"use">
+  default_ = kw<"default">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | action_
@@ -1173,4 +1208,5 @@ grammar Crochet : Program {
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
     | effect_ | handle_ | continue_ | perform_ | trait_ | implement_ | has_
     | global_ | capability_ | protect_ | otherwise_
+    | use_ | handler_ | default_
 }

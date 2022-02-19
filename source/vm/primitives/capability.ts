@@ -1,5 +1,6 @@
 import {
   CrochetCapability,
+  CrochetHandler,
   CrochetModule,
   CrochetPackage,
   CrochetTrait,
@@ -13,6 +14,7 @@ import * as Location from "./location";
 import * as Types from "./types";
 import * as Values from "./values";
 import * as Modules from "./modules";
+import { Effects } from ".";
 
 export function define_capability(
   module: CrochetModule,
@@ -129,6 +131,17 @@ export function protect_effect(
   return protect_type(universe, module, name, capability);
 }
 
+export function protect_handler(
+  universe: Universe,
+  module: CrochetModule,
+  name: string,
+  capability: CrochetCapability
+) {
+  const handler = Effects.get_handler(module, name);
+  handler.protected_by.add(capability);
+  return handler;
+}
+
 export function protect_definition(
   universe: Universe,
   module: CrochetModule,
@@ -162,6 +175,16 @@ export function free_definition(
       return value;
     }
   }
+}
+
+export function free_handler(module: CrochetModule, handler: CrochetHandler) {
+  assert_capabilities(
+    module,
+    handler.protected_by,
+    "Accessing handler",
+    handler.name
+  );
+  return handler;
 }
 
 export function free_type(module: CrochetModule, type: CrochetType) {

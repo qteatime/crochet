@@ -1,3 +1,4 @@
+import { CrochetHandler } from "..";
 import { unreachable } from "../../utils/utils";
 import {
   Activation,
@@ -95,6 +96,8 @@ export function format_location(location: ActivationLocation) {
     return `native ${location.name} in ${location.pkg.name}`;
   } else if (location instanceof SimulationSignal) {
     return `signal ${location.name}${from_suffix_newline(location.module)}`;
+  } else if (location instanceof CrochetHandler) {
+    return `handler ${location.name} in ${module_location(location.module)}`;
   } else if (location == null) {
     return `(root)`;
   } else {

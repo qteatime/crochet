@@ -71,6 +71,14 @@ end
 
 // -- The effects
 
+/// An effect that controls the construction of random generators from
+/// some source of randomness---the effect describes the randomness source.
+effect randomness-source with
+  /// Returns a seed for the random generator
+  random-seed(); // -> integer
+end
+
+
 /// An effect that allows sharing a mutable, predictable random number
 /// generator within a `handle` block. 
 effect scoped-random with
@@ -114,3 +122,8 @@ capability update-shared-instance;
 /// Generally you want to give this capability to your application, and not
 /// to libraries you use (unless you have a reason to do so).
 capability read-shared-instance;
+
+/// Grants the power of installing randomness source, and thus allowing
+/// possibly all code to construct random generators with non-deterministic
+/// seeds.
+capability randomness-source;

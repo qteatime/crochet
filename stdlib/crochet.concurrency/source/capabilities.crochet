@@ -4,3 +4,5 @@ singleton internal;
 
 protect global internal with internal;
 protect type internal with internal;
+
+capability wall-clock-timer;

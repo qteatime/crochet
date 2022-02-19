@@ -3,8 +3,22 @@
 open crochet.network.types;
 
 singleton document-location;
+
+effect document-location with
+  get-current(); // -> url
+end
+
+handler real-document-location with
+  on document-location.get-current() do
+    continue with (#url from-text: (foreign document.location()));
+  end
+end
+
 protect global document-location with document-location;
 protect type document-location with document-location;
+protect effect document-location with document-location;
+protect handler real-document-location with document-location;
+
 
 command document-location current =
-  #url from-text: (foreign document.location());
+  perform document-location.get-current();

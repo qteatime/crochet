@@ -84,3 +84,95 @@ end
 singleton io;
 command io read = perform io.read();
 command io write: X = perform io.write(X);
+
+
+// handlers
+local define shared-io-state = lazy ([
+  input -> #cell with-value: [],
+  output -> #cell with-value: [],
+]);
+
+handler shared-io with
+  on io.read() do
+    let State = (force shared-io-state).input;
+    let Value = State value first;
+    State <- State value rest;
+    continue with Value;
+  end
+
+  on io.write(X) do
+    let State = (force shared-io-state).output;
+    State <- State value append: X;
+    continue with nothing;
+  end
+end
+
+default handler shared-io;
+
+handler pure-io state: (State is record) do
+  let Input = State.input;
+  let Output = State.output;
+with
+  on io.read() do
+    let Value = Input value first;
+    Input <- Input value rest;
+    continue with Value;
+  end
+
+  on io.write(X) do
+    Output <- Output value append: X;
+    continue with nothing;
+  end
+end
+
+
+handler pure-io with
+  use pure-io state: (do
+    let Cell = #cell with-value: [];
+    [input -> Cell, output -> Cell];
+  end);
+end
+
+
+test "Default handlers work" do
+  let State = (force shared-io-state);
+  State.input <- ["World"];
+  State.output <- [];
+  
+  let Who = perform io.read();
+  perform io.write("Hello, [Who]");
+
+  assert State.output value =:= ["Hello, ["World"]"];
+  assert State.input value =:= [];
+end
+
+test "Parameterised handlers" do
+  let State = [
+    input -> #cell with-value: ["World"],
+    output -> #cell with-value: []
+  ];
+
+  handle
+    let Who = perform io.read();
+    perform io.write("Hello, [Who]");
+  with
+    use pure-io state: State;
+  end
+
+  assert State.output value =:= ["Hello, ["World"]"];
+  assert State.input value =:= [];
+end
+
+test "Parameterised handlers including other handlers" do
+  let State = #cell with-value: [];
+  handle
+    perform io.write("a");
+    perform io.write("b");
+    State <- State value append: perform io.read();
+    State <- State value append: perform io.read();
+  with
+    use pure-io;
+  end
+
+  assert State value =:= ["a", "b"];
+end

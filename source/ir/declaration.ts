@@ -22,6 +22,8 @@ export enum DeclarationTag {
   IMPLEMENT_TRAIT,
   CAPABILITY,
   PROTECT,
+  HANDLER,
+  DEFAULT_HANDLER,
 }
 
 export enum Visibility {
@@ -46,7 +48,9 @@ export type Declaration =
   | DTrait
   | DImplementTrait
   | DCapability
-  | DProtect;
+  | DProtect
+  | DHandler
+  | DDefaultHandler;
 
 abstract class BaseDeclaration {
   abstract tag: DeclarationTag;
@@ -293,4 +297,29 @@ export enum ProtectEntityTag {
   TRAIT,
   EFFECT,
   DEFINE,
+  HANDLER,
+}
+
+export class DHandler extends BaseDeclaration {
+  readonly tag = DeclarationTag.HANDLER;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly parameters: string[],
+    readonly types: TypeConstraint[],
+    readonly body: BasicBlock,
+    readonly handlers: HandlerCase[]
+  ) {
+    super();
+  }
+}
+
+export class DDefaultHandler extends BaseDeclaration {
+  readonly tag = DeclarationTag.DEFAULT_HANDLER;
+
+  constructor(readonly meta: Metadata, readonly name: string) {
+    super();
+  }
 }

@@ -61,21 +61,21 @@ command main-html: Root do
   let App = #cell with-value: nothing;
 
   handle
-    websocket-handler with-real-handler: {
-      agata-dom with-root: Root do: {
-        let Ws = #websocket open: (#url from-text: "ws://localhost:8081");
-        let Actor = root-zone spawn: app-state-not-connected;
-        Ws listener
-          | keep-if: { Event in Event is websocket-message-received }
-          | subscribe: { Event in
-              let Message = package json parse: Event message;
-              Actor send: Message;
-            } capture;
-        App <- new app(ws -> Ws, actor -> Actor, stream -> #event-stream empty);
-        agata show: screen-loading;
-      };
-    };
+    let Ws = #websocket open: (#url from-text: "ws://localhost:8081");
+    let Actor = root-zone spawn: app-state-not-connected;
+    Ws listener
+      | keep-if: { Event in Event is websocket-message-received }
+      | subscribe: { Event in
+          let Message = package json parse: Event message;
+          Actor send: Message;
+        } capture;
+    App <- new app(ws -> Ws, actor -> Actor, stream -> #event-stream empty);
+    agata show: screen-loading;
+    agata-dom initialise;
   with
+    use agata-dom-renderer root: Root;
+    use real-websocket-handler;
+
     on chat.get-app() => continue with App value;
   end
 end

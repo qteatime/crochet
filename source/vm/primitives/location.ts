@@ -278,10 +278,7 @@ export function simple_op(op: IR.Op, index: number | null): string {
       ? [
           "\n",
           ...op.handlers.map((x) => {
-            return (
-              `on ${x.effect}.${x.variant} [${x.parameters.join(", ")}]:\n` +
-              x.block.ops.map((x, i) => "  " + simple_op(x, i) + "\n").join("")
-            );
+            return simple_handler_case(x);
           }),
         ]
       : []
@@ -294,6 +291,26 @@ export function simple_op(op: IR.Op, index: number | null): string {
   return `${(index ?? "").toString().padStart(3)} ${
     IR.OpTag[op.tag]
   } ${entries.join(" ")}${bbs}${hs}`;
+}
+
+export function simple_handler_case(x: IR.HandlerCase) {
+  switch (x.tag) {
+    case IR.HandlerCaseTag.ON: {
+      return (
+        `on ${x.effect}.${x.variant} [${x.parameters.join(", ")}]:\n` +
+        x.block.ops.map((x, i) => "  " + simple_op(x, i) + "\n").join("")
+      );
+    }
+
+    case IR.HandlerCaseTag.USE: {
+      return `use ${x.name}:\n${x.values.ops
+        .map((x, i) => "  " + simple_op(x, i) + "\n")
+        .join("")}`;
+    }
+
+    default:
+      throw unreachable(x, "HandlerCase");
+  }
 }
 
 export function simple_activation(x: Activation): string {

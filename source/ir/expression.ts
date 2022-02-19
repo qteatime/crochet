@@ -490,14 +490,42 @@ export class Handle extends BaseOp {
   }
 }
 
-export class HandlerCase {
+export type HandlerCase = HandlerCaseUse | HandlerCaseOn;
+
+export abstract class BaseHandlerCase {
+  abstract readonly tag: HandlerCaseTag;
+}
+
+export enum HandlerCaseTag {
+  USE,
+  ON,
+}
+
+export class HandlerCaseUse extends BaseHandlerCase {
+  readonly tag = HandlerCaseTag.USE;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly name: string,
+    readonly arity: number,
+    readonly values: BasicBlock
+  ) {
+    super();
+  }
+}
+
+export class HandlerCaseOn extends BaseHandlerCase {
+  readonly tag = HandlerCaseTag.ON;
+
   constructor(
     readonly meta: Metadata,
     readonly effect: string,
     readonly variant: string,
     readonly parameters: string[],
     readonly block: BasicBlock
-  ) {}
+  ) {
+    super();
+  }
 }
 
 export class Perform extends BaseOp {

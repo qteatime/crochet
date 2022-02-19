@@ -1,6 +1,17 @@
 % crochet
 
+effect wall-clock with
+  now(); // -> instant
+end
+
+handler milliseconds-precise-wall-clock with
+  on wall-clock.now() => continue with (foreign clock.now());
+end
+
+protect handler milliseconds-precise-wall-clock with wall-clock;
+
+
 /// Returns the an instant that represents the current system's wall clock,
 /// in UTC, and with milliseconds precision.
 command wall-clock now =
-  #instant from-milliseconds-since-unix-epoch: (foreign clock.now());
+  #instant from-milliseconds-since-unix-epoch: (perform wall-clock.now());

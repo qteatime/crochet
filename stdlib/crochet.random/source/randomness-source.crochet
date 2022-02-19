@@ -1,0 +1,8 @@
+% crochet
+
+handler low-entropy-random-source with
+  on randomness-source.random-seed() =>
+    continue with (foreign random.random-seed());
+end
+
+protect handler low-entropy-random-source with randomness-source;

@@ -343,6 +343,21 @@ export class CrochetTest {
   ) {}
 }
 
+export class CrochetHandler {
+  readonly protected_by: Set<CrochetCapability> = new Set();
+
+  constructor(
+    readonly module: CrochetModule,
+    readonly env: Environment,
+    readonly documentation: string,
+    readonly name: string,
+    readonly parameters: string[],
+    readonly types: CrochetTypeConstraint[],
+    readonly initialisation: IR.BasicBlock,
+    readonly handlers: IR.HandlerCase[]
+  ) {}
+}
+
 export class CrochetPrelude {
   constructor(readonly env: Environment, readonly body: IR.BasicBlock) {}
 }
@@ -358,8 +373,10 @@ export class CrochetWorld {
   readonly actions = new Namespace<Action>(null, null);
   readonly contexts = new Namespace<CrochetContext>(null, null);
   readonly capabilities = new Namespace<CrochetCapability>(null, null);
+  readonly handlers = new Namespace<CrochetHandler>(null, null);
   readonly global_context = new GlobalContext();
   readonly prelude: CrochetPrelude[] = [];
+  readonly default_handlers: Set<CrochetHandler> = new Set();
   readonly tests: CrochetTest[] = [];
   readonly packages = new Map<string, CrochetPackage>();
 }
@@ -376,6 +393,8 @@ export class CrochetPackage {
   readonly actions: PassthroughNamespace<Action>;
   readonly contexts: PassthroughNamespace<CrochetContext>;
   readonly capabilities: PassthroughNamespace<CrochetCapability>;
+  readonly handlers: PassthroughNamespace<CrochetHandler>;
+
   readonly dependencies = new Set<string>();
   readonly granted_capabilities = new Set<CrochetCapability>();
   private _token: string;
@@ -397,6 +416,7 @@ export class CrochetPackage {
     this.actions = new PassthroughNamespace(world.actions, name);
     this.contexts = new PassthroughNamespace(world.contexts, name);
     this.capabilities = new PassthroughNamespace(world.capabilities, name);
+    this.handlers = new PassthroughNamespace(world.handlers, name);
   }
 
   get name() {
@@ -424,6 +444,7 @@ export class CrochetModule {
   readonly actions: Namespace<Action>;
   readonly contexts: Namespace<CrochetContext>;
   readonly traits: Namespace<CrochetTrait>;
+  readonly handlers: Namespace<CrochetHandler>;
   readonly open_prefixes: Set<string>;
 
   constructor(
@@ -444,6 +465,7 @@ export class CrochetModule {
     this.actions = new Namespace(pkg.actions, pkg.name, this.open_prefixes);
     this.contexts = new Namespace(pkg.contexts, pkg.name, this.open_prefixes);
     this.traits = new Namespace(pkg.traits, pkg.name, this.open_prefixes);
+    this.handlers = new Namespace(pkg.handlers, pkg.name, this.open_prefixes);
   }
 }
 //#endregion
@@ -693,12 +715,14 @@ export enum ContinuationTag {
   RETURN,
   DONE,
   TAP,
+  JUMP,
 }
 
 export type Continuation =
   | ContinuationDone
   | ContinuationReturn
-  | ContinuationTap;
+  | ContinuationTap
+  | ContinuationJump;
 
 export class ContinuationReturn {
   readonly tag = ContinuationTag.RETURN;
@@ -719,6 +743,12 @@ export class ContinuationTap {
       value: CrochetValue
     ) => State
   ) {}
+}
+
+export class ContinuationJump {
+  readonly tag = ContinuationTag.JUMP;
+
+  constructor(readonly next: CrochetActivation, readonly arity: number) {}
 }
 
 export const _done = new ContinuationDone();
@@ -755,6 +785,7 @@ export type ActivationLocation =
   | CrochetTest
   | NativeFunction
   | SimulationSignal
+  | CrochetHandler
   | null;
 
 export class CrochetActivation implements IActivation {
