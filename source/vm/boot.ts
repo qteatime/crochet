@@ -1,4 +1,4 @@
-import { CrochetCapability } from ".";
+import { CrochetCapability, CrochetHandler } from ".";
 import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
 import { XorShift } from "../utils/xorshift";
@@ -689,10 +689,41 @@ export function load_declaration(
           break;
         }
 
+        case et.HANDLER: {
+          Capability.protect_handler(universe, module, entity, capability);
+          break;
+        }
+
         default: {
           throw unreachable(entity_type, "Entity type");
         }
       }
+      break;
+    }
+
+    case t.HANDLER: {
+      const env = new Environment(null, null, module, null);
+      const new_handler = new CrochetHandler(
+        module,
+        env,
+        declaration.documentation,
+        declaration.name,
+        declaration.parameters,
+        declaration.types.map((t) =>
+          Types.materialise_type_constraint(universe, module, t)
+        ),
+        declaration.body,
+        declaration.handlers
+      );
+      Effects.define_handler(module, new_handler);
+      break;
+    }
+
+    case t.DEFAULT_HANDLER: {
+      const handler0 = Effects.get_handler(module, declaration.name);
+      // this should always succeed
+      const handler = Capability.free_handler(module, handler0);
+      Effects.make_default_handler(universe, handler);
       break;
     }
 

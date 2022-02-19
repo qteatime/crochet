@@ -343,6 +343,21 @@ export class CrochetTest {
   ) {}
 }
 
+export class CrochetHandler {
+  readonly protected_by: Set<CrochetCapability> = new Set();
+
+  constructor(
+    readonly module: CrochetModule,
+    readonly env: Environment,
+    readonly documentation: string,
+    readonly name: string,
+    readonly parameters: string[],
+    readonly types: CrochetTypeConstraint[],
+    readonly initialisation: IR.BasicBlock,
+    readonly handlers: IR.HandlerCase[]
+  ) {}
+}
+
 export class CrochetPrelude {
   constructor(readonly env: Environment, readonly body: IR.BasicBlock) {}
 }
@@ -358,8 +373,10 @@ export class CrochetWorld {
   readonly actions = new Namespace<Action>(null, null);
   readonly contexts = new Namespace<CrochetContext>(null, null);
   readonly capabilities = new Namespace<CrochetCapability>(null, null);
+  readonly handlers = new Namespace<CrochetHandler>(null, null);
   readonly global_context = new GlobalContext();
   readonly prelude: CrochetPrelude[] = [];
+  readonly default_handlers: Set<CrochetHandler> = new Set();
   readonly tests: CrochetTest[] = [];
   readonly packages = new Map<string, CrochetPackage>();
 }
@@ -376,6 +393,8 @@ export class CrochetPackage {
   readonly actions: PassthroughNamespace<Action>;
   readonly contexts: PassthroughNamespace<CrochetContext>;
   readonly capabilities: PassthroughNamespace<CrochetCapability>;
+  readonly handlers: PassthroughNamespace<CrochetHandler>;
+
   readonly dependencies = new Set<string>();
   readonly granted_capabilities = new Set<CrochetCapability>();
   private _token: string;
@@ -397,6 +416,7 @@ export class CrochetPackage {
     this.actions = new PassthroughNamespace(world.actions, name);
     this.contexts = new PassthroughNamespace(world.contexts, name);
     this.capabilities = new PassthroughNamespace(world.capabilities, name);
+    this.handlers = new PassthroughNamespace(world.handlers, name);
   }
 
   get name() {

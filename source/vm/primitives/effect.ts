@@ -10,12 +10,14 @@ import {
   Handler,
   HandlerStack,
   Tag,
+  Universe,
   _return,
 } from "../intrinsics";
 import { module_location, simple_value } from "./location";
 import { assert_tag, has_type } from "./values";
 import * as Environments from "./environments";
 import * as Capability from "./capability";
+import { CrochetHandler, CrochetWorld } from "..";
 
 export function effect_name(x: string) {
   return `effect ${x}`;
@@ -143,4 +145,39 @@ export function make_handle(
   );
   stack.activation = activation;
   return new_activation;
+}
+
+export function get_handler(module: CrochetModule, name: string) {
+  const handler = module.pkg.handlers.try_lookup(name);
+  if (handler == null) {
+    throw new ErrArbitrary(
+      "undefined",
+      `The handler ${name} is not accessible from ${module_location(module)}`
+    );
+  }
+  return handler;
+}
+
+export function define_handler(module: CrochetModule, handler: CrochetHandler) {
+  if (!module.pkg.handlers.define(handler.name, handler)) {
+    throw new ErrArbitrary(
+      "duplicated-handler",
+      `Duplicated handler definition ${handler.name} in ${module_location(
+        module
+      )}`
+    );
+  }
+}
+
+export function make_default_handler(
+  universe: Universe,
+  handler: CrochetHandler
+) {
+  if (handler.initialisation.ops.length !== 0) {
+    throw new ErrArbitrary(
+      "default-handler-with-initialisation",
+      `Cannot make ${handler.name} a default handler because it contains initialisation code.`
+    );
+  }
+  universe.world.default_handlers.add(handler);
 }
