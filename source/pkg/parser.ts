@@ -64,6 +64,7 @@ export const capabilities_spec = spec(
   {
     requires: set(capability_spec),
     provides: set(capability_provide_spec),
+    optional: optional(set(capability_spec), new Set<Capability>()),
   },
   (x) => capabilities(x)
 );
@@ -105,6 +106,7 @@ export const package_spec = spec(
       capabilities({
         requires: new Set<Capability>(),
         provides: new Set<ProvideCapability>(),
+        optional: new Set<Capability>(),
       })
     ),
   },

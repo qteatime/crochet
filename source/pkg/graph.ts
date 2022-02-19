@@ -145,6 +145,11 @@ export class PackageGraph {
       for (const x of pkg.required_capabilities) {
         pkg.granted_capabilities.add(x);
       }
+      for (const x of pkg.optional_capabilities) {
+        if (capabilities.has(x)) {
+          pkg.granted_capabilities.add(x);
+        }
+      }
 
       // check dependencies recursively
       for (const x of pkg.dependencies) {
@@ -152,7 +157,7 @@ export class PackageGraph {
         if (!visited.includes(dep)) {
           const new_capabilities = restrict_capabilities(
             capabilities,
-            dep.required_capabilities
+            dep.accepted_capabilities
           );
 
           check([dep, ...visited], name, dep, new_capabilities);
@@ -331,6 +336,14 @@ export class ResolvedPackage {
 
   get required_capabilities() {
     return this.pkg.meta.capabilities.requires;
+  }
+
+  get optional_capabilities() {
+    return this.pkg.meta.capabilities.optional;
+  }
+
+  get accepted_capabilities() {
+    return union(this.required_capabilities, this.optional_capabilities);
   }
 
   get provided_capabilities() {

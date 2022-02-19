@@ -15,15 +15,12 @@
   "dependencies": [
     "crochet.core",
     "crochet.concurrency",
-    {
-      "name": "crochet.ui.agata",
-      "capabilities": ["crochet.core/asset-location"]
-    },
     "crochet.time",
-    "crochet.debug"
+    "crochet.debug",
+    "crochet.ui.agata"
   ],
   "capabilities": {
-    "requires": ["crochet.ui.agata/ui-control", "crochet.core/asset-location"],
+    "requires": ["crochet.ui.agata/ui-control"],
     "provides": []
   }
 }
