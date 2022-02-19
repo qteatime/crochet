@@ -33,6 +33,7 @@ type Declaration =
   | Protect(pos: Meta, capability: Name, entity: ProtectEntity)
   | Decorated(pos: Meta, signature: Signature<Literal>, declaration: Declaration)
   | Handler( pos: Meta
+           , cmeta: Metadata
            , name: Name
            , signature: Signature<Parameter>?
            , initialisation: Statement[]
@@ -278,8 +279,8 @@ grammar Crochet : Program {
     | handlerDeclaration
 
   handlerDeclaration =
-    | handler_ n:atom s:handlerSignature<parameter>? b:handlerBody with_ xs:handlers end_ 
-      -> Declaration.Handler(meta, n, s, b, xs)
+    | m:declarationMeta handler_ n:atom s:handlerSignature<parameter>? b:handlerBody with_ xs:handlers end_ 
+      -> Declaration.Handler(meta, m, n, s, b, xs)
     | default_ handler_ n:atom s<";">
       -> Declaration.DefaultHandler(meta, n)
 

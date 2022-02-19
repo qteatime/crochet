@@ -3,6 +3,7 @@ import {
   Signature,
   String as CString,
   PartialSignature,
+  Name,
 } from "../generated/crochet-grammar";
 
 // -- Utilities
@@ -125,4 +126,16 @@ export function compileRepl(x: any): any {
 
 export function compileProgram(p: any): any {
   throw new Error(`to be removed`);
+}
+
+export function handlerName(name: Name, sig: Signature<unknown> | null) {
+  if (sig == null) {
+    return name.name;
+  } else {
+    return `${name.name} ${signatureName(sig)}`;
+  }
+}
+
+export function handlerArgs<T>(sig: Signature<T> | null): T[] {
+  return sig == null ? [] : signatureValues(sig);
 }

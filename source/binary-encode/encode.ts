@@ -183,17 +183,52 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.DeclarationTag.HANDLER: {
+        this.encode_meta_id(x.meta);
+        this.string(x.documentation);
+        this.string(x.name);
+        this.array(x.parameters, (f) => this.string(f));
+        this.array(x.types, (t) => this.encode_type_constraint(t));
+        this.encode_basic_block(x.body);
+        this.array(x.handlers, (h) => this.encode_handler(h));
+        break;
+      }
+
+      case IR.DeclarationTag.DEFAULT_HANDLER: {
+        this.encode_meta_id(x.meta);
+        this.string(x.name);
+        break;
+      }
+
       default:
         throw unreachable(x, `Declaration`);
     }
   }
 
   encode_handler(x: IR.HandlerCase) {
-    this.encode_meta_id(x.meta);
-    this.string(x.effect);
-    this.string(x.variant);
-    this.array(x.parameters, (p) => this.string(p));
-    this.encode_basic_block(x.block);
+    const t = IR.HandlerCaseTag;
+
+    switch (x.tag) {
+      case t.USE: {
+        this.encode_meta_id(x.meta);
+        this.string(x.name);
+        this.uint32(x.arity);
+        this.encode_basic_block(x.values);
+        break;
+      }
+
+      case t.ON: {
+        this.encode_meta_id(x.meta);
+        this.string(x.effect);
+        this.string(x.variant);
+        this.array(x.parameters, (p) => this.string(p));
+        this.encode_basic_block(x.block);
+        break;
+      }
+
+      default:
+        throw unreachable(x, "HandlerCase");
+    }
   }
 
   encode_basic_block(x: IR.BasicBlock) {
