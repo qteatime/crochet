@@ -1,9 +1,0 @@
-% crochet
-
-command integer pixels = new pixels(self);
-command float-64bit percent = new percent(self);
-command integer percent = new percent(self as float-64bit);
-command float-64bit em = new em(self);
-command integer em = new em(self as float-64bit);
-
-
