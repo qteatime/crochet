@@ -6,10 +6,7 @@
   "dependencies": [
     "crochet.core",
     "crochet.concurrency",
-    {
-      "name": "crochet.ui.agata",
-      "capabilities": ["crochet.core/asset-location"]
-    },
+    "crochet.ui.agata",
     "crochet.wrapper.browser.web-apis",
     "crochet.network.types",
     "crochet.language.json",
@@ -19,7 +16,6 @@
     "requires": [
       "crochet.wrapper.browser.web-apis/use-websockets",
       "crochet.wrapper.browser.web-apis/manage-websockets",
-      "crochet.core/asset-location",
       "crochet.ui.agata/ui-control"
     ],
     "provides": []

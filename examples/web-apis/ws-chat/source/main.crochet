@@ -161,7 +161,7 @@ command screen-login as widget do
         | fill-container-horizontally
         | with-margin: { M in M top: (1 as rem) }
     ]
-    | with-width: (500 as pixels)
+    | with-size: { S in S width: (500 as pixels) }
   ]
   | gap: (1 as rem)
   | justify-content: "center"
