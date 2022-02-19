@@ -869,6 +869,20 @@ export class Thread {
         return _continue;
       }
 
+      case t.EXTEND_RECORD: {
+        const values = this.pop_many(activation, op.keys.length);
+        const base = this.pop(activation);
+        const record = Values.extend_record(
+          this.universe,
+          base,
+          op.keys,
+          values
+        );
+        this.push(activation, record);
+        activation.next();
+        return _continue;
+      }
+
       case t.PROJECT_STATIC: {
         const value = this.pop(activation);
         const result = Values.project(value, op.key, (value) =>

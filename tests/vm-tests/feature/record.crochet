@@ -1,0 +1,43 @@
+% crochet
+
+test "Constructing and using records" do
+  let A = [a -> 1];
+  let B = [->];
+  let C = [a -> 1, b -> 2, c -> 3];
+
+  assert A =:= [a -> 1];
+  assert B =:= [->];
+  assert C =:= [a -> 1, b -> 2, c -> 3];
+
+  assert A.a =:= 1;
+  assert C.a =:= 1;
+  assert C.b =:= 2;
+  assert C.c =:= 3;
+end
+
+test "Extended record keys" do
+  let A = [a -> 1];
+  let B = ["a" -> 1];
+  let C = [A -> 1];
+  let D = ["a long name" -> 1];
+
+  assert A =:= B;
+  assert A.a =:= 1;
+  assert B.a =:= 1;
+  assert A."a" =:= 1;
+  assert B."a" =:= 1;
+  assert C.A =:= 1;
+  assert D."a long name" =:= 1;
+end
+
+test "Extending records" do
+  let A = [->];
+  let B = [A with a -> 1, b -> 2];
+  let C = [B with a -> 2];
+  let D = [C with b -> 3, c -> 4];
+
+  assert A =:= [->];
+  assert B =:= [a -> 1, b -> 2];
+  assert C =:= [a -> 2, b -> 2];
+  assert D =:= [a -> 2, b -> 3, c -> 4];
+end

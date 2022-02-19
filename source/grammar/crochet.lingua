@@ -107,6 +107,7 @@ type Expression =
   | Self(pos: Meta)
   | List(pos: Meta, values: Expression[])
   | Record(pos: Meta, pairs: Pair<RecordField, Expression>[])
+  | ExtendRecord(pos: Meta, record: Expression, pairs: Pair<RecordField, Expression>[])
   | Search(pos: Meta, predicate: Predicate)
   | MatchSearch(pos: Meta, cases: MatchSearchCase[])
   | Project(pos: Meta, object: Expression, field: RecordField)
@@ -844,8 +845,9 @@ grammar Crochet : Program {
       -> Expression.List(meta, xs)
 
   recordExpression<e> =
-    | s<"["> s<"->"> s<"]">                            -> Expression.Record(meta, [])
-    | s<"["> xs:list1<recordPair<e>, s<",">> s<"]">    -> Expression.Record(meta, xs)
+    | s<"["> s<"->"> s<"]">                                     -> Expression.Record(meta, [])
+    | s<"["> o:e with_ xs:list1<recordPair<e>, s<",">> s<"]">   -> Expression.ExtendRecord(meta, o, xs)
+    | s<"["> xs:list1<recordPair<e>, s<",">> s<"]">             -> Expression.Record(meta, xs)
 
   recordPair<e> =
     | n:recordField s<"->"> v:e -> Pair(meta, n, v)

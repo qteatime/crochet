@@ -514,6 +514,13 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.Dig(this.decode_meta_id(), this.uint32());
       }
 
+      case t.EXTEND_RECORD: {
+        return new IR.ExtendRecord(
+          this.decode_meta_id(),
+          this.array((_) => this.string())
+        );
+      }
+
       default:
         throw unreachable(tag, "Operation");
     }
