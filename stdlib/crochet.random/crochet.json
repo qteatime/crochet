@@ -3,17 +3,22 @@
   "target": "*",
   "stability": "experimental",
   "dependencies": ["crochet.core"],
-  "native_sources": ["native/xorshift.js"],
+  "native_sources": ["native/xorshift.js", "native/random.js"],
   "sources": [
     "source/0-types.crochet",
     "source/shared-random.crochet",
     "source/constructing.crochet",
     "source/equality.crochet",
     "source/xor-shift.crochet",
-    "source/mutable-random.crochet"
+    "source/mutable-random.crochet",
+    "source/randomness-source.crochet"
   ],
   "capabilities": {
     "requires": [],
-    "provides": ["read-shared-instance", "update-shared-instance"]
+    "provides": [
+      "read-shared-instance",
+      "update-shared-instance",
+      "randomness-source"
+    ]
   }
 }

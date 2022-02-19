@@ -1,5 +1,14 @@
 % crochet
 
+/// Constructs a predictable random number generator with a "random"
+/// seed---where the seed is selected according to the randomness
+/// source that's active in the calling context.
+/// See [effect:randomness-source].
+command #random with-random-seed -> xor-shift do
+  let Seed = perform randomness-source.random-seed();
+  #random with-seed: Seed;
+end
+
 /// Constructs a predictable random number generator with the given
 /// `Seed`. Currently uses [type:xor-shift] as the implementation.
 command #random with-seed: Seed -> xor-shift

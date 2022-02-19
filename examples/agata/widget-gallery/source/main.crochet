@@ -5,11 +5,14 @@ open crochet.ui.agata;
 
 
 command main-html: Root do
-  agata-dom with-root: Root do: {
+  handle
     agata register-page: controls-button;
     agata register-page: layout-section;
     agata register-page: layout-card;
     
     agata register-top-page: layout-section;
-  }
+    agata-dom initialise;
+  with
+    use agata-dom-renderer root: Root;
+  end
 end

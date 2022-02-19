@@ -7,13 +7,19 @@ singleton agata-dom;
 protect type agata-dom with ui-control;
 protect global agata-dom with ui-control;
 
+effect dom-routing with
+  get-router(); // -> dom-routing
+end
+
+protect effect dom-routing with internal;
+
 type dom-routing(
   router is cell<router>,
   events is event-stream<navigate-event>,
   surface is dom-surface,
 );
 
-command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
+handler agata-dom-renderer root: (Root is unknown) do
   let Surface = dom make-surface-from-native-element: Root;
   Surface.node add-class: "agata-root";
   let Router = new dom-routing(
@@ -22,56 +28,62 @@ command agata-dom with-root: (Root is unknown) do: (Block is (() -> A)) -> A do
     surface -> Surface,
   );
   let References = #cell with-value: #map empty;
-  handle
-    Router setup-history-router;
-    Block();
-    Router try-load-current-url;
-  with
-    on agata-presentation.show(Widget) do
-      Surface replace-contents: Widget;
-      continue with nothing;
-    end
+with
+  on dom-routing.get-router() do
+    continue with Router;
+  end
 
-    on agata-rendering.get-shared-renderer() do
-      continue with dom-renderer;
-    end
+  on agata-presentation.show(Widget) do
+    Surface replace-contents: Widget;
+    continue with nothing;
+  end
 
-    on agata-presentation.register-reference(Reference, Target) do
-      References <- References value at: Reference put: Target;
-      continue with nothing;
-    end
+  on agata-rendering.get-shared-renderer() do
+    continue with dom-renderer;
+  end
 
-    on agata-presentation.get-reference(Reference) do
-      let Live = References value at: Reference;
-      continue with Live;
-    end
+  on agata-presentation.register-reference(Reference, Target) do
+    References <- References value at: Reference put: Target;
+    continue with nothing;
+  end
 
-    on agata-routing.register(Page) do
-      Router add-page: Page;
-      continue with nothing;
-    end
+  on agata-presentation.get-reference(Reference) do
+    let Live = References value at: Reference;
+    continue with Live;
+  end
 
-    on agata-routing.register-top-page(Page) do
-      Router use-top-page: Page;
-      continue with nothing;
-    end
+  on agata-routing.register(Page) do
+    Router add-page: Page;
+    continue with nothing;
+  end
 
-    on agata-routing.register-error-page(Page) do
-      Router use-error-page: Page;
-      continue with nothing;
-    end
+  on agata-routing.register-top-page(Page) do
+    Router use-top-page: Page;
+    continue with nothing;
+  end
 
-    on agata-routing.navigate(Uri) do
-      Router render: Uri;
-      agata-dom push-uri: Uri;
-      continue with nothing;
-    end
+  on agata-routing.register-error-page(Page) do
+    Router use-error-page: Page;
+    continue with nothing;
+  end
 
-    on agata-routing.get-navigation-events() do
-      continue with Router.events listener;
-    end
+  on agata-routing.navigate(Uri) do
+    Router render: Uri;
+    agata-dom push-uri: Uri;
+    continue with nothing;
+  end
+
+  on agata-routing.get-navigation-events() do
+    continue with Router.events listener;
   end
 end
+
+command agata-dom initialise do
+  let Router = perform dom-routing.get-router();
+  Router setup-history-router;
+  Router try-load-current-url;
+end
+
 
 // -- Routing
 command dom-routing add-page: Page do

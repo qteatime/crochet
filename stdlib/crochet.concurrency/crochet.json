@@ -3,7 +3,7 @@
   "target": "*",
   "native_sources": ["native/promise.js", "native/timer.js", "native/actor.js"],
   "sources": [
-    "source/internal.crochet",
+    "source/capabilities.crochet",
     "source/actor.crochet",
     "source/channel.crochet",
     "source/event-stream.crochet",
@@ -14,6 +14,6 @@
   "dependencies": ["crochet.core", "crochet.time"],
   "capabilities": {
     "requires": [],
-    "provides": []
+    "provides": ["wall-clock-timer"]
   }
 }
