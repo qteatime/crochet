@@ -1,0 +1,18 @@
+% crochet
+
+effect atomic-cell with
+  read(cell is cell<A>); // -> A
+  compare-and-swap(cell is cell<A>, old is A, value is A); // -> boolean
+end
+
+handler memory-atomic-cell with
+  on atomic-cell.read(Cell) do
+    continue with (foreign cell.deref(Cell));
+  end
+
+  on atomic-cell.compare-and-swap(Cell, Old, New) do
+    continue with (foreign cell.cas(Cell, Old, New));
+  end
+end
+
+default handler memory-atomic-cell;

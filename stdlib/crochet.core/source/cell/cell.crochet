@@ -17,7 +17,8 @@ end
 
 
 /// Retrieves the value of a [type:cell].
-command (X is cell) value = foreign cell.deref(X)
+command cell value do
+  perform atomic-cell.read(self);
 test
   let C = #cell with-value: 1;
   assert C value =:= 1;  
@@ -27,8 +28,8 @@ end
 /// Updates the value of a [type:cell], but only if its current value matches
 /// the provided `Old` value. The comparison and update are performed
 /// atomically.
-command (X is cell) compare: Old and-set: New -> boolean
-  = foreign cell.cas(X, Old, New)
+command cell compare: Old and-set: New -> boolean do
+  perform atomic-cell.compare-and-swap(self, Old, New);
 test
   let C = #cell with-value: 1;
   assert not (C compare: 2 and-set: 3);

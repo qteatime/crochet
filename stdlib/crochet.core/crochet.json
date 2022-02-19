@@ -25,6 +25,7 @@
 
     "source/action/action.crochet",
 
+    "source/cell/atomic-memory.crochet",
     "source/cell/cell.crochet",
     "source/cell/read-only.crochet",
 
