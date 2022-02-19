@@ -164,12 +164,15 @@ test "Parameterised handlers" do
 end
 
 test "Parameterised handlers including other handlers" do
+  let State = #cell with-value: [];
   handle
     perform io.write("a");
     perform io.write("b");
-    assert io.read() =:= "a";
-    assert io.read() =:= "b";
+    State <- State value append: perform io.read();
+    State <- State value append: perform io.read();
   with
     use pure-io;
   end
+
+  assert State value =:= ["a", "b"];
 end

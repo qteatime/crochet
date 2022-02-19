@@ -206,8 +206,9 @@ class CrochetIREncoder extends BinaryWriter {
   }
 
   encode_handler(x: IR.HandlerCase) {
-    const t = IR.HandlerCaseTag;
+    this.encode_enum_tag(x.tag);
 
+    const t = IR.HandlerCaseTag;
     switch (x.tag) {
       case t.USE: {
         this.encode_meta_id(x.meta);

@@ -280,6 +280,21 @@ export class Thread {
         return new SetStateSignal(new_state);
       }
 
+      case ContinuationTag.JUMP: {
+        const current = this.state.activation;
+        if (!(current instanceof CrochetActivation)) {
+          throw new Error(
+            `JUMP continuations cannot happen in native activations`
+          );
+        }
+
+        logger.debug("Jumping with", k.arity, "arguments to", () => k.next);
+
+        const args = this.pop_many(current, k.arity);
+        k.next.stack.push(...args);
+        return new JumpSignal(k.next);
+      }
+
       default:
         throw unreachable(k, `Continuation`);
     }

@@ -13,11 +13,17 @@ import {
   Universe,
   _return,
 } from "../intrinsics";
-import { module_location, simple_value } from "./location";
+import {
+  activation_location,
+  module_location,
+  simple_activation,
+  simple_value,
+} from "./location";
 import { assert_tag, has_type } from "./values";
 import * as Environments from "./environments";
 import * as Capability from "./capability";
-import { CrochetHandler, CrochetWorld } from "..";
+import { ContinuationJump, CrochetHandler, CrochetWorld } from "..";
+import { unreachable } from "../../utils/utils";
 
 export function effect_name(x: string) {
   return `effect ${x}`;
@@ -119,6 +125,108 @@ export function apply_continuation(k: CrochetActivation, value: CrochetValue) {
   return k;
 }
 
+class EffectContext {
+  constructor(
+    readonly handlers: Handler[] = [],
+    readonly activations: {
+      use: CrochetActivation;
+      init: CrochetActivation;
+    }[] = [],
+    readonly activation: CrochetActivation,
+    readonly module: CrochetModule,
+    readonly env: Environment
+  ) {}
+
+  with(module: CrochetModule, env: Environment) {
+    return new EffectContext(
+      this.handlers,
+      this.activations,
+      this.activation,
+      module,
+      env
+    );
+  }
+
+  add_handler(handler: Handler) {
+    this.handlers.push(handler);
+  }
+
+  add_activation(activation: {
+    use: CrochetActivation;
+    init: CrochetActivation;
+  }) {
+    this.activations.push(activation);
+  }
+
+  make_prelude(last: CrochetActivation) {
+    return this.activations.reduceRight(
+      (next, { use, init }) => {
+        (init as any).continuation = new ContinuationJump(next.use, 0);
+        return { use, init };
+      },
+      { use: last, init: last }
+    ).use;
+  }
+}
+
+export function evaluate_handle(
+  ctx: EffectContext,
+  handler: IR.HandlerCase
+): EffectContext {
+  const t = IR.HandlerCaseTag;
+  switch (handler.tag) {
+    case t.ON: {
+      const type0 = materialise_effect(
+        ctx.module,
+        handler.effect,
+        handler.variant
+      );
+      const type = Capability.free_effect(ctx.module, type0);
+      ctx.add_handler(
+        new Handler(type, handler.parameters, ctx.env, handler.block)
+      );
+      return ctx;
+    }
+
+    case t.USE: {
+      const h0 = get_handler(ctx.module, handler.name);
+      const h = Capability.free_handler(ctx.module, h0);
+
+      const env = Environments.clone(h.env);
+      const activation = new CrochetActivation(
+        ctx.activation,
+        h,
+        env,
+        _return,
+        ctx.activation.handlers,
+        new IR.BasicBlock([
+          ...h.parameters.map((x) => new IR.Let(handler.meta, x)).reverse(),
+          ...h.initialisation.ops,
+        ])
+      );
+
+      const use_env = Environments.clone(ctx.env);
+      const use_activation = new CrochetActivation(
+        ctx.activation,
+        null,
+        use_env,
+        new ContinuationJump(activation, h.parameters.length),
+        ctx.activation.handlers,
+        handler.values
+      );
+
+      ctx.add_activation({ use: use_activation, init: activation });
+      return h.handlers.reduce(
+        (ctx, hc) => evaluate_handle(ctx, hc),
+        ctx.with(h.module, env)
+      );
+    }
+
+    default:
+      throw unreachable(handler, "HandlerCase");
+  }
+}
+
 export function make_handle(
   activation: CrochetActivation,
   module: CrochetModule,
@@ -127,14 +235,10 @@ export function make_handle(
   cases: IR.HandlerCase[]
 ) {
   const env = Environments.clone(env0);
-  const handlers: Handler[] = [];
-  for (const h of cases) {
-    const type0 = materialise_effect(module, h.effect, h.variant);
-    const type = Capability.free_effect(module, type0);
-    handlers.push(new Handler(type, h.parameters, env, h.block));
-  }
+  const ctx0 = new EffectContext([], [], activation, module, env);
+  const ctx = cases.reduce((ctx, hc) => evaluate_handle(ctx, hc), ctx0);
 
-  const stack = new HandlerStack(activation.handlers, handlers);
+  const stack = new HandlerStack(activation.handlers, ctx.handlers);
   const new_activation = new CrochetActivation(
     activation,
     null,
@@ -144,7 +248,9 @@ export function make_handle(
     body
   );
   stack.activation = activation;
-  return new_activation;
+
+  const prelude = ctx.make_prelude(new_activation);
+  return prelude;
 }
 
 export function get_handler(module: CrochetModule, name: string) {

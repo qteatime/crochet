@@ -713,12 +713,14 @@ export enum ContinuationTag {
   RETURN,
   DONE,
   TAP,
+  JUMP,
 }
 
 export type Continuation =
   | ContinuationDone
   | ContinuationReturn
-  | ContinuationTap;
+  | ContinuationTap
+  | ContinuationJump;
 
 export class ContinuationReturn {
   readonly tag = ContinuationTag.RETURN;
@@ -739,6 +741,12 @@ export class ContinuationTap {
       value: CrochetValue
     ) => State
   ) {}
+}
+
+export class ContinuationJump {
+  readonly tag = ContinuationTag.JUMP;
+
+  constructor(readonly next: CrochetActivation, readonly arity: number) {}
 }
 
 export const _done = new ContinuationDone();
@@ -775,6 +783,7 @@ export type ActivationLocation =
   | CrochetTest
   | NativeFunction
   | SimulationSignal
+  | CrochetHandler
   | null;
 
 export class CrochetActivation implements IActivation {
