@@ -179,15 +179,12 @@ function materialise_handler(
   return new Handler(type, handler.parameters, env, handler.block);
 }
 
-export function evaluate_handle(
-  ctx: EffectContext,
-  handler: IR.HandlerCase
-): EffectContext {
+export function evaluate_handle(ctx: EffectContext, handler: IR.HandlerCase) {
   const t = IR.HandlerCaseTag;
   switch (handler.tag) {
     case t.ON: {
       ctx.add_handler(materialise_handler(ctx.module, ctx.env, handler));
-      return ctx;
+      return;
     }
 
     case t.USE: {
@@ -218,10 +215,11 @@ export function evaluate_handle(
       );
 
       ctx.add_activation({ use: use_activation, init: activation });
-      return h.handlers.reduce(
-        (ctx, hc) => evaluate_handle(ctx, hc),
-        ctx.with(h.module, env)
-      );
+      const ctx1 = ctx.with(h.module, env);
+      for (const hc of h.handlers) {
+        evaluate_handle(ctx1, hc);
+      }
+      return;
     }
 
     default:
@@ -237,8 +235,10 @@ export function make_handle(
   cases: IR.HandlerCase[]
 ) {
   const env = Environments.clone(env0);
-  const ctx0 = new EffectContext([], [], activation, module, env);
-  const ctx = cases.reduce((ctx, hc) => evaluate_handle(ctx, hc), ctx0);
+  const ctx = new EffectContext([], [], activation, module, env);
+  for (const hc of cases) {
+    evaluate_handle(ctx, hc);
+  }
 
   const stack = new HandlerStack(activation.handlers, ctx.handlers);
   const new_activation = new CrochetActivation(
@@ -256,7 +256,7 @@ export function make_handle(
 }
 
 export function get_handler(module: CrochetModule, name: string) {
-  const handler = module.pkg.handlers.try_lookup(name);
+  const handler = module.handlers.try_lookup(name);
   if (handler == null) {
     throw new ErrArbitrary(
       "undefined",

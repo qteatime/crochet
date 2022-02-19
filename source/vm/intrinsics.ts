@@ -444,6 +444,7 @@ export class CrochetModule {
   readonly actions: Namespace<Action>;
   readonly contexts: Namespace<CrochetContext>;
   readonly traits: Namespace<CrochetTrait>;
+  readonly handlers: Namespace<CrochetHandler>;
   readonly open_prefixes: Set<string>;
 
   constructor(
@@ -464,6 +465,7 @@ export class CrochetModule {
     this.actions = new Namespace(pkg.actions, pkg.name, this.open_prefixes);
     this.contexts = new Namespace(pkg.contexts, pkg.name, this.open_prefixes);
     this.traits = new Namespace(pkg.traits, pkg.name, this.open_prefixes);
+    this.handlers = new Namespace(pkg.handlers, pkg.name, this.open_prefixes);
   }
 }
 //#endregion
