@@ -61,7 +61,7 @@ class CrochetIRDecoder extends BinaryReader {
     return this.array((_) => this.decode_declaration());
   }
 
-  decode_declaration() {
+  decode_declaration(): IR.Declaration {
     const t = IR.DeclarationTag;
     const tag = this.decode_enum_tag(t, "declaration");
     switch (tag) {
@@ -242,6 +242,21 @@ class CrochetIRDecoder extends BinaryReader {
         );
       }
 
+      case t.NAMESPACE: {
+        return new IR.DNamespace(
+          this.decode_meta_id(),
+          this.string(),
+          this.string(),
+          this.array((_) => {
+            const x = this.decode_declaration();
+            if (!(x instanceof IR.DAlias)) {
+              throw new Error(`Non-alias content in namespace`);
+            }
+            return x;
+          })
+        );
+      }
+
       default:
         throw unreachable(tag, "Declaration");
     }
@@ -337,6 +352,14 @@ class CrochetIRDecoder extends BinaryReader {
 
       case IR.TypeTag.GLOBAL_STATIC: {
         return new IR.GlobalStaticType(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case IR.TypeTag.LOCAL_NAMESPACED: {
+        return new IR.LocalNamespacedType(
           this.decode_meta_id(),
           this.string(),
           this.string()

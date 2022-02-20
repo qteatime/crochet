@@ -386,7 +386,11 @@ export class CrochetNamespace {
   readonly types: Map<string, Alias<IR.Type>> = new Map();
   readonly traits: Map<string, Alias<IR.Trait>> = new Map();
 
-  constructor(readonly module: CrochetModule, readonly name: string) {}
+  constructor(
+    readonly module: CrochetModule,
+    readonly documentation: string,
+    readonly name: string
+  ) {}
 }
 
 export class CrochetWorld {
@@ -476,7 +480,7 @@ export class CrochetModule {
   readonly traits: Namespace<CrochetTrait>;
   readonly handlers: Namespace<CrochetHandler>;
   readonly namespaces: Namespace<CrochetNamespace>;
-  readonly default_namespace = new CrochetNamespace(this, "default");
+  readonly default_namespace = new CrochetNamespace(this, "", "default");
   readonly open_prefixes: Set<string>;
 
   constructor(

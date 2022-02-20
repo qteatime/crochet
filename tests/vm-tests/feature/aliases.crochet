@@ -41,3 +41,13 @@ test "Dispatch aliases" do
   assert new hello--two name =:= "other";
   assert new one other-name =:= "other name";
 end
+
+namespace hello with
+  alias type hello--one as one;
+  alias type hello--two as two;
+end
+
+test "Alias namespaces work" do
+  assert new hello.one is hello--one;
+  assert new two is hello.two;
+end

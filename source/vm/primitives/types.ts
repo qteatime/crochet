@@ -12,7 +12,11 @@ import {
 } from "../intrinsics";
 import * as Location from "./location";
 import { get_trait_namespace, get_type_namespace } from "./modules";
-import { try_resolve_trait_alias, try_resolve_type_alias } from "./namespaces";
+import {
+  get_namespace,
+  try_resolve_trait_alias,
+  try_resolve_type_alias,
+} from "./namespaces";
 import { assert_open_allowed } from "./packages";
 
 export function is_subtype(type: CrochetType, parent: CrochetType): boolean {
@@ -159,6 +163,21 @@ export function materialise_type(
       );
       if (value == null) {
         return get_type(module, type.name);
+      } else {
+        return materialise_type(universe, module, value);
+      }
+    }
+
+    case IR.TypeTag.LOCAL_NAMESPACED: {
+      const ns = get_namespace(module, type.namespace);
+      const value = try_resolve_type_alias(module, ns, type.name);
+      if (value == null) {
+        throw new ErrArbitrary(
+          "undefined-type",
+          `The alias ${type.name} is not accessible from the namespace ${
+            ns.name
+          } in ${Location.module_location(module)}`
+        );
       } else {
         return materialise_type(universe, module, value);
       }

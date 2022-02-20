@@ -207,6 +207,14 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.DeclarationTag.NAMESPACE: {
+        this.encode_meta_id(x.meta);
+        this.string(x.documentation);
+        this.string(x.name);
+        this.array(x.aliases, (a) => this.encode_declaration(a));
+        break;
+      }
+
       default:
         throw unreachable(x, `Declaration`);
     }
@@ -766,6 +774,13 @@ class CrochetIREncoder extends BinaryWriter {
       }
 
       case IR.TypeTag.GLOBAL_STATIC: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
+      case IR.TypeTag.LOCAL_NAMESPACED: {
         this.encode_meta_id(x.meta);
         this.string(x.namespace);
         this.string(x.name);

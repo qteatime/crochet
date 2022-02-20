@@ -1,5 +1,5 @@
 export const MAGIC = "CROC";
-export const VERSION = 42;
+export const VERSION = 43;
 
 export enum Section {
   DECLARATION = 1,

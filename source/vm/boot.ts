@@ -1,4 +1,4 @@
-import { CrochetCapability, CrochetHandler } from ".";
+import { CrochetCapability, CrochetHandler, CrochetNamespace } from ".";
 import * as IR from "../ir";
 import { unreachable } from "../utils/utils";
 import { XorShift } from "../utils/xorshift";
@@ -731,6 +731,24 @@ export function load_declaration(
     case t.ALIAS: {
       const ns = module.default_namespace;
       Namespaces.define_alias(module, ns, declaration.name, declaration.entity);
+      break;
+    }
+
+    case t.NAMESPACE: {
+      const new_namespace = new CrochetNamespace(
+        module,
+        declaration.documentation,
+        declaration.name
+      );
+      for (const alias of declaration.aliases) {
+        Namespaces.define_alias(
+          module,
+          new_namespace,
+          alias.name,
+          alias.entity
+        );
+      }
+      Namespaces.define_namespace(module, new_namespace);
       break;
     }
 

@@ -143,3 +143,25 @@ export function define_alias(
   }
   repo.set(name, value);
 }
+
+export function define_namespace(module: CrochetModule, ns: CrochetNamespace) {
+  if (!module.namespaces.define(ns.name, ns)) {
+    throw new ErrArbitrary(
+      "duplicated-namespace",
+      `The namespace ${ns.name} cannot be defined in ${module_location(
+        module
+      )} because it is already defined in the package ${module.pkg.name}`
+    );
+  }
+}
+
+export function get_namespace(module: CrochetModule, name: string) {
+  const ns = module.namespaces.try_lookup(name);
+  if (ns == null) {
+    throw new ErrArbitrary(
+      "undefined-namespace",
+      `The namespace ${name} does not exist in ${module_location(module)}`
+    );
+  }
+  return ns;
+}

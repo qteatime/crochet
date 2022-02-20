@@ -25,6 +25,7 @@ export enum DeclarationTag {
   HANDLER,
   DEFAULT_HANDLER,
   ALIAS,
+  NAMESPACE,
 }
 
 export enum Visibility {
@@ -52,7 +53,8 @@ export type Declaration =
   | DProtect
   | DHandler
   | DDefaultHandler
-  | DAlias;
+  | DAlias
+  | DNamespace;
 
 abstract class BaseDeclaration {
   abstract tag: DeclarationTag;
@@ -379,6 +381,19 @@ export class DAlias extends BaseDeclaration {
     readonly meta: Metadata,
     readonly entity: Entity,
     readonly name: string
+  ) {
+    super();
+  }
+}
+
+export class DNamespace extends BaseDeclaration {
+  readonly tag = DeclarationTag.NAMESPACE;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly aliases: DAlias[]
   ) {
     super();
   }

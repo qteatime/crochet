@@ -250,7 +250,10 @@ export function from_enum_integer(
       ["_", "N"],
       [
         new IR.TypeConstraintType(NO_INFO, type),
-        new IR.TypeConstraintType(meta, new IR.LocalType(meta, "integer")),
+        new IR.TypeConstraintType(
+          meta,
+          new IR.GlobalType(meta, "crochet.core", "integer")
+        ),
       ],
       new IR.BasicBlock(cond)
     );
@@ -307,7 +310,10 @@ export class LowerToIR {
             throw new Error(`internal: invalid #any`);
           },
           Named: (_, n) => new IR.LocalStaticType(id, n.name),
-          Namespaced: (_, ns, n) =>
+          Namespaced: (_, ns, n) => {
+            throw new Error(`internal: to-do`);
+          },
+          Global: (_, ns, n) =>
             new IR.GlobalStaticType(id, compileNamespace(ns), n.name),
           Static: (_1, _2) => {
             throw new Error(`internal: invalid ##type`);
@@ -319,11 +325,15 @@ export class LowerToIR {
       },
       Function: (pos, args, _ret) => {
         const id = this.context.register(pos);
-        return new IR.LocalType(id, `function-${args.length}`);
+        return new IR.GlobalType(id, "crochet.core", `function-${args.length}`);
+      },
+      Global: (pos, ns, name) => {
+        const id = this.context.register(pos);
+        return new IR.GlobalType(id, compileNamespace(ns), name.name);
       },
       Namespaced: (pos, ns, name) => {
         const id = this.context.register(pos);
-        return new IR.GlobalType(id, compileNamespace(ns), name.name);
+        return new IR.LocalNamespacedType(id, ns.name, name.name);
       },
     });
   }
@@ -353,7 +363,7 @@ export class LowerToIR {
         return new IR.LocalTrait(id, name.name);
       },
 
-      Namespaced: (pos, ns, name) => {
+      Global: (pos, ns, name) => {
         const id = this.context.register(pos);
         return new IR.GlobalTrait(id, compileNamespace(ns), name.name);
       },
@@ -861,6 +871,13 @@ export class LowerToIR {
         return new IR.LocalType(this.context.register(pos), name.name);
       },
       Namespaced: (pos, ns, name) => {
+        return new IR.LocalNamespacedType(
+          this.context.register(pos),
+          ns.name,
+          name.name
+        );
+      },
+      Global: (pos, ns, name) => {
         return new IR.GlobalType(
           this.context.register(pos),
           compileNamespace(ns),
@@ -1946,16 +1963,29 @@ export class LowerToIR {
         ];
       },
 
-      Alias: (pos, entity, name) => {
+      Alias: (x) => {
+        return [this.alias(x)];
+      },
+
+      Namespace: (pos, cmeta, name, aliases) => {
         return [
-          new IR.DAlias(
+          new IR.DNamespace(
             this.context.register(pos),
-            this.entity(entity),
-            name.name
+            this.documentation(cmeta),
+            name.name,
+            aliases.map((x) => this.alias(x))
           ),
         ];
       },
     });
+  }
+
+  alias(x: Ast.NsAlias) {
+    return new IR.DAlias(
+      this.context.register(x.pos),
+      this.entity(x.entity),
+      x.name.name
+    );
   }
 
   declarations(xs: Ast.Declaration[], context: string | null) {
