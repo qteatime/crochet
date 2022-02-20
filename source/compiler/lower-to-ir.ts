@@ -1491,6 +1491,27 @@ export class LowerToIR {
     }
   }
 
+  entity(x: Ast.Entity): IR.Entity {
+    return x.match<IR.Entity>({
+      GlobalTrait: (pos, ns, n) =>
+        new IR.EntityGlobalTrait(
+          this.context.register(pos),
+          compileNamespace(ns),
+          n.name
+        ),
+      GlobalType: (pos, ns, n) =>
+        new IR.EntityGlobalType(
+          this.context.register(pos),
+          compileNamespace(ns),
+          n.name
+        ),
+      LocalTrait: (pos, n) =>
+        new IR.EntityLocalTrait(this.context.register(pos), n.name),
+      LocalType: (pos, n) =>
+        new IR.EntityLocalType(this.context.register(pos), n.name),
+    });
+  }
+
   declaration(x: Ast.Declaration, context: string | null): IR.Declaration[] {
     return x.match<IR.Declaration[]>({
       Command: (pos, cmeta, sig, contract, body, test) => {
@@ -1921,6 +1942,16 @@ export class LowerToIR {
             types,
             this.statements(init),
             this.handlers(specs)
+          ),
+        ];
+      },
+
+      Alias: (pos, entity, name) => {
+        return [
+          new IR.DAlias(
+            this.context.register(pos),
+            this.entity(entity),
+            name.name
           ),
         ];
       },

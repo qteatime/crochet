@@ -13,6 +13,7 @@ import * as World from "./world";
 import * as StackTrace from "./stack-trace";
 import * as Effects from "./effect";
 import * as Capability from "./capability";
+import * as Namespaces from "./namespaces";
 
 export {
   Commands,
@@ -30,4 +31,5 @@ export {
   World,
   Effects,
   Capability,
+  Namespaces,
 };

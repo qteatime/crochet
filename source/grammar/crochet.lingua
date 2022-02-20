@@ -40,6 +40,13 @@ type Declaration =
            , specs: HandlerSpec[]
            )
   | DefaultHandler(pos: Meta, name: Name)
+  | Alias(pos: Meta, entity: Entity, name: Name)
+
+type Entity =
+  | LocalType(pos: Meta, name: Name)
+  | GlobalType(pos: Meta, namespace: Namespace, name: Name)
+  | LocalTrait(pos: Meta, name: Name)
+  | GlobalTrait(pos: Meta, namespace: Namespace, name: Name)
 
 type ProtectEntity =
   | Type(pos: Meta, name: Name)
@@ -283,6 +290,17 @@ grammar Crochet : Program {
     | capabilityDeclaration
     | protectDeclaration
     | handlerDeclaration
+    | aliasDeclaration
+
+  aliasDeclaration =
+    | alias_ e:entity as_ n:atom s<";">
+      -> Declaration.Alias(meta, e, n)
+
+  entity =
+    | type_ ns:namespace "/" n:atom     -> Entity.GlobalType(meta, ns, n)
+    | type_ n:atom                      -> Entity.LocalType(meta, n)
+    | trait_ ns:namespace "/" n:atom    -> Entity.GlobalTrait(meta, ns, n)
+    | trait_ n:atom                     -> Entity.LocalTrait(meta, n)
 
   handlerDeclaration =
     | m:declarationMeta handler_ n:atom s:handlerSignature<parameter>? b:handlerBody with_ xs:handlers end_ 
@@ -1208,6 +1226,7 @@ grammar Crochet : Program {
   handler_ = kw<"handler">
   use_ = kw<"use">
   default_ = kw<"default">
+  alias_ = kw<"alias">
 
   reserved =
     | relation_ | predicate_ | when_ | do_ | command_ | action_
@@ -1220,5 +1239,5 @@ grammar Crochet : Program {
     | open_ | local_ | test_ | assert_ | requires_ | ensures_ | nothing_
     | effect_ | handle_ | continue_ | perform_ | trait_ | implement_ | has_
     | global_ | capability_ | protect_ | otherwise_
-    | use_ | handler_ | default_
+    | use_ | handler_ | default_ | alias_
 }

@@ -200,8 +200,50 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.DeclarationTag.ALIAS: {
+        this.encode_meta_id(x.meta);
+        this.encode_entity(x.entity);
+        this.string(x.name);
+        break;
+      }
+
       default:
         throw unreachable(x, `Declaration`);
+    }
+  }
+
+  encode_entity(x: IR.Entity) {
+    this.encode_enum_tag(x.tag);
+    const t = IR.EntityTag;
+    switch (x.tag) {
+      case t.GLOBAL_TRAIT: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
+      case t.GLOBAL_TYPE: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
+      case t.LOCAL_TRAIT: {
+        this.encode_meta_id(x.meta);
+        this.string(x.name);
+        break;
+      }
+
+      case t.LOCAL_TYPE: {
+        this.encode_meta_id(x.meta);
+        this.string(x.name);
+        break;
+      }
+
+      default:
+        throw unreachable(x, "Entity");
     }
   }
 

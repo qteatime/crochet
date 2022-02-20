@@ -234,8 +234,49 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.DDefaultHandler(this.decode_meta_id(), this.string());
       }
 
+      case t.ALIAS: {
+        return new IR.DAlias(
+          this.decode_meta_id(),
+          this.decode_entity(),
+          this.string()
+        );
+      }
+
       default:
         throw unreachable(tag, "Declaration");
+    }
+  }
+
+  decode_entity() {
+    const tag = this.decode_enum_tag(IR.EntityTag, "Entity");
+    const t = IR.EntityTag;
+    switch (tag) {
+      case t.GLOBAL_TRAIT: {
+        return new IR.EntityGlobalTrait(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case t.GLOBAL_TYPE: {
+        return new IR.EntityGlobalType(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case t.LOCAL_TRAIT: {
+        return new IR.EntityLocalTrait(this.decode_meta_id(), this.string());
+      }
+
+      case t.LOCAL_TYPE: {
+        return new IR.EntityLocalType(this.decode_meta_id(), this.string());
+      }
+
+      default:
+        throw unreachable(tag, "Entity");
     }
   }
 

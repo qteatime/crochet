@@ -1,0 +1,43 @@
+% crochet
+
+local abstract hello;
+local type hello--one is hello;
+local type hello--two is hello;
+
+alias type hello--one as one;
+alias type hello--two as two;
+
+test "Using aliases" do
+  assert new hello--one is one;
+  assert new hello--two is two;
+  assert new one is hello--one;
+end
+
+// -- Aliasing globals
+alias type crochet.core/integer as int;
+alias trait crochet.core/equality as eq;
+
+test "Global aliases" do
+  assert 1 is int;
+  assert 1 has eq;
+end
+
+// -- Aliases in dispatch
+trait alias-trait with
+  command X name -> text;
+end
+
+alias trait alias-trait as t;
+
+implement alias-trait for two;
+implement t for one;
+
+command one name = "one";
+command (X has t) name = "other";
+command (X has t) other-name = "other name";
+
+test "Dispatch aliases" do
+  assert new hello--one name =:= "one";
+  assert new hello--two name =:= "other";
+  assert new one other-name =:= "other name";
+end

@@ -29,6 +29,7 @@ import {
   Types,
   World,
   Capability,
+  Namespaces,
 } from "./primitives";
 import { Contexts } from "./simulation";
 import { CrochetTrace } from "./tracing";
@@ -724,6 +725,12 @@ export function load_declaration(
       // this should always succeed
       const handler = Capability.free_handler(module, handler0);
       Effects.make_default_handler(universe, handler);
+      break;
+    }
+
+    case t.ALIAS: {
+      const ns = module.default_namespace;
+      Namespaces.define_alias(module, ns, declaration.name, declaration.entity);
       break;
     }
 

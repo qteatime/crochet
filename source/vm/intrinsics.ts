@@ -362,6 +362,33 @@ export class CrochetPrelude {
   constructor(readonly env: Environment, readonly body: IR.BasicBlock) {}
 }
 
+export type Alias<A> = ConcreteAlias<A> | LinkAlias;
+export enum AliasTag {
+  CONCRETE,
+  LINK,
+}
+
+export abstract class BaseAlias {}
+export class ConcreteAlias<A> extends BaseAlias {
+  readonly tag = AliasTag.CONCRETE;
+  constructor(readonly entity: A) {
+    super();
+  }
+}
+export class LinkAlias extends BaseAlias {
+  readonly tag = AliasTag.LINK;
+  constructor(readonly namespace: string) {
+    super();
+  }
+}
+
+export class CrochetNamespace {
+  readonly types: Map<string, Alias<IR.Type>> = new Map();
+  readonly traits: Map<string, Alias<IR.Trait>> = new Map();
+
+  constructor(readonly module: CrochetModule, readonly name: string) {}
+}
+
 export class CrochetWorld {
   readonly commands = new Namespace<CrochetCommand>(null, null);
   readonly types = new Namespace<CrochetType>(null, null);
@@ -374,6 +401,7 @@ export class CrochetWorld {
   readonly contexts = new Namespace<CrochetContext>(null, null);
   readonly capabilities = new Namespace<CrochetCapability>(null, null);
   readonly handlers = new Namespace<CrochetHandler>(null, null);
+  readonly namespaces = new Namespace<CrochetNamespace>(null, null);
   readonly global_context = new GlobalContext();
   readonly prelude: CrochetPrelude[] = [];
   readonly default_handlers: Set<CrochetHandler> = new Set();
@@ -394,6 +422,7 @@ export class CrochetPackage {
   readonly contexts: PassthroughNamespace<CrochetContext>;
   readonly capabilities: PassthroughNamespace<CrochetCapability>;
   readonly handlers: PassthroughNamespace<CrochetHandler>;
+  readonly namespaces: PassthroughNamespace<CrochetNamespace>;
 
   readonly dependencies = new Set<string>();
   readonly granted_capabilities = new Set<CrochetCapability>();
@@ -417,6 +446,7 @@ export class CrochetPackage {
     this.contexts = new PassthroughNamespace(world.contexts, name);
     this.capabilities = new PassthroughNamespace(world.capabilities, name);
     this.handlers = new PassthroughNamespace(world.handlers, name);
+    this.namespaces = new PassthroughNamespace(world.namespaces, name);
   }
 
   get name() {
@@ -445,6 +475,8 @@ export class CrochetModule {
   readonly contexts: Namespace<CrochetContext>;
   readonly traits: Namespace<CrochetTrait>;
   readonly handlers: Namespace<CrochetHandler>;
+  readonly namespaces: Namespace<CrochetNamespace>;
+  readonly default_namespace = new CrochetNamespace(this, "default");
   readonly open_prefixes: Set<string>;
 
   constructor(
@@ -466,6 +498,11 @@ export class CrochetModule {
     this.contexts = new Namespace(pkg.contexts, pkg.name, this.open_prefixes);
     this.traits = new Namespace(pkg.traits, pkg.name, this.open_prefixes);
     this.handlers = new Namespace(pkg.handlers, pkg.name, this.open_prefixes);
+    this.namespaces = new Namespace(
+      pkg.namespaces,
+      pkg.name,
+      this.open_prefixes
+    );
   }
 }
 //#endregion
