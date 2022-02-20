@@ -7,7 +7,7 @@ local enum direction =
   west;
 
 test "Enums have local aliases and enum commands" do
-  assert #direction north is north;
+  assert #direction north is direction.north;
   assert #direction north is direction--north;
 end
 
@@ -23,5 +23,5 @@ end
 
 test "Enums have string constructors" do
   assert #direction north to-enum-text =:= "north";
-  assert #direction from-enum-text: "north" =:= #direction north;
+  assert (#direction from-enum-text: "north") =:= #direction north;
 end

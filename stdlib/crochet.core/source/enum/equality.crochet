@@ -8,6 +8,6 @@ local enum test-enum = ta, tb;
 command 'enum === (That is 'enum)
   = self =:= That
 test
-  assert ta === ta;
-  assert not (ta === tb);
+  assert #test-enum ta === #test-enum ta;
+  assert not (#test-enum ta === #test-enum tb);
 end

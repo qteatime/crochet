@@ -160,12 +160,12 @@ command duration largest-unit -> duration-unit do
     otherwise => #duration-unit milliseconds;
   end
 test
-  assert new duration(1, 1, 1, 1, 1) largest-unit is duration-unit.days;
-  assert new duration(0, 1, 1, 1, 1) largest-unit is duration-unit.hours;
-  assert new duration(0, 0, 1, 1, 1) largest-unit is duration-unit.minutes;
-  assert new duration(0, 0, 0, 1, 1) largest-unit is duration-unit.seconds;
-  assert new duration(0, 0, 0, 0, 1) largest-unit is duration-unit.milliseconds;
-  assert new duration(0, 0, 0, 0, 0) largest-unit is duration-unit.milliseconds;
+  assert new duration(1, 1, 1, 1, 1) largest-unit is duration-unit--days;
+  assert new duration(0, 1, 1, 1, 1) largest-unit is duration-unit--hours;
+  assert new duration(0, 0, 1, 1, 1) largest-unit is duration-unit--minutes;
+  assert new duration(0, 0, 0, 1, 1) largest-unit is duration-unit--seconds;
+  assert new duration(0, 0, 0, 0, 1) largest-unit is duration-unit--milliseconds;
+  assert new duration(0, 0, 0, 0, 0) largest-unit is duration-unit--milliseconds;
 end
 
 // -- Arithmetic
