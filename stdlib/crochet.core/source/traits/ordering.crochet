@@ -46,14 +46,14 @@ end
 /// between `X` and `Y`, from `X`'s point of view.
 command (X has total-ordering) compare-to: (Y has total-ordering) do
   condition
-    when X === Y => equal;
-    when X < Y   => less-than;
-    when X > Y   => greater-than;
+    when X === Y => #ordering equal;
+    when X < Y   => #ordering less-than;
+    when X > Y   => #ordering greater-than;
   end
 test
-  assert (1 compare-to: 1) =:= equal;
-  assert (-1 compare-to: 0) =:= less-than;
-  assert (1 compare-to: 0) =:= greater-than;
+  assert (1 compare-to: 1) =:= #ordering equal;
+  assert (-1 compare-to: 0) =:= #ordering less-than;
+  assert (1 compare-to: 0) =:= #ordering greater-than;
 end
 
 /// Returns `X` restricted to the range between `Min` and `Max`.
