@@ -44,3 +44,12 @@ end
 
 command (W has crochet.internal.vm.tests/test-trait-a) check-global-trait-a = W check;
 command (W has crochet.internal.vm.tests/test-trait-b) check-global-trait-b = W check;
+
+// -- Referencing traits globally
+implement crochet.core/equality for a;
+command a === a = true;
+
+test "Global implement declarations work" do
+  assert a has equality;
+  assert not (a =/= a);
+end
