@@ -1712,7 +1712,12 @@ export class LowerToIR {
         const id = this.context.register(pos);
         const parent = new IR.LocalType(id, name.name);
         const parent_constraint = new IR.TypeConstraintType(id, parent);
+        const parent_constraint_static = new IR.TypeConstraintType(
+          id,
+          new IR.StaticType(id, parent)
+        );
         const variants = variants0.flatMap((v, i) => {
+          const full_name = `${name.name}--${v.name}`;
           const variant_id = this.context.register(v.pos);
 
           return [
@@ -1720,10 +1725,15 @@ export class LowerToIR {
               v.pos,
               variant_id,
               NO_METADATA,
-              v.name,
+              full_name,
               parent_constraint,
               [],
               context
+            ),
+            new IR.DAlias(
+              variant_id,
+              new IR.EntityLocalType(variant_id, full_name),
+              v.name
             ),
             new IR.DCommand(
               variant_id,
@@ -1733,11 +1743,27 @@ export class LowerToIR {
               [
                 new IR.TypeConstraintType(
                   variant_id,
-                  new IR.LocalType(variant_id, v.name)
+                  new IR.LocalType(variant_id, full_name)
                 ),
               ],
               new IR.BasicBlock([
                 new IR.PushLiteral(new IR.LiteralInteger(BigInt(i + 1))),
+                new IR.Return(variant_id),
+              ])
+            ),
+            new IR.DCommand(
+              variant_id,
+              "",
+              "_ to-enum-text",
+              ["_"],
+              [
+                new IR.TypeConstraintType(
+                  variant_id,
+                  new IR.LocalType(variant_id, full_name)
+                ),
+              ],
+              new IR.BasicBlock([
+                new IR.PushLiteral(new IR.LiteralText(v.name)),
                 new IR.Return(variant_id),
               ])
             ),
@@ -1760,7 +1786,7 @@ export class LowerToIR {
           ...variants,
           new IR.DDefine(
             id,
-            `See type:${name.name}`,
+            `See [type:${name.name}]`,
             IR.Visibility.GLOBAL,
             name.name,
             new IR.BasicBlock([
@@ -1769,7 +1795,81 @@ export class LowerToIR {
             ])
           ),
           new IR.DSeal(id, name.name),
+          // Namespacing
+          new IR.DNamespace(
+            id,
+            `See [type:${name.name}]`,
+            name.name,
+            variants0.map(
+              (x) =>
+                new IR.DAlias(
+                  id,
+                  new IR.EntityLocalType(id, `${name.name}--${x.name}`),
+                  x.name
+                )
+            )
+          ),
           // Generated commands
+          ...variants0.map((x) => {
+            const full_name = `${name.name}--${x.name}`;
+            return new IR.DCommand(
+              id,
+              `See [type:${full_name}]`,
+              `_ ${x.name}`,
+              ["_"],
+              [parent_constraint_static],
+              new IR.BasicBlock([
+                new IR.PushGlobal(id, full_name),
+                new IR.Return(id),
+              ])
+            );
+          }),
+
+          new IR.DCommand(
+            id,
+            "",
+            "_ from-enum-text: _",
+            ["_", "Name"],
+            [
+              parent_constraint_static,
+              new IR.TypeConstraintType(
+                id,
+                new IR.GlobalType(id, "crochet.core", "text")
+              ),
+            ],
+            new IR.BasicBlock(
+              variants0
+                .slice()
+                .reverse()
+                .reduceRight(
+                  (prev: IR.Op[], x) => {
+                    return [
+                      new IR.PushVariable(id, "Name"),
+                      new IR.PushLiteral(new IR.LiteralText(x.name)),
+                      new IR.IntrinsicEqual(id),
+                      new IR.Branch(
+                        id,
+                        new IR.BasicBlock([
+                          new IR.PushGlobal(id, `${name.name}--${x.name}`),
+                          new IR.Return(id),
+                        ]),
+                        new IR.BasicBlock(prev)
+                      ),
+                    ];
+                  },
+                  [
+                    new IR.PushLiteral(new IR.LiteralFalse()),
+                    new IR.Assert(
+                      id,
+                      IR.AssertType.UNREACHABLE,
+                      "unreachable",
+                      "None of the conditions were true",
+                      null
+                    ),
+                  ]
+                )
+            )
+          ),
           new IR.DCommand(
             id,
             "",
