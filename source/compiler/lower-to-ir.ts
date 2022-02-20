@@ -1872,7 +1872,7 @@ export class LowerToIR {
             ["_"],
             [parent_constraint],
             new IR.BasicBlock([
-              new IR.PushGlobal(id, variants0[0].name),
+              new IR.PushGlobal(id, `${name.name}--${variants0[0].name}`),
               new IR.Return(id),
             ])
           ),
@@ -1883,7 +1883,10 @@ export class LowerToIR {
             ["_"],
             [parent_constraint],
             new IR.BasicBlock([
-              new IR.PushGlobal(id, variants0[variants0.length - 1].name),
+              new IR.PushGlobal(
+                id,
+                `${name.name}--${variants0[variants0.length - 1].name}`
+              ),
               new IR.Return(id),
             ])
           ),
