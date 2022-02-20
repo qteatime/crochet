@@ -22,10 +22,10 @@ singleton websocket-error-closed is websocket-error;
 singleton websocket-error-unknown is websocket-error;
 
 enum websocket-state =
-  websocket-state-connecting,
-  websocket-state-open,
-  websocket-state-closing,
-  websocket-state-closed;
+  connecting,
+  'open,
+  closing,
+  closed;
 
 // Opening connections
 command #websocket open: (Url is url) protocols: (Protocols is list<text>) do
@@ -34,15 +34,15 @@ command #websocket open: (Url is url) protocols: (Protocols is list<text>) do
   Connection.events listener subscribe: { M in
     condition
       when M is websocket-message-open do
-        Connection.state <- websocket-state-open;
+        Connection.state <- #websocket-state 'open;
       end
 
       when M is websocket-message-closed do
-        Connection.state <- websocket-state-closed;
+        Connection.state <- #websocket-state closed;
       end
 
       when M is websocket-message-error do
-        Connection.state <- websocket-state-closed;
+        Connection.state <- #websocket-state closed;
       end
 
       otherwise do nothing end
@@ -64,7 +64,7 @@ command websocket connect do
   #deferred promise: { D in 
     let State = self state;
     condition
-      when State =:= websocket-state-connecting do
+      when State is websocket-state.connecting do
         let Subscriber = self.stream listener subscribe: { Event in
           condition
             when Event is websocket-message-error do
@@ -87,9 +87,9 @@ command websocket connect do
         } capture;
       end
 
-      when State =:= websocket-state-open => D resolve: self;
-      when State =:= websocket-state-closing => D reject: websocket-error-closed;
-      when State =:= websocket-state-closed => D reject: websocket-error-closed;
+      when State is websocket-state.open => D resolve: self;
+      when State is websocket-state.closing => D reject: websocket-error-closed;
+      when State is websocket-state.closed => D reject: websocket-error-closed;
     end
   };
 end
@@ -101,7 +101,7 @@ command websocket state =
 
 command websocket protocol
 requires
-  is-open :: self state =:= websocket-state-open
+  is-open :: self state is websocket-state.open
 do
   perform websocket.get-protocol(self);
 end
@@ -110,14 +110,14 @@ end
 // Operations on the socket
 command websocket send: (Data is text)
 requires
-  is-open :: self state =:= websocket-state-open
+  is-open :: self state is websocket-state.open
 do
   perform websocket.send(self, Data);
   self;
 end
 
 command websocket close do
-  self.state <- websocket-state-closing;
+  self.state <- #websocket-state closing;
   perform websocket.close(self);
   self;
 end

@@ -9,37 +9,37 @@ command internal http-method-name: http-put = "PUT";
 command internal http-method-name: http-patch = "PATCH";
 
 
-command internal http-cache: http-cache-default = "default";
-command internal http-cache: http-cache-no-store = "no-store";
-command internal http-cache: http-cache-reload = "reload";
-command internal http-cache: http-cache-no-cache = "no-cache";
-command internal http-cache: http-cache-force-cache = "force-cache";
-command internal http-cache: http-cache-only-if-cached = "only-if-cached";
+command internal http-cache: http-cache.default = "default";
+command internal http-cache: http-cache.no-store = "no-store";
+command internal http-cache: http-cache.reload = "reload";
+command internal http-cache: http-cache.no-cache = "no-cache";
+command internal http-cache: http-cache.force-cache = "force-cache";
+command internal http-cache: http-cache.only-if-cached = "only-if-cached";
 
 
-command internal http-mode: http-mode-cors = "cors";
-command internal http-mode: http-mode-no-cors = "no-cors";
-command internal http-mode: http-mode-same-origin = "same-origin";
-command internal http-mode: http-mode-navigate = "navigate";
+command internal http-mode: http-mode.cors = "cors";
+command internal http-mode: http-mode.no-cors = "no-cors";
+command internal http-mode: http-mode.same-origin = "same-origin";
+command internal http-mode: http-mode.navigate = "navigate";
 
 
-command internal http-credentials: http-credentials-omit = "omit";
-command internal http-credentials: http-credentials-same-origin = "same-origin";
-command internal http-credentials: http-credentials-include = "include";
+command internal http-credentials: http-credentials.omit = "omit";
+command internal http-credentials: http-credentials.same-origin = "same-origin";
+command internal http-credentials: http-credentials.include = "include";
 
 
-command internal http-redirect: http-redirect-follow = "follow";
-command internal http-redirect: http-redirect-error = "error";
-command internal http-redirect: http-redirect-manual = "manual";
+command internal http-redirect: http-redirect.follow = "follow";
+command internal http-redirect: http-redirect.error = "error";
+command internal http-redirect: http-redirect.manual = "manual";
 
 
-command internal http-referrer: http-referrer-no-referrer = "";
-command internal http-referrer: http-referrer-client = "about:client";
-command internal http-referrer: http-referrer-url = self.url to-text;
+command internal http-referrer: http-referrer--no-referrer = "";
+command internal http-referrer: http-referrer--client = "about:client";
+command internal http-referrer: http-referrer--url = self.url to-text;
 
 
-command internal http-integrity: http-integrity-skip = nothing;
-command internal http-integrity: http-integrity-check = self.hash;
+command internal http-integrity: http-integrity--skip = nothing;
+command internal http-integrity: http-integrity--check = self.hash;
 
 
 // -- Request body

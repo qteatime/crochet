@@ -25,38 +25,45 @@ type http-put(body is http-body) is http-method;
 type http-patch(body is http-body) is http-method;
 
 enum http-mode =
-  http-mode-cors,
-  http-mode-no-cors,
-  http-mode-same-origin,
-  http-mode-navigate;
+  cors,
+  no-cors,
+  same-origin,
+  navigate;
 
 enum http-credentials =
-  http-credentials-omit,
-  http-credentials-same-origin,
-  http-credentials-include;
+  omit,
+  same-origin,
+  include;
 
 enum http-redirect =
-  http-redirect-follow,
-  http-redirect-error,
-  http-redirect-manual;
+  follow,
+  error,
+  manual;
 
 enum http-cache =
-  http-cache-default,
-  http-cache-no-store,
-  http-cache-reload,
-  http-cache-no-cache,
-  http-cache-force-cache,
-  http-cache-only-if-cached;
+  'default,
+  no-store,
+  reload,
+  no-cache,
+  force-cache,
+  only-if-cached;
 
 abstract http-referrer;
-singleton http-referrer-no-referrer is http-referrer;
-singleton http-referrer-client is http-referrer;
-type http-referrer-url(url is url) is http-referrer;
+singleton http-referrer--no-referrer is http-referrer;
+singleton http-referrer--client is http-referrer;
+type http-referrer--url(url is url) is http-referrer;
+
+command #http-referrer no-referrer = http-referrer--no-referrer;
+command #http-referrer client = http-referrer--client;
+command #http-referrer url: (Url is url) = new http-referrer--url(Url);
 
 
 abstract http-integrity;
-singleton http-integrity-skip is http-integrity;
-type http-integrity-check(hash is text) is http-integrity;
+singleton http-integrity--skip is http-integrity;
+type http-integrity--check(hash is text) is http-integrity;
+
+command #http-integrity skip = http-integrity--skip;
+command #http-integrity check: (Hash is text) = new http-integrity--check(Hash);
 
 
 command #http-request url: (Url is static-text) =
@@ -67,12 +74,12 @@ command #http-request url: (Url is url) =
     url -> Url,
     method -> http-get,
     headers -> #http-headers empty,
-    cache -> http-cache-default,
-    mode -> http-mode-cors,
-    credentials -> http-credentials-same-origin,
-    redirect -> http-redirect-follow,
-    referrer -> http-referrer-client,
-    integrity -> http-integrity-skip,
+    cache -> #http-cache 'default,
+    mode -> #http-mode cors,
+    credentials -> #http-credentials same-origin,
+    redirect -> #http-redirect follow,
+    referrer -> #http-referrer client,
+    integrity -> #http-integrity skip,
   );
 
 command http-request method: (M is http-method) =
