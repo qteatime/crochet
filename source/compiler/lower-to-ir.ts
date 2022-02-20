@@ -211,7 +211,7 @@ function replace_signature_args<T, U>(x: Ast.Signature<T>, args: U[]) {
 export function from_enum_integer(
   meta: number,
   type: IR.Type,
-  variants: Ast.Name[]
+  variants: { full_name: string }[]
 ) {
   if (variants.length === 0) {
     throw new Error(`empty variants`);
@@ -225,7 +225,7 @@ export function from_enum_integer(
           new IR.Branch(
             meta,
             new IR.BasicBlock([
-              new IR.PushGlobal(meta, x.name),
+              new IR.PushGlobal(meta, x.full_name),
               new IR.Return(meta),
             ]),
             new IR.BasicBlock(prev)
@@ -1716,8 +1716,12 @@ export class LowerToIR {
           id,
           new IR.StaticType(id, parent)
         );
-        const variants = variants0.flatMap((v, i) => {
-          const full_name = `${name.name}--${v.name}`;
+        const variants1 = variants0.map((x) => ({
+          pos: x.pos,
+          name: x.name,
+          full_name: `${name.name}--${x.name}`,
+        }));
+        const variants = variants1.flatMap((v, i) => {
           const variant_id = this.context.register(v.pos);
 
           return [
@@ -1725,7 +1729,7 @@ export class LowerToIR {
               v.pos,
               variant_id,
               NO_METADATA,
-              full_name,
+              v.full_name,
               parent_constraint,
               [],
               context
@@ -1738,7 +1742,7 @@ export class LowerToIR {
               [
                 new IR.TypeConstraintType(
                   variant_id,
-                  new IR.LocalType(variant_id, full_name)
+                  new IR.LocalType(variant_id, v.full_name)
                 ),
               ],
               new IR.BasicBlock([
@@ -1754,7 +1758,7 @@ export class LowerToIR {
               [
                 new IR.TypeConstraintType(
                   variant_id,
-                  new IR.LocalType(variant_id, full_name)
+                  new IR.LocalType(variant_id, v.full_name)
                 ),
               ],
               new IR.BasicBlock([
@@ -1795,26 +1799,25 @@ export class LowerToIR {
             id,
             `See [type:${name.name}]`,
             name.name,
-            variants0.map(
+            variants1.map(
               (x) =>
                 new IR.DAlias(
                   id,
-                  new IR.EntityLocalType(id, `${name.name}--${x.name}`),
+                  new IR.EntityLocalType(id, x.full_name),
                   x.name
                 )
             )
           ),
           // Generated commands
-          ...variants0.map((x) => {
-            const full_name = `${name.name}--${x.name}`;
+          ...variants1.map((x) => {
             return new IR.DCommand(
               id,
-              `See [type:${full_name}]`,
+              `See [type:${x.full_name}]`,
               `_ ${x.name}`,
               ["_"],
               [parent_constraint_static],
               new IR.BasicBlock([
-                new IR.PushGlobal(id, full_name),
+                new IR.PushGlobal(id, x.full_name),
                 new IR.Return(id),
               ])
             );
@@ -1833,7 +1836,7 @@ export class LowerToIR {
               ),
             ],
             new IR.BasicBlock(
-              variants0
+              variants1
                 .slice()
                 .reverse()
                 .reduceRight(
@@ -1845,7 +1848,7 @@ export class LowerToIR {
                       new IR.Branch(
                         id,
                         new IR.BasicBlock([
-                          new IR.PushGlobal(id, `${name.name}--${x.name}`),
+                          new IR.PushGlobal(id, x.full_name),
                           new IR.Return(id),
                         ]),
                         new IR.BasicBlock(prev)
@@ -1872,7 +1875,7 @@ export class LowerToIR {
             ["_"],
             [parent_constraint],
             new IR.BasicBlock([
-              new IR.PushGlobal(id, `${name.name}--${variants0[0].name}`),
+              new IR.PushGlobal(id, variants1[0].full_name),
               new IR.Return(id),
             ])
           ),
@@ -1883,14 +1886,11 @@ export class LowerToIR {
             ["_"],
             [parent_constraint],
             new IR.BasicBlock([
-              new IR.PushGlobal(
-                id,
-                `${name.name}--${variants0[variants0.length - 1].name}`
-              ),
+              new IR.PushGlobal(id, variants1[variants1.length - 1].full_name),
               new IR.Return(id),
             ])
           ),
-          from_enum_integer(id, parent, variants0),
+          from_enum_integer(id, parent, variants1),
         ];
       },
 
