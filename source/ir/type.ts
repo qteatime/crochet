@@ -116,9 +116,10 @@ export class TypeConstraintWithTrait extends BaseConstraint {
 export enum TraitTag {
   LOCAL,
   GLOBAL,
+  NAMESPACED,
 }
 
-export type Trait = LocalTrait | GlobalTrait;
+export type Trait = LocalTrait | GlobalTrait | NamespacedTrait;
 
 abstract class BaseTrait {
   abstract tag: TraitTag;
@@ -134,6 +135,18 @@ export class LocalTrait extends BaseTrait {
 
 export class GlobalTrait extends BaseTrait {
   readonly tag = TraitTag.GLOBAL;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly namespace: string,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+
+export class NamespacedTrait extends BaseTrait {
+  readonly tag = TraitTag.NAMESPACED;
 
   constructor(
     readonly meta: Metadata,

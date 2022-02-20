@@ -42,6 +42,7 @@ test "Dispatch aliases" do
   assert new one other-name =:= "other name";
 end
 
+// -- Namespaces
 namespace hello with
   alias type hello--one as one;
   alias type hello--two as two;
@@ -50,4 +51,13 @@ end
 test "Alias namespaces work" do
   assert new hello.one is hello--one;
   assert new two is hello.two;
+end
+
+// -- Namespaces and traits
+namespace hello2 with
+  alias trait crochet.core/equality as eq;
+end
+
+test "Trait aliases in namespaces are resolved" do
+  assert 1 has hello2.eq;
 end

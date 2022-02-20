@@ -256,6 +256,22 @@ export function materialise_trait(
       return get_trait_namespaced(module, trait.namespace, trait.name);
     }
 
+    case IR.TraitTag.NAMESPACED: {
+      const ns = get_namespace(module, trait.namespace);
+      const value = try_resolve_trait_alias(module, ns, trait.name);
+      if (value == null) {
+        throw new ErrArbitrary(
+          "undefined-alias",
+          `The alias ${
+            trait.name
+          } is not defined for any trait in the namespace ${
+            ns.name
+          } from ${Location.module_location(module)}`
+        );
+      }
+      return materialise_trait(universe, module, value);
+    }
+
     default:
       throw unreachable(trait, "Trait");
   }

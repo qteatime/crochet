@@ -367,6 +367,11 @@ export class LowerToIR {
         const id = this.context.register(pos);
         return new IR.GlobalTrait(id, compileNamespace(ns), name.name);
       },
+
+      Namespaced: (pos, ns, name) => {
+        const id = this.context.register(pos);
+        return new IR.NamespacedTrait(id, ns.name, name.name);
+      },
     });
   }
 

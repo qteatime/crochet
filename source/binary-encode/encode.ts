@@ -825,6 +825,13 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.TraitTag.NAMESPACED: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
       default:
         throw unreachable(x, `Trait`);
     }

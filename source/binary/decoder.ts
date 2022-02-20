@@ -409,6 +409,14 @@ class CrochetIRDecoder extends BinaryReader {
         );
       }
 
+      case IR.TraitTag.NAMESPACED: {
+        return new IR.NamespacedTrait(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
       default:
         throw unreachable(tag, "Trait");
     }

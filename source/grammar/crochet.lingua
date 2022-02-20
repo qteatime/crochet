@@ -105,6 +105,7 @@ type TypeConstraint =
 
 type Trait =
   | Global(pos: Meta, namespace: Namespace, name: Name)
+  | Namespaced(pos: Meta, namespace: Name, name: Name)
   | Named(pos: Meta, name: Name)
 
 type Statement =
@@ -500,6 +501,7 @@ grammar Crochet : Program {
 
   traitName =
     | n:namespace "/" x:atom  -> Trait.Global(meta, n, x)
+    | ns:atom "." x:atom      -> Trait.Namespaced(meta, ns, x)
     | x:atom                  -> Trait.Named(meta, x)
 
   typeDeclaration =
