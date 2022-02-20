@@ -64,7 +64,7 @@ command websocket connect do
   #deferred promise: { D in 
     let State = self state;
     condition
-      when State is websocket-state.connecting do
+      when State is websocket-state--connecting do
         let Subscriber = self.stream listener subscribe: { Event in
           condition
             when Event is websocket-message-error do
@@ -87,9 +87,9 @@ command websocket connect do
         } capture;
       end
 
-      when State is websocket-state.open => D resolve: self;
-      when State is websocket-state.closing => D reject: websocket-error-closed;
-      when State is websocket-state.closed => D reject: websocket-error-closed;
+      when State is websocket-state--open => D resolve: self;
+      when State is websocket-state--closing => D reject: websocket-error-closed;
+      when State is websocket-state--closed => D reject: websocket-error-closed;
     end
   };
 end
@@ -101,7 +101,7 @@ command websocket state =
 
 command websocket protocol
 requires
-  is-open :: self state is websocket-state.open
+  is-open :: self state is websocket-state--open
 do
   perform websocket.get-protocol(self);
 end
@@ -110,7 +110,7 @@ end
 // Operations on the socket
 command websocket send: (Data is text)
 requires
-  is-open :: self state is websocket-state.open
+  is-open :: self state is websocket-state--open
 do
   perform websocket.send(self, Data);
   self;

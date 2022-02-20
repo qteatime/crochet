@@ -51,16 +51,16 @@ command controls-button page do
 
       self row: [
         #widget icon-button: "cat"
-          | size: icon-size-small,
+          | size: #icon-size small,
         #widget icon-button: "cat"
-          | size: icon-size-medium,
+          | size: #icon-size medium,
         #widget icon-button: "cat"
-          | size: icon-size-large,
+          | size: #icon-size large,
         #widget icon-button: "cat"
-          | size: icon-size-extra-large,
+          | size: #icon-size extra-large,
         #widget icon-button: "cat"
           | disabled: true
-          | size: icon-size-extra-large,
+          | size: #icon-size extra-large,
       ]
       | align-items: "flex-end",
     ],

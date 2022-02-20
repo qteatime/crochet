@@ -1,129 +1,129 @@
 % crochet
 
 // flex layout
-command dom-renderer to-text: flex-layout.row = "row";
-command dom-renderer to-text: flex-layout.row-reverse = "row-reverse";
-command dom-renderer to-text: flex-layout.column = "column";
-command dom-renderer to-text: flex-layout.column-reverse = "column-reverse";
+command dom-renderer to-text: flex-layout--row = "row";
+command dom-renderer to-text: flex-layout--row-reverse = "row-reverse";
+command dom-renderer to-text: flex-layout--column = "column";
+command dom-renderer to-text: flex-layout--column-reverse = "column-reverse";
 
 
 // flex wrap
-command dom-renderer to-text: flex-wrap.no-wrap = "no-wrap";
-command dom-renderer to-text: flex-wrap.wrap = "wrap";
-command dom-renderer to-text: flex-wrap.wrap-reverse = "wrap-reverse";
+command dom-renderer to-text: flex-wrap--no-wrap = "no-wrap";
+command dom-renderer to-text: flex-wrap--wrap = "wrap";
+command dom-renderer to-text: flex-wrap--wrap-reverse = "wrap-reverse";
 
 
 // flex align
-command dom-renderer to-text: flex-align.normal = "normal";
-command dom-renderer to-text: flex-align.flex-start = "flex-start";
-command dom-renderer to-text: flex-align.flex-end = "flex-end";
-command dom-renderer to-text: flex-align.center = "center";
-command dom-renderer to-text: flex-align.stretch = "stretch";
-command dom-renderer to-text: flex-align.baseline = "baseline";
+command dom-renderer to-text: flex-align--normal = "normal";
+command dom-renderer to-text: flex-align--flex-start = "flex-start";
+command dom-renderer to-text: flex-align--flex-end = "flex-end";
+command dom-renderer to-text: flex-align--center = "center";
+command dom-renderer to-text: flex-align--stretch = "stretch";
+command dom-renderer to-text: flex-align--baseline = "baseline";
 
 
 // flex justify
-command dom-renderer to-text: flex-justify.normal = "normal";
-command dom-renderer to-text: flex-justify.flex-start = "flex-start";
-command dom-renderer to-text: flex-justify.flex-end = "flex-end";
-command dom-renderer to-text: flex-justify.center = "center";
-command dom-renderer to-text: flex-justify.left = "left";
-command dom-renderer to-text: flex-justify.right = "right";
-command dom-renderer to-text: flex-justify.baseline = "baseline";
-command dom-renderer to-text: flex-justify.space-between = "space-between";
-command dom-renderer to-text: flex-justify.space-around = "space-around";
-command dom-renderer to-text: flex-justify.space-evenly = "space-evenly";
-command dom-renderer to-text: flex-justify.stretch = "stretch";
+command dom-renderer to-text: flex-justify--normal = "normal";
+command dom-renderer to-text: flex-justify--flex-start = "flex-start";
+command dom-renderer to-text: flex-justify--flex-end = "flex-end";
+command dom-renderer to-text: flex-justify--center = "center";
+command dom-renderer to-text: flex-justify--left = "left";
+command dom-renderer to-text: flex-justify--right = "right";
+command dom-renderer to-text: flex-justify--baseline = "baseline";
+command dom-renderer to-text: flex-justify--space-between = "space-between";
+command dom-renderer to-text: flex-justify--space-around = "space-around";
+command dom-renderer to-text: flex-justify--space-evenly = "space-evenly";
+command dom-renderer to-text: flex-justify--stretch = "stretch";
 
 
 // divider style
-command dom-renderer to-text: divider-style-full = "agata-divider-style-full";
-command dom-renderer to-text: divider-style-half = "agata-divider-style-half";
+command dom-renderer to-text: divider-style--full = "agata-divider-style-full";
+command dom-renderer to-text: divider-style--half = "agata-divider-style-half";
 
 
 // anchors
-command dom-renderer to-text: x-anchor.left = "left";
-command dom-renderer to-text: x-anchor.right = "right";
-command dom-renderer to-text: y-anchor.top = "top";
-command dom-renderer to-text: y-anchor.bottom = "bottom";
+command dom-renderer to-text: x-anchor--left = "left";
+command dom-renderer to-text: x-anchor--right = "right";
+command dom-renderer to-text: y-anchor--top = "top";
+command dom-renderer to-text: y-anchor--bottom = "bottom";
 
 
 // button styles
-command dom-renderer to-css-class: button-style.default = "agata-button-style-default";
-command dom-renderer to-css-class: button-style.primary = "agata-button-style-primary";
-command dom-renderer to-css-class: button-style.dangerous = "agata-button-style-dangerous";
-command dom-renderer to-css-class: button-style.clear = "agata-button-style-clear";
-command dom-renderer to-css-class: button-style.card = "agata-button-style-card";
+command dom-renderer to-css-class: button-style--default = "agata-button-style-default";
+command dom-renderer to-css-class: button-style--primary = "agata-button-style-primary";
+command dom-renderer to-css-class: button-style--dangerous = "agata-button-style-dangerous";
+command dom-renderer to-css-class: button-style--clear = "agata-button-style-clear";
+command dom-renderer to-css-class: button-style--card = "agata-button-style-card";
 
 
 // Icon sizes
-command dom-renderer to-css-class: icon-size.small = "agata-icon-size-small";
-command dom-renderer to-css-class: icon-size.medium = "agata-icon-size-medium";
-command dom-renderer to-css-class: icon-size.large = "agata-icon-size-large";
-command dom-renderer to-css-class: icon-size.extra-large = "agata-icon-size-extra-large";
+command dom-renderer to-css-class: icon-size--small = "agata-icon-size-small";
+command dom-renderer to-css-class: icon-size--medium = "agata-icon-size-medium";
+command dom-renderer to-css-class: icon-size--large = "agata-icon-size-large";
+command dom-renderer to-css-class: icon-size--extra-large = "agata-icon-size-extra-large";
 
 
 // Font weight
-command dom-renderer to-font-weight: font-weight.inherit = "inherit";
-command dom-renderer to-font-weight: font-weight.thin = "100";
-command dom-renderer to-font-weight: font-weight.ultra-light = "200";
-command dom-renderer to-font-weight: font-weight.light = "300";
-command dom-renderer to-font-weight: font-weight.regular = "400";
-command dom-renderer to-font-weight: font-weight.medium = "500";
-command dom-renderer to-font-weight: font-weight.semi-bold = "600";
-command dom-renderer to-font-weight: font-weight.bold = "700";
-command dom-renderer to-font-weight: font-weight.black = "900";
+command dom-renderer to-font-weight: font-weight--inherit = "inherit";
+command dom-renderer to-font-weight: font-weight--thin = "100";
+command dom-renderer to-font-weight: font-weight--ultra-light = "200";
+command dom-renderer to-font-weight: font-weight--light = "300";
+command dom-renderer to-font-weight: font-weight--regular = "400";
+command dom-renderer to-font-weight: font-weight--medium = "500";
+command dom-renderer to-font-weight: font-weight--semi-bold = "600";
+command dom-renderer to-font-weight: font-weight--bold = "700";
+command dom-renderer to-font-weight: font-weight--black = "900";
 
 
 // Font style
-command dom-renderer to-font-style: font-style.inherit = "inherit";
-command dom-renderer to-font-style: font-style.normal = "normal";
-command dom-renderer to-font-style: font-style.italic = "italic";
+command dom-renderer to-font-style: font-style--inherit = "inherit";
+command dom-renderer to-font-style: font-style--normal = "normal";
+command dom-renderer to-font-style: font-style--italic = "italic";
 
 
 // Typography
-command dom-renderer to-css-class: typography-style.page-title = "agata-typography-page-title";
-command dom-renderer to-css-class: typography-style.title = "agata-typography-title";
-command dom-renderer to-css-class: typography-style.subtitle = "agata-typography-subtitle";
-command dom-renderer to-css-class: typography-style.subtitle2 = "agata-typography-subtitle2";
-command dom-renderer to-css-class: typography-style.body = "agata-typography-body";
+command dom-renderer to-css-class: typography-style--page-title = "agata-typography-page-title";
+command dom-renderer to-css-class: typography-style--title = "agata-typography-title";
+command dom-renderer to-css-class: typography-style--subtitle = "agata-typography-subtitle";
+command dom-renderer to-css-class: typography-style--subtitle2 = "agata-typography-subtitle2";
+command dom-renderer to-css-class: typography-style--body = "agata-typography-body";
 
 
 // Section styles
-command dom-renderer to-css-class: section-style.content = "agata-section-style-content";
-command dom-renderer to-css-class: section-style.welcome = "agata-section-style-welcome";
+command dom-renderer to-css-class: section-style--content = "agata-section-style-content";
+command dom-renderer to-css-class: section-style--welcome = "agata-section-style-welcome";
 
 
 // Text alignment
-command dom-renderer to-css-property: text-alignment.left =
+command dom-renderer to-css-property: text-alignment--left =
   "left";
-command dom-renderer to-css-property: text-alignment.center =
+command dom-renderer to-css-property: text-alignment--center =
   "center";
-command dom-renderer to-css-property: text-alignment.right =
+command dom-renderer to-css-property: text-alignment--right =
   "right";
-command dom-renderer to-css-property: text-alignment.justify =
+command dom-renderer to-css-property: text-alignment--justify =
   "justify";
 
 
 // Icon styles
-command dom-renderer to-css-class: icon-style.solid = "fas";
-command dom-renderer to-css-class: icon-style.regular = "far";
+command dom-renderer to-css-class: icon-style--solid = "fas";
+command dom-renderer to-css-class: icon-style--regular = "far";
 
 
 // Line styles
-command dom-renderer to-css-property: text-decoration-line.none = "none";
-command dom-renderer to-css-property: text-decoration-line.underline = "underline";
-command dom-renderer to-css-property: text-decoration-line.overline = "overline";
-command dom-renderer to-css-property: text-decoration-line.line-through = "line-through";
+command dom-renderer to-css-property: text-decoration-line--none = "none";
+command dom-renderer to-css-property: text-decoration-line--underline = "underline";
+command dom-renderer to-css-property: text-decoration-line--overline = "overline";
+command dom-renderer to-css-property: text-decoration-line--line-through = "line-through";
 
 
 // Card styles
-command dom-renderer to-css-class: card-style.narrow = "agata-card-style-narrow";
-command dom-renderer to-css-class: card-style.fluid = "agata-card-style-fluid";
+command dom-renderer to-css-class: card-style--narrow = "agata-card-style-narrow";
+command dom-renderer to-css-class: card-style--fluid = "agata-card-style-fluid";
 
 
 // Overflow styles
-command dom-renderer to-css-property: overflow-style.hidden = "hidden";
-command dom-renderer to-css-property: overflow-style.visible = "visible";
-command dom-renderer to-css-property: overflow-style.auto = "auto";
-command dom-renderer to-css-property: overflow-style.scroll = "scroll";
+command dom-renderer to-css-property: overflow-style--hidden = "hidden";
+command dom-renderer to-css-property: overflow-style--visible = "visible";
+command dom-renderer to-css-property: overflow-style--auto = "auto";
+command dom-renderer to-css-property: overflow-style--scroll = "scroll";

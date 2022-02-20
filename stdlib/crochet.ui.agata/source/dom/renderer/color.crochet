@@ -14,24 +14,24 @@ command dom-renderer to-css-color: (X is color-builtin) do
   "var([self to-css-variable: X.code])" flatten-into-plain-text;
 end
 
-command dom-renderer to-css-variable: color-code.blue-grey-10 = "--blue-grey-10";
-command dom-renderer to-css-variable: color-code.blue-grey-20 = "--blue-grey-20";
-command dom-renderer to-css-variable: color-code.blue-grey-30 = "--blue-grey-30";
-command dom-renderer to-css-variable: color-code.blue-grey-40 = "--blue-grey-40";
-command dom-renderer to-css-variable: color-code.blue-grey-50 = "--blue-grey-50";
-command dom-renderer to-css-variable: color-code.red = "--red";
-command dom-renderer to-css-variable: color-code.pink = "--pink";
-command dom-renderer to-css-variable: color-code.blue = "--blue";
-command dom-renderer to-css-variable: color-code.green = "--green";
-command dom-renderer to-css-variable: color-code.orange = "--orange";
-command dom-renderer to-css-variable: color-code.white = "--white";
-command dom-renderer to-css-variable: color-code.black = "--black";
-command dom-renderer to-css-variable: color-code.fg = "--fg";
-command dom-renderer to-css-variable: color-code.fg-invert = "--fg-invert";
-command dom-renderer to-css-variable: color-code.fg-muted = "--fg-muted";
-command dom-renderer to-css-variable: color-code.fg-meta = "--fg-meta";
-command dom-renderer to-css-variable: color-code.bg = "--bg";
-command dom-renderer to-css-variable: color-code.bg-muted = "--bg-muted";
-command dom-renderer to-css-variable: color-code.bg-muted-20 = "--bg-muted-20";
+command dom-renderer to-css-variable: color-code--blue-grey-10 = "--blue-grey-10";
+command dom-renderer to-css-variable: color-code--blue-grey-20 = "--blue-grey-20";
+command dom-renderer to-css-variable: color-code--blue-grey-30 = "--blue-grey-30";
+command dom-renderer to-css-variable: color-code--blue-grey-40 = "--blue-grey-40";
+command dom-renderer to-css-variable: color-code--blue-grey-50 = "--blue-grey-50";
+command dom-renderer to-css-variable: color-code--red = "--red";
+command dom-renderer to-css-variable: color-code--pink = "--pink";
+command dom-renderer to-css-variable: color-code--blue = "--blue";
+command dom-renderer to-css-variable: color-code--green = "--green";
+command dom-renderer to-css-variable: color-code--orange = "--orange";
+command dom-renderer to-css-variable: color-code--white = "--white";
+command dom-renderer to-css-variable: color-code--black = "--black";
+command dom-renderer to-css-variable: color-code--fg = "--fg";
+command dom-renderer to-css-variable: color-code--fg-invert = "--fg-invert";
+command dom-renderer to-css-variable: color-code--fg-muted = "--fg-muted";
+command dom-renderer to-css-variable: color-code--fg-meta = "--fg-meta";
+command dom-renderer to-css-variable: color-code--bg = "--bg";
+command dom-renderer to-css-variable: color-code--bg-muted = "--bg-muted";
+command dom-renderer to-css-variable: color-code--bg-muted-20 = "--bg-muted-20";
 
 
