@@ -180,7 +180,7 @@ command screen-chat as widget do
                   |> #observable-cell collect-stream: _;
   let Key-events = #event-stream empty;
   Key-events
-    | keep-if: { X in X key =:= key-code-enter }
+    | keep-if: { X in X key is key-code--enter }
     | listener
     | subscribe: { _ in
         let To-send = new message-send(Message value);

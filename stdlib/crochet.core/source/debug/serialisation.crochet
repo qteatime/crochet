@@ -256,13 +256,13 @@ command debug-serialisation for: (X is doc-scroll-style) =
     vertically -> self for: X.vertically,
   ];
 
-command debug-serialisation for: doc-scroll-visible =
+command debug-serialisation for: doc-scroll--visible =
   "visible";
 
-command debug-serialisation for: doc-scroll-hidden =
+command debug-serialisation for: doc-scroll--hidden =
   "hidden";
 
-command debug-serialisation for: doc-scroll-if-needed =
+command debug-serialisation for: doc-scroll--if-needed =
   "auto";
 
 command debug-serialisation for: (X is doc-font-presentation) =
@@ -276,34 +276,34 @@ command debug-serialisation for: (X is doc-font-presentation) =
     decoration -> self for: X.decoration
   ];
 
-command debug-serialisation for: doc-font-family-inherit = "inherit";
-command debug-serialisation for: doc-font-family-serif = "serif";
-command debug-serialisation for: doc-font-family-sans-serif = "sans-serif";
-command debug-serialisation for: doc-font-family-monospace = "monospace";
+command debug-serialisation for: doc-font-family--inherit = "inherit";
+command debug-serialisation for: doc-font-family--serif = "serif";
+command debug-serialisation for: doc-font-family--sans-serif = "sans-serif";
+command debug-serialisation for: doc-font-family--monospace = "monospace";
 
-command debug-serialisation for: doc-font-italic = "italic";
-command debug-serialisation for: doc-font-normal = "normal";
-command debug-serialisation for: doc-font-style-inherit = "inherit";
+command debug-serialisation for: doc-font-style--italic = "italic";
+command debug-serialisation for: doc-font-style--normal = "normal";
+command debug-serialisation for: doc-font-style--inherit = "inherit";
 
-command debug-serialisation for: doc-font-lighter = "lighter";
-command debug-serialisation for: doc-font-light = "light";
-command debug-serialisation for: doc-font-regular = "regular";
-command debug-serialisation for: doc-font-bold = "bold";
-command debug-serialisation for: doc-font-bolder = "bolder";
-command debug-serialisation for: doc-font-weight-inherit = "inherit";
+command debug-serialisation for: doc-font-weight--lighter = "lighter";
+command debug-serialisation for: doc-font-weight--light = "light";
+command debug-serialisation for: doc-font-weight--regular = "regular";
+command debug-serialisation for: doc-font-weight--bold = "bold";
+command debug-serialisation for: doc-font-weight--bolder = "bolder";
+command debug-serialisation for: doc-font-weight--inherit = "inherit";
 
-command debug-serialisation for: doc-font-decoration-inherit = "inherit";
-command debug-serialisation for: doc-font-underline = "underline";
-command debug-serialisation for: doc-font-strike-through = "line-through";
-command debug-serialisation for: doc-font-overline = "overline";
-command debug-serialisation for: doc-font-no-decoration = "none";
+command debug-serialisation for: doc-font-decoration--inherit = "inherit";
+command debug-serialisation for: doc-font-decoration--underline = "underline";
+command debug-serialisation for: doc-font-decoration--strike-through = "line-through";
+command debug-serialisation for: doc-font-decoration--overline = "overline";
+command debug-serialisation for: doc-font-decoration--no-decoration = "none";
 
 
-command debug-serialisation for: doc-border-style-none = "none";
-command debug-serialisation for: doc-border-style-hidden = "hidden";
-command debug-serialisation for: doc-border-style-dotted = "dotted";
-command debug-serialisation for: doc-border-style-dashed = "dashed";
-command debug-serialisation for: doc-border-style-solid = "solid";
+command debug-serialisation for: doc-border-style--none = "none";
+command debug-serialisation for: doc-border-style--hidden = "hidden";
+command debug-serialisation for: doc-border-style--dotted = "dotted";
+command debug-serialisation for: doc-border-style--dashed = "dashed";
+command debug-serialisation for: doc-border-style--solid = "solid";
 
 
 command debug-serialisation for: (X is doc-border) =

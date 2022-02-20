@@ -1,46 +1,46 @@
 % crochet
 
 command agata-theme-colors blue-grey =
-  new color-builtin(color-code-blue-grey-30);
+  new color-builtin(#color-code blue-grey-30);
 
 command agata-theme-colors red =
-  new color-builtin(color-code-red);
+  new color-builtin(#color-code red);
 
 command agata-theme-colors pink =
-  new color-builtin(color-code-pink);
+  new color-builtin(#color-code pink);
 
 command agata-theme-colors blue =
-  new color-builtin(color-code-blue);
+  new color-builtin(#color-code blue);
 
 command agata-theme-colors green =
-  new color-builtin(color-code-green);
+  new color-builtin(#color-code green);
 
 command agata-theme-colors orange =
-  new color-builtin(color-code-orange);
+  new color-builtin(#color-code orange);
 
 command agata-theme-colors white =
-  new color-builtin(color-code-white);
+  new color-builtin(#color-code white);
 
 command agata-theme-colors black =
-  new color-builtin(color-code-black);
+  new color-builtin(#color-code black);
 
 command agata-theme-colors fg =
-  new color-builtin(color-code-fg);
+  new color-builtin(#color-code fg);
 
 command agata-theme-colors fg-invert =
-  new color-builtin(color-code-fg-invert);
+  new color-builtin(#color-code fg-invert);
 
 command agata-theme-colors fg-muted =
-  new color-builtin(color-code-fg-muted);
+  new color-builtin(#color-code fg-muted);
 
 command agata-theme-colors fg-meta =
-  new color-builtin(color-code-fg-meta);
+  new color-builtin(#color-code fg-meta);
 
 command agata-theme-colors bg =
-  new color-builtin(color-code-bg);
+  new color-builtin(#color-code bg);
 
 command agata-theme-colors bg-muted =
-  new color-builtin(color-code-bg-muted);
+  new color-builtin(#color-code bg-muted);
 
 command agata-theme-colors bg-muted-20 =
-  new color-builtin(color-code-bg-muted-20);
+  new color-builtin(#color-code bg-muted-20);

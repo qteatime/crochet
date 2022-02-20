@@ -13,9 +13,9 @@ ensures same-size :: self count === return count do
     do
       let C = Comparator(A, B);
       condition
-        when C === less-than => -1;
-        when C === equal => 0;
-        when C === greater-than => 1;
+        when C =:= #ordering less-than => -1;
+        when C =:= #ordering equal => 0;
+        when C =:= #ordering greater-than => 1;
       end
     end
   };

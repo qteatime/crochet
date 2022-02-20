@@ -12,9 +12,9 @@ local enum test-enum = ta, tb, tc;
 command 'enum < (Other is 'enum) =
   self to-enum-integer < Other to-enum-integer
 test
-  assert ta < tb;
-  assert tb < tc;
-  assert not (tc < ta);
+  assert #test-enum ta < #test-enum tb;
+  assert #test-enum tb < #test-enum tc;
+  assert not (#test-enum tc < #test-enum ta);
 end
 
 /// True if `self` is strictly higher than `Other`.
@@ -25,7 +25,7 @@ end
 command 'enum > (Other is 'enum) =
   self to-enum-integer > Other to-enum-integer
 test
-  assert tb > ta;
-  assert tc > tb;
-  assert not (ta > tc);
+  assert #test-enum tb > #test-enum ta;
+  assert #test-enum tc > #test-enum tb;
+  assert not (#test-enum ta > #test-enum tc);
 end

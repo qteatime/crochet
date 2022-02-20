@@ -61,7 +61,7 @@ class CrochetIRDecoder extends BinaryReader {
     return this.array((_) => this.decode_declaration());
   }
 
-  decode_declaration() {
+  decode_declaration(): IR.Declaration {
     const t = IR.DeclarationTag;
     const tag = this.decode_enum_tag(t, "declaration");
     switch (tag) {
@@ -234,8 +234,64 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.DDefaultHandler(this.decode_meta_id(), this.string());
       }
 
+      case t.ALIAS: {
+        return new IR.DAlias(
+          this.decode_meta_id(),
+          this.decode_entity(),
+          this.string()
+        );
+      }
+
+      case t.NAMESPACE: {
+        return new IR.DNamespace(
+          this.decode_meta_id(),
+          this.string(),
+          this.string(),
+          this.array((_) => {
+            const x = this.decode_declaration();
+            if (!(x instanceof IR.DAlias)) {
+              throw new Error(`Non-alias content in namespace`);
+            }
+            return x;
+          })
+        );
+      }
+
       default:
         throw unreachable(tag, "Declaration");
+    }
+  }
+
+  decode_entity() {
+    const tag = this.decode_enum_tag(IR.EntityTag, "Entity");
+    const t = IR.EntityTag;
+    switch (tag) {
+      case t.GLOBAL_TRAIT: {
+        return new IR.EntityGlobalTrait(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case t.GLOBAL_TYPE: {
+        return new IR.EntityGlobalType(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case t.LOCAL_TRAIT: {
+        return new IR.EntityLocalTrait(this.decode_meta_id(), this.string());
+      }
+
+      case t.LOCAL_TYPE: {
+        return new IR.EntityLocalType(this.decode_meta_id(), this.string());
+      }
+
+      default:
+        throw unreachable(tag, "Entity");
     }
   }
 
@@ -290,12 +346,12 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.LocalType(this.decode_meta_id(), this.string());
       }
 
-      case IR.TypeTag.LOCAL_STATIC: {
-        return new IR.LocalStaticType(this.decode_meta_id(), this.string());
+      case IR.TypeTag.STATIC: {
+        return new IR.StaticType(this.decode_meta_id(), this.decode_type());
       }
 
-      case IR.TypeTag.GLOBAL_STATIC: {
-        return new IR.GlobalStaticType(
+      case IR.TypeTag.LOCAL_NAMESPACED: {
+        return new IR.LocalNamespacedType(
           this.decode_meta_id(),
           this.string(),
           this.string()
@@ -339,6 +395,14 @@ class CrochetIRDecoder extends BinaryReader {
 
       case IR.TraitTag.GLOBAL: {
         return new IR.GlobalTrait(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
+      case IR.TraitTag.NAMESPACED: {
+        return new IR.NamespacedTrait(
           this.decode_meta_id(),
           this.string(),
           this.string()
@@ -390,11 +454,11 @@ class CrochetIRDecoder extends BinaryReader {
           this.uint32()
         );
 
-      case t.PUSH_STATIC_TYPE:
-        return new IR.PushStaticType(
-          this.decode_meta_id(),
-          this.decode_type() as IR.LocalStaticType
-        );
+      case t.PUSH_STATIC_TYPE: {
+        const id = this.decode_meta_id();
+        const type = this.decode_type();
+        return new IR.PushStaticType(id, type);
+      }
 
       case t.PUSH_RECORD:
         return new IR.PushRecord(

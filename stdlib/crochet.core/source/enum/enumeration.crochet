@@ -15,9 +15,9 @@ do
   let To = To0 to-enum-integer;
   for I in From to: To do From0 from-enum-integer: I end
 test
-  assert (ta to: tc) =:= [ta, tb, tc];
-  assert (tb to: tc) =:= [tb, tc];
-  assert (tc to: tc) =:= [tc];
+  assert (#test-enum ta to: #test-enum tc) =:= [#test-enum ta, #test-enum tb, #test-enum tc];
+  assert (#test-enum tb to: #test-enum tc) =:= [#test-enum tb, #test-enum tc];
+  assert (#test-enum tc to: #test-enum tc) =:= [#test-enum tc];
 end
 
 /// Range of enums, only inclusive on the starting end
@@ -29,9 +29,9 @@ do
   let To = To0 to-enum-integer;
   for I in From until: To do From0 from-enum-integer: I end
 test
-  assert (ta to: tc) =:= [ta, tb, tc];
-  assert (tb to: tc) =:= [tb, tc];
-  assert (tc to: tc) =:= [tc];
+  assert (#test-enum ta to: #test-enum tc) =:= [#test-enum ta, #test-enum tb, #test-enum tc];
+  assert (#test-enum tb to: #test-enum tc) =:= [#test-enum tb, #test-enum tc];
+  assert (#test-enum tc to: #test-enum tc) =:= [#test-enum tc];
 end
 
 /// Successor of the current enum
@@ -40,8 +40,8 @@ requires not-last :: self to-enum-integer < self upper-bound to-enum-integer
 do
   self from-enum-integer: (self to-enum-integer + 1);
 test
-  assert ta successor =:= tb;
-  assert tb successor =:= tc;
+  assert #test-enum ta successor =:= #test-enum tb;
+  assert #test-enum tb successor =:= #test-enum tc;
 end
 
 /// Predecessor of the current enum
@@ -50,6 +50,6 @@ requires not-first :: self to-enum-integer > 1
 do
   self from-enum-integer: (self to-enum-integer - 1);
 test
-  assert tb predecessor =:= ta;
-  assert tc predecessor =:= tb;
+  assert #test-enum tb predecessor =:= #test-enum ta;
+  assert #test-enum tc predecessor =:= #test-enum tb;
 end

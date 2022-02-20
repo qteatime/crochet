@@ -1,0 +1,27 @@
+% crochet
+
+local enum direction =
+  north,
+  east,
+  south,
+  west;
+
+test "Enums have local aliases and enum commands" do
+  assert #direction north is direction.north;
+  assert #direction north is direction--north;
+end
+
+test "Enums have bounds" do
+  assert direction lower-bound =:= #direction north;
+  assert direction upper-bound =:= #direction west;
+
+  assert #direction north to-enum-integer =:= 1;
+  assert #direction east to-enum-integer =:= 2;
+  assert #direction south to-enum-integer =:= 3;
+  assert #direction west to-enum-integer =:= 4;
+end
+
+test "Enums have string constructors" do
+  assert #direction north to-enum-text =:= "north";
+  assert (#direction from-enum-text: "north") =:= #direction north;
+end

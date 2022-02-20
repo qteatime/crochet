@@ -237,7 +237,7 @@ export class ExtendInstance extends BaseOp {
 export class PushStaticType extends BaseOp {
   readonly tag = OpTag.PUSH_STATIC_TYPE;
 
-  constructor(readonly meta: Metadata, readonly type: StaticType) {
+  constructor(readonly meta: Metadata, readonly type: Type) {
     super();
   }
 }

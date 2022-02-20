@@ -211,7 +211,7 @@ function replace_signature_args<T, U>(x: Ast.Signature<T>, args: U[]) {
 export function from_enum_integer(
   meta: number,
   type: IR.Type,
-  variants: Ast.Name[]
+  variants: { full_name: string }[]
 ) {
   if (variants.length === 0) {
     throw new Error(`empty variants`);
@@ -225,7 +225,7 @@ export function from_enum_integer(
           new IR.Branch(
             meta,
             new IR.BasicBlock([
-              new IR.PushGlobal(meta, x.name),
+              new IR.PushGlobal(meta, x.full_name),
               new IR.Return(meta),
             ]),
             new IR.BasicBlock(prev)
@@ -250,7 +250,10 @@ export function from_enum_integer(
       ["_", "N"],
       [
         new IR.TypeConstraintType(NO_INFO, type),
-        new IR.TypeConstraintType(meta, new IR.LocalType(meta, "integer")),
+        new IR.TypeConstraintType(
+          meta,
+          new IR.GlobalType(meta, "crochet.core", "integer")
+        ),
       ],
       new IR.BasicBlock(cond)
     );
@@ -306,9 +309,9 @@ export class LowerToIR {
           Any: () => {
             throw new Error(`internal: invalid #any`);
           },
-          Named: (_, n) => new IR.LocalStaticType(id, n.name),
-          Namespaced: (_, ns, n) =>
-            new IR.GlobalStaticType(id, compileNamespace(ns), n.name),
+          Named: (_, n) => new IR.StaticType(id, this.type(t)),
+          Namespaced: (_, ns, n) => new IR.StaticType(id, this.type(t)),
+          Global: (_, ns, n) => new IR.StaticType(id, this.type(t)),
           Static: (_1, _2) => {
             throw new Error(`internal: invalid ##type`);
           },
@@ -319,11 +322,15 @@ export class LowerToIR {
       },
       Function: (pos, args, _ret) => {
         const id = this.context.register(pos);
-        return new IR.LocalType(id, `function-${args.length}`);
+        return new IR.GlobalType(id, "crochet.core", `function-${args.length}`);
+      },
+      Global: (pos, ns, name) => {
+        const id = this.context.register(pos);
+        return new IR.GlobalType(id, compileNamespace(ns), name.name);
       },
       Namespaced: (pos, ns, name) => {
         const id = this.context.register(pos);
-        return new IR.GlobalType(id, compileNamespace(ns), name.name);
+        return new IR.LocalNamespacedType(id, ns.name, name.name);
       },
     });
   }
@@ -353,9 +360,14 @@ export class LowerToIR {
         return new IR.LocalTrait(id, name.name);
       },
 
-      Namespaced: (pos, ns, name) => {
+      Global: (pos, ns, name) => {
         const id = this.context.register(pos);
         return new IR.GlobalTrait(id, compileNamespace(ns), name.name);
+      },
+
+      Namespaced: (pos, ns, name) => {
+        const id = this.context.register(pos);
+        return new IR.NamespacedTrait(id, ns.name, name.name);
       },
     });
   }
@@ -861,6 +873,13 @@ export class LowerToIR {
         return new IR.LocalType(this.context.register(pos), name.name);
       },
       Namespaced: (pos, ns, name) => {
+        return new IR.LocalNamespacedType(
+          this.context.register(pos),
+          ns.name,
+          name.name
+        );
+      },
+      Global: (pos, ns, name) => {
         return new IR.GlobalType(
           this.context.register(pos),
           compileNamespace(ns),
@@ -1491,6 +1510,27 @@ export class LowerToIR {
     }
   }
 
+  entity(x: Ast.Entity): IR.Entity {
+    return x.match<IR.Entity>({
+      GlobalTrait: (pos, ns, n) =>
+        new IR.EntityGlobalTrait(
+          this.context.register(pos),
+          compileNamespace(ns),
+          n.name
+        ),
+      GlobalType: (pos, ns, n) =>
+        new IR.EntityGlobalType(
+          this.context.register(pos),
+          compileNamespace(ns),
+          n.name
+        ),
+      LocalTrait: (pos, n) =>
+        new IR.EntityLocalTrait(this.context.register(pos), n.name),
+      LocalType: (pos, n) =>
+        new IR.EntityLocalType(this.context.register(pos), n.name),
+    });
+  }
+
   declaration(x: Ast.Declaration, context: string | null): IR.Declaration[] {
     return x.match<IR.Declaration[]>({
       Command: (pos, cmeta, sig, contract, body, test) => {
@@ -1672,7 +1712,16 @@ export class LowerToIR {
         const id = this.context.register(pos);
         const parent = new IR.LocalType(id, name.name);
         const parent_constraint = new IR.TypeConstraintType(id, parent);
-        const variants = variants0.flatMap((v, i) => {
+        const parent_constraint_static = new IR.TypeConstraintType(
+          id,
+          new IR.StaticType(id, parent)
+        );
+        const variants1 = variants0.map((x) => ({
+          pos: x.pos,
+          name: x.name,
+          full_name: `${name.name}--${x.name}`,
+        }));
+        const variants = variants1.flatMap((v, i) => {
           const variant_id = this.context.register(v.pos);
 
           return [
@@ -1680,7 +1729,7 @@ export class LowerToIR {
               v.pos,
               variant_id,
               NO_METADATA,
-              v.name,
+              v.full_name,
               parent_constraint,
               [],
               context
@@ -1693,11 +1742,27 @@ export class LowerToIR {
               [
                 new IR.TypeConstraintType(
                   variant_id,
-                  new IR.LocalType(variant_id, v.name)
+                  new IR.LocalType(variant_id, v.full_name)
                 ),
               ],
               new IR.BasicBlock([
                 new IR.PushLiteral(new IR.LiteralInteger(BigInt(i + 1))),
+                new IR.Return(variant_id),
+              ])
+            ),
+            new IR.DCommand(
+              variant_id,
+              "",
+              "_ to-enum-text",
+              ["_"],
+              [
+                new IR.TypeConstraintType(
+                  variant_id,
+                  new IR.LocalType(variant_id, v.full_name)
+                ),
+              ],
+              new IR.BasicBlock([
+                new IR.PushLiteral(new IR.LiteralText(v.name)),
                 new IR.Return(variant_id),
               ])
             ),
@@ -1720,7 +1785,7 @@ export class LowerToIR {
           ...variants,
           new IR.DDefine(
             id,
-            `See type:${name.name}`,
+            `See [type:${name.name}]`,
             IR.Visibility.GLOBAL,
             name.name,
             new IR.BasicBlock([
@@ -1729,7 +1794,80 @@ export class LowerToIR {
             ])
           ),
           new IR.DSeal(id, name.name),
+          // Namespacing
+          new IR.DNamespace(
+            id,
+            `See [type:${name.name}]`,
+            name.name,
+            variants1.map(
+              (x) =>
+                new IR.DAlias(
+                  id,
+                  new IR.EntityLocalType(id, x.full_name),
+                  x.name
+                )
+            )
+          ),
           // Generated commands
+          ...variants1.map((x) => {
+            return new IR.DCommand(
+              id,
+              `See [type:${x.full_name}]`,
+              `_ ${x.name}`,
+              ["_"],
+              [parent_constraint_static],
+              new IR.BasicBlock([
+                new IR.PushGlobal(id, x.full_name),
+                new IR.Return(id),
+              ])
+            );
+          }),
+
+          new IR.DCommand(
+            id,
+            "",
+            "_ from-enum-text: _",
+            ["_", "Name"],
+            [
+              parent_constraint_static,
+              new IR.TypeConstraintType(
+                id,
+                new IR.GlobalType(id, "crochet.core", "text")
+              ),
+            ],
+            new IR.BasicBlock(
+              variants1
+                .slice()
+                .reverse()
+                .reduceRight(
+                  (prev: IR.Op[], x) => {
+                    return [
+                      new IR.PushVariable(id, "Name"),
+                      new IR.PushLiteral(new IR.LiteralText(x.name)),
+                      new IR.IntrinsicEqual(id),
+                      new IR.Branch(
+                        id,
+                        new IR.BasicBlock([
+                          new IR.PushGlobal(id, x.full_name),
+                          new IR.Return(id),
+                        ]),
+                        new IR.BasicBlock(prev)
+                      ),
+                    ];
+                  },
+                  [
+                    new IR.PushLiteral(new IR.LiteralFalse()),
+                    new IR.Assert(
+                      id,
+                      IR.AssertType.UNREACHABLE,
+                      "unreachable",
+                      "None of the conditions were true",
+                      null
+                    ),
+                  ]
+                )
+            )
+          ),
           new IR.DCommand(
             id,
             "",
@@ -1737,7 +1875,7 @@ export class LowerToIR {
             ["_"],
             [parent_constraint],
             new IR.BasicBlock([
-              new IR.PushGlobal(id, variants0[0].name),
+              new IR.PushGlobal(id, variants1[0].full_name),
               new IR.Return(id),
             ])
           ),
@@ -1748,11 +1886,11 @@ export class LowerToIR {
             ["_"],
             [parent_constraint],
             new IR.BasicBlock([
-              new IR.PushGlobal(id, variants0[variants0.length - 1].name),
+              new IR.PushGlobal(id, variants1[variants1.length - 1].full_name),
               new IR.Return(id),
             ])
           ),
-          from_enum_integer(id, parent, variants0),
+          from_enum_integer(id, parent, variants1),
         ];
       },
 
@@ -1924,7 +2062,30 @@ export class LowerToIR {
           ),
         ];
       },
+
+      Alias: (x) => {
+        return [this.alias(x)];
+      },
+
+      Namespace: (pos, cmeta, name, aliases) => {
+        return [
+          new IR.DNamespace(
+            this.context.register(pos),
+            this.documentation(cmeta),
+            name.name,
+            aliases.map((x) => this.alias(x))
+          ),
+        ];
+      },
     });
+  }
+
+  alias(x: Ast.NsAlias) {
+    return new IR.DAlias(
+      this.context.register(x.pos),
+      this.entity(x.entity),
+      x.name.name
+    );
   }
 
   declarations(xs: Ast.Declaration[], context: string | null) {

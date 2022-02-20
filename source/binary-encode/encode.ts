@@ -200,8 +200,58 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.DeclarationTag.ALIAS: {
+        this.encode_meta_id(x.meta);
+        this.encode_entity(x.entity);
+        this.string(x.name);
+        break;
+      }
+
+      case IR.DeclarationTag.NAMESPACE: {
+        this.encode_meta_id(x.meta);
+        this.string(x.documentation);
+        this.string(x.name);
+        this.array(x.aliases, (a) => this.encode_declaration(a));
+        break;
+      }
+
       default:
         throw unreachable(x, `Declaration`);
+    }
+  }
+
+  encode_entity(x: IR.Entity) {
+    this.encode_enum_tag(x.tag);
+    const t = IR.EntityTag;
+    switch (x.tag) {
+      case t.GLOBAL_TRAIT: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
+      case t.GLOBAL_TYPE: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
+      case t.LOCAL_TRAIT: {
+        this.encode_meta_id(x.meta);
+        this.string(x.name);
+        break;
+      }
+
+      case t.LOCAL_TYPE: {
+        this.encode_meta_id(x.meta);
+        this.string(x.name);
+        break;
+      }
+
+      default:
+        throw unreachable(x, "Entity");
     }
   }
 
@@ -717,13 +767,13 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
-      case IR.TypeTag.LOCAL_STATIC: {
+      case IR.TypeTag.STATIC: {
         this.encode_meta_id(x.meta);
-        this.string(x.name);
+        this.encode_type(x.type);
         break;
       }
 
-      case IR.TypeTag.GLOBAL_STATIC: {
+      case IR.TypeTag.LOCAL_NAMESPACED: {
         this.encode_meta_id(x.meta);
         this.string(x.namespace);
         this.string(x.name);
@@ -762,6 +812,13 @@ class CrochetIREncoder extends BinaryWriter {
       }
 
       case IR.TraitTag.GLOBAL: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
+      case IR.TraitTag.NAMESPACED: {
         this.encode_meta_id(x.meta);
         this.string(x.namespace);
         this.string(x.name);

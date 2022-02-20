@@ -23,11 +23,11 @@ type widget-action-button(
 ) is widget;
 
 enum button-style =
-  button-style-default,
-  button-style-primary,
-  button-style-dangerous,
-  button-style-clear,
-  button-style-card;
+  'default,
+  primary,
+  dangerous,
+  clear,
+  card;
 
 
 command #widget button: (Content has to-widget) =
@@ -36,12 +36,12 @@ command #widget button: (Content has to-widget) =
     accessible-title -> #observable-cell with-value: "",
     disabled -> #observable-cell with-value: false,
     clicked -> #event-stream empty,
-    style -> button-style-default,
+    style -> #button-style 'default,
   );
 
 command #widget card-button: (Content is widget) =
   #widget button: Content
-    | style: button-style-card;
+    | style: #button-style card;
 
 command #widget card-button: (Items is list) =
   #widget card-button: (#widget card: Items);
@@ -49,7 +49,7 @@ command #widget card-button: (Items is list) =
 command #widget icon-button: (Icon is widget-icon) =
   new widget-icon-button(
     icon -> Icon,
-    button -> #widget button: "" | style: button-style-clear
+    button -> #widget button: "" | style: #button-style clear
   );
 
 command #widget icon-button: (Name is static-text) =
@@ -60,18 +60,12 @@ command #widget action-button: (Title has to-widget) =
     icon -> nothing,
     title -> Title,
     description -> "",
-    button -> #widget button: "" | style: button-style-clear,
+    button -> #widget button: "" | style: #button-style clear,
   );
 
 
 command #button-style from-text: (Name is static-text) do
-  condition
-    when Name =:= "default" => button-style-default;
-    when Name =:= "primary" => button-style-primary;
-    when Name =:= "dangerous" => button-style-dangerous;
-    when Name =:= "clear" => button-style-clear;
-    when Name =:= "card" => button-style-card;
-  end
+  #button-style from-enum-text: Name;
 end
 
 

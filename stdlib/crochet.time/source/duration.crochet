@@ -124,19 +124,19 @@ command duration balanced-to: (Unit is duration-unit) do
   let Days = self days + HoursC;
 
   condition
-    when Unit is du-days =>
+    when Unit is duration-unit.days =>
       new duration(Days, Hours, Minutes, Seconds, Millis);
 
-    when Unit is du-hours =>
+    when Unit is duration-unit.hours =>
       new duration(0, Hours0 + (self days * 24), Minutes, Seconds, Millis);
 
-    when Unit is du-minutes =>
+    when Unit is duration-unit.minutes =>
       new duration(0, 0, Minutes0 + (self hours * 60) + (self days * 24 * 60), Seconds, Millis);
 
-    when Unit is du-seconds =>
+    when Unit is duration-unit.seconds =>
       new duration(0, 0, 0, Seconds0 + (self minutes * 60) + (self hours * 60 * 60) + (self days * 24 * 60 * 60), Millis);
 
-    when Unit is du-milliseconds =>
+    when Unit is duration-unit.milliseconds =>
       new duration(0, 0, 0, 0, self milliseconds +
                                (self seconds * 1000) +
                                (self minutes * 60 * 1000) +
@@ -153,19 +153,19 @@ end
 /// Returns the largest unit in the duration.
 command duration largest-unit -> duration-unit do
   condition
-    when self days =/= 0 => du-days;
-    when self hours =/= 0 => du-hours;
-    when self minutes =/= 0 => du-minutes;
-    when self seconds =/= 0 => du-seconds;
-    otherwise => du-milliseconds;
+    when self days =/= 0 => #duration-unit days;
+    when self hours =/= 0 => #duration-unit hours;
+    when self minutes =/= 0 => #duration-unit minutes;
+    when self seconds =/= 0 => #duration-unit seconds;
+    otherwise => #duration-unit milliseconds;
   end
 test
-  assert new duration(1, 1, 1, 1, 1) largest-unit === du-days;
-  assert new duration(0, 1, 1, 1, 1) largest-unit === du-hours;
-  assert new duration(0, 0, 1, 1, 1) largest-unit === du-minutes;
-  assert new duration(0, 0, 0, 1, 1) largest-unit === du-seconds;
-  assert new duration(0, 0, 0, 0, 1) largest-unit === du-milliseconds;
-  assert new duration(0, 0, 0, 0, 0) largest-unit === du-milliseconds;
+  assert new duration(1, 1, 1, 1, 1) largest-unit is duration-unit--days;
+  assert new duration(0, 1, 1, 1, 1) largest-unit is duration-unit--hours;
+  assert new duration(0, 0, 1, 1, 1) largest-unit is duration-unit--minutes;
+  assert new duration(0, 0, 0, 1, 1) largest-unit is duration-unit--seconds;
+  assert new duration(0, 0, 0, 0, 1) largest-unit is duration-unit--milliseconds;
+  assert new duration(0, 0, 0, 0, 0) largest-unit is duration-unit--milliseconds;
 end
 
 // -- Arithmetic

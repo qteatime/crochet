@@ -13,20 +13,20 @@ type font(
 );
 
 enum font-weight =
-  font-weight-inherit,
-  font-weight-thin,
-  font-weight-ultra-light,
-  font-weight-light,
-  font-weight-regular,
-  font-weight-medium,
-  font-weight-semi-bold,
-  font-weight-bold,
-  font-weight-black;
+  inherit,
+  thin,
+  ultra-light,
+  light,
+  regular,
+  medium,
+  semi-bold,
+  bold,
+  black;
 
 enum font-style =
-  font-style-inherit,
-  font-style-normal,
-  font-style-italic;
+  inherit,
+  normal,
+  italic;
 
 
 command agata-font family: (Family is static-text) =
@@ -38,31 +38,17 @@ command agata-font family: (Families is list<static-text>) =
 command agata-font family: (Families is set<static-text>) =
   new font(
     family-set -> Families,
-    weight -> font-weight-inherit,
-    style -> font-style-inherit,
+    weight -> #font-weight inherit,
+    style -> #font-style inherit,
     color -> color-unset,
     size -> measure-auto,
   );
 
 
 command #font-weight from-text: (Name is static-text) do
-  condition
-    when Name =:= "inherit" => font-weight-inherit;
-    when Name =:= "thin" => font-weight-thin;
-    when Name =:= "ultra-light" => font-weight-ultra-light;
-    when Name =:= "light" => font-weight-light;
-    when Name =:= "regular" => font-weight-regular;
-    when Name =:= "medium" => font-weight-medium;
-    when Name =:= "semi-bold" => font-weight-semi-bold;
-    when Name =:= "bold" => font-weight-bold;
-    when Name =:= "black" => font-weight-black;
-  end
+  #font-weight from-enum-text: Name;
 end
 
 command #font-style from-text: (Name is static-text) do
-  condition
-    when Name =:= "inherit" => font-style-inherit;
-    when Name =:= "normal" => font-style-normal;
-    when Name =:= "italic" => font-style-italic;
-  end
+  #font-style from-enum-text: Name;
 end

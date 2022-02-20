@@ -16,25 +16,25 @@ type rgba(
 type color-builtin(code is color-code) is color;
 
 enum color-code =
-  color-code-blue-grey-10,
-  color-code-blue-grey-20,
-  color-code-blue-grey-30,
-  color-code-blue-grey-40,
-  color-code-blue-grey-50,
-  color-code-red,
-  color-code-pink,
-  color-code-blue,
-  color-code-green,
-  color-code-orange,
-  color-code-white,
-  color-code-black,
-  color-code-fg,
-  color-code-fg-invert,
-  color-code-fg-muted,
-  color-code-fg-meta,
-  color-code-bg,
-  color-code-bg-muted,
-  color-code-bg-muted-20;
+  blue-grey-10,
+  blue-grey-20,
+  blue-grey-30,
+  blue-grey-40,
+  blue-grey-50,
+  red,
+  pink,
+  blue,
+  green,
+  orange,
+  white,
+  black,
+  fg,
+  fg-invert,
+  fg-muted,
+  fg-meta,
+  bg,
+  bg-muted,
+  bg-muted-20;
 
 trait to-agata-color with
   command Self as color -> color;

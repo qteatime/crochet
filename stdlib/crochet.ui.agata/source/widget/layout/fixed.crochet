@@ -23,12 +23,12 @@ type anchors(
 );
 
 enum x-anchor =
-  x-anchor-left,
-  x-anchor-right;
+  left,
+  right;
 
 enum y-anchor =
-  y-anchor-top,
-  y-anchor-bottom;
+  top,
+  bottom;
 
 type dimension(
   width is measure-length,
@@ -68,7 +68,7 @@ command fixed-options dimension: (F is (dimension -> dimension)) =
 
 command #position zero =
   new position(
-    anchors -> new anchors(x-anchor-left, y-anchor-top),
+    anchors -> new anchors(#x-anchor left, #y-anchor top),
     x -> #measure pixels: 0,
     y -> #measure pixels: 0,
   );
@@ -108,17 +108,11 @@ command anchors y: (Y is static-text) =
 
 
 command #x-anchor from-text: (X is static-text) do
-  condition
-    when X =:= "left" => x-anchor-left;
-    when X =:= "right" => x-anchor-right;
-  end
+  #x-anchor from-enum-text: X;
 end
 
 command #y-anchor from-text: (Y is static-text) do
-  condition
-    when Y =:= "top" => y-anchor-top;
-    when Y =:= "bottom" => y-anchor-bottom;
-  end
+  #y-anchor from-enum-text: Y;
 end
 
 

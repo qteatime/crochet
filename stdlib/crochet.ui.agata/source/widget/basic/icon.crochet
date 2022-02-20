@@ -10,8 +10,8 @@ type widget-icon(
 ) is widget;
 
 enum icon-style =
-  icon-style-solid,
-  icon-style-regular;
+  solid,
+  regular;
 
 
 command #widget icon: (Name is static-text)
@@ -20,8 +20,8 @@ requires
 do
   new widget-icon(
     name -> Name,
-    size -> icon-size-small,
-    style -> icon-style-solid,
+    size -> #icon-size small,
+    style -> #icon-style solid,
     color -> color-unset,
   );
 end
@@ -33,10 +33,7 @@ end
 
 
 command #icon-style from-text: (Name is static-text) do
-  condition
-    when Name =:= "solid" => icon-style-solid;
-    when Name =:= "regular" => icon-style-regular;
-  end
+  #icon-style from-enum-text: Name;
 end
 
 

@@ -100,9 +100,9 @@ type doc-presentation(
 
 /// Types of scroll bars
 enum doc-scroll =
-  doc-scroll-visible,
-  doc-scroll-hidden,
-  doc-scroll-if-needed;
+  visible,
+  hidden,
+  if-needed;
 
 /// Scroll-view properties
 type doc-scroll-style(
@@ -112,31 +112,31 @@ type doc-scroll-style(
 
 /// Font properties
 enum doc-font-family =
-  doc-font-family-inherit,
-  doc-font-family-serif,
-  doc-font-family-sans-serif,
-  doc-font-family-monospace;
+  inherit,
+  serif,
+  sans-serif,
+  monospace;
 
 enum doc-font-style =
-  doc-font-italic,
-  doc-font-normal,
-  doc-font-style-inherit;
+  italic,
+  normal,
+  inherit;
 
 enum doc-font-weight =
-  doc-font-lighter,
-  doc-font-light,
-  doc-font-regular,
-  doc-font-bold,
-  doc-font-bolder,
-  doc-font-weight-inherit;
+  lighter,
+  light,
+  regular,
+  bold,
+  bolder,
+  inherit;
 
 // TODO: turn this into a more fully-featured thing, like CSS's text decoration
 enum doc-font-decoration =
-  doc-font-decoration-inherit,
-  doc-font-overline,
-  doc-font-underline,
-  doc-font-strike-through,
-  doc-font-no-decoration;
+  inherit,
+  overline,
+  underline,
+  strike-through,
+  no-decoration;
 
 type doc-font-presentation(
   family is doc-font-family,
@@ -164,11 +164,11 @@ trait to-doc-font-decoration with
 end
 
 enum doc-border-style =
-  doc-border-style-none,
-  doc-border-style-hidden,
-  doc-border-style-dotted,
-  doc-border-style-dashed,
-  doc-border-style-solid;
+  none,
+  hidden,
+  dotted,
+  dashed,
+  solid;
 
 trait to-doc-border-style with
   command Value as doc-border-style;

@@ -32,7 +32,7 @@ command todo-ui render-new-list-widget do
   let Name = #observable-cell with-value: "";
   let Key-events = #event-stream empty;
   Key-events
-    | keep-if: { X in X key =:= key-code-enter }
+    | keep-if: { X in X key is key-code--enter }
     | listener
     | subscribe: { _ in
         let List = #todo-list-concrete with-name: Name value;

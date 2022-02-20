@@ -33,6 +33,8 @@
     "feature/internal.crochet",
     "feature/plugin-derive.crochet",
     "feature/record.crochet",
+    "feature/aliases.crochet",
+    "feature/enums.crochet",
     "regression/placeholder-dispatch.crochet"
   ],
   "capabilities": {

@@ -24,6 +24,8 @@ export enum DeclarationTag {
   PROTECT,
   HANDLER,
   DEFAULT_HANDLER,
+  ALIAS,
+  NAMESPACE,
 }
 
 export enum Visibility {
@@ -50,7 +52,9 @@ export type Declaration =
   | DCapability
   | DProtect
   | DHandler
-  | DDefaultHandler;
+  | DDefaultHandler
+  | DAlias
+  | DNamespace;
 
 abstract class BaseDeclaration {
   abstract tag: DeclarationTag;
@@ -320,6 +324,77 @@ export class DDefaultHandler extends BaseDeclaration {
   readonly tag = DeclarationTag.DEFAULT_HANDLER;
 
   constructor(readonly meta: Metadata, readonly name: string) {
+    super();
+  }
+}
+
+export enum EntityTag {
+  LOCAL_TYPE,
+  GLOBAL_TYPE,
+  LOCAL_TRAIT,
+  GLOBAL_TRAIT,
+}
+export abstract class BaseEntity {}
+export class EntityLocalType extends BaseEntity {
+  readonly tag = EntityTag.LOCAL_TYPE;
+  constructor(readonly meta: Metadata, readonly name: string) {
+    super();
+  }
+}
+export class EntityGlobalType extends BaseEntity {
+  readonly tag = EntityTag.GLOBAL_TYPE;
+  constructor(
+    readonly meta: Metadata,
+    readonly namespace: string,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+export class EntityLocalTrait extends BaseEntity {
+  readonly tag = EntityTag.LOCAL_TRAIT;
+  constructor(readonly meta: Metadata, readonly name: string) {
+    super();
+  }
+}
+export class EntityGlobalTrait extends BaseEntity {
+  readonly tag = EntityTag.GLOBAL_TRAIT;
+  constructor(
+    readonly meta: Metadata,
+    readonly namespace: string,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+
+export type Entity =
+  | EntityLocalType
+  | EntityGlobalType
+  | EntityLocalTrait
+  | EntityGlobalTrait;
+
+export class DAlias extends BaseDeclaration {
+  readonly tag = DeclarationTag.ALIAS;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly entity: Entity,
+    readonly name: string
+  ) {
+    super();
+  }
+}
+
+export class DNamespace extends BaseDeclaration {
+  readonly tag = DeclarationTag.NAMESPACE;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly documentation: string,
+    readonly name: string,
+    readonly aliases: DAlias[]
+  ) {
     super();
   }
 }

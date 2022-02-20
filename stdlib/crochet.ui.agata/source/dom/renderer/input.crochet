@@ -68,7 +68,7 @@ command dom-renderer render: (W is widget-action-button) do
 
       otherwise do
         #widget flex-row: [
-          #dom-widget themed: "agata-action-button-icon" content: (W.icon size: icon-size-medium),
+          #dom-widget themed: "agata-action-button-icon" content: (W.icon size: #icon-size medium),
           #dom-widget themed: "agata-action-button-content" content: (#widget flex-column: [
             #dom-widget themed: "agata-action-button-title" content: W.title,
             #dom-widget themed: "agata-action-button-description" content: W.description,

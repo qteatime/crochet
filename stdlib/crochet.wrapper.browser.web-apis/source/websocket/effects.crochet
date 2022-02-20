@@ -14,10 +14,10 @@ handler real-websocket-handler with
   on websocket.connect(Url, Protocols) do
     let Channel = foreign ws.open(Url to-text, Protocols);
     let Events = #event-stream empty;
-    let State = #cell with-value: websocket-state-connecting;
+    let State = #cell with-value: #websocket-state connecting;
 
     foreign ws.listen(Channel, "open", { Event in
-      State <- websocket-state-open;
+      State <- #websocket-state 'open;
       Events publish: websocket-message-open;
     } capture);
 
@@ -26,12 +26,12 @@ handler real-websocket-handler with
     } capture);
 
     foreign ws.listen(Channel, "error", { Event in
-      State <- websocket-state-closed;
+      State <- #websocket-state closed;
       Events publish: new websocket-message-error(new websocket-error-unknown);
     } capture);
 
     foreign ws.listen(Channel, "close", { Event in
-      State <- websocket-state-closed;
+      State <- #websocket-state closed;
       Events publish: websocket-message-closed;
     } capture);
 

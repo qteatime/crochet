@@ -40,12 +40,7 @@ command doc-font-family as doc-font-family =
 implement to-doc-font-family for static-text;
 
 command (Text is static-text) as doc-font-family do
-  condition
-    when Text =:= "inherit" => doc-font-family-inherit;
-    when Text =:= "serif" => doc-font-family-serif;
-    when Text =:= "sans-serif" => doc-font-family-sans-serif;
-    when Text =:= "monospace" => doc-font-family-monospace;
-  end
+  #doc-font-family from-enum-text: Text;
 end
 
 implement to-doc-font-style for doc-font-style;
@@ -56,11 +51,7 @@ command doc-font-style as doc-font-style =
 implement to-doc-font-style for static-text;
 
 command (Text is static-text) as doc-font-style do
-  condition
-    when Text =:= "inherit" => doc-font-style-inherit;
-    when Text =:= "italic" => doc-font-italic;
-    when Text =:= "normal" => doc-font-normal;
-  end
+  #doc-font-style from-enum-text: Text;
 end
 
 
@@ -71,14 +62,7 @@ command doc-font-weight as doc-font-weight =
 implement to-doc-font-weight for static-text;
 
 command (Text is static-text) as doc-font-weight do
-  condition
-    when Text =:= "inherit" => doc-font-weight-inherit;
-    when Text =:= "lighter" => doc-font-lighter;
-    when Text =:= "light" => doc-font-light;
-    when Text =:= "regular" => doc-font-regular;
-    when Text =:= "bold" => doc-font-bold;
-    when Text =:= "bolder" => doc-font-bolder;
-  end
+  #doc-font-weight from-enum-text: Text;
 end
 
 implement to-doc-font-decoration for doc-font-decoration;
@@ -88,13 +72,7 @@ command doc-font-decoration as doc-font-decoration =
 implement to-doc-font-decoration for static-text;
 
 command (Text is static-text) as doc-font-decoration do
-  condition
-    when Text =:= "inherit" => doc-font-decoration-inherit;
-    when Text =:= "underline" => doc-font-underline;
-    when Text =:= "overline" => doc-font-overline;
-    when Text =:= "strike-through" => doc-font-strike-through;
-    when Text =:= "none" => doc-font-no-decoration;
-  end
+  #doc-font-decoration from-enum-text: Text;
 end
 
 
@@ -121,11 +99,5 @@ end
 implement to-doc-border-style for static-text;
 
 command (Style is static-text) as doc-border-style do
-  condition
-    when Style =:= "none" => doc-border-style-none;
-    when Style =:= "hidden" => doc-border-style-hidden;
-    when Style =:= "dotted" => doc-border-style-dotted;
-    when Style =:= "dashed" => doc-border-style-dashed;
-    when Style =:= "solid" => doc-border-style-solid;
-  end
+  #doc-border-style from-enum-text: Style;
 end

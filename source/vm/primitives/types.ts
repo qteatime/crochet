@@ -12,6 +12,11 @@ import {
 } from "../intrinsics";
 import * as Location from "./location";
 import { get_trait_namespace, get_type_namespace } from "./modules";
+import {
+  get_namespace,
+  try_resolve_trait_alias,
+  try_resolve_type_alias,
+} from "./namespaces";
 import { assert_open_allowed } from "./packages";
 
 export function is_subtype(type: CrochetType, parent: CrochetType): boolean {
@@ -142,7 +147,7 @@ export function materialise_type(
   universe: Universe,
   module: CrochetModule,
   type: IR.Type
-) {
+): CrochetType {
   switch (type.tag) {
     case IR.TypeTag.ANY:
       return universe.types.Any;
@@ -151,16 +156,35 @@ export function materialise_type(
       return universe.types.Unknown;
 
     case IR.TypeTag.LOCAL: {
-      return get_type(module, type.name);
+      const value = try_resolve_type_alias(
+        module,
+        module.default_namespace,
+        type.name
+      );
+      if (value == null) {
+        return get_type(module, type.name);
+      } else {
+        return materialise_type(universe, module, value);
+      }
     }
 
-    case IR.TypeTag.LOCAL_STATIC: {
-      const value = get_type(module, type.name);
-      return get_static_type(universe, value);
+    case IR.TypeTag.LOCAL_NAMESPACED: {
+      const ns = get_namespace(module, type.namespace);
+      const value = try_resolve_type_alias(module, ns, type.name);
+      if (value == null) {
+        throw new ErrArbitrary(
+          "undefined-type",
+          `The alias ${type.name} is not accessible from the namespace ${
+            ns.name
+          } in ${Location.module_location(module)}`
+        );
+      } else {
+        return materialise_type(universe, module, value);
+      }
     }
 
-    case IR.TypeTag.GLOBAL_STATIC: {
-      const value = get_type_namespaced(module, type.namespace, type.name);
+    case IR.TypeTag.STATIC: {
+      const value = materialise_type(universe, module, type.type);
       return get_static_type(universe, value);
     }
 
@@ -204,14 +228,39 @@ export function materialise_trait(
   universe: Universe,
   module: CrochetModule,
   trait: IR.Trait
-) {
+): CrochetTrait {
   switch (trait.tag) {
     case IR.TraitTag.LOCAL: {
-      return get_trait(module, trait.name);
+      const value = try_resolve_trait_alias(
+        module,
+        module.default_namespace,
+        trait.name
+      );
+      if (value == null) {
+        return get_trait(module, trait.name);
+      } else {
+        return materialise_trait(universe, module, value);
+      }
     }
 
     case IR.TraitTag.GLOBAL: {
       return get_trait_namespaced(module, trait.namespace, trait.name);
+    }
+
+    case IR.TraitTag.NAMESPACED: {
+      const ns = get_namespace(module, trait.namespace);
+      const value = try_resolve_trait_alias(module, ns, trait.name);
+      if (value == null) {
+        throw new ErrArbitrary(
+          "undefined-alias",
+          `The alias ${
+            trait.name
+          } is not defined for any trait in the namespace ${
+            ns.name
+          } from ${Location.module_location(module)}`
+        );
+      }
+      return materialise_trait(universe, module, value);
     }
 
     default:
