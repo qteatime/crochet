@@ -4,21 +4,18 @@ export enum TypeTag {
   ANY = 1,
   UNKNOWN,
   GLOBAL, // meta, namespace, name
-  GLOBAL_STATIC,
   LOCAL, // meta, name
-  LOCAL_STATIC, // meta, name
   LOCAL_NAMESPACED,
+  STATIC,
 }
 
 export type Type =
-  | GlobalStaticType
-  | LocalStaticType
+  | StaticType
   | GlobalType
   | LocalType
   | LocalNamespacedType
   | AnyType
   | UnknownType;
-export type StaticType = GlobalStaticType | LocalStaticType;
 
 export abstract class BaseType {}
 
@@ -30,22 +27,10 @@ export class UnknownType extends BaseType {
   readonly tag = TypeTag.UNKNOWN;
 }
 
-export class LocalStaticType extends BaseType {
-  readonly tag = TypeTag.LOCAL_STATIC;
+export class StaticType extends BaseType {
+  readonly tag = TypeTag.STATIC;
 
-  constructor(readonly meta: Metadata, readonly name: string) {
-    super();
-  }
-}
-
-export class GlobalStaticType extends BaseType {
-  readonly tag = TypeTag.GLOBAL_STATIC;
-
-  constructor(
-    readonly meta: Metadata,
-    readonly namespace: string,
-    readonly name: string
-  ) {
+  constructor(readonly meta: Metadata, readonly type: Type) {
     super();
   }
 }

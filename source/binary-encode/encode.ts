@@ -767,16 +767,9 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
-      case IR.TypeTag.LOCAL_STATIC: {
+      case IR.TypeTag.STATIC: {
         this.encode_meta_id(x.meta);
-        this.string(x.name);
-        break;
-      }
-
-      case IR.TypeTag.GLOBAL_STATIC: {
-        this.encode_meta_id(x.meta);
-        this.string(x.namespace);
-        this.string(x.name);
+        this.encode_type(x.type);
         break;
       }
 

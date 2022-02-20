@@ -61,3 +61,12 @@ end
 test "Trait aliases in namespaces are resolved" do
   assert 1 has hello2.eq;
 end
+
+// -- Namespaces and static types
+command #hello--one hello = 1;
+command #two hello = 2;
+
+test "Namespaced types can be made static" do
+  assert #hello.one hello =:= 1;
+  assert #hello.two hello =:= 2;
+end

@@ -346,16 +346,8 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.LocalType(this.decode_meta_id(), this.string());
       }
 
-      case IR.TypeTag.LOCAL_STATIC: {
-        return new IR.LocalStaticType(this.decode_meta_id(), this.string());
-      }
-
-      case IR.TypeTag.GLOBAL_STATIC: {
-        return new IR.GlobalStaticType(
-          this.decode_meta_id(),
-          this.string(),
-          this.string()
-        );
+      case IR.TypeTag.STATIC: {
+        return new IR.StaticType(this.decode_meta_id(), this.decode_type());
       }
 
       case IR.TypeTag.LOCAL_NAMESPACED: {
@@ -462,11 +454,11 @@ class CrochetIRDecoder extends BinaryReader {
           this.uint32()
         );
 
-      case t.PUSH_STATIC_TYPE:
-        return new IR.PushStaticType(
-          this.decode_meta_id(),
-          this.decode_type() as IR.LocalStaticType
-        );
+      case t.PUSH_STATIC_TYPE: {
+        const id = this.decode_meta_id();
+        const type = this.decode_type();
+        return new IR.PushStaticType(id, type);
+      }
 
       case t.PUSH_RECORD:
         return new IR.PushRecord(

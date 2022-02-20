@@ -309,12 +309,9 @@ export class LowerToIR {
           Any: () => {
             throw new Error(`internal: invalid #any`);
           },
-          Named: (_, n) => new IR.LocalStaticType(id, n.name),
-          Namespaced: (_, ns, n) => {
-            throw new Error(`internal: to-do`);
-          },
-          Global: (_, ns, n) =>
-            new IR.GlobalStaticType(id, compileNamespace(ns), n.name),
+          Named: (_, n) => new IR.StaticType(id, this.type(t)),
+          Namespaced: (_, ns, n) => new IR.StaticType(id, this.type(t)),
+          Global: (_, ns, n) => new IR.StaticType(id, this.type(t)),
           Static: (_1, _2) => {
             throw new Error(`internal: invalid ##type`);
           },

@@ -183,17 +183,8 @@ export function materialise_type(
       }
     }
 
-    case IR.TypeTag.LOCAL_STATIC: {
-      const value = materialise_type(
-        universe,
-        module,
-        new IR.LocalType(type.meta, type.name)
-      );
-      return get_static_type(universe, value);
-    }
-
-    case IR.TypeTag.GLOBAL_STATIC: {
-      const value = get_type_namespaced(module, type.namespace, type.name);
+    case IR.TypeTag.STATIC: {
+      const value = materialise_type(universe, module, type.type);
       return get_static_type(universe, value);
     }
 
