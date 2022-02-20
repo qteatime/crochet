@@ -82,6 +82,7 @@ type Parameter =
   | TypedOnly(pos: Meta, typ: TypeConstraint)
 
 type TypeApp =
+  | Namespaced(pos: Meta, namespace: Namespace, name: Name)
   | Named(pos: Meta, name: Name)
   | Static(pos: Meta, typ: TypeApp)
   | Function(pos: Meta, args: TypeConstraint[], ret: TypeConstraint)
@@ -92,6 +93,7 @@ type TypeConstraint =
   | Has(pos: Meta, typ: TypeConstraint, traits: Trait[])
 
 type Trait =
+  | Namespaced(pos: Meta, namespace: Namespace, name: Name)
   | Named(pos: Meta, name: Name)
 
 type Statement =
@@ -108,10 +110,14 @@ type SimulationContext =
 
 type Signal(pos: Meta, signature: Signature<Parameter>, body: Statement[])
 
+type NewTypeName =
+  | Namespaced(pos: Meta, namespace: Namespace, name: Name)
+  | Name(pos: Meta, name: Name)
+
 type Expression =
-  | New(pos: Meta, typ: Name, fields: Expression[])
-  | NewNamed(pos: Meta, typ: Name, fields: Pair<RecordField, Expression>[])
-  | NewExtend(pos: Meta, typ: Name, base: Expression, fields: Pair<RecordField, Expression>[])
+  | New(pos: Meta, typ: NewTypeName, fields: Expression[])
+  | NewNamed(pos: Meta, typ: NewTypeName, fields: Pair<RecordField, Expression>[])
+  | NewExtend(pos: Meta, typ: NewTypeName, base: Expression, fields: Pair<RecordField, Expression>[])
   | Invoke(pos: Meta, signature: Signature<Expression>)
   | Global(pos: Meta, name: Name)
   | Variable(pos: Meta, name: Name)
@@ -449,8 +455,9 @@ grammar Crochet : Program {
     | typeAppPrimary
 
   typeAppPrimary =
-    | t:typeName                -> TypeApp.Named(meta, t)
-    | s<"("> t:typeApp s<")">   -> t
+    | n:namespace "/" t:typeName  -> TypeApp.Namespaced(meta, n, t)
+    | t:typeName                  -> TypeApp.Named(meta, t)
+    | s<"("> t:typeApp s<")">     -> t
 
   typeName =
     | atom
@@ -459,7 +466,8 @@ grammar Crochet : Program {
     | x:false_    -> Name(meta, x)
 
   traitName =
-    | x:atom -> Trait.Named(meta, x)
+    | n:namespace "/" x:atom  -> Trait.Namespaced(meta, n, x)
+    | x:atom                  -> Trait.Named(meta, x)
 
   typeDeclaration =
     | m:declarationMeta ws type_ t:typeName s<"="> foreign_ n:namespace s<";">
@@ -852,9 +860,13 @@ grammar Crochet : Program {
       -> Expression.Perform(meta, n, v, xs)
 
   newExpression<e> =
-    | new_ n:atom s<"("> b:e with_ xs:list1<recordPair<e>, s<",">> s<")">   -> Expression.NewExtend(meta, n, b, xs)
-    | new_ n:atom fs:newPairFields<e>                                       -> Expression.NewNamed(meta, n, fs)
-    | new_ n:atom fs:newFields<e>                                           -> Expression.New(meta, n, fs)
+    | new_ n:newTypeName s<"("> b:e with_ xs:list1<recordPair<e>, s<",">> s<")">   -> Expression.NewExtend(meta, n, b, xs)
+    | new_ n:newTypeName fs:newPairFields<e>                                       -> Expression.NewNamed(meta, n, fs)
+    | new_ n:newTypeName fs:newFields<e>                                           -> Expression.New(meta, n, fs)
+
+  newTypeName =
+    | ns:namespace "/" n:atom   -> NewTypeName.Namespaced(meta, ns, n)
+    | n:atom                    -> NewTypeName.Name(meta, n)
 
   newPairFields<e> =
     | s<"("> xs:list1<recordPair<e>, s<",">> s<")">   -> xs

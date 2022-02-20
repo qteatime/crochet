@@ -34,3 +34,13 @@ test "Traits can be defined after constraints" do
   assert b has test-trait-b;
   assert not (b has test-trait-a);
 end
+
+test "Global traits work" do
+  assert a has crochet.internal.vm.tests/test-trait-a;
+  assert b has crochet.internal.vm.tests/test-trait-b;
+  assert a check-global-trait-a === a check-trait-a;
+  assert b check-global-trait-b === b check-trait-b;
+end
+
+command (W has crochet.internal.vm.tests/test-trait-a) check-global-trait-a = W check;
+command (W has crochet.internal.vm.tests/test-trait-b) check-global-trait-b = W check;

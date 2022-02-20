@@ -34,3 +34,13 @@ test "Multimethod selection and dispatch" do
   assert 1.0 multimethod-test-other =:= "float-64bit+pain other";
   assert "a" multimethod-test-other =:= "any+pain other";
 end
+
+command crochet.core/text multimethod-test-global = "text";
+command (I is crochet.core/integer) multimethod-test-global = "integer";
+command (I has crochet.internal.vm.tests/pain) multimethod-test-global = "pain";
+
+test "Dispatch with global types" do
+  assert "a" multimethod-test-global === "text";
+  assert 1 multimethod-test-global === "integer";
+  assert 1.0 multimethod-test-global === "pain";
+end

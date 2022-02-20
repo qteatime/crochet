@@ -12,6 +12,7 @@ import {
 } from "../intrinsics";
 import * as Location from "./location";
 import { get_trait_namespace, get_type_namespace } from "./modules";
+import { assert_open_allowed } from "./packages";
 
 export function is_subtype(type: CrochetType, parent: CrochetType): boolean {
   if (type === parent) {
@@ -85,6 +86,23 @@ export function get_type(module: CrochetModule, name: string) {
   return placeholder;
 }
 
+export function get_trait_namespaced(
+  module: CrochetModule,
+  namespace: string,
+  name: string
+) {
+  assert_open_allowed(module.pkg, namespace);
+  const value = module.traits.try_lookup_namespaced(namespace, name);
+  if (value != null) {
+    return value;
+  } else {
+    throw new ErrArbitrary(
+      "undefined-trait",
+      `The trait ${namespace}/${name} is not defined`
+    );
+  }
+}
+
 export function get_trait(module: CrochetModule, name: string) {
   const value = module.traits.try_lookup(name);
   if (value != null) {
@@ -106,6 +124,7 @@ export function get_type_namespaced(
   namespace: string,
   name: string
 ) {
+  assert_open_allowed(module.pkg, namespace);
   const value = module.types.try_lookup_namespaced(namespace, name);
   if (value != null) {
     return value;
@@ -137,6 +156,11 @@ export function materialise_type(
 
     case IR.TypeTag.LOCAL_STATIC: {
       const value = get_type(module, type.name);
+      return get_static_type(universe, value);
+    }
+
+    case IR.TypeTag.GLOBAL_STATIC: {
+      const value = get_type_namespaced(module, type.namespace, type.name);
       return get_static_type(universe, value);
     }
 
@@ -186,8 +210,12 @@ export function materialise_trait(
       return get_trait(module, trait.name);
     }
 
+    case IR.TraitTag.GLOBAL: {
+      return get_trait_namespaced(module, trait.namespace, trait.name);
+    }
+
     default:
-      throw unreachable(trait as never, "Trait");
+      throw unreachable(trait, "Trait");
   }
 }
 

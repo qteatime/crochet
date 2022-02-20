@@ -12,7 +12,7 @@ import { define_type, seal } from "./types";
 import { instantiate, make_package_value } from "./values";
 
 export function is_open_allowed(pkg: CrochetPackage, namespace: string) {
-  return pkg.dependencies.has(namespace);
+  return namespace === pkg.name || pkg.dependencies.has(namespace);
 }
 
 export function assert_open_allowed(pkg: CrochetPackage, namespace: string) {

@@ -1,5 +1,5 @@
 import { Literal } from "./literal";
-import { AnyStaticType, Trait, Type, TypeConstraint } from "./type";
+import { StaticType, Trait, Type, TypeConstraint } from "./type";
 import { Predicate } from "./logic";
 import { SimulationGoal } from "./goal";
 
@@ -237,7 +237,7 @@ export class ExtendInstance extends BaseOp {
 export class PushStaticType extends BaseOp {
   readonly tag = OpTag.PUSH_STATIC_TYPE;
 
-  constructor(readonly meta: Metadata, readonly type: AnyStaticType) {
+  constructor(readonly meta: Metadata, readonly type: StaticType) {
     super();
   }
 }

@@ -133,3 +133,9 @@ test "Placeholder types work across modules" do
   assert P.left now =:= 2;
   assert P.right now =:= 3;
 end
+
+test "Global types work" do
+  let A = new crochet.internal.vm.tests/g-regular-type;
+  assert A is crochet.internal.vm.tests/g-regular-type;
+  assert (new g-regular-type) is crochet.internal.vm.tests/g-regular-type;
+end

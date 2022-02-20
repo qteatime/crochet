@@ -291,7 +291,15 @@ class CrochetIRDecoder extends BinaryReader {
       }
 
       case IR.TypeTag.LOCAL_STATIC: {
-        return new IR.StaticType(this.decode_meta_id(), this.string());
+        return new IR.LocalStaticType(this.decode_meta_id(), this.string());
+      }
+
+      case IR.TypeTag.GLOBAL_STATIC: {
+        return new IR.GlobalStaticType(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
       }
 
       default:
@@ -327,6 +335,14 @@ class CrochetIRDecoder extends BinaryReader {
     switch (tag) {
       case IR.TraitTag.LOCAL: {
         return new IR.LocalTrait(this.decode_meta_id(), this.string());
+      }
+
+      case IR.TraitTag.GLOBAL: {
+        return new IR.GlobalTrait(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
       }
 
       default:
@@ -377,7 +393,7 @@ class CrochetIRDecoder extends BinaryReader {
       case t.PUSH_STATIC_TYPE:
         return new IR.PushStaticType(
           this.decode_meta_id(),
-          this.decode_type() as IR.StaticType
+          this.decode_type() as IR.LocalStaticType
         );
 
       case t.PUSH_RECORD:
