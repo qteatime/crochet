@@ -11,17 +11,17 @@ relation output: Output*;
 
 
 action karis say-hello-karis
-when karis state: greet do
+when karis state: state--greet do
   fact output: "[karis] says: Hello!";
 end
 
 action lielle say-hello-lielle
-when lielle state: greet do
+when lielle state: state--greet do
   fact output: "[lielle] greets in kind.";
 end
 
 action (P is person) part
-when P state: part do
+when P state: state--part do
   fact output: "[P] leaves.";
 end
 
@@ -30,8 +30,8 @@ when P simulate-turn, P state: S, if S < state upper-bound do
 end
 
 test "Simulations respect turn ordering and action restrictions" do
-  fact karis state: greet;
-  fact lielle state: greet;
+  fact karis state: state--greet;
+  fact lielle state: state--greet;
   simulate for [karis, lielle] until action quiescence;
   assert (search output: Output) =:= [
     [Output -> "[karis] says: Hello!"],

@@ -1730,11 +1730,6 @@ export class LowerToIR {
               [],
               context
             ),
-            new IR.DAlias(
-              variant_id,
-              new IR.EntityLocalType(variant_id, full_name),
-              v.name
-            ),
             new IR.DCommand(
               variant_id,
               "",

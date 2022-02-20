@@ -12,8 +12,8 @@ test "Enums have local aliases and enum commands" do
 end
 
 test "Enums have bounds" do
-  assert #direction north lower-bound =:= #direction north;
-  assert #direction north upper-bound =:= #direction west;
+  assert direction lower-bound =:= #direction north;
+  assert direction upper-bound =:= #direction west;
 
   assert #direction north to-enum-integer =:= 1;
   assert #direction east to-enum-integer =:= 2;
