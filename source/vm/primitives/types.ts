@@ -12,6 +12,7 @@ import {
 } from "../intrinsics";
 import * as Location from "./location";
 import { get_trait_namespace, get_type_namespace } from "./modules";
+import { assert_open_allowed } from "./packages";
 
 export function is_subtype(type: CrochetType, parent: CrochetType): boolean {
   if (type === parent) {
@@ -90,6 +91,7 @@ export function get_trait_namespaced(
   namespace: string,
   name: string
 ) {
+  assert_open_allowed(module.pkg, namespace);
   const value = module.traits.try_lookup_namespaced(namespace, name);
   if (value != null) {
     return value;
@@ -122,6 +124,7 @@ export function get_type_namespaced(
   namespace: string,
   name: string
 ) {
+  assert_open_allowed(module.pkg, namespace);
   const value = module.types.try_lookup_namespaced(namespace, name);
   if (value != null) {
     return value;
