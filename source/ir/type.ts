@@ -4,12 +4,19 @@ export enum TypeTag {
   ANY = 1,
   UNKNOWN,
   GLOBAL, // meta, namespace, name
+  GLOBAL_STATIC,
   LOCAL, // meta, name
   LOCAL_STATIC, // meta, name
 }
 
-export type Type = StaticType | GlobalType | LocalType | AnyType | UnknownType;
-export type AnyStaticType = StaticType;
+export type Type =
+  | GlobalStaticType
+  | StaticType
+  | GlobalType
+  | LocalType
+  | AnyType
+  | UnknownType;
+export type AnyStaticType = GlobalStaticType | StaticType;
 
 export abstract class BaseType {}
 
@@ -25,6 +32,18 @@ export class StaticType extends BaseType {
   readonly tag = TypeTag.LOCAL_STATIC;
 
   constructor(readonly meta: Metadata, readonly name: string) {
+    super();
+  }
+}
+
+export class GlobalStaticType extends BaseType {
+  readonly tag = TypeTag.GLOBAL_STATIC;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly namespace: string,
+    readonly name: string
+  ) {
     super();
   }
 }
@@ -82,9 +101,10 @@ export class TypeConstraintWithTrait extends BaseConstraint {
 
 export enum TraitTag {
   LOCAL,
+  GLOBAL,
 }
 
-export type Trait = LocalTrait;
+export type Trait = LocalTrait | GlobalTrait;
 
 abstract class BaseTrait {
   abstract tag: TraitTag;
@@ -94,6 +114,18 @@ export class LocalTrait extends BaseTrait {
   readonly tag = TraitTag.LOCAL;
 
   constructor(readonly meta: Metadata, readonly name: string) {
+    super();
+  }
+}
+
+export class GlobalTrait extends BaseTrait {
+  readonly tag = TraitTag.GLOBAL;
+
+  constructor(
+    readonly meta: Metadata,
+    readonly namespace: string,
+    readonly name: string
+  ) {
     super();
   }
 }

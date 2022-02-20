@@ -294,6 +294,14 @@ class CrochetIRDecoder extends BinaryReader {
         return new IR.StaticType(this.decode_meta_id(), this.string());
       }
 
+      case IR.TypeTag.GLOBAL_STATIC: {
+        return new IR.GlobalStaticType(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
+      }
+
       default:
         throw unreachable(tag, "Type");
     }
@@ -327,6 +335,14 @@ class CrochetIRDecoder extends BinaryReader {
     switch (tag) {
       case IR.TraitTag.LOCAL: {
         return new IR.LocalTrait(this.decode_meta_id(), this.string());
+      }
+
+      case IR.TraitTag.GLOBAL: {
+        return new IR.GlobalTrait(
+          this.decode_meta_id(),
+          this.string(),
+          this.string()
+        );
       }
 
       default:

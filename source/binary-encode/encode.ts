@@ -723,6 +723,13 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.TypeTag.GLOBAL_STATIC: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
       default:
         throw unreachable(x, `Type`);
     }
@@ -754,8 +761,15 @@ class CrochetIREncoder extends BinaryWriter {
         break;
       }
 
+      case IR.TraitTag.GLOBAL: {
+        this.encode_meta_id(x.meta);
+        this.string(x.namespace);
+        this.string(x.name);
+        break;
+      }
+
       default:
-        throw unreachable(x as never, `Trait`);
+        throw unreachable(x, `Trait`);
     }
   }
 

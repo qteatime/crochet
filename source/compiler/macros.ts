@@ -46,7 +46,11 @@ export function derive_equality(ast: IR.Declaration[]) {
     const meta = type.meta;
     const tname = new IR.LocalType(meta, type.name);
     return [
-      new IR.DImplementTrait(meta, new IR.LocalTrait(meta, "equality"), tname),
+      new IR.DImplementTrait(
+        meta,
+        new IR.GlobalTrait(meta, "crochet.core", "equality"),
+        tname
+      ),
       new IR.DCommand(
         meta,
         "True if both values are equal",
@@ -65,9 +69,15 @@ export function derive_equality(ast: IR.Declaration[]) {
             new IR.PushVariable(meta, "R"),
             new IR.ProjectStatic(meta, field),
             new IR.Duplicate(meta),
-            new IR.TraitTest(meta, new IR.LocalTrait(meta, "equality")),
+            new IR.TraitTest(
+              meta,
+              new IR.GlobalTrait(meta, "crochet.core", "equality")
+            ),
             new IR.Dig(meta, 2),
-            new IR.TraitTest(meta, new IR.LocalTrait(meta, "equality")),
+            new IR.TraitTest(
+              meta,
+              new IR.GlobalTrait(meta, "crochet.core", "equality")
+            ),
             new IR.Invoke(meta, "_ and _", 2),
             new IR.Branch(
               meta,
@@ -97,7 +107,11 @@ export function derive_json(ast: IR.Declaration[]) {
     );
     return [
       new IR.DOpen(meta, "crochet.language.json"),
-      new IR.DImplementTrait(meta, new IR.LocalTrait(meta, "to-json"), tname),
+      new IR.DImplementTrait(
+        meta,
+        new IR.GlobalTrait(meta, "crochet.language.json", "to-json"),
+        tname
+      ),
       new IR.DCommand(
         meta,
         "Serialises the value as JSON",
@@ -105,7 +119,10 @@ export function derive_json(ast: IR.Declaration[]) {
         ["Json", "Value"],
         [serialisation, tconstraint],
         new IR.BasicBlock([
-          new IR.PushStaticType(meta, new IR.StaticType(meta, "json-type")),
+          new IR.PushStaticType(
+            meta,
+            new IR.GlobalStaticType(meta, "crochet.language.json", "json-type")
+          ),
           new IR.PushStaticType(meta, new IR.StaticType(meta, type.name)),
           new IR.PushVariable(meta, "Json"),
           ...type.fields.flatMap((field) => [
@@ -122,7 +139,7 @@ export function derive_json(ast: IR.Declaration[]) {
       ),
       new IR.DImplementTrait(
         meta,
-        new IR.LocalTrait(meta, "from-json"),
+        new IR.GlobalTrait(meta, "crochet.language.json", "from-json"),
         new IR.StaticType(meta, type.name)
       ),
       new IR.DCommand(

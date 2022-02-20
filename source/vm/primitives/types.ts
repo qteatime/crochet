@@ -85,6 +85,22 @@ export function get_type(module: CrochetModule, name: string) {
   return placeholder;
 }
 
+export function get_trait_namespaced(
+  module: CrochetModule,
+  namespace: string,
+  name: string
+) {
+  const value = module.traits.try_lookup_namespaced(namespace, name);
+  if (value != null) {
+    return value;
+  } else {
+    throw new ErrArbitrary(
+      "undefined-trait",
+      `The trait ${namespace}/${name} is not defined`
+    );
+  }
+}
+
 export function get_trait(module: CrochetModule, name: string) {
   const value = module.traits.try_lookup(name);
   if (value != null) {
@@ -140,6 +156,11 @@ export function materialise_type(
       return get_static_type(universe, value);
     }
 
+    case IR.TypeTag.GLOBAL_STATIC: {
+      const value = get_type_namespaced(module, type.namespace, type.name);
+      return get_static_type(universe, value);
+    }
+
     case IR.TypeTag.GLOBAL: {
       return get_type_namespaced(module, type.namespace, type.name);
     }
@@ -186,8 +207,12 @@ export function materialise_trait(
       return get_trait(module, trait.name);
     }
 
+    case IR.TraitTag.GLOBAL: {
+      return get_trait_namespaced(module, trait.namespace, trait.name);
+    }
+
     default:
-      throw unreachable(trait as never, "Trait");
+      throw unreachable(trait, "Trait");
   }
 }
 
