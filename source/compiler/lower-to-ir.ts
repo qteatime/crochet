@@ -302,11 +302,13 @@ export class LowerToIR {
       },
       Static: (pos, t) => {
         const id = this.context.register(pos);
-        return t.match({
+        return t.match<IR.StaticType>({
           Any: () => {
             throw new Error(`internal: invalid #any`);
           },
-          Named: (_, n) => new IR.StaticType(id, n.name),
+          Named: (_, n) => new IR.LocalStaticType(id, n.name),
+          Namespaced: (_, ns, n) =>
+            new IR.GlobalStaticType(id, compileNamespace(ns), n.name),
           Static: (_1, _2) => {
             throw new Error(`internal: invalid ##type`);
           },
@@ -318,6 +320,10 @@ export class LowerToIR {
       Function: (pos, args, _ret) => {
         const id = this.context.register(pos);
         return new IR.LocalType(id, `function-${args.length}`);
+      },
+      Namespaced: (pos, ns, name) => {
+        const id = this.context.register(pos);
+        return new IR.GlobalType(id, compileNamespace(ns), name.name);
       },
     });
   }
@@ -345,6 +351,11 @@ export class LowerToIR {
       Named: (pos, name) => {
         const id = this.context.register(pos);
         return new IR.LocalTrait(id, name.name);
+      },
+
+      Namespaced: (pos, ns, name) => {
+        const id = this.context.register(pos);
+        return new IR.GlobalTrait(id, compileNamespace(ns), name.name);
       },
     });
   }
@@ -844,6 +855,21 @@ export class LowerToIR {
     }
   }
 
+  new_type_name(x: Ast.NewTypeName): IR.Type {
+    return x.match<IR.Type>({
+      Name: (pos, name) => {
+        return new IR.LocalType(this.context.register(pos), name.name);
+      },
+      Namespaced: (pos, ns, name) => {
+        return new IR.GlobalType(
+          this.context.register(pos),
+          compileNamespace(ns),
+          name.name
+        );
+      },
+    });
+  }
+
   expression(x: Ast.Expression): IR.Op[] {
     return x.match<IR.Op[]>({
       Variable: (pos, name) => {
@@ -880,8 +906,7 @@ export class LowerToIR {
 
       New: (pos, type0, values) => {
         const id = this.context.register(pos);
-        const type_id = this.context.register(type0.pos);
-        const type = new IR.LocalType(type_id, type0.name);
+        const type = this.new_type_name(type0);
         return [
           ...values.flatMap((x) => this.expression(x)),
           new IR.PushNew(id, type, values.length),
@@ -890,8 +915,7 @@ export class LowerToIR {
 
       NewNamed: (pos, type0, fields0) => {
         const id = this.context.register(pos);
-        const type_id = this.context.register(type0.pos);
-        const type = new IR.LocalType(type_id, type0.name);
+        const type = this.new_type_name(type0);
         const pairs = this.record_pairs(fields0);
         return [
           ...pairs.flatMap((x) => x.value),
@@ -905,8 +929,7 @@ export class LowerToIR {
 
       NewExtend: (pos, type0, base, fields0) => {
         const id = this.context.register(pos);
-        const type_id = this.context.register(type0.pos);
-        const type = new IR.LocalType(type_id, type0.name);
+        const type = this.new_type_name(type0);
         const pairs = this.record_pairs(fields0);
         return [
           ...pairs.flatMap((x) => x.value),
@@ -921,7 +944,7 @@ export class LowerToIR {
 
       Type: (pos, type0) => {
         const id = this.context.register(pos);
-        const type = this.type(type0) as IR.AnyStaticType;
+        const type = this.type(type0) as IR.StaticType;
         return [new IR.PushStaticType(id, type)];
       },
 

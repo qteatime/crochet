@@ -11,12 +11,12 @@ export enum TypeTag {
 
 export type Type =
   | GlobalStaticType
-  | StaticType
+  | LocalStaticType
   | GlobalType
   | LocalType
   | AnyType
   | UnknownType;
-export type AnyStaticType = GlobalStaticType | StaticType;
+export type StaticType = GlobalStaticType | LocalStaticType;
 
 export abstract class BaseType {}
 
@@ -28,7 +28,7 @@ export class UnknownType extends BaseType {
   readonly tag = TypeTag.UNKNOWN;
 }
 
-export class StaticType extends BaseType {
+export class LocalStaticType extends BaseType {
   readonly tag = TypeTag.LOCAL_STATIC;
 
   constructor(readonly meta: Metadata, readonly name: string) {

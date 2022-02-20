@@ -123,7 +123,7 @@ export function derive_json(ast: IR.Declaration[]) {
             meta,
             new IR.GlobalStaticType(meta, "crochet.language.json", "json-type")
           ),
-          new IR.PushStaticType(meta, new IR.StaticType(meta, type.name)),
+          new IR.PushStaticType(meta, new IR.LocalStaticType(meta, type.name)),
           new IR.PushVariable(meta, "Json"),
           ...type.fields.flatMap((field) => [
             new IR.PushVariable(meta, "Json"),
@@ -140,7 +140,7 @@ export function derive_json(ast: IR.Declaration[]) {
       new IR.DImplementTrait(
         meta,
         new IR.GlobalTrait(meta, "crochet.language.json", "from-json"),
-        new IR.StaticType(meta, type.name)
+        new IR.LocalStaticType(meta, type.name)
       ),
       new IR.DCommand(
         meta,
@@ -153,7 +153,10 @@ export function derive_json(ast: IR.Declaration[]) {
             meta,
             new IR.GlobalType(meta, "crochet.core", "map")
           ),
-          new IR.TypeConstraintType(meta, new IR.StaticType(meta, type.name)),
+          new IR.TypeConstraintType(
+            meta,
+            new IR.LocalStaticType(meta, type.name)
+          ),
         ],
         new IR.BasicBlock([
           ...type.fields.flatMap((field) => [

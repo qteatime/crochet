@@ -291,7 +291,7 @@ class CrochetIRDecoder extends BinaryReader {
       }
 
       case IR.TypeTag.LOCAL_STATIC: {
-        return new IR.StaticType(this.decode_meta_id(), this.string());
+        return new IR.LocalStaticType(this.decode_meta_id(), this.string());
       }
 
       case IR.TypeTag.GLOBAL_STATIC: {
@@ -393,7 +393,7 @@ class CrochetIRDecoder extends BinaryReader {
       case t.PUSH_STATIC_TYPE:
         return new IR.PushStaticType(
           this.decode_meta_id(),
-          this.decode_type() as IR.StaticType
+          this.decode_type() as IR.LocalStaticType
         );
 
       case t.PUSH_RECORD:
