@@ -222,8 +222,8 @@ command doc-scroll-view bounds: (F is (doc-dimension -> doc-dimension)) =
 
 command #doc-scroll-style defaults =
   new doc-scroll-style(
-    doc-scroll-if-needed,
-    doc-scroll-if-needed
+    #doc-scroll if-needed,
+    #doc-scroll if-needed
   );
 
 command doc-scroll-style horizontally: (Scroll is doc-scroll) =
@@ -373,12 +373,12 @@ command #doc-colour red: R green: G blue: B =
 // -- Fonts
 command #doc-font-presentation defaults =
   new doc-font-presentation(
-    doc-font-family-inherit,
+    #doc-font-family inherit,
     doc-unit-unset,
     doc-colour-inherit,
-    doc-font-style-inherit,
-    doc-font-weight-inherit,
-    doc-font-decoration-inherit,
+    #doc-font-style inherit,
+    #doc-font-weight inherit,
+    #doc-font-decoration inherit,
   );
 
 command doc-font-presentation family: (Family has to-doc-font-family) =
@@ -443,7 +443,7 @@ command doc-font-presentation decoration: (Decoration has to-doc-font-decoration
 
 
 command #doc-border defaults =
-  new doc-border(doc-unit-unset, doc-colour-inherit, doc-border-style-none);
+  new doc-border(doc-unit-unset, doc-colour-inherit, #doc-border-style none);
 
 command #doc-border width: (W has to-doc-unit) colour: (C has to-doc-colour) style: (S has to-doc-border-style) =
   new doc-border(W as doc-unit, C as doc-colour, S as doc-border-style);
