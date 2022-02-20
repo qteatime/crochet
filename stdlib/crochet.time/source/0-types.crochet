@@ -27,11 +27,11 @@ type plain-date-time(instant is instant);
 
 /// A duration unit represents one of the units of a duration.
 enum duration-unit =
-  du-days,
-  du-hours,
-  du-minutes,
-  du-seconds,
-  du-milliseconds;
+  days,
+  hours,
+  minutes,
+  seconds,
+  milliseconds;
 
 // -- The capabilities
 
