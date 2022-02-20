@@ -13,36 +13,36 @@ type flex-options(
 );
 
 enum flex-layout =
-  flex-layout-row,
-  flex-layout-row-reverse,
-  flex-layout-column,
-  flex-layout-column-reverse;
+  row,
+  row-reverse,
+  column,
+  column-reverse;
 
 enum flex-wrap =
-  flex-wrap-no-wrap,
-  flex-wrap-wrap,
-  flex-wrap-wrap-reverse;
+  no-wrap,
+  wrap,
+  wrap-reverse;
 
 enum flex-align =
-  flex-align-normal,
-  flex-align-flex-start,
-  flex-align-flex-end,
-  flex-align-center,
-  flex-align-stretch,
-  flex-align-baseline;
+  normal,
+  flex-start,
+  flex-end,
+  center,
+  stretch,
+  baseline;
 
 enum flex-justify =
-  flex-justify-normal,
-  flex-justify-flex-start,
-  flex-justify-flex-end,
-  flex-justify-center,
-  flex-justify-left,
-  flex-justify-right,
-  flex-justify-baseline,
-  flex-justify-space-between,
-  flex-justify-space-around,
-  flex-justify-space-evenly,
-  flex-justify-stretch;
+  normal,
+  flex-start,
+  flex-end,
+  center,
+  left,
+  right,
+  baseline,
+  space-between,
+  space-around,
+  space-evenly,
+  stretch;
 
 type flex-gap(row is measure, column is measure);
 
@@ -118,12 +118,12 @@ command flex-child basis: X =
 // -- Flex options
 command #flex-options defaults =
   new flex-options(
-    layout -> flex-layout-row,
+    layout -> #flex-layout row,
     gap -> #flex-gap defaults,
-    wrap -> flex-wrap-no-wrap,
-    align-items -> flex-align-normal,
-    justify-content -> flex-justify-normal,
-    align-content -> flex-justify-normal
+    wrap -> #flex-wrap no-wrap,
+    align-items -> #flex-align normal,
+    justify-content -> #flex-justify normal,
+    align-content -> #flex-justify normal
   );
 
 command flex-options layout: (Layout is flex-layout) =
@@ -209,45 +209,17 @@ command flex-child-options basis: (N has to-agata-measure) =
 
 // -- Constructing enums
 command #flex-justify from-text: (Name is static-text) do
-  condition
-    when Name =:= "flex-start" => flex-justify-flex-start;
-    when Name =:= "flex-end" => flex-justify-flex-end;
-    when Name =:= "center" => flex-justify-center;
-    when Name =:= "left" => flex-justify-left;
-    when Name =:= "right" => flex-justify-right;
-    when Name =:= "normal" => flex-justify-normal;
-    when Name =:= "baseline" => flex-justify-baseline;
-    when Name =:= "space-between" => flex-justify-space-between;
-    when Name =:= "space-around" => flex-justify-space-around;
-    when Name =:= "space-evenly" => flex-justify-space-evenly;
-    when Name =:= "stretch" => flex-justify-stretch;
-  end
+  #flex-justify from-enum-text: Name;
 end
 
 command #flex-layout from-text: (Name is static-text) do
-  condition
-    when Name =:= "row" => flex-layout-row;
-    when Name =:= "row-reverse" => flex-layout-row-reverse;
-    when Name =:= "column" => flex-layout-column;
-    when Name =:= "column-reverse" => flex-layout-column-reverse;
-  end
+  #flex-layout from-enum-text: Name;
 end
 
 command #flex-wrap from-text: (Name is static-text) do
-  condition
-    when Name =:= "no-wrap" => flex-wrap-no-wrap;
-    when Name =:= "wrap" => flex-wrap-wrap;
-    when Name =:= "wrap-reverse" => flex-wrap-reverse;
-  end
+  #flex-wrap from-enum-text: Name;
 end
 
 command #flex-align from-text: (Name is static-text) do
-  condition
-    when Name =:= "normal" => flex-align-normal;
-    when Name =:= "flex-start" => flex-align-flex-start;
-    when Name =:= "flex-end" => flex-align-flex-end;
-    when Name =:= "center" => flex-align-center;
-    when Name =:= "stretch" => flex-align-stretch;
-    when Name =:= "baseline" => flex-align-baseline;
-  end
+  #flex-align from-enum-text: Name;
 end

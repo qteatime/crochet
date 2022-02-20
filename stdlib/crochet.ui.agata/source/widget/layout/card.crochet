@@ -3,8 +3,8 @@
 type widget-card(content is list<card-child>, style is card-style) is widget;
 
 enum card-style =
-  card-style-narrow,
-  card-style-fluid;
+  narrow,
+  fluid;
 
 abstract card-child;
 type card-child-image(image is widget) is card-child;
@@ -16,7 +16,7 @@ type card-child-extra(content is widget) is card-child;
 command #widget card: (Content is list) =
   new widget-card(
     content -> Content map: (internal to-card-child: _),
-    style -> card-style-fluid
+    style -> #card-style fluid
   );
 
 command internal to-card-child: (X is card-child) = X;
@@ -28,10 +28,7 @@ command widget-card style: (Style is static-text) =
   self style: (#card-style from-text: Style);
 
 command #card-style from-text: (Name is static-text) do
-  condition
-    when Name =:= "narrow" => card-style-narrow;
-    when Name =:= "fluid" => card-style-fluid;
-  end
+  #card-style from-enum-text: Name;
 end
 
 

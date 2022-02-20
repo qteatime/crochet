@@ -92,17 +92,17 @@ command dom-renderer render: (W is fixed-child) do
 
   Node style:
     (condition
-      when Anchors.x is x-anchor-left =>
+      when Anchors.x is x-anchor.left =>
         [left -> self to-unit-text: W.position.x];
-      when Anchors.x is x-anchor-right =>
+      when Anchors.x is x-anchor.right =>
         [right -> self to-unit-text: W.position.x];
     end);
 
   Node style: 
     (condition
-      when Anchors.y is y-anchor-top =>
+      when Anchors.y is y-anchor.top =>
         [top -> self to-unit-text: W.position.y];
-      when Anchors.y is y-anchor-bottom =>
+      when Anchors.y is y-anchor.bottom =>
         [bottom -> self to-unit-text: W.position.y];
     end);
     

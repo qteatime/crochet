@@ -3,25 +3,25 @@
 type widget-typography(content is widget, style is typography-style) is widget;
 
 enum typography-style =
-  typography-style-page-title,
-  typography-style-title,
-  typography-style-subtitle,
-  typography-style-subtitle2,
-  typography-style-body;
+  page-title,
+  title,
+  subtitle,
+  subtitle2,
+  body;
 
 command #widget page-title: (Content has to-widget) =
-  new widget-typography(Content as widget, typography-style-page-title);
+  new widget-typography(Content as widget, #typography-style page-title);
 
 command #widget title: (Content has to-widget) =
-  new widget-typography(Content as widget, typography-style-title);
+  new widget-typography(Content as widget, #typography-style title);
 
 command #widget subtitle: (Content has to-widget) =
-  new widget-typography(Content as widget, typography-style-subtitle);
+  new widget-typography(Content as widget, #typography-style subtitle);
 
 command #widget subtitle2: (Content has to-widget) =
-  new widget-typography(Content as widget, typography-style-subtitle2);
+  new widget-typography(Content as widget, #typography-style subtitle2);
 
 command #widget body: (Content has to-widget) =
-  new widget-typography(Content as widget, typography-style-body);
+  new widget-typography(Content as widget, #typography-style body);
 
 

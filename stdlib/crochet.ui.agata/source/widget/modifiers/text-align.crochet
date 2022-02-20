@@ -3,10 +3,10 @@
 type widget-text-align(content is widget, alignment is text-alignment) is widget;
 
 enum text-alignment =
-  text-alignment-left,
-  text-alignment-center,
-  text-alignment-right,
-  text-alignment-justify;
+  left,
+  center,
+  right,
+  justify;
 
 command widget with-text-aligned: (Alignment is text-alignment) =
   new widget-text-align(self, Alignment);
@@ -16,10 +16,5 @@ command widget with-text-aligned: (Alignment is static-text) =
 
 
 command #text-alignment from-text: (Name is static-text) do
-  condition
-    when Name =:= "left" => text-alignment-left;
-    when Name =:= "center" => text-alignment-center;
-    when Name =:= "right" => text-alignment-right;
-    when Name =:= "justify" => text-alignment-justify;
-  end
+  #text-alignment from-enum-text: Name;
 end

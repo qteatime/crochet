@@ -9,10 +9,10 @@ type text-decoration(
 );
 
 enum text-decoration-line =
-  text-decoration-line-none,
-  text-decoration-line-underline,
-  text-decoration-line-overline,
-  text-decoration-line-line-through;
+  none,
+  underline,
+  overline,
+  line-through;
 
 command widget with-text-decoration: (Decoration is text-decoration) =
   new widget-text-decoration(self, Decoration);
@@ -36,12 +36,7 @@ command #text-decoration line: (Line is static-text) =
 
 
 command #text-decoration-line from-text: (Name is static-text) do
-  condition
-    when Name =:= "none" => text-decoration-line-none;
-    when Name =:= "underline" => text-decoration-line-underline;
-    when Name =:= "overline" => text-decoration-line-overline;
-    when Name =:= "line-through" => text-decoration-line-line-through;
-  end
+  #text-decoration-line from-enum-text: Name;
 end
 
 command text-decoration color: (Color has to-agata-color) =

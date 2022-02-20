@@ -3,8 +3,8 @@
 type widget-divider(style is divider-style) is widget;
 
 enum divider-style =
-  divider-style-full,
-  divider-style-half;
+  full,
+  half;
 
 
 command #widget divider: (Style is divider-style) =
@@ -14,8 +14,5 @@ command #widget divider: (Style is static-text) =
   #widget divider: (#divider-style from-text: Style);
 
 command #divider-style from-text: (Style is static-text) do
-  condition
-    when Style =:= "full" => divider-style-full;
-    when Style =:= "half" => divider-style-half;
-  end
+  #divider-style from-enum-text: Style;
 end
