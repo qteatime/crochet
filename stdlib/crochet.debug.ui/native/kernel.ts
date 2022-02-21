@@ -25,7 +25,11 @@ export default (ffi: ForeignInterface) => {
   type Meta = Map<number, IR.Interval>;
 
   abstract class ReplExpr {
-    abstract evaluate(page: KernelPage): Promise<CrochetValue>;
+    abstract evaluate(
+      page: KernelPage
+    ): Promise<
+      { ok: true; value: CrochetValue } | { ok: false; error: unknown }
+    >;
   }
 
   class ReplDeclaration extends ReplExpr {
@@ -37,11 +41,19 @@ export default (ffi: ForeignInterface) => {
       super();
     }
 
-    async evaluate(page: KernelPage) {
-      for (const x of this.declarations) {
-        await page.vm.system.load_declaration(x, page.module);
+    async evaluate(
+      page: KernelPage
+    ): Promise<
+      { ok: true; value: CrochetValue } | { ok: false; error: unknown }
+    > {
+      try {
+        for (const x of this.declarations) {
+          await page.vm.system.load_declaration(x, page.module);
+        }
+        return { ok: true, value: ffi.nothing };
+      } catch (e) {
+        return { ok: false, error: e };
       }
-      return ffi.nothing;
     }
   }
 
@@ -54,15 +66,23 @@ export default (ffi: ForeignInterface) => {
       super();
     }
 
-    async evaluate(page: KernelPage) {
+    async evaluate(
+      page: KernelPage
+    ): Promise<
+      { ok: true; value: CrochetValue } | { ok: false; error: unknown }
+    > {
       const new_env = Crochet.VM.Environments.clone(page.env);
-      const value = await page.vm.system.run_block(this.block, new_env);
-      for (const [k, v] of new_env.bindings.entries()) {
-        if (!/\$/.test(k)) {
-          page.env.define(k, v);
+      try {
+        const value = await page.vm.system.run_block(this.block, new_env);
+        for (const [k, v] of new_env.bindings.entries()) {
+          if (!/\$/.test(k)) {
+            page.env.define(k, v);
+          }
         }
+        return { ok: true, value };
+      } catch (e) {
+        return { ok: false, error: e };
       }
-      return value;
     }
   }
 
@@ -227,20 +247,35 @@ export default (ffi: ForeignInterface) => {
     }
 
     const code = ffi.text_to_string(code0);
-    const expr = compile(code);
+    let expr: ReplExpr;
     try {
-      const value = yield ffi.await(expr.evaluate(page));
-      return ffi.record(
-        new Map([
-          ["ok", ffi.boolean(true)],
-          ["value", ffi.box(value)],
-        ])
-      );
-    } catch (error: any) {
+      expr = compile(code);
+    } catch (error) {
       return ffi.record(
         new Map([
           ["ok", ffi.boolean(false)],
           ["reason", ffi.text(String(error))],
+        ])
+      );
+    }
+
+    const value:
+      | { ok: true; value: CrochetValue }
+      | { ok: false; error: unknown } = ffi.unbox(
+      yield ffi.await(expr.evaluate(page).then((x) => ffi.box(x)))
+    ) as any;
+    if (value.ok) {
+      return ffi.record(
+        new Map([
+          ["ok", ffi.boolean(true)],
+          ["value", ffi.box(value.value)],
+        ])
+      );
+    } else {
+      return ffi.record(
+        new Map([
+          ["ok", ffi.boolean(false)],
+          ["reason", ffi.text(String(value.error))],
         ])
       );
     }

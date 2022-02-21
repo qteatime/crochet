@@ -99,14 +99,22 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("dom.input-value", (x0) => {
-    const x = unbox_typed(x0, HTMLInputElement);
-    return ffi.text(x.value);
+    const x = unbox_typed(x0, HTMLElement);
+    if (x instanceof HTMLInputElement || x instanceof HTMLTextAreaElement) {
+      return ffi.text(x.value);
+    } else {
+      throw ffi.panic("invalid-type", `Not an input element`);
+    }
   });
 
   ffi.defun("dom.set-text-input-value", (x0, value) => {
-    const x = unbox_typed(x0, HTMLInputElement);
-    x.value = ffi.text_to_string(value);
-    return ffi.nothing;
+    const x = unbox_typed(x0, HTMLElement);
+    if (x instanceof HTMLInputElement || x instanceof HTMLTextAreaElement) {
+      x.value = ffi.text_to_string(value);
+      return ffi.nothing;
+    } else {
+      throw ffi.panic("invalid-type", `Not an input element`);
+    }
   });
 
   ffi.defun("dom.input-is-checked", (x0) => {
@@ -183,5 +191,26 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("dom.now", () => {
     return ffi.integer(BigInt(new Date().getTime()));
+  });
+
+  ffi.defun("dom.is-html-element", (x0) => {
+    try {
+      const x = ffi.unbox_typed(HTMLElement, x0);
+      document.createNodeIterator(x);
+      return ffi.boolean(true);
+    } catch (e) {
+      return ffi.boolean(false);
+    }
+  });
+
+  ffi.defun("dom.auto-resize-text-area", (node0) => {
+    const node = ffi.unbox_typed(HTMLTextAreaElement, node0);
+
+    node.addEventListener("input", () => {
+      node.style.height = "";
+      node.style.height = `${node.scrollHeight}px`;
+    });
+
+    return ffi.nothing;
   });
 };

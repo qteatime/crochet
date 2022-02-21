@@ -118,3 +118,10 @@ command dom-renderer render: (W is widget-box-overflow) =
     | style: [
         overflow -> self to-css-property: W.overflow
       ];
+
+
+command dom-renderer render: (W is widget-white-space) =
+  self render: W.content
+    | style: [
+        white-space -> self to-css-property: W.white-space
+      ];

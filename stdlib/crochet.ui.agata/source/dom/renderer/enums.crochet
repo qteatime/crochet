@@ -127,3 +127,11 @@ command dom-renderer to-css-property: overflow-style--hidden = "hidden";
 command dom-renderer to-css-property: overflow-style--visible = "visible";
 command dom-renderer to-css-property: overflow-style--auto = "auto";
 command dom-renderer to-css-property: overflow-style--scroll = "scroll";
+
+
+command dom-renderer to-css-property: white-space--collapse = "normal";
+command dom-renderer to-css-property: white-space--no-wrap = "nowrap";
+command dom-renderer to-css-property: white-space--pre-formatted = "pre";
+command dom-renderer to-css-property: white-space--pre-formatted-wrap = "pre-wrap";
+command dom-renderer to-css-property: white-space--pre-formatted-wrap-line = "pre-line";
+command dom-renderer to-css-property: white-space--break-spaces = "break-spaces";

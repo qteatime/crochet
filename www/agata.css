@@ -157,6 +157,25 @@ input {
   box-shadow: 0 2px 0px var(--primary-fg-accent);
 }
 
+.agata-text-area {
+  min-height: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid var(--blue-grey-40);
+  position: relative;
+  display: block;
+}
+
+.agata-text-area:focus {
+  border-color: var(--primary-fg-accent);
+  box-shadow: 0 2px 0px var(--primary-fg-accent);
+}
+
+.agata-text-area-fit-content {
+  overflow-y: hidden;
+}
+
 .agata-button {
   padding: 1em 2em;
   text-transform: uppercase;

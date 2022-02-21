@@ -3,12 +3,30 @@
 open crochet.debug;
 
 command dom-renderer render: (W is widget-text-input) do
-  let Node = dom make: "input" class: "agata-text-input"
-              | set: "type" to: "text";
-  
+  let Node = 
+    condition
+      when W.multi-line do
+        dom make: "textarea" class: "agata-text-area"
+      end
+
+      otherwise do
+        dom make: "input" class: "agata-text-input"
+          | set: "type" to: "text";
+      end
+    end;
+
+  condition
+    when W.multi-line and W.fit-content do
+      Node add-class: "agata-text-area-fit-content";
+      Node auto-resize-text-area;
+    end
+
+    otherwise => nothing;
+  end
+
   Node set: "placeholder" to: W.placeholder value;
-  Node set: "value" to: W.value value;
   Node set-boolean: "readonly" to: W.read-only value;
+  Node set: "value" to: W.value value;
 
   W.placeholder stream subscribe: (Node set: "placeholder" to: _);
   W.value stream subscribe: (Node set-text-input-value: _);

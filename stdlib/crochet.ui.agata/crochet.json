@@ -62,6 +62,7 @@
     "source/widget/modifiers/size.crochet",
     "source/widget/modifiers/text-color.crochet",
     "source/widget/modifiers/box-overflow.crochet",
+    "source/widget/modifiers/white-space.crochet",
     "source/widget/basic/fragment.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",
@@ -80,6 +81,7 @@
     "source/widget/layout/section.crochet",
     "source/widget/layout/navigation.crochet",
     "source/widget/layout/appbar.crochet",
+    "source/widget/layout/container.crochet",
     "source/widget/input/text.crochet",
     "source/widget/input/button.crochet",
     "source/widget/input/checkbox.crochet"
@@ -94,7 +96,12 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": ["network", "ui-control", "arbitrary-fonts", "arbitrary-css"],
+    "provides": [
+      "network",
+      "ui-control",
+      "arbitrary-fonts",
+      "arbitrary-dom-widgets"
+    ],
     "optional": ["crochet.core/asset-location"]
   }
 }

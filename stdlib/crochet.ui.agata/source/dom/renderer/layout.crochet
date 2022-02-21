@@ -27,13 +27,12 @@ command dom-renderer render: (W is widget-flex) do
 end
 
 command dom-renderer render: (W is flex-child) do
-  let E = dom make: "div" class: "agata-flex-child";
+  let E = self render: W.content;
   E style: [
     flex-grow -> self render-flex-unit: W.options.grow,
     flex-shrink -> self render-flex-unit: W.options.shrink,
     flex-basis -> self to-unit-text: W.options.basis,
   ];
-  E append: (self render: W.content);
   E;
 end
 
@@ -153,3 +152,12 @@ end
 command dom-renderer render: (W is widget-appbar) =
   dom make: "div" class: "agata-appbar"
     | append: (self render: W.content);
+
+
+command dom-renderer render: (W is widget-container) do
+  let Node = dom make: "div" class: "agata-container";
+  for C in W.content do
+    Node append: (self render: C);
+  end
+  Node;
+end

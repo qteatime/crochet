@@ -1,0 +1,88 @@
+% crochet
+
+open crochet.ui.agata;
+open crochet.concurrency;
+
+type widget-playground-page(
+  page is playground-page,
+);
+
+implement to-widget for widget-playground-page;
+command widget-playground-page as widget do
+  let Entries = #observable-cell with-value: self.page.entries value;
+  let Error = #observable-cell with-value: nothing;
+  let Code = #observable-cell with-value: "";
+  let Key-events = #event-stream empty;
+  Key-events
+    | keep-if: { X in (X key is key-code--enter) and X with-ctrl }
+    | listener
+    | subscribe: { _ in
+        let To-eval = Code value;
+        let Result = self.page execute: #playground-language crochet code: To-eval;
+        condition
+          when Result is ok do
+            Code <- "";
+            Error <- nothing;
+            let Entry = new playground-entry-code(
+              #playground-language crochet,
+              To-eval,
+              Result value
+            );
+            Entries <- Entries value append: Entry;
+          end
+
+          otherwise do
+            Error <- Result reason;
+          end
+        end
+      };
+  
+  #widget flex-column: [
+    Entries map: { Xs in
+      #widget flex-column: Xs
+        | gap: (1 as rem)
+    },
+
+    #widget card: [
+      #card-child body: (
+        #widget text-input
+          | multi-line
+          | placeholder: "Write some code and evaluate it with Ctrl+Enter"
+          | value: Code
+          | key-up: Key-events
+      ),
+      #card-child extra: (Error map: (self render-error: _))
+    ]
+    | style: #card-style fluid
+  ]
+  | gap: (1 as rem)
+  | with-padding: { P in P all: (1 as rem) }
+  | with-background: agata-theme-colors bg-muted;
+end
+
+command widget-playground-page render-error: nothing =
+  #widget text: "";
+
+command widget-playground-page render-error: (E is playground-run-error) =
+  #widget text: E reason
+    | with-font: agata-theme-fonts monospace
+    | with-white-space: #white-space pre-formatted-wrap
+    | with-text-color: agata-theme-colors red;
+
+implement to-widget for playground-entry;
+command playground-entry-code as widget do
+  #widget card: [
+    #card-child meta: self.language to-enum-text,
+    #card-child body: (
+      #widget text: self.code
+        | with-font: agata-theme-fonts monospace
+        | with-white-space: #white-space pre-formatted-wrap
+    ),
+    #card-child extra: (
+      #widget text: self.result internal-representation
+        | with-font: agata-theme-fonts monospace
+        | with-white-space: #white-space pre-formatted-wrap
+    )
+  ]
+  | style: #card-style fluid;
+end

@@ -9,6 +9,7 @@
     "source/playground/foreign-values.crochet",
     "source/playground/secret.crochet",
     "source/playground/vm.crochet",
+    "source/ui/playground-page.crochet",
     "source/main.crochet"
   ],
   "dependencies": [

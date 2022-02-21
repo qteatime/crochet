@@ -24,13 +24,13 @@ abstract playground-entry;
 /// Code entered in a specific language supported by Crochet. This results
 /// in a regular code editor being presented to the user.
 type playground-entry-code(
-  language-id is text,
+  language is playground-language,
   code is text,
-  result is result<foreign-value, playground-run-error>,
+  result is foreign-value,
 ) is playground-entry;
 
 abstract playground-run-error;
-type playground-run-error-arbitrary(global reason is text);
+type playground-run-error-arbitrary(global reason is text) is playground-run-error;
 
 
 enum playground-language =

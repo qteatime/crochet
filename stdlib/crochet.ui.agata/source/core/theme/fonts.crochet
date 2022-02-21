@@ -28,3 +28,5 @@ command agata-theme-fonts subtitle2 =
     | weight: "medium"
     | color: agata-theme-colors subtitle2;
 
+command agata-theme-fonts monospace =
+  agata-font family: agata-theme-mono-family;

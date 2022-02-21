@@ -12,6 +12,7 @@ command playground-app
           config: (Config is record)
 do
   handle
+    agata show: "Loading...";
     let Kernel = #playground-kernel bootstrap: new kernel-config(
       library-root ->
         Config.library-root,
@@ -30,6 +31,8 @@ do
     let Page = VM new-page: "Untitled";
     let Value = Page execute: #playground-language crochet code: "1 + 2";
     transcript tag: "Result" write: Value value internal-representation;
+
+    agata show: new widget-playground-page(Page);
   with
     use browser-kernel;
     use agata-dom-renderer root: Root;
