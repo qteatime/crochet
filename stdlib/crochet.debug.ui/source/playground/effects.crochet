@@ -1,0 +1,68 @@
+% crochet
+
+effect playground with
+  // Bootstraps the kernel
+  bootstrap(config is kernel-config); // -> playground-kernel
+
+  // Constructs a VM for the package
+  make-vm(kernel is playground-kernel); // -> playground-vm
+
+  // Create a new playground page
+  new-page(vm is playground-vm, title is text); // -> playground-page
+
+  // Execute code in the given language
+  run-code(
+    page is playground-page,
+    language is playground-language,
+    code is text
+  ); // -> result<any, playground-run-error>
+end
+
+// FIXME: this creates a placeholder type
+// protect effect playground with internal;
+
+
+handler browser-kernel with
+  on playground.bootstrap(Config) do
+    let Kernel = foreign kernel.make-kernel(
+      Config.library-root,
+      Config.capabilities values,
+      Config.package-tokens
+        | entries
+        | map: { Pair in [Pair key, package unseal: Pair value] },
+      Config.app-root,
+    );
+    continue with new playground-kernel(Kernel);
+  end
+
+  on playground.make-vm(Kernel) do
+    let VM = foreign kernel.make-vm(Kernel.kernel-box);
+    continue with new playground-vm(
+      kernel -> Kernel,
+      vm-box -> VM,
+    )
+  end
+
+  on playground.new-page(VM, Title) do
+    let Page = foreign kernel.make-page(VM.kernel.kernel-box, VM.vm-box);
+    continue with new playground-page(
+      vm -> VM,
+      page-box -> Page,
+      title -> #cell with-value: Title,
+      entries -> #cell with-value: [],
+    );
+  end
+
+  on playground.run-code(Page, Language, Code) do
+    let Result = foreign kernel.run-code(Page.page-box, Language to-enum-text, Code);
+    condition
+      when Result.ok do
+        let Value = new foreign-value-near(Page.vm, Result.value);
+        continue with #result ok: Value;
+      end
+
+      otherwise =>
+        continue with #result error: new playground-run-error-arbitrary(Result.reason);
+    end
+  end
+end

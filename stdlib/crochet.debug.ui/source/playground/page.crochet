@@ -1,0 +1,41 @@
+% crochet
+
+/// Playgrounds are divided into pages: similar to "shell sessions". Each
+/// page has its own history and way of interacting with the underlying
+/// VM.
+type playground-page(
+  // The VM this page uses
+  vm is playground-vm,
+  // An unique identifier for this page, used for serialisation
+  page-box is unknown,
+  // A human-friendly title for the page
+  title is cell<text>,
+  // The entries in this page
+  entries is cell<list<playground-entry>>
+);
+
+/// Each interaction in the playground is an "entry". Entries provide
+/// different affordances depending on their type, which allows the
+/// playground to support more modes of interaction than just
+/// "run this piece of Crochet code"---this is also relevant given
+/// that Crochet is a multi-language platform _anyway_.
+abstract playground-entry;
+
+/// Code entered in a specific language supported by Crochet. This results
+/// in a regular code editor being presented to the user.
+type playground-entry-code(
+  language-id is text,
+  code is text,
+  result is result<foreign-value, playground-run-error>,
+) is playground-entry;
+
+abstract playground-run-error;
+type playground-run-error-arbitrary(global reason is text);
+
+
+enum playground-language =
+  crochet;
+
+
+command playground-page execute: (Language is playground-language) code: (Code is text) =
+  perform playground.run-code(self, Language, Code);

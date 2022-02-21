@@ -1,0 +1,31 @@
+{
+  "name": "crochet.debug.ui",
+  "target": "*",
+  "native_sources": ["native/kernel.js", "native/repr.js"],
+  "sources": [
+    "source/playground/effects.crochet",
+    "source/playground/kernel.crochet",
+    "source/playground/page.crochet",
+    "source/playground/foreign-values.crochet",
+    "source/playground/secret.crochet",
+    "source/playground/vm.crochet",
+    "source/main.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.debug",
+    {
+      "name": "crochet.debug.tracing",
+      "capabilities": ["crochet.debug/internal"]
+    },
+    "crochet.concurrency",
+    "crochet.ui.agata",
+    "crochet.language.json",
+    "crochet.time",
+    "crochet.wrapper.browser.web-apis"
+  ],
+  "capabilities": {
+    "requires": ["crochet.ui.agata/ui-control", "native"],
+    "provides": []
+  }
+}

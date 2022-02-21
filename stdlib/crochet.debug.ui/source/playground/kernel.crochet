@@ -1,0 +1,25 @@
+% crochet
+
+/// Information needed to spawn new Crochet VMs for the underlying package.
+type kernel-config(
+  library-root is text,
+  capabilities is set<text>,
+  package-tokens is map<text, secret<text>>,
+  app-root is text,
+);
+
+/// The kernel provides the core of the interaction between the playground
+/// and the external, observable world.
+type playground-kernel(
+  // A reference to the native kernel object
+  kernel-box is unknown,
+);
+
+protect type playground-kernel with internal;
+
+
+command #playground-kernel bootstrap: (Config is kernel-config) =
+  perform playground.bootstrap(Config);
+
+command playground-kernel make-vm =
+  perform playground.make-vm(self);

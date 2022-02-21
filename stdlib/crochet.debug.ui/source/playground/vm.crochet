@@ -1,0 +1,11 @@
+% crochet
+
+type playground-vm(
+  // The kernel this VM belongs to
+  kernel is playground-kernel,
+  // A reference to the underlying VM
+  vm-box is unknown,
+);
+
+command playground-vm new-page: (Title is text) =
+  perform playground.new-page(self, Title);
