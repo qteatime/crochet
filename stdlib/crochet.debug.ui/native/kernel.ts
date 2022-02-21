@@ -79,7 +79,34 @@ export default (ffi: ForeignInterface) => {
             page.env.define(k, v);
           }
         }
-        return { ok: true, value };
+
+        const perspectives = await page.vm.system.debug_perspectives(value);
+        const representations = await page.vm.system.debug_representations(
+          value,
+          perspectives
+        );
+
+        return {
+          ok: true,
+          value: ffi.record(
+            new Map([
+              ["raw-value", ffi.box(value)],
+              [
+                "representations",
+                ffi.list(
+                  representations.map((x) =>
+                    ffi.record(
+                      new Map([
+                        ["name", ffi.text(x.name)],
+                        ["document", ffi.text(JSON.stringify(x.document))],
+                      ])
+                    )
+                  )
+                ),
+              ],
+            ])
+          ),
+        };
       } catch (e) {
         return { ok: false, error: e };
       }
@@ -287,7 +314,7 @@ export default (ffi: ForeignInterface) => {
       return ffi.record(
         new Map([
           ["ok", ffi.boolean(true)],
-          ["value", ffi.box(value.value)],
+          ["value", value.value],
         ])
       );
     } else {

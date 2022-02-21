@@ -12,7 +12,7 @@ type dom-fragment(box is unknown);
 // -- DOM operations
 command dom import-external-element: (Node is unknown)
 requires
-  html-element :: dom.is-html-element(Node)
+  html-element :: foreign dom.is-html-element(Node)
 do
   new dom-node(Node);
 end

@@ -14,9 +14,6 @@ command #dom-widget themed: (Theme is text) content: (Content has to-widget) =
 command #dom-widget css: (Content is text) =
   new dom-widget-css(Content);
 
-command #dom-widget from-html-element: (Node is unknown)
-requires
-  html-element :: foreign dom.is-html-element(Node)
-do
-  new dom-widget-node(Node);
+command #dom-widget from-html-element: (Node is unknown) do
+  new dom-widget-node(dom import-external-element: Node);
 end

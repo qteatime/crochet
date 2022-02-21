@@ -1,0 +1,11 @@
+% crochet
+
+type document-lens(code is text, rendered is thunk<unknown>); // JSON
+type value-representation(global name is text, global document is document-lens);
+
+command package reify-value-representation: (Repr is record) =
+  new value-representation(
+    name -> Repr.name,
+    document -> new document-lens(Repr.document, lazy (foreign lens.render(Repr.document)))
+  );
+

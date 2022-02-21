@@ -1,7 +1,7 @@
 {
   "name": "crochet.debug.ui",
   "target": "*",
-  "native_sources": ["native/kernel.js", "native/repr.js"],
+  "native_sources": ["native/kernel.js", "native/repr.js", "native/lens.js"],
   "sources": [
     "source/playground/effects.crochet",
     "source/playground/kernel.crochet",
@@ -10,6 +10,7 @@
     "source/playground/secret.crochet",
     "source/playground/vm.crochet",
     "source/playground/errors.crochet",
+    "source/playground/lens.crochet",
     "source/ui/welcome.crochet",
     "source/ui/playground-page.crochet",
     "source/main.crochet"
@@ -28,7 +29,11 @@
     "crochet.wrapper.browser.web-apis"
   ],
   "capabilities": {
-    "requires": ["crochet.ui.agata/ui-control", "native"],
+    "requires": [
+      "crochet.ui.agata/ui-control",
+      "crochet.ui.agata/arbitrary-dom-widgets",
+      "native"
+    ],
     "provides": []
   }
 }

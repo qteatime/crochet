@@ -63,8 +63,17 @@ handler browser-kernel with
     let Result = foreign kernel.run-code(Page.page-box, Language to-enum-text, Code);
     condition
       when Result.ok do
-        let Value = new foreign-value-near(Page.vm, Result.value);
-        continue with #result ok: Value;
+        let X = Result.value;
+        condition
+          when X is nothing =>
+            continue with #result ok: foreign-value-none;
+
+          otherwise do
+            let Representations = X.representations map: (package reify-value-representation: _);
+            let Value = new foreign-value-near(Page.vm, X.raw-value, Representations);
+            continue with #result ok: Value;
+          end
+        end
       end
 
       otherwise =>

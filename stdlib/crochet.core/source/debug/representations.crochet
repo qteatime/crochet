@@ -36,7 +36,8 @@ command debug-representation for: (X is secret-seal) perspective: (P is default-
     | typed: #secret-seal;
 
 command debug-representation for: (X is record) perspective: default-perspective do
-  let Rows = (#map from: X) pairs
+  let Rows = (#map from: X)
+              | entries
               | map: { P in #document table-row: [
                               self for: P key perspective: default-perspective,
                               self for: P value perspective: default-perspective,

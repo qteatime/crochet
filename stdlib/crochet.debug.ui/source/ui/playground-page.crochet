@@ -38,7 +38,7 @@ command widget-playground-page as widget do
       };
   #widget container: [
     Entries map: { Xs in
-      #widget flex-column: Xs
+      #widget flex-column: (Xs map: (self render-entry: _))
         | gap: (1 as rem)
     },
 
@@ -76,20 +76,34 @@ command widget-playground-page render-error: (E is playground-run-error) =
     | with-white-space: #white-space pre-formatted-wrap
     | with-text-color: agata-theme-colors red;
 
-implement to-widget for playground-entry;
-command playground-entry-code as widget do
+command widget-playground-page render-entry: (X is playground-entry-code) do
   #widget card: [
-    #card-child meta: self.language to-enum-text,
+    #card-child meta: X.language to-enum-text,
     #card-child body: (
-      #widget text: self.code
+      #widget text: X.code
         | with-font: agata-theme-fonts monospace
         | with-white-space: #white-space pre-formatted-wrap
     ),
-    #card-child extra: (
-      #widget text: self.result internal-representation
-        | with-font: agata-theme-fonts monospace
-        | with-white-space: #white-space pre-formatted-wrap
-    )
+    #card-child extra: (self render-value: X.result)
   ]
   | style: #card-style fluid;
+end
+
+command widget-playground-page render-value: (X is foreign-value-none) do
+  #widget text: "";
+end
+
+command widget-playground-page render-value: (X is foreign-value-near) do
+  #widget container: [
+    #widget text: X internal-representation
+      | with-font: agata-theme-fonts monospace
+      | with-white-space: #white-space pre-formatted-wrap,
+
+    X representations map: { R in
+      #widget section: [
+        #widget title: R name,
+        #dom-widget from-html-element: (force (R document).rendered)
+      ]
+    },
+  ]
 end
