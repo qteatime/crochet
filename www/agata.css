@@ -435,3 +435,34 @@ input {
   position: relative;
   z-index: 1;
 }
+
+/* Tabbed panels */
+.agata-tabbed-panel-header-container {
+  height: 48px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: var(--white);
+  border-bottom: 1px solid var(--blue-grey-10);
+}
+
+.agata-tabbed-panel-header {
+  line-height: 48px;
+  padding: 0.1rem 1rem;
+  cursor: pointer;
+}
+
+.agata-tabbed-panel-header.selected {
+  font-weight: bold;
+  color: var(--primary-fg);
+  border-bottom: 3px solid var(--primary-fg-accent);
+}
+
+.agata-tabbed-panel-header:hover {
+  background: var(--blue-grey-10);
+}
+
+.agata-tabbed-panel-content:not(.selected) {
+  display: none;
+}

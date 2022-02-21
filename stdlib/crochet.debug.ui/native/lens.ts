@@ -648,7 +648,7 @@ export default (ffi: ForeignInterface) => {
                   },
                 ],
               },
-              expanded: data,
+              expanded: data.value,
             },
             true,
             context

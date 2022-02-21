@@ -32,7 +32,7 @@ command debug-representation for: (X is secret) perspective: (P is default-persp
 end
 
 command debug-representation for: (X is secret-seal) perspective: (P is default-perspective) =
-  #document text: X.description
+  #document crochet-text: X.description
     | typed: #secret-seal;
 
 command debug-representation for: (X is record) perspective: default-perspective do

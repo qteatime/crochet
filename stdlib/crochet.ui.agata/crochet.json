@@ -83,6 +83,7 @@
     "source/widget/layout/navigation.crochet",
     "source/widget/layout/appbar.crochet",
     "source/widget/layout/container.crochet",
+    "source/widget/layout/tabbed-panel.crochet",
     "source/widget/input/text.crochet",
     "source/widget/input/button.crochet",
     "source/widget/input/checkbox.crochet"

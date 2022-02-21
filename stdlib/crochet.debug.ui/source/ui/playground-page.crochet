@@ -94,16 +94,12 @@ command widget-playground-page render-value: (X is foreign-value-none) do
 end
 
 command widget-playground-page render-value: (X is foreign-value-near) do
-  #widget container: [
-    #widget text: X internal-representation
-      | with-font: agata-theme-fonts monospace
-      | with-white-space: #white-space pre-formatted-wrap,
-
-    X representations map: { R in
-      #widget section: [
-        #widget title: R name,
-        #dom-widget from-html-element: (force (R document).rendered)
-      ]
-    },
-  ]
+  #widget tabbed-panel: (
+    X representations enumerate map: { R in
+      #tab id: R index
+        | header: R value name
+        | content: (#dom-widget from-html-element: (force (R value document).rendered))
+    }
+  )
+  | selected: (#observable-cell with-value: 1)
 end

@@ -1,0 +1,42 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-tabbed-panel(
+  tabs is list<tab>,
+  selected is observable-cell,
+) is widget;
+
+type tab(
+  id,
+  header is widget,
+  content is widget
+);
+
+
+command #widget tabbed-panel: (Tabs is list) =
+  new widget-tabbed-panel(
+    tabs -> Tabs map: (package to-tab: _),
+    selected -> #observable-cell with-value: nothing,
+  );
+
+command package to-tab: (X is tab) =
+  X;
+
+
+command #tab id: Id =
+  new tab(
+    id -> Id,
+    header -> #widget space,
+    content -> #widget space
+  );
+
+command tab header: (H has to-widget) =
+  new tab(self with header -> H as widget);
+
+command tab content: (C has to-widget) =
+  new tab(self with content -> C as widget);
+
+
+command widget-tabbed-panel selected: (Cell is observable-cell) =
+  new widget-tabbed-panel(self with selected -> Cell);
