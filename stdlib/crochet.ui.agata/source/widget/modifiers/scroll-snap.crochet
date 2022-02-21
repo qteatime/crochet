@@ -1,0 +1,89 @@
+% crochet
+
+type widget-scroll-snap-type(
+  content is widget,
+  snap-type is scroll-snap-type
+) is widget;
+
+type widget-scroll-snap-align(
+  content is widget,
+  snap-align is scroll-snap-align
+) is widget;
+
+type widget-scroll-snap-padding(
+  content is widget, 
+  top is measure,
+  right is measure,
+  bottom is measure,
+  left is measure,
+) is widget;
+
+enum scroll-snap-type =
+  unset,
+  y-mandatory,
+  y-proximity,
+  x-mandatory,
+  x-proximity,
+  both-mandatory,
+  both-proximity;
+
+enum scroll-snap-align =
+  unset,
+  start,
+  center,
+  'end;
+
+
+command widget with-scroll-snap-type: (Type is scroll-snap-type) =
+  new widget-scroll-snap-type(self, Type);
+
+command widget with-scroll-snap-padding: (F is (widget-scroll-snap-padding -> widget-scroll-snap-padding)) =
+  F(new widget-scroll-snap-padding(
+    content -> self, 
+    top -> #measure pixels: 0,
+    right -> #measure pixels: 0,
+    bottom -> #measure pixels: 0,
+    left -> #measure pixels: 0
+  ));
+
+command widget with-scroll-snap-align: (Align is scroll-snap-align) =
+  new widget-scroll-snap-align(self, Align);
+
+
+command widget-scroll-snap-padding top: (X has to-agata-measure) =
+  new widget-scroll-snap-padding(self with top -> X as measure);
+
+command widget-scroll-snap-padding right: (X has to-agata-measure) =
+  new widget-scroll-snap-padding(self with right -> X as measure);
+
+command widget-scroll-snap-padding bottom: (X has to-agata-measure) =
+  new widget-scroll-snap-padding(self with bottom -> X as measure);
+
+command widget-scroll-snap-padding left: (X has to-agata-measure) =
+  new widget-scroll-snap-padding(self with left -> X as measure);
+
+command widget-scroll-snap-padding all: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-scroll-snap-padding(self with 
+    top -> X,
+    right -> X,
+    bottom -> X,
+    left -> X,
+  );
+end
+
+command widget-scroll-snap-padding vertical: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-scroll-snap-padding(self with
+    top -> X,
+    bottom -> X,
+  );
+end
+
+command widget-scroll-snap-padding horizontal: (X0 has to-agata-measure) do
+  let X = X0 as measure;
+  new widget-scroll-snap-padding(self with
+    left -> X,
+    right -> X,
+  );
+end

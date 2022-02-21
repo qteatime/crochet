@@ -36,12 +36,14 @@ command widget-playground-page as widget do
           end
         end
       };
-  
-  #widget flex-column: [
+  #widget container: [
     Entries map: { Xs in
       #widget flex-column: Xs
         | gap: (1 as rem)
     },
+
+    #widget divider: #divider-style full
+      | with-margin: { M in M top: (1 as rem) },
 
     #widget card: [
       #card-child body: (
@@ -54,10 +56,15 @@ command widget-playground-page as widget do
       #card-child extra: (Error map: (self render-error: _))
     ]
     | style: #card-style fluid
+    | with-margin: { M in M top: (1 as rem) }
+    | with-scroll-snap-align: #scroll-snap-align 'end
   ]
-  | gap: (1 as rem)
   | with-padding: { P in P all: (1 as rem) }
-  | with-background: agata-theme-colors bg-muted;
+  | with-background: agata-theme-colors bg-muted
+  | with-scroll-snap-type: #scroll-snap-type y-proximity
+  | with-scroll-snap-padding: { P in P bottom: (1 as rem) }
+  | with-box-overflow: #overflow-style auto
+  | fill-screen-vertically;
 end
 
 command widget-playground-page render-error: nothing =

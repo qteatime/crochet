@@ -14,6 +14,15 @@ command widget fill-container-horizontally =
 command widget fill-container-vertically =
   self with-size: { S in S fill-container-vertically };
 
+command widget fill-screen =
+  self with-size: { S in S fill-screen };
+
+command widget fill-screen-horizontally =
+  self with-size: { S in S fill-screen-horizontally };
+
+command widget fill-screen-vertically =
+  self with-size: { S in S fill-screen-vertically };
+
 
 command widget-size width: (W has to-agata-measure) =
   new widget-size(self with width -> W as measure);
@@ -29,3 +38,12 @@ command widget-size fill-container-horizontally =
 
 command widget-size fill-container-vertically =
   new widget-size(self with height -> #measure percent: 100.0);
+
+command widget-size fill-screen =
+  new widget-size(self with width -> 100 as view-width, height -> 100 as view-height);
+
+command widget-size fill-screen-vertically =
+  new widget-size(self with height -> 100 as view-height);
+
+command widget-size fill-screen-horizontally =
+  new widget-size(self with width -> 100 as view-width);

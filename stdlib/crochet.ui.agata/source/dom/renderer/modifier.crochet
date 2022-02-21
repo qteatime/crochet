@@ -125,3 +125,28 @@ command dom-renderer render: (W is widget-white-space) =
     | style: [
         white-space -> self to-css-property: W.white-space
       ];
+
+
+command dom-renderer render: (W is widget-scroll-snap-type) do
+  self render: W.content
+    | style: [
+        scroll-snap-type -> self to-css-property: W.snap-type
+      ];
+end
+
+command dom-renderer render: (W is widget-scroll-snap-padding) do
+  self render: W.content
+    | style: [
+        scroll-padding-top -> self to-unit-text: W.top,
+        scroll-padding-right -> self to-unit-text: W.right,
+        scroll-padding-bottom -> self to-unit-text: W.bottom,
+        scroll-padding-left -> self to-unit-text: W.left,
+      ]
+end
+
+command dom-renderer render: (W is widget-scroll-snap-align) do
+  self render: W.content
+    | style: [
+        scroll-snap-align -> self to-css-property: W.snap-align
+      ]
+end

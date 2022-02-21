@@ -63,6 +63,7 @@
     "source/widget/modifiers/text-color.crochet",
     "source/widget/modifiers/box-overflow.crochet",
     "source/widget/modifiers/white-space.crochet",
+    "source/widget/modifiers/scroll-snap.crochet",
     "source/widget/basic/fragment.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/base-widget.crochet",
