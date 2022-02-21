@@ -5,7 +5,7 @@ effect playground with
   bootstrap(config is kernel-config); // -> playground-kernel
 
   // Constructs a VM for the package
-  make-vm(kernel is playground-kernel); // -> playground-vm
+  make-vm(kernel is playground-kernel); // -> result<playground-vm, playground-error>
 
   // Create a new playground page
   new-page(vm is playground-vm, title is text); // -> playground-page
@@ -36,11 +36,17 @@ handler browser-kernel with
   end
 
   on playground.make-vm(Kernel) do
-    let VM = foreign kernel.make-vm(Kernel.kernel-box);
-    continue with new playground-vm(
-      kernel -> Kernel,
-      vm-box -> VM,
-    )
+    let Maybe-VM = foreign kernel.make-vm(Kernel.kernel-box);
+    condition
+      when Maybe-VM.ok =>
+        continue with #result ok: new playground-vm(
+          kernel -> Kernel,
+          vm-box -> Maybe-VM.value,
+        );
+      
+      otherwise =>
+        continue with #result error: new playground-error--arbitrary(Maybe-VM.reason);
+    end
   end
 
   on playground.new-page(VM, Title) do

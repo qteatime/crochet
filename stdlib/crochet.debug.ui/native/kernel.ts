@@ -204,16 +204,35 @@ export default (ffi: ForeignInterface) => {
       false
     );
 
-    yield ffi.await(
-      crochet
-        .boot_from_file(kernel.app_root, Crochet.Package.target_web())
-        .then((_) => ffi.nothing)
+    const result = ffi.unbox(
+      yield ffi.await(
+        crochet
+          .boot_from_file(kernel.app_root, Crochet.Package.target_web())
+          .then(
+            (_) => ffi.box(true),
+            (e) => ffi.box(String(e))
+          )
+      )
     );
+
+    if (result !== true) {
+      return ffi.record(
+        new Map([
+          ["ok", ffi.boolean(false)],
+          ["reason", ffi.text(result as any)],
+        ])
+      );
+    }
 
     const vm = new KernelVM(session, crochet);
     kernel.add_vm(session, vm);
 
-    return ffi.box(vm);
+    return ffi.record(
+      new Map([
+        ["ok", ffi.boolean(true)],
+        ["value", ffi.box(vm)],
+      ])
+    );
   });
 
   ffi.defun("kernel.make-page", (kernel0, vm0) => {
