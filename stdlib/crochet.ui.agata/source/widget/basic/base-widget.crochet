@@ -71,3 +71,36 @@ command observable-cell-widget maybe-unsubscribe: nothing =
 command observable-cell-widget maybe-unsubscribe: (Subscriber is subscriber) do
   self.cell stream unsubscribe: Subscriber;
 end
+
+
+implement to-widget for event-stream;
+command event-stream as widget =
+  #widget dynamic: (new event-stream-widget(self listener, #cell with-value: nothing) setup: _);
+
+implement to-widget for event-stream-listener;
+command event-stream-listener as widget =
+  #widget dynamic: (new event-stream-widget(self, #cell with-value: nothing) setup: _);
+
+type event-stream-widget(listener is event-stream-listener, subscriber is cell);
+protect type event-stream-widget with internal;
+
+command event-stream-widget setup: (Surface is surface) do
+  Surface on-attached: {
+    self maybe-unsubscribe;
+    self.subscriber <- self.listener subscribe: (Surface append: _);
+  };
+  Surface on-detached: {
+    self maybe-unsubscribe;
+    self.subscriber <- nothing;
+  };
+end
+
+command event-stream-widget maybe-unsubscribe = 
+  self maybe-unsubscribe: self.subscriber value;
+
+command event-stream-widget maybe-unsubscribe: nothing =
+  nothing;
+
+command event-stream-widget maybe-unsubscribe: (Subscriber is subscriber) do
+  self.listener unsubscribe: Subscriber;
+end

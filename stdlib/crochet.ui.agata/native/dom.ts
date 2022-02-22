@@ -215,7 +215,6 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("dom.pin-scroll-at-bottom", (node0) => {
-    debugger;
     const node = ffi.unbox_typed(HTMLElement, node0);
     let should_scroll = true;
     let manual_scroll = true;

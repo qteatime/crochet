@@ -9,7 +9,7 @@ type widget-playground-page(
 
 implement to-widget for widget-playground-page;
 command widget-playground-page as widget do
-  let Entries = #observable-cell with-value: self.page.entries value;
+  let New-entries = #event-stream empty;
   let Error = #observable-cell with-value: nothing;
   let Code = #observable-cell with-value: "";
   let Key-events = #event-stream empty;
@@ -28,7 +28,7 @@ command widget-playground-page as widget do
               To-eval,
               Result value
             );
-            Entries <- Entries value append: Entry;
+            New-entries publish: Entry;
           end
 
           otherwise do
@@ -37,13 +37,10 @@ command widget-playground-page as widget do
         end
       };
   #widget container: [
-    Entries map: { Xs in
-      #widget flex-column: (Xs map: (self render-entry: _))
-        | gap: (1 as rem)
-    },
+    self.page.entries value map: (self render-entry: _),
+    New-entries map: (self render-entry: _),
 
-    #widget divider: #divider-style full
-      | with-margin: { M in M top: (1 as rem) },
+    #widget divider: #divider-style full,
 
     #widget card: [
       #card-child body: (
@@ -77,7 +74,10 @@ command widget-playground-page render-error: (E is playground-run-error) =
 
 command widget-playground-page render-entry: (X is playground-entry-code) do
   #widget card: [
-    #card-child meta: X.language to-enum-text,
+    #card-child meta: (
+      #widget text: X.language to-enum-text
+        | with-margin: { M in M top: (1 as rem) | bottom: (-1 as rem) }
+    ),
     #card-child body: (
       #widget text: X.code
         | with-font: agata-theme-fonts monospace
@@ -85,7 +85,8 @@ command widget-playground-page render-entry: (X is playground-entry-code) do
     ),
     #card-child extra: (self render-value: X.result)
   ]
-  | style: #card-style fluid;
+  | style: #card-style fluid
+  | with-margin: { M in M bottom: (1 as rem) };
 end
 
 command widget-playground-page render-value: (X is foreign-value-none) do
