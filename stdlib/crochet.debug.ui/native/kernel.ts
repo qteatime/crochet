@@ -8,6 +8,7 @@ import type {
   VM,
   Compiler,
   AST,
+  REPL,
 } from "../../../build/targets/browser";
 
 declare var Crochet: {
@@ -18,87 +19,35 @@ declare var Crochet: {
   VM: typeof VM;
   Compiler: typeof Compiler;
   AST: typeof AST;
+  REPL: typeof REPL;
 };
 declare var crypto: { randomUUID(): string };
 
 export default (ffi: ForeignInterface) => {
-  type Meta = Map<number, IR.Interval>;
+  type RunResult =
+    | { ok: true; value: CrochetValue }
+    | { ok: false; error: unknown };
 
-  abstract class ReplExpr {
-    abstract evaluate(
-      page: KernelPage
-    ): Promise<
-      { ok: true; value: CrochetValue } | { ok: false; error: unknown }
-    >;
-  }
-
-  class ReplDeclaration extends ReplExpr {
-    constructor(
-      readonly declarations: IR.Declaration[],
-      readonly source: string,
-      readonly meta: Meta
-    ) {
-      super();
-    }
-
-    async evaluate(
-      page: KernelPage
-    ): Promise<
-      { ok: true; value: CrochetValue } | { ok: false; error: unknown }
-    > {
-      try {
-        for (const x of this.declarations) {
-          await page.vm.system.load_declaration(x, page.module);
-        }
+  async function run(page: KernelPage, code: string) {
+    const expr = Crochet.REPL.compile(code);
+    try {
+      const result = await expr.evaluate(page.vm.system, page.module, page.env);
+      if (result == null) {
         return { ok: true, value: ffi.nothing };
-      } catch (e) {
-        return { ok: false, error: e };
-      }
-    }
-  }
-
-  class ReplStatements extends ReplExpr {
-    constructor(
-      readonly block: IR.BasicBlock,
-      readonly source: string,
-      readonly meta: Meta
-    ) {
-      super();
-    }
-
-    async evaluate(
-      page: KernelPage
-    ): Promise<
-      { ok: true; value: CrochetValue } | { ok: false; error: unknown }
-    > {
-      const new_env = Crochet.VM.Environments.clone(page.env);
-      try {
-        const value = await page.vm.system.run_block(this.block, new_env);
-        for (const [k, v] of new_env.bindings.entries()) {
-          if (!/\$/.test(k)) {
-            page.env.define(k, v);
-          }
-        }
-
-        const perspectives = await page.vm.system.debug_perspectives(value);
-        const representations = await page.vm.system.debug_representations(
-          value,
-          perspectives
-        );
-
+      } else {
         return {
           ok: true,
           value: ffi.record(
             new Map([
-              ["raw-value", ffi.box(value)],
+              ["raw-value", ffi.box(result.value)],
               [
                 "representations",
                 ffi.list(
-                  representations.map((x) =>
+                  result.representations.map((x) =>
                     ffi.record(
                       new Map([
                         ["name", ffi.text(x.name)],
-                        ["document", ffi.text(JSON.stringify(x.document))],
+                        ["document", ffi.text(x.document)],
                       ])
                     )
                   )
@@ -107,36 +56,10 @@ export default (ffi: ForeignInterface) => {
             ])
           ),
         };
-      } catch (e) {
-        return { ok: false, error: e };
       }
+    } catch (e) {
+      return { ok: false, error: e };
     }
-  }
-
-  function lower(x: AST.REPL, source: string) {
-    return x.match<ReplExpr>({
-      Declarations: (xs) => {
-        const { declarations, meta } = Crochet.Compiler.lower_declarations(
-          source,
-          xs
-        );
-        return new ReplDeclaration(declarations, source, meta);
-      },
-
-      Statements: (xs) => {
-        const { block, meta } = Crochet.Compiler.lower_statements(source, xs);
-        return new ReplStatements(block, source, meta);
-      },
-
-      Command: (command) => {
-        throw new Error(`internal: Unsupported`);
-      },
-    });
-  }
-
-  function compile(source: string) {
-    const ast = Crochet.Compiler.parse_repl(source, "(playground)");
-    return lower(ast, source);
   }
 
   class KernelPage {
@@ -293,23 +216,11 @@ export default (ffi: ForeignInterface) => {
     }
 
     const code = ffi.text_to_string(code0);
-    let expr: ReplExpr;
-    try {
-      expr = compile(code);
-    } catch (error) {
-      return ffi.record(
-        new Map([
-          ["ok", ffi.boolean(false)],
-          ["reason", ffi.text(String(error))],
-        ])
-      );
-    }
 
-    const value:
-      | { ok: true; value: CrochetValue }
-      | { ok: false; error: unknown } = ffi.unbox(
-      yield ffi.await(expr.evaluate(page).then((x) => ffi.box(x)))
+    const value: RunResult = ffi.unbox(
+      yield ffi.await(run(page, code).then((x) => ffi.box(x)))
     ) as any;
+
     if (value.ok) {
       return ffi.record(
         new Map([

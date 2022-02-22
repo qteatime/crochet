@@ -46,8 +46,11 @@ export async function repl(vm: CrochetForNode, pkg_name: string) {
   while (true) {
     try {
       const ast = await get_line(rl);
-      await ast.evaluate(vm, module, env);
-    } catch (error) {
+      const result = await ast.evaluate(vm.system, module, env);
+      if (result != null) {
+        console.log(VM.Location.simple_value(result.value));
+      }
+    } catch (error: any) {
       if (error instanceof SyntaxError) {
         console.error(error.name + ":", error.message);
       } else if (logger.verbose) {

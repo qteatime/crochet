@@ -2,14 +2,24 @@ import * as Compiler from "../compiler";
 import * as IR from "../ir";
 import * as Ast from "../generated/crochet-grammar";
 import * as VM from "../vm";
-import type { CrochetForNode } from "../targets/node";
+import type { BootedCrochet } from "../crochet/index";
+
+type Representation = {
+  name: string;
+  document: string; // JSON
+};
+
+type ReplResponse = null | {
+  value: VM.CrochetValue;
+  representations: Representation[];
+};
 
 export abstract class ReplExpr {
   abstract evaluate(
-    vm: CrochetForNode,
+    vm: BootedCrochet,
     module: VM.CrochetModule,
     env: VM.Environment
-  ): Promise<void>;
+  ): Promise<ReplResponse>;
 }
 
 export class ReplDeclaration extends ReplExpr {
@@ -22,13 +32,15 @@ export class ReplDeclaration extends ReplExpr {
   }
 
   async evaluate(
-    vm: CrochetForNode,
+    vm: BootedCrochet,
     module: VM.CrochetModule,
     env: VM.Environment
-  ): Promise<void> {
+  ): Promise<ReplResponse> {
     for (const x of this.declarations) {
-      await vm.system.load_declaration(x, module);
+      await vm.load_declaration(x, module);
     }
+
+    return null;
   }
 }
 
@@ -42,19 +54,29 @@ export class ReplStatements extends ReplExpr {
   }
 
   async evaluate(
-    vm: CrochetForNode,
+    vm: BootedCrochet,
     module: VM.CrochetModule,
     env: VM.Environment
-  ): Promise<void> {
+  ): Promise<ReplResponse> {
     const new_env = VM.Environments.clone(env);
-    const value = await vm.system.run_block(this.block, new_env);
+    const value = await vm.run_block(this.block, new_env);
     // Copy only non-generated bindings back to the top-level environment
     for (const [k, v] of new_env.bindings.entries()) {
       if (!/\$/.test(k)) {
         env.define(k, v);
       }
     }
-    console.log(VM.Location.simple_value(value));
+
+    const perspectives = await vm.debug_perspectives(value);
+    const representations = await vm.debug_representations(value, perspectives);
+
+    return {
+      value,
+      representations: representations.map((x) => ({
+        name: x.name,
+        document: JSON.stringify(x.document),
+      })),
+    };
   }
 }
 
