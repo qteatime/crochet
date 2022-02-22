@@ -9,7 +9,9 @@
     "native/uri.js",
     "native/code-mirror.js",
     "vendor-native/codemirror.js",
-    "vendor-native/codemirror-css.js"
+    "vendor-native/codemirror-css.js",
+    "vendor-native/simple-mode.js",
+    "native/code-mirror-modes.js"
   ],
   "sources": [
     "source/capabilities.crochet",

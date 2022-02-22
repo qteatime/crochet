@@ -4,7 +4,7 @@ exports.default = () => {
 
   .CodeMirror {
     /* Set height, width, borders, and global font properties here */
-    font-family: monospace;
+    font-family: "Cascadia Code", "Source Code Pro", Consolas, monospace;
     height: 300px;
     color: black;
     direction: ltr;
@@ -112,22 +112,22 @@ exports.default = () => {
   .cm-link {text-decoration: underline;}
   .cm-strikethrough {text-decoration: line-through;}
   
-  .cm-s-default .cm-keyword {color: #708;}
+  .cm-s-default .cm-keyword {color: #2f2f2f; font-weight: bold}
   .cm-s-default .cm-atom {color: #219;}
-  .cm-s-default .cm-number {color: #164;}
+  .cm-s-default .cm-number {color: #0288d1;}
   .cm-s-default .cm-def {color: #00f;}
-  .cm-s-default .cm-variable,
-  .cm-s-default .cm-punctuation,
+  .cm-s-default .cm-variable {color: #ec407a}
+  .cm-s-default .cm-punctuation {color: #607d8b}
   .cm-s-default .cm-property,
   .cm-s-default .cm-operator {}
-  .cm-s-default .cm-variable-2 {color: #05a;}
+  .cm-s-default .cm-variable-2 {color: #0288d1; font-weight: bold}
   .cm-s-default .cm-variable-3, .cm-s-default .cm-type {color: #085;}
-  .cm-s-default .cm-comment {color: #a50;}
-  .cm-s-default .cm-string {color: #a11;}
+  .cm-s-default .cm-comment {color: #757575; font-style: italic}
+  .cm-s-default .cm-string {color: #388e3c;}
   .cm-s-default .cm-string-2 {color: #f50;}
   .cm-s-default .cm-meta {color: #555;}
   .cm-s-default .cm-qualifier {color: #555;}
-  .cm-s-default .cm-builtin {color: #30a;}
+  .cm-s-default .cm-builtin {color: #2f2f2f; font-weight: bold}
   .cm-s-default .cm-bracket {color: #997;}
   .cm-s-default .cm-tag {color: #170;}
   .cm-s-default .cm-attribute {color: #00c;}
