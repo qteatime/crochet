@@ -113,12 +113,23 @@ command dom-renderer render: (W is widget-text-color) do
 end
 
 
-command dom-renderer render: (W is widget-box-overflow) =
-  self render: W.content
-    | style: [
-        overflow -> self to-css-property: W.overflow
-      ];
+command dom-renderer render: (W is widget-box-overflow) do
+  let Node = self render: W.content;
 
+  Node style: [
+    overflow -> self to-css-property: W.options.style,
+    scroll-behavior -> self to-css-property: W.options.scroll-behavior,
+  ];
+
+  condition
+    when W.options.scroll-pin is scroll-pin--at-end =>
+      Node pin-scroll-at-bottom;
+    otherwise =>
+      nothing;
+  end
+
+  Node;
+end
 
 command dom-renderer render: (W is widget-white-space) =
   self render: W.content

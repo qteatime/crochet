@@ -213,4 +213,30 @@ export default (ffi: ForeignInterface) => {
 
     return ffi.nothing;
   });
+
+  ffi.defun("dom.pin-scroll-at-bottom", (node0) => {
+    debugger;
+    const node = ffi.unbox_typed(HTMLElement, node0);
+    let should_scroll = true;
+    let manual_scroll = true;
+
+    const observer = new MutationObserver((mutations, observer) => {
+      if (!mutations.some((x) => x.type === "childList")) {
+        return;
+      }
+
+      if (should_scroll) {
+        manual_scroll = false;
+        node.scrollTo({ top: node.scrollHeight });
+      }
+    });
+
+    node.addEventListener("scroll", (_) => {
+      should_scroll = node.scrollTop >= node.scrollHeight - node.offsetHeight;
+      manual_scroll = true;
+    });
+
+    observer.observe(node, { childList: true, subtree: true });
+    return ffi.nothing;
+  });
 };

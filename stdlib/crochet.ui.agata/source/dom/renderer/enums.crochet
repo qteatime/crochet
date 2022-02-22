@@ -148,3 +148,6 @@ command dom-renderer to-css-property: scroll-snap-align--unset = "unset";
 command dom-renderer to-css-property: scroll-snap-align--start = "start";
 command dom-renderer to-css-property: scroll-snap-align--center = "center";
 command dom-renderer to-css-property: scroll-snap-align--end = "end";
+
+command dom-renderer to-css-property: scroll-behavior--auto = "auto";
+command dom-renderer to-css-property: scroll-behavior--smooth = "smooth";

@@ -57,13 +57,12 @@ command widget-playground-page as widget do
     ]
     | style: #card-style fluid
     | with-margin: { M in M top: (1 as rem) }
-    | with-scroll-snap-align: #scroll-snap-align 'end
   ]
   | with-padding: { P in P all: (1 as rem) }
   | with-background: agata-theme-colors bg-muted
-  | with-scroll-snap-type: #scroll-snap-type y-proximity
-  | with-scroll-snap-padding: { P in P bottom: (1 as rem) }
-  | with-box-overflow: #overflow-style auto
+  | with-box-overflow: { O in O style: #overflow-style auto
+                                | scroll-behavior: #scroll-behavior smooth
+                                | scroll-pin: #scroll-pin at-end }
   | fill-screen-vertically;
 end
 
