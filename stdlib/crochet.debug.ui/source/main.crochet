@@ -20,6 +20,12 @@ do
     agata show: new welcome-screen;
 
     let Kernel = #playground-kernel bootstrap: new kernel-config(
+      session-id ->
+        package seal: Config.session-id,
+
+      kind ->
+        #kernel-kind from-enum-text: Config.kind,
+
       library-root ->
         Config.library-root,
 

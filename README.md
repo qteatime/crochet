@@ -47,7 +47,14 @@ You can try programming interactively with the Playground. You can run with:
 $ crochet playground <path/to/your/crochet.json>
 ```
 
-You do need to specify a package currently because that's how Crochet tracks
+For node projects you need to specify `node` as your Playground execution
+target, since the default is running the package in the browser:
+
+```shell
+$ crochet playground <path/to/your/crochet.json> --target node
+```
+
+You do need to specify a package because that's how Crochet tracks
 dependencies and capabilities. All code you type in the Playground will
 be executed in the context of the given package. And all dependencies of
 that package will be loaded first.

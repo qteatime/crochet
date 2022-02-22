@@ -25,6 +25,8 @@ end
 handler browser-kernel with
   on playground.bootstrap(Config) do
     let Kernel = foreign kernel.make-kernel(
+      Config.kind to-enum-text,
+      package unseal: Config.session-id,
       Config.library-root,
       Config.capabilities values,
       Config.package-tokens
@@ -67,6 +69,12 @@ handler browser-kernel with
         condition
           when X is nothing =>
             continue with #result ok: foreign-value-none;
+
+          when X.raw-value is nothing do
+            let Representations = X.representations map: (package reify-value-representation: _);
+            let Value = new foreign-value-far(Page.vm, Representations);
+            continue with #result ok: Value;
+          end
 
           otherwise do
             let Representations = X.representations map: (package reify-value-representation: _);

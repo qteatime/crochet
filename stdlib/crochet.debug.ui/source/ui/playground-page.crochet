@@ -106,3 +106,14 @@ command widget-playground-page render-value: (X is foreign-value-near) do
   )
   | selected: (#observable-cell with-value: 1)
 end
+
+command widget-playground-page render-value: (X is foreign-value-far) do
+  #widget tabbed-panel: (
+    X representations enumerate map: { R in
+      #tab id: R index
+        | header: R value name
+        | content: (#dom-widget from-html-element: (force (R value document).rendered))
+    }
+  )
+  | selected: (#observable-cell with-value: 1)
+end
