@@ -5,11 +5,15 @@ open crochet.ui.agata;
 
 command todo-ui render-lists do
   #widget flex-column: [
-    #flex-child fluid: (self render-all-lists),
+    #flex-child fluid: (
+      #widget container: [self render-all-lists]
+        | with-box-overflow: #overflow-style auto
+    ),
     #widget space | vertical: (1 as rem),
     #widget divider: "full",
     self render-new-list-widget
   ]
+  | with-box-overflow: #overflow-style hidden
   | fill-container-vertically;
 end
 

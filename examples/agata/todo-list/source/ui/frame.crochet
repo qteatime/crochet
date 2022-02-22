@@ -12,6 +12,8 @@ command todo-ui with-frame: (Content is widget) do
       Content
         | with-padding: { P in P all: (2 as rem) }
         | with-background: (agata-theme-colors bg-muted)
+        | with-box-overflow: #overflow-style hidden
     ),
   ]
+  | fill-screen-vertically
 end

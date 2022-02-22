@@ -27,7 +27,7 @@ command dom-renderer render: (W is widget-flex) do
 end
 
 command dom-renderer render: (W is flex-child) do
-  let E = self render: W.content;
+  let E = self render-to-element: W.content;
   E style: [
     flex-grow -> self render-flex-unit: W.options.grow,
     flex-shrink -> self render-flex-unit: W.options.shrink,
