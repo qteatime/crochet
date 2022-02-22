@@ -83,9 +83,8 @@ command widget-playground-page render-entry: (X is playground-entry-code) do
         | with-margin: { M in M top: (1 as rem) | bottom: (-1 as rem) }
     ),
     #card-child body: (
-      #widget text: X.code
-        | with-font: agata-theme-fonts monospace
-        | with-white-space: #white-space pre-formatted-wrap
+      #widget syntax-highlight: X.code
+        | language: X.language to-enum-text
     ),
     #card-child extra: (self render-value: X.result)
   ]

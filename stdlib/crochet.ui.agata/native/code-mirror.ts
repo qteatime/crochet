@@ -12,7 +12,7 @@ export default (ffi: ForeignInterface) => {
     const node = ffi.unbox_typed(HTMLElement, node0);
     const options1 = ffi.record_to_map(options0);
     const keymap0 = ffi
-      .list_to_array(options1.get("key-map")!)
+      .list_to_array(options1.get("key-map") ?? ffi.list([]))
       .map((x) => ffi.list_to_array(x))
       .map(([k, v]) => [
         ffi.text_to_string(k),
@@ -26,16 +26,13 @@ export default (ffi: ForeignInterface) => {
     const options = {
       mode: ffi.text_to_string(options1.get("mode")!),
       value: ffi.text_to_string(options1.get("value")!),
-      readOnly: ffi.to_js_boolean(options1.get("read-only")!),
+      readOnly: ffi.to_plain_native(options1.get("read-only")!) as any,
       lineNumbers: ffi.to_js_boolean(options1.get("line-numbers")!),
       lineWrapping: ffi.to_js_boolean(options1.get("line-wrapping")!),
       viewportMargin: ffi.float_to_number(options1.get("viewport-margin")!),
       extraKeys: Object.fromEntries(keymap0),
     };
     const cm = CodeMirror(node, options);
-    setTimeout(() => {
-      cm.refresh();
-    });
     return ffi.box(cm);
   });
 
@@ -63,6 +60,13 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("code-mirror.set-value", (cm, val) => {
     get_editor(cm).setValue(ffi.text_to_string(val));
+    return ffi.nothing;
+  });
+
+  ffi.defun("code-mirror.refresh", (cm) => {
+    setTimeout(() => {
+      get_editor(cm).refresh();
+    });
     return ffi.nothing;
   });
 };

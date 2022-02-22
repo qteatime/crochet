@@ -168,9 +168,16 @@ textarea {
   box-shadow: 0 2px 0px var(--primary-fg-accent);
 }
 
+.agata-syntax-highlight .CodeMirror {
+  height: auto;
+  background: none;
+  line-height: 1.3em;
+}
+
 .agata-code-editor .CodeMirror {
   min-height: 1.5rem;
   border: 1px solid var(--blue-grey-40);
+  line-height: 1.3em;
 }
 
 .agata-code-editor-auto-resize .CodeMirror {

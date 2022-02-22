@@ -1,0 +1,25 @@
+% crochet
+
+type widget-syntax-highlight(
+  language is text,
+  value is text,
+  line-numbers is boolean,
+  line-wrapping is boolean
+) is widget;
+
+command #widget syntax-highlight: (Code is text) =
+  new widget-syntax-highlight(
+    language -> "crochet",
+    value -> Code,
+    line-numbers -> false,
+    line-wrapping -> true,
+  );
+
+command widget-syntax-highlight language: (X is text) =
+  new widget-syntax-highlight(self with language -> X);
+
+command widget-syntax-highlight line-numbers: (X is boolean) =
+  new widget-syntax-highlight(self with line-numbers -> X);
+
+command widget-syntax-highlight line-wrapping: (X is boolean) =
+  new widget-syntax-highlight(self with line-wrapping -> X);
