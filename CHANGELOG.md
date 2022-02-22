@@ -79,7 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed the port of the launcher server when running from the CLI;
 
-- Support running the `docs` command on packages that have `prelude` declarations.
+- Support running the `docs` command on packages that have `prelude` declarations;
+
+- Dependencies are now compiled transitively when doing `build` on a package, compile time is still proportional to the number of outdated modules.
 
 ## [0.13.0] - 2021-12-25
 
