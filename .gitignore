@@ -14,3 +14,4 @@ tools/**/native/*.js
 _build
 *.lingua.crochet
 *:Zone.Identifier
+!stdlib/**/vendor-native/**/*.js

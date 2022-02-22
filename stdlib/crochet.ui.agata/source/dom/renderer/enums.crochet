@@ -127,3 +127,27 @@ command dom-renderer to-css-property: overflow-style--hidden = "hidden";
 command dom-renderer to-css-property: overflow-style--visible = "visible";
 command dom-renderer to-css-property: overflow-style--auto = "auto";
 command dom-renderer to-css-property: overflow-style--scroll = "scroll";
+
+
+command dom-renderer to-css-property: white-space--collapse = "normal";
+command dom-renderer to-css-property: white-space--no-wrap = "nowrap";
+command dom-renderer to-css-property: white-space--pre-formatted = "pre";
+command dom-renderer to-css-property: white-space--pre-formatted-wrap = "pre-wrap";
+command dom-renderer to-css-property: white-space--pre-formatted-wrap-line = "pre-line";
+command dom-renderer to-css-property: white-space--break-spaces = "break-spaces";
+
+command dom-renderer to-css-property: scroll-snap-type--unset = "unset";
+command dom-renderer to-css-property: scroll-snap-type--y-mandatory = "y mandatory";
+command dom-renderer to-css-property: scroll-snap-type--y-proximity = "y proximity";
+command dom-renderer to-css-property: scroll-snap-type--x-mandatory = "x mandatory";
+command dom-renderer to-css-property: scroll-snap-type--x-proximity = "x proximity";
+command dom-renderer to-css-property: scroll-snap-type--both-mandatory = "both mandatory";
+command dom-renderer to-css-property: scroll-snap-type--both-proximity = "both proximity";
+
+command dom-renderer to-css-property: scroll-snap-align--unset = "unset";
+command dom-renderer to-css-property: scroll-snap-align--start = "start";
+command dom-renderer to-css-property: scroll-snap-align--center = "center";
+command dom-renderer to-css-property: scroll-snap-align--end = "end";
+
+command dom-renderer to-css-property: scroll-behavior--auto = "auto";
+command dom-renderer to-css-property: scroll-behavior--smooth = "smooth";

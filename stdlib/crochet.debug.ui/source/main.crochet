@@ -1,0 +1,53 @@
+% crochet
+  
+open crochet.debug;
+open crochet.ui.agata;
+open crochet.concurrency;
+
+type playground-app;
+protect type playground-app with internal;
+
+effect playground-app with
+  halt();
+end
+
+
+command playground-app
+          html-root: Root
+          config: (Config is record)
+do
+  handle
+    agata show: new welcome-screen;
+
+    let Kernel = #playground-kernel bootstrap: new kernel-config(
+      library-root ->
+        Config.library-root,
+
+      capabilities ->
+        #set from: Config.capabilities,
+
+      package-tokens ->
+        #map from: Config.package-tokens
+          | map: { Pair in package seal: Pair value },
+
+      app-root -> 
+        Config.app-root
+    );
+
+    let VM = Kernel make-vm
+              | value-or-else: { R in self halt-with-error: R };
+
+    let Page = VM new-page: "Untitled";
+    
+    agata show: new widget-playground-page(Page);
+  with
+    use browser-kernel;
+    use agata-dom-renderer root: Root;
+    on playground-app.halt() => nothing;
+  end
+end
+
+command playground-app halt-with-error: (Error is playground-error) do
+  agata show: new welcome-error-screen(Error reason);
+  perform playground-app.halt();
+end

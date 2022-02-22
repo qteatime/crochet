@@ -10,3 +10,7 @@ command dom-renderer render: (W is dom-widget-css) do
   let Node = dom make-css: W.content;
   Node;
 end
+
+command dom-renderer render: (W is dom-widget-node) do
+  W.node;
+end

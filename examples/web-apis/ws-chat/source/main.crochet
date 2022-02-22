@@ -190,9 +190,13 @@ command screen-chat as widget do
 
   #widget flex-column: [
     #flex-child fluid: (
-      Received map: { Xs in 
-        #widget flex-column: Xs
-      }
+      #widget container: [
+        Received map: { Xs in 
+          #widget flex-column: Xs
+        }
+      ]
+      | with-size: { S in S height: (1 as pixels) }
+      | with-box-overflow: { S in S style: #overflow-style auto | scroll-pin: #scroll-pin at-end }
     ),
 
     #widget divider: "full",
@@ -202,6 +206,7 @@ command screen-chat as widget do
       | key-up: Key-events
   ]
   | with-background: (agata-theme-colors bg-muted)
+  | with-box-overflow: #overflow-style hidden
   | fill-container;
 end
 

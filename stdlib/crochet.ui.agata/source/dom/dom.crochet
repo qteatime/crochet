@@ -10,6 +10,13 @@ type dom-fragment(box is unknown);
 
 
 // -- DOM operations
+command dom import-external-element: (Node is unknown)
+requires
+  html-element :: foreign dom.is-html-element(Node)
+do
+  new dom-node(Node);
+end
+
 command dom make: (Name is static-text) class: (Class is text) do
   new dom-node(foreign dom.make(Name, Class));
 end
@@ -126,5 +133,15 @@ end
 
 command dom-node remove-class: (Name is text) do
   foreign dom.remove-class(self.box, Name);
+  self;
+end
+
+command dom-node auto-resize-text-area do
+  foreign dom.auto-resize-text-area(self.box);
+  self;
+end
+
+command dom-node pin-scroll-at-bottom do
+  foreign dom.pin-scroll-at-bottom(self.box);
   self;
 end

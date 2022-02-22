@@ -6,6 +6,8 @@ type widget-text-input(
   placeholder is observable-cell<text>,
   read-only is observable-cell<boolean>,
   value is observable-cell<text>,
+  multi-line is boolean,
+  fit-content is boolean,
   key-up is event-stream<keyboard-event>,
   key-down is event-stream<keyboard-event>,
 ) is widget;
@@ -15,6 +17,8 @@ command #widget text-input =
     placeholder -> #observable-cell with-value: "",
     read-only -> #observable-cell with-value: false,
     value -> #observable-cell with-value: "",
+    multi-line -> false,
+    fit-content -> true,
     key-up -> #event-stream empty,
     key-down -> #event-stream empty,
   );
@@ -39,6 +43,26 @@ command widget-text-input value: (Text is text) =
 
 command widget-text-input value: (Cell is observable-cell<text>) =
   new widget-text-input(self with value -> Cell);
+
+
+command widget-text-input multi-line: (Value is boolean) =
+  new widget-text-input(self with multi-line -> Value);
+
+command widget-text-input multi-line =
+  self multi-line: true;
+
+command widget-text-input single-line =
+  self multi-line: false;
+
+
+command widget-text-input resize-to-fit-content: (Value is boolean) =
+  new widget-text-input(self with fit-content -> Value);
+
+command widget-text-input resize-to-fit-content =
+  self fit-content: true;
+
+command widget-text-input keep-fixed-size =
+  self fit-content: false;
 
 
 command widget-text-input key-up: (Stream is event-stream) =

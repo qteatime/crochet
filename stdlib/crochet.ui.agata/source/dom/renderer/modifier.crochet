@@ -9,7 +9,7 @@ end
 
 
 command dom-renderer render: (W is widget-reference) do
-  let Node = self render: W.widget;
+  let Node = self render-to-element: W.widget;
   let Live = dom to-live-widget: W.widget node: Node;
   perform agata-presentation.register-reference(W.reference, Live);
   Node;
@@ -17,7 +17,7 @@ end
 
 
 command dom-renderer render: (W is widget-format-font) do
-  let Node = self render: W.content;
+  let Node = self render-to-element: W.content;
   Node style: [
     font-family -> self render-font-family: W.font.family-set,
     font-weight -> self to-font-weight: W.font.weight,
@@ -39,7 +39,7 @@ end
 
 
 command dom-renderer render: (W is widget-padding) do
-  self render: W.content
+  self render-to-element: W.content
     | style: [
         padding-top -> self to-unit-text: W.top,
         padding-right -> self to-unit-text: W.right,
@@ -50,7 +50,7 @@ end
 
 
 command dom-renderer render: (W is widget-margin) do
-  self render: W.content
+  self render-to-element: W.content
     | style: [
         margin-top -> self to-unit-text: W.top,
         margin-right -> self to-unit-text: W.right,
@@ -61,14 +61,14 @@ end
 
 
 command dom-renderer render: (W is widget-text-align) do
-  self render: W.content
+  self render-to-element: W.content
     | style: [text-align -> self to-css-property: W.alignment];
 end
 
 
 command dom-renderer render: (W is widget-text-decoration) do
   let D = W.decoration;
-  self render: W.content
+  self render-to-element: W.content
     | style: [
         text-decoration-line -> self to-css-property: D.line,
         text-decoration-color -> self to-css-color: D.color,
@@ -77,7 +77,7 @@ command dom-renderer render: (W is widget-text-decoration) do
 end
 
 command dom-renderer render: (W is widget-attachment) do
-  let Node = self render: W.content
+  let Node = self render-to-element: W.content
               | add-class: "agata-dynamic-attachment";
   W.attached stream subscribe: { Attached in
     condition
@@ -90,13 +90,13 @@ end
 
 
 command dom-renderer render: (W is widget-background) do
-  self render: W.content
+  self render-to-element: W.content
     | style: [background-color -> self to-css-color: W.color];
 end
 
 
 command dom-renderer render: (W is widget-size) do
-  self render: W.content
+  self render-to-element: W.content
     | style: [
         box-sizing -> "border-box",
         width -> self to-unit-text: W.width,
@@ -106,15 +106,58 @@ end
 
 
 command dom-renderer render: (W is widget-text-color) do
-  self render: W.content
+  self render-to-element: W.content
     | style: [
         color -> self to-css-color: W.color
       ];
 end
 
 
-command dom-renderer render: (W is widget-box-overflow) =
-  self render: W.content
+command dom-renderer render: (W is widget-box-overflow) do
+  let Node = self render-to-element: W.content;
+
+  Node style: [
+    overflow -> self to-css-property: W.options.style,
+    scroll-behavior -> self to-css-property: W.options.scroll-behavior,
+  ];
+
+  condition
+    when W.options.scroll-pin is scroll-pin--at-end =>
+      Node pin-scroll-at-bottom;
+    otherwise =>
+      nothing;
+  end
+
+  Node;
+end
+
+command dom-renderer render: (W is widget-white-space) =
+  self render-to-element: W.content
     | style: [
-        overflow -> self to-css-property: W.overflow
+        white-space -> self to-css-property: W.white-space
       ];
+
+
+command dom-renderer render: (W is widget-scroll-snap-type) do
+  self render-to-element: W.content
+    | style: [
+        scroll-snap-type -> self to-css-property: W.snap-type
+      ];
+end
+
+command dom-renderer render: (W is widget-scroll-snap-padding) do
+  self render-to-element: W.content
+    | style: [
+        scroll-padding-top -> self to-unit-text: W.top,
+        scroll-padding-right -> self to-unit-text: W.right,
+        scroll-padding-bottom -> self to-unit-text: W.bottom,
+        scroll-padding-left -> self to-unit-text: W.left,
+      ]
+end
+
+command dom-renderer render: (W is widget-scroll-snap-align) do
+  self render-to-element: W.content
+    | style: [
+        scroll-snap-align -> self to-css-property: W.snap-align
+      ]
+end

@@ -27,13 +27,12 @@ command dom-renderer render: (W is widget-flex) do
 end
 
 command dom-renderer render: (W is flex-child) do
-  let E = dom make: "div" class: "agata-flex-child";
+  let E = self render-to-element: W.content;
   E style: [
     flex-grow -> self render-flex-unit: W.options.grow,
     flex-shrink -> self render-flex-unit: W.options.shrink,
     flex-basis -> self to-unit-text: W.options.basis,
   ];
-  E append: (self render: W.content);
   E;
 end
 
@@ -153,3 +152,75 @@ end
 command dom-renderer render: (W is widget-appbar) =
   dom make: "div" class: "agata-appbar"
     | append: (self render: W.content);
+
+
+command dom-renderer render: (W is widget-container) do
+  let Node = dom make: "div" class: "agata-container";
+  for C in W.content do
+    Node append: (self render: C);
+  end
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-tabbed-panel) do
+  let Node = dom make: "div" class: "agata-tabbed-panel-container";
+  let Header-container = dom make: "div" class: "agata-tabbed-panel-header-container";
+  let Content-container = dom make: "div" class: "agata-tabbed-panel-content-container";
+
+  Node append: Header-container;
+  Node append: Content-container;
+
+  let Render-list = W.tabs map: { Tab in
+    let Header-node = dom make: "div" class: "agata-tabbed-panel-header";
+    Header-node append: (self render: Tab.header);
+    Header-container append: Header-node;
+
+    Header-node on: "click" do: { _ in
+      W.selected <- Tab.id;
+    };
+
+    let Content-node = dom make: "div" class: "agata-tabbed-panel-content";
+    Content-node append: (self render: Tab.content);
+    Content-container append: Content-node;
+
+    [id -> Tab.id, header -> Header-node, content -> Content-node];
+  };
+
+  let Id-map = Render-list fold-from: #map empty with: { Map, X in
+    assert not (Map contains-key: X.id);
+    Map at: X.id put: X
+  };
+
+  let Unselect = { X in
+    condition
+      when X is nothing => nothing;
+      otherwise do
+        X.header remove-class: "selected";
+        X.content remove-class: "selected";
+      end
+    end
+  };
+
+  let Select = { Id in
+    let Old = Unselect(Current value);
+    condition
+      when Id-map contains-key: Id do
+        let Nodes = Id-map at: Id;
+        Current <- Nodes;
+        Nodes.header add-class: "selected";
+        Nodes.content add-class: "selected";
+      end
+
+      otherwise do
+        Current <- nothing;
+      end
+    end
+  };
+
+  let Current = #cell with-value: nothing;
+  Select(W.selected value);
+  W.selected stream subscribe: Select;
+
+  Node;
+end

@@ -9,6 +9,8 @@ type pixels(value is integer) is measure-length;
 type rem(value is float-64bit) is measure-length;
 type em(value is float-64bit) is measure-length;
 type percent(value is float-64bit) is measure-length;
+type view-width(value is float-64bit) is measure-length;
+type view-height(value is float-64bit) is measure-length;
 
 
 // -- Constructors
@@ -53,3 +55,16 @@ command integer as percent =
 command float-64bit as percent =
   new percent(self);
 
+
+command integer as view-width =
+  new view-width(self as float-64bit);
+
+command float-64bit as view-width =
+  new view-width(self);
+
+
+command integer as view-height =
+  new view-height(self as float-64bit);
+
+command float-64bit as view-height =
+  new view-height(self);

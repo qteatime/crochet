@@ -23,9 +23,11 @@ command todo-ui render-list: (List is todo-list) do
 
     #widget space | vertical: (2 as rem),
 
-    #flex-child fluid: [
-      self render-list-items: Items
-    ],
+    #flex-child fluid: (
+      #widget container: [self render-list-items: Items]
+        | with-box-overflow: #overflow-style auto
+        | fill-container-vertically
+    ),
 
     #widget space | vertical: (2 as rem),
 

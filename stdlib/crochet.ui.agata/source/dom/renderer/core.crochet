@@ -1,3 +1,12 @@
 % crochet
 
 singleton dom-renderer is renderer;
+
+command dom-renderer render-to-element: (W is widget) do
+  let Node = self render: W;
+  condition
+    when Node is dom-node => Node;
+    when Node is dom-fragment => dom make: "div" class: "agata-fragment"
+                                   | append: Node;
+  end
+end

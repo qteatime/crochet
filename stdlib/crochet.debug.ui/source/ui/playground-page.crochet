@@ -1,0 +1,108 @@
+% crochet
+
+open crochet.ui.agata;
+open crochet.concurrency;
+open crochet.debug;
+
+type widget-playground-page(
+  page is playground-page,
+);
+
+implement to-widget for widget-playground-page;
+command widget-playground-page as widget do
+  let New-entries = #event-stream empty;
+  let Error = #observable-cell with-value: nothing;
+  let Code = #observable-cell with-value: "";
+
+  #widget container: [
+    self.page.entries value map: (self render-entry: _),
+    New-entries map: (self render-entry: _),
+
+    #widget divider: #divider-style full,
+
+    #widget card: [
+      #card-child meta: (
+        #widget text: "Type some code and evaluate it with Ctrl+Enter"
+          | with-margin: { M in M top: (1 as rem) | bottom: (-1 as rem) }
+      ),
+      #card-child body: (
+        #widget code-editor
+          | auto-resize: true
+          | value: Code
+          | key-map: (#map from: [
+              "Ctrl-Enter" -> { _ in self run-code: Code entries: New-entries error: Error }
+            ])
+      ),
+      #card-child extra: (Error map: (self render-error: _))
+    ]
+    | style: #card-style fluid
+    | with-margin: { M in M top: (1 as rem) }
+  ]
+  | with-padding: { P in P all: (1 as rem) }
+  | with-background: agata-theme-colors bg-muted
+  | with-box-overflow: { O in O style: #overflow-style auto
+                                | scroll-behavior: #scroll-behavior smooth
+                                | scroll-pin: #scroll-pin at-end }
+  | fill-screen-vertically;
+end
+
+command widget-playground-page run-code: Code entries: New-entries error: Error do
+  let To-eval = Code value;
+  let Result = self.page execute: #playground-language crochet code: To-eval;
+  condition
+    when Result is ok do
+      Code <- "";
+      Error <- nothing;
+      let Entry = new playground-entry-code(
+        #playground-language crochet,
+        To-eval,
+        Result value
+      );
+      New-entries publish: Entry;
+    end
+
+    otherwise do
+      Error <- Result reason;
+    end
+  end
+end
+
+command widget-playground-page render-error: nothing =
+  #widget text: "";
+
+command widget-playground-page render-error: (E is playground-run-error) =
+  #widget text: E reason
+    | with-font: agata-theme-fonts monospace
+    | with-white-space: #white-space pre-formatted-wrap
+    | with-text-color: agata-theme-colors red;
+
+command widget-playground-page render-entry: (X is playground-entry-code) do
+  #widget card: [
+    #card-child meta: (
+      #widget text: X.language to-enum-text
+        | with-margin: { M in M top: (1 as rem) | bottom: (-1 as rem) }
+    ),
+    #card-child body: (
+      #widget syntax-highlight: X.code
+        | language: X.language to-enum-text
+    ),
+    #card-child extra: (self render-value: X.result)
+  ]
+  | style: #card-style fluid
+  | with-margin: { M in M bottom: (1 as rem) };
+end
+
+command widget-playground-page render-value: (X is foreign-value-none) do
+  #widget text: "";
+end
+
+command widget-playground-page render-value: (X is foreign-value-near) do
+  #widget tabbed-panel: (
+    X representations enumerate map: { R in
+      #tab id: R index
+        | header: R value name
+        | content: (#dom-widget from-html-element: (force (R value document).rendered))
+    }
+  )
+  | selected: (#observable-cell with-value: 1)
+end

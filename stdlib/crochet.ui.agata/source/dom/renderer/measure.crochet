@@ -17,3 +17,9 @@ command dom-renderer to-unit-text: (X is rem) =
 
 command dom-renderer to-unit-text: (X is percent) =
   "[X.value to-text]%" flatten-into-plain-text;
+
+command dom-renderer to-unit-text: (X is view-width) =
+  "[X.value to-text]vw" flatten-into-plain-text;
+
+command dom-renderer to-unit-text: (X is view-height) =
+  "[X.value to-text]vh" flatten-into-plain-text;

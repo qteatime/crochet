@@ -1,0 +1,5 @@
+% crochet
+
+abstract playground-error;
+
+type playground-error--arbitrary(global reason is text) is playground-error;

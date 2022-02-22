@@ -49,20 +49,31 @@ html {
   flex-grow: 1;
 }
 
-/* FIXME: a less excessive reset sheet */
-* {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+textarea,
+ul,
+ol {
   margin: 0;
   padding: 0;
-  border: none;
-  outline: none;
-  background: none;
   font-weight: inherit;
   font-style: inherit;
   font-size: 100%;
 }
 
 button,
-input {
+input,
+textarea {
+  border: none;
+  outline: none;
+  background: none;
   font-family: "Roboto", sans-serif;
 }
 
@@ -155,6 +166,47 @@ input {
 .agata-text-input:focus {
   border-color: var(--primary-fg-accent);
   box-shadow: 0 2px 0px var(--primary-fg-accent);
+}
+
+.agata-syntax-highlight .CodeMirror {
+  height: auto;
+  background: none;
+  line-height: 1.3em;
+}
+
+.agata-code-editor .CodeMirror {
+  min-height: 1.5rem;
+  border: 1px solid var(--blue-grey-40);
+  line-height: 1.3em;
+}
+
+.agata-code-editor-auto-resize .CodeMirror {
+  height: auto;
+}
+
+.agata-code-editor .CodeMirror-focused {
+  border-color: var(--primary-fg-accent);
+  box-shadow: 0 2px 0px var(--primary-fg-accent);
+}
+
+.agata-text-area {
+  min-height: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid var(--blue-grey-40);
+  position: relative;
+  display: block;
+}
+
+.agata-text-area:focus {
+  border-color: var(--primary-fg-accent);
+  box-shadow: 0 2px 0px var(--primary-fg-accent);
+}
+
+.agata-text-area-fit-content {
+  overflow-y: hidden;
+  resize: none;
 }
 
 .agata-button {
@@ -414,4 +466,35 @@ input {
   padding: 1rem 3rem;
   position: relative;
   z-index: 1;
+}
+
+/* Tabbed panels */
+.agata-tabbed-panel-header-container {
+  height: 48px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: var(--white);
+  border-bottom: 1px solid var(--blue-grey-10);
+}
+
+.agata-tabbed-panel-header {
+  line-height: 48px;
+  padding: 0.1rem 1rem;
+  cursor: pointer;
+}
+
+.agata-tabbed-panel-header.selected {
+  font-weight: bold;
+  color: var(--primary-fg);
+  border-bottom: 3px solid var(--primary-fg-accent);
+}
+
+.agata-tabbed-panel-header:hover {
+  background: var(--blue-grey-10);
+}
+
+.agata-tabbed-panel-content:not(.selected) {
+  display: none;
 }

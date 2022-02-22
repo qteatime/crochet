@@ -39,28 +39,20 @@ $ node make build
 
 See `crochet --help` (or `./node_modules/.bin/crochet --help` if you've installed it locally) for usage information.
 
-## REPL
+## Playground
 
-There's a basic command-line based REPL currently which you can run with:
+You can try programming interactively with the Playground. You can run with:
 
 ```shell
-$ crochet repl <path/to/your/crochet.json>
+$ crochet playground <path/to/your/crochet.json>
 ```
 
 You do need to specify a package currently because that's how Crochet tracks
-dependencies and capabilities. All code you type in the REPL will be executed
-in the context of the given package. And all dependencies of that package
-will be loaded first.
+dependencies and capabilities. All code you type in the Playground will
+be executed in the context of the given package. And all dependencies of
+that package will be loaded first.
 
-The REPL accepts both declarations and statements/expressions. Multi-line
-input currently works by allowing the reporting of a parser error to be
-delayed until an empty line is entered.
-
-E.g.: if you type `define hello =` and press return, you'll get a "continuation
-input" (marked with `...`), since that piece of text is not a complete `define`
-declaration. Typing the rest of it, e.g.: `"hello";` will then allow the
-declaration to be executed. Entering an empty line by just pressing return
-will accept the partial declaration and present the parser error on the screen.
+The Playground accepts both declarations and statements/expressions.
 
 ## API Reference
 
@@ -86,6 +78,17 @@ $ crochet run <path/to/your/crochet.json> -- argument1 argument2
 Anything after `--` is passed as the invocation arguments as-is to your
 package. You must provide a command called `main: _`, where the only
 parameter will be this list of command line arguments.
+
+Web packages are currently run with the `run-web` command. This does not
+accept any invocation arguments:
+
+```shell
+$ crochet run-web <path/to/your/crochet.json>
+```
+
+You can provide a different port with `--port 12345`. Currently the server
+is started on port 8000, and Crochet does not try to find an available
+port if that one is taken.
 
 ## Licence
 

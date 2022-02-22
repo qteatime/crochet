@@ -1,0 +1,17 @@
+% crochet
+
+type widget-white-space(content is widget, white-space is white-space) is widget;
+
+enum white-space =
+  collapse,
+  no-wrap,
+  pre-formatted,
+  pre-formatted-wrap,
+  pre-formatted-wrap-line,
+  break-spaces;
+
+command widget with-white-space: (Space is white-space) =
+  new widget-white-space(self, Space);
+
+command widget with-white-space: (Space is static-text) =
+  self with-white-space: (#white-space from-enum-text: Space);

@@ -15,5 +15,5 @@ capability ui-control;
 /// Allows control over loading arbitrary fonts. Particularly dangerous.
 capability arbitrary-fonts;
 
-/// Allows arbitrary CSS. Particularly dangerous.
-capability arbitrary-css;
+/// Allows arbitrary DOM operations on widgets. Particularly dangerous.
+capability arbitrary-dom-widgets;

@@ -1,6 +1,15 @@
 % crochet
 
-type widget-box-overflow(content is widget, overflow is overflow-style) is widget;
+type widget-box-overflow(
+  content is widget,
+  options is box-overflow-options
+) is widget;
+
+type box-overflow-options(
+  style is overflow-style,
+  scroll-behavior is scroll-behavior,
+  scroll-pin is scroll-pin
+);
 
 enum overflow-style =
   hidden,
@@ -8,13 +17,32 @@ enum overflow-style =
   auto,
   scroll;
 
+enum scroll-behavior =
+  auto,
+  smooth;
+
+enum scroll-pin =
+  no-pin,
+  at-end;
+
 command widget with-box-overflow: (Overflow is overflow-style) =
-  new widget-box-overflow(self, Overflow);
+  new widget-box-overflow(self, #box-overflow-options defaults style: Overflow);
 
-command widget with-box-overflow: (Overflow is static-text) =
-  self with-box-overflow: (#overflow-style from-text: Overflow);
+command widget with-box-overflow: (F is (box-overflow-options -> box-overflow-options)) =
+  new widget-box-overflow(self, F(#box-overflow-options defaults));
 
+command #box-overflow-options defaults =
+  new box-overflow-options(
+    style -> #overflow-style auto,
+    scroll-behavior -> #scroll-behavior auto,
+    scroll-pin -> #scroll-pin no-pin
+  );
 
-command #overflow-style from-text: (Name is static-text) do
-  #overflow-style from-enum-text: Name;
-end
+command box-overflow-options style: (Style is overflow-style) =
+  new box-overflow-options(self with style -> Style);
+
+command box-overflow-options scroll-behavior: (X is scroll-behavior) =
+  new box-overflow-options(self with scroll-behavior -> X);
+
+command box-overflow-options scroll-pin: (X is scroll-pin) =
+  new box-overflow-options(self with scroll-pin -> X);

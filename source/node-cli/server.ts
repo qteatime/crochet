@@ -7,12 +7,19 @@ import { random_uuid } from "../utils/uuid";
 
 const repo_root = Path.resolve(__dirname, "../../");
 
-export default async (root: string, port: number, www: string) => {
-  const template = (config: unknown) => {
+export default async (
+  root: string,
+  port: number,
+  www: string,
+  start_page: string
+) => {
+  const template = (filename: string) => (config: unknown) => {
     const config_str = JSON.stringify(config).replace(/</g, "\\u003c");
-    const source = FS.readFileSync(Path.join(www, "index.html"), "utf-8");
+    const source = FS.readFileSync(Path.join(www, filename), "utf-8");
     return source.replace(/{{crochet_config}}/g, (_) => config_str);
   };
+  const index_template = template("index.html");
+  const playground_template = template("playground.html");
 
   console.log("Building all dependencies...");
   const crochet = new CrochetForNode(
@@ -76,7 +83,20 @@ export default async (root: string, port: number, www: string) => {
       capabilities: [...pkg.meta.capabilities.requires.values()],
       package_tokens: Object.fromEntries([...pkg_tokens.entries()]),
     };
-    res.send(template(config));
+    res.send(index_template(config));
+  });
+
+  app.get("/playground", (req, res) => {
+    const config = {
+      token: random_uuid(),
+      library_root: "/library",
+      app_root: "/app/crochet.json",
+      playground_root: "/library/crochet.debug.ui/crochet.json",
+      asset_root: "/assets",
+      capabilities: [...pkg.meta.capabilities.requires.values()],
+      package_tokens: Object.fromEntries([...pkg_tokens.entries()]),
+    };
+    res.send(playground_template(config));
   });
 
   app.use("/", express.static(www));
@@ -96,6 +116,7 @@ export default async (root: string, port: number, www: string) => {
   app.listen(port, () => {
     const url = new URL("http://localhost");
     url.port = String(port);
+    url.pathname = start_page;
     console.log(`Server started at ${url.toString()}`);
   });
 };

@@ -1,7 +1,7 @@
 % crochet
 
 /// Represents a secret value
-command #document secret: Value seal: (Seal is secret-seal) =
+command #document secret: (Value is document) seal: (Seal is document) =
   new doc-secret(Value, Seal);
 
 /// Represents nothing

@@ -1,0 +1,15 @@
+% crochet
+
+abstract foreign-value;
+
+type foreign-value-near(
+  vm is playground-vm,
+  value is unknown,
+  global representations is list<value-representation>,
+) is foreign-value;
+
+singleton foreign-value-none is foreign-value;
+
+
+command foreign-value-near internal-representation =
+  foreign repr.internal(self.value);
