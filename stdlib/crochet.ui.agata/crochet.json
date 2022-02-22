@@ -6,7 +6,10 @@
     "native/ev.js",
     "native/color.js",
     "native/history.js",
-    "native/uri.js"
+    "native/uri.js",
+    "native/code-mirror.js",
+    "vendor-native/codemirror.js",
+    "vendor-native/codemirror-css.js"
   ],
   "sources": [
     "source/capabilities.crochet",
@@ -49,6 +52,7 @@
     "source/dom/renderer/modifier.crochet",
     "source/dom/renderer/color.crochet",
     "source/dom/renderer/dom-specific.crochet",
+    "source/dom/renderer/code-editor.crochet",
 
     "source/widget/modifiers/committed.crochet",
     "source/widget/modifiers/reference.crochet",
@@ -86,7 +90,8 @@
     "source/widget/layout/tabbed-panel.crochet",
     "source/widget/input/text.crochet",
     "source/widget/input/button.crochet",
-    "source/widget/input/checkbox.crochet"
+    "source/widget/input/checkbox.crochet",
+    "source/widget/input/code-editor.crochet"
   ],
   "dependencies": [
     "crochet.core",

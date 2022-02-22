@@ -2,6 +2,7 @@
 
 open crochet.ui.agata;
 open crochet.concurrency;
+open crochet.debug;
 
 type widget-playground-page(
   page is playground-page,
@@ -12,30 +13,7 @@ command widget-playground-page as widget do
   let New-entries = #event-stream empty;
   let Error = #observable-cell with-value: nothing;
   let Code = #observable-cell with-value: "";
-  let Key-events = #event-stream empty;
-  Key-events
-    | keep-if: { X in (X key is key-code--enter) and X with-ctrl }
-    | listener
-    | subscribe: { _ in
-        let To-eval = Code value;
-        let Result = self.page execute: #playground-language crochet code: To-eval;
-        condition
-          when Result is ok do
-            Code <- "";
-            Error <- nothing;
-            let Entry = new playground-entry-code(
-              #playground-language crochet,
-              To-eval,
-              Result value
-            );
-            New-entries publish: Entry;
-          end
 
-          otherwise do
-            Error <- Result reason;
-          end
-        end
-      };
   #widget container: [
     self.page.entries value map: (self render-entry: _),
     New-entries map: (self render-entry: _),
@@ -43,12 +21,17 @@ command widget-playground-page as widget do
     #widget divider: #divider-style full,
 
     #widget card: [
+      #card-child meta: (
+        #widget text: "Type some code and evaluate it with Ctrl+Enter"
+          | with-margin: { M in M top: (1 as rem) | bottom: (-1 as rem) }
+      ),
       #card-child body: (
-        #widget text-input
-          | multi-line
-          | placeholder: "Write some code and evaluate it with Ctrl+Enter"
+        #widget code-editor
+          | auto-resize: true
           | value: Code
-          | key-up: Key-events
+          | key-map: (#map from: [
+              "Ctrl-Enter" -> { _ in self run-code: Code entries: New-entries error: Error }
+            ])
       ),
       #card-child extra: (Error map: (self render-error: _))
     ]
@@ -61,6 +44,27 @@ command widget-playground-page as widget do
                                 | scroll-behavior: #scroll-behavior smooth
                                 | scroll-pin: #scroll-pin at-end }
   | fill-screen-vertically;
+end
+
+command widget-playground-page run-code: Code entries: New-entries error: Error do
+  let To-eval = Code value;
+  let Result = self.page execute: #playground-language crochet code: To-eval;
+  condition
+    when Result is ok do
+      Code <- "";
+      Error <- nothing;
+      let Entry = new playground-entry-code(
+        #playground-language crochet,
+        To-eval,
+        Result value
+      );
+      New-entries publish: Entry;
+    end
+
+    otherwise do
+      Error <- Result reason;
+    end
+  end
 end
 
 command widget-playground-page render-error: nothing =

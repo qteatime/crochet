@@ -1,0 +1,70 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-code-editor(
+  mode is observable-cell<text>,
+  value is observable-cell<text>,
+  read-only is observable-cell<boolean>,
+  line-numbers is observable-cell<boolean>,
+  line-wrapping is observable-cell<boolean>,
+  auto-resize is boolean,
+  key-map is map<text, (code-editor -> nothing)>,
+) is widget;
+
+abstract code-editor;
+
+
+command #widget code-editor =
+  new widget-code-editor(
+    mode -> #observable-cell with-value: "crochet",
+    value -> #observable-cell with-value: "",
+    read-only -> #observable-cell with-value: false,
+    line-numbers -> #observable-cell with-value: true,
+    line-wrapping -> #observable-cell with-value: true,
+    auto-resize -> false,
+    key-map -> #map empty
+  );
+
+command widget-code-editor mode: (Mode is observable-cell<text>) =
+  new widget-code-editor(self with mode -> Mode);
+
+command widget-code-editor mode: (Mode is text) =
+  self mode: (#observable-cell with-value: Mode);
+
+
+command widget-code-editor value: (X is observable-cell<text>) =
+  new widget-code-editor(self with value -> X);
+
+command widget-code-editor value: (X is text) =
+  self value: (#observable-cell with-value: X);
+
+
+command widget-code-editor read-only: (X is observable-cell<boolean>) =
+  new widget-code-editor(self with read-only -> X);
+
+command widget-code-editor read-only: (X is boolean) =
+  self read-only: (#observable-cell with-value: X);
+
+
+command widget-code-editor line-numbers: (X is observable-cell<boolean>) =
+  new widget-code-editor(self with line-numbers -> X);
+
+command widget-code-editor line-numbers: (X is boolean) =
+  self line-numbers: (#observable-cell with-value: X);
+
+
+command widget-code-editor line-wrapping: (X is observable-cell<boolean>) =
+  new widget-code-editor(self with line-wrapping -> X);
+
+command widget-code-editor line-wrapping: (X is boolean) =
+  self line-wrapping: (#observable-cell with-value: X);
+
+
+command widget-code-editor auto-resize: (X is boolean) =
+  new widget-code-editor(self with auto-resize -> X);
+
+
+command widget-code-editor key-map: (X is map<text, (code-editor -> nothing)>) =
+  new widget-code-editor(self with key-map -> X);
+

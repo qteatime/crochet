@@ -49,20 +49,31 @@ html {
   flex-grow: 1;
 }
 
-/* FIXME: a less excessive reset sheet */
-* {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+textarea,
+ul,
+ol {
   margin: 0;
   padding: 0;
-  border: none;
-  outline: none;
-  background: none;
   font-weight: inherit;
   font-style: inherit;
   font-size: 100%;
 }
 
 button,
-input {
+input,
+textarea {
+  border: none;
+  outline: none;
+  background: none;
   font-family: "Roboto", sans-serif;
 }
 
@@ -153,6 +164,20 @@ input {
 }
 
 .agata-text-input:focus {
+  border-color: var(--primary-fg-accent);
+  box-shadow: 0 2px 0px var(--primary-fg-accent);
+}
+
+.agata-code-editor .CodeMirror {
+  min-height: 1.5rem;
+  border: 1px solid var(--blue-grey-40);
+}
+
+.agata-code-editor-auto-resize .CodeMirror {
+  height: auto;
+}
+
+.agata-code-editor .CodeMirror-focused {
   border-color: var(--primary-fg-accent);
   box-shadow: 0 2px 0px var(--primary-fg-accent);
 }
