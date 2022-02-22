@@ -94,7 +94,17 @@ export default async (
     res.sendFile(Path.resolve(root));
   });
 
-  app.get("/", (req, res) => {
+  async function try_build(res: Express.Response) {
+    try {
+      await crochet.build(root);
+    } catch (e) {
+      console.error(e);
+      res.send(500);
+    }
+  }
+
+  app.get("/", async (req, res) => {
+    await try_build(res);
     const config = {
       session_id: session_id,
       token: random_uuid(),
@@ -107,7 +117,8 @@ export default async (
     res.send(index_template(config));
   });
 
-  app.get("/playground", (req, res) => {
+  app.get("/playground", async (req, res) => {
+    await try_build(res);
     const config = {
       session_id: session_id,
       kind: get_kind(target),
