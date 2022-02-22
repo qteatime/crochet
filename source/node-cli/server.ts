@@ -7,7 +7,12 @@ import { random_uuid } from "../utils/uuid";
 
 const repo_root = Path.resolve(__dirname, "../../");
 
-export default async (root: string, port: number, www: string) => {
+export default async (
+  root: string,
+  port: number,
+  www: string,
+  start_page: string
+) => {
   const template = (filename: string) => (config: unknown) => {
     const config_str = JSON.stringify(config).replace(/</g, "\\u003c");
     const source = FS.readFileSync(Path.join(www, filename), "utf-8");
@@ -111,6 +116,7 @@ export default async (root: string, port: number, www: string) => {
   app.listen(port, () => {
     const url = new URL("http://localhost");
     url.port = String(port);
+    url.pathname = start_page;
     console.log(`Server started at ${url.toString()}`);
   });
 };

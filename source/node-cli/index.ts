@@ -315,7 +315,7 @@ async function repl([file0]: string[], options: Options) {
   await REPL.repl(crochet, pkg.meta.name);
 }
 
-async function run_web([file]: string[], options: Options) {
+async function setup_web_capabilities(file: string, options: Options) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
     options.disclose_debug,
@@ -346,8 +346,27 @@ async function run_web([file]: string[], options: Options) {
       );
     }
   }
+}
 
-  await Server(file, options.web.port, options.web.www_root);
+async function run_web([file]: string[], options: Options) {
+  setup_web_capabilities(file, options);
+  await build([file], options);
+  await Server(file, options.web.port, options.web.www_root, "/");
+}
+
+async function playground([file]: string[], options: Options) {
+  setup_web_capabilities(file, options);
+  await build([file], options);
+  await build(
+    [Path.join(__dirname, "../../stdlib/crochet.debug.ui/crochet.json")],
+    options
+  );
+  await Server(
+    file,
+    options.web.port,
+    Path.join(__dirname, "../../www"),
+    "/playground"
+  );
 }
 
 async function show_docs([file]: string[], options: Options) {
@@ -485,6 +504,7 @@ function help(command?: string) {
           "Usage:\n",
           "  crochet run <crochet.json> [-- <app-args...>]\n",
           "  crochet run-web <crochet.json> [--port PORT --www-root DIR]\n",
+          "  crochet playground <crochet.json> [--port PORT]\n",
           "  crochet docs <crochet.json> [--port PORT --target ('node' | 'browser' | '*')]\n",
           "  crochet package <crochet.json> [--package-to OUT_DIR]\n",
           "  crochet repl <crochet.json>\n",
@@ -541,6 +561,8 @@ void (async function main() {
         return await run(args, options);
       case "run-web":
         return await run_web(args, options);
+      case "playground":
+        return await playground(args, options);
       case "docs":
         return await show_docs(args, options);
       case "test":
