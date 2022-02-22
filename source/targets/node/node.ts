@@ -182,7 +182,16 @@ export class CrochetForNode {
 
   async build(file: string) {
     const pkg = await this.read_package_from_file(file);
-    await build(new Package.ResolvedPackage(pkg, Package.target_any()));
+    console.log("Building all dependencies of", pkg.meta.name);
+    const graph = await Package.build_package_graph(
+      pkg,
+      Package.target_any(),
+      this.crochet.trusted,
+      this.crochet.resolver
+    );
+    for (const x of graph.serialise(graph.get_package(pkg.meta.name))) {
+      await build(x);
+    }
   }
 
   read_package_from_file(filename: string) {

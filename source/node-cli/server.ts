@@ -43,7 +43,6 @@ export default async (
   const session_id = randomUUID();
   let repl: REPL.NodeRepl | null = null;
 
-  console.log("Building all dependencies...");
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
     false,
@@ -53,7 +52,6 @@ export default async (
     true
   );
   const pkg = crochet.read_package_from_file(root);
-  await crochet.build(root);
   for (const dep of pkg.meta.dependencies) {
     const dep_pkg = await crochet.fs.read_package(dep.name);
     await crochet.build(dep_pkg.filename);

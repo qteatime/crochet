@@ -184,7 +184,7 @@ export class Crochet {
     return pkg;
   }
 
-  private resolver: Package.IPackageResolution = {
+  readonly resolver: Package.IPackageResolution = {
     get_package: async (name: string) => {
       return this.get_package(name);
     },
