@@ -3,8 +3,10 @@ import * as Path from "path";
 import * as Read from "readline";
 import * as Compiler from "./compiler";
 import * as VM from "../vm";
+import * as Pkg from "../pkg";
 import { CrochetForNode } from "../targets/node";
 import { logger } from "../utils/logger";
+import { randomUUID } from "crypto";
 
 async function readline(rl: Read.Interface, prompt: string) {
   return new Promise<string>((resolve, reject) => {
@@ -72,5 +74,78 @@ export function resolve_file(x: string) {
     }
     default:
       return x;
+  }
+}
+
+export class NodeRepl {
+  readonly pages: Map<string, ReplPage> = new Map();
+  constructor(readonly vm: CrochetForNode, readonly session: string) {}
+
+  get_page(id: string) {
+    const page = this.pages.get(id);
+    if (page == null) {
+      throw new Error(`Unknown page id ${id}`);
+    }
+    return page;
+  }
+
+  static async bootstrap(
+    file: string,
+    target: Pkg.Target,
+    capabilities: Set<string>,
+    universe: string,
+    session: string,
+    package_tokens: Map<string, string>
+  ) {
+    const disclose_debug = false;
+    const library_paths: string[] = [];
+    const interactive = false;
+    const safe_mode = false;
+    const crochet = new CrochetForNode(
+      { universe: universe, packages: package_tokens },
+      disclose_debug,
+      library_paths,
+      capabilities,
+      interactive,
+      safe_mode
+    );
+    await crochet.boot_from_file(file, target);
+    return new NodeRepl(crochet, session);
+  }
+
+  async make_page() {
+    const id = randomUUID();
+    const root_pkg = this.vm.root;
+    const root_cpkg = this.vm.system.universe.world.packages.get(
+      root_pkg.meta.name
+    );
+    if (root_cpkg == null) {
+      throw new Error(`internal: root package not found`);
+    }
+
+    const module = new VM.CrochetModule(root_cpkg, "(playground)", null);
+    const env = new VM.Environment(null, null, module, null);
+    const page = new ReplPage(id, this.vm, root_cpkg, module, env);
+    this.pages.set(id, page);
+    return page;
+  }
+}
+
+export class ReplPage {
+  constructor(
+    readonly id: string,
+    readonly vm: CrochetForNode,
+    readonly pkg: VM.CrochetPackage,
+    readonly module: VM.CrochetModule,
+    readonly env: VM.Environment
+  ) {}
+
+  async run_code(language: string, code: string) {
+    if (language !== "crochet") {
+      throw new Error(`Language ${language} is currently unsupported`);
+    }
+
+    const expr = await Compiler.compile(code);
+    return await expr.evaluate(this.vm.system, this.module, this.env);
   }
 }

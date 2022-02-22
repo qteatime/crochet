@@ -13,10 +13,12 @@ import {
   ResolvedPackage,
   Target,
   target_web,
+  parse as parse_pkg,
+  target_spec,
 } from "../pkg";
 import * as ChildProcess from "child_process";
 import { serve_docs } from "./docs";
-import { Ok, try_parse } from "../utils/spec";
+import { Ok, parse, try_parse } from "../utils/spec";
 import { StorageConfig } from "../storage";
 import { random_uuid } from "../utils/uuid";
 
@@ -49,13 +51,13 @@ interface Options {
   disclose_debug: boolean;
   capabilities: Set<string>;
   interactive: boolean;
+  target?: Target;
   web: {
     port: number;
     www_root: string;
   };
   docs: {
     port: number;
-    target: Target;
   };
   packaging: {
     out_dir: string;
@@ -78,6 +80,7 @@ function parse_options(args0: string[]) {
   options.interactive = true;
   options.capabilities = new Set([]);
   options.verbose = false;
+  options.target = undefined;
   options.test = {
     show_success: false,
   };
@@ -90,7 +93,6 @@ function parse_options(args0: string[]) {
   };
   options.docs = {
     port: 8080,
-    target: Crochet.pkg.target_any(),
   };
   options.app_args = [];
 
@@ -151,10 +153,11 @@ function parse_options(args0: string[]) {
       case "--target": {
         const target = try_parse(args0[current + 1], Crochet.pkg.target_spec);
         if (target instanceof Ok) {
-          options.docs.target = target.value;
+          options.target = target.value;
         } else {
           throw new Error(`Invalid target ${args0[current + 1]}`);
         }
+        current += 2;
         continue;
       }
 
@@ -325,7 +328,7 @@ async function setup_web_capabilities(file: string, options: Options) {
     false
   );
   const pkg = crochet.read_package_from_file(file);
-  const rpkg = new ResolvedPackage(pkg, target_web());
+  const rpkg = new ResolvedPackage(pkg, options.target ?? target_web());
   const required = [...pkg.meta.capabilities.requires.values()];
   const cap_map = new Map(required.map((x) => [x, [rpkg]]));
   const config = StorageConfig.load();
@@ -346,16 +349,25 @@ async function setup_web_capabilities(file: string, options: Options) {
       );
     }
   }
+
+  return new Set(required);
 }
 
 async function run_web([file]: string[], options: Options) {
-  setup_web_capabilities(file, options);
+  const cap = await setup_web_capabilities(file, options);
   await build([file], options);
-  await Server(file, options.web.port, options.web.www_root, "/");
+  await Server(
+    file,
+    options.web.port,
+    options.web.www_root,
+    "/",
+    target_web(),
+    cap
+  );
 }
 
 async function playground([file]: string[], options: Options) {
-  setup_web_capabilities(file, options);
+  const cap = await setup_web_capabilities(file, options);
   await build([file], options);
   await build(
     [Path.join(__dirname, "../../stdlib/crochet.debug.ui/crochet.json")],
@@ -365,7 +377,9 @@ async function playground([file]: string[], options: Options) {
     file,
     options.web.port,
     Path.join(__dirname, "../../www"),
-    "/playground"
+    "/playground",
+    options.target ?? target_web(),
+    cap
   );
 }
 

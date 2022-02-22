@@ -1,7 +1,13 @@
 % crochet
 
+enum kernel-kind =
+  node,
+  browser;
+
 /// Information needed to spawn new Crochet VMs for the underlying package.
 type kernel-config(
+  kind is kernel-kind,
+  session-id is secret<text>,
   library-root is text,
   capabilities is set<text>,
   package-tokens is map<text, secret<text>>,

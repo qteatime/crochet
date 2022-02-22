@@ -8,8 +8,19 @@ type foreign-value-near(
   global representations is list<value-representation>,
 ) is foreign-value;
 
+type foreign-value-far(
+  vm is playground-vm,
+  global representations is list<value-representation>,
+) is foreign-value;
+
 singleton foreign-value-none is foreign-value;
 
 
 command foreign-value-near internal-representation =
   foreign repr.internal(self.value);
+
+command foreign-value-far internal-representation =
+  "(far reference)";
+
+command foreign-value-none internal-representation =
+  "(nothing)";

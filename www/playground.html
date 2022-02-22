@@ -63,6 +63,8 @@
           const app = Crochet.VM.Values.instantiate(app_type, []);
           const app_config = crochet.ffi.record(
             new Map([
+              ["session-id", crochet.ffi.text(config.session_id)],
+              ["kind", crochet.ffi.text(config.kind)],
               ["library-root", crochet.ffi.text(config.library_root)],
               [
                 "capabilities",
