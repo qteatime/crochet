@@ -521,7 +521,6 @@ function help(command?: string) {
           "  crochet playground <crochet.json> [--port PORT]\n",
           "  crochet docs <crochet.json> [--port PORT --target ('node' | 'browser' | '*')]\n",
           "  crochet package <crochet.json> [--package-to OUT_DIR]\n",
-          "  crochet repl <crochet.json>\n",
           "  crochet test <crochet.json> [--test-title PATTERN --test-module PATTERN --test-package PATTERN --test-show-ok]\n",
           "  crochet build <crochet.json>\n",
           "  crochet show-ir <file.crochet>\n",
