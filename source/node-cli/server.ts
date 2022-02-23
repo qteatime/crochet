@@ -201,7 +201,7 @@ export default async (
   url.pathname = start_page;
 
   await new Promise((resolve) => {
-    app.listen(port, () => {
+    app.listen(port, "localhost", () => {
       console.log(`Server started at ${url.toString()}`);
       resolve(null);
     });
