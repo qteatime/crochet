@@ -24,6 +24,7 @@
 
 .value-lens-text {
   color: #00796b;
+  white-space: pre-wrap;
 }
 .value-lens-text::before {
   content: "“";
