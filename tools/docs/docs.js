@@ -900,20 +900,22 @@ function quick_jump(data) {
           h("i.fas.fa-question-circle", { title: "How to search" }, []),
         ]),
         h(".qj-search-help-details", {}, [
-          md_to_html(`
-            Use this field to quickly search for **code entities**.
-            The keyboard shortcut \`.\` (period) can be used to
-            quickly focus this field. Arrow keys can
-            be used to select items, and Enter can be used to
-            navigate to them.
+          md_to_html(
+            `
+Use this field to quickly search for **code entities**.
+The keyboard shortcut \`.\` (period) can be used to
+quickly focus this field. Arrow keys can
+be used to select items, and Enter can be used to
+navigate to them.
 
-            If you want to filter by the type of the entity, you
-            can do so by preceding the name with the type and a colon.
-            For example, \`type:ac\` would consider all **types** that
-            contain \`ac\` somewhere in their name.
+If you want to filter by the type of the entity, you
+can do so by preceding the name with the type and a colon.
+For example, \`type:ac\` would consider all **types** that
+contain \`ac\` somewhere in their name.
 
-            Valid filters: \`type:\`, \`command:\`, \`trait:\`, \`effect:\`, and \`capability:\`.
-          `),
+Valid filters: \`type:\`, \`command:\`, \`trait:\`, \`effect:\`, and \`capability:\`.
+          `.trim()
+          ),
         ]),
       ]),
     ]),
