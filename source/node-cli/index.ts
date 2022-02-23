@@ -47,6 +47,13 @@ function read(file: string) {
   }
 }
 
+function run_electron(file: string) {
+  const child = ChildProcess.execFile(Electron as any, [file]);
+  child.on("exit", (code) => {
+    process.exit(code ?? 0);
+  });
+}
+
 interface Options {
   verbose: boolean;
   disclose_debug: boolean;
@@ -365,7 +372,7 @@ async function run_web([file]: string[], options: Options) {
     target_web(),
     cap
   );
-  ChildProcess.execFile(Electron as any, [url.toString()]);
+  run_electron(url.toString());
 }
 
 async function playground([file]: string[], options: Options) {
@@ -383,7 +390,7 @@ async function playground([file]: string[], options: Options) {
     options.target ?? target_web(),
     cap
   );
-  ChildProcess.execFile(Electron as any, [url.toString()]);
+  run_electron(url.toString());
 }
 
 async function show_docs([file]: string[], options: Options) {
