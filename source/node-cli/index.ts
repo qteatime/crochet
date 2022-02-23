@@ -384,7 +384,11 @@ async function playground([file]: string[], options: Options) {
 }
 
 async function show_docs([file]: string[], options: Options) {
-  await serve_docs(options.docs.port, file, Crochet.pkg.target_any());
+  await serve_docs(
+    options.docs.port,
+    file,
+    options.target ?? Crochet.pkg.target_web()
+  );
 }
 
 async function package_app([file]: string[], options: Options) {
@@ -518,8 +522,8 @@ function help(command?: string) {
           "Usage:\n",
           "  crochet run <crochet.json> [-- <app-args...>]\n",
           "  crochet run-web <crochet.json> [--port PORT --www-root DIR]\n",
-          "  crochet playground <crochet.json> [--port PORT]\n",
-          "  crochet docs <crochet.json> [--port PORT --target ('node' | 'browser' | '*')]\n",
+          "  crochet playground <crochet.json> [--port PORT --target ('node' | 'browser')]\n",
+          "  crochet docs <crochet.json> [--port PORT --target ('node' | 'browser')]\n",
           "  crochet package <crochet.json> [--package-to OUT_DIR]\n",
           "  crochet test <crochet.json> [--test-title PATTERN --test-module PATTERN --test-package PATTERN --test-show-ok]\n",
           "  crochet build <crochet.json>\n",
