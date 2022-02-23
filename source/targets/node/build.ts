@@ -39,14 +39,16 @@ export async function build_lingua(
   file: Package.ResolvedFile,
   pkg: Package.ResolvedPackage
 ) {
-  logger.debug(`Compiling ${file.relative_filename} in ${pkg.name}`);
   const output = execFileSync("node", [
     linguaPath,
     file.absolute_filename,
     "crochet",
   ]);
-  FS.writeFileSync(file.crochet_file.absolute_filename, output);
-  await build_crochet(file.crochet_file, pkg);
+  if (!is_crochet_up_to_date(file.crochet_file, output)) {
+    logger.debug(`Compiling ${file.relative_filename} in ${pkg.name}`);
+    FS.writeFileSync(file.crochet_file.absolute_filename, output);
+    await build_crochet(file.crochet_file, pkg);
+  }
 }
 
 export async function build_crochet(
