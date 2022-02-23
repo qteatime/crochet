@@ -101,6 +101,10 @@ command dom-renderer render: (W is widget-size) do
         box-sizing -> "border-box",
         width -> self to-unit-text: W.width,
         height -> self to-unit-text: W.height,
+        max-width -> self to-unit-text: W.max-width,
+        max-height -> self to-unit-text: W.max-height,
+        min-width -> self to-unit-text: W.min-width,
+        min-height -> self to-unit-text: W.min-height,
       ];
 end
 

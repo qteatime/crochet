@@ -1,9 +1,25 @@
 % crochet
 
-type widget-size(content is widget, width is measure, height is measure) is widget;
+type widget-size(
+  content is widget,
+  width is measure,
+  height is measure,
+  max-width is measure,
+  max-height is measure,
+  min-width is measure,
+  min-height is measure
+) is widget;
 
 command widget with-size: (F is (widget-size -> widget-size)) =
-  F(new widget-size(self, measure-unset, measure-unset));
+  F(new widget-size(
+    content -> self,
+    width -> measure-unset,
+    height -> measure-unset,
+    max-width -> measure-unset,
+    max-height -> measure-unset,
+    min-width -> measure-unset,
+    min-height -> measure-unset
+  ));
 
 command widget fill-container =
   self with-size: { S in S fill-container };
@@ -29,6 +45,18 @@ command widget-size width: (W has to-agata-measure) =
 
 command widget-size height: (H has to-agata-measure) =
   new widget-size(self with height -> H as measure);
+
+command widget-size max-width: (W has to-agata-measure) =
+  new widget-size(self with max-width -> W as measure);
+
+command widget-size max-height: (H has to-agata-measure) =
+  new widget-size(self with max-height -> H as measure);
+
+command widget-size min-width: (W has to-agata-measure) =
+  new widget-size(self with min-width -> W as measure);
+
+command widget-size min-height: (H has to-agata-measure) =
+  new widget-size(self with min-height -> H as measure);
 
 command widget-size fill-container =
   new widget-size(self with width -> #measure percent: 100.0, height -> #measure percent: 100.0);
