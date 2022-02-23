@@ -189,10 +189,16 @@ export default async (
   }
 
   // -- Starting servers
-  app.listen(port, () => {
-    const url = new URL("http://localhost");
-    url.port = String(port);
-    url.pathname = start_page;
-    console.log(`Server started at ${url.toString()}`);
+  const url = new URL("http://localhost");
+  url.port = String(port);
+  url.pathname = start_page;
+
+  await new Promise((resolve) => {
+    app.listen(port, () => {
+      console.log(`Server started at ${url.toString()}`);
+      resolve(null);
+    });
   });
+
+  return url;
 };

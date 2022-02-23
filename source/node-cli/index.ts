@@ -21,6 +21,7 @@ import { serve_docs } from "./docs";
 import { Ok, parse, try_parse } from "../utils/spec";
 import { StorageConfig } from "../storage";
 import { random_uuid } from "../utils/uuid";
+import * as Electron from "electron";
 
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -356,7 +357,7 @@ async function setup_web_capabilities(file: string, options: Options) {
 async function run_web([file]: string[], options: Options) {
   const cap = await setup_web_capabilities(file, options);
   await build([file], options);
-  await Server(
+  const url = await Server(
     file,
     options.web.port,
     options.web.www_root,
@@ -364,6 +365,7 @@ async function run_web([file]: string[], options: Options) {
     target_web(),
     cap
   );
+  ChildProcess.execFile(Electron as any, [url.toString()]);
 }
 
 async function playground([file]: string[], options: Options) {
@@ -373,7 +375,7 @@ async function playground([file]: string[], options: Options) {
     [Path.join(__dirname, "../../stdlib/crochet.debug.ui/crochet.json")],
     options
   );
-  await Server(
+  const url = await Server(
     file,
     options.web.port,
     Path.join(__dirname, "../../www"),
@@ -381,6 +383,7 @@ async function playground([file]: string[], options: Options) {
     options.target ?? target_web(),
     cap
   );
+  ChildProcess.execFile(Electron as any, [url.toString()]);
 }
 
 async function show_docs([file]: string[], options: Options) {
