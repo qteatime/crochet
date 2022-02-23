@@ -25,9 +25,10 @@ command welcome-error-screen as widget do
       #widget text: self.error
         | with-font: agata-theme-fonts monospace
         | with-text-color: agata-theme-colors red
-        | with-white-space: #white-space pre-formatted-wrap
+        | with-white-space: #white-space pre-formatted-wrap-line
     ]
-    | with-size: { S in S width: (80 as rem) }
+    | with-size: { S in S max-width: (80 as rem) }
+    | with-padding: { P in P all: (1 as rem) }
   ]
   | align-items: #flex-align center
   | justify-content: #flex-justify center;
