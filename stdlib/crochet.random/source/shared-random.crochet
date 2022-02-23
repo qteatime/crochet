@@ -4,13 +4,10 @@
 /// the context. This will be available to anyone who can read the
 /// shared generator (see [type:shared-random]) if their code runs
 /// within the given `Block`.
-command scoped-random with-source: (Instance0 is random) do: (Block is (() -> A)) -> A do
+handler scoped-random with-source: (Instance0 is random) do
   let Instance = Instance0 mutable;
-  handle
-    Block();
-  with
-    on random.get-random() => continue with Instance;
-  end
+with
+  on random.get-random() => continue with Instance;
 end
 
 
