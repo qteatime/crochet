@@ -69,11 +69,16 @@ export default async (
   const express = require("express") as typeof Express;
   const app = express();
 
+  const app_base_dir = Path.resolve(Path.dirname(pkg.filename));
   app.get("/app/.binary/*", async (req, res) => {
     const path = (req.params as any)[0];
-    const source = rpkg.sources.find((x) => x.binary_image.includes(path));
+    const resolved = Path.resolve(app_base_dir, ".binary", path);
+    const source = rpkg.sources.find(
+      (x) => Path.resolve(x.binary_image) === resolved
+    );
     if (!source) {
-      throw new Error(`Unknown image ${path}`);
+      console.error(`Unknown image ${path}`);
+      return res.status(500).send(`Unknown image ${path}`);
     }
     await build_file(source, rpkg);
     res.sendFile(Path.resolve(source.binary_image));
@@ -81,11 +86,13 @@ export default async (
 
   app.get("/app/native/*", async (req, res) => {
     const path = (req.params as any)[0];
+    const resolved = Path.resolve(app_base_dir, "native", path);
     const source = rpkg.native_sources.find(
-      (x) => x.relative_filename === "native/" + path
+      (x) => Path.normalize(x.absolute_filename) === resolved
     );
     if (!source) {
-      throw new Error(`Unknown native source ${path}`);
+      console.error(`Unknown native source ${path}`);
+      return res.status(500).send(`Unknown native source ${path}`);
     }
     res.sendFile(source.absolute_filename);
   });
