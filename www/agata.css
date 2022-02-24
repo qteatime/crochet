@@ -77,8 +77,12 @@ textarea {
   font-family: "Roboto", sans-serif;
 }
 
+.agata-text {
+  white-space: pre-wrap;
+}
+
 .agata-flow > * {
-  display: inline;
+  display: inline-block;
 }
 
 .agata-icon {
