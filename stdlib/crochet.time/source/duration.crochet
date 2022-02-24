@@ -124,19 +124,19 @@ command duration balanced-to: (Unit is duration-unit) do
   let Days = self days + HoursC;
 
   condition
-    when Unit is duration-unit.days =>
+    when Unit is duration-unit--days =>
       new duration(Days, Hours, Minutes, Seconds, Millis);
 
-    when Unit is duration-unit.hours =>
+    when Unit is duration-unit--hours =>
       new duration(0, Hours0 + (self days * 24), Minutes, Seconds, Millis);
 
-    when Unit is duration-unit.minutes =>
+    when Unit is duration-unit--minutes =>
       new duration(0, 0, Minutes0 + (self hours * 60) + (self days * 24 * 60), Seconds, Millis);
 
-    when Unit is duration-unit.seconds =>
+    when Unit is duration-unit--seconds =>
       new duration(0, 0, 0, Seconds0 + (self minutes * 60) + (self hours * 60 * 60) + (self days * 24 * 60 * 60), Millis);
 
-    when Unit is duration-unit.milliseconds =>
+    when Unit is duration-unit--milliseconds =>
       new duration(0, 0, 0, 0, self milliseconds +
                                (self seconds * 1000) +
                                (self minutes * 60 * 1000) +
