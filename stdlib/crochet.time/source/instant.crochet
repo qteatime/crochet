@@ -66,3 +66,16 @@ command instant + (That is duration) =
 /// Moves this instant back in time by the periods described in the given [type:duration].
 command instant - (That is duration) =
   #instant from-milliseconds-since-unix-epoch: (self to-milliseconds-since-unix-epoch - That to-milliseconds);
+
+
+// -- Conversions
+
+/// Returns the duration between two instants in time
+command instant until: (That is instant)
+requires
+  ordered :: self <= That
+do
+  #duration milliseconds: (That to-milliseconds-since-unix-epoch - self to-milliseconds-since-unix-epoch)
+    | balanced-to: #duration-unit days;
+end
+
