@@ -10,8 +10,7 @@ command #document empty =
 
 /// Represents any number
 command #document number: (X is numeric) =
-  new doc-number(X)
-    | typed: (foreign debug.type(X));
+  new doc-number(X);
 
 /// Represents any crochet text (and _highlights_ that it is a Crochet text,
 /// e.g.: by having quotes around it).
@@ -93,7 +92,7 @@ command internal make-positioned: (D is doc-position) =
 
 /// Constructs a table from a record of fields.
 command #document fields: (R is record) do
-  let Rows = (#map from: R) pairs
+  let Rows = (#map from: R) entries
                | map: { P in #document table-row: [#document plain-text: P key, P value] };
   #document
     | table-header: [#document plain-text: "Field", #document plain-text: "Value"]
