@@ -4,6 +4,7 @@
 /bin/
 /docs
 /support
-.binary
+/versions
+/benchmarks
 tsconfig.tsbuildinfo
 node_modules
