@@ -10,6 +10,7 @@ import type {
   AST,
   REPL,
 } from "../../../build/targets/browser";
+import type * as PlaygroundKernel from "../../../build/node-cli/playground-kernel";
 
 declare var Crochet: {
   CrochetForBrowser: typeof CrochetForBrowser;
@@ -22,6 +23,7 @@ declare var Crochet: {
   REPL: typeof REPL;
 };
 declare var crypto: { randomUUID(): string };
+declare var Playground: PlaygroundKernel.Playground;
 
 export default (ffi: ForeignInterface) => {
   type RunResult =
@@ -91,49 +93,44 @@ export default (ffi: ForeignInterface) => {
       super();
     }
 
-    async run_code(language: string, code: string) {
-      const result = await (
-        await fetch(
-          `/playground/api/${encodeURIComponent(
-            this.session_id
-          )}/pages/${encodeURIComponent(this.page_id)}/run-code`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              language,
-              code,
-            }),
-          }
-        )
-      ).json();
-
-      if (!result.ok) {
-        return result;
-      } else if (Array.isArray(result.representations)) {
-        return {
-          ok: true,
-          value: ffi.record(
-            new Map([
-              ["raw-value", ffi.nothing],
-              [
-                "representations",
-                ffi.list(
-                  result.representations.map((x: any) =>
-                    ffi.record(
-                      new Map([
-                        ["name", ffi.text(x.name)],
-                        ["document", ffi.text(x.document)],
-                      ])
+    async run_code(language: string, code: string): Promise<RunResult> {
+      try {
+        const result = await Playground.run_code(
+          this.session_id,
+          this.page_id,
+          language,
+          code
+        );
+        if (result == null) {
+          return { ok: true, value: ffi.nothing };
+        } else if (Array.isArray(result)) {
+          return {
+            ok: true,
+            value: ffi.record(
+              new Map([
+                ["raw-value", ffi.nothing],
+                [
+                  "representations",
+                  ffi.list(
+                    result.map((x: any) =>
+                      ffi.record(
+                        new Map([
+                          ["name", ffi.text(x.name)],
+                          ["document", ffi.text(x.document)],
+                        ])
+                      )
                     )
-                  )
-                ),
-              ],
-            ])
-          ),
-        };
-      } else {
-        return { ok: true, value: ffi.nothing };
+                  ),
+                ],
+              ])
+            ),
+          };
+        } else {
+          console.error("Unexpected value", result);
+          return { ok: false, error: `Unexpected value` };
+        }
+      } catch (e) {
+        return { ok: false, error: String(e) };
       }
     }
   }
@@ -176,22 +173,8 @@ export default (ffi: ForeignInterface) => {
     }
 
     async make_page(kernel: BaseKernel) {
-      const result = await (
-        await fetch(
-          `/playground/api/${encodeURIComponent(this.session_id)}/make-page`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({}),
-          }
-        )
-      ).json();
-
-      if (!result.ok) {
-        throw new Error(result.reason);
-      }
-
-      const page = new FarKernelPage(this.session_id, result.page_id);
+      const id = await Playground.make_page(this.session_id);
+      const page = new FarKernelPage(this.session_id, id);
       kernel.add_page(page.page_id, page);
       return page;
     }
@@ -284,22 +267,23 @@ export default (ffi: ForeignInterface) => {
       { ok: true; value: BaseVM } | { ok: false; reason: string }
     > {
       const id = crypto.randomUUID();
+      await Playground.initialise(this.session_id);
       const vm = new FarKernelVM(this.session_id, id);
       this.add_vm(id, vm);
       return { ok: true, value: vm };
     }
   }
 
-  ffi.defun(
+  ffi.defmachine(
     "kernel.make-kernel",
-    (
+    function* (
       kind0,
       session_id0,
       library_root0,
       capabilities0,
       package_tokens0,
       app_root0
-    ) => {
+    ) {
       const kind = ffi.text_to_string(kind0);
       const session_id = ffi.text_to_string(session_id0);
       const library_root = ffi.text_to_string(library_root0);

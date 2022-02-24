@@ -47,8 +47,8 @@ function read(file: string) {
   }
 }
 
-function run_electron(file: string) {
-  const child = ChildProcess.execFile(Electron as any, [file]);
+function run_electron(file: string, config: string = "") {
+  const child = ChildProcess.execFile(Electron as any, [file, config]);
   child.on("exit", (code) => {
     process.exit(code ?? 0);
   });
@@ -364,7 +364,7 @@ async function setup_web_capabilities(file: string, options: Options) {
 async function run_web([file]: string[], options: Options) {
   const cap = await setup_web_capabilities(file, options);
   await build([file], options);
-  const url = await Server(
+  const config = await Server(
     file,
     options.web.port,
     options.web.www_root,
@@ -372,7 +372,7 @@ async function run_web([file]: string[], options: Options) {
     target_web(),
     cap
   );
-  run_electron(url.toString());
+  run_electron(config.url.toString());
 }
 
 async function playground([file]: string[], options: Options) {
@@ -382,7 +382,7 @@ async function playground([file]: string[], options: Options) {
     [Path.join(__dirname, "../../stdlib/crochet.debug.ui/crochet.json")],
     options
   );
-  const url = await Server(
+  const config = await Server(
     file,
     options.web.port,
     Path.join(__dirname, "../../www"),
@@ -390,7 +390,7 @@ async function playground([file]: string[], options: Options) {
     options.target ?? target_web(),
     cap
   );
-  run_electron(url.toString());
+  run_electron(Path.join(__dirname, "playground.js"), JSON.stringify(config));
 }
 
 async function show_docs([file]: string[], options: Options) {

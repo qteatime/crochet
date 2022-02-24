@@ -6,6 +6,7 @@ import type * as Express from "express";
 import { CrochetForNode, build_file } from "../targets/node";
 import { random_uuid } from "../utils/uuid";
 import { randomUUID } from "crypto";
+import { TargetTag } from "../pkg";
 
 const repo_root = Path.resolve(__dirname, "../../");
 
@@ -143,35 +144,6 @@ export default async (
   app.use("/", express.static(www));
   app.use("/library", express.static(Path.join(repo_root, "stdlib")));
 
-  app.use("/playground/api", express.json());
-
-  app.post("/playground/api/:id/make-page", async (req, res) => {
-    if (req.params.id !== session_id) {
-      return res.send(403);
-    }
-
-    try {
-      const page = await repl!.make_page();
-      res.send({ ok: true, page_id: page.id });
-    } catch (e) {
-      res.send({ ok: false, reason: String(e) });
-    }
-  });
-
-  app.post("/playground/api/:id/pages/:page_id/run-code", async (req, res) => {
-    if (req.params.id !== session_id) {
-      return res.send(403);
-    }
-
-    try {
-      const page = repl!.get_page(req.params.page_id);
-      const result = await page.run_code(req.body.language, req.body.code);
-      res.send({ ok: true, representations: result?.representations });
-    } catch (e) {
-      res.send({ ok: false, error: String(e) });
-    }
-  });
-
   // -- File system capabilities
   const pkg_tokens = new Map();
   for (const x of graph.serialise(rpkg)) {
@@ -207,5 +179,12 @@ export default async (
     });
   });
 
-  return url;
+  return {
+    url,
+    root: root,
+    session_id: session_id,
+    target: get_kind(target),
+    capabilities: [...pkg.meta.capabilities.requires.values()],
+    package_tokens: [...pkg_tokens.entries()],
+  };
 };

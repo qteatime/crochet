@@ -4,7 +4,7 @@ import * as Ast from "../generated/crochet-grammar";
 import * as VM from "../vm";
 import type { BootedCrochet } from "../crochet/index";
 
-type Representation = {
+export type Representation = {
   name: string;
   document: string; // JSON
 };
