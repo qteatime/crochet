@@ -1,0 +1,26 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.ui.agata;
+
+command main-html: Root do
+  handle
+    let Name = #observable-cell with-value: "";
+    agata show: (
+      #widget flex-column: [
+        #widget text-input
+          | placeholder: "What's your name?"
+          | value: Name,
+
+        "Hello, [Name]"
+      ]
+      | gap: (1 as rem)
+      | align-items: #flex-align center
+      | justify-content: #flex-justify center
+      | with-padding: { P in P all: (2 as rem) }
+      | fill-screen-vertically
+    );
+  with
+    use agata-dom-renderer root: Root;
+  end
+end

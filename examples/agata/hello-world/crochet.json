@@ -1,0 +1,17 @@
+{
+  "name": "crochet.examples.agata.hello-world",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    "crochet.ui.agata"
+  ],
+  "capabilities": {
+    "requires": ["crochet.ui.agata/ui-control"],
+    "provides": []
+  }
+}
