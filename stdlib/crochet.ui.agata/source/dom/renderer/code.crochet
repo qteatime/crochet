@@ -96,7 +96,7 @@ command dom-renderer render: (W is widget-syntax-highlight) do
     #code-mirror-dom render: Node options: [
       mode -> W.language,
       value -> W.value,
-      read-only -> "nocursor",
+      read-only -> true,
       line-numbers -> W.line-numbers,
       line-wrapping -> W.line-wrapping,
       viewport-margin -> #float-64bit positive-infinity,
