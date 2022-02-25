@@ -342,7 +342,9 @@ async function setup_web_capabilities(file: string, options: Options) {
   const config = StorageConfig.load();
   const previous = config.grants(pkg.meta.name)?.capabilities ?? null;
 
-  if (previous == null) {
+  if (required.length === 0) {
+    return new Set([]);
+  } else if (previous == null) {
     await crochet.request_new_capabilities(config, cap_map, pkg);
   } else if (required.length !== 0) {
     const req_set = new Set(required);
