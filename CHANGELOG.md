@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2022-02-25
+
 ### Breaking changes
 
 - Changed `crochet.debug`'s API to require tags for all logging entries (required for proper tracing);
