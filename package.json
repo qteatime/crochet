@@ -1,6 +1,6 @@
 {
   "name": "@qteatime/crochet",
-  "version": "0.14.0-rc3",
+  "version": "0.14.0",
   "bin": {
     "crochet": "crochet.js"
   },
