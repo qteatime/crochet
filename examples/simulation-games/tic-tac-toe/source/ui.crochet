@@ -180,7 +180,10 @@ command game-ui render-column: (Column is board-column) do
       | justify-content: #flex-justify center
       | fill-container
     )
-    | disabled: (self.wait-choice map: (not _))
+    | disabled: (condition
+                   when Column mark is empty => self.wait-choice map: (not _);
+                   otherwise => true;
+                 end)
     | on-click: { _ in perform game.make-choice(Column) }
     | style: #button-style clear
     | with-background: agata-theme-colors bg-muted
