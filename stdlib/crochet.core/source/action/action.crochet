@@ -8,6 +8,10 @@ command action-choice score =
 command action-choice title =
   (foreign action.action(self)) title;
 
+/// Retrieves the underlying action for an [type:action-choice].
+command action-choice 'action =
+  foreign action.action(self);
+
 /// True if this [type:action] has fired before for the given turn-value.
 command 'action fired-for: Value =
   (foreign action.fired-for(self, Value));
