@@ -67,11 +67,7 @@ when X simulate-turn, if X won do
   game update;
 end
 
-when
-  state--on-going state,
-  not L at: C mark: empty,
-  let Won = search X is player, if not (X won),
-do
+when state--on-going state, X is player, if not (X won), not L at: C mark: empty do
   fact state--draw state;
   game log: "It's a draw!";
   game update;
