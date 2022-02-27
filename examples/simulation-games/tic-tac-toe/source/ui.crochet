@@ -1,0 +1,195 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.ui.agata;
+open crochet.random;
+
+singleton game;
+type game-ui(
+  board is observable-cell<list<board-line>>,
+  log is event-stream<text>,
+  wait-choice is observable-cell<boolean>,
+  state is observable-cell<state>,
+);
+
+effect game with
+  ask-choice(); // -> promise<board-column>
+  make-choice(choice is board-column); // -> nothing
+  add-log(log is text); // -> nothing
+  update(); // -> nothing
+end
+
+command main-html: Root do
+  handle
+    game play;
+  with
+    use low-entropy-random-source;
+    use agata-dom-renderer root: Root;
+  end
+end
+
+command game play do
+  let Board = #observable-cell with-value: [];
+  let Log = #event-stream empty;
+  let Wait-choice = #observable-cell with-value: false;
+  let Pending = #cell with-value: nothing;
+  let State = #observable-cell with-value: state--on-going;
+  handle
+    fact saga player;
+    board reset;
+    Board <- board current-state;
+    agata show: new game-ui(Board, Log, Wait-choice, State);
+    game run-simulation;
+  with
+    use scoped-random with-source: #random with-random-seed;
+
+    on game.ask-choice() do
+      assert not Wait-choice value;
+      Pending <- #deferred make;
+      Wait-choice <- true;
+      continue with Pending value promise;
+    end
+
+    on game.make-choice(Choice) do
+      assert Wait-choice value;
+      Wait-choice <- false;
+      let Waiter = Pending value;
+      Pending <- nothing;
+      Waiter resolve: Choice;
+      continue with nothing;
+    end
+
+    on game.update() do
+      Board <- board current-state;
+      let New-state = (search S state).S first;
+      condition
+        when New-state =:= State value => nothing;
+        otherwise => State <- New-state;
+      end
+      continue with nothing;
+    end
+
+    on game.add-log(Entry) do
+      Log publish: Entry;
+      continue with nothing;
+    end
+  end
+end
+
+command game run-simulation do
+  simulate for [erin, saga] until not state--on-going state
+  on pick-action: Actions for: Turn do
+    let Choice = Turn choose-action: Actions;
+    Choice;
+  end
+end
+
+command game replay do
+  self log: "-- new game --";
+  fact saga player;
+  board reset;
+  self update;
+  self run-simulation;
+end
+
+command game ask-choice = (perform game.ask-choice()) wait;
+command game update = perform game.update();
+command game log: (Entry is text) = perform game.add-log(Entry);
+command game log: (Entry is interpolation) = self log: Entry flatten-into-plain-text;
+
+
+command (P is player) choose-action: Actions do
+  let Choice =
+    match
+      when P player do
+        let Chosen = game ask-choice;
+        Actions
+          | find-first: { X in X 'action marks-line: Chosen line column: Chosen column }
+          | value-or-panic: "internal: no actions matched" data: [chosen -> Chosen, actions -> Actions];
+      end
+
+      otherwise do
+        shared-random instance choose: Actions;
+      end
+    end;
+
+  Choice first;
+end
+
+implement to-widget for game-ui;
+command game-ui as widget do
+  #widget flex-column: [
+    #widget flex-column: [
+      self render-state,
+      self render-board,
+      self render-log
+    ]
+    | gap: (2 as rem)
+    | with-size: { S in S max-width: (500 as pixels) }
+  ]
+  | align-items: #flex-align center
+  | justify-content: #flex-justify center
+  | fill-screen;
+end
+
+command game-ui render-state do
+  #widget given: self.state
+    | when: { S in S is state--on-going } use: (#widget space)
+    | otherwise: (
+        #widget button: "Play again"
+          | on-click: { _ in game replay }
+          | fill-container-horizontally
+      )
+end
+
+command game-ui render-log do
+  #widget container: [
+    self.log
+  ]
+  | with-box-overflow: { S in S style: #overflow-style auto | scroll-pin: #scroll-pin at-end }
+  | with-size: { S in S height: (200 as pixels) };
+end
+
+command game-ui render-board do
+  #widget flex-row: [
+    self.board map: { Lines in
+      #widget flex-column: (
+        Lines map: { Line in
+          #widget flex-row: (Line columns map: (self render-column: _))
+            | gap: (1 as rem)
+            | align-items: #flex-align center
+            | justify-content: #flex-justify center
+        }
+      )
+      | gap: (1 as rem)
+    }
+  ]
+  | gap: (1 as rem)
+  | align-items: #flex-align center
+  | justify-content: #flex-justify center
+  | wrap: #flex-wrap no-wrap;
+end
+
+command game-ui render-column: (Column is board-column) do
+  #flex-child with: (
+    #widget button: (
+      #widget flex-row: [
+        self render-mark: Column mark
+      ]
+      | align-items: #flex-align center
+      | justify-content: #flex-justify center
+      | fill-container
+    )
+    | disabled: (self.wait-choice map: (not _))
+    | on-click: { _ in perform game.make-choice(Column) }
+    | style: #button-style clear
+    | with-background: agata-theme-colors bg-muted
+    | with-size: { S in S width: (64 as pixels) | height: (64 as pixels) }
+  )
+  | grow: 1
+  | basis: (33 as percent)
+end
+
+command game-ui render-mark: erin = (#widget icon: "circle" | style: #icon-style regular | size: #icon-size extra-large);
+command game-ui render-mark: saga = (#widget icon: "times" | size: #icon-size extra-large);
+command game-ui render-mark: empty = #widget space;

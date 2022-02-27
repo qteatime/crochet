@@ -1,0 +1,26 @@
+{
+  "name": "crochet.examples.simulation-games.tic-tac-toe",
+  "title": "Tic-Tac-Toe",
+  "description": "Text-based tic-tac-toe AI example.",
+  "target": "browser",
+  "sources": [
+    "source/model.crochet",
+    "source/simulation.crochet",
+    "source/ui.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.ui.agata",
+    "crochet.concurrency",
+    "crochet.random"
+  ],
+  "capabilities": {
+    "provides": [],
+    "requires": [
+      "crochet.random/read-shared-instance",
+      "crochet.random/update-shared-instance",
+      "crochet.random/randomness-source",
+      "crochet.ui.agata/ui-control"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+% crochet
+
+abstract mark;
+
+abstract player is mark;
+
+singleton erin is player with
+  command name = "Erin";
+end
+
+singleton saga is player with
+  command name = "Saga";
+end
+
+singleton empty is mark;
+
+singleton board;
+
+enum line = l1, l2, l3;
+enum column = c1, c2, c3;
+
+enum state = on-going, won, draw;
+
+relation Line* at: Column* mark: Who;
+relation State state;
+relation Who player;
+
+define lines = [line--l1, line--l2, line--l3];
+define columns = [column--c1, column--c2, column--c3];
+
+type board-line(global line is line, global columns is list<board-column>);
+type board-column(global line is line, global column is column, global mark is mark);

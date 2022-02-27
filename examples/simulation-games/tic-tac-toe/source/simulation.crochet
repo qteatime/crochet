@@ -1,0 +1,79 @@
+% crochet
+
+/// Resets the board state to an empty state
+command board reset do
+  for L in lines, C in columns do
+    fact L at: C mark: empty;
+  end
+
+  fact state--on-going state;
+end
+
+/// Gets the current state of the board
+command board current-state do
+  let Lines =
+    search
+      Line is line,
+      let Columns = search Line at: Column mark: Mark;
+
+  Lines map: { Line in
+    Line.Columns
+      |> _ map: { Column in new board-column(Line.Line, Column.Column, Column.Mark) }
+      |> _ sort-by: { A, B in A column compare-to: B column }
+      |> { Xs in new board-line(Line.Line, Xs) }
+  }
+  | sort-by: { A, B in A line compare-to: B line };
+end
+
+/// True if the given player has won the game with the current board
+command player won do
+  let Result =
+    match
+      when line--l1 at: C mark: self,
+           line--l2 at: C mark: self,
+           line--l3 at: C mark: self => true;
+      
+      when L at: column--c1 mark: self,
+           L at: column--c2 mark: self,
+           L at: column--c3 mark: self => true;
+
+      when line--l1 at: column--c1 mark: self,
+           line--l2 at: column--c2 mark: self,
+           line--l3 at: column--c3 mark: self => true;
+      
+      when line--l1 at: column--c3 mark: self,
+           line--l2 at: column--c2 mark: self,
+           line--l3 at: column--c1 mark: self => true;
+
+      otherwise => false;
+    end;
+  
+  Result first;
+end
+
+// -- Actions that can be taken in a game
+action (X is player) mark "Mark [self.L], [self.C]"
+when L at: C mark: empty do
+  fact L at: C mark: X;
+  game update;
+  game log: "[X name] marks [L to-enum-text], [C to-enum-text]";
+with
+  command marks-line: (L is line) column: (C is column) = (self.L =:= L) and (self.C =:= C);
+end
+
+when X simulate-turn, if X won do
+  fact state--won state;
+  game log: "[X name] won!";
+  game update;
+end
+
+when
+  state--on-going state,
+  not L at: C mark: empty,
+  let Won = search X is player, if not (X won),
+do
+  fact state--draw state;
+  game log: "It's a draw!";
+  game update;
+end
+
