@@ -7,7 +7,7 @@
 handler scoped-random with-source: (Instance0 is random) do
   let Instance = Instance0 mutable;
 with
-  on random.get-random() => continue with Instance;
+  on scoped-random.get-random() => continue with Instance;
 end
 
 
@@ -15,5 +15,5 @@ end
 /// for this context. An instance must have been provided before through
 /// [type:scoped-random].
 command shared-random instance -> random do
-  perform random.get-random();
+  perform scoped-random.get-random();
 end
