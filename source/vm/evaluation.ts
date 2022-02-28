@@ -140,16 +140,18 @@ export class Thread {
           return result.value;
 
         case RunResultTag.AWAIT: {
+          let value;
           try {
-            const value = await result.promise;
-            result = this.run_with_input(value);
+            value = await result.promise;
           } catch (e) {
             if (!(this.state.activation instanceof NativeActivation)) {
               throw new Error(`internal: await throw in non-native activation`);
             }
             const signal = this.throw_native(this.state.activation, e);
             result = this.run(signal);
+            continue;
           }
+          result = this.run_with_input(value);
           continue;
         }
 
