@@ -27,6 +27,7 @@ import {
   CrochetNativeLambda,
   Tag,
   TraceSpan,
+  NativeSignal,
 } from "./intrinsics";
 import { Relation, run_match_case, run_search, search } from "./logic";
 import { Namespace } from "./namespaces";
@@ -47,6 +48,8 @@ import {
 import { Contexts } from "./simulation";
 import { run_simulation } from "./simulation/simulation";
 import { TELog, TENew, EventLocation } from "./tracing";
+
+type NativeStepResult = IteratorResult<NativeSignal, CrochetValue>;
 
 export enum RunResultTag {
   DONE,
@@ -137,8 +140,16 @@ export class Thread {
           return result.value;
 
         case RunResultTag.AWAIT: {
-          const value = await result.promise;
-          result = this.run_with_input(value);
+          try {
+            const value = await result.promise;
+            result = this.run_with_input(value);
+          } catch (e) {
+            if (!(this.state.activation instanceof NativeActivation)) {
+              throw new Error(`internal: await throw in non-native activation`);
+            }
+            const signal = this.throw_native(this.state.activation, e);
+            result = this.run(signal);
+          }
           continue;
         }
 
@@ -313,7 +324,19 @@ export class Thread {
   }
 
   step_native(activation: NativeActivation, input: CrochetValue): Signal {
-    const { value, done } = activation.routine.next(input);
+    const result = activation.routine.next(input);
+    return this.handle_native_step(activation, result);
+  }
+
+  throw_native(activation: NativeActivation, thrown: unknown): Signal {
+    const result = activation.routine.throw(thrown);
+    return this.handle_native_step(activation, result);
+  }
+
+  handle_native_step(
+    activation: NativeActivation,
+    { done, value }: NativeStepResult
+  ): Signal {
     if (done) {
       if (!(value instanceof CrochetValue)) {
         throw new ErrArbitrary(

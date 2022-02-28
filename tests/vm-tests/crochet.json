@@ -17,6 +17,7 @@
     "crochet.time",
     "crochet.concurrency"
   ],
+  "native_sources": ["native/throw-native.js"],
   "sources": [
     "feature/types-before.crochet",
     "feature/types.crochet",
@@ -35,10 +36,11 @@
     "feature/record.crochet",
     "feature/aliases.crochet",
     "feature/enums.crochet",
-    "regression/placeholder-dispatch.crochet"
+    "regression/placeholder-dispatch.crochet",
+    "regression/throw-in-native-promise.crochet"
   ],
   "capabilities": {
-    "requires": ["crochet.debug/internal"],
+    "requires": ["crochet.debug/internal", "native"],
     "provides": []
   }
 }

@@ -1,0 +1,5 @@
+% crochet
+
+test "Rejected promises should be catch-able in native machines" do
+  assert (foreign throw-native.trapped());
+end
