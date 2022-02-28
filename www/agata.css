@@ -1,3 +1,8 @@
+@import url("./fonts/roboto.css");
+@import url("./fonts/fa-regular.css");
+@import url("./fonts/fa-solid.css");
+@import url("./fontawesome.min.css");
+
 html {
   font-size: 16px;
 }
