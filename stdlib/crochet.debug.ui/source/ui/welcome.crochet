@@ -1,35 +1,16 @@
 % crochet
 
 open crochet.ui.agata;
-open crochet.concurrency;
 
-type welcome-screen;
+type welcome-panel(vm is playground-vm);
 
-implement to-widget for welcome-screen;
-command welcome-screen as widget do
-  #widget flex-column: [
-    #widget text: "Loading..."
+implement to-widget for welcome-panel;
+command welcome-panel as widget do
+  #widget container: [
+    #widget text: self.vm readme
   ]
-  | align-items: #flex-align center
-  | justify-content: #flex-justify center;
-end
-
-
-type welcome-error-screen(error is text);
-
-implement to-widget for welcome-error-screen;
-command welcome-error-screen as widget do
-  #widget flex-column: [
-    #widget section: [
-      #widget title: "Cannot initialise playground",
-      #widget text: self.error
-        | with-font: agata-theme-fonts monospace
-        | with-text-color: agata-theme-colors red
-        | with-white-space: #white-space pre-formatted-wrap-line
-    ]
-    | with-size: { S in S max-width: (80 as rem) }
-    | with-padding: { P in P all: (1 as rem) }
-  ]
-  | align-items: #flex-align center
-  | justify-content: #flex-justify center;
+  | with-padding: { P in P all: (2 as rem) }
+  | with-font: agata-theme-fonts monospace
+  | with-box-overflow: #overflow-style auto
+  | fill-container-vertically
 end

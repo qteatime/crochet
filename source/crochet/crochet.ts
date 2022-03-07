@@ -299,7 +299,12 @@ export class BootedCrochet {
       `Loading native module ${x.relative_filename} from package ${pkg.name}`
     );
     const module = await this.crochet.fs.read_native_module(x, pkg);
-    const ffi = new ForeignInterface(this.universe, cpkg, x.relative_filename);
+    const ffi = new ForeignInterface(
+      this,
+      this.universe,
+      cpkg,
+      x.relative_filename
+    );
     await module(ffi);
   }
 
@@ -390,5 +395,14 @@ export class BootedCrochet {
     perspectives: CrochetType[]
   ) {
     return debug_representations(this.universe, value, perspectives);
+  }
+
+  async readme(pkg0: Package.Package) {
+    try {
+      const pkg = this.graph.get_package(pkg0.meta.name);
+      return await this.crochet.fs.read_file(pkg.readme.absolute_filename);
+    } catch (e) {
+      return "";
+    }
   }
 }

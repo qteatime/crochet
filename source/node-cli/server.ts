@@ -102,6 +102,10 @@ export default async (
     res.sendFile(Path.resolve(root));
   });
 
+  app.get("/app/README.md", async (req, res) => {
+    res.sendFile(Path.resolve(rpkg.readme.absolute_filename));
+  });
+
   async function try_build(res: Express.Response) {
     try {
       await crochet.build(root);

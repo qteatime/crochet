@@ -9,3 +9,6 @@ type playground-vm(
 
 command playground-vm new-page: (Title is text) =
   perform playground.new-page(self, Title);
+
+command playground-vm readme =
+  perform playground.get-readme(self);

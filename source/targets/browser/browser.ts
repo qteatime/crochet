@@ -75,6 +75,7 @@ export class CrochetForBrowser {
     this._root = root;
     this._booted_system = booted;
     this._ffi = new ForeignInterface(
+      this.system,
       this.system.universe,
       this.system.universe.world.packages.get(this.root.meta.name)!,
       this.root.filename

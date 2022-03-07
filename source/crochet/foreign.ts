@@ -47,19 +47,27 @@ import {
   Values,
 } from "../vm";
 import { random_uuid } from "../utils/uuid";
+import { BootedCrochet } from "./crochet";
 
 export type { Machine, CrochetValue };
 export type { ISet, IList, IMap };
 
 export class ForeignInterface {
+  #vm: BootedCrochet;
   #universe: Universe;
   #package: CrochetPackage;
   #module: CrochetModule;
 
-  constructor(universe: Universe, pkg: CrochetPackage, filename: string) {
+  constructor(
+    vm: BootedCrochet,
+    universe: Universe,
+    pkg: CrochetPackage,
+    filename: string
+  ) {
     this.#universe = universe;
     this.#package = pkg;
     this.#module = new CrochetModule(pkg, filename, null);
+    this.#vm = vm;
   }
 
   defun(name: string, fn: (...args: CrochetValue[]) => CrochetValue) {
@@ -536,5 +544,9 @@ export class ForeignInterface {
 
   get formatter() {
     return Location;
+  }
+
+  get vm() {
+    return this.#vm;
   }
 }

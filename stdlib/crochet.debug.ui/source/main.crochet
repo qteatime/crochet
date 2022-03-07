@@ -17,7 +17,7 @@ command playground-app
           config: (Config is record)
 do
   handle
-    agata show: new welcome-screen;
+    agata show: new loading-screen;
 
     let Kernel = #playground-kernel bootstrap: new kernel-config(
       session-id ->
@@ -45,7 +45,7 @@ do
 
     let Page = VM new-page: "Untitled";
     
-    agata show: new widget-playground-page(Page);
+    agata show: new screen-frame(vm -> VM, page -> Page);
   with
     use browser-kernel;
     use agata-dom-renderer root: Root;
@@ -54,6 +54,6 @@ do
 end
 
 command playground-app halt-with-error: (Error is playground-error) do
-  agata show: new welcome-error-screen(Error reason);
+  agata show: new loading-error-screen(Error reason);
   perform playground-app.halt();
 end

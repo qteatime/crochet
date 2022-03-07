@@ -16,6 +16,9 @@ effect playground with
     language is playground-language,
     code is text
   ); // -> result<any, playground-run-error>
+
+  // Returns the introductory documentation for the project
+  get-readme(vm is playground-vm); // -> untrusted-text
 end
 
 // FIXME: this creates a placeholder type
@@ -87,5 +90,10 @@ handler browser-kernel with
       otherwise =>
         continue with #result error: new playground-run-error-arbitrary(Result.reason);
     end
+  end
+
+  on playground.get-readme(VM) do
+    let Readme = foreign kernel.readme(VM.vm-box);
+    continue with Readme;
   end
 end

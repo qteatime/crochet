@@ -1,0 +1,26 @@
+% crochet
+
+open crochet.ui.agata;
+open crochet.concurrency;
+
+type screen-frame(
+  vm is playground-vm,
+  page is playground-page
+);
+
+implement to-widget for screen-frame;
+command screen-frame as widget do
+  let Selected = #observable-cell with-value: "welcome";
+
+  #widget tabbed-panel: [
+    #tab id: "welcome"
+      | header: "Welcome"
+      | content: new welcome-panel(self.vm),
+
+    #tab id: "playground"
+      | header: "Playground"
+      | content: new playground-panel(self.page),
+  ]
+  | selected: Selected
+  | fill-screen-vertically;
+end

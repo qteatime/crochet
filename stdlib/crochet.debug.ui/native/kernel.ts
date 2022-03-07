@@ -137,6 +137,7 @@ export default (ffi: ForeignInterface) => {
 
   abstract class BaseVM {
     abstract make_page(kernel: BaseKernel): Promise<BasePage>;
+    abstract readme(): Promise<string>;
   }
 
   class KernelVM extends BaseVM {
@@ -165,6 +166,11 @@ export default (ffi: ForeignInterface) => {
 
       return page;
     }
+
+    async readme() {
+      const root_pkg = this.vm.system.graph.root;
+      return await this.vm.system.readme(root_pkg.pkg);
+    }
   }
 
   class FarKernelVM extends BaseVM {
@@ -177,6 +183,10 @@ export default (ffi: ForeignInterface) => {
       const page = new FarKernelPage(this.session_id, id);
       kernel.add_page(page.page_id, page);
       return page;
+    }
+
+    async readme() {
+      return await Playground.readme();
     }
   }
 
@@ -384,5 +394,11 @@ export default (ffi: ForeignInterface) => {
         ])
       );
     }
+  });
+
+  ffi.defmachine("kernel.readme", function* (vm0) {
+    const vm = ffi.unbox_typed(BaseVM, vm0);
+    const text = yield ffi.await(vm.readme().then((x) => ffi.text(x)));
+    return text;
   });
 };

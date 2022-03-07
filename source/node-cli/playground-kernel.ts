@@ -15,9 +15,19 @@ export interface Playground {
     language: string,
     code: string
   ): Promise<REPL.Representation[] | undefined>;
+  readme(): Promise<string>;
 }
 
 declare var Playground: Playground;
+
+function assert_repl(
+  repl: REPL.NodeRepl | null,
+  session_id: string
+): asserts repl is REPL.NodeRepl {
+  if (repl == null || session_id != repl.session) {
+    throw new Error(`REPL not initialised.`);
+  }
+}
 
 contextBridge.exposeInMainWorld("Playground", <Playground>{
   async initialise(id: string) {
@@ -37,10 +47,7 @@ contextBridge.exposeInMainWorld("Playground", <Playground>{
   },
 
   async make_page(session_id: string) {
-    if (repl == null || session_id != repl.session) {
-      throw new Error(`Cannot create a new playground page.`);
-    }
-
+    assert_repl(repl, session_id);
     const page = await repl.make_page();
     return page.id;
   },
@@ -51,12 +58,16 @@ contextBridge.exposeInMainWorld("Playground", <Playground>{
     language: string,
     code: string
   ) {
-    if (repl == null || session_id != repl.session) {
-      throw new Error(`Cannot run code in the page`);
-    }
-
+    assert_repl(repl, session_id);
     const page = repl.get_page(page_id);
     const result = await page.run_code(language, code);
     return result?.representations;
+  },
+
+  async readme(session_id: string) {
+    assert_repl(repl, session_id);
+    const root_pkg = repl.vm.system.graph.root;
+    const result = await repl.vm.system.readme(root_pkg.pkg);
+    return result;
   },
 });

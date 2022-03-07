@@ -1,0 +1,9 @@
+% crochet
+
+open crochet.ui.agata;
+
+type playground-panel(page is playground-page);
+
+implement to-widget for playground-panel;
+command playground-panel as widget =
+  (new widget-playground-page(self.page)) as widget;

@@ -43,7 +43,7 @@ command widget-playground-page as widget do
   | with-box-overflow: { O in O style: #overflow-style auto
                                 | scroll-behavior: #scroll-behavior smooth
                                 | scroll-pin: #scroll-pin at-end }
-  | fill-screen-vertically;
+  | fill-container-vertically;
 end
 
 command widget-playground-page run-code: Code entries: New-entries error: Error do
