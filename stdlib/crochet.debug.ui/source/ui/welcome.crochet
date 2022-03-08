@@ -43,6 +43,7 @@ command welcome-panel render-edit: Ctx do
     #widget flex-row-reverse: [
       #widget icon-button: "check"
         | on-click: { _ in
+            self.vm update-readme: Code value;
             Ctx.text <- Code value;
             Ctx.mode <- #mode view;
           }

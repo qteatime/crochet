@@ -12,3 +12,6 @@ command playground-vm new-page: (Title is text) =
 
 command playground-vm readme =
   perform playground.get-readme(self);
+
+command playground-vm update-readme: (Code is text) =
+  perform playground.update-readme(self, Code);

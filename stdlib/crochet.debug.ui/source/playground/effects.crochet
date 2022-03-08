@@ -19,6 +19,9 @@ effect playground with
 
   // Returns the introductory documentation for the project
   get-readme(vm is playground-vm); // -> untrusted-text
+
+  // Updates the introductory documentation for the project
+  update-readme(vm is playground-vm, code is text); // -> nothing
 end
 
 // FIXME: this creates a placeholder type
@@ -96,4 +99,13 @@ handler browser-kernel with
     let Readme = foreign kernel.readme(VM.vm-box);
     continue with Readme;
   end
+
+  on playground.update-readme(VM, Code) do
+    let Result = foreign kernel.update-root-readme(VM.vm-box, Code);
+    transcript tag: "error" inspect: Result;
+    assert Result.ok;
+    continue with nothing;
+  end
 end
+
+open crochet.debug;

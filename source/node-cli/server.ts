@@ -1,7 +1,6 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
-import * as REPL from "../node-repl";
 import type * as Express from "express";
 import { CrochetForNode, build_file } from "../targets/node";
 import { random_uuid } from "../utils/uuid";
@@ -42,7 +41,6 @@ export default async (
 
   // -- Initialisation
   const session_id = randomUUID();
-  let repl: REPL.NodeRepl | null = null;
 
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
@@ -158,17 +156,6 @@ export default async (
       console.log("Installing assets for", x.name);
       app.use(`/assets/${token}`, express.static(assets));
     }
-  }
-
-  if (target.tag === Package.TargetTag.NODE) {
-    repl = await REPL.NodeRepl.bootstrap(
-      root,
-      target,
-      capabilities,
-      randomUUID(),
-      session_id,
-      pkg_tokens
-    );
   }
 
   // -- Starting servers
