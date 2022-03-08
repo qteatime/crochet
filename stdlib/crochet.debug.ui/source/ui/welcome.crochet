@@ -1,16 +1,57 @@
 % crochet
 
 open crochet.ui.agata;
+open crochet.concurrency;
 
 type welcome-panel(vm is playground-vm);
+local type ctx(mode is observable-cell<welcome-panel-mode>, text is observable-cell<text>);
+
+local enum mode = view, edit;
 
 implement to-widget for welcome-panel;
 command welcome-panel as widget do
+  let Mode = #observable-cell with-value: #mode view;
+  let Readme = #observable-cell with-value: self.vm readme;
+  let Ctx = new ctx(mode -> Mode, text -> Readme);
+
   #widget container: [
-    #widget text: self.vm readme
+    #widget given: Mode
+      | when: (_ === #mode view) use: (self render-view: Ctx)
+      | when: (_ === #mode edit) use: (self render-edit: Ctx)
   ]
   | with-padding: { P in P all: (2 as rem) }
   | with-font: agata-theme-fonts monospace
   | with-box-overflow: #overflow-style auto
+  | fill-container-vertically
+end
+
+command welcome-panel render-view: Ctx do
+  #widget flex-column: [
+    #widget flex-row-reverse: [
+      #widget icon-button: "pen"
+        | on-click: { _ in Ctx.mode <- #mode edit }
+    ],
+
+    Ctx.text
+  ]
+end
+
+command welcome-panel render-edit: Ctx do
+  let Code = #observable-cell with-value: Ctx.text value;
+
+  #widget flex-column: [
+    #widget flex-row-reverse: [
+      #widget icon-button: "check"
+        | on-click: { _ in
+            Ctx.text <- Code value;
+            Ctx.mode <- #mode view;
+          }
+    ],
+
+    #flex-child fluid: (
+      #widget code-editor
+        | value: Code
+    )
+  ]
   | fill-container-vertically
 end
