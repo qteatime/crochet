@@ -46,6 +46,3 @@ command agata navigate: (Page has agata-page) bindings: (Bindings is record) =
 command agata navigate: (Page has agata-page) =
   self navigate: Page bindings: [->];
 
-command agata reference: (Name is static-text) do
-  new reference(Name);
-end

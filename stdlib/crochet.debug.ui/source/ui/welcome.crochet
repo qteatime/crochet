@@ -37,21 +37,24 @@ command welcome-panel render-view: Ctx do
 end
 
 command welcome-panel render-edit: Ctx do
-  let Code = #observable-cell with-value: Ctx.text value;
+  let Editor = #reference with-name: "readme-editor";
 
   #widget flex-column: [
     #widget flex-row-reverse: [
       #widget icon-button: "check"
         | on-click: { _ in
-            self.vm update-readme: Code value;
-            Ctx.text <- Code value;
+            let Code = Editor materialise value;
+            self.vm update-readme: Code;
+            Ctx.text <- Code;
             Ctx.mode <- #mode view;
           }
     ],
 
     #flex-child fluid: (
       #widget code-editor
-        | value: Code
+        | mode: "plain-text"
+        | value: Ctx.text
+        | with-reference: Editor
     )
   ]
   | fill-container-vertically

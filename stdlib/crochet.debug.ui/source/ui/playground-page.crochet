@@ -13,6 +13,7 @@ command widget-playground-page as widget do
   let New-entries = #event-stream empty;
   let Error = #observable-cell with-value: nothing;
   let Code = #observable-cell with-value: "";
+  let Editor = #reference with-name: "snippet-editor";
 
   #widget container: [
     self.page.entries value map: (self render-entry: _),
@@ -30,8 +31,16 @@ command widget-playground-page as widget do
           | auto-resize: true
           | value: Code
           | key-map: (#map from: [
-              "Ctrl-Enter" -> { _ in self run-code: Code entries: New-entries error: Error }
+              "Ctrl-Enter" -> { _ in 
+                let Value = Editor materialise value;
+                let Result = self run-code: Value entries: New-entries error: Error;
+                condition
+                  when Result is ok => Code <- "";
+                  otherwise => nothing;
+                end
+              }
             ])
+          | with-reference: Editor
       ),
       #card-child extra: (Error map: (self render-error: _))
     ]
@@ -46,12 +55,10 @@ command widget-playground-page as widget do
   | fill-container-vertically;
 end
 
-command widget-playground-page run-code: Code entries: New-entries error: Error do
-  let To-eval = Code value;
+command widget-playground-page run-code: To-eval entries: New-entries error: Error do
   let Result = self.page execute: #playground-language crochet code: To-eval;
   condition
     when Result is ok do
-      Code <- "";
       Error <- nothing;
       let Entry = new playground-entry-code(
         #playground-language crochet,
@@ -65,6 +72,7 @@ command widget-playground-page run-code: Code entries: New-entries error: Error 
       Error <- Result reason;
     end
   end
+  Result;
 end
 
 command widget-playground-page render-error: nothing =
