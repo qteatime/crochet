@@ -620,10 +620,6 @@ export default (ffi: ForeignInterface) => {
               h("div", { class: "value-lens-typed-type-name" }, [
                 data["type-name"],
               ]),
-              " in ",
-              h("div", { class: "value-lens-typed-type-package" }, [
-                data["package-name"],
-              ]),
             ]),
             h("div", { class: "value-lens-typed-value" }, [
               render(data.content, compact, "typed"),
