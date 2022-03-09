@@ -1,0 +1,30 @@
+% crochet
+
+command marquesa example do
+  marquesa parse: <<% marquesa
+
+The `Random` package provides basic support for **predictable**
+pseudo-random number generation, as needed by video games and
+stochastic model checking.
+
+# Predictable randomness
+
+The \[type:random\] type provides the entry-point for predictable
+random number generation. All random number generators spawned
+from this type follow the \[trait:predictable-rng\] trait, but
+the only concrete implementation is currently on the \[type:xor-shift\]
+type.
+
+----
+
+- this is a list;
+
+- with another element;
+
+- and yet another;
+
+> And this is a quotation
+> It goes
+> And goes
+>>;
+end

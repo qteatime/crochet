@@ -1,0 +1,15 @@
+{
+  "name": "crochet.language.marquesa",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/grammar.lingua",
+    "source/main.crochet",
+    "source/debug.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.text.parsing.lingua"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

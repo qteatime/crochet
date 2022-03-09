@@ -1,0 +1,144 @@
+type program(blocks: block[])
+
+type block =
+  | heading(pos: interval, level: text[], title: text)
+  | list(pos: interval, items: list_item[])
+  | quote(pos: interval, lines: line[])
+  | divider(pos: interval)
+  | paragraph(pos: interval, lines: line[])
+
+type list_item(pos: interval, words: line[])
+
+type word =
+  | bold(pos: interval, words: word[])
+  | italic(pos: interval, words: word[])
+  | code(pos: interval, text: text)
+  | link(pos: interval, member: names, link: text)
+  | text(pos: interval, text: text)
+
+type line(words: word[])
+type names(members: name[])
+type name(pos: interval, name: text)
+
+grammar marquesa : program {
+  program =
+    | header xs:blocks space* end  -> program(xs)
+
+  token header =
+    | "%" hs* "marquesa" nl
+
+  blocks =
+    | nonemptyListOf<skip_blank<block>, break>
+
+  block =
+    | heading
+    | divider
+    | list
+    | quote
+    | paragraph
+
+  heading =
+    | l:"#"+ hs? t:run_line                 -> block.heading(meta, l, t)
+  
+  list =
+    | xs:nonemptyListOf<list_item, maybe_break>  -> block.list(meta, xs)
+
+  list_item =
+    | "-" hs? t:run_paragraph               -> list_item(meta, t)
+
+  quote =
+    | q:nonemptyListOf<quote_line, nl>      -> block.quote(meta, q)
+  
+  quote_line =
+    | ">" hs? xs:word+                      -> line(xs)
+
+  divider =
+    | "---" "-"* hs*                        -> block.divider(meta)
+
+  paragraph =
+    | xs:run_paragraph                      -> block.paragraph(meta, xs)
+
+  run_paragraph =
+    | ~blank xs:word+ nl r:run_paragraph -> [line(xs), ...r]
+    | ~blank xs:word+                    -> [line(xs)]
+
+  word =
+    | inline
+    | w:non_special_word          -> word.text(meta, w)
+
+  inline =
+    | bold
+    | italic
+    | code
+    | link
+
+  bold =
+    | "**" xs:word+ "**"        -> word.bold(meta, xs)
+
+  italic =
+    | "_" xs:word+ "_"          -> word.italic(meta, xs)
+
+  code =
+    | "`" t:code_text "`"       -> word.code(meta, t)
+
+  token code_text =
+    | code_text_char+
+
+  token code_text_char =
+    | "\\`"
+    | (~"`" any)
+
+  link =
+    | "[" m:member ":" t:link_text "]"  -> word.link(meta, m, t)
+
+  token link_text =
+    | link_text_char+
+
+  token link_text_char =
+    | "\\]"
+    | (~"]" any)
+
+  member =
+    | xs:nonemptyListOf<name, ".">  -> names(xs)
+
+  name =
+    | n:name_tk                     -> name(meta, n)
+
+  token name_tk =
+    | letter (letter | digit)+
+
+  token non_special_word =
+    | non_special_char+
+
+  token non_special_char =
+    | "\\" special
+    | (~(special | nl) any)
+
+  token hspaces =
+    | hs+
+
+  token special =
+    | "*" | "_" | "`" | "[" | "@"
+
+  // -- Lexemes
+  token blank =
+    | hs* nl
+
+  skip_blank<x> =
+    | blank* m:x -> m
+
+  token hs =
+    | " " | "\t"
+
+  token nl =
+    | "\n" | "\r\n" | "\r"
+
+  token run_line =
+    | (~nl any)+
+
+  token break =
+    | nl hs* nl
+
+  token maybe_break =
+    | nl (hs* nl)?
+}

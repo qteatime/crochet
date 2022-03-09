@@ -1,0 +1,105 @@
+% crochet
+
+type marquesa-code-perspective is perspective;
+alias type marquesa-code-perspective as code;
+
+command code name = "Code structure";
+
+command debug-representation for: (X is program) perspective: (P is code) =
+  #document flex-column: (X.blocks map: (self for: _ perspective: P));
+
+command debug-representation for: (X is block--heading) perspective: (P is code) =
+  #document flow: [
+    #document code: (X.level as interpolation),
+    #document plain-text: " ",
+    #document plain-text: X.title
+  ]
+  | format-text
+    | font: { F in F weight: "bold" }
+  | typed: #block--heading;
+
+command debug-representation for: (X is block--list) perspective: (P is code) =
+  #document flex-column: (X.items map: (self for: _ perspective: P))
+    | box
+      | borders: { B in B all: (#doc-border width: 1 colour: "#5f5f5f" style: "solid") }
+    | typed: #block--list;
+
+command debug-representation for: (X is list-item) perspective: (P is code) =
+  #document flow: [
+    #document code: "- ",
+    #document flex-column: (X.words map: (self for: _ perspective: P))
+  ]
+  | typed: #list-item;
+
+command debug-representation for: (X is block--quote) perspective: (P is code) =
+  #document flex-column: (X.lines map: { L in #document flow: [
+                                                #document code: "> ",
+                                                self for: L perspective: P 
+                                              ] })
+    | box
+      | borders: { B in B all: (#doc-border width: 1 colour: "#5f5f5f" style: "solid") }
+    | typed: #block--quote;
+
+command debug-representation for: (X is block--divider) perspective: (P is code) =
+  #document plain-text: "---"
+    | typed: #block--divider;
+
+command debug-representation for: (X is block--paragraph) perspective: (P is code) =
+  #document flex-column: (X.lines map: (self for: _ perspective: P))
+    | box
+      | borders: { B in B all: (#doc-border width: 1 colour: "#5f5f5f" style: "solid") }
+    | typed: #block--paragraph;
+
+command debug-representation for: (X is line) perspective: (P is code) =
+  #document flow: (X.words map: (self for: _ perspective: P))
+    | typed: #line;
+
+command debug-representation for: (X is word--bold) perspective: (P is code) =
+  #document flow: [
+    #document code: "**",
+    #document flow: (X.words map: (self for: _ perspective: P))
+      | format-text
+        | font: { F in F weight: "bold" },
+    #document code: "**"
+  ]
+  | typed: #word--bold;
+
+command debug-representation for: (X is word--italic) perspective: (P is code) =
+  #document flow: [
+    #document code: "_",
+    #document flow: (X.words map: (self for: _ perspective: P))
+      | format-text
+        | font: { F in F style: "italic" },
+    #document code: "_"
+  ]
+  | typed: #word--italic;
+
+command debug-representation for: (X is word--code) perspective: (P is code) =
+  #document flow: [
+    #document code: "`"
+      | format-text
+        | font: { F in F weight: "bold" },
+    #document code: X.text,
+    #document code: "`"
+      | format-text
+        | font: { F in F weight: "bold" }
+  ]
+  | typed: #word--code;
+
+command debug-representation for: (X is word--link) perspective: (P is code) =
+  #document flow: [
+    #document code: "\[",
+    #document crochet-text: X.link,
+    #document code: "\]"
+  ]
+  | typed: #word--link;
+
+command debug-representation for: (X is word--text) perspective: (P is code) =
+  #document crochet-text: X.text;
+
+command debug-representation for: (X is names) perspective: (P is code) =
+  #document flow: (X.members map: (self for: _ perspective: P))
+    | typed: #names;
+
+command debug-representation for: (X is name) perspective: (P is code) =
+  #document code: X.name;
