@@ -178,7 +178,7 @@ const visitor = {
     TypeVariant_alt0: (meta_2, n_2, _1, p_2, _3_2) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.Variant(0, n_2, p_2)),
     TypeField_alt0: (meta_3, n_3, _1_1, t) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.Field(0, n_3, t)),
     TypeApp_alt0: (meta_4, t_1, _1_2) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.TypeApp(3, t_1)),
-    TypeApp_alt1: (meta_5, t_2, _1_3) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.TypeApp(4, t_2)),
+    TypeApp1_alt0: (meta_5, t_2, _1_3) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.TypeApp(4, t_2)),
     TypeApp2_alt0: (meta_6, t_3, _1_4, ps, _3_3) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.TypeApp(1, t_3, ps)),
     TypeApp3_alt0: (meta_7, t_4, _1_5, n_4) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.TypeApp(2, t_4, n_4)),
     TypeApp4_alt0: (meta_8, n_5) => (new _Ast_js__WEBPACK_IMPORTED_MODULE_3__.TypeApp(0, n_5)),
@@ -222,7 +222,7 @@ const visitor = {
     oneCharTerminal_alt0: (meta_46, t_20) => parseString(t_20),
 };
 
-const primParser = (0,_source_generated_fohm_runtime_js__WEBPACK_IMPORTED_MODULE_4__.makeParser)("\n    Linguist {\n      TypeDecl =\n        | type_ Name Formals \"(\" ListOf\u003cTypeField, \",\"\u003e \")\" -- alt0\n        | type_ Name Formals \"=\" \"|\"? NonemptyListOf\u003cTypeVariant, \"|\"\u003e -- alt1\n              \n      \n      TypeVariant =\n        | Name \"(\" ListOf\u003cTypeField, \",\"\u003e \")\" -- alt0\n              \n      \n      TypeField =\n        | Name \":\" TypeApp -- alt0\n              \n      \n      TypeApp =\n        | TypeApp2 \"[]\" -- alt0\n        | TypeApp2 \"?\" -- alt1\n        | TypeApp2 -- alt2\n              \n      \n      TypeApp2 =\n        | TypeApp3 \"\u003c\" NonemptyListOf\u003cTypeApp, \",\"\u003e \"\u003e\" -- alt0\n        | TypeApp3 -- alt1\n              \n      \n      TypeApp3 =\n        | TypeApp3 \".\" Name -- alt0\n        | TypeApp4 -- alt1\n              \n      \n      TypeApp4 =\n        | Name -- alt0\n        | \"(\" TypeApp \")\" -- alt1\n              \n      \n      Grammar =\n        | TypeDecl* grammar_ Name \":\" TypeApp \"{\" Rule* \"}\" -- alt0\n              \n      \n      Rule =\n        | token_ Rule -- alt0\n        | ident Formals ruleDescr? \"=\" RuleBody -- alt1\n        | ident Formals \":=\" RuleBody -- alt2\n        | ident Formals? \"+=\" RuleBody -- alt3\n              \n      \n      RuleBody =\n        | \"|\"? NonemptyListOf\u003cTopLevelTerm, \"|\"\u003e -- alt0\n              \n      \n      TopLevelTerm =\n        | Binder* \"-\u003e\" Action -- alt0\n        | Binder* -- alt1\n              \n      \n      Binder =\n        | Name \":\" Iter -- alt0\n        | Iter -- alt1\n              \n      \n      Action =\n        | ActionProject \"(\" ListOf\u003cAction, \",\"\u003e \")\" -- alt0\n        | ActionProject -- alt1\n              \n      \n      ActionProject =\n        | ActionProject \".\" Name -- alt0\n        | ActionPrimary -- alt1\n              \n      \n      ActionPrimary =\n        | meta_ -- alt0\n        | Name -- alt1\n        | null_ -- alt2\n        | ActionList -- alt3\n        | \"(\" Action \")\" -- alt4\n              \n      \n      ActionList =\n        | \"[\" NonemptyListOf\u003cAction, \",\"\u003e \",\" \"...\" Action \"]\" -- alt0\n        | \"[\" ListOf\u003cAction, \",\"\u003e \"]\" -- alt1\n              \n      \n      Formals =\n        | \"\u003c\" ListOf\u003cident, \",\"\u003e \"\u003e\" -- alt0\n        |  -- alt1\n              \n      \n      Params =\n        | \"\u003c\" ListOf\u003cSeq, \",\"\u003e \"\u003e\" -- alt0\n        |  -- alt1\n              \n      \n      Alt =\n        | NonemptyListOf\u003cSeq, \"|\"\u003e -- alt0\n              \n      \n      Seq =\n        | Iter* -- alt0\n              \n      \n      Iter =\n        | Pred \"*\" -- alt0\n        | Pred \"+\" -- alt1\n        | Pred \"?\" -- alt2\n        | Pred -- alt3\n              \n      \n      Pred =\n        | \"~\" Lex -- alt0\n        | \"\u0026\" Lex -- alt1\n        | Lex -- alt2\n              \n      \n      Lex =\n        | \"#\" Base -- alt0\n        | Base -- alt1\n              \n      \n      Base =\n        | ~reserved ident Params ~(ruleDescr? \"=\" | \":=\" | \"+=\") -- alt0\n        | oneCharTerminal \"..\" oneCharTerminal -- alt1\n        | terminal -- alt2\n        | \"(\" Alt \")\" -- alt3\n              \n      \n      ruleDescr (a,r,u,l,e,d,e,s,c,r,i,p,t,i,o,n) =\n        | \"(\" ruleDescrText \")\" -- alt0\n              \n      \n      ruleDescrText =\n        | (~\")\" any)* -- alt0\n              \n      \n      name (a,n,a,m,e) =\n        | nameFirst nameRest* -- alt0\n              \n      \n      nameFirst =\n        | \"_\" -- alt0\n        | letter -- alt1\n              \n      \n      nameRest =\n        | \"_\" -- alt0\n        | alnum -- alt1\n              \n      \n      ident (a,n,i,d,e,n,t,i,f,i,e,r) =\n        | name -- alt0\n              \n      \n      terminal =\n        | t_terminal -- alt0\n              \n      \n      t_terminal =\n        | \"\\\"\" terminalChar* \"\\\"\" -- alt0\n              \n      \n      oneCharTerminal =\n        | t_oneCharTerminal -- alt0\n              \n      \n      t_oneCharTerminal =\n        | \"\\\"\" terminalChar \"\\\"\" -- alt0\n              \n      \n      terminalChar =\n        | escapeChar -- alt0\n        | ~\"\\\\\" ~\"\\\"\" ~\"\\n\" any -- alt1\n              \n      \n      escapeChar (a,n,e,s,c,a,p,e,s,e,q,u,e,n,c,e) =\n        | \"\\\\\\\\\" -- alt0\n        | \"\\\\\\\"\" -- alt1\n        | \"\\\\b\" -- alt2\n        | \"\\\\n\" -- alt3\n        | \"\\\\r\" -- alt4\n        | \"\\\\t\" -- alt5\n        | \"\\\\u\" hexDigit hexDigit hexDigit hexDigit -- alt6\n        | \"\\\\x\" hexDigit hexDigit -- alt7\n              \n      \n      space +=\n        | comment -- alt0\n              \n      \n      comment =\n        | \"//\" (~\"\\n\" any)* \"\\n\" -- alt0\n        | \"/*\" (~\"*/\" any)* \"*/\" -- alt1\n              \n      \n      tokens =\n        | token* -- alt0\n              \n      \n      token =\n        | comment -- alt0\n        | ident -- alt1\n        | operator -- alt2\n        | punctuation -- alt3\n        | terminal -- alt4\n        | any -- alt5\n              \n      \n      operator =\n        | \"\u003c:\" -- alt0\n        | \"=\" -- alt1\n        | \":=\" -- alt2\n        | \"+=\" -- alt3\n        | \"*\" -- alt4\n        | \"+\" -- alt5\n        | \"?\" -- alt6\n        | \"~\" -- alt7\n        | \"\u0026\" -- alt8\n              \n      \n      punctuation =\n        | \"\u003c\" -- alt0\n        | \"\u003e\" -- alt1\n        | \",\" -- alt2\n        | \"--\" -- alt3\n              \n      \n      kw\u003ck\u003e =\n        | k ~nameRest -- alt0\n              \n      \n      type_ =\n        | kw\u003c\"type\"\u003e -- alt0\n              \n      \n      grammar_ =\n        | kw\u003c\"grammar\"\u003e -- alt0\n              \n      \n      meta_ =\n        | kw\u003c\"meta\"\u003e -- alt0\n              \n      \n      null_ =\n        | kw\u003c\"null\"\u003e -- alt0\n              \n      \n      token_ =\n        | kw\u003c\"token\"\u003e -- alt0\n              \n      \n      reserved =\n        | type_ -- alt0\n        | grammar_ -- alt1\n        | meta_ -- alt2\n        | null_ -- alt3\n        | token_ -- alt4\n              \n      \n      Name =\n        | ~reserved name -- alt0\n              \n    }\n      \n    ", visitor);
+const primParser = (0,_source_generated_fohm_runtime_js__WEBPACK_IMPORTED_MODULE_4__.makeParser)("\n    Lingua {\n      TypeDecl =\n        | type_ Name Formals \"(\" ListOf\u003cTypeField, \",\"\u003e \")\" -- alt0\n        | type_ Name Formals \"=\" \"|\"? NonemptyListOf\u003cTypeVariant, \"|\"\u003e -- alt1\n              \n      \n      TypeVariant =\n        | Name \"(\" ListOf\u003cTypeField, \",\"\u003e \")\" -- alt0\n              \n      \n      TypeField =\n        | Name \":\" TypeApp -- alt0\n              \n      \n      TypeApp =\n        | TypeApp \"[]\" -- alt0\n        | TypeApp1 -- alt1\n              \n      \n      TypeApp1 =\n        | TypeApp2 \"?\" -- alt0\n        | TypeApp2 -- alt1\n              \n      \n      TypeApp2 =\n        | TypeApp3 \"\u003c\" NonemptyListOf\u003cTypeApp, \",\"\u003e \"\u003e\" -- alt0\n        | TypeApp3 -- alt1\n              \n      \n      TypeApp3 =\n        | TypeApp3 \".\" Name -- alt0\n        | TypeApp4 -- alt1\n              \n      \n      TypeApp4 =\n        | Name -- alt0\n        | \"(\" TypeApp \")\" -- alt1\n              \n      \n      Grammar =\n        | TypeDecl* grammar_ Name \":\" TypeApp \"{\" Rule* \"}\" -- alt0\n              \n      \n      Rule =\n        | token_ Rule -- alt0\n        | ident Formals ruleDescr? \"=\" RuleBody -- alt1\n        | ident Formals \":=\" RuleBody -- alt2\n        | ident Formals? \"+=\" RuleBody -- alt3\n              \n      \n      RuleBody =\n        | \"|\"? NonemptyListOf\u003cTopLevelTerm, \"|\"\u003e -- alt0\n              \n      \n      TopLevelTerm =\n        | Binder* \"-\u003e\" Action -- alt0\n        | Binder* -- alt1\n              \n      \n      Binder =\n        | Name \":\" Iter -- alt0\n        | Iter -- alt1\n              \n      \n      Action =\n        | ActionProject \"(\" ListOf\u003cAction, \",\"\u003e \")\" -- alt0\n        | ActionProject -- alt1\n              \n      \n      ActionProject =\n        | ActionProject \".\" Name -- alt0\n        | ActionPrimary -- alt1\n              \n      \n      ActionPrimary =\n        | meta_ -- alt0\n        | Name -- alt1\n        | null_ -- alt2\n        | ActionList -- alt3\n        | \"(\" Action \")\" -- alt4\n              \n      \n      ActionList =\n        | \"[\" NonemptyListOf\u003cAction, \",\"\u003e \",\" \"...\" Action \"]\" -- alt0\n        | \"[\" ListOf\u003cAction, \",\"\u003e \"]\" -- alt1\n              \n      \n      Formals =\n        | \"\u003c\" ListOf\u003cident, \",\"\u003e \"\u003e\" -- alt0\n        |  -- alt1\n              \n      \n      Params =\n        | \"\u003c\" ListOf\u003cSeq, \",\"\u003e \"\u003e\" -- alt0\n        |  -- alt1\n              \n      \n      Alt =\n        | NonemptyListOf\u003cSeq, \"|\"\u003e -- alt0\n              \n      \n      Seq =\n        | Iter* -- alt0\n              \n      \n      Iter =\n        | Pred \"*\" -- alt0\n        | Pred \"+\" -- alt1\n        | Pred \"?\" -- alt2\n        | Pred -- alt3\n              \n      \n      Pred =\n        | \"~\" Lex -- alt0\n        | \"\u0026\" Lex -- alt1\n        | Lex -- alt2\n              \n      \n      Lex =\n        | \"#\" Base -- alt0\n        | Base -- alt1\n              \n      \n      Base =\n        | ~reserved ident Params ~(ruleDescr? \"=\" | \":=\" | \"+=\") -- alt0\n        | oneCharTerminal \"..\" oneCharTerminal -- alt1\n        | terminal -- alt2\n        | \"(\" Alt \")\" -- alt3\n              \n      \n      ruleDescr (a,r,u,l,e,d,e,s,c,r,i,p,t,i,o,n) =\n        | \"(\" ruleDescrText \")\" -- alt0\n              \n      \n      ruleDescrText =\n        | (~\")\" any)* -- alt0\n              \n      \n      name (a,n,a,m,e) =\n        | nameFirst nameRest* -- alt0\n              \n      \n      nameFirst =\n        | \"_\" -- alt0\n        | letter -- alt1\n              \n      \n      nameRest =\n        | \"_\" -- alt0\n        | alnum -- alt1\n              \n      \n      ident (a,n,i,d,e,n,t,i,f,i,e,r) =\n        | name -- alt0\n              \n      \n      terminal =\n        | t_terminal -- alt0\n              \n      \n      t_terminal =\n        | \"\\\"\" terminalChar* \"\\\"\" -- alt0\n              \n      \n      oneCharTerminal =\n        | t_oneCharTerminal -- alt0\n              \n      \n      t_oneCharTerminal =\n        | \"\\\"\" terminalChar \"\\\"\" -- alt0\n              \n      \n      terminalChar =\n        | escapeChar -- alt0\n        | ~\"\\\\\" ~\"\\\"\" ~\"\\n\" any -- alt1\n              \n      \n      escapeChar (a,n,e,s,c,a,p,e,s,e,q,u,e,n,c,e) =\n        | \"\\\\\\\\\" -- alt0\n        | \"\\\\\\\"\" -- alt1\n        | \"\\\\b\" -- alt2\n        | \"\\\\n\" -- alt3\n        | \"\\\\r\" -- alt4\n        | \"\\\\t\" -- alt5\n        | \"\\\\u\" hexDigit hexDigit hexDigit hexDigit -- alt6\n        | \"\\\\x\" hexDigit hexDigit -- alt7\n              \n      \n      space +=\n        | comment -- alt0\n              \n      \n      comment =\n        | \"//\" (~\"\\n\" any)* \"\\n\" -- alt0\n        | \"/*\" (~\"*/\" any)* \"*/\" -- alt1\n              \n      \n      tokens =\n        | token* -- alt0\n              \n      \n      token =\n        | comment -- alt0\n        | ident -- alt1\n        | operator -- alt2\n        | punctuation -- alt3\n        | terminal -- alt4\n        | any -- alt5\n              \n      \n      operator =\n        | \"\u003c:\" -- alt0\n        | \"=\" -- alt1\n        | \":=\" -- alt2\n        | \"+=\" -- alt3\n        | \"*\" -- alt4\n        | \"+\" -- alt5\n        | \"?\" -- alt6\n        | \"~\" -- alt7\n        | \"\u0026\" -- alt8\n              \n      \n      punctuation =\n        | \"\u003c\" -- alt0\n        | \"\u003e\" -- alt1\n        | \",\" -- alt2\n        | \"--\" -- alt3\n              \n      \n      kw\u003ck\u003e =\n        | k ~nameRest -- alt0\n              \n      \n      type_ =\n        | kw\u003c\"type\"\u003e -- alt0\n              \n      \n      grammar_ =\n        | kw\u003c\"grammar\"\u003e -- alt0\n              \n      \n      meta_ =\n        | kw\u003c\"meta\"\u003e -- alt0\n              \n      \n      null_ =\n        | kw\u003c\"null\"\u003e -- alt0\n              \n      \n      token_ =\n        | kw\u003c\"token\"\u003e -- alt0\n              \n      \n      reserved =\n        | type_ -- alt0\n        | grammar_ -- alt1\n        | meta_ -- alt2\n        | null_ -- alt3\n        | token_ -- alt4\n              \n      \n      Name =\n        | ~reserved name -- alt0\n              \n    }\n      \n    ", visitor);
 
 function parse(rule, source, options) {
     const patternInput = primParser(source, rule, options);
@@ -12611,10 +12611,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(21);
 /* harmony import */ var _fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9);
 /* harmony import */ var _fable_fable_library_3_1_5_Array_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(24);
-/* harmony import */ var _fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(28);
-/* harmony import */ var _fable_fable_library_3_1_5_Util_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7);
-/* harmony import */ var _fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(29);
-/* harmony import */ var _OhmCodegen_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(30);
+/* harmony import */ var _OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(28);
+/* harmony import */ var _fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(29);
+/* harmony import */ var _fable_fable_library_3_1_5_Util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(7);
+/* harmony import */ var _fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(30);
 
 
 
@@ -12723,7 +12723,7 @@ function genTypePatterns(n, patTypes, vs) {
 }
 
 function genVariantTags(vs) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" | ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((_arg1) => (JSON.stringify(_arg1.fields[0])), vs));
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" | ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((_arg1) => (0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.toString)(_arg1.fields[0]), vs));
 }
 
 function genThisProjection(_arg2) {
@@ -12760,8 +12760,8 @@ function getVariantFullname(p, n) {
 
 function genInitAsserts(ps, fs) {
     let ps_1;
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)("; ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((ps_1 = (0,_fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_3__.ofSeq)(ps, {
-        Compare: (x, y) => (0,_fable_fable_library_3_1_5_Util_js__WEBPACK_IMPORTED_MODULE_4__.comparePrimitives)(x, y),
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)("; ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((ps_1 = (0,_fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_4__.ofSeq)(ps, {
+        Compare: (x, y) => (0,_fable_fable_library_3_1_5_Util_js__WEBPACK_IMPORTED_MODULE_5__.comparePrimitives)(x, y),
     }), (arg10$0040) => genInitAssert(ps_1, arg10$0040)), fs));
 }
 
@@ -12772,7 +12772,7 @@ function genInitAssert(ps, _arg5) {
 function genAssert(ps, x, t) {
     let pattern_matching_result;
     if (t.tag === 0) {
-        if ((0,_fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_3__.contains)(t.fields[0], ps)) {
+        if ((0,_fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_4__.contains)(t.fields[0], ps)) {
             pattern_matching_result = 0;
         }
         else {
@@ -12870,7 +12870,7 @@ function genVisitorBinder(n, b) {
     }
     switch (pattern_matching_result) {
         case 0: {
-            return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_5__.empty)();
+            return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_6__.empty)();
         }
         case 1: {
             let pattern_matching_result_1;
@@ -12887,14 +12887,14 @@ function genVisitorBinder(n, b) {
             }
             switch (pattern_matching_result_1) {
                 case 0: {
-                    return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_5__.empty)();
+                    return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_6__.empty)();
                 }
                 case 1: {
                     if (b.tag === 1) {
-                        return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_5__.singleton)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("_%P(): Ohm.Node", [n])));
+                        return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_6__.singleton)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("_%P(): Ohm.Node", [n])));
                     }
                     else {
-                        return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_5__.singleton)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()$0: Ohm.Node", [b.fields[0]])));
+                        return (0,_fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_6__.singleton)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()$0: Ohm.Node", [b.fields[0]])));
                     }
                 }
             }
@@ -13018,8 +13018,8 @@ function generateAstVisitor(g) {
 const prelude = "\r\nconst inspect = Symbol.for(\u0027nodejs.util.inspect.custom\u0027);\r\n\r\ntype Result\u003cA\u003e =\r\n  { ok: true, value: A }\r\n| { ok: false, error: string };\r\n\r\nexport abstract class Node {}\r\n\r\nexport class Meta {\r\n  constructor(readonly interval: Ohm.Interval) {}\r\n\r\n  static has_instance(x: any) {\r\n    return x instanceof Meta;\r\n  }\r\n\r\n  get position() {\r\n    const { lineNum, colNum } = OhmUtil.getLineAndColumn(\r\n      (this.interval as any).sourceString,\r\n      this.interval.startIdx\r\n    );\r\n    return {\r\n      line: lineNum,\r\n      column: colNum,\r\n    };\r\n  }\r\n\r\n  get range() {\r\n    return {\r\n      start: this.interval.startIdx,\r\n      end: this.interval.endIdx,\r\n    };\r\n  }\r\n\r\n  get source_slice() {\r\n    return this.interval.contents;\r\n  }\r\n\r\n  get formatted_position_message() {\r\n    return this.interval.getLineAndColumnMessage();\r\n  }\r\n\r\n  [inspect]() {\r\n    return this.position;\r\n  }\r\n}\r\n\r\nfunction $meta(x: Ohm.Node): Meta {\r\n  return new Meta(x.source);\r\n}\r\n\r\ntype Typed =\r\n  ((_: any) =\u003e boolean)\r\n| { has_instance(x: any): boolean };\r\n\r\nfunction $check_type(f: Typed) {\r\n  return (x: any) =\u003e {\r\n    if (typeof (f as any).has_instance === \"function\") {\r\n      return (f as any).has_instance(x);\r\n    } else {\r\n      return (f as any)(x);\r\n    }\r\n  }\r\n}\r\n\r\nfunction $is_type(t: string) {\r\n  return (x: any) =\u003e {\r\n    return typeof x === t;\r\n  };\r\n}\r\n\r\nfunction $is_array(f: Typed) {\r\n  return (x: any) =\u003e {\r\n    return Array.isArray(x) \u0026\u0026 x.every($check_type(f));\r\n  };\r\n}\r\n\r\nfunction $is_maybe(f: Typed) {\r\n  return (x: any) =\u003e {\r\n    return x === null || $check_type(f)(x);\r\n  };\r\n}\r\n\r\nfunction $is_null(x: any) {\r\n  return x === null;\r\n}\r\n\r\nfunction $assert_type\u003cT\u003e(x: any, t: string, f: Typed): asserts x is T {\r\n  if (!$check_type(f)(x)) {\r\n    throw new TypeError(`Expected ${t}, but got ${$inspect(x)}`);\r\n  }\r\n}\r\n  ";
 
 function generate(g) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\r\n  // This file is generated from Linguist\r\n  import * as Ohm from \"ohm-js\";\r\n  const OhmUtil = require(\"ohm-js/src/util\");\r\n  import { inspect as $inspect } from \"util\";\r\n\r\n  %P()\r\n\r\n  // == Type definitions ==============================================\r\n  %P()\r\n\r\n  // == Grammar definition ============================================\r\n  export const grammar = Ohm.grammar(%P())\r\n\r\n  // == Parsing =======================================================\r\n  export function parse(source: string, rule: string): Result\u003c%P()\u003e {\r\n    const result = grammar.match(source, rule);\r\n    if (result.failed()) {\r\n      return { ok: false, error: result.message as string };\r\n    } else {\r\n      const ast = toAst(result);\r\n      %P()\r\n      return { ok: true, value: ast };\r\n    }\r\n  }\r\n\r\n  export const semantics = grammar.createSemantics();\r\n  export const toAstVisitor = (%P());\r\n  semantics.addOperation(\"toAST()\", toAstVisitor);\r\n\r\n  export function toAst(result: Ohm.MatchResult) {\r\n    return semantics(result).toAST();\r\n  }\r\n  ", [prelude, generateTypes(g.Types), JSON.stringify((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_6__.generateGrammar)(g)), topType(g), genAssert((0,_fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_3__.empty)({
-        Compare: (x, y) => (0,_fable_fable_library_3_1_5_Util_js__WEBPACK_IMPORTED_MODULE_4__.comparePrimitives)(x, y),
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\r\n  // This file is generated from Linguist\r\n  import * as Ohm from \"ohm-js\";\r\n  const OhmUtil = require(\"ohm-js/src/util\");\r\n  import { inspect as $inspect } from \"util\";\r\n\r\n  %P()\r\n\r\n  // == Type definitions ==============================================\r\n  %P()\r\n\r\n  // == Grammar definition ============================================\r\n  export const grammar = Ohm.grammar(%P())\r\n\r\n  // == Parsing =======================================================\r\n  export function parse(source: string, rule: string): Result\u003c%P()\u003e {\r\n    const result = grammar.match(source, rule);\r\n    if (result.failed()) {\r\n      return { ok: false, error: result.message as string };\r\n    } else {\r\n      const ast = toAst(result);\r\n      %P()\r\n      return { ok: true, value: ast };\r\n    }\r\n  }\r\n\r\n  export const semantics = grammar.createSemantics();\r\n  export const toAstVisitor = (%P());\r\n  semantics.addOperation(\"toAST()\", toAstVisitor);\r\n\r\n  export function toAst(result: Ohm.MatchResult) {\r\n    return semantics(result).toAST();\r\n  }\r\n  ", [prelude, generateTypes(g.Types), (0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.toString)((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.generateGrammar)(g)), topType(g), genAssert((0,_fable_fable_library_3_1_5_Set_js__WEBPACK_IMPORTED_MODULE_4__.empty)({
+        Compare: (x, y) => (0,_fable_fable_library_3_1_5_Util_js__WEBPACK_IMPORTED_MODULE_5__.comparePrimitives)(x, y),
     }), "ast", g.Top), generateAstVisitor(g)]));
 }
 
@@ -17112,6 +17112,148 @@ function HashSet__Remove_2B595(this$, k) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "enumerate": () => (/* binding */ enumerate),
+/* harmony export */   "toString": () => (/* binding */ toString),
+/* harmony export */   "genDesc": () => (/* binding */ genDesc),
+/* harmony export */   "genRuleParams": () => (/* binding */ genRuleParams),
+/* harmony export */   "genTerm": () => (/* binding */ genTerm),
+/* harmony export */   "genBinder": () => (/* binding */ genBinder),
+/* harmony export */   "genBody": () => (/* binding */ genBody),
+/* harmony export */   "genBodies": () => (/* binding */ genBodies),
+/* harmony export */   "generateRule": () => (/* binding */ generateRule),
+/* harmony export */   "generateRules": () => (/* binding */ generateRules),
+/* harmony export */   "generateGrammar": () => (/* binding */ generateGrammar)
+/* harmony export */ });
+/* harmony import */ var _fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(21);
+/* harmony import */ var _fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9);
+/* harmony import */ var _fable_fable_library_3_1_5_Option_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(19);
+
+
+
+
+function enumerate(xs) {
+    return (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.zip)((0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.rangeNumber)(1, 1, (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.length)(xs)), xs);
+}
+
+function toString(s) {
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.replace)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.replace)(JSON.stringify(s), "[", "\\x5b"), "]", "\\x5d");
+}
+
+function genDesc(desc) {
+    if (desc == null) {
+        return "";
+    }
+    else {
+        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("(%P())", [(0,_fable_fable_library_3_1_5_Option_js__WEBPACK_IMPORTED_MODULE_2__.value)(desc)]));
+    }
+}
+
+function genRuleParams(ps) {
+    if (ps.length === 0) {
+        return "";
+    }
+    else {
+        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\u003c%P()\u003e", [(0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(", ", ps)]));
+    }
+}
+
+function genTerm(t) {
+    switch (t.tag) {
+        case 1: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" | ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((t_2) => genTerm(t_2), t.fields[0]));
+        }
+        case 2: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()*", [genTerm(t.fields[0])]));
+        }
+        case 3: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()+", [genTerm(t.fields[0])]));
+        }
+        case 4: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()?", [genTerm(t.fields[0])]));
+        }
+        case 5: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("~%P()", [genTerm(t.fields[0])]));
+        }
+        case 6: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\u0026%P()", [genTerm(t.fields[0])]));
+        }
+        case 7: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("#%P()", [genTerm(t.fields[0])]));
+        }
+        case 8: {
+            const t_9 = t.fields[0];
+            const ps = t.fields[1];
+            if (ps.length === 0) {
+                return t_9;
+            }
+            else {
+                return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()\u003c%P()\u003e", [t_9, (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(", ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((t_10) => genTerm(t_10), ps))]));
+            }
+        }
+        case 9: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()..%P()", [toString(t.fields[0]), toString(t.fields[1])]));
+        }
+        case 10: {
+            return toString(t.fields[0]);
+        }
+        case 11: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("(%P())", [genTerm(t.fields[0])]));
+        }
+        default: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((t_1) => genTerm(t_1), t.fields[0]));
+        }
+    }
+}
+
+function genBinder(b) {
+    if (b.tag === 1) {
+        return genTerm(b.fields[0]);
+    }
+    else {
+        return genTerm(b.fields[1]);
+    }
+}
+
+function genBody(n, b) {
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()  -- alt%P()\n", [(0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((b_1) => genBinder(b_1), b.Terms)), n]));
+}
+
+function genBodies(b) {
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" | ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((tupledArg) => genBody(tupledArg[0], tupledArg[1]), enumerate(b)));
+}
+
+function generateRule(rule) {
+    switch (rule.tag) {
+        case 1: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()%P() := %P()", [rule.fields[1], genRuleParams(rule.fields[2]), genBodies(rule.fields[3])]));
+        }
+        case 2: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()%P() += %P()", [rule.fields[1], genRuleParams(rule.fields[2]), genBodies(rule.fields[3])]));
+        }
+        default: {
+            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()%P() %P() = %P()", [rule.fields[1], genRuleParams(rule.fields[2]), genDesc(rule.fields[3]), genBodies(rule.fields[4])]));
+        }
+    }
+}
+
+function generateRules(rules) {
+    return (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((rule) => generateRule(rule), rules);
+}
+
+function generateGrammar(g) {
+    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\r\n  %P() {\r\n    %P()\r\n  }\r\n  ", [g.Name, (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)("\n\n", generateRules(g.Rules))]));
+}
+
+//# sourceMappingURL=OhmCodegen.js.map
+
+
+/***/ }),
+/* 29 */
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "SetTreeLeaf$1": () => (/* binding */ SetTreeLeaf$1),
 /* harmony export */   "SetTreeLeaf$1$reflection": () => (/* binding */ SetTreeLeaf$1$reflection),
 /* harmony export */   "SetTreeLeaf$1_$ctor_2B595": () => (/* binding */ SetTreeLeaf$1_$ctor_2B595),
@@ -19175,7 +19317,7 @@ function isProperSupersetOf(s1, s2, comparer) {
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -20464,143 +20606,6 @@ function transpose(lists) {
 
 
 /***/ }),
-/* 30 */
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "enumerate": () => (/* binding */ enumerate),
-/* harmony export */   "genDesc": () => (/* binding */ genDesc),
-/* harmony export */   "genRuleParams": () => (/* binding */ genRuleParams),
-/* harmony export */   "genTerm": () => (/* binding */ genTerm),
-/* harmony export */   "genBinder": () => (/* binding */ genBinder),
-/* harmony export */   "genBody": () => (/* binding */ genBody),
-/* harmony export */   "genBodies": () => (/* binding */ genBodies),
-/* harmony export */   "generateRule": () => (/* binding */ generateRule),
-/* harmony export */   "generateRules": () => (/* binding */ generateRules),
-/* harmony export */   "generateGrammar": () => (/* binding */ generateGrammar)
-/* harmony export */ });
-/* harmony import */ var _fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(21);
-/* harmony import */ var _fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9);
-/* harmony import */ var _fable_fable_library_3_1_5_Option_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(19);
-
-
-
-
-function enumerate(xs) {
-    return (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.zip)((0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.rangeNumber)(1, 1, (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.length)(xs)), xs);
-}
-
-function genDesc(desc) {
-    if (desc == null) {
-        return "";
-    }
-    else {
-        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("(%P())", [(0,_fable_fable_library_3_1_5_Option_js__WEBPACK_IMPORTED_MODULE_2__.value)(desc)]));
-    }
-}
-
-function genRuleParams(ps) {
-    if (ps.length === 0) {
-        return "";
-    }
-    else {
-        return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\u003c%P()\u003e", [(0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(", ", ps)]));
-    }
-}
-
-function genTerm(t) {
-    switch (t.tag) {
-        case 1: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" | ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((t_2) => genTerm(t_2), t.fields[0]));
-        }
-        case 2: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()*", [genTerm(t.fields[0])]));
-        }
-        case 3: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()+", [genTerm(t.fields[0])]));
-        }
-        case 4: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()?", [genTerm(t.fields[0])]));
-        }
-        case 5: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("~%P()", [genTerm(t.fields[0])]));
-        }
-        case 6: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\u0026%P()", [genTerm(t.fields[0])]));
-        }
-        case 7: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("#%P()", [genTerm(t.fields[0])]));
-        }
-        case 8: {
-            const t_9 = t.fields[0];
-            const ps = t.fields[1];
-            if (ps.length === 0) {
-                return t_9;
-            }
-            else {
-                return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()\u003c%P()\u003e", [t_9, (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(", ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((t_10) => genTerm(t_10), ps))]));
-            }
-        }
-        case 9: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()..%P()", [JSON.stringify(t.fields[0]), JSON.stringify(t.fields[1])]));
-        }
-        case 10: {
-            return JSON.stringify(t.fields[0]);
-        }
-        case 11: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("(%P())", [genTerm(t.fields[0])]));
-        }
-        default: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((t_1) => genTerm(t_1), t.fields[0]));
-        }
-    }
-}
-
-function genBinder(b) {
-    if (b.tag === 1) {
-        return genTerm(b.fields[0]);
-    }
-    else {
-        return genTerm(b.fields[1]);
-    }
-}
-
-function genBody(n, b) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()  -- alt%P()\n", [(0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((b_1) => genBinder(b_1), b.Terms)), n]));
-}
-
-function genBodies(b) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)(" | ", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((tupledArg) => genBody(tupledArg[0], tupledArg[1]), enumerate(b)));
-}
-
-function generateRule(rule) {
-    switch (rule.tag) {
-        case 1: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()%P() := %P()", [rule.fields[1], genRuleParams(rule.fields[2]), genBodies(rule.fields[3])]));
-        }
-        case 2: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()%P() += %P()", [rule.fields[1], genRuleParams(rule.fields[2]), genBodies(rule.fields[3])]));
-        }
-        default: {
-            return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("%P()%P() %P() = %P()", [rule.fields[1], genRuleParams(rule.fields[2]), genDesc(rule.fields[3]), genBodies(rule.fields[4])]));
-        }
-    }
-}
-
-function generateRules(rules) {
-    return (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_0__.map)((rule) => generateRule(rule), rules);
-}
-
-function generateGrammar(g) {
-    return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.interpolate)("\r\n  %P() {\r\n    %P()\r\n  }\r\n  ", [g.Name, (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_1__.join)("\n\n", generateRules(g.Rules))]));
-}
-
-//# sourceMappingURL=OhmCodegen.js.map
-
-
-/***/ }),
 /* 31 */
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -20635,8 +20640,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9);
 /* harmony import */ var _fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(21);
-/* harmony import */ var _fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(29);
-/* harmony import */ var _OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(30);
+/* harmony import */ var _fable_fable_library_3_1_5_List_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(30);
+/* harmony import */ var _OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(28);
 /* harmony import */ var _fable_fable_library_3_1_5_Types_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6);
 /* harmony import */ var _fable_fable_library_3_1_5_Array_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(24);
 
@@ -20866,7 +20871,7 @@ function genVisitorEffect(n, expr) {
 }
 
 function genAltVisitor(tk, n, i, b) {
-    const name = JSON.stringify(((n + "_alt") + (0,_fable_fable_library_3_1_5_Types_js__WEBPACK_IMPORTED_MODULE_4__.toString)(i)));
+    const name = (0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.toString)((n + "_alt") + (0,_fable_fable_library_3_1_5_Types_js__WEBPACK_IMPORTED_MODULE_4__.toString)(i));
     if (tk) {
         return (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("  %P() -\u003e #lingua visitor-source,", [name]));
     }
@@ -20879,7 +20884,7 @@ function genAltVisitor(tk, n, i, b) {
 }
 
 function genRuleVisitor(tk, n, b) {
-    return ((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("  %P() -\u003e #lingua visitor-identity,", [JSON.stringify(n)])) + "\n") + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.join)("\n", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_1__.map)((tupledArg) => genAltVisitor(tk, n, tupledArg[0], tupledArg[1]), (0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.enumerate)(b)));
+    return ((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("  %P() -\u003e #lingua visitor-identity,", [(0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.toString)(n)])) + "\n") + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.join)("\n", (0,_fable_fable_library_3_1_5_Seq_js__WEBPACK_IMPORTED_MODULE_1__.map)((tupledArg) => genAltVisitor(tk, n, tupledArg[0], tupledArg[1]), (0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.enumerate)(b)));
 }
 
 function genVisitor(rule) {
@@ -20906,7 +20911,7 @@ function topRule(g) {
 }
 
 function generate(g) {
-    return "% crochet" + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("\r\n// This file is generated from Lingua\r\n\r\nopen crochet.text.parsing.lingua;\r\n\r\n// Type definitions\r\nlocal abstract ast-node is node;\r\n%P()\r\n\r\nsingleton %P();\r\n\r\n// Grammar definition\r\nlocal define grammar =\r\n  lazy (#lingua grammar: %P());\r\n\r\nlocal define to-ast =\r\n  lazy ((force grammar) semantics: [\r\n    %P()\r\n  ]);\r\n\r\ncommand %P() grammar = force grammar;\r\n\r\ncommand %P() to-ast = force to-ast;\r\n\r\ncommand %P() parse: (Input is text) -\u003e result\u003c%P(), string\u003e do\r\n  let Tree = self grammar parse: Input rule: %P();\r\n  Tree map: { X in self to-ast transform: X };\r\nend\r\n  ", [generateTypes(g.Types), typeName(g.Name), JSON.stringify((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.generateGrammar)(g)), generateVisitors(g), typeName(g.Name), typeName(g.Name), typeName(g.Name), genTypeApp(g.Top), topRule(g)]));
+    return "% crochet" + (0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.toText)((0,_fable_fable_library_3_1_5_String_js__WEBPACK_IMPORTED_MODULE_0__.interpolate)("\r\n// This file is generated from Lingua\r\n\r\nopen crochet.text.parsing.lingua;\r\n\r\n// Type definitions\r\nlocal abstract ast-node is node;\r\n%P()\r\n\r\nsingleton %P();\r\n\r\n// Grammar definition\r\nlocal define grammar =\r\n  lazy (#lingua grammar: %P());\r\n\r\nlocal define to-ast =\r\n  lazy ((force grammar) semantics: [\r\n    %P()\r\n  ]);\r\n\r\ncommand %P() grammar = force grammar;\r\n\r\ncommand %P() to-ast = force to-ast;\r\n\r\ncommand %P() parse: (Input is text) -\u003e result\u003c%P(), string\u003e do\r\n  let Tree = self grammar parse: Input rule: %P();\r\n  Tree map: { X in self to-ast transform: X };\r\nend\r\n  ", [generateTypes(g.Types), typeName(g.Name), (0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.toString)((0,_OhmCodegen_js__WEBPACK_IMPORTED_MODULE_3__.generateGrammar)(g)), generateVisitors(g), typeName(g.Name), typeName(g.Name), typeName(g.Name), genTypeApp(g.Top), topRule(g)]));
 }
 
 //# sourceMappingURL=CrochetCodegen.js.map
