@@ -143,6 +143,7 @@ export class CrochetForBrowser {
     read_package: async (name: string) => {
       const filename = this.package_url(name);
       const response = await fetch(filename);
+      throw_if_not_200(response, `package ${name}`);
       const data = await response.json();
       const pkg = Package.parse(data, filename);
       if (this.is_trusted(pkg)) {
@@ -153,6 +154,7 @@ export class CrochetForBrowser {
 
     read_file: async (file: string) => {
       const response = await fetch(file);
+      throw_if_not_200(response, `file ${file}`);
       return await response.text();
     },
 
@@ -161,6 +163,7 @@ export class CrochetForBrowser {
       pkg: Package.ResolvedPackage
     ) => {
       const response = await fetch(file.binary_image);
+      throw_if_not_200(response, `crochet binary ${file}`);
       const data = await response.arrayBuffer();
       const buffer = Buffer.from(data);
       return buffer;
@@ -171,6 +174,7 @@ export class CrochetForBrowser {
       pkg: Package.ResolvedPackage
     ) => {
       const response = await fetch(file.absolute_filename);
+      throw_if_not_200(response, `native module ${file}`);
       const source = await response.text();
       const exports = Object.create(null);
       const fn = new Function("exports", source);
@@ -204,4 +208,12 @@ export class CrochetForBrowser {
       this.test_report.publish(message);
     },
   };
+}
+
+function throw_if_not_200(response: Response, name: string) {
+  if (response.status === 404) {
+    throw new Error(`internal: resource not found: ${name}`);
+  } else if (response.status >= 400) {
+    throw new Error(`internal: failed to load resource: ${name}`);
+  }
 }

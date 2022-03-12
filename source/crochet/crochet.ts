@@ -402,7 +402,7 @@ export class BootedCrochet {
       const pkg = this.graph.get_package(pkg0.meta.name);
       return await this.crochet.fs.read_file(pkg.readme.absolute_filename);
     } catch (e) {
-      return "";
+      return "(no welcome documentation)";
     }
   }
 }
