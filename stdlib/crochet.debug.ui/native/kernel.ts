@@ -137,10 +137,16 @@ export default (ffi: ForeignInterface) => {
 
   abstract class BaseVM {
     abstract make_page(kernel: BaseKernel): Promise<BasePage>;
+    abstract readme(): Promise<string>;
+    abstract update_root_readme(code: string): Promise<void>;
   }
 
   class KernelVM extends BaseVM {
-    constructor(readonly id: string, readonly vm: CrochetForBrowser) {
+    constructor(
+      readonly kernel: BaseKernel,
+      readonly id: string,
+      readonly vm: CrochetForBrowser
+    ) {
       super();
     }
 
@@ -165,6 +171,15 @@ export default (ffi: ForeignInterface) => {
 
       return page;
     }
+
+    async readme() {
+      const root_pkg = this.vm.system.graph.root;
+      return await this.vm.system.readme(root_pkg.pkg);
+    }
+
+    async update_root_readme(code: string) {
+      await Playground.update_root_readme(this.kernel.session_id, code);
+    }
   }
 
   class FarKernelVM extends BaseVM {
@@ -177,6 +192,14 @@ export default (ffi: ForeignInterface) => {
       const page = new FarKernelPage(this.session_id, id);
       kernel.add_page(page.page_id, page);
       return page;
+    }
+
+    async readme() {
+      return await Playground.readme(this.session_id);
+    }
+
+    async update_root_readme(code: string): Promise<void> {
+      await Playground.update_root_readme(this.session_id, code);
     }
   }
 
@@ -234,6 +257,7 @@ export default (ffi: ForeignInterface) => {
       const universe = crypto.randomUUID();
       const session = crypto.randomUUID();
 
+      await Playground.initialise(this.session_id, true);
       const crochet = new Crochet.CrochetForBrowser(
         {
           universe: universe,
@@ -255,7 +279,7 @@ export default (ffi: ForeignInterface) => {
         return { ok: false, reason: result as string };
       }
 
-      const vm = new KernelVM(session, crochet);
+      const vm = new KernelVM(this, session, crochet);
       this.add_vm(session, vm);
 
       return { ok: true, value: vm };
@@ -267,7 +291,7 @@ export default (ffi: ForeignInterface) => {
       { ok: true; value: BaseVM } | { ok: false; reason: string }
     > {
       const id = crypto.randomUUID();
-      await Playground.initialise(this.session_id);
+      await Playground.initialise(this.session_id, false);
       const vm = new FarKernelVM(this.session_id, id);
       this.add_vm(id, vm);
       return { ok: true, value: vm };
@@ -381,6 +405,29 @@ export default (ffi: ForeignInterface) => {
         new Map([
           ["ok", ffi.boolean(false)],
           ["reason", ffi.text(String(result.error))],
+        ])
+      );
+    }
+  });
+
+  ffi.defmachine("kernel.readme", function* (vm0) {
+    const vm = ffi.unbox_typed(BaseVM, vm0);
+    const text = yield ffi.await(vm.readme().then((x) => ffi.text(x)));
+    return text;
+  });
+
+  ffi.defmachine("kernel.update-root-readme", function* (vm0, code) {
+    const vm = ffi.unbox_typed(BaseVM, vm0);
+    try {
+      yield ffi.await(
+        vm.update_root_readme(ffi.text_to_string(code)).then((_) => ffi.nothing)
+      );
+      return ffi.record(new Map([["ok", ffi.boolean(true)]]));
+    } catch (e) {
+      return ffi.record(
+        new Map([
+          ["ok", ffi.boolean(false)],
+          ["reason", ffi.text(String(e))],
         ])
       );
     }

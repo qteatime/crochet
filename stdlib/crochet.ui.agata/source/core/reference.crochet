@@ -5,6 +5,9 @@ open crochet.concurrency;
 type reference(name is text);
 type reference-observer(reference is reference, observer is observable-cell<widget>);
 
+command #reference with-name: (Name is static-text) =
+  new reference(Name);
+
 command reference materialise =
   perform agata-presentation.get-reference(self);
 

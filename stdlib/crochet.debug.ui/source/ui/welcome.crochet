@@ -3,33 +3,59 @@
 open crochet.ui.agata;
 open crochet.concurrency;
 
-type welcome-screen;
+type welcome-panel(vm is playground-vm);
+local type ctx(mode is observable-cell<welcome-panel-mode>, text is observable-cell<text>);
 
-implement to-widget for welcome-screen;
-command welcome-screen as widget do
-  #widget flex-column: [
-    #widget text: "Loading..."
+local enum mode = view, edit;
+
+implement to-widget for welcome-panel;
+command welcome-panel as widget do
+  let Mode = #observable-cell with-value: #mode view;
+  let Readme = #observable-cell with-value: self.vm readme;
+  let Ctx = new ctx(mode -> Mode, text -> Readme);
+
+  #widget container: [
+    #widget given: Mode
+      | when: (_ === #mode view) use: (self render-view: Ctx)
+      | when: (_ === #mode edit) use: (self render-edit: Ctx)
   ]
-  | align-items: #flex-align center
-  | justify-content: #flex-justify center;
+  | with-padding: { P in P all: (2 as rem) }
+  | with-font: agata-theme-fonts monospace
+  | with-box-overflow: #overflow-style auto
+  | fill-container-vertically
 end
 
-
-type welcome-error-screen(error is text);
-
-implement to-widget for welcome-error-screen;
-command welcome-error-screen as widget do
+command welcome-panel render-view: Ctx do
   #widget flex-column: [
-    #widget section: [
-      #widget title: "Cannot initialise playground",
-      #widget text: self.error
-        | with-font: agata-theme-fonts monospace
-        | with-text-color: agata-theme-colors red
-        | with-white-space: #white-space pre-formatted-wrap-line
-    ]
-    | with-size: { S in S max-width: (80 as rem) }
-    | with-padding: { P in P all: (1 as rem) }
+    #widget flex-row-reverse: [
+      #widget icon-button: "pen"
+        | on-click: { _ in Ctx.mode <- #mode edit }
+    ],
+
+    Ctx.text
   ]
-  | align-items: #flex-align center
-  | justify-content: #flex-justify center;
+end
+
+command welcome-panel render-edit: Ctx do
+  let Editor = #reference with-name: "readme-editor";
+
+  #widget flex-column: [
+    #widget flex-row-reverse: [
+      #widget icon-button: "check"
+        | on-click: { _ in
+            let Code = Editor materialise value;
+            self.vm update-readme: Code;
+            Ctx.text <- Code;
+            Ctx.mode <- #mode view;
+          }
+    ],
+
+    #flex-child fluid: (
+      #widget code-editor
+        | mode: "plain-text"
+        | value: Ctx.text
+        | with-reference: Editor
+    )
+  ]
+  | fill-container-vertically
 end

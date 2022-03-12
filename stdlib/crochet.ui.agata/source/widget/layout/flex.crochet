@@ -65,11 +65,19 @@ command internal to-flex-child: (Child has to-widget) =
 
 command #widget flex-column: (Children is list) =
   #widget flex: Children
-    | layout: "column";
+    | layout: #flex-layout column;
 
 command #widget flex-row: (Children is list) =
   #widget flex: Children
-    | layout: "row";
+    | layout: #flex-layout row;
+
+command #widget flex-row-reverse: (Children is list) =
+  #widget flex: Children
+    | layout: #flex-layout row-reverse;
+
+command #widget flex-column-reverse: (Children is list) =
+  #widget flex: Children
+    | layout: #flex-layout column-reverse;
 
 command #flex-child with: (Content has to-widget) =
   new flex-child(Content as widget, #flex-child-options defaults);

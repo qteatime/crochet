@@ -69,4 +69,16 @@ export default (ffi: ForeignInterface) => {
     });
     return ffi.nothing;
   });
+
+  ffi.defun("code-mirror.value-from-node", (node) => {
+    const el = ffi.unbox_typed(HTMLElement, node);
+    if (el.children.length !== 1) {
+      throw ffi.panic("invalid-node", `Expected a code-editor widget node`);
+    }
+    const cm: CM.Editor | null = (el.children[0] as any).CodeMirror;
+    if (cm == null) {
+      throw ffi.panic("invalid-node", `Expected a code-editor widget node`);
+    }
+    return ffi.text(cm.getDoc().getValue());
+  });
 };

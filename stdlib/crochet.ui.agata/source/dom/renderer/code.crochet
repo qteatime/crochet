@@ -34,7 +34,6 @@ end
 command dom-renderer render: (W is widget-code-editor) do
   let Surface = dom make-surface;
   let Node = Surface.node;
-  let Skip = #cell with-value: nothing;
 
   Node add-class: "agata-code-editor";
 
@@ -57,23 +56,11 @@ command dom-renderer render: (W is widget-code-editor) do
                 }
     ];
 
-  Code-mirror on: "changes" do: { _ in
-    let Value = Code-mirror value;
-    Skip <- Value;
-    W.value <- Value;
-  };
-
   W.mode stream subscribe: (Code-mirror set: "mode" to: _);
   W.read-only stream subscribe: (Code-mirror set: "readOnly" to: _);
   W.line-numbers stream subscribe: (Code-mirror set: "lineNumbers" to: _);
   W.line-wrapping stream subscribe: (Code-mirror set: "lineWrapping" to: _);
-  W.value stream subscribe: { M in
-    condition
-      when M =:= Skip value => nothing;
-      otherwise => Code-mirror set-value: M;
-    end
-    Skip <- nothing;
-  };
+  W.value stream subscribe: (Code-mirror set-value: _);
 
   Surface on-attached: {
     Code-mirror refresh;

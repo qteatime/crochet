@@ -478,6 +478,11 @@ textarea {
 }
 
 /* Tabbed panels */
+.agata-tabbed-panel-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .agata-tabbed-panel-header-container {
   height: 48px;
   display: flex;
@@ -486,6 +491,8 @@ textarea {
   justify-content: flex-start;
   background: var(--white);
   border-bottom: 1px solid var(--blue-grey-10);
+  box-shadow: 0px 1px 1px rgb(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .agata-tabbed-panel-header {
@@ -502,6 +509,15 @@ textarea {
 
 .agata-tabbed-panel-header:hover {
   background: var(--blue-grey-10);
+}
+
+.agata-tabbed-panel-content-container {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.agata-tabbed-panel-content {
+  height: 100%;
 }
 
 .agata-tabbed-panel-content:not(.selected) {

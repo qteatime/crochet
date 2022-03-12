@@ -17,6 +17,7 @@ export interface IPackageResolution {
 
 export class PackageGraph {
   constructor(
+    readonly root: ResolvedPackage,
     readonly target: Target,
     readonly trusted: Set<Package>,
     readonly packages: Map<string, ResolvedPackage>
@@ -322,6 +323,13 @@ export class ResolvedPackage {
     );
   }
 
+  get readme() {
+    return new ResolvedFile(
+      this,
+      file({ filename: "README.md", target: target_any() })
+    );
+  }
+
   get sources() {
     return this.pkg.meta.sources
       .filter((x) => target_compatible(this.target, x.target))
@@ -383,5 +391,5 @@ export async function build_package_graph(
   const resolved_pkg = new ResolvedPackage(root, target);
   packages.set(resolved_pkg.name, resolved_pkg);
   await resolve(resolved_pkg);
-  return new PackageGraph(target, trusted, packages);
+  return new PackageGraph(resolved_pkg, target, trusted, packages);
 }

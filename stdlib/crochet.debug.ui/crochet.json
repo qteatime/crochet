@@ -11,8 +11,11 @@
     "source/playground/vm.crochet",
     "source/playground/errors.crochet",
     "source/playground/lens.crochet",
-    "source/ui/welcome.crochet",
+    "source/ui/frame.crochet",
+    "source/ui/loading.crochet",
     "source/ui/playground-page.crochet",
+    "source/ui/playground.crochet",
+    "source/ui/welcome.crochet",
     "source/main.crochet"
   ],
   "dependencies": [

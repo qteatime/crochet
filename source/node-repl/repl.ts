@@ -95,12 +95,13 @@ export class NodeRepl {
     capabilities: Set<string>,
     universe: string,
     session: string,
-    package_tokens: Map<string, string>
+    package_tokens: Map<string, string>,
+    bare: boolean
   ) {
     const disclose_debug = false;
     const library_paths: string[] = [];
     const interactive = false;
-    const safe_mode = false;
+    const safe_mode = bare;
     const crochet = new CrochetForNode(
       { universe: universe, packages: package_tokens },
       disclose_debug,
