@@ -47,8 +47,11 @@ function read(file: string) {
   }
 }
 
-function run_electron(file: string, config: string = "") {
-  const child = ChildProcess.execFile(Electron as any, [file, config]);
+function run_electron(file: string, config?: string) {
+  const child = ChildProcess.execFile(
+    Electron as any,
+    [file, config as any].filter((x) => x != null)
+  );
   child.on("exit", (code) => {
     process.exit(code ?? 0);
   });
