@@ -385,6 +385,10 @@ export default (ffi: ForeignInterface) => {
     const page = ffi.unbox_typed(BasePage, page0);
     const language = ffi.text_to_string(language0);
 
+    // we only care about *long-running* processes, and we use performance.now
+    // for the monotonicity, but we don't need something more accurate than
+    // milliseconds-range.
+    const start = Math.round(performance.now());
     const result: RunResult = ffi.unbox(
       yield ffi.await(
         page
@@ -392,12 +396,15 @@ export default (ffi: ForeignInterface) => {
           .then((x) => ffi.box(x))
       )
     ) as any;
+    const end = Math.round(performance.now());
+    const elapsed = BigInt(end - start);
 
     if (result.ok) {
       return ffi.record(
         new Map([
           ["ok", ffi.boolean(true)],
           ["value", result.value],
+          ["duration", ffi.integer(elapsed)],
         ])
       );
     } else {

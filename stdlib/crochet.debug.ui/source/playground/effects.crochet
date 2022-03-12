@@ -72,22 +72,22 @@ handler browser-kernel with
     condition
       when Result.ok do
         let X = Result.value;
-        condition
-          when X is nothing =>
-            continue with #result ok: foreign-value-none;
+        let Value =
+          condition
+            when X is nothing =>
+              foreign-value-none;
 
-          when X.raw-value is nothing do
-            let Representations = X.representations map: (package reify-value-representation: _);
-            let Value = new foreign-value-far(Page.vm, Representations);
-            continue with #result ok: Value;
-          end
+            when X.raw-value is nothing do
+              let Representations = X.representations map: (package reify-value-representation: _);
+              new foreign-value-far(Page.vm, Representations);
+            end
 
-          otherwise do
-            let Representations = X.representations map: (package reify-value-representation: _);
-            let Value = new foreign-value-near(Page.vm, X.raw-value, Representations);
-            continue with #result ok: Value;
-          end
-        end
+            otherwise do
+              let Representations = X.representations map: (package reify-value-representation: _);
+              new foreign-value-near(Page.vm, X.raw-value, Representations);
+            end
+          end;
+        continue with #result ok: [value -> Value, duration -> Result.duration];
       end
 
       otherwise =>

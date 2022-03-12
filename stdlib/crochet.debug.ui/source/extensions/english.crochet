@@ -1,0 +1,33 @@
+% crochet
+
+open crochet.time;
+
+command package describe-duration: (X is duration) do
+  let Describe = { Value, Single, Plural in
+    condition
+      when Value =:= 0 => nothing;
+      when Value =:= 1 => "1 [Single]";
+      otherwise => "[Value to-text] [Plural]";
+    end
+  };
+
+  [
+    Describe(X hours, "hour", "hours"),
+    Describe(X minutes, "minute", "minutes"),
+    Describe(X seconds, "second", "seconds"),
+    Describe(X milliseconds, "millisecond", "milliseconds")
+  ]
+  |> _ keep-if: { X in not (X is nothing) }
+  |> package join-list: _;
+end
+
+command package join-list: (List is list<any>) -> interpolation do
+  condition
+    when List is-empty => "" as interpolation;
+    when List count =:= 1 => "[List first]";
+    otherwise =>
+      List without-last
+        | fold-right-from: "and [List last]"
+          with: { A, B in "[A], [B]" };
+  end
+end

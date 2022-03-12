@@ -3,6 +3,7 @@
 open crochet.ui.agata;
 open crochet.concurrency;
 open crochet.debug;
+open crochet.time;
 
 type widget-playground-page(
   page is playground-page,
@@ -42,7 +43,7 @@ command widget-playground-page as widget do
             ])
           | with-reference: Editor
       ),
-      #card-child extra: (Error map: (self render-error: _))
+      #card-child extra: (Error map: (self render-error: _)),
     ]
     | style: #card-style fluid
     | with-margin: { M in M top: (1 as rem) }
@@ -60,10 +61,13 @@ command widget-playground-page run-code: To-eval entries: New-entries error: Err
   condition
     when Result is ok do
       Error <- nothing;
+      let Res = Result value;
+      let Duration = #duration milliseconds: Res.duration;
       let Entry = new playground-entry-code(
-        #playground-language crochet,
-        To-eval,
-        Result value
+        language -> #playground-language crochet,
+        code -> To-eval,
+        result -> Res.value,
+        metrics -> new playground-evaluation-metrics(total -> Duration)
       );
       New-entries publish: Entry;
     end
@@ -87,8 +91,24 @@ command widget-playground-page render-error: (E is playground-run-error) =
 command widget-playground-page render-entry: (X is playground-entry-code) do
   #widget card: [
     #card-child meta: (
-      #widget text: X.language to-enum-text
-        | with-margin: { M in M top: (1 as rem) | bottom: (-1 as rem) }
+      #widget flex-row: [
+        #widget text: X.language to-enum-text,
+
+        condition
+          when X.metrics total > (#duration milliseconds: 100) do
+            let Duration = (X.metrics total
+                            |> _ balanced-to: #duration-unit hours
+                            |> package describe-duration: _);
+            #widget text: "took [Duration]";
+          end
+
+          otherwise =>
+            #widget space;
+        end
+      ]
+      | gap: (3 as rem)
+      | justify-content: #flex-justify space-between
+      | with-margin: { M in M top: (1 as rem) | bottom: (-1 as rem) }
     ),
     #card-child body: (
       #widget syntax-highlight: X.code

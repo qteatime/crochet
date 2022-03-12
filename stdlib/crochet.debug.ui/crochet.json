@@ -3,6 +3,7 @@
   "target": "*",
   "native_sources": ["native/kernel.js", "native/repr.js", "native/lens.js"],
   "sources": [
+    "source/extensions/english.crochet",
     "source/playground/effects.crochet",
     "source/playground/kernel.crochet",
     "source/playground/page.crochet",
