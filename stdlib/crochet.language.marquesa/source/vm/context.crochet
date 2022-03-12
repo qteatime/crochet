@@ -1,0 +1,19 @@
+% crochet
+
+command environment clone =
+  new environment(#cell with-value: self.bindings value);
+
+command environment add-all: (Bindings is map<text, value>) do
+  for Pair in Bindings entries do
+    self at: Pair key put: Pair value;
+  end
+  self;
+end
+
+command environment at: (Key is text) =
+  self.bindings value at: Key;
+
+command environment at: (Key is text) put: (Value is value) do
+  self.bindings <- self.bindings value at: Key put: Value;
+  self;
+end

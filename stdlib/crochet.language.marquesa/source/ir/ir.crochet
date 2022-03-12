@@ -1,0 +1,16 @@
+% crochet
+
+abstract ir-node;
+type ir-sequence(items is list<ir-node>) is ir-node;
+type ir-apply(callee is ir-node, arguments is list<ir-argument>) is ir-node;
+type ir-project(object is ir-node, field is text) is ir-node;
+type ir-deref(name is text) is ir-node;
+type ir-letrec(bindings is list<ir-argument>, body is ir-node) is ir-node;
+type ir-fun(parameters is list<ir-parameter>, body is ir-node) is ir-node;
+type ir-literal(value is any) is ir-node; // nothing | integer | float | text
+
+type ir-argument(name is text, value is ir-node);
+
+abstract ir-parameter;
+type ir-parameter-required(name is text) is ir-parameter;
+type ir-parameter-optional(name is text, value is ir-node) is ir-parameter;

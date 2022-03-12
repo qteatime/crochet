@@ -1,0 +1,13 @@
+% crochet
+
+type environment(bindings is cell<map<text, value>>);
+
+abstract value;
+singleton v-nothing is value;
+type v-integer(value is integer);
+type v-float(value is float-64bit);
+type v-boolean(value is boolean);
+type v-text(value is text);
+type v-list(values is list<value>);
+type v-fun(code is ir-fun, environment is environment);
+type v-record(values is map<text, value>);

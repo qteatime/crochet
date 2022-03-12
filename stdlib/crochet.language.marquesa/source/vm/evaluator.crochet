@@ -1,0 +1,81 @@
+% crochet
+
+type vm;
+
+command vm evaluate: (X is ir-sequence) context: (C is environment) do
+  let Results = X.items map: (self evaluate: _ context: C);
+  new v-list(Results);
+end
+
+command vm evaluate: (X is ir-literal) context: (C is environment) =
+  self reify-literal: X.value;
+
+command vm evaluate: (X is ir-fun) context: (C is environment) =
+  new v-fun(X, C);
+
+command vm evaluate: (X is ir-letrec) context: (C0 is environment) do
+  let C = C0 clone;
+  for Pair in X.parameters do
+    let Value = self evaluate: Pair.value context: C;
+    C at: Pair.name put: Value;
+  end
+  self evaluate: X.body context: C;
+end
+
+command vm evaluate: (X is ir-deref) context: (C is environment) =
+  C at: X.name;
+
+command vm evaluate: (X is ir-project) context: (C is environment) do
+  let Record = self evaluate: X.object context: C;
+  self assert-record: Record;
+  Record at: X.field;
+end
+
+command vm evaluate: (X is ir-apply) context: (C is environment) do
+  let Fun = self evaluate: X.callee context: C;
+  self assert-fun: Fun;
+  let Arguments = self evaluate-arguments: X.arguments context: C;
+  vm apply: Fun to: Arguments in: C;
+end
+
+
+command vm evaluate-arguments: (Arguments is list<ir-argument>) context: (C is environment) do
+  Arguments fold-from: #map empty
+            with: { Map, Argument in
+              let Value = self evaluate: Argument.value context: C;
+              Map at: Argument.name put: Value;
+            };
+end
+
+
+command vm apply: (Fun is v-fun) to: (Arguments is map<text, value>) in: (C0 is environment) do
+  let Bindings = self collect-bindings: Fun.code.parameters arguments: Arguments;
+  let C = Fun.environment clone add-all: Bindings;
+  self evaluate: Fun.code.body context: C;
+end
+
+
+command vm reify-literal: (X is nothing) =
+  v-nothing;
+
+command vm reify-literal: (X is integer) =
+  new v-integer(X);
+
+command vm reify-literal: (X is float-64bit) =
+  new v-float(X);
+
+command vm reify-literal: (X is text) =
+  new v-text(X);
+
+command vm reify-literal: (X is boolean) =
+  new v-boolean(X);
+
+
+// TODO: handle errors
+command vm assert-record: (X is v-record) =
+  X;
+
+command vm assert-fun: (X is v-fun) =
+  X;
+
+

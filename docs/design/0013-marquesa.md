@@ -80,15 +80,14 @@ The underlying language for Marquesa consists of the following:
     n in names
 
     Expr e ::=
-      | use p as n in e                           -- qualified import
+      | use p as n in e                             -- qualified import
       | use p exposing (...) excluding (...) in e   -- restricted import
       | use p in e                                  -- unpack import
       | e1; ...; eN                                 -- sequence
       | eH n1:e1 ... nN:eN                          -- application
       | e.n                                         -- projection
       | n                                           -- variable dereference
-      | let n = e1 in e2                            -- variable introduction
-      | letrec n1 = e1, ..., nN = eN in e           -- mutual variable intro
+      | letrec n1 = e1, ..., nN = eN in e           -- variable introduction
       | fun(n1 = e1, ..., nN = eN): e               -- lambda abstraction
       | nothing | b | i | f | t                     -- values
 
