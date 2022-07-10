@@ -616,15 +616,14 @@ export default (ffi: ForeignInterface) => {
 
         case "typed":
           return h("div", { class: "value-lens-typed" }, [
-            h("div", { class: "value-lens-typed-type" }, [
-              h("div", { class: "value-lens-typed-type-name" }, [
-                data["type-name"],
-              ]),
-              " in ",
-              h("div", { class: "value-lens-typed-type-package" }, [
-                data["package-name"],
-              ]),
-            ]),
+            h(
+              "div",
+              {
+                class: "value-lens-typed-type",
+                title: `${data["package-name"]}/${data["type-name"]}`,
+              },
+              [data["type-name"]]
+            ),
             h("div", { class: "value-lens-typed-value" }, [
               render(data.content, compact, "typed"),
             ]),

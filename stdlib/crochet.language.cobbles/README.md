@@ -1,7 +1,7 @@
 # Cobbles
 
 Cobbles is a small language for describing data, their semantics,
-and their evolution. Un a way that allows this data to be serialised and
+and their evolution. In a way that allows this data to be serialised and
 shared while maintaining all of these definitions, everywhere.
 
 ## Contracts

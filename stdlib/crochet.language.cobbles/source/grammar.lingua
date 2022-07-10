@@ -1,0 +1,81 @@
+type Module(info: Interval, declarations: Declaration[])
+
+type Declaration =
+  | Type(info: Interval, name: Name, fields: Field[])
+  | Union(info: Interval, name: Name, declarations: Declaration[])
+
+type Field(info: Interval, name: Name, typ: TypeExpr)
+
+type TypeExpr =
+  | Named(info: Interval, name: Name)
+  | List(info: Interval, typ: TypeExpr)
+  | Map(info: Interval, key: TypeExpr, value: TypeExpr)
+  | Optional(info: Interval, typ: TypeExpr)
+
+type Name(name: Text)
+
+
+grammar Cobbles_Grammar : Module {
+  Module =
+    | header xs:Declaration* end
+      -> Module(meta, xs)
+
+  Declaration =
+    | TypeDeclaration
+    | UnionDeclaration
+
+  TypeDeclaration =
+    | type_ n:Name "{" xs:Field* "}"
+      -> Declaration.Type(meta, n, xs)
+
+  UnionDeclaration =
+    | union_ n:Name "{" xs:TypeDeclaration* "}"
+      -> Declaration.Union(meta, n, xs)
+
+  Field =
+    | field_ n:Name ":" t:TypeExpr ";"
+      -> Field(meta, n, t)
+
+  TypeExpr =
+    | k:TypeExprList "->" v:TypeExprList
+      -> TypeExpr.Map(meta, k, v)
+    | TypeExprList
+
+  TypeExprList =
+    | t:TypeExpr "[]"
+      -> TypeExpr.List(meta, t)
+    | t:TypeExpr "?"
+      -> TypeExpr.Optional(meta, t)
+    | TypeExprPrimary
+
+  TypeExprPrimary =
+    | n:Name
+      -> TypeExpr.Named(meta, n)
+    | "(" t:TypeExpr ")"
+      -> t
+
+  Name =
+    | n:name
+      -> Name(n)
+
+  // -- Lexical --
+  token header (a file header) = space* "%" hs* "cobbles/0" nl
+  token hs = " " | "\t"
+  token nl = "\r\n" | "\n" | "\r"
+  token line = (~nl any)*
+  token comment (a comment) = "//" "~/" line
+  space += comment
+
+  token name_start = "a".."z" | "A".."Z"
+  token name_rest = "a".."z" | "A".."Z" | "-" | "0".."9"
+  token name = name_start name_rest*
+
+  kw<w> = x:w ~name_rest -> x
+
+  type_ = kw<"type">
+  union_ = kw<"union">
+  field_ = kw<"field">
+
+  reserved =
+    | type_ | union_ | field_
+}

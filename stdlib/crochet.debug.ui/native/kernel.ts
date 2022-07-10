@@ -267,7 +267,7 @@ export default (ffi: ForeignInterface) => {
       { ok: true; value: BaseVM } | { ok: false; reason: string }
     > {
       const id = crypto.randomUUID();
-      await Playground.initialise(this.session_id);
+      await Playground.initialise(this.session_id, false);
       const vm = new FarKernelVM(this.session_id, id);
       this.add_vm(id, vm);
       return { ok: true, value: vm };

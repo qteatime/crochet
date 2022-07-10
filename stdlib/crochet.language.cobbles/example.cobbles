@@ -1,0 +1,74 @@
+% cobbles/0
+
+type Program {
+  field file-name: Text;
+  field hash: Text;
+  field declarations: Declaration[];
+}
+
+union Declaration {
+  type Define {
+    field name: Text;
+    field value: Expression;
+  }
+
+  type Scene {
+    field name: Text;
+    field arguments: Text[];
+    field statements: Statement[];
+  }
+}
+
+union Statement {
+  type Clear {
+    field layer: Expression;
+  }
+
+  type Show {
+    field view: Expression;
+  }
+
+  type Let {
+    field name: Text;
+    field value: Expression;
+  }
+}
+
+union Expression {
+  type Call {
+    field callee: Expression;
+    field arguments: Expression[];
+  }
+
+  type Invoke {
+    field object: Expression;
+    field method: Text;
+    field arguments: Expression[];
+  }
+
+  type LoadVariable {
+    field name: Text;
+  }
+
+  type LoadTuple {
+    field values: Expression[];
+  }
+
+  type LoadText {
+    field value: Text;
+  }
+
+  type LoadInteger {
+    field value: Integer;
+  }
+
+  type LoadFloat {
+    field value: Float64;
+  }
+
+  type LoadBoolean {
+    field value: Boolean;
+  }
+
+  type LoadNothing {}
+}

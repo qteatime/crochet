@@ -1,0 +1,11 @@
+{
+  "name": "crochet.unsafe.wrapper.node",
+  "target": "node",
+  "native_sources": ["native/fs.js"],
+  "sources": ["source/file-system.crochet"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": ["native"],
+    "provides": ["file-system"]
+  }
+}
