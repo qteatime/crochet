@@ -384,6 +384,24 @@ export class ForeignInterface {
     return x.fields;
   }
 
+  get_type_pairs(x: CrochetValue) {
+    if (x.tag === Tag.INSTANCE) {
+      Values.assert_tag(Tag.INSTANCE, x);
+      const type = x.type;
+      return this.list(
+        type.fields.map((f, i) => {
+          return this.list([this.text(f), x.payload[i]]);
+        })
+      );
+    } else {
+      throw this.panic("invalid-type", `Expected an instance`);
+    }
+  }
+
+  is_instance(x: CrochetValue) {
+    return x.tag === Tag.INSTANCE;
+  }
+
   to_debug_string(x: CrochetValue) {
     return Location.simple_value(x);
   }
