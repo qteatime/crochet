@@ -1,0 +1,7 @@
+% crochet
+
+type nvl-layer(name is text);
+
+define background-layer = new nvl-layer("background");
+define dialogue-layer = new nvl-layer("dialogue");
+define interaction-layer = new nvl-layer("interaction");

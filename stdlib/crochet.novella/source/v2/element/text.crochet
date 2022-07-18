@@ -1,0 +1,10 @@
+% crochet
+
+type nvl-text(children is list<nvl-text-component>) is nvl-element;
+
+abstract nvl-text-component;
+type nvl-tc-text(child is text) is nvl-text-component;
+type nvl-tc-strong(child is nvl-text-component) is nvl-text-component;
+type nvl-tc-emphasis(child is nvl-text-component) is nvl-text-component;
+type nvl-tc-flow(children is list<nvl-text-component>) is nvl-text-component;
+

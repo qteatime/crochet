@@ -1,0 +1,25 @@
+% crochet
+
+singleton novella;
+
+effect novella-action with
+  say(text is nvl-text); // -> nothing
+  show(layer is nvl-layer, element is nvl-element); // -> nvl-rendered-element
+  clear(layer is nvl-layer); // -> nothing
+end
+
+
+command novella web-renderer: (Root is unknown) do
+  let Node = nvl-dom node-from-element: Root;
+  let Renderer = nvl-dom make-renderer: Node size: #nvl-size zero;
+  new nvl-game(
+    size -> Size,
+    renderer -> Renderer,
+    layers -> [
+      background-layer,
+      dialogue-layer,
+      interaction-layer,
+    ], 
+  );
+end
+

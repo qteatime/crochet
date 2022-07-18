@@ -1,0 +1,247 @@
+% crochet
+
+singleton novella;
+
+effect novella-action with
+  say(text is nvl-text); // -> nothing
+  clear(layer is nvl-layer); // -> nothing
+end
+
+type nvl-size(global width is integer, global height is integer);
+
+singleton nvl-dom;
+type nvl-dom-node(box is unknown);
+
+type nvl-layer(name is text);
+type nvl-layer-group(layers is list<nvl-layer>, global dialogue is nvl-layer);
+
+abstract nvl-renderer;
+type nvl-web-renderer-config(root is nvl-dom-node, size is nvl-size, global layers is nvl-layer-group) is nvl-renderer;
+
+type nvl-web-renderer(
+  config is nvl-web-renderer-config,
+  screen is nvl-dom-node,
+  layer-map is map<nvl-layer, nvl-dom-node>,
+);
+
+
+abstract nvl-element;
+type nvl-text(children is list<nvl-text-component>) is nvl-element;
+
+abstract nvl-text-component;
+type nvl-tc-text(content is text) is nvl-text-component;
+type nvl-tc-strong(child is nvl-text-component) is nvl-text-component;
+type nvl-tc-emphasis(child is nvl-text-component) is nvl-text-component;
+type nvl-tc-flow(children is list<nvl-text-component>) is nvl-text-component;
+
+trait to-nvl-text-component with
+  command Self as nvl-text-component -> nvl-text-component;
+end
+
+trait to-nvl-text with
+  command Self as nvl-text -> nvl-text;
+end
+
+
+implement to-nvl-text for text;
+command text as nvl-text =
+  new nvl-text([self as nvl-text-component]);
+
+implement to-nvl-text for interpolation;
+command interpolation as nvl-text =
+  new nvl-text([self as nvl-text-component]);
+
+implement to-nvl-text-component for text;
+command text as nvl-text-component =
+  new nvl-tc-text(self);
+
+implement to-nvl-text-component for interpolation;
+command interpolation as nvl-text-component =
+  new nvl-tc-flow(self parts map: (_ as nvl-text-component));
+
+
+
+
+command #nvl-size zero =
+  new nvl-size(width -> 0, height -> 0);
+
+command #nvl-size width: (W is integer) height: (H is integer)
+requires
+  non-negative :: (W >= 0) and (H >= 0)
+=
+  new nvl-size(width -> W, height -> H);
+
+
+command #nvl-layer-group defaults do
+  let Dialogue = new nvl-layer("dialogue");
+  new nvl-layer-group(
+    layers -> [
+      new nvl-layer("background"),
+      Dialogue,
+      new nvl-layer("interaction"),
+    ],
+    dialogue -> Dialogue,
+  );
+end
+
+
+command novella web-renderer: (Root is unknown)
+requires
+  html-element :: nvl-dom is-element: Root
+do
+  new nvl-web-renderer-config(
+    root -> nvl-dom from-html-element: Root,
+    size -> #nvl-size zero,
+    layers -> #nvl-layer-group defaults
+  );
+end
+
+command nvl-web-renderer-config width: W height: H =
+  new nvl-web-renderer-config(self with size -> #nvl-size width: W height: H);
+
+command nvl-web-renderer-config setup do
+  let W = self.size width to-text;
+  let H = self.size height to-text;
+  let Screen = nvl-dom make: "div" class: "novella-screen"
+                | set-style: [
+                    width -> "[W]px" flatten-into-plain-text,
+                    height -> "[H]px" flatten-into-plain-text,
+                    aspect-ratio -> "[W] / [H]" flatten-into-plain-text
+                  ];
+  let Layer-map = (self layers).layers fold-from: #map empty with: { Map, Layer in
+    let Layer-node = nvl-dom make: "div" class: "novella-layer"
+                      | set: "data-name" to: Layer.name;
+    Screen append: Layer-node;
+    Map at: Layer put: Layer-node;
+  };
+  self.root append: Screen;
+  new nvl-web-renderer(
+    config -> self,
+    screen -> Screen,
+    layer-map -> Layer-map
+  );
+end
+
+command nvl-web-renderer clear-at: (Layer is nvl-layer) do
+  let Node = self.layer-map at: Layer;
+  Node remove-contents;
+  self;
+end
+
+command nvl-web-renderer at: (Layer is nvl-layer) show: (Node is nvl-dom-node) do
+  let Layer-node = self.layer-map at: Layer;
+  Layer-node append: Node;
+  self;
+end
+
+command nvl-web-renderer wait-text-interaction: (Node is nvl-dom-node) do
+  let Continue-mark = nvl-dom make: "span" class: "novella-continue-marker";
+  Node append: Continue-mark;
+  nvl-dom wait-interaction;
+  Continue-mark detach;
+  self;
+end
+
+
+command novella say: (Text has to-nvl-text) =
+  perform novella-action.say(Text as nvl-text);
+
+command novella clear: (Layer is nvl-layer) =
+  perform novella-action.clear(Layer);
+
+
+handler novella-game renderer: (Config is nvl-renderer) do
+  let Renderer = Config setup;
+  let Dialogue-layer = Config layers dialogue;
+with
+  on novella-action.say(Text) do
+    let Node = Renderer render: Text;
+    Renderer at: Dialogue-layer show: Node;
+    Renderer wait-text-interaction: Node;
+    continue with nothing;
+  end
+
+  on novella-action.clear(Layer) do
+    Renderer clear-at: Layer;
+    continue with nothing;
+  end
+end
+
+
+command nvl-dom make: (Tag is text) class: (Class is text) =
+  new nvl-dom-node(foreign dom.make(Tag, Class));
+
+command nvl-dom make-text: (Text is text) =
+  new nvl-dom-node(foreign dom.text(Text));
+
+command nvl-dom from-html-element: (Node is unknown)
+requires
+  is-element :: nvl-dom is-element: Node
+=
+  new nvl-dom-node(Node);
+
+command nvl-dom is-element: (X is unknown) =
+  foreign dom.is-element(X);
+
+command nvl-dom-node set: (Attr is text) to: (Value is text) do
+  foreign dom.set(self.box, Attr, Value);
+  self;
+end
+
+command nvl-dom-node set-style: (Style is record) do
+  foreign dom.set-style(self.box, Style);
+  self;
+end
+
+command nvl-dom-node append: (Node is nvl-dom-node) do
+  foreign dom.append(self.box, Node.box);
+  self;
+end
+
+command nvl-dom-node remove-contents do
+  foreign dom.clear(self.box);
+  self;
+end
+
+command nvl-dom-node detach
+requires attached :: foreign dom.is-attached(self.box)
+do
+  foreign dom.detach(self.box);
+  self;
+end
+
+command nvl-dom wait-interaction do
+  foreign dom.wait-interaction();
+  self;
+end
+
+
+command nvl-web-renderer render: (X is nvl-text) do
+  let Node = nvl-dom make: "div" class: "novella-text";
+  for Child in X.children do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command nvl-web-renderer render: (X is nvl-tc-text) do
+  nvl-dom make-text: X.content;
+end
+
+command nvl-web-renderer render: (X is nvl-tc-strong) do
+  nvl-dom make: "strong" class: "novella-text-strong"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-emphasis) do
+  nvl-dom make: "em" class: "novella-text-emphasis"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-flow) do
+  let Node = nvl-dom make: "span" class: "novella-text-flow";
+  for Child in X.children do
+    Node append: (self render: Child);
+  end
+  Node;
+end

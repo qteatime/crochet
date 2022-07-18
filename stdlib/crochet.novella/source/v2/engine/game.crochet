@@ -1,0 +1,34 @@
+% crochet
+
+type nvl-game(
+  size is nvl-size,
+  renderer is nvl-renderer,
+  layers is list<nvl-layer>,
+);
+
+type nvl-game-booted(
+  renderer is nvl-renderer,
+  layers is list<nvl-layer>,
+);
+
+effect novella-game with
+  setup(game is nvl-game); // -> nvl-game-booted
+end
+
+
+command nvl-game width: (W is integer) height: (H is integer) =
+  new nvl-game(self with size -> #nvl-size width: W height: H);
+
+command nvl-game layers: (Layers is list<nvl-layer>)
+requires
+  has-bg-layer = Layers contains: background-layer,
+  has-dialogue-layer = Layers contains: dialogue-layer,
+  has-interaction-layer = Layers contains: interaction-layer
+=
+  new nvl-game(self with layers -> Layers);
+
+
+command nvl-game setup =
+  perform novella-game.setup(self);
+
+
