@@ -12,7 +12,7 @@ type nvl-size(global width is integer, global height is integer);
 singleton nvl-dom;
 type nvl-dom-node(box is unknown);
 
-type nvl-layer(name is text);
+type nvl-layer(name is text, transform is nvl-transform);
 type nvl-layer-group(layers is list<nvl-layer>, global dialogue is nvl-layer);
 
 abstract nvl-renderer;
@@ -23,6 +23,19 @@ type nvl-web-renderer(
   screen is nvl-dom-node,
   layer-map is map<nvl-layer, nvl-dom-node>,
 );
+
+
+abstract nvl-unit;
+type nvl-unit-pixel(value is integer) is nvl-unit;
+type nvl-unit-percent(value is float-64bit) is nvl-unit;
+
+
+type nvl-transform(properties is list<nvl-property>);
+
+abstract nvl-property;
+type nvl-dimension(width is nvl-unit, height is nvl-unit) is nvl-property;
+type nvl-position(x is nvl-unit, y is nvl-unit) is nvl-property;
+type nvl-padding(top is nvl-unit, right is nvl-unit, bottom is nvl-unit, left is nvl-unit) is nvl-property;
 
 
 abstract nvl-element;
@@ -73,16 +86,17 @@ requires
 
 
 command #nvl-layer-group defaults do
-  let Dialogue = new nvl-layer("dialogue");
+  let Dialogue = new nvl-layer(name -> "dialogue", transform -> #nvl-transform empty);
   new nvl-layer-group(
     layers -> [
-      new nvl-layer("background"),
       Dialogue,
-      new nvl-layer("interaction"),
     ],
     dialogue -> Dialogue,
   );
 end
+
+command #nvl-layer-group layers: (Layers is list<nvl-layer>) dialogue: (Dialogue is nvl-layer) =
+  new nvl-layer-group(Layers, Dialogue);
 
 
 command novella web-renderer: (Root is unknown)
@@ -98,6 +112,9 @@ end
 
 command nvl-web-renderer-config width: W height: H =
   new nvl-web-renderer-config(self with size -> #nvl-size width: W height: H);
+
+command nvl-web-renderer-config layers: (Layers is nvl-layer-group) =
+  new nvl-web-renderer-config(self with layers -> Layers);
 
 command nvl-web-renderer-config setup do
   let W = self.size width to-text;
@@ -115,11 +132,15 @@ command nvl-web-renderer-config setup do
     Map at: Layer put: Layer-node;
   };
   self.root append: Screen;
-  new nvl-web-renderer(
+  let Renderer = new nvl-web-renderer(
     config -> self,
     screen -> Screen,
     layer-map -> Layer-map
   );
+  for Layer in Layer-map entries do
+    Renderer transform: Layer value with: (Layer key).transform;
+  end
+  Renderer;
 end
 
 command nvl-web-renderer clear-at: (Layer is nvl-layer) do
@@ -245,3 +266,97 @@ command nvl-web-renderer render: (X is nvl-tc-flow) do
   end
   Node;
 end
+
+command nvl-web-renderer transform: (X is nvl-dom-node) with: (T is nvl-transform) do
+  for Property in T.properties do
+    self apply-property: Property to: X;
+  end
+  X;
+end
+
+command nvl-web-renderer apply-property: (X is nvl-dimension) to: (N is nvl-dom-node) =
+  N set-style: [
+    width -> self render-unit: X.width,
+    height -> self render-unit: X.height,
+  ];
+
+command nvl-web-renderer apply-property: (X is nvl-position) to: (N is nvl-dom-node) =
+  N set-style: [
+    left -> self render-unit: X.x,
+    top -> self render-unit: X.y,
+  ];
+
+command nvl-web-renderer apply-property: (X is nvl-padding) to: (N is nvl-dom-node) =
+  N set-style: [
+    padding-top -> self render-unit: X.top,
+    padding-right -> self render-unit: X.right,
+    padding-bottom -> self render-unit: X.bottom,
+    padding-left -> self render-unit: X.left,
+  ];
+
+command nvl-web-renderer render-unit: (X is nvl-unit-pixel) =
+  "[X.value to-text]px" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-percent) =
+  "[X.value to-text]%" flatten-into-plain-text;
+
+
+command #nvl-unit pixels: (X is integer) =
+  new nvl-unit-pixel(X);
+
+command #nvl-unit percent: (X is integer) =
+  new nvl-unit-percent(X as float-64bit);
+
+command #nvl-unit percent: (X is float-64bit) =
+  new nvl-unit-percent(X);
+
+
+
+command #nvl-dimension width: (W is nvl-unit) height: (H is nvl-unit) =
+  new nvl-dimension(W, H);
+
+command #nvl-position x: (X is nvl-unit) y: (Y is nvl-unit) =
+  new nvl-position(X, Y);
+
+command #nvl-padding zero =
+  new nvl-padding(
+    top -> #nvl-unit pixels: 0,
+    bottom -> #nvl-unit pixels: 0,
+    left -> #nvl-unit pixels: 0,
+    right -> #nvl-unit pixels: 0,
+  );
+
+command nvl-padding top: (X is nvl-unit) =
+  new nvl-padding(self with top -> X);
+
+command nvl-padding bottom: (X is nvl-unit) =
+  new nvl-padding(self with bottom -> X);
+
+command nvl-padding left: (X is nvl-unit) =
+  new nvl-padding(self with left -> X);
+
+command nvl-padding right: (X is nvl-unit) =
+  new nvl-padding(self with right -> X);
+
+command nvl-padding vertical: (X is nvl-unit) =
+  self top: X | bottom: X;
+
+command nvl-padding horizontal: (X is nvl-unit) =
+  self left: X | right: X;
+
+command nvl-padding all: (X is nvl-unit) =
+  self horizontal: X | vertical: X;
+
+
+command #nvl-transform empty =
+  new nvl-transform([]);
+
+command #nvl-transform with: (Props is list<nvl-property>) =
+  new nvl-transform(Props);
+
+
+command #nvl-layer name: (Name is text) =
+  new nvl-layer(name -> Name, transform -> #nvl-transform empty);
+
+command nvl-layer transform: (Transform is nvl-transform) =
+  new nvl-layer(self with transform -> Transform);

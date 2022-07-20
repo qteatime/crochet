@@ -36,6 +36,10 @@
   position: relative;
 }
 
+.novella-screen * {
+  box-sizing: border-box;
+}
+
 .novella-layer {
   position: absolute;
   top: 0px;

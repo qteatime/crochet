@@ -3,12 +3,27 @@
 open crochet.novella;
 
 command main-html: Root do
+  let Dialogue-layer =
+    #nvl-layer name: "dialogue"
+    | transform: (#nvl-transform with: [
+        #nvl-position x: (#nvl-unit pixels: 0) y: (#nvl-unit pixels: 340),
+        #nvl-dimension width: (#nvl-unit pixels: 400) height: (#nvl-unit pixels: 380),
+        #nvl-padding zero | all: (#nvl-unit pixels: 20),
+      ]);
+  let Background-layer =
+    #nvl-layer name: "background"
+      | transform: (#nvl-transform with: [
+          #nvl-position x: (#nvl-unit pixels: 0) y: (#nvl-unit pixels: 20),
+          #nvl-dimension width: (#nvl-unit pixels: 400) height: (#nvl-unit pixels: 320),
+        ]);
+  let Layers = #nvl-layer-group layers: [Background-layer, Dialogue-layer] dialogue: Dialogue-layer;
   let Renderer = novella web-renderer: Root
-                  | width: 256 height: 256;
+                  | layers: Layers
+                  | width: 400 height: 720;
   handle
     novella say: "One line of text.";
     novella say: "Two lines of text.";
-    novella clear: Renderer layers dialogue;
+    novella clear: Dialogue-layer;
     novella say: "One line again";
   with
     use novella-game renderer: Renderer;
