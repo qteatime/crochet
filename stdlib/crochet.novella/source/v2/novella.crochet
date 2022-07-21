@@ -5,6 +5,7 @@ singleton novella;
 effect novella-action with
   say(text is nvl-text); // -> nothing
   clear(layer is nvl-layer); // -> nothing
+  menu(menu is nvl-menu<A>); // -> A
 end
 
 type nvl-size(global width is integer, global height is integer);
@@ -13,7 +14,7 @@ singleton nvl-dom;
 type nvl-dom-node(box is unknown);
 
 type nvl-layer(name is text, transform is nvl-transform);
-type nvl-layer-group(layers is list<nvl-layer>, global dialogue is nvl-layer);
+type nvl-layer-group(layers is list<nvl-layer>, global dialogue is nvl-layer, global menu is nvl-layer);
 
 abstract nvl-renderer;
 type nvl-web-renderer-config(root is nvl-dom-node, size is nvl-size, global layers is nvl-layer-group) is nvl-renderer;
@@ -24,6 +25,10 @@ type nvl-web-renderer(
   layer-map is map<nvl-layer, nvl-dom-node>,
 );
 
+type nvl-menu(items is list<nvl-menu-item>);
+
+abstract nvl-menu-item;
+type nvl-menu-leaf(label is text, value is A) is nvl-menu-item;
 
 abstract nvl-unit;
 type nvl-unit-pixel(value is integer) is nvl-unit;
@@ -73,6 +78,11 @@ command interpolation as nvl-text-component =
   new nvl-tc-flow(self parts map: (_ as nvl-text-component));
 
 
+command #nvl-menu items: (Items is list<nvl-menu-item>) =
+  new nvl-menu(Items);
+
+command #nvl-menu-leaf label: (Label is text) value: Value =
+  new nvl-menu-leaf(Label, Value);
 
 
 command #nvl-size zero =
@@ -87,16 +97,19 @@ requires
 
 command #nvl-layer-group defaults do
   let Dialogue = new nvl-layer(name -> "dialogue", transform -> #nvl-transform empty);
+  let Menu = new nvl-layer(name -> "menu", transform -> #nvl-transform empty);
   new nvl-layer-group(
     layers -> [
       Dialogue,
+      Menu,
     ],
     dialogue -> Dialogue,
+    menu -> Menu,
   );
 end
 
-command #nvl-layer-group layers: (Layers is list<nvl-layer>) dialogue: (Dialogue is nvl-layer) =
-  new nvl-layer-group(Layers, Dialogue);
+command #nvl-layer-group layers: (Layers is list<nvl-layer>) dialogue: (Dialogue is nvl-layer) menu: (Menu is nvl-layer) =
+  new nvl-layer-group(Layers, Dialogue, Menu);
 
 
 command novella web-renderer: (Root is unknown)
@@ -170,10 +183,14 @@ command novella say: (Text has to-nvl-text) =
 command novella clear: (Layer is nvl-layer) =
   perform novella-action.clear(Layer);
 
+command novella menu: (Menu is nvl-menu) =
+  perform novella-action.menu(Menu);
+
 
 handler novella-game renderer: (Config is nvl-renderer) do
   let Renderer = Config setup;
   let Dialogue-layer = Config layers dialogue;
+  let Menu-layer = Config layers menu;
 with
   on novella-action.say(Text) do
     let Node = Renderer render: Text;
@@ -185,6 +202,14 @@ with
   on novella-action.clear(Layer) do
     Renderer clear-at: Layer;
     continue with nothing;
+  end
+
+  on novella-action.menu(Menu) do
+    let Menu-data = Renderer render-menu: Menu;
+    let Layer-node = Renderer.layer-map at: Menu-layer;
+    let Result = foreign dom.show-menu("I", Layer-node.box, Menu-data);
+    Renderer clear-at: Menu-layer;
+    continue with Result;
   end
 end
 
@@ -265,6 +290,14 @@ command nvl-web-renderer render: (X is nvl-tc-flow) do
     Node append: (self render: Child);
   end
   Node;
+end
+
+command nvl-web-renderer render-menu-item: (X is nvl-menu-leaf) =
+  foreign dom.make-menu-leaf(X.label, X.value);
+
+command nvl-web-renderer render-menu: (X is nvl-menu) do
+  let Items = X.items map: (self render-menu-item: _);
+  foreign dom.make-menu(Items);
 end
 
 command nvl-web-renderer transform: (X is nvl-dom-node) with: (T is nvl-transform) do

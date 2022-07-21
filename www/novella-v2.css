@@ -73,3 +73,47 @@
 .novella-text-emphasis {
   font-style: italic;
 }
+
+.novella-menu-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.novella-menu-container > * {
+  padding: 0.5em 1em;
+  border: 1px solid #4f4f4f;
+}
+
+.novella-menu-prefix,
+.novella-menu-suffix {
+  font-style: italic;
+  color: #7a7a7a;
+  border-left: none;
+  border-right: none;
+  background: #ececea;
+  height: 2em;
+}
+
+.novella-menu-suffix {
+  flex-grow: 1;
+}
+
+.novella-menu-selection-container {
+  border-radius: 3px;
+  padding: 0.5em 0;
+}
+
+.novella-menu-selection-container > * {
+  height: 2em;
+  line-height: 2em;
+  padding: 0 1em;
+}
+
+.novella-menu-selection-current {
+  background: #ececea;
+  border: 1px solid #4f4f4f;
+  border-left: none;
+  border-right: none;
+}
