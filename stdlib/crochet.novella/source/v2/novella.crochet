@@ -3,11 +3,11 @@
 singleton novella;
 
 effect novella-action with
-  wait-interaction(); // -> nothing
+  wait-interaction(layer is nvl-layer); // -> nothing
   show(item is nvl-element, layer is nvl-layer); // -> nothing
-  say(text is nvl-text); // -> nothing
+  say(text is nvl-text, layer is nvl-layer); // -> nothing
+  menu(menu is nvl-menu<A>, layer is nvl-layer); // -> A
   clear(layer is nvl-layer); // -> nothing
-  menu(menu is nvl-menu<A>); // -> A
   get-layers(); // -> nvl-layer-group
 end
 
@@ -20,7 +20,6 @@ type nvl-layer(name is text, transform is nvl-transform);
 type nvl-layer-group(
   layers is list<nvl-layer>,
   global dialogue is nvl-layer,
-  global menu is nvl-layer,
   global title is nvl-layer,
   global background is nvl-layer,
 );
@@ -240,7 +239,6 @@ requires
 
 command #nvl-layer-group defaults do
   let Dialogue = new nvl-layer(name -> "dialogue", transform -> #nvl-transform empty);
-  let Menu = new nvl-layer(name -> "menu", transform -> #nvl-transform empty);
   let Background = new nvl-layer(name -> "background", transform -> #nvl-transform empty);
   let Title = new nvl-layer(name -> "title", transform -> #nvl-transform empty);
   new nvl-layer-group(
@@ -248,10 +246,8 @@ command #nvl-layer-group defaults do
       Background,
       Title,
       Dialogue,
-      Menu,
     ],
     dialogue -> Dialogue,
-    menu -> Menu,
     background -> Background,
     title -> Title,
   );
@@ -327,8 +323,11 @@ command nvl-web-renderer wait-text-interaction: (Node is nvl-dom-node) do
 end
 
 
-command novella say: (Text has to-nvl-text) =
-  perform novella-action.say(Text as nvl-text);
+command novella say: Text =
+  novella at: novella layers dialogue say: Text;
+
+command novella at: (Layer is nvl-layer) say: (Text has to-nvl-text) =
+  perform novella-action.say(Text as nvl-text, Layer);
 
 command novella at: (Layer is nvl-layer) show: (X has to-nvl-element) =
   perform novella-action.show(X as nvl-element, Layer);
@@ -336,11 +335,17 @@ command novella at: (Layer is nvl-layer) show: (X has to-nvl-element) =
 command novella clear: (Layer is nvl-layer) =
   perform novella-action.clear(Layer);
 
-command novella menu: (Menu is nvl-menu) =
-  perform novella-action.menu(Menu);
+command novella menu: Menu =
+  novella at: novella layers dialogue menu: Menu;
+
+command novella at: (Layer is nvl-layer) menu: (Menu is nvl-menu) =
+  perform novella-action.menu(Menu, Layer);
 
 command novella wait-interaction =
-  perform novella-action.wait-interaction();
+  novella wait-interaction-at: novella layers dialogue;
+
+command novella wait-interaction-at: (Layer is nvl-layer) =
+  perform novella-action.wait-interaction(Layer);
 
 command package action-title-parts: (Title is interpolation) =
   Title parts;
@@ -363,18 +368,16 @@ command novella layers =
 
 handler novella-game renderer: (Config is nvl-renderer) do
   let Renderer = Config setup;
-  let Dialogue-layer = Config layers dialogue;
-  let Menu-layer = Config layers menu;
 with
-  on novella-action.say(Text) do
+  on novella-action.say(Text, Layer) do
     let Node = Renderer render: Text;
-    Renderer at: Dialogue-layer show: Node;
+    Renderer at: Layer show: Node;
     continue with nothing;
   end
 
-  on novella-action.wait-interaction() do
-    let Dialogue-node = Renderer.layer-map at: Dialogue-layer;
-    Renderer wait-text-interaction: Dialogue-node;
+  on novella-action.wait-interaction(Layer) do
+    let Layer-node = Renderer.layer-map at: Layer;
+    Renderer wait-text-interaction: Layer-node;
     continue with nothing;
   end
 
@@ -389,11 +392,10 @@ with
     continue with nothing;
   end
 
-  on novella-action.menu(Menu) do
+  on novella-action.menu(Menu, Layer) do
     let Menu-data = Renderer render-menu: Menu;
-    let Layer-node = Renderer.layer-map at: Menu-layer;
+    let Layer-node = Renderer.layer-map at: Layer;
     let Result = foreign dom.show-menu("I", Layer-node.box, Menu-data);
-    Renderer clear-at: Menu-layer;
     continue with Result;
   end
 

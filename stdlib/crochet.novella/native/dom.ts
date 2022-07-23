@@ -345,7 +345,6 @@ export default (ffi: ForeignInterface) => {
 
     function accept_selection(selected: MenuItem) {
       if (selected instanceof MILeaf) {
-        document.removeEventListener("keyup", input_listener);
         deferred.resolve(selected.value);
       } else if (selected instanceof MIBranch) {
         trail.push(selected);
@@ -388,6 +387,11 @@ export default (ffi: ForeignInterface) => {
     node.appendChild(menu_container);
     document.addEventListener("keyup", input_listener);
 
-    return yield ffi.await(deferred.promise);
+    const result = yield ffi.await(deferred.promise);
+
+    document.removeEventListener("keyup", input_listener);
+    node.removeChild(menu_container);
+
+    return result;
   });
 };

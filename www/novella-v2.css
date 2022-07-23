@@ -79,7 +79,7 @@
 }
 
 .novella-layer[data-name="dialogue"] {
-  height: calc(100% - 13rem - 175px);
+  height: calc(100% - 3rem - 175px);
   top: calc(3rem + 175px);
   padding: 2rem;
 }
