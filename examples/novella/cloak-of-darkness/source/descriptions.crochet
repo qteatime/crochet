@@ -1,0 +1,27 @@
+% crochet
+
+command Room description do
+  let Descriptions =
+    match
+      when Room has-light, 
+          cloak on: player,
+          Room dark-description: Description
+      =>
+        Description;
+
+      when Room is-locked, Room locked-description: Description =>
+        Description;
+
+      when Room description: Description =>
+        Description;
+    end;
+  Descriptions first;
+end
+
+command Thing name do
+  ((search Thing name: Name) first).Name;
+end
+
+command Thing short-name do
+  ((search Thing short-name: Name) first).Name;
+end

@@ -1,0 +1,16 @@
+{
+  "name": "crochet.examples.novella.cloak-of-darkness",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/model.crochet",
+    "source/descriptions.crochet",
+    "source/actions.crochet",
+    "source/main.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.novella", "crochet.debug"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

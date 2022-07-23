@@ -160,6 +160,12 @@ export default (ffi: ForeignInterface) => {
     return node0;
   });
 
+  ffi.defun("dom.add-class", (node0, class0) => {
+    const node = ffi.unbox_typed(HTMLElement, node0);
+    node.classList.add(ffi.text_to_string(class0));
+    return node0;
+  });
+
   ffi.defun("dom.clear", (node0) => {
     const node = ffi.unbox_typed(HTMLElement, node0);
     node.textContent = "";

@@ -3,9 +3,11 @@
 singleton novella;
 
 effect novella-action with
+  show(item is nvl-element, layer is nvl-layer); // -> nothing
   say(text is nvl-text); // -> nothing
   clear(layer is nvl-layer); // -> nothing
   menu(menu is nvl-menu<A>); // -> A
+  get-layers(); // -> nvl-layer-group
 end
 
 type nvl-size(global width is integer, global height is integer);
@@ -14,7 +16,13 @@ singleton nvl-dom;
 type nvl-dom-node(box is unknown);
 
 type nvl-layer(name is text, transform is nvl-transform);
-type nvl-layer-group(layers is list<nvl-layer>, global dialogue is nvl-layer, global menu is nvl-layer);
+type nvl-layer-group(
+  layers is list<nvl-layer>,
+  global dialogue is nvl-layer,
+  global menu is nvl-layer,
+  global title is nvl-layer,
+  global background is nvl-layer,
+);
 
 abstract nvl-renderer;
 type nvl-web-renderer-config(root is nvl-dom-node, size is nvl-size, global layers is nvl-layer-group) is nvl-renderer;
@@ -51,6 +59,8 @@ abstract nvl-text-component;
 type nvl-tc-text(content is text) is nvl-text-component;
 type nvl-tc-strong(child is nvl-text-component) is nvl-text-component;
 type nvl-tc-emphasis(child is nvl-text-component) is nvl-text-component;
+type nvl-tc-italic(child is nvl-text-component) is nvl-text-component;
+type nvl-tc-bold(child is nvl-text-component) is nvl-text-component;
 type nvl-tc-flow(children is list<nvl-text-component>) is nvl-text-component;
 
 trait to-nvl-text-component with
@@ -59,6 +69,10 @@ end
 
 trait to-nvl-text with
   command Self as nvl-text -> nvl-text;
+end
+
+trait to-nvl-element with
+  command Self as nvl-element -> nvl-element;
 end
 
 
@@ -70,6 +84,10 @@ implement to-nvl-text for interpolation;
 command interpolation as nvl-text =
   new nvl-text([self as nvl-text-component]);
 
+implement to-nvl-text for nvl-text-component;
+command nvl-text-component as nvl-text =
+  new nvl-text([self]);
+
 implement to-nvl-text-component for text;
 command text as nvl-text-component =
   new nvl-tc-text(self);
@@ -77,6 +95,38 @@ command text as nvl-text-component =
 implement to-nvl-text-component for interpolation;
 command interpolation as nvl-text-component =
   new nvl-tc-flow(self parts map: (_ as nvl-text-component));
+
+implement to-nvl-text-component for nvl-text-component;
+command nvl-text-component as nvl-text-component =
+  self;
+
+implement to-nvl-element for text;
+command text as nvl-element =
+  self as nvl-text;
+
+implement to-nvl-element for interpolation;
+command interpolation as nvl-element =
+  self as nvl-text;
+
+implement to-nvl-element for nvl-text-component;
+command nvl-text-component as nvl-element =
+  self as nvl-text;
+
+
+command #nvl-text strong: (X has to-nvl-text-component) =
+  new nvl-tc-strong(X as nvl-text-component);
+
+command #nvl-text emphasis: (X has to-nvl-text-component) =
+  new nvl-tc-emphasis(X as nvl-text-component);
+
+command #nvl-text italic: (X has to-nvl-text-component) =
+  new nvl-tc-italic(X as nvl-text-component);
+
+command #nvl-text bold: (X has to-nvl-text-component) =
+  new nvl-tc-bold(X as nvl-text-component);
+
+command #nvl-text flow: (Xs is list<X has to-nvl-text-component>) =
+  new nvl-tc-flow(Xs map: (_ as nvl-text-component));
 
 
 command #nvl-menu items: (Items is list<nvl-menu-item>) =
@@ -87,6 +137,89 @@ command #nvl-menu-leaf label: (Label is text) value: Value =
 
 command #nvl-menu-branch label: (Label is text) items: (Items is list<nvl-menu-item>) =
   new nvl-menu-branch(Label, Items);
+
+command package menu-item: (X is nvl-menu-leaf) accepts: (Prefix is text) =
+  X.label =:= Prefix;
+
+command package menu-item: (X is nvl-menu-branch) accepts: (Prefix is text) =
+  X.prefix =:= Prefix;
+
+command package menu-items: (Items is list<nvl-menu-item>) insert: (Parts is list<text>) value: Value do
+  let Part = Parts first;
+  Items
+    | enumerate
+    | find-first: { X in package menu-item: X value accepts: Part }
+    | map: { X in
+        X value insert: Parts value: Value
+          |> Items at: X index put: _
+      }
+    | value-or-else: { _ in 
+        #nvl-menu-branch label: Part items: []
+          |> _ insert: Parts value: Value
+          |> Items append: _
+      };
+end
+
+command nvl-menu insert: (Parts is list<text>) value: Value do
+  new nvl-menu(self with items -> package menu-items: self.items insert: Parts value: Value);
+end
+
+command nvl-menu-branch insert: (Parts is list<text>) value: Value
+requires
+  empty-if-leaf :: do condition
+                     when Parts is-empty => true;
+                     when Parts count =:= 1 => (Parts first =:= self.prefix) and self.items is-empty;
+                     otherwise => (Parts first =:= self.prefix);
+                   end end
+do
+  condition
+    when Parts is-empty =>
+      self;
+
+    when Parts count =:= 1 =>
+      #nvl-menu-leaf label: Parts first value: Value;
+
+    otherwise =>
+      new nvl-menu-branch(self with items -> package menu-items: self.items insert: Parts rest value: Value);
+  end
+end
+
+command nvl-menu-leaf insert: (Parts is list<text>) value: Value
+requires
+  non-duplicate :: condition
+                    when Parts is-empty => true;
+                    when Parts count =:= 1 => (Parts first =:= self.label) and (Value =:= self.value);
+                    otherwise => false;
+                   end
+do
+  self;
+end
+
+command nvl-menu flatten-menu-tree =
+  new nvl-menu(self with items -> self.items map: (_ flatten-menu-tree));
+
+command nvl-menu-leaf flatten-menu-tree =
+  self;
+
+command nvl-menu-branch flatten-menu-tree do
+  condition
+    when self.items count === 1 do
+      let Item = self.items first flatten-menu-tree;
+      condition
+        when Item is nvl-menu-leaf do
+          let Label = "[self.prefix][Item.label]" flatten-into-plain-text;
+          #nvl-menu-leaf label: Label value: Item.value;
+        end
+
+        otherwise =>
+          new nvl-menu-branch(self with items -> [Item]);
+      end
+    end
+
+    otherwise =>
+      new nvl-menu-branch(self with items -> self.items map: (_ flatten-menu-tree));
+  end
+end
 
 
 command #nvl-size zero =
@@ -102,19 +235,21 @@ requires
 command #nvl-layer-group defaults do
   let Dialogue = new nvl-layer(name -> "dialogue", transform -> #nvl-transform empty);
   let Menu = new nvl-layer(name -> "menu", transform -> #nvl-transform empty);
+  let Background = new nvl-layer(name -> "background", transform -> #nvl-transform empty);
+  let Title = new nvl-layer(name -> "title", transform -> #nvl-transform empty);
   new nvl-layer-group(
     layers -> [
+      Background,
+      Title,
       Dialogue,
       Menu,
     ],
     dialogue -> Dialogue,
     menu -> Menu,
+    background -> Background,
+    title -> Title,
   );
 end
-
-command #nvl-layer-group layers: (Layers is list<nvl-layer>) dialogue: (Dialogue is nvl-layer) menu: (Menu is nvl-layer) =
-  new nvl-layer-group(Layers, Dialogue, Menu);
-
 
 command novella web-renderer: (Root is unknown)
 requires
@@ -148,6 +283,7 @@ command nvl-web-renderer-config setup do
     Screen append: Layer-node;
     Map at: Layer put: Layer-node;
   };
+  self.root add-class: "novella-root";
   self.root append: Screen;
   let Renderer = new nvl-web-renderer(
     config -> self,
@@ -184,11 +320,32 @@ end
 command novella say: (Text has to-nvl-text) =
   perform novella-action.say(Text as nvl-text);
 
+command novella at: (Layer is nvl-layer) show: (X has to-nvl-element) =
+  perform novella-action.show(X as nvl-element, Layer);
+
 command novella clear: (Layer is nvl-layer) =
   perform novella-action.clear(Layer);
 
 command novella menu: (Menu is nvl-menu) =
   perform novella-action.menu(Menu);
+
+command package action-title-parts: (Title is interpolation) =
+  Title parts;
+
+command package action-title-parts: (Title is text) =
+  [Title];
+
+command novella choose-action: (Actions is list<action-choice>) do
+  Actions fold-from: new nvl-menu([]) with: { Menu, Action in
+    let Parts = package action-title-parts: Action title | map: (_ to-text);
+    Menu insert: Parts value: Action;
+  }
+  |> _ flatten-menu-tree
+  |> novella menu: _;
+end
+
+command novella layers =
+  perform novella-action.get-layers();
 
 
 handler novella-game renderer: (Config is nvl-renderer) do
@@ -203,6 +360,12 @@ with
     continue with nothing;
   end
 
+  on novella-action.show(Element, Layer) do
+    let Node = Renderer render: Element;
+    Renderer at: Layer show: Node;
+    continue with nothing;
+  end
+
   on novella-action.clear(Layer) do
     Renderer clear-at: Layer;
     continue with nothing;
@@ -214,6 +377,10 @@ with
     let Result = foreign dom.show-menu("I", Layer-node.box, Menu-data);
     Renderer clear-at: Menu-layer;
     continue with Result;
+  end
+
+  on novella-action.get-layers() do
+    continue with Config layers;
   end
 end
 
@@ -240,6 +407,11 @@ end
 
 command nvl-dom-node set-style: (Style is record) do
   foreign dom.set-style(self.box, Style);
+  self;
+end
+
+command nvl-dom-node add-class: (Name is text) do
+  foreign dom.add-class(self.box, Name);
   self;
 end
 
@@ -285,6 +457,16 @@ end
 
 command nvl-web-renderer render: (X is nvl-tc-emphasis) do
   nvl-dom make: "em" class: "novella-text-emphasis"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-bold) do
+  nvl-dom make: "b" class: "novella-text-bold"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-italic) do
+  nvl-dom make: "i" class: "novella-text-italic"
     | append: (self render: X.child);
 end
 

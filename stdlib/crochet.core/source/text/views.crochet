@@ -34,3 +34,7 @@ test
   assert (#text from-lines: ("a\nb\nc" lines)) =:= "a\nb\nc";
   assert (#text from-lines: ("a\r\nb\r\nc" lines)) =:= "a\nb\nc";
 end
+
+// These need a little more love and thought
+command text to-text = self;
+command interpolation to-text = self flatten-into-plain-text;
