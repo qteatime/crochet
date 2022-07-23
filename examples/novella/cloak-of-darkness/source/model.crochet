@@ -7,6 +7,7 @@ relation Item* dark-description: Description;
 relation Item* locked-description: Description;
 relation Item* on: Place;
 
+relation Room* background: Asset;
 relation Room* to: Direction* lays: Room;
 relation Room* times-disturbed: N;
 relation Room* is-locked;
@@ -45,6 +46,7 @@ type room is thing;
 singleton foyer is room with
   name: "The Foyer of the Opera House";
   short-name: "the foyer";
+  background: (package assets at: "foyer.png");
   description:
     "You are standing in a spacious hall, splendidly decorated in red and gold,
      with glittering chandeliers overhead. The entrance from the street is to
@@ -68,6 +70,7 @@ end
 singleton cloakroom is room with
   name: "The Cloakroom";
   short-name: "the cloakroom";
+  background: (package assets at: "cloakroom.png");
   description:
     "The walls of this small room were clearly once lined with hooks,
      though now only one remains. The exit is a door to the east.";
@@ -89,6 +92,7 @@ end
 singleton bar is room with
   name: "The Foyer Bar";
   short-name: "the bar";
+  background: (package assets at: "bar.png");
   description:
     "The bar, much rougher than you'd have guessed after the opulence of the
      foyer to the north, is completely empty. There seems to be some sort of

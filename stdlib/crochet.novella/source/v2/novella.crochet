@@ -117,6 +117,9 @@ implement to-nvl-element for nvl-text-component;
 command nvl-text-component as nvl-element =
   self as nvl-text;
 
+implement to-nvl-element for nvl-element;
+command nvl-element as nvl-element =
+  self;
 
 command #nvl-text strong: (X has to-nvl-text-component) =
   new nvl-tc-strong(X as nvl-text-component);

@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.novella;
+
 command Room description do
   let Descriptions =
     match
@@ -16,6 +18,26 @@ command Room description do
         Description;
     end;
   Descriptions first;
+end
+
+command Room background do
+  let Bg =
+    match
+      when Room has-light,
+           cloak on: player =>
+        nothing;
+
+      when Room background: Asset =>
+        Asset;
+
+      otherwise =>
+        nothing;
+    end;
+
+  condition
+    when Bg first is nothing => nothing;
+    otherwise => #nvl-image from-asset: Bg first;
+  end
 end
 
 command Thing name do

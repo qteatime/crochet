@@ -19,5 +19,6 @@
   "capabilities": {
     "requires": ["crochet.core/asset-location"],
     "provides": []
-  }
+  },
+  "assets": ["bar.png", "cloakroom.png", "foyer.png"]
 }

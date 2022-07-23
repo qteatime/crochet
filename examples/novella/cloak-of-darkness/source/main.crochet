@@ -45,5 +45,11 @@ command game show-room: Room do
   novella at: novella layers title show: Room name;
   novella say: "[#nvl-text bold: Room name]";
   novella say: Room description;
+  novella clear: novella layers background;
+  let Bg = Room background;
+  condition
+    when Bg is nothing => nothing;
+    otherwise => novella at: novella layers background show: Bg;
+  end
   novella wait-interaction;
 end
