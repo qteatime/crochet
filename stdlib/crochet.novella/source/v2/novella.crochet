@@ -29,6 +29,7 @@ type nvl-menu(items is list<nvl-menu-item>);
 
 abstract nvl-menu-item;
 type nvl-menu-leaf(label is text, value is A) is nvl-menu-item;
+type nvl-menu-branch(prefix is text, items is list<nvl-menu-item>) is nvl-menu-item;
 
 abstract nvl-unit;
 type nvl-unit-pixel(value is integer) is nvl-unit;
@@ -83,6 +84,9 @@ command #nvl-menu items: (Items is list<nvl-menu-item>) =
 
 command #nvl-menu-leaf label: (Label is text) value: Value =
   new nvl-menu-leaf(Label, Value);
+
+command #nvl-menu-branch label: (Label is text) items: (Items is list<nvl-menu-item>) =
+  new nvl-menu-branch(Label, Items);
 
 
 command #nvl-size zero =
@@ -294,6 +298,9 @@ end
 
 command nvl-web-renderer render-menu-item: (X is nvl-menu-leaf) =
   foreign dom.make-menu-leaf(X.label, X.value);
+
+command nvl-web-renderer render-menu-item: (X is nvl-menu-branch) =
+  foreign dom.make-menu-branch(X.prefix, X.items map: (self render-menu-item: _));
 
 command nvl-web-renderer render-menu: (X is nvl-menu) do
   let Items = X.items map: (self render-menu-item: _);

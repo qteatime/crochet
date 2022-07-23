@@ -37,9 +37,18 @@ command main-html: Root do
     novella say: "More lines of text.";
     novella say: "More!!!!";
     let Selection = novella menu: (#nvl-menu items: [
-      #nvl-menu-leaf label: "Go ..." value: "went",
-      #nvl-menu-leaf label: "Search ..." value: "searched",
-      #nvl-menu-leaf label: "Take ..." value: "taken",
+      #nvl-menu-leaf label: "check my inventory" value: "I check my inventory",
+      #nvl-menu-branch label: "go" items: [
+        #nvl-menu-leaf label: "north" value: "I go north",
+        #nvl-menu-leaf label: "east" value: "I go east",
+      ],
+      #nvl-menu-branch label: "search" items: [
+        #nvl-menu-leaf label: "the desk" value: "I search the desk",
+        #nvl-menu-branch label: "the portrait" items: [
+          #nvl-menu-leaf label: "on the wall" value: "I search the portrait on the wall",
+          #nvl-menu-leaf label: "on the desk" value: "I search the portrait on the desk"
+        ]
+      ],
     ]);
     novella say: Selection;
   with

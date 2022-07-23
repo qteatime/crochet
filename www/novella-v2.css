@@ -87,7 +87,8 @@
 }
 
 .novella-menu-prefix,
-.novella-menu-suffix {
+.novella-menu-suffix,
+.novella-menu-breadcrumb {
   font-style: italic;
   color: #7a7a7a;
   border-left: none;
@@ -98,6 +99,9 @@
 
 .novella-menu-suffix {
   flex-grow: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .novella-menu-selection-container {
@@ -109,6 +113,7 @@
   height: 2em;
   line-height: 2em;
   padding: 0 1em;
+  white-space: nowrap;
 }
 
 .novella-menu-selection-current {
@@ -116,4 +121,54 @@
   border: 1px solid #4f4f4f;
   border-left: none;
   border-right: none;
+}
+
+.novella-menu-item-rotating-suffix-text {
+  display: block;
+  height: 0px;
+  overflow: hidden;
+  line-height: 2em;
+  position: relative;
+  top: 2em;
+  opacity: 0;
+  transition: all 0.3s ease-out;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.novella-menu-item-rotating-suffix-text.novella-rotating-suffix-shown {
+  top: 0px;
+  height: 2em;
+  opacity: 1;
+}
+
+.novella-menu-breadcrumb {
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 0.2em;
+  flex-wrap: nowrap;
+}
+
+.novella-menu-breadcrumb-node {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+  background: #ddd;
+  border-radius: 0.8em;
+  height: calc(2em - 8px);
+  border: 1px solid #4f4f4f;
+  line-height: calc(2em - 8px);
+  padding: 0 0.5em;
+  align-items: center;
+  margin-top: 3px;
+  font-style: normal;
+  color: #4f4f4f;
+}
+
+.novella-menu-breadcrumb-remove {
+  font-size: 0.6em;
+  color: #d84d7d;
+  cursor: pointer;
 }
