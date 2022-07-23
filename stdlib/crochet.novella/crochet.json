@@ -6,5 +6,10 @@
   "version": "1.0.0",
   "dependencies": ["crochet.core", "crochet.debug"],
   "sources": ["source/v2/novella.crochet"],
-  "native_sources": ["native/dom.js"]
+  "native_sources": ["native/dom.js"],
+  "capabilities": {
+    "requires": [],
+    "provides": [],
+    "optional": ["crochet.core/asset-location"]
+  }
 }

@@ -20,11 +20,11 @@
   }
 
   30% {
-    transform: translateY(6px);
+    transform: translateY(0.5em);
   }
 
   31% {
-    transform: translateY(7px);
+    transform: translateY(0.51em);
   }
 
   60% {
@@ -73,14 +73,14 @@
 }
 
 .novella-layer[data-name="background"] {
-  height: 20%;
+  height: 175px;
   top: 3rem;
   background: #4f4f4f;
 }
 
 .novella-layer[data-name="dialogue"] {
-  height: calc(50% - 3rem);
-  top: calc(3rem + 20%);
+  height: calc(100% - 13rem - 175px);
+  top: calc(3rem + 175px);
   padding: 2rem;
 }
 
@@ -89,18 +89,31 @@
 }
 
 .novella-layer[data-name="menu"] {
-  height: 30%;
-  top: 70%;
+  height: 10rem;
+  top: calc(100% - 10rem);
 }
 
 .novella-continue-marker {
-  display: inline-block;
-  width: 0.4em;
-  height: 0.4em;
-  background: #6f9a7d;
-  animation: novella-ctc 0.7s ease-in-out infinite;
-  margin-left: 0.5em;
-  border-radius: 100%;
+  display: block;
+  text-align: center;
+  animation: novella-ctc 1s ease-in-out infinite;
+  margin-top: 2em;
+}
+
+.novella-continue-marker .novella-continue-marker-help {
+  font-style: italic;
+  color: #7a7a7a;
+  font-size: 0.9em;
+}
+
+.novella-continue-marker .novella-continue-marker-icon {
+  font-size: 2em;
+  color: #7a7a7a;
+}
+
+.novella-continue-marker .novella-continue-marker-help,
+.novella-continue-marker .novella-continue-marker-icon {
+  display: block;
 }
 
 .novella-text {
@@ -124,6 +137,7 @@
   flex-direction: row;
   align-items: center;
   flex-wrap: nowrap;
+  margin-top: 0.3em;
 }
 
 .novella-menu-container > * {
@@ -159,6 +173,36 @@
   line-height: 2em;
   padding: 0 1em;
   white-space: nowrap;
+}
+
+.novella-menu-selection-previous,
+.novella-menu-selection-next {
+  color: #7a7a7a;
+  position: relative;
+}
+
+.novella-menu-selection-next::before,
+.novella-menu-selection-previous::before {
+  font-family: "Font Awesome 5 Free";
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  position: absolute;
+  display: block;
+  left: 50%;
+  width: 1.2em;
+  height: 1.2em;
+  margin-left: -0.6em;
+}
+
+.novella-menu-selection-next::before {
+  content: "\f078";
+  bottom: -0.75em;
+}
+
+.novella-menu-selection-previous::before {
+  content: "\f077";
+  top: -1.5em;
 }
 
 .novella-menu-selection-current {

@@ -9,9 +9,7 @@ when
   not Target is-locked,
   not player visited: Target
 do
-  novella clear: novella layers title;
-  novella at: novella layers title show: Target name;
-  novella say: Target description;
+  game show-room: Target;
   fact player at: Target;
   fact player visited: Target;
 end
@@ -25,9 +23,7 @@ when
   Target short-name: Short-name,
   player visited: Target
 do
-  novella clear: novella layers title;
-  novella at: novella layers title show: Target name;
-  novella say: Target description;
+  game show-room: Target;
   fact player at: Target;
 end
 
@@ -39,9 +35,7 @@ when
   Target short-name: Short-name,
   player visited: Target
 do
-  novella clear: novella layers title;
-  novella at: novella layers title show: Target name;
-  novella say: Target description;
+  game say: Target description;
 end
 
 action player look-around "look around"
@@ -49,7 +43,7 @@ when
   player at: Room,
   (not cloak on: player | not Room has-light)
 do
-  novella say: Room description;
+  game say: Room description;
 end
 
 action player look-around-dark "look around"
@@ -58,7 +52,7 @@ when
   Room has-light,
   cloak on: player
 do
-  novella say: "In the dark? You could easily disturb something!";
+  game say: "In the dark? You could easily disturb something!";
   let Ns = match
              when Room times-disturbed: X => X;
              otherwise => 0;
@@ -77,10 +71,8 @@ when
   let Has-cloak = search cloak on: player,
   if not (Has-light all-true and Has-cloak all-true)
 do
-  novella say: Thing description;
+  game say: Thing description;
 end
-
-open crochet.debug;
 
 action player check-inventory "check my possessions"
 when
@@ -88,13 +80,13 @@ when
 do
   condition
     when Items is-empty =>
-      novella say: "You're not carrying anything of note.";
+      game say: "You're not carrying anything of note.";
 
     when Items count === 1 =>
-      novella say: "You're carrying [Items first short-name]";
+      game say: "You're carrying [Items first short-name]";
 
     otherwise =>
-      novella say: "You're carrying [Items but-last map: (_ short-name) join: ", "], and [Items last short-name]";
+      game say: "You're carrying [Items but-last map: (_ short-name) join: ", "], and [Items last short-name]";
   end
 end
 
@@ -105,13 +97,13 @@ when
 do
   match
     when bar times-disturbed: N, if N < 2 do
-      novella say: "The message, neatly marked in the sawdust reads... [#nvl-text strong: "you won."]";
+      game say: "The message, neatly marked in the sawdust reads... [#nvl-text strong: "you won."]";
       fact won game-state;
     end
 
     otherwise do
-      novella say: "The message has been carelessly trampled, making it difficult to read.
-                    You can just distinguish the words... [#nvl-text strong: "you have lost"]";
+      game say: "The message has been carelessly trampled, making it difficult to read.
+                 You can just distinguish the words... [#nvl-text strong: "you have lost"]";
       fact lost game-state;
     end
   end
@@ -127,7 +119,7 @@ when
   Thing short-name: Thing-name,
   Place short-name: Place-name
 do
-  novella say: "You place [Thing-name] on [Place-name].";
+  game say: "You place [Thing-name] on [Place-name].";
   fact Thing on: Place;
 end
 
@@ -141,6 +133,6 @@ when
   Thing short-name: Thing-name,
   Place short-name: Place-name
 do
-  novella say: "You take [Thing-name] from [Place-name].";
+  game say: "You take [Thing-name] from [Place-name].";
   fact Thing on: player;
 end

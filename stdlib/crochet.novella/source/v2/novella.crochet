@@ -3,6 +3,7 @@
 singleton novella;
 
 effect novella-action with
+  wait-interaction(); // -> nothing
   show(item is nvl-element, layer is nvl-layer); // -> nothing
   say(text is nvl-text); // -> nothing
   clear(layer is nvl-layer); // -> nothing
@@ -54,6 +55,11 @@ type nvl-padding(top is nvl-unit, right is nvl-unit, bottom is nvl-unit, left is
 
 abstract nvl-element;
 type nvl-text(children is list<nvl-text-component>) is nvl-element;
+type nvl-image(source is nvl-source) is nvl-element;
+type nvl-transform-element(element is nvl-element, transform is nvl-transform) is nvl-element;
+
+abstract nvl-source;
+type nvl-source-asset(asset is package-asset) is nvl-source;
 
 abstract nvl-text-component;
 type nvl-tc-text(content is text) is nvl-text-component;
@@ -309,7 +315,11 @@ command nvl-web-renderer at: (Layer is nvl-layer) show: (Node is nvl-dom-node) d
 end
 
 command nvl-web-renderer wait-text-interaction: (Node is nvl-dom-node) do
-  let Continue-mark = nvl-dom make: "span" class: "novella-continue-marker";
+  let Continue-mark =
+    nvl-dom make: "span" class: "novella-continue-marker"
+      | append: (nvl-dom make: "span" class: "novella-continue-marker-help"
+                  | append: (nvl-dom make-text: "(click or press 'Return' to continue)"))
+      | append: (nvl-dom make: "i" class: "novella-continue-marker-icon fas fa-chevron-down");
   Node append: Continue-mark;
   nvl-dom wait-interaction;
   Continue-mark detach;
@@ -328,6 +338,9 @@ command novella clear: (Layer is nvl-layer) =
 
 command novella menu: (Menu is nvl-menu) =
   perform novella-action.menu(Menu);
+
+command novella wait-interaction =
+  perform novella-action.wait-interaction();
 
 command package action-title-parts: (Title is interpolation) =
   Title parts;
@@ -356,7 +369,12 @@ with
   on novella-action.say(Text) do
     let Node = Renderer render: Text;
     Renderer at: Dialogue-layer show: Node;
-    Renderer wait-text-interaction: Node;
+    continue with nothing;
+  end
+
+  on novella-action.wait-interaction() do
+    let Dialogue-node = Renderer.layer-map at: Dialogue-layer;
+    Renderer wait-text-interaction: Dialogue-node;
     continue with nothing;
   end
 
@@ -478,6 +496,20 @@ command nvl-web-renderer render: (X is nvl-tc-flow) do
   Node;
 end
 
+command nvl-web-renderer render: (X is nvl-transform-element) do
+  let Node = self render: X.element;
+  self transform: Node with: X.transform;
+end
+
+command nvl-web-renderer render: (X is nvl-image) do
+  let Uri = self resolve-source-uri: X.source;
+  nvl-dom make: "img" class: "novella-image"
+    | set: "src" to: Uri;
+end
+
+command nvl-web-renderer resolve-source-uri: (Source is nvl-source-asset) =
+  asset-location resolve: Source.asset;
+
 command nvl-web-renderer render-menu-item: (X is nvl-menu-leaf) =
   foreign dom.make-menu-leaf(X.label, X.value);
 
@@ -582,3 +614,10 @@ command #nvl-layer name: (Name is text) =
 
 command nvl-layer transform: (Transform is nvl-transform) =
   new nvl-layer(self with transform -> Transform);
+
+
+command #nvl-image from-asset: (Asset is package-asset) =
+  new nvl-image(new nvl-source-asset(Asset));
+
+command nvl-element transform: (T is nvl-transform) =
+  new nvl-transform-element(self, T);

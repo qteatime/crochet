@@ -8,9 +8,16 @@
     "source/actions.crochet",
     "source/main.crochet"
   ],
-  "dependencies": ["crochet.core", "crochet.novella", "crochet.debug"],
+  "dependencies": [
+    "crochet.core",
+    {
+      "name": "crochet.novella",
+      "capabilities": ["crochet.core/asset-location"]
+    },
+    "crochet.debug"
+  ],
   "capabilities": {
-    "requires": [],
+    "requires": ["crochet.core/asset-location"],
     "provides": []
   }
 }
