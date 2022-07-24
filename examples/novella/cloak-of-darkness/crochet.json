@@ -20,5 +20,13 @@
     "requires": ["crochet.core/asset-location"],
     "provides": []
   },
-  "assets": ["bar.png", "cloakroom.png", "foyer.png"]
+  "assets": ["bar.png", "cloakroom.png", "foyer.png"],
+  "config": {
+    "electron": {
+      "window": {
+        "width": 720,
+        "height": 720
+      }
+    }
+  }
 }

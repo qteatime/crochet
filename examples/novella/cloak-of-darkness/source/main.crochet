@@ -8,7 +8,7 @@ command main-html: Root do
   let Layers = #nvl-layer-group defaults;
   let Renderer = novella web-renderer: Root
                    | layers: Layers
-                   | width: 720 height: 680;
+                   | width: 720 height: 720;
 
   handle
     game run;

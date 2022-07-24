@@ -374,7 +374,11 @@ async function run_web([file]: string[], options: Options) {
     target_web(),
     cap
   );
-  run_electron(config.url.toString());
+  const web_config = JSON.parse(FS.readFileSync(file, "utf-8"))?.config || {};
+  run_electron(
+    Path.join(__dirname, "run-web.js"),
+    JSON.stringify({ config: web_config, ...config })
+  );
 }
 
 async function playground([file]: string[], options: Options) {
