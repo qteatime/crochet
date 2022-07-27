@@ -361,7 +361,6 @@ command novella choose-action: (Actions is list<action-choice>) do
     let Parts = package action-title-parts: Action title | map: (_ to-text);
     Menu insert: Parts value: Action;
   }
-  |> _ flatten-menu-tree
   |> novella menu: _;
 end
 
