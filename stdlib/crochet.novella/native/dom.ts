@@ -60,18 +60,41 @@ export default (ffi: ForeignInterface) => {
     return x < 0 ? max + x : x;
   }
 
-  function wrap_choose<A>(x: A[], index0: number) {
-    const index = wrap(index0, x.length);
-    return x[index];
-  }
-
   function clear(x: HTMLElement) {
     x.textContent = "";
     return x;
   }
 
+  function highlight_query(query: string, text: string) {
+    if (query.trim() == "") {
+      return text;
+    }
+
+    const re = new RegExp(
+      query.trim().replace(/([^\w\d])/g, (_, x) => "\\" + x),
+      "gi"
+    );
+    let last = 0;
+    const elements = [];
+    while (true) {
+      const next = re.exec(text);
+      if (next == null || re.lastIndex == -1) {
+        elements.push(text.slice(last));
+        break;
+      } else {
+        elements.push(text.slice(last, next.index));
+        elements.push(
+          h("span", { class: "novella-selection-highlight" }, [next[0]])
+        );
+        last = re.lastIndex;
+      }
+    }
+    return h("span", { class: "novella-selection-with-highlights" }, elements);
+  }
+
   abstract class MenuItem {
-    abstract render(): { text: HTMLElement; suffix: HTMLElement };
+    abstract render(query: string): { text: HTMLElement; suffix: HTMLElement };
+    abstract prefix_text(): string;
     abstract suffix_text(): string[];
   }
 
@@ -80,11 +103,17 @@ export default (ffi: ForeignInterface) => {
       super();
     }
 
-    render() {
+    render(query: string) {
       return {
-        text: h("div", { class: "novella-menu-item-text" }, [this.text]),
+        text: h("div", { class: "novella-menu-item-text" }, [
+          highlight_query(query, this.text),
+        ]),
         suffix: h("div", { class: "novella-menu-item-empty" }, []),
       };
+    }
+
+    prefix_text() {
+      return this.text;
     }
 
     suffix_text() {
@@ -97,15 +126,21 @@ export default (ffi: ForeignInterface) => {
       super();
     }
 
+    prefix_text() {
+      return this.prefix;
+    }
+
     suffix_text() {
       return this.items.flatMap((x) =>
         x.suffix_text().map((x) => `${this.prefix} ${x}`)
       );
     }
 
-    render() {
+    render(query: string) {
       return {
-        text: h("div", { class: "novella-menu-item-branch" }, [this.prefix]),
+        text: h("div", { class: "novella-menu-item-branch" }, [
+          highlight_query(query, this.prefix),
+        ]),
         suffix: h("div", { class: "novella-menu-item-rotating-suffix" }, [
           ...this.items
             .flatMap((x) => x.suffix_text())
@@ -234,56 +269,57 @@ export default (ffi: ForeignInterface) => {
     const node = ffi.unbox_typed(HTMLElement, node0);
     const menu = ffi.unbox_typed(Menu, menu0);
     const deferred = defer<CrochetValue>();
+    let all_items = menu.items;
     let items = menu.items;
     let trail: MIBranch[] = [];
     let position = 0;
     let roll_timer: any = null;
+    let previous_value = "";
 
     const menu_container = h("div", { class: "novella-menu-container" }, []);
     const menu_prefix = h("div", { class: "novella-menu-prefix" }, [prefix]);
     const menu_breadcrumb = h("div", { class: "novella-menu-breadcrumb" }, []);
+    const menu_input = h(
+      "input",
+      { class: "novella-menu-input" },
+      []
+    ) as HTMLInputElement;
     const menu_selection = h(
       "div",
       { class: "novella-menu-selection-container" },
       []
     );
-    const menu_selection_previous = h(
+    const menu_selection_completion = h(
       "div",
-      { class: "novella-menu-selection-previous" },
+      { class: "novella-menu-selection-completion" },
       []
     );
     const menu_selection_current = h(
       "div",
       { class: "novella-menu-selection-current" },
-      []
-    );
-    const menu_selection_next = h(
-      "div",
-      { class: "novella-menu-selection-next" },
-      []
+      [menu_input]
     );
     const menu_suffix = h("div", { class: "novella-menu-suffix" }, []);
 
     menu_container.appendChild(menu_prefix);
     menu_container.appendChild(menu_breadcrumb);
     menu_container.appendChild(menu_selection);
-    menu_selection.appendChild(menu_selection_previous);
     menu_selection.appendChild(menu_selection_current);
-    menu_selection.appendChild(menu_selection_next);
+    menu_selection.appendChild(menu_selection_completion);
     menu_container.appendChild(menu_suffix);
 
     function render_selection() {
-      const { text: current, suffix: current_suffix } = wrap_choose(
-        items,
-        position
-      ).render();
-      const previous = wrap_choose(items, position - 1).render().text;
-      const next = wrap_choose(items, position + 1).render().text;
+      if (items.length === 0) {
+        return;
+      }
+      const query = menu_input.value;
+      const { suffix: current_suffix } = items[position].render(query);
+      const completions = items.map((x) => x.render(query).text);
       clear(menu_breadcrumb);
       for (const { index, value } of enumerate(trail)) {
         menu_breadcrumb.appendChild(
           h("div", { class: "novella-menu-breadcrumb-node" }, [
-            value.render().text,
+            value.render("").text,
             $(
               h("button", { class: "novella-menu-breadcrumb-remove" }, [
                 h("i", { class: "novella-icon fas fa-times" }, []),
@@ -307,10 +343,24 @@ export default (ffi: ForeignInterface) => {
         );
       }
 
-      clear(menu_selection_previous).appendChild(previous);
-      clear(menu_selection_current).appendChild(current);
+      menu_input.focus();
       clear(menu_suffix).appendChild(current_suffix);
-      clear(menu_selection_next).appendChild(next);
+      clear(menu_selection_completion);
+      for (const { index, value } of enumerate(completions)) {
+        const x = h(
+          "div",
+          { class: "novella-menu-selection-completion-item" },
+          [value]
+        );
+        x.addEventListener("click", () => {
+          accept_selection(items[index]);
+        });
+        menu_selection_completion.appendChild(x);
+        if (index === position) {
+          x.classList.add("novella-menu-selection-completion-selected");
+          menu_selection_completion.scrollTop = x.offsetTop;
+        }
+      }
       roll_animate();
     }
 
@@ -348,48 +398,86 @@ export default (ffi: ForeignInterface) => {
         deferred.resolve(selected.value);
       } else if (selected instanceof MIBranch) {
         trail.push(selected);
+        menu_input.value = "";
+        previous_value = "";
+        all_items = selected.items;
         items = selected.items;
         position = 0;
         render_selection();
       }
     }
 
+    function filter_items() {
+      items = all_items.filter((x) =>
+        x.prefix_text().includes(menu_input.value)
+      );
+      if (items.length === 0) {
+        menu_container.classList.add("novella-invalid-selection");
+      } else {
+        menu_container.classList.remove("novella-invalid-selection");
+      }
+    }
+
     function input_listener(ev: KeyboardEvent) {
+      filter_items();
       if (ev.key === "ArrowUp") {
-        position = wrap(position - 1, items.length);
         ev.stopPropagation();
         ev.preventDefault();
+        if (position === 0) {
+          return;
+        }
+        position = position - 1;
         render_selection();
       } else if (ev.key === "ArrowDown") {
-        position = wrap(position + 1, items.length);
         ev.stopPropagation();
         ev.preventDefault();
+        if (position >= items.length - 1) {
+          return;
+        }
+        position = position + 1;
         render_selection();
       } else if (ev.key === "Enter") {
-        const selected = wrap_choose(items, position);
+        if (items.length === 0) {
+          return;
+        }
+        const selected = items[position];
         accept_selection(selected);
         ev.stopPropagation();
         ev.preventDefault();
         return;
       } else if (ev.key === "Backspace") {
-        trail.pop();
-        if (trail.length === 0) {
-          items = menu.items;
+        if (menu_input.value === "") {
+          if (previous_value !== "") {
+            previous_value = "";
+            return;
+          }
+          trail.pop();
+          if (trail.length === 0) {
+            all_items = menu.items;
+          } else {
+            all_items = trail[trail.length - 1].items;
+          }
+          items = all_items.slice();
+          position = 0;
+          render_selection();
         } else {
-          items = trail[trail.length - 1].items;
+          render_selection();
         }
+      } else {
         position = 0;
         render_selection();
       }
+      previous_value = menu_input.value;
     }
 
     render_selection();
     node.appendChild(menu_container);
-    document.addEventListener("keyup", input_listener);
+    menu_input.addEventListener("keyup", input_listener);
+    menu_input.focus();
 
     const result = yield ffi.await(deferred.promise);
 
-    document.removeEventListener("keyup", input_listener);
+    menu_input.removeEventListener("keyup", input_listener);
     node.removeChild(menu_container);
 
     return result;

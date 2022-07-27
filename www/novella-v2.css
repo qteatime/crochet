@@ -137,7 +137,7 @@
 .novella-menu-container {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: nowrap;
   margin-top: 0.3em;
 }
@@ -145,6 +145,28 @@
 .novella-menu-container > * {
   padding: 0.5em 1em;
   border: 1px solid #4f4f4f;
+}
+
+.novella-menu-input {
+  line-height: 2em;
+  height: 2em;
+  background: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-family: Lora, serif;
+}
+
+.novella-invalid-selection .novella-menu-input {
+  color: #d84d7d;
+}
+
+.novella-invalid-selection .novella-menu-selection-completion {
+  display: none;
+}
+
+.novella-selection-highlight {
+  font-weight: bold;
 }
 
 .novella-menu-prefix,
@@ -166,8 +188,8 @@
 }
 
 .novella-menu-selection-container {
-  border-radius: 3px;
-  padding: 0.5em 0;
+  padding: 0;
+  border-top: none;
 }
 
 .novella-menu-selection-container > * {
@@ -177,38 +199,36 @@
   white-space: nowrap;
 }
 
-.novella-menu-selection-previous,
-.novella-menu-selection-next {
+.novella-menu-selection {
+  display: flex;
+  flex-direction: column;
+}
+
+.novella-menu-selection-completion {
   color: #7a7a7a;
   position: relative;
+  height: auto;
+  font-style: italic;
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(6em + 2px);
 }
 
-.novella-menu-selection-next::before,
-.novella-menu-selection-previous::before {
-  font-family: "Font Awesome 5 Free";
-  font-style: normal;
-  font-weight: 900;
-  font-display: block;
-  position: absolute;
-  display: block;
-  left: 50%;
-  width: 1.2em;
-  height: 1.2em;
-  margin-left: -0.6em;
+.novella-menu-selection-completion > * {
+  padding: 0 1em;
 }
 
-.novella-menu-selection-next::before {
-  content: "\f078";
-  bottom: -0.75em;
+.novella-menu-selection-completion > *:not(:last-child) {
+  border-bottom: 1px solid #ddd;
 }
 
-.novella-menu-selection-previous::before {
-  content: "\f077";
-  top: -1.5em;
+.novella-menu-selection-completion
+  > .novella-menu-selection-completion-selected {
+  background: #ececea;
 }
 
 .novella-menu-selection-current {
-  background: #ececea;
+  background: #fafafa;
   border: 1px solid #4f4f4f;
   border-left: none;
   border-right: none;
