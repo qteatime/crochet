@@ -223,6 +223,7 @@
   height: 2em;
   line-height: 2em;
   font-family: Lora, serif;
+  color: #7a7a7a;
 }
 
 .novella-menu-selection-completion > *:not(:last-child) {
@@ -232,6 +233,7 @@
 .novella-menu-selection-completion
   > .novella-menu-selection-completion-selected {
   background: #ececea;
+  color: #4f4f4f;
 }
 
 .novella-menu-selection-current {
