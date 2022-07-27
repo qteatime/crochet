@@ -348,7 +348,7 @@ export default (ffi: ForeignInterface) => {
       clear(menu_selection_completion);
       for (const { index, value } of enumerate(completions)) {
         const x = h(
-          "div",
+          "button",
           { class: "novella-menu-selection-completion-item" },
           [value]
         );

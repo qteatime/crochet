@@ -216,6 +216,13 @@
 
 .novella-menu-selection-completion > * {
   padding: 0 1em;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: left;
+  height: 2em;
+  line-height: 2em;
+  font-family: Lora, serif;
 }
 
 .novella-menu-selection-completion > *:not(:last-child) {
