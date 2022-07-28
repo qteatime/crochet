@@ -482,4 +482,22 @@ export default (ffi: ForeignInterface) => {
 
     return result;
   });
+
+  ffi.defun("dom.make-sound", (name0, loop) => {
+    const name = ffi.text_to_string(name0);
+    const el = h(
+      "audio",
+      { "data-name": name, class: "novella-sound-channel" },
+      []
+    ) as HTMLAudioElement;
+    el.loop = ffi.to_js_boolean(loop);
+    return ffi.box(el);
+  });
+
+  ffi.defun("dom.play-sound", (channel0, src) => {
+    const channel = ffi.unbox_typed(HTMLAudioElement, channel0);
+    channel.src = ffi.text_to_string(src);
+    channel.play();
+    return ffi.nothing;
+  });
 };

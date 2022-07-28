@@ -10,6 +10,7 @@ effect novella-action with
   clear(layer is nvl-layer); // -> nothing
   get-layers(); // -> nvl-layer-group
   transform-layer(layer is nvl-layer, transform is nvl-transform); // -> nothing
+  play-sound(channel is nvl-sound-channel, source is nvl-audio); // -> nothing
 end
 
 type nvl-size(global width is integer, global height is integer);
@@ -33,6 +34,10 @@ type nvl-web-renderer(
   screen is nvl-dom-node,
   layer-map is map<nvl-layer, nvl-dom-node>,
 );
+
+type nvl-sound-channel(name is text, sound is nvl-dom-sound);
+type nvl-dom-sound(box is unknown);
+type nvl-audio(source is nvl-source);
 
 type nvl-menu(items is list<nvl-menu-item>);
 
@@ -381,6 +386,11 @@ command novella transform: (Layer is nvl-layer) with: (Transform is nvl-transfor
 command novella transform: Item with: (Properties is list<nvl-property>) =
   self transform: Item with: (#nvl-transform with: Properties);
 
+command novella make-sound-channel: (Name is text) loop: (Loop is boolean) =
+  new nvl-sound-channel(Name, new nvl-dom-sound(foreign dom.make-sound(Name, Loop)));
+
+command nvl-sound-channel play: (Source is nvl-audio) =
+  perform novella-action.play-sound(self, Source);
 
 handler novella-game renderer: (Config is nvl-renderer) do
   let Renderer = Config setup;
@@ -422,6 +432,13 @@ with
   on novella-action.transform-layer(Layer, Transform) do
     let Layer-node = Renderer.layer-map at: Layer;
     Renderer transform: Layer-node with: Transform;
+    continue with nothing;
+  end
+
+  on novella-action.play-sound(Channel, Source) do
+    let Src = Renderer resolve-source-uri: Source.source;
+    let Audio = Channel.sound.box;
+    foreign dom.play-sound(Audio, Src);
     continue with nothing;
   end
 end
@@ -700,3 +717,7 @@ command #nvl-image from-asset: (Asset is package-asset) =
 
 command nvl-element transform: (T is nvl-transform) =
   new nvl-transform-element(self, T);
+
+
+command #nvl-audio from-asset: (Asset is package-asset) =
+  new nvl-audio(new nvl-source-asset(Asset));
