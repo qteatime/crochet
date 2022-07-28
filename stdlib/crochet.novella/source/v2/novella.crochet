@@ -79,6 +79,7 @@ type nvl-tc-strong(child is nvl-text-component) is nvl-text-component;
 type nvl-tc-emphasis(child is nvl-text-component) is nvl-text-component;
 type nvl-tc-italic(child is nvl-text-component) is nvl-text-component;
 type nvl-tc-bold(child is nvl-text-component) is nvl-text-component;
+type nvl-tc-link(reference is static-text, child is nvl-text-component) is nvl-text-component;
 type nvl-tc-flow(children is list<nvl-text-component>) is nvl-text-component;
 
 trait to-nvl-text-component with
@@ -149,6 +150,8 @@ command #nvl-text bold: (X has to-nvl-text-component) =
 command #nvl-text flow: (Xs is list<X has to-nvl-text-component>) =
   new nvl-tc-flow(Xs map: (_ as nvl-text-component));
 
+command #nvl-text link-to: (URI is static-text) text: (Text has to-nvl-text-component) =
+  new nvl-tc-link(URI, Text as nvl-text-component);
 
 command #nvl-menu items: (Items is list<nvl-menu-item>) =
   new nvl-menu(Items);
@@ -534,6 +537,13 @@ command nvl-web-renderer render: (X is nvl-tc-flow) do
   for Child in X.children do
     Node append: (self render: Child);
   end
+  Node;
+end
+
+command nvl-web-renderer render: (X is nvl-tc-link) do
+  let Node = nvl-dom make: "a" class: "novella-text-link";
+  Node set: "href" to: X.reference;
+  Node append: (self render: X.child);
   Node;
 end
 

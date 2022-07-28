@@ -125,6 +125,11 @@
   animation: novella-show 0.3s ease-out;
 }
 
+.novella-text-link {
+  color: #5494d7;
+  text-decoration: none;
+}
+
 .novella-text-strong,
 .novella-text-bold {
   font-weight: bold;
