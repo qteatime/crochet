@@ -261,7 +261,7 @@ export class ResolvedFile {
   }
 
   get absolute_filename() {
-    return Path.resolve(this.pkg.root, this.relative_filename);
+    return Path.join(this.pkg.root, this.relative_filename);
   }
 
   get crochet_file(): ResolvedFile {
