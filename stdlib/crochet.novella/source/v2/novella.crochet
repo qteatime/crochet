@@ -69,6 +69,7 @@ abstract nvl-element;
 type nvl-text(children is list<nvl-text-component>) is nvl-element;
 type nvl-image(source is nvl-source) is nvl-element;
 type nvl-transform-element(element is nvl-element, transform is nvl-transform) is nvl-element;
+type nvl-element-dom(node is nvl-dom-node) is nvl-element;
 
 abstract nvl-source;
 type nvl-source-asset(asset is package-asset) is nvl-source;
@@ -499,6 +500,8 @@ command nvl-dom wait-interaction do
   self;
 end
 
+command nvl-web-renderer render: (X is nvl-element-dom) =
+  X.node;
 
 command nvl-web-renderer render: (X is nvl-text) do
   let Node = nvl-dom make: "div" class: "novella-text";
@@ -731,3 +734,7 @@ command nvl-element transform: (T is nvl-transform) =
 
 command #nvl-audio from-asset: (Asset is package-asset) =
   new nvl-audio(new nvl-source-asset(Asset));
+
+
+command #nvl-element-dom from-html: (Node is unknown) =
+  new nvl-element-dom(nvl-dom from-html-element: Node);
