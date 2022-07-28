@@ -9,6 +9,7 @@ effect novella-action with
   menu(menu is nvl-menu<A>, layer is nvl-layer); // -> A
   clear(layer is nvl-layer); // -> nothing
   get-layers(); // -> nvl-layer-group
+  transform-layer(layer is nvl-layer, transform is nvl-transform); // -> nothing
 end
 
 type nvl-size(global width is integer, global height is integer);
@@ -42,6 +43,12 @@ type nvl-menu-branch(prefix is text, items is list<nvl-menu-item>) is nvl-menu-i
 abstract nvl-unit;
 type nvl-unit-pixel(value is integer) is nvl-unit;
 type nvl-unit-percent(value is float-64bit) is nvl-unit;
+type nvl-unit-em(value is float-64bit) is nvl-unit;
+type nvl-unit-rem(value is float-64bit) is nvl-unit;
+
+abstract nvl-unit-calc is nvl-unit;
+type nvl-unit-calc-add(left is nvl-unit, right is nvl-unit) is nvl-unit-calc;
+type nvl-unit-calc-sub(left is nvl-unit, right is nvl-unit) is nvl-unit-calc;
 
 
 type nvl-transform(properties is list<nvl-property>);
@@ -50,6 +57,7 @@ abstract nvl-property;
 type nvl-dimension(width is nvl-unit, height is nvl-unit) is nvl-property;
 type nvl-position(x is nvl-unit, y is nvl-unit) is nvl-property;
 type nvl-padding(top is nvl-unit, right is nvl-unit, bottom is nvl-unit, left is nvl-unit) is nvl-property;
+type nvl-alpha(value is float-64bit) is nvl-property;
 
 
 abstract nvl-element;
@@ -367,6 +375,12 @@ end
 command novella layers =
   perform novella-action.get-layers();
 
+command novella transform: (Layer is nvl-layer) with: (Transform is nvl-transform) =
+  perform novella-action.transform-layer(Layer, Transform);
+
+command novella transform: Item with: (Properties is list<nvl-property>) =
+  self transform: Item with: (#nvl-transform with: Properties);
+
 
 handler novella-game renderer: (Config is nvl-renderer) do
   let Renderer = Config setup;
@@ -403,6 +417,12 @@ with
 
   on novella-action.get-layers() do
     continue with Config layers;
+  end
+
+  on novella-action.transform-layer(Layer, Transform) do
+    let Layer-node = Renderer.layer-map at: Layer;
+    Renderer transform: Layer-node with: Transform;
+    continue with nothing;
   end
 end
 
@@ -552,11 +572,38 @@ command nvl-web-renderer apply-property: (X is nvl-padding) to: (N is nvl-dom-no
     padding-left -> self render-unit: X.left,
   ];
 
+command nvl-web-renderer apply-property: (X is nvl-alpha) to: (N is nvl-dom-node) =
+  N set-style: [
+    opacity -> X.value to-text
+  ];
+
 command nvl-web-renderer render-unit: (X is nvl-unit-pixel) =
   "[X.value to-text]px" flatten-into-plain-text;
 
 command nvl-web-renderer render-unit: (X is nvl-unit-percent) =
   "[X.value to-text]%" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-rem) =
+  "[X.value to-text]rem" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-em) =
+  "[X.value to-text]em" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-calc) =
+  "calc([self render-unit-calc: X])" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit-calc: (X is nvl-unit-calc-add) =
+  "([self render-unit: X.left] + [self render-unit: X.right])";
+
+command nvl-web-renderer render-unit-calc: (X is nvl-unit-calc-sub) =
+  "([self render-unit: X.left] - [self render-unit: X.right])";
+
+command nvl-web-renderer render-unit-calc: nvl-unit-calc do
+  assert false;
+end
+
+command nvl-web-renderer render-unit-calc: (X is nvl-unit) =
+  self render-unit: X;
 
 
 command #nvl-unit pixels: (X is integer) =
@@ -568,6 +615,24 @@ command #nvl-unit percent: (X is integer) =
 command #nvl-unit percent: (X is float-64bit) =
   new nvl-unit-percent(X);
 
+command #nvl-unit em: (X is integer) =
+  new nvl-unit-em(X as float-64bit);
+
+command #nvl-unit em: (X is float-64bit) =
+  new nvl-unit-em(X);
+
+command #nvl-unit rem: (X is integer) =
+  new nvl-unit-rem(X as float-64bit);
+
+command #nvl-unit rem: (X is float-64bit) =
+  new nvl-unit-rem(X);
+
+command (X is nvl-unit) + (Y is nvl-unit) =
+  new nvl-unit-calc-add(X, Y);
+
+command (X is nvl-unit) - (Y is nvl-unit) =
+  new nvl-unit-calc-sub(X, Y);
+
 
 
 command #nvl-dimension width: (W is nvl-unit) height: (H is nvl-unit) =
@@ -575,6 +640,16 @@ command #nvl-dimension width: (W is nvl-unit) height: (H is nvl-unit) =
 
 command #nvl-position x: (X is nvl-unit) y: (Y is nvl-unit) =
   new nvl-position(X, Y);
+
+command #nvl-alpha value: (X is float-64bit)
+requires
+  valid :: (X >= 0) and (X <= 1)
+do
+  new nvl-alpha(X);
+end
+
+command #nvl-alpha value: (X is integer) =
+  #nvl-alpha value: (X as float-64bit);
 
 command #nvl-padding zero =
   new nvl-padding(
