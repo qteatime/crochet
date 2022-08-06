@@ -239,7 +239,7 @@ export class CrochetForNode {
       pkg: Package.ResolvedPackage
     ) {
       // FIXME: sandbox
-      const module = require(file.absolute_filename);
+      const module = require(Path.resolve(file.absolute_filename));
       if (typeof module.default === "function") {
         return module.default;
       } else {
