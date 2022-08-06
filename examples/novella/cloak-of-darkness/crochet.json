@@ -1,0 +1,32 @@
+{
+  "name": "crochet.examples.novella.cloak-of-darkness",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/model.crochet",
+    "source/descriptions.crochet",
+    "source/actions.crochet",
+    "source/main.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    {
+      "name": "crochet.novella",
+      "capabilities": ["crochet.core/asset-location"]
+    },
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": ["crochet.core/asset-location"],
+    "provides": []
+  },
+  "assets": ["bar.png", "cloakroom.png", "foyer.png"],
+  "config": {
+    "electron": {
+      "window": {
+        "width": 720,
+        "height": 720
+      }
+    }
+  }
+}

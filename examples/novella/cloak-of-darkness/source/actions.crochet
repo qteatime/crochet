@@ -1,0 +1,138 @@
+% crochet
+
+open crochet.novella;
+
+action player go-unvisited "go [self.Direction to-text]"
+when
+  player at: Room,
+  Room to: Direction lays: Target,
+  not Target is-locked,
+  not player visited: Target
+do
+  game show-room: Target;
+  fact player at: Target;
+  fact player visited: Target;
+end
+
+
+action player go-visited "go [self.Direction to-text], to [self.Short-name]"
+when
+  player at: Room,
+  Room to: Direction lays: Target,
+  not Target is-locked,
+  Target short-name: Short-name,
+  player visited: Target
+do
+  game show-room: Target;
+  fact player at: Target;
+end
+
+action player go-locked "go [self.Direction to-text], to [self.Short-name]"
+when
+  player at: Room,
+  Room to: Direction lays: Target,
+  Target is-locked,
+  Target short-name: Short-name,
+  player visited: Target
+do
+  game say: Target description;
+end
+
+action player look-around "look around"
+when
+  player at: Room,
+  (not cloak on: player | not Room has-light)
+do
+  game say: Room description;
+end
+
+action player look-around-dark "look around"
+when
+  player at: Room,
+  Room has-light,
+  cloak on: player
+do
+  game say: "In the dark? You could easily disturb something!";
+  let Ns = match
+             when Room times-disturbed: X => X;
+             otherwise => 0;
+           end;
+  fact Room times-disturbed: (Ns first + 1);
+end
+
+action player look-at-thing "look at [self.Short-name]"
+when
+  player at: Room,
+  Thing at: Room,
+  if not (Thing =:= player),
+  Thing is-inspectable,
+  Thing short-name: Short-name,
+  let Has-light = search Room has-light,
+  let Has-cloak = search cloak on: player,
+  if not (Has-light all-true and Has-cloak all-true)
+do
+  game say: Thing description;
+end
+
+action player check-inventory "check my possessions"
+when
+  let Items = (search (Item on: player)) map: { X in X.Item }
+do
+  condition
+    when Items is-empty =>
+      game say: "You're not carrying anything of note.";
+
+    when Items count === 1 =>
+      game say: "You're carrying [Items first short-name]";
+
+    otherwise =>
+      game say: "You're carrying [Items but-last map: (_ short-name) join: ", "], and [Items last short-name]";
+  end
+end
+
+action player examine-message "look at ["the message"]"
+when
+  player at: bar,
+  not cloak on: player
+do
+  match
+    when bar times-disturbed: N, if N < 2 do
+      game say: "The message, neatly marked in the sawdust reads... [#nvl-text strong: "you won."]";
+      fact won game-state;
+    end
+
+    otherwise do
+      game say: "The message has been carelessly trampled, making it difficult to read.
+                 You can just distinguish the words... [#nvl-text strong: "you have lost"]";
+      fact lost game-state;
+    end
+  end
+end
+
+action player place-thing "place [self.Thing-name] on [self.Place-name]"
+when
+  player at: Room,
+  Place at: Room,
+  Place is-place,
+  Thing on: player,
+  Thing is-pickable,
+  Thing short-name: Thing-name,
+  Place short-name: Place-name
+do
+  game say: "You place [Thing-name] on [Place-name].";
+  fact Thing on: Place;
+end
+
+action player take-thing "take [self.Thing-name]"
+when
+  player at: Room,
+  Place at: Room,
+  if not (Place =:= player),
+  Thing on: Place,
+  Thing is-pickable,
+  Thing short-name: Thing-name,
+  Place short-name: Place-name
+do
+  game say: "You take [Thing-name] from [Place-name].";
+  fact Thing on: player;
+end

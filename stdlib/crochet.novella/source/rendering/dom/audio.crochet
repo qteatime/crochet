@@ -1,0 +1,7 @@
+% crochet
+
+type nvl-dom-sound-channel(
+  name is text,
+  loop is boolean,
+  box is unknown,
+) is nvl-sound-channel;

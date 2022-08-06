@@ -8,8 +8,8 @@ const config = JSON.parse(config0);
 
 async function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: config?.screen_dimension?.width ?? 800,
+    height: config?.screen_dimension?.height ?? 600,
     webPreferences: {
       preload: Path.join(__dirname, "playground-kernel.js"),
     },

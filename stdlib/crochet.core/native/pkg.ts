@@ -10,7 +10,7 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("pkg.asset", (pkg0, path0) => {
     const pkg = ffi.get_underlying_package(pkg0);
     const path = ffi.text_to_string(path0);
-    const asset = pkg.metadata.assets.find((x) => x.path);
+    const asset = pkg.metadata.assets.find((x) => x.path === path);
     if (asset == null) {
       throw ffi.panic("invalid-asset", `No asset ${path}`);
     }

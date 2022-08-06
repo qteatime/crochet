@@ -14,38 +14,6 @@ singleton debug-representation;
 /// Used for serialisation. No powers are granted for external modules.
 type debug-serialisation;
 
-// -- Perspectives
-
-/// The base of all perspectives.
-///
-/// A perspective is a nullary type that allows selecting one of
-/// the debug representations, and extending these representations,
-/// without any coordination. This means that packages need not be
-/// aware of other packages' perspectives and representations.
-abstract perspective;
-
-/// The default perspective. Whenever one isn't specified, this will
-/// be used to represent the value. Generally the "most commonly useful"
-/// view of it.
-type default-perspective is perspective;
-define default-perspective = new default-perspective;
-
-/// Shows the "source code" representation of a value.
-type source-perspective is perspective;
-
-/// The minimal amount of commands that a perspective needs to provide
-/// for all of Crochet's debugging tools to work properly.
-///
-/// Currently the only requirement is a [command:_ name] command, but
-/// more commands may be added in the future.
-trait debug-perspective with
-  /// Returns a human-readable description of the perspective. Used in
-  /// debugging tools to show the available ways they can inspect the
-  /// data.
-  command Perspective name -> text;
-end
-
-
 // -- Numeric values
 /// The base type of all numeric units used by documents.
 abstract doc-unit;

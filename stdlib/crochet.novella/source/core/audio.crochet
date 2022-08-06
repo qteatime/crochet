@@ -1,0 +1,11 @@
+% crochet
+
+abstract nvl-sound-channel;
+type nvl-audio(source is nvl-source);
+
+command #nvl-audio from-asset: (Asset is package-asset) =
+  new nvl-audio(new nvl-source-asset(Asset));
+
+
+command nvl-sound-channel play: (Source is nvl-audio) =
+  perform novella-action.play-sound(self, Source);

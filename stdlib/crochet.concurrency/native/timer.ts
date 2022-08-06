@@ -6,7 +6,7 @@ export default (ffi: ForeignInterface) => {
     const p = new Promise<CrochetValue>((resolve, reject) => {
       setTimeout(() => {
         resolve(ffi.nothing);
-      });
+      }, ms);
     });
     return yield ffi.await(p);
   });

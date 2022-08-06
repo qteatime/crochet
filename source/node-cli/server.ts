@@ -87,13 +87,13 @@ export default async (
     const path = (req.params as any)[0];
     const resolved = Path.resolve(app_base_dir, "native", path);
     const source = rpkg.native_sources.find(
-      (x) => Path.normalize(x.absolute_filename) === resolved
+      (x) => Path.resolve(x.absolute_filename) === resolved
     );
     if (!source) {
       console.error(`Unknown native source ${path}`);
       return res.status(500).send(`Unknown native source ${path}`);
     }
-    res.sendFile(source.absolute_filename);
+    res.sendFile(Path.resolve(source.absolute_filename));
   });
 
   app.get("/app/crochet.json", async (req, res) => {

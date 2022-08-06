@@ -1,0 +1,23 @@
+% crochet
+
+command #nvl-text strong: (X has to-nvl-text-component) =
+  new nvl-tc-strong(X as nvl-text-component);
+
+command #nvl-text emphasis: (X has to-nvl-text-component) =
+  new nvl-tc-emphasis(X as nvl-text-component);
+
+command #nvl-text italic: (X has to-nvl-text-component) =
+  new nvl-tc-italic(X as nvl-text-component);
+
+command #nvl-text bold: (X has to-nvl-text-component) =
+  new nvl-tc-bold(X as nvl-text-component);
+
+command #nvl-text flow: (Xs is list<X has to-nvl-text-component>) =
+  new nvl-tc-flow(Xs map: (_ as nvl-text-component));
+
+command #nvl-text link-to: (URI is static-text) text: (Text has to-nvl-text-component) =
+  new nvl-tc-link(URI, Text as nvl-text-component);
+
+
+command #nvl-image from-asset: (Asset is package-asset) =
+  new nvl-image(new nvl-source-asset(Asset));

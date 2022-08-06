@@ -1,0 +1,57 @@
+% crochet
+
+handler novella-game renderer: (Config is nvl-renderer) do
+  let Renderer = Config setup;
+with
+  on novella-action.say(Text, Layer) do
+    let Node = Renderer render: Text;
+    Renderer at: Layer show: Node;
+    continue with nothing;
+  end
+
+  on novella-action.wait-interaction(Layer) do
+    let Layer-node = Renderer.layer-map at: Layer;
+    Renderer wait-text-interaction: Layer-node;
+    continue with nothing;
+  end
+
+  on novella-action.show(Element, Layer) do
+    let Node = Renderer render: Element;
+    Renderer at: Layer show: Node;
+    continue with nothing;
+  end
+
+  on novella-action.clear(Layer) do
+    Renderer clear-at: Layer;
+    continue with nothing;
+  end
+
+  on novella-action.menu(Menu, Layer) do
+    let Menu-data = Renderer render-menu: Menu;
+    let Layer-node = Renderer.layer-map at: Layer;
+    let Result = foreign dom.show-menu("I", Layer-node.box, Menu-data);
+    continue with Result;
+  end
+
+  on novella-action.get-layers() do
+    continue with Config layers;
+  end
+
+  on novella-action.transform-layer(Layer, Transform) do
+    let Layer-node = Renderer.layer-map at: Layer;
+    Renderer transform: Layer-node with: Transform;
+    continue with nothing;
+  end
+
+  on novella-action.play-sound(Channel, Source) do
+    let Src = Renderer resolve-source-uri: Source.source;
+    let Audio = Channel.box;
+    foreign dom.play-sound(Audio, Src);
+    continue with nothing;
+  end
+
+  on novella-action.make-sound-channel(Name, Loop) do
+    let Channel = foreign dom.make-sound(Name, Loop);
+    continue with new nvl-dom-sound-channel(Name, Loop, Channel);
+  end
+end

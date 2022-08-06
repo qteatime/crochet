@@ -1,0 +1,14 @@
+% crochet
+
+type nvl-size(global width is integer, global height is integer);
+
+
+command #nvl-size zero =
+  new nvl-size(width -> 0, height -> 0);
+
+command #nvl-size width: (W is integer) height: (H is integer)
+requires
+  non-negative :: (W >= 0) and (H >= 0)
+do
+  new nvl-size(width -> W, height -> H);
+end

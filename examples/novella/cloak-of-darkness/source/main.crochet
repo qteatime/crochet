@@ -1,0 +1,55 @@
+% crochet
+
+open crochet.novella;
+  
+singleton game;
+
+command main-html: Root do
+  let Layers = #nvl-layer-group defaults;
+  let Renderer = novella web-renderer: Root
+                   | layers: Layers
+                   | width: 720 height: 720;
+
+  handle
+    game run;
+  with
+    use novella-game renderer: Renderer;
+  end
+end
+
+command game run do
+  novella at: novella layers title show: "Cloak of Darkness";
+  game say: "Hurrying through the rainswept November night, you're glad to
+             see the bright lights of the Opera House. It's surprising that
+             there aren't more people about but, hey, what do you expect in
+             a cheap demo game...?";
+  game show-room: foyer;
+
+  simulate for [player]
+  until not state--on-going game-state
+  on pick-action: Actions for: _ do
+    let Action = novella choose-action: Actions;
+    novella clear: novella layers dialogue;
+    novella say: (#nvl-text italic: "I [Action title].");
+    Action;
+  end
+end
+
+command game say: Text do
+  novella say: Text;
+  novella wait-interaction;
+end
+
+command game show-room: Room do
+  novella clear: novella layers title;
+  novella at: novella layers title show: Room name;
+  novella say: "[#nvl-text bold: Room name]";
+  novella say: Room description;
+  novella clear: novella layers background;
+  let Bg = Room background;
+  condition
+    when Bg is nothing => nothing;
+    otherwise => novella at: novella layers background show: Bg;
+  end
+  novella wait-interaction;
+end

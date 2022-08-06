@@ -1,0 +1,18 @@
+{
+  "name": "crochet.language.cobbles",
+  "target": "*",
+  "native_sources": [],
+  "sources": ["source/grammar.lingua", "source/main.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.parsing.lingua",
+    {
+      "name": "crochet.unsafe.wrapper.node",
+      "capabilities": ["native"]
+    }
+  ],
+  "capabilities": {
+    "requires": ["native", "crochet.unsafe.wrapper.node/file-system"],
+    "provides": []
+  }
+}

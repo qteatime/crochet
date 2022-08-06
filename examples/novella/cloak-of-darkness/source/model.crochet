@@ -1,0 +1,134 @@
+% crochet
+
+relation Item* short-name: Name;
+relation Item* name: Name;
+relation Item* description: Description;
+relation Item* dark-description: Description;
+relation Item* locked-description: Description;
+relation Item* on: Place;
+
+relation Room* background: Asset;
+relation Room* to: Direction* lays: Room;
+relation Room* times-disturbed: N;
+relation Room* is-locked;
+relation Room* has-light;
+
+relation Player visited: Room*;
+relation Player* at: Location;
+
+relation Thing* is-place;
+relation Thing* is-inspectable;
+relation Thing* is-pickable;
+
+relation State game-state;
+
+
+enum state = on-going, won, lost;
+enum direction = north, east, south, west;
+
+define north = direction--north;
+define east = direction--east;
+define south = direction--south;
+define west = direction--west;
+
+command direction--north to-text = "north";
+command direction--east to-text = "east";
+command direction--south to-text = "south";
+command direction--west to-text = "west";
+
+define on-going = state--on-going;
+define won = state--won;
+define lost = state--lost;
+
+type thing;
+type room is thing;
+
+singleton foyer is room with
+  name: "The Foyer of the Opera House";
+  short-name: "the foyer";
+  background: (package assets at: "foyer.png");
+  description:
+    "You are standing in a spacious hall, splendidly decorated in red and gold,
+     with glittering chandeliers overhead. The entrance from the street is to
+     the north, and there are doorways south and west.";
+
+  to: north lays: street;
+  to: south lays: bar;
+  to: west lays: cloakroom;
+end
+
+singleton street is room with
+  name: "The Street";
+  short-name: "the street";
+  locked-description:
+    "You've only just arrived, and besides, the weather outside seems to be
+     getting worse.";
+
+  is-locked;
+end
+
+singleton cloakroom is room with
+  name: "The Cloakroom";
+  short-name: "the cloakroom";
+  background: (package assets at: "cloakroom.png");
+  description:
+    "The walls of this small room were clearly once lined with hooks,
+     though now only one remains. The exit is a door to the east.";
+
+  to: east lays: foyer;
+end
+
+singleton hook is thing with
+  name: "A Small Brass Hook";
+  short-name: "the hook";
+  description:
+    "It's just a small brass hook, screwed to the wall.";
+
+  at: cloakroom;
+  is-place;
+  is-inspectable;
+end
+
+singleton bar is room with
+  name: "The Foyer Bar";
+  short-name: "the bar";
+  background: (package assets at: "bar.png");
+  description:
+    "The bar, much rougher than you'd have guessed after the opulence of the
+     foyer to the north, is completely empty. There seems to be some sort of
+     message scrawled in sawdust on the floor.";
+  
+  dark-description:
+    "It's pitch dark here. You can't see a thing.";
+
+  to: north lays: foyer;
+  times-disturbed: 0;
+  has-light;
+end
+
+singleton cloak is thing with
+  name: "The Velvet Cloak";
+  short-name: "the velvet cloak";
+  description:
+    "A handsome cloak, of velvet trimmed with satin, and slightly spattered
+     with raindrops. Its blackness is so deep that it almost seems to suck
+     light from the room.";
+
+  on: player;
+  is-pickable;
+end
+
+singleton player with
+  name: "Me";
+  short-name: "myself";
+  description: "It's you.";
+
+  at: foyer;
+  visited: foyer;
+  visited: street;
+end
+
+
+prelude
+  fact on-going game-state;
+end

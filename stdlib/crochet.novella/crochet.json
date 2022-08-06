@@ -1,14 +1,38 @@
 {
   "name": "crochet.novella",
+  "target": "browser",
   "description": "A tool for writing interactive story books",
   "stability": "experimental",
   "version": "1.0.0",
   "dependencies": ["crochet.core"],
   "sources": [
-    "source/0-types.crochet",
-    "source/elements.crochet",
-    "source/api.crochet",
-    "source/rendering-html.crochet"
+    "source/core/element/constructors.crochet",
+    "source/core/element/core.crochet",
+    "source/core/element/operations.crochet",
+    "source/core/audio.crochet",
+    "source/core/layer.crochet",
+    "source/core/menu.crochet",
+    "source/core/size.crochet",
+    "source/core/source.crochet",
+    "source/core/text-component.crochet",
+    "source/core/transform.crochet",
+    "source/core/unit.crochet",
+    "source/rendering/dom/audio.crochet",
+    "source/rendering/dom/core.crochet",
+    "source/rendering/dom/dom-api.crochet",
+    "source/rendering/dom/effect-handler.crochet",
+    "source/rendering/dom/element-extension.crochet",
+    "source/rendering/dom/element-rendering.crochet",
+    "source/rendering/dom/resource-resolution.crochet",
+    "source/rendering/dom/unit-rendering.crochet",
+    "source/rendering/core.crochet",
+    "source/core/element/coercions.crochet",
+    "source/api.crochet"
   ],
-  "native_sources": ["native/html.js"]
+  "native_sources": ["native/dom.js"],
+  "capabilities": {
+    "requires": [],
+    "provides": [],
+    "optional": ["crochet.core/asset-location"]
+  }
 }

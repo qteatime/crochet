@@ -5,8 +5,29 @@ command debug-representation for: X =
   self for: X perspective: default-perspective;
 
 /// Default debug representation.
-command debug-representation for: X perspective: default-perspective =
-  #document empty typed: (foreign debug.type(X));
+command debug-representation for: X perspective: (P is default-perspective) do
+  condition
+    when foreign debug.is-instance(X) do
+      let Pairs = foreign debug.type-pairs(X);
+      let Rows =
+        Pairs map: { X in
+          #document table-row: [
+            #document plain-text: X first,
+            self for: X second perspective: P
+          ]
+        };
+      #document
+        | table-header: [#document plain-text: "Field", #document plain-text: "Value"]
+          rows: Rows
+        | compact-layout: (#document plain-text: "([Rows count to-text] fields)")
+        | typed: (foreign debug.type(X));
+    end
+
+    otherwise do
+      #document empty typed: (foreign debug.type(X));
+    end
+  end
+end
 
 command debug-representation for: (X is document) perspective: default-perspective =
   X;
@@ -163,3 +184,4 @@ command debug-representation for: (X is document) perspective: source-perspectiv
     | code: (foreign debug.to-json(JSON))
     | typed: (foreign debug.type(X))
 end
+

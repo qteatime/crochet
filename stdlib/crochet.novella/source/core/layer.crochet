@@ -1,0 +1,33 @@
+% crochet
+
+type nvl-layer(name is text, transform is nvl-transform);
+type nvl-layer-group(
+  layers is list<nvl-layer>,
+  global dialogue is nvl-layer,
+  global title is nvl-layer,
+  global background is nvl-layer,
+);
+
+
+command #nvl-layer-group defaults do
+  let Dialogue = new nvl-layer(name -> "dialogue", transform -> #nvl-transform empty);
+  let Background = new nvl-layer(name -> "background", transform -> #nvl-transform empty);
+  let Title = new nvl-layer(name -> "title", transform -> #nvl-transform empty);
+  new nvl-layer-group(
+    layers -> [
+      Background,
+      Title,
+      Dialogue,
+    ],
+    dialogue -> Dialogue,
+    background -> Background,
+    title -> Title,
+  );
+end
+
+
+command #nvl-layer name: (Name is text) =
+  new nvl-layer(name -> Name, transform -> #nvl-transform empty);
+
+command nvl-layer transform: (Transform is nvl-transform) =
+  new nvl-layer(self with transform -> Transform);

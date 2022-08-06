@@ -1,0 +1,6 @@
+% crochet
+
+abstract nvl-element;
+type nvl-text(children is list<nvl-text-component>) is nvl-element;
+type nvl-image(source is nvl-source) is nvl-element;
+type nvl-transform-element(element is nvl-element, transform is nvl-transform) is nvl-element;

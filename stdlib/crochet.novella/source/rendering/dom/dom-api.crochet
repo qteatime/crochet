@@ -1,0 +1,57 @@
+% crochet
+
+singleton nvl-dom;
+type nvl-dom-node(box is unknown);
+
+
+command nvl-dom make: (Tag is text) class: (Class is text) =
+  new nvl-dom-node(foreign dom.make(Tag, Class));
+
+command nvl-dom make-text: (Text is text) =
+  new nvl-dom-node(foreign dom.text(Text));
+
+command nvl-dom from-html-element: (Node is unknown)
+requires
+  is-element :: nvl-dom is-element: Node
+=
+  new nvl-dom-node(Node);
+
+command nvl-dom is-element: (X is unknown) =
+  foreign dom.is-element(X);
+
+command nvl-dom-node set: (Attr is text) to: (Value is text) do
+  foreign dom.set(self.box, Attr, Value);
+  self;
+end
+
+command nvl-dom-node set-style: (Style is record) do
+  foreign dom.set-style(self.box, Style);
+  self;
+end
+
+command nvl-dom-node add-class: (Name is text) do
+  foreign dom.add-class(self.box, Name);
+  self;
+end
+
+command nvl-dom-node append: (Node is nvl-dom-node) do
+  foreign dom.append(self.box, Node.box);
+  self;
+end
+
+command nvl-dom-node remove-contents do
+  foreign dom.clear(self.box);
+  self;
+end
+
+command nvl-dom-node detach
+requires attached :: foreign dom.is-attached(self.box)
+do
+  foreign dom.detach(self.box);
+  self;
+end
+
+command nvl-dom wait-interaction do
+  foreign dom.wait-interaction();
+  self;
+end

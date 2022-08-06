@@ -1,0 +1,4 @@
+% crochet
+
+abstract nvl-source;
+type nvl-source-asset(asset is package-asset) is nvl-source;

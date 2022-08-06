@@ -1,0 +1,67 @@
+% crochet
+
+type nvl-transform(properties is list<nvl-property>);
+
+abstract nvl-property;
+type nvl-dimension(width is nvl-unit, height is nvl-unit) is nvl-property;
+type nvl-position(x is nvl-unit, y is nvl-unit) is nvl-property;
+type nvl-padding(top is nvl-unit, right is nvl-unit, bottom is nvl-unit, left is nvl-unit) is nvl-property;
+type nvl-alpha(value is float-64bit) is nvl-property;
+
+
+command #nvl-dimension width: (W is nvl-unit) height: (H is nvl-unit) =
+  new nvl-dimension(W, H);
+
+
+command #nvl-position x: (X is nvl-unit) y: (Y is nvl-unit) =
+  new nvl-position(X, Y);
+
+
+
+command #nvl-alpha value: (X is float-64bit)
+requires
+  valid :: (X >= 0) and (X <= 1)
+do
+  new nvl-alpha(X);
+end
+
+command #nvl-alpha value: (X is integer) =
+  #nvl-alpha value: (X as float-64bit);
+
+
+
+command #nvl-padding zero =
+  new nvl-padding(
+    top -> #nvl-unit pixels: 0,
+    bottom -> #nvl-unit pixels: 0,
+    left -> #nvl-unit pixels: 0,
+    right -> #nvl-unit pixels: 0,
+  );
+
+command nvl-padding top: (X is nvl-unit) =
+  new nvl-padding(self with top -> X);
+
+command nvl-padding bottom: (X is nvl-unit) =
+  new nvl-padding(self with bottom -> X);
+
+command nvl-padding left: (X is nvl-unit) =
+  new nvl-padding(self with left -> X);
+
+command nvl-padding right: (X is nvl-unit) =
+  new nvl-padding(self with right -> X);
+
+command nvl-padding vertical: (X is nvl-unit) =
+  self top: X | bottom: X;
+
+command nvl-padding horizontal: (X is nvl-unit) =
+  self left: X | right: X;
+
+command nvl-padding all: (X is nvl-unit) =
+  self horizontal: X | vertical: X;
+
+
+command #nvl-transform empty =
+  new nvl-transform([]);
+
+command #nvl-transform with: (Props is list<nvl-property>) =
+  new nvl-transform(Props);

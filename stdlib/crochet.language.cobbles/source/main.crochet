@@ -1,0 +1,57 @@
+% crochet
+  
+
+singleton cobbles;
+
+open crochet.unsafe.wrapper.node;
+command cobbles example = file-system read-file: "stdlib/crochet.language.cobbles/example.cobbles";
+
+command debug-representation for: (X is module) perspective: (P is default-perspective) =
+  self for: X.declarations perspective: P
+    | typed: #module;
+
+command debug-representation for: (X is declaration--type) perspective: (P is default-perspective) =
+  #document
+    | fields: [
+        name -> self for: X.name perspective: P,
+        fields -> self for: X.fields perspective: P
+      ]
+    | typed: #declaration--type;
+
+command debug-representation for: (X is declaration--union) perspective: (P is default-perspective) =
+  #document
+    | fields: [
+        name -> self for: X.name perspective: P,
+        declarations -> self for: X.declarations perspective: P
+      ]
+    | typed: #declaration--union;
+
+command debug-representation for: (X is field) perspective: (P is default-perspective) =
+  #document
+    | fields: [
+        name -> self for: X.name perspective: P,
+        "type" -> self for: X.typ perspective: P
+      ]
+    | typed: #field;
+
+command debug-representation for: (X is typeexpr--named) perspective: (P is default-perspective) =
+  self for: X.name perspective: P
+    | typed: #typeexpr--named;
+
+command debug-representation for: (X is typeexpr--list) perspective: (P is default-perspective) =
+  self for: X.typ perspective: P
+    | typed: #typeexpr--list;
+
+command debug-representation for: (X is typeexpr--map) perspective: (P is default-perspective) =
+  #document fields: [
+    key -> self for: X.key perspective: P,
+    value -> self for: X.value perspective: P
+  ]
+  | typed: #typeexpr--map;
+
+command debug-representation for: (X is typeexpr--optional) perspective: (P is default-perspective) =
+  self for: X.typ perspective: P
+    | typed: #typeexpr--optional;
+
+command debug-representation for: (X is name) perspective: (P is default-perspective) =
+  #document crochet-text: X.name;
