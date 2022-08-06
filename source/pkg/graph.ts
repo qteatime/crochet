@@ -287,6 +287,10 @@ export class ResolvedFile {
     return Path.join(this.pkg.binary_root, this.relative_basename + ".croc");
   }
 
+  get relative_binary_image() {
+    return Path.join(this.pkg.binary_dir, this.relative_basename + ".croc");
+  }
+
   get extension() {
     return Path.extname(this.relative_filename);
   }
@@ -310,11 +314,19 @@ export class ResolvedPackage {
   }
 
   get binary_root() {
-    return Path.join(this.root, ".binary");
+    return Path.join(this.root, this.binary_dir);
+  }
+
+  get binary_dir() {
+    return ".binary";
   }
 
   get assets_root() {
-    return Path.join(this.root, "assets");
+    return Path.join(this.root, this.assets_dir);
+  }
+
+  get assets_dir() {
+    return "assets";
   }
 
   get dependencies() {
