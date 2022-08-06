@@ -1,0 +1,109 @@
+% crochet
+
+command nvl-web-renderer render: (X is nvl-element-dom) =
+  X.node;
+
+command nvl-web-renderer render: (X is nvl-text) do
+  let Node = nvl-dom make: "div" class: "novella-text";
+  for Child in X.children do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command nvl-web-renderer render: (X is nvl-tc-text) do
+  nvl-dom make-text: X.content;
+end
+
+command nvl-web-renderer render: (X is nvl-tc-strong) do
+  nvl-dom make: "strong" class: "novella-text-strong"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-emphasis) do
+  nvl-dom make: "em" class: "novella-text-emphasis"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-bold) do
+  nvl-dom make: "b" class: "novella-text-bold"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-italic) do
+  nvl-dom make: "i" class: "novella-text-italic"
+    | append: (self render: X.child);
+end
+
+command nvl-web-renderer render: (X is nvl-tc-flow) do
+  let Node = nvl-dom make: "span" class: "novella-text-flow";
+  for Child in X.children do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command nvl-web-renderer render: (X is nvl-tc-link) do
+  let Node = nvl-dom make: "a" class: "novella-text-link";
+  Node set: "href" to: X.reference;
+  Node append: (self render: X.child);
+  Node;
+end
+
+command nvl-web-renderer render: (X is nvl-transform-element) do
+  let Node = self render: X.element;
+  self transform: Node with: X.transform;
+end
+
+command nvl-web-renderer render: (X is nvl-image) do
+  let Uri = self resolve-source-uri: X.source;
+  nvl-dom make: "img" class: "novella-image"
+    | set: "src" to: Uri;
+end
+
+
+
+command nvl-web-renderer render-menu-item: (X is nvl-menu-leaf) =
+  foreign dom.make-menu-leaf(X.label, X.value);
+
+command nvl-web-renderer render-menu-item: (X is nvl-menu-branch) =
+  foreign dom.make-menu-branch(X.prefix, X.items map: (self render-menu-item: _));
+
+command nvl-web-renderer render-menu: (X is nvl-menu) do
+  let Items = X.items map: (self render-menu-item: _);
+  foreign dom.make-menu(Items);
+end
+
+
+
+command nvl-web-renderer transform: (X is nvl-dom-node) with: (T is nvl-transform) do
+  for Property in T.properties do
+    self apply-property: Property to: X;
+  end
+  X;
+end
+
+command nvl-web-renderer apply-property: (X is nvl-dimension) to: (N is nvl-dom-node) =
+  N set-style: [
+    width -> self render-unit: X.width,
+    height -> self render-unit: X.height,
+  ];
+
+command nvl-web-renderer apply-property: (X is nvl-position) to: (N is nvl-dom-node) =
+  N set-style: [
+    left -> self render-unit: X.x,
+    top -> self render-unit: X.y,
+  ];
+
+command nvl-web-renderer apply-property: (X is nvl-padding) to: (N is nvl-dom-node) =
+  N set-style: [
+    padding-top -> self render-unit: X.top,
+    padding-right -> self render-unit: X.right,
+    padding-bottom -> self render-unit: X.bottom,
+    padding-left -> self render-unit: X.left,
+  ];
+
+command nvl-web-renderer apply-property: (X is nvl-alpha) to: (N is nvl-dom-node) =
+  N set-style: [
+    opacity -> X.value to-text
+  ];

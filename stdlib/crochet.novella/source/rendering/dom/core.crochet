@@ -1,0 +1,73 @@
+% crochet
+
+type nvl-web-renderer-config(
+  root is nvl-dom-node,
+  size is nvl-size,
+  global layers is nvl-layer-group
+) is nvl-renderer;
+
+type nvl-web-renderer(
+  config is nvl-web-renderer-config,
+  screen is nvl-dom-node,
+  layer-map is map<nvl-layer, nvl-dom-node>,
+);
+
+
+command nvl-web-renderer-config width: W height: H =
+  new nvl-web-renderer-config(self with size -> #nvl-size width: W height: H);
+
+command nvl-web-renderer-config layers: (Layers is nvl-layer-group) =
+  new nvl-web-renderer-config(self with layers -> Layers);
+
+command nvl-web-renderer-config setup do
+  let W = self.size width to-text;
+  let H = self.size height to-text;
+  let Screen = nvl-dom make: "div" class: "novella-screen"
+                | set-style: [
+                    width -> "[W]px" flatten-into-plain-text,
+                    height -> "[H]px" flatten-into-plain-text,
+                    aspect-ratio -> "[W] / [H]" flatten-into-plain-text
+                  ];
+  let Layer-map = (self layers).layers fold-from: #map empty with: { Map, Layer in
+    let Layer-node = nvl-dom make: "div" class: "novella-layer"
+                      | set: "data-name" to: Layer.name;
+    Screen append: Layer-node;
+    Map at: Layer put: Layer-node;
+  };
+  self.root add-class: "novella-root";
+  self.root append: Screen;
+  let Renderer = new nvl-web-renderer(
+    config -> self,
+    screen -> Screen,
+    layer-map -> Layer-map
+  );
+  for Layer in Layer-map entries do
+    Renderer transform: Layer value with: (Layer key).transform;
+  end
+  Renderer;
+end
+
+
+command nvl-web-renderer clear-at: (Layer is nvl-layer) do
+  let Node = self.layer-map at: Layer;
+  Node remove-contents;
+  self;
+end
+
+command nvl-web-renderer at: (Layer is nvl-layer) show: (Node is nvl-dom-node) do
+  let Layer-node = self.layer-map at: Layer;
+  Layer-node append: Node;
+  self;
+end
+
+command nvl-web-renderer wait-text-interaction: (Node is nvl-dom-node) do
+  let Continue-mark =
+    nvl-dom make: "span" class: "novella-continue-marker"
+      | append: (nvl-dom make: "span" class: "novella-continue-marker-help"
+                  | append: (nvl-dom make-text: "(click or press 'Return' to continue)"))
+      | append: (nvl-dom make: "i" class: "novella-continue-marker-icon fas fa-chevron-down");
+  Node append: Continue-mark;
+  nvl-dom wait-interaction;
+  Continue-mark detach;
+  self;
+end

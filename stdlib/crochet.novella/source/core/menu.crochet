@@ -1,0 +1,107 @@
+% crochet
+
+type nvl-menu(items is list<nvl-menu-item>);
+
+abstract nvl-menu-item;
+type nvl-menu-leaf(label is text, value is A) is nvl-menu-item;
+type nvl-menu-branch(prefix is text, items is list<nvl-menu-item>) is nvl-menu-item;
+
+
+// -- Constructors
+command #nvl-menu items: (Items is list<nvl-menu-item>) =
+  new nvl-menu(Items);
+
+command #nvl-menu-leaf label: (Label is text) value: Value =
+  new nvl-menu-leaf(Label, Value);
+
+command #nvl-menu-branch label: (Label is text) items: (Items is list<nvl-menu-item>) =
+  new nvl-menu-branch(Label, Items);
+
+
+// -- Insertion
+
+command package menu-item: (X is nvl-menu-leaf) accepts: (Prefix is text) =
+  X.label =:= Prefix;
+
+command package menu-item: (X is nvl-menu-branch) accepts: (Prefix is text) =
+  X.prefix =:= Prefix;
+
+command package menu-items: (Items is list<nvl-menu-item>) insert: (Parts is list<text>) value: Value do
+  let Part = Parts first;
+  Items
+    | enumerate
+    | find-first: { X in package menu-item: X value accepts: Part }
+    | map: { X in
+        X value insert: Parts value: Value
+          |> Items at: X index put: _
+      }
+    | value-or-else: { _ in 
+        #nvl-menu-branch label: Part items: []
+          |> _ insert: Parts value: Value
+          |> Items append: _
+      };
+end
+
+command nvl-menu insert: (Parts is list<text>) value: Value do
+  new nvl-menu(self with items -> package menu-items: self.items insert: Parts value: Value);
+end
+
+command nvl-menu-branch insert: (Parts is list<text>) value: Value
+requires
+  empty-if-leaf :: do condition
+                     when Parts is-empty => true;
+                     when Parts count =:= 1 => (Parts first =:= self.prefix) and self.items is-empty;
+                     otherwise => (Parts first =:= self.prefix);
+                   end end
+do
+  condition
+    when Parts is-empty =>
+      self;
+
+    when Parts count =:= 1 =>
+      #nvl-menu-leaf label: Parts first value: Value;
+
+    otherwise =>
+      new nvl-menu-branch(self with items -> package menu-items: self.items insert: Parts rest value: Value);
+  end
+end
+
+command nvl-menu-leaf insert: (Parts is list<text>) value: Value
+requires
+  non-duplicate :: condition
+                    when Parts is-empty => true;
+                    when Parts count =:= 1 => (Parts first =:= self.label) and (Value =:= self.value);
+                    otherwise => false;
+                   end
+do
+  self;
+end
+
+
+// -- Flattening
+
+command nvl-menu flatten-menu-tree =
+  new nvl-menu(self with items -> self.items map: (_ flatten-menu-tree));
+
+command nvl-menu-leaf flatten-menu-tree =
+  self;
+
+command nvl-menu-branch flatten-menu-tree do
+  condition
+    when self.items count === 1 do
+      let Item = self.items first flatten-menu-tree;
+      condition
+        when Item is nvl-menu-leaf do
+          let Label = "[self.prefix][Item.label]" flatten-into-plain-text;
+          #nvl-menu-leaf label: Label value: Item.value;
+        end
+
+        otherwise =>
+          new nvl-menu-branch(self with items -> [Item]);
+      end
+    end
+
+    otherwise =>
+      new nvl-menu-branch(self with items -> self.items map: (_ flatten-menu-tree));
+  end
+end

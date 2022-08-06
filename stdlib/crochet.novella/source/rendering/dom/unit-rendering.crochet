@@ -1,0 +1,30 @@
+% crochet
+
+
+command nvl-web-renderer render-unit: (X is nvl-unit-pixel) =
+  "[X.value to-text]px" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-percent) =
+  "[X.value to-text]%" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-rem) =
+  "[X.value to-text]rem" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-em) =
+  "[X.value to-text]em" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit: (X is nvl-unit-calc) =
+  "calc([self render-unit-calc: X])" flatten-into-plain-text;
+
+command nvl-web-renderer render-unit-calc: (X is nvl-unit-calc-add) =
+  "([self render-unit: X.left] + [self render-unit: X.right])";
+
+command nvl-web-renderer render-unit-calc: (X is nvl-unit-calc-sub) =
+  "([self render-unit: X.left] - [self render-unit: X.right])";
+
+command nvl-web-renderer render-unit-calc: nvl-unit-calc do
+  assert false;
+end
+
+command nvl-web-renderer render-unit-calc: (X is nvl-unit) =
+  self render-unit: X;

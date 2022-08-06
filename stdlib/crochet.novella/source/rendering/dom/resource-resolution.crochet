@@ -1,0 +1,4 @@
+% crochet
+
+command nvl-web-renderer resolve-source-uri: (Source is nvl-source-asset) =
+  asset-location resolve: Source.asset;

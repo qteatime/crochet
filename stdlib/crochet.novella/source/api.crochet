@@ -1,20 +1,84 @@
 % crochet
 
-command novella show: (X is list) =
-  novella show: (novella flow: (X map: { E in E as element | block }));
+singleton novella;
 
-command novella show: X =
-  perform novella.show(X as element);
+effect novella-action with
+  wait-interaction(layer is nvl-layer); // -> nothing
+  show(item is nvl-element, layer is nvl-layer); // -> nothing
+  say(text is nvl-text, layer is nvl-layer); // -> nothing
+  menu(menu is nvl-menu<A>, layer is nvl-layer); // -> A
+  clear(layer is nvl-layer); // -> nothing
+  get-layers(); // -> nvl-layer-group
+  transform-layer(layer is nvl-layer, transform is nvl-transform); // -> nothing
+  make-sound-channel(name is text, loop is boolean); // -> nvl-sound-channel
+  play-sound(channel is nvl-sound-channel, source is nvl-audio); // -> nothing
+end
+
+
+// -- Configuration
+command novella web-renderer: (Root is unknown)
+requires
+  html-element :: nvl-dom is-element: Root
+do
+  new nvl-web-renderer-config(
+    root -> nvl-dom from-html-element: Root,
+    size -> #nvl-size zero,
+    layers -> #nvl-layer-group defaults
+  );
+end
+
+// -- Text/Display
+command novella say: Text =
+  novella at: novella layers dialogue say: Text;
+
+command novella at: (Layer is nvl-layer) say: (Text has to-nvl-text) =
+  perform novella-action.say(Text as nvl-text, Layer);
+
+command novella at: (Layer is nvl-layer) show: (X has to-nvl-element) =
+  perform novella-action.show(X as nvl-element, Layer);
+
+command novella clear: (Layer is nvl-layer) =
+  perform novella-action.clear(Layer);
+
+command novella at: (Layer is nvl-layer) menu: (Menu is nvl-menu) =
+  perform novella-action.menu(Menu, Layer);
+
+command novella transform: (Layer is nvl-layer) with: (Transform is nvl-transform) =
+  perform novella-action.transform-layer(Layer, Transform);
+
+command novella transform: Item with: (Properties is list<nvl-property>) =
+  self transform: Item with: (#nvl-transform with: Properties);
+
+// -- Interaction
+command novella menu: Menu =
+  novella at: novella layers dialogue menu: Menu;
 
 command novella wait-interaction =
-  perform novella.wait-interaction();
+  novella wait-interaction-at: novella layers dialogue;
 
-command novella wait-selection: Reference =
-  perform novella.wait-selection(Reference);
+command novella wait-interaction-at: (Layer is nvl-layer) =
+  perform novella-action.wait-interaction(Layer);
 
-local type choice-ref;
 command novella choose-action: (Actions is list<action-choice>) do
-  let Ref = new choice-ref;
-  novella show: (novella action-choice-menu: Actions for: Ref);
-  novella wait-selection: Ref;
+  Actions fold-from: new nvl-menu([]) with: { Menu, Action in
+    let Parts = package action-title-parts: Action title | map: (_ to-text);
+    Menu insert: Parts value: Action;
+  }
+  |> novella menu: _;
 end
+
+command package action-title-parts: (Title is interpolation) =
+  Title parts;
+
+command package action-title-parts: (Title is text) =
+  [Title];
+
+
+// -- Introspection
+command novella layers =
+  perform novella-action.get-layers();
+
+
+// -- Sound
+command novella make-sound-channel: (Name is text) loop: (Loop is boolean) =
+  perform novella-action.make-sound-channel(Name, Loop);

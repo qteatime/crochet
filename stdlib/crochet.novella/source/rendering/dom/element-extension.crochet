@@ -1,0 +1,7 @@
+% crochet
+
+type nvl-element-dom(node is nvl-dom-node) is nvl-element;
+
+
+command #nvl-element-dom from-html: (Node is unknown) =
+  new nvl-element-dom(nvl-dom from-html-element: Node);

@@ -1,0 +1,39 @@
+% crochet
+
+abstract nvl-unit;
+type nvl-unit-pixel(value is integer) is nvl-unit;
+type nvl-unit-percent(value is float-64bit) is nvl-unit;
+type nvl-unit-em(value is float-64bit) is nvl-unit;
+type nvl-unit-rem(value is float-64bit) is nvl-unit;
+
+abstract nvl-unit-calc is nvl-unit;
+type nvl-unit-calc-add(left is nvl-unit, right is nvl-unit) is nvl-unit-calc;
+type nvl-unit-calc-sub(left is nvl-unit, right is nvl-unit) is nvl-unit-calc;
+
+
+command #nvl-unit pixels: (X is integer) =
+  new nvl-unit-pixel(X);
+
+command #nvl-unit percent: (X is integer) =
+  new nvl-unit-percent(X as float-64bit);
+
+command #nvl-unit percent: (X is float-64bit) =
+  new nvl-unit-percent(X);
+
+command #nvl-unit em: (X is integer) =
+  new nvl-unit-em(X as float-64bit);
+
+command #nvl-unit em: (X is float-64bit) =
+  new nvl-unit-em(X);
+
+command #nvl-unit rem: (X is integer) =
+  new nvl-unit-rem(X as float-64bit);
+
+command #nvl-unit rem: (X is float-64bit) =
+  new nvl-unit-rem(X);
+
+command (X is nvl-unit) + (Y is nvl-unit) =
+  new nvl-unit-calc-add(X, Y);
+
+command (X is nvl-unit) - (Y is nvl-unit) =
+  new nvl-unit-calc-sub(X, Y);

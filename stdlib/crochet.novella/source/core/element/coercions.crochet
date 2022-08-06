@@ -1,0 +1,55 @@
+% crochet
+
+trait to-nvl-text-component with
+  command Self as nvl-text-component -> nvl-text-component;
+end
+
+implement to-nvl-text-component for text;
+command text as nvl-text-component =
+  new nvl-tc-text(self);
+
+implement to-nvl-text-component for interpolation;
+command interpolation as nvl-text-component =
+  new nvl-tc-flow(self parts map: (_ as nvl-text-component));
+
+implement to-nvl-text-component for nvl-text-component;
+command nvl-text-component as nvl-text-component =
+  self;
+
+
+trait to-nvl-text with
+  command Self as nvl-text -> nvl-text;
+end
+
+implement to-nvl-text for text;
+command text as nvl-text =
+  new nvl-text([self as nvl-text-component]);
+
+implement to-nvl-text for interpolation;
+command interpolation as nvl-text =
+  new nvl-text([self as nvl-text-component]);
+
+implement to-nvl-text for nvl-text-component;
+command nvl-text-component as nvl-text =
+  new nvl-text([self]);
+
+
+trait to-nvl-element with
+  command Self as nvl-element -> nvl-element;
+end
+
+implement to-nvl-element for text;
+command text as nvl-element =
+  self as nvl-text;
+
+implement to-nvl-element for interpolation;
+command interpolation as nvl-element =
+  self as nvl-text;
+
+implement to-nvl-element for nvl-text-component;
+command nvl-text-component as nvl-element =
+  self as nvl-text;
+
+implement to-nvl-element for nvl-element;
+command nvl-element as nvl-element =
+  self;
