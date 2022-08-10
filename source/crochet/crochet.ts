@@ -7,14 +7,13 @@ import { logger } from "../utils/logger";
 import { ForeignInterface } from "./foreign";
 import {
   CrochetValue,
-  Environment,
-  CrochetTrace,
   ErrArbitrary,
   debug_perspectives,
   CrochetType,
   debug_representations,
 } from "../vm";
 import { random_uuid } from "../utils/uuid";
+import { AggregatedFS } from "../scoped-fs/aggregated-fs";
 
 export type TestReportMessage =
   | TRM_Started
@@ -71,19 +70,6 @@ export class TRM_Finished extends TestReportMessageBase {
   }
 }
 
-export interface IFileSystem {
-  read_package(name: string): Promise<Package.Package>;
-  read_file(x: string): Promise<string>;
-  read_binary(
-    file: Package.ResolvedFile,
-    pkg: Package.ResolvedPackage
-  ): Promise<Buffer>;
-  read_native_module(
-    file: Package.ResolvedFile,
-    pkg: Package.ResolvedPackage
-  ): Promise<(_: ForeignInterface) => Promise<void>>;
-}
-
 export interface ISignal {
   request_capabilities(
     graph: Package.PackageGraph,
@@ -102,7 +88,7 @@ export class Crochet {
   constructor(
     readonly tokens: { universe: string; packages: Map<string, string> },
     readonly safe_mode: boolean,
-    readonly fs: IFileSystem,
+    readonly fs: AggregatedFS,
     readonly signal: ISignal
   ) {}
 
@@ -159,12 +145,6 @@ export class Crochet {
     this.trusted.add(pkg);
   }
 
-  async register_package_from_file(filename: string) {
-    const source = await this.fs.read_file(filename);
-    const pkg = Package.parse_from_string(source, filename);
-    return this.register_package(pkg);
-  }
-
   async register_package(pkg: Package.Package) {
     const old = this.registered_packages.get(pkg.meta.name);
     if (old != null) {
@@ -193,7 +173,11 @@ export class Crochet {
   private async get_package(name: string) {
     const pkg = this.registered_packages.get(name);
     if (pkg == null) {
-      const pkg = await this.fs.read_package(name);
+      const scope = this.fs.get_scope(name);
+      const pkg = Package.parse_from_string(
+        await scope.read_text("crochet.json"),
+        name
+      );
       this.register_package(pkg);
       return pkg;
     }
@@ -298,7 +282,8 @@ export class BootedCrochet {
     logger.debug(
       `Loading native module ${x.relative_filename} from package ${pkg.name}`
     );
-    const module = await this.crochet.fs.read_native_module(x, pkg);
+    const scope = this.crochet.fs.get_scope(pkg.name);
+    const module = await scope.read_native_module(x.relative_filename);
     const ffi = new ForeignInterface(
       this,
       this.universe,
@@ -317,7 +302,8 @@ export class BootedCrochet {
       `Loading module ${x.relative_filename} from package ${pkg.name}`
     );
 
-    const buffer = await this.crochet.fs.read_binary(x, pkg);
+    const scope = await this.crochet.fs.get_scope(pkg.name);
+    const buffer = await scope.read(x.relative_binary_image);
     const header = Binary.decode_header(buffer);
 
     if (header.version !== Binary.VERSION) {
@@ -400,7 +386,8 @@ export class BootedCrochet {
   async readme(pkg0: Package.Package) {
     try {
       const pkg = this.graph.get_package(pkg0.meta.name);
-      return await this.crochet.fs.read_file(pkg.readme.absolute_filename);
+      const scope = this.crochet.fs.get_scope(pkg.name);
+      return await scope.read_text(pkg.readme.relative_filename);
     } catch (e) {
       return "(no welcome documentation)";
     }

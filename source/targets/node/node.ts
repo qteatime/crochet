@@ -7,24 +7,14 @@ import {
   BootedCrochet,
   Crochet,
   ForeignInterface,
-  IFileSystem,
   ISignal,
 } from "../../crochet";
 import { logger } from "../../utils/logger";
 import { question } from "../../utils/prompt";
 import { union } from "../../utils/collections";
-import { build, build_file, read_updated_binary } from "./build";
-import {
-  CrochetTest,
-  CrochetValue,
-  TELog,
-  TraceEvent,
-  Location,
-  CrochetEvaluationError,
-} from "../../vm";
-import { random_uuid } from "../../utils/uuid";
-
-const rootRelative = process.env.WEBPACK ? "" : "../../../";
+import { build } from "./build";
+import { CrochetTest, CrochetValue, CrochetEvaluationError } from "../../vm";
+import { AggregatedFS } from "../../scoped-fs/aggregated-fs";
 
 export class CrochetForNode {
   readonly crochet: Crochet;
@@ -34,32 +24,12 @@ export class CrochetForNode {
 
   constructor(
     token: { universe: string; packages: Map<string, string> },
-    disclose_debug: boolean,
-    readonly library_paths: string[],
+    readonly fs: AggregatedFS,
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean,
     readonly safe_mode: boolean
   ) {
     this.crochet = new Crochet(token, safe_mode, this.fs, this.signal);
-  }
-
-  render_entry = (entry: TraceEvent) => {
-    // if (entry instanceof TELog) {
-    //   const message = entry.value;
-    //   if (typeof message === "string") {
-    //     console.log(`[${entry.log_tag}] ${message}`);
-    //   } else {
-    //     console.log(`[${entry.log_tag}] ${Location.simple_value(message)}`);
-    //   }
-    // }
-  };
-
-  get search_paths() {
-    return [this.stdlib_path, ...this.library_paths];
-  }
-
-  get stdlib_path() {
-    return Path.join(__dirname, rootRelative, "stdlib");
   }
 
   get system() {
@@ -208,49 +178,6 @@ export class CrochetForNode {
     return this._ffi;
   }
 
-  fs: IFileSystem = {
-    async read_file(x: string) {
-      return FS.readFileSync(x, "utf-8");
-    },
-
-    async read_binary(
-      file: Package.ResolvedFile,
-      pkg: Package.ResolvedPackage
-    ) {
-      return read_updated_binary(file, pkg);
-    },
-
-    read_package: async (name: string) => {
-      for (const root of this.search_paths) {
-        const full_path = Path.join(root, name, "crochet.json");
-        if (FS.existsSync(full_path)) {
-          const source = FS.readFileSync(full_path, "utf-8");
-          return Package.parse_from_string(source, full_path);
-        }
-      }
-      throw new Error(
-        `The package ${name} was not found in any the library directories:\n  - ${this.search_paths.join(
-          "\n  - "
-        )}`
-      );
-    },
-
-    async read_native_module(
-      file: Package.ResolvedFile,
-      pkg: Package.ResolvedPackage
-    ) {
-      // FIXME: sandbox
-      const module = require(Path.resolve(file.absolute_filename));
-      if (typeof module.default === "function") {
-        return module.default;
-      } else {
-        throw new Error(
-          `Native module ${file.relative_filename} in ${pkg.name} does not expose a function`
-        );
-      }
-    },
-  };
-
   signal: ISignal = {
     request_capabilities: async (
       graph: Package.PackageGraph,
@@ -293,9 +220,7 @@ export class CrochetForNode {
       }
     },
 
-    booted: async (vm: BootedCrochet) => {
-      vm.universe.trace.subscribe(this.render_entry);
-    },
+    booted: async (vm: BootedCrochet) => {},
 
     async report_test(message) {},
   };
@@ -373,30 +298,21 @@ export class CrochetForNode {
   }
 
   private async register_standard_library() {
-    const pkgs = await this.register_directory(this.stdlib_path);
-    for (const pkg of pkgs) {
-      if (this.crochet.trusted_core.has(pkg.meta.name)) {
+    for (const name of this.crochet.trusted_core.values()) {
+      const pkg = this.crochet.registered_packages.get(name);
+      if (pkg != null) {
         this.crochet.trust(pkg);
       }
     }
   }
 
-  private async register_directory(root: string) {
-    const result = [];
-    for (const dir of FS.readdirSync(root)) {
-      const path = Path.join(root, dir, "crochet.json");
-      if (FS.existsSync(path)) {
-        const pkg = await this.crochet.register_package_from_file(path);
-        result.push(pkg);
-      }
-    }
-    return result;
-  }
-
   private async register_libraries() {
-    await this.register_standard_library();
-    for (const path of this.library_paths) {
-      await this.register_directory(path);
+    for (const x of this.crochet.fs.all_scopes()) {
+      const pkg = await x.scope.read_package("crochet.json");
+      this.crochet.register_package(pkg);
+      if (x.scope.is_trusted && this.crochet.trusted_core.has(pkg.meta.name)) {
+        this.crochet.trust(pkg);
+      }
     }
   }
 }
