@@ -2,7 +2,7 @@ import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
 import type * as Express from "express";
-import { CrochetForNode, build_file } from "../targets/node";
+import { CrochetForNode, build_file, NodeFS } from "../targets/node";
 import { random_uuid } from "../utils/uuid";
 import { randomUUID } from "crypto";
 import { TargetTag } from "../pkg";
@@ -44,17 +44,12 @@ export default async (
 
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    false,
-    [],
+    await NodeFS.from_directory(Path.dirname(root)),
     new Set([]),
     false,
     true
   );
   const pkg = crochet.read_package_from_file(root);
-  for (const dep of pkg.meta.dependencies) {
-    const dep_pkg = await crochet.fs.read_package(dep.name);
-    await crochet.build(dep_pkg.filename);
-  }
   const graph = await Package.build_package_graph(
     pkg,
     target,
@@ -114,10 +109,10 @@ export default async (
   }
 
   app.get("/", async (req, res) => {
-    await try_build(res);
     const config = {
       session_id: session_id,
       token: random_uuid(),
+      root_package: pkg.meta.name,
       library_root: "/library",
       app_root: "/app/crochet.json",
       asset_root: "/assets",
@@ -128,7 +123,6 @@ export default async (
   });
 
   app.get("/playground", async (req, res) => {
-    await try_build(res);
     const config = {
       session_id: session_id,
       kind: get_kind(target),
@@ -144,7 +138,7 @@ export default async (
   });
 
   app.use("/", express.static(www));
-  app.use("/library", express.static(Path.join(repo_root, "stdlib")));
+  app.use("/library", express.static(Path.join(repo_root, "stdlib/_build")));
 
   // -- File system capabilities
   const pkg_tokens = new Map();

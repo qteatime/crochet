@@ -3,7 +3,6 @@ import {
   BootedCrochet,
   Crochet,
   ForeignInterface,
-  IFileSystem,
   ISignal,
   TestReportMessage,
   TRM_Finished,
@@ -17,6 +16,7 @@ import { CrochetValue, CrochetTest } from "../../vm";
 import { EventStream } from "../../utils/event";
 import { defer } from "../../utils/utils";
 import { random_uuid } from "../../utils/uuid";
+import { AggregatedFS } from "../../scoped-fs/aggregated-fs";
 
 export class CrochetForBrowser {
   readonly crochet: Crochet;
@@ -27,7 +27,7 @@ export class CrochetForBrowser {
 
   constructor(
     token: { universe: string; packages: Map<string, string> },
-    readonly library_base: string,
+    readonly fs: AggregatedFS,
     readonly capabilities: Set<Package.Capability>,
     readonly interactive: boolean
   ) {
@@ -58,9 +58,8 @@ export class CrochetForBrowser {
     return this._ffi;
   }
 
-  async boot_from_file(filename: string, target: Package.Target) {
-    const source = await this.fs.read_file(filename);
-    const pkg = Package.parse_from_string(source, filename);
+  async boot_from_package(name: string, target: Package.Target) {
+    const pkg = await this.fs.get_scope(name).read_package("crochet.json");
     return this.boot(pkg, target);
   }
 
@@ -69,10 +68,10 @@ export class CrochetForBrowser {
       throw new Error(`Crochet already booted.`);
     }
 
-    const root = await this.crochet.register_package(entry);
-    const booted = await this.crochet.boot(root.meta.name, target);
-    await booted.initialise(root.meta.name, false);
-    this._root = root;
+    await this.register_libraries();
+    const booted = await this.crochet.boot(entry.meta.name, target);
+    await booted.initialise(entry.meta.name, false);
+    this._root = entry;
     this._booted_system = booted;
     this._ffi = new ForeignInterface(
       this.system,
@@ -80,6 +79,16 @@ export class CrochetForBrowser {
       this.system.universe.world.packages.get(this.root.meta.name)!,
       this.root.filename
     );
+  }
+
+  private async register_libraries() {
+    for (const x of this.crochet.fs.all_scopes()) {
+      const pkg = await x.scope.read_package("crochet.json");
+      this.crochet.register_package(pkg);
+      if (x.scope.is_trusted && this.crochet.trusted_core.has(pkg.meta.name)) {
+        this.crochet.trust(pkg);
+      }
+    }
   }
 
   async run(entry: string, args: CrochetValue[]) {
@@ -130,68 +139,6 @@ export class CrochetForBrowser {
     this.system.run_tests(run_id, filter);
     return result.promise;
   }
-
-  private package_url(name: string) {
-    return `${this.library_base}/${name}/crochet.json`;
-  }
-
-  private is_trusted(pkg: Package.Package) {
-    return this.crochet.trusted_core.has(pkg.meta.name);
-  }
-
-  fs: IFileSystem = {
-    read_package: async (name: string) => {
-      const filename = this.package_url(name);
-      const response = await fetch(filename);
-      throw_if_not_200(response, `package ${name}`);
-      const data = await response.json();
-      const pkg = Package.parse(data, filename);
-      if (this.is_trusted(pkg)) {
-        this.crochet.trust(pkg);
-      }
-      return pkg;
-    },
-
-    read_file: async (file: string) => {
-      const response = await fetch(file);
-      throw_if_not_200(response, `file ${file}`);
-      return await response.text();
-    },
-
-    read_binary: async (
-      file: Package.ResolvedFile,
-      pkg: Package.ResolvedPackage
-    ) => {
-      const response = await fetch(file.binary_image);
-      throw_if_not_200(response, `crochet binary ${file}`);
-      const data = await response.arrayBuffer();
-      const buffer = Buffer.from(data);
-      return buffer;
-    },
-
-    read_native_module: async (
-      file: Package.ResolvedFile,
-      pkg: Package.ResolvedPackage
-    ) => {
-      const response = await fetch(file.absolute_filename);
-      throw_if_not_200(response, `native module ${file}`);
-      const source = await response.text();
-      const exports = Object.create(null);
-      const fn = new Function("exports", source);
-      fn(exports);
-
-      if (typeof exports.default === "function") {
-        return exports.default;
-      } else {
-        throw new Error(
-          [
-            `Native module ${file.relative_filename} in ${pkg.name} `,
-            `does not expose a function in 'exports.default'.`,
-          ].join("")
-        );
-      }
-    },
-  };
 
   signal: ISignal = {
     request_capabilities: async (

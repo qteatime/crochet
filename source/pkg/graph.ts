@@ -133,7 +133,7 @@ export class PackageGraph {
       ) {
         throw new Error(
           [
-            `${name} (${pkg.filename}) defines native extensions, `,
+            `${name} defines native extensions, `,
             `but has not been granted the 'native' capability.\n`,
             `${parent} has granted the capabilities: `,
             [...capabilities].join(", "),

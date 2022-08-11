@@ -24,17 +24,27 @@
         config_root.remove();
         const root = document.querySelector("#crochet");
         try {
+          const packages = await (await fetch("library/packages.json")).json();
+          const fs = new Crochet.BrowserFS();
+          for (const [name, token] of Object.entries(config.package_tokens)) {
+            const pkg = packages.find((x) => x.name === name);
+            if (pkg != null) {
+              await fs.add_archive(name, `library/${pkg.filename}`, pkg.hash);
+            }
+          }
+          await fs.add_endpoint(config.root_package, "app");
+
           const crochet = new Crochet.CrochetForBrowser(
             {
               universe: config.token,
               packages: new Map(Object.entries(config.package_tokens)),
             },
-            config.library_root,
+            fs,
             new Set(config.capabilities),
             false
           );
-          await crochet.boot_from_file(
-            config.app_root,
+          await crochet.boot_from_package(
+            config.root_package,
             Crochet.Package.target_web()
           );
           root.classList.remove("crochet-loading");

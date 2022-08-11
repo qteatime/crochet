@@ -10,11 +10,23 @@ export abstract class ScopedFSBackend {
   ): Promise<(ffi: ForeignInterface) => any> {
     const module = Object.create(null);
     module.exports = Object.create(null);
-    new Function("require", "__filename", "module", source)(
+    new Function("require", "__filename", "module", "exports", source)(
       make_restricted_require(path),
       path,
-      module
+      module,
+      module.exports
     );
+
+    if (typeof module.exports.default === "function") {
+      return module.exports.default;
+    } else {
+      throw new Error(
+        [
+          `Native module ${path} `, // FIXME: include scope
+          `does not expose a function in 'exports.default'.`,
+        ].join("")
+      );
+    }
     return module.exports;
   }
 }

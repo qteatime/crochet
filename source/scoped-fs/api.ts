@@ -2,6 +2,7 @@ import * as Path from "path";
 import type { ForeignInterface } from "../crochet";
 import { ScopedFSBackend } from "./backend/core";
 import * as Pkg from "../pkg";
+import { normalize_path } from "../utils/normalize-path";
 
 export class ScopedFS {
   constructor(readonly backend: ScopedFSBackend, readonly is_trusted = false) {}
@@ -14,7 +15,7 @@ export class ScopedFS {
         )} is not allowed in scoped file systems.`
       );
     }
-    return await this.backend.read(path);
+    return await this.backend.read(normalize_path(path));
   }
 
   async read_text(path: string): Promise<string> {

@@ -1,7 +1,7 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
-import { CrochetForNode, build, build_file } from "../targets/node";
+import { CrochetForNode, build, build_file, NodeFS } from "../targets/node";
 import { unreachable } from "../utils/utils";
 import { random_uuid } from "../utils/uuid";
 
@@ -29,8 +29,7 @@ export async function package_app(
 ) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    false,
-    [],
+    await NodeFS.from_directory(Path.dirname(filename)),
     new Set([]),
     false,
     false
@@ -49,7 +48,9 @@ export async function package_app(
   const lib_path = Path.join(out_dir, "library");
   await mkdirp(lib_path);
   for (const dep of pkg.meta.dependencies) {
-    const dep_pkg = await crochet.fs.read_package(dep.name);
+    const dep_pkg = await crochet.fs
+      .get_scope(dep.name)
+      .read_package("crochet.json");
     console.log(`--> Copying ${dep_pkg.meta.name}`);
     await copy_tree(
       Path.dirname(dep_pkg.filename),

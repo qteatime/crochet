@@ -4,7 +4,7 @@ import * as Read from "readline";
 import * as Compiler from "./compiler";
 import * as VM from "../vm";
 import * as Pkg from "../pkg";
-import { CrochetForNode } from "../targets/node";
+import { CrochetForNode, NodeFS } from "../targets/node";
 import { logger } from "../utils/logger";
 import { randomUUID } from "crypto";
 
@@ -98,14 +98,11 @@ export class NodeRepl {
     package_tokens: Map<string, string>,
     bare: boolean
   ) {
-    const disclose_debug = false;
-    const library_paths: string[] = [];
     const interactive = false;
     const safe_mode = bare;
     const crochet = new CrochetForNode(
       { universe: universe, packages: package_tokens },
-      disclose_debug,
-      library_paths,
+      await NodeFS.from_directory(Path.dirname(file)),
       capabilities,
       interactive,
       safe_mode

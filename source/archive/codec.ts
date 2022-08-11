@@ -1,6 +1,7 @@
 import * as Path from "path";
 import { hash_file } from "../binary-encode";
 import type { BinaryReader, BinaryWriter } from "../binary/binary";
+import { normalize_path } from "../utils/normalize-path";
 
 const MAGIC = "CARC";
 const VERSION = 1;
@@ -13,8 +14,8 @@ export class CrochetArchiveWriter {
   private files: ArchiveFile[] = [];
 
   add_file(path0: string, data: Buffer) {
-    const path = Path.normalize(path0);
-    if (Path.isAbsolute(path) || /(^|\/)..($|\/)/.test(path)) {
+    const path = normalize_path(path0);
+    if (Path.isAbsolute(path0) || /(^|\/)\.\.($|\/)/.test(path)) {
       throw new Error(`Invalid path: ${path}`);
     }
     if (this.files.some((x) => x.path === path)) {

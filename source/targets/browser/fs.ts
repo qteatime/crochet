@@ -6,6 +6,12 @@ import { ScopedFS } from "../../scoped-fs/api";
 import { ArchiveFSMapper } from "../../scoped-fs/backend/archive";
 import { HttpFsMapper } from "../../scoped-fs/backend/http-mapper";
 
+const stdlib_packages: {
+  name: string;
+  hash: string;
+  filename: string;
+}[] = require("../../../stdlib/_build/packages.json");
+
 export class BrowserFS extends AggregatedFS {
   async add_archive(id: string, path: string, hash: string) {
     const data = Buffer.from(await (await fetch(path)).arrayBuffer());
@@ -16,7 +22,12 @@ export class BrowserFS extends AggregatedFS {
       );
     }
     const archive = CrochetArchive.decode(new BinaryReader(data));
-    return this.add_scope(id, new ScopedFS(new ArchiveFSMapper(archive)));
+    const is_trusted =
+      stdlib_packages.find((x) => x.name === id && x.hash === hash) != null;
+    return this.add_scope(
+      id,
+      new ScopedFS(new ArchiveFSMapper(archive), is_trusted)
+    );
   }
 
   async add_endpoint(id: string, root: string) {

@@ -1,7 +1,7 @@
 import * as FS from "fs";
 import * as Path from "path";
 import * as Util from "util";
-import { CrochetForNode } from "../targets/node";
+import { CrochetForNode, NodeFS } from "../targets/node";
 import Crochet from "../index";
 import { logger } from "../utils/logger";
 import { CrochetTest, CrochetValue } from "../vm";
@@ -267,8 +267,7 @@ async function show_ir([file]: string[], options: Options) {
 async function run([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    options.disclose_debug,
-    [],
+    await NodeFS.from_directory(Path.dirname(file)),
     options.capabilities,
     options.interactive,
     false
@@ -287,8 +286,7 @@ async function run([file]: string[], options: Options) {
 async function test([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    options.disclose_debug,
-    [],
+    await NodeFS.from_directory(Path.dirname(file)),
     options.capabilities,
     options.interactive,
     false
@@ -304,25 +302,24 @@ async function test([file]: string[], options: Options) {
 async function build([file]: string[], options: Options) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    options.disclose_debug,
-    [],
+    await NodeFS.from_directory(Path.dirname(file)),
     new Set([]),
     true,
     false
   );
-  await crochet.build(file);
+  // FIXME: build
+  // await crochet.build(file);
 }
 
 async function repl([file0]: string[], options: Options) {
+  const file = REPL.resolve_file(file0);
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    options.disclose_debug,
-    [],
+    await NodeFS.from_directory(Path.dirname(file)),
     new Set([]),
     true,
     false
   );
-  let file = REPL.resolve_file(file0);
 
   await crochet.boot_from_file(file, Crochet.pkg.target_node());
   const pkg = crochet.read_package_from_file(file);
@@ -332,8 +329,7 @@ async function repl([file0]: string[], options: Options) {
 async function setup_web_capabilities(file: string, options: Options) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    options.disclose_debug,
-    [],
+    await NodeFS.from_directory(Path.dirname(file)),
     new Set([]),
     true,
     false

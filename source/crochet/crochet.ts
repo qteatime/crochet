@@ -145,19 +145,23 @@ export class Crochet {
     this.trusted.add(pkg);
   }
 
+  read_package(name: string) {
+    const pkg = this.registered_packages.get(name);
+    if (pkg == null) {
+      throw new Error(`No package ${name} registered`);
+    }
+    return pkg;
+  }
+
   async register_package(pkg: Package.Package) {
     const old = this.registered_packages.get(pkg.meta.name);
     if (old != null) {
-      if (Path.resolve(old.filename) !== Path.resolve(pkg.filename)) {
-        throw new Error(
-          [
-            `Duplicated package ${pkg.meta.name}.\n`,
-            `Defined in ${pkg.filename} and ${old.filename}`,
-          ].join("")
-        );
-      } else {
-        return old;
-      }
+      throw new Error(
+        [
+          `Duplicated package ${pkg.meta.name}.\n`,
+          `Defined in ${pkg.filename} and ${old.filename}`,
+        ].join("")
+      );
     }
     logger.debug(`Registered package ${pkg.meta.name} for ${pkg.filename}`);
     this.registered_packages.set(pkg.meta.name, pkg);

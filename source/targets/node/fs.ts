@@ -11,6 +11,24 @@ import { ArchiveFSMapper } from "../../scoped-fs/backend/archive";
 import { NativeFSMapper } from "../../scoped-fs/backend/native-mapper";
 
 export class NodeFS extends AggregatedFS {
+  static async with_stdlib() {
+    const fs = new NodeFS();
+    await fs.add_stdlib();
+    return fs;
+  }
+
+  static async from_directory(path0: string) {
+    const path = Path.resolve(path0);
+    const json_path = Path.join(path, "crochet.json");
+    const source = await FS.readFile(json_path, "utf-8");
+    const pkg = Pkg.parse_from_string(source, json_path);
+
+    const fs = new NodeFS();
+    await fs.add_stdlib();
+    await fs.add_directory(pkg.meta.name, path);
+    return fs;
+  }
+
   async add_archive(id: string, path: string, hash: string) {
     const data = await FS.readFile(path);
     const data_hash = hash_file(data).toString("hex");

@@ -5,6 +5,8 @@ import { Binary } from "../targets/browser";
 import { CrochetArchiveWriter } from "./codec";
 import { BinaryReader, BinaryWriter } from "../binary/binary";
 import { CrochetArchive } from "./archive";
+import { hash_file } from "../binary-encode";
+import { normalize_path } from "../utils/normalize-path";
 
 export function build_from_json(file: string, target: string) {
   const source = FS.readFileSync(file, "utf-8");
@@ -27,7 +29,13 @@ export function build_from_json(file: string, target: string) {
     );
   }
   encoder.write(new BinaryWriter(writer));
-  FS.writeFileSync(target, writer.collect());
+  const buffer = writer.collect();
+  FS.writeFileSync(target, buffer);
+
+  return {
+    buffer,
+    hash: hash_file(buffer),
+  };
 }
 
 export function unpack(filename: string, target: string) {

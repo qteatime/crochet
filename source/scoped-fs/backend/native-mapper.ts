@@ -1,5 +1,6 @@
 import * as FS from "fs/promises";
 import * as Path from "path";
+import { ForeignInterface } from "../../crochet";
 import { ScopedFSBackend } from "./core";
 
 export class NativeFSMapper extends ScopedFSBackend {
@@ -15,5 +16,15 @@ export class NativeFSMapper extends ScopedFSBackend {
       throw new Error(`Invalid path ${path0} in scope ${this.root}`);
     }
     return FS.readFile(path);
+  }
+
+  // FIXME: this is unsafe
+  async make_native_module(
+    path: string,
+    source: string
+  ): Promise<(ffi: ForeignInterface) => any> {
+    const real_path = Path.resolve(this.root, path);
+    const module = require(real_path);
+    return module.default;
   }
 }
