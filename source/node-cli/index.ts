@@ -365,24 +365,6 @@ async function run_web([file]: string[], options: Options) {
   );
 }
 
-async function playground([file]: string[], options: Options) {
-  const cap = await setup_web_capabilities(file, options);
-  await Build.build_from_file(file, Pkg.target_any());
-  await Build.build_from_file(
-    Path.join(__dirname, "../../stdlib/crochet.debug.ui/crochet.json"),
-    Pkg.target_any()
-  );
-  const config = await Server(
-    file,
-    options.web.port,
-    Path.join(__dirname, "../../www"),
-    "/playground",
-    options.target ?? Pkg.target_web(),
-    cap
-  );
-  run_electron(Path.join(__dirname, "playground.js"), JSON.stringify(config));
-}
-
 async function show_docs([file]: string[], options: Options) {
   await serve_docs(
     options.docs.port,
@@ -523,7 +505,6 @@ function help(command?: string) {
           "Usage:\n",
           "  crochet run <crochet.json> [-- <app-args...>]\n",
           "  crochet run-web <crochet.json> [--port PORT --www-root DIR]\n",
-          "  crochet playground <crochet.json> [--port PORT --target ('node' | 'browser')]\n",
           "  crochet docs <crochet.json> [--port PORT --target ('node' | 'browser')]\n",
           "  crochet package <crochet.json> [--package-to OUT_DIR]\n",
           "  crochet test <crochet.json> [--test-title PATTERN --test-module PATTERN --test-package PATTERN --test-show-ok]\n",
@@ -579,8 +560,6 @@ void (async function main() {
         return await run(args, options);
       case "run-web":
         return await run_web(args, options);
-      case "playground":
-        return await playground(args, options);
       case "docs":
         return await show_docs(args, options);
       case "test":

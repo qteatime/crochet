@@ -11,7 +11,6 @@ import {
   AST,
   REPL,
 } from "../../../build/targets/browser";
-import type * as PlaygroundKernel from "../../../build/node-cli/playground-kernel";
 
 declare var Crochet: {
   CrochetForBrowser: typeof CrochetForBrowser;
@@ -25,7 +24,7 @@ declare var Crochet: {
   REPL: typeof REPL;
 };
 declare var crypto: { randomUUID(): string };
-declare var Playground: PlaygroundKernel.Playground;
+declare var Playground: any;
 
 export default (ffi: ForeignInterface) => {
   type RunResult =

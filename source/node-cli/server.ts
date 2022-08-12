@@ -47,7 +47,6 @@ export default async (
     return source.replace(/{{crochet_config}}/g, (_) => config_str);
   };
   const index_template = template("index.html");
-  const playground_template = template("playground.html");
 
   // -- Initialisation
   const fs = await NodeFS.from_directory(Path.dirname(root));
@@ -114,21 +113,6 @@ export default async (
     res.send(index_template(config));
   });
 
-  app.get("/playground", async (req, res) => {
-    const config = {
-      // session_id: session_id,
-      // kind: get_kind(target),
-      // token: random_uuid(),
-      // library_root: "/library",
-      // app_root: "/app/crochet.json",
-      // playground_root: "/library/crochet.debug.ui/crochet.json",
-      // asset_root: "/assets",
-      // capabilities: [...pkg.meta.capabilities.requires.values()],
-      // package_tokens: Object.fromEntries([...pkg_tokens.entries()]),
-    };
-    res.send(playground_template(config));
-  });
-
   app.use("/", express.static(www));
 
   // -- Starting servers
@@ -145,9 +129,6 @@ export default async (
 
   return {
     url,
-    root: root,
-    target: get_kind(target),
-    capabilities: [...capabilities.values()],
   };
 };
 
