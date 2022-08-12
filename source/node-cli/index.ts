@@ -389,7 +389,8 @@ async function show_docs([file]: string[], options: Options) {
 }
 
 async function package_app([file]: string[], options: Options) {
-  await Packaging.package_app(file, null, options.packaging.out_dir);
+  const cap = await setup_web_capabilities(file, options);
+  await Packaging.package_app(file, null, options.packaging.out_dir, cap);
 }
 
 async function new_package([name]: string[], options: Options) {

@@ -80,9 +80,9 @@ w.task("build-stdlib", [], () => {
   exec(`npm run build-stdlib`);
 }).with_doc("Compiles the TypeScript stdlib source to JavaScript");
 
-w.task("package-stdlib", ["build-stdlib"], () => {
+w.task("package-stdlib", ["build-stdlib"], async () => {
   console.log("> Packaging stdlib");
-  require("./build/node-cli/archive").main();
+  await require("./build/node-cli/archive").generate_stdlib_archives();
 }).with_doc("Creates proper package files for all of the stdlib");
 
 w.task("build", ["build-browser"], () => {}).with_doc(

@@ -1,6 +1,7 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Pkg from "../pkg";
+import * as Build from "./build";
 import { Binary } from "../targets/browser";
 import { CrochetArchiveWriter } from "../archive/codec";
 import { BinaryReader, BinaryWriter } from "../binary/binary";
@@ -11,10 +12,14 @@ import { normalize_path } from "../utils/normalize-path";
 const stdlib_root = Path.resolve(__dirname, "../../stdlib");
 const stdlib_target = Path.resolve(__dirname, "../../stdlib/_build");
 
-export function archive_from_json(file: string, target: string) {
+export function archive_from_json(
+  file: string,
+  out_file: string,
+  target: Pkg.Target
+) {
   const source = FS.readFileSync(file, "utf-8");
   const pkg = Pkg.parse_from_string(source, file);
-  const rpkg = new Pkg.ResolvedPackage(pkg, Pkg.target_any());
+  const rpkg = new Pkg.ResolvedPackage(pkg, target);
 
   const writer = new Binary.BufferedWriter();
   const encoder = new CrochetArchiveWriter();
@@ -33,7 +38,7 @@ export function archive_from_json(file: string, target: string) {
   }
   encoder.write(new BinaryWriter(writer));
   const buffer = writer.collect();
-  FS.writeFileSync(target, buffer);
+  FS.writeFileSync(out_file, buffer);
 
   return {
     buffer,
@@ -68,12 +73,12 @@ function* stdlib_packages() {
   }
 }
 
-export function main() {
+export async function generate_stdlib_archives() {
   FS.mkdirSync(stdlib_target, { recursive: true });
   const entries = [];
-  for (const { pkg } of stdlib_packages()) {
+  for (const { pkg, dir } of stdlib_packages()) {
     const target = Path.join(stdlib_target, pkg.meta.name + ".archive");
-    const { hash } = archive_from_json(pkg.filename, target);
+    const { hash } = archive_from_json(pkg.filename, target, Pkg.target_any());
     console.log(
       "-> Built archive for",
       pkg.meta.name,

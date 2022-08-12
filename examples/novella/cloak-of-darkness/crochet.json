@@ -1,6 +1,6 @@
 {
   "name": "crochet.examples.novella.cloak-of-darkness",
-  "target": "*",
+  "target": "browser",
   "native_sources": [],
   "sources": [
     "source/model.crochet",

@@ -27,6 +27,5 @@ export abstract class ScopedFSBackend {
         ].join("")
       );
     }
-    return module.exports;
   }
 }

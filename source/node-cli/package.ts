@@ -2,9 +2,19 @@ import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
 import * as Build from "./build";
+import * as Archive from "./archive";
 import { CrochetForNode, build, build_file, NodeFS } from "../targets/node";
 import { unreachable } from "../utils/utils";
 import { random_uuid } from "../utils/uuid";
+import { ScopedFS } from "../scoped-fs/api";
+import { NativeFSMapper } from "../scoped-fs/backend/native-mapper";
+
+type PkgData = {
+  name: string;
+  hash: string;
+  path: string;
+  token: string;
+};
 
 export enum PackageType {
   BROWSER,
@@ -26,7 +36,8 @@ export function type_from_target(target: Package.Target) {
 export async function package_app(
   filename: string,
   target0: Package.Target | null,
-  out_dir0: string
+  out_dir0: string,
+  capabilities: Set<string>
 ) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
@@ -36,9 +47,17 @@ export async function package_app(
     false
   );
   const pkg = crochet.read_package_from_file(filename);
-  const out_dir = Path.join(out_dir0, pkg.meta.name);
   const target = target0 ?? pkg.meta.target;
+  const rpkg = new Package.ResolvedPackage(pkg, target);
+  const graph = await Package.build_package_graph(
+    pkg,
+    target,
+    new Set(),
+    (crochet.crochet as any).resolver
+  );
+  const out_dir = Path.join(out_dir0, pkg.meta.name);
   const package_type = type_from_target(target);
+  const lib_dir = Path.join(out_dir, "library");
 
   if (FS.existsSync(out_dir)) {
     throw new Error(`Aborting. ${out_dir} is not empty`);
@@ -46,34 +65,45 @@ export async function package_app(
 
   console.log(`Packaging ${pkg.meta.name} to ${out_dir}`);
   await mkdirp(out_dir);
-  const lib_path = Path.join(out_dir, "library");
-  await mkdirp(lib_path);
-  for (const dep of pkg.meta.dependencies) {
-    const dep_pkg = await crochet.fs
-      .get_scope(dep.name)
-      .read_package("crochet.json");
-    console.log(`--> Copying ${dep_pkg.meta.name}`);
-    await copy_tree(
-      Path.dirname(dep_pkg.filename),
-      Path.join(lib_path, dep_pkg.meta.name)
-    );
+  await mkdirp(lib_dir);
+  const package_data = new Map<string, PkgData>();
+  for (const dep of graph.serialise(rpkg)) {
+    const scope = crochet.fs.get_scope(dep.name);
+    const dep_dir = get_scope_root(scope);
+    const dep_pkg = await scope.read_package("crochet.json");
+
     console.log(`--> Building ${dep_pkg.meta.name}`);
     await Build.build_from_file(
-      Path.join(lib_path, dep_pkg.meta.name, "crochet.json"),
-      target
+      Path.join(dep_dir, "crochet.json"),
+      Package.target_any()
     );
+    console.log(`--> Archiving ${dep_pkg.meta.name}`);
+    const token = random_uuid();
+    await mkdirp(Path.join(lib_dir, token));
+    const { hash } = await Archive.archive_from_json(
+      Path.join(dep_dir, "crochet.json"),
+      Path.join(lib_dir, token, dep_pkg.meta.name + ".archive"),
+      Package.target_any()
+    );
+    package_data.set(dep_pkg.meta.name, {
+      name: dep_pkg.meta.name,
+      hash: hash.toString("hex"),
+      path: `library/${token}/${dep_pkg.meta.name}.archive`,
+      token: token,
+    });
   }
-
-  const app_path = Path.join(out_dir, "app");
-  await mkdirp(app_path);
-  console.log(`--> Copying ${pkg.meta.name}`);
-  await copy_tree(Path.dirname(pkg.filename), app_path);
-  console.log(`--> Building ${pkg.meta.name}`);
-  await Build.build_from_file(Path.join(app_path, "crochet.json"), target);
 
   switch (package_type) {
     case PackageType.BROWSER: {
-      await package_for_browser(pkg, filename, target, out_dir);
+      await package_for_browser(
+        pkg,
+        filename,
+        target,
+        out_dir,
+        lib_dir,
+        package_data,
+        capabilities
+      );
       break;
     }
 
@@ -88,11 +118,23 @@ export async function package_for_browser(
   pkg: Package.Package,
   filename: string,
   target: Package.Target,
-  out_dir: string
+  out_dir: string,
+  lib_dir: string,
+  package_data: Map<string, PkgData>,
+  capabilities: Set<string>
 ) {
   console.log(`--> Copying Crochet's browser assets`);
   const www_dir = Path.join(__dirname, "../../www");
   await copy_tree(www_dir, out_dir);
+  console.log(`--> Making index.html`);
+  const index = template(Path.join(out_dir, "index.html"))({
+    packages: [...package_data.values()],
+    token: random_uuid(),
+    capabilities: [...capabilities.values()],
+    root_package: pkg.meta.name,
+  });
+  FS.writeFileSync(Path.join(out_dir, "index.html"), index);
+  console.log(`--> Packaged to ${out_dir}`);
 }
 
 export async function copy_tree(from: string, to: string) {
@@ -119,5 +161,19 @@ export async function copy_tree(from: string, to: string) {
 export async function mkdirp(path: string) {
   if (!FS.existsSync(path)) {
     FS.mkdirSync(path, { recursive: true });
+  }
+}
+
+const template = (filename: string) => (config: unknown) => {
+  const config_str = JSON.stringify(config).replace(/</g, "\\u003c");
+  const source = FS.readFileSync(filename, "utf-8");
+  return source.replace(/{{crochet_config}}/g, (_) => config_str);
+};
+
+function get_scope_root(scope: ScopedFS) {
+  if (scope.backend instanceof NativeFSMapper) {
+    return scope.backend.root;
+  } else {
+    throw new Error(`internal: Invalid scope backend for packaging`);
   }
 }
