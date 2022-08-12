@@ -10,11 +10,14 @@ import { ScopedFS } from "../scoped-fs/api";
 import { NativeFSMapper } from "../scoped-fs/backend/native-mapper";
 
 const stdlib_root = Path.resolve(__dirname, "../../stdlib");
-const stdlib_packages: {
+
+function stdlib_packages(): {
   name: string;
   hash: string;
   filename: string;
-}[] = require("../../stdlib/_build/packages.json");
+}[] {
+  return require("../../stdlib/_build/packages.json");
+}
 
 function get_kind(x: Package.Target) {
   switch (x.tag) {
@@ -66,12 +69,13 @@ export default async (
         await fs.to_package_map()
       );
       const packages = [];
+      const stdlib = stdlib_packages();
       for (const dep of graph.serialise(rpkg)) {
         const scope = fs.get_scope(dep.name);
         const dir = get_scope_root(scope);
         const token = random_uuid();
         if (dir.startsWith(stdlib_root)) {
-          const pkg = stdlib_packages.find((x) => x.name === dep.name)!;
+          const pkg = stdlib.find((x) => x.name === dep.name)!;
           app.get(`/library/${token}`, (req, res) => {
             res.sendFile(Path.resolve(stdlib_root, "_build", pkg.filename));
           });
