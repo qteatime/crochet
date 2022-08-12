@@ -1,11 +1,11 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
+import * as Build from "./build";
 import type * as Express from "express";
 import { CrochetForNode, build_file, NodeFS } from "../targets/node";
 import { random_uuid } from "../utils/uuid";
 import { randomUUID } from "crypto";
-import { TargetTag } from "../pkg";
 
 const repo_root = Path.resolve(__dirname, "../../");
 
@@ -65,7 +65,7 @@ export default async (
 
   const app_base_dir = Path.resolve(Path.dirname(pkg.filename));
   app.get("/app/.binary/*", async (req, res) => {
-    const path = (req.params as any)[0];
+    const path: string = (req.params as any)[0];
     const resolved = Path.resolve(app_base_dir, ".binary", path);
     const source = rpkg.sources.find(
       (x) => Path.resolve(x.binary_image) === resolved
@@ -101,7 +101,7 @@ export default async (
 
   async function try_build(res: Express.Response) {
     try {
-      await crochet.build(root);
+      await Build.build_from_file(root, Package.target_any());
     } catch (e) {
       console.error(e);
       res.send(500);
@@ -109,6 +109,7 @@ export default async (
   }
 
   app.get("/", async (req, res) => {
+    await try_build(res);
     const config = {
       session_id: session_id,
       token: random_uuid(),

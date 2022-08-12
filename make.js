@@ -82,7 +82,7 @@ w.task("build-stdlib", [], () => {
 
 w.task("package-stdlib", ["build-stdlib"], () => {
   console.log("> Packaging stdlib");
-  require("./build/node-cli/make-archives").main();
+  require("./build/node-cli/archive").main();
 }).with_doc("Creates proper package files for all of the stdlib");
 
 w.task("build", ["build-browser"], () => {}).with_doc(

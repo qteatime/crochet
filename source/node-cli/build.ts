@@ -1,15 +1,24 @@
 import * as Path from "path";
 import * as FS from "fs";
-import * as BinaryEnc from "../../binary-encode";
-import * as Binary from "../../binary";
-import * as Compiler from "../../compiler";
-import * as Package from "../../pkg";
+import * as BinaryEnc from "../binary-encode";
+import * as Binary from "../binary";
+import * as Compiler from "../compiler";
+import * as Package from "../pkg";
 import { execFileSync } from "child_process";
-import { logger } from "../../utils/logger";
-import { hash_file } from "../../binary-encode/hash";
+import { logger } from "../utils/logger";
+import { hash_file } from "../binary-encode/hash";
 
-const rootRelative = process.env.WEBPACK ? "" : "../../../";
-const linguaPath = Path.join(__dirname, rootRelative, "tools/lingua.js");
+const linguaPath = Path.join(__dirname, "tools/lingua.js");
+
+export async function build_from_file(
+  filename: string,
+  target: Package.Target
+) {
+  const source = FS.readFileSync(filename, "utf-8");
+  const pkg = Package.parse_from_string(source, filename);
+  const rpkg = new Package.ResolvedPackage(pkg, target);
+  return await build(rpkg);
+}
 
 export async function build(pkg: Package.ResolvedPackage) {
   for (const file of pkg.sources) {

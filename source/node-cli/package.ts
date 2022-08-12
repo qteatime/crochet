@@ -1,6 +1,7 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
+import * as Build from "./build";
 import { CrochetForNode, build, build_file, NodeFS } from "../targets/node";
 import { unreachable } from "../utils/utils";
 import { random_uuid } from "../utils/uuid";
@@ -57,7 +58,10 @@ export async function package_app(
       Path.join(lib_path, dep_pkg.meta.name)
     );
     console.log(`--> Building ${dep_pkg.meta.name}`);
-    await crochet.build(Path.join(lib_path, dep_pkg.meta.name, "crochet.json"));
+    await Build.build_from_file(
+      Path.join(lib_path, dep_pkg.meta.name, "crochet.json"),
+      target
+    );
   }
 
   const app_path = Path.join(out_dir, "app");
@@ -65,7 +69,7 @@ export async function package_app(
   console.log(`--> Copying ${pkg.meta.name}`);
   await copy_tree(Path.dirname(pkg.filename), app_path);
   console.log(`--> Building ${pkg.meta.name}`);
-  await crochet.build(Path.join(app_path, "crochet.json"));
+  await Build.build_from_file(Path.join(app_path, "crochet.json"), target);
 
   switch (package_type) {
     case PackageType.BROWSER: {

@@ -12,7 +12,7 @@ import {
 import { logger } from "../../utils/logger";
 import { question } from "../../utils/prompt";
 import { union } from "../../utils/collections";
-import { build } from "./build";
+import { build } from "../../node-cli/build";
 import { CrochetTest, CrochetValue, CrochetEvaluationError } from "../../vm";
 import { AggregatedFS } from "../../scoped-fs/aggregated-fs";
 
@@ -148,20 +148,6 @@ export class CrochetForNode {
     );
 
     return failures;
-  }
-
-  async build(file: string) {
-    const pkg = await this.read_package_from_file(file);
-    console.log("Building all dependencies of", pkg.meta.name);
-    const graph = await Package.build_package_graph(
-      pkg,
-      Package.target_any(),
-      this.crochet.trusted,
-      this.crochet.resolver
-    );
-    for (const x of graph.serialise(graph.get_package(pkg.meta.name))) {
-      await build(x);
-    }
   }
 
   read_package_from_file(filename: string) {

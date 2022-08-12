@@ -8,19 +8,13 @@ import { CrochetTest, CrochetValue } from "../vm";
 import * as REPL from "../node-repl";
 import Server from "./server";
 import * as Packaging from "./package";
-import {
-  missing_capabilities,
-  ResolvedPackage,
-  Target,
-  target_web,
-  parse as parse_pkg,
-  target_spec,
-} from "../pkg";
+import * as Pkg from "../pkg";
 import * as ChildProcess from "child_process";
 import { serve_docs } from "./docs";
 import { Ok, parse, try_parse } from "../utils/spec";
 import { StorageConfig } from "../storage";
 import { random_uuid } from "../utils/uuid";
+import * as Build from "./build";
 import * as Electron from "electron";
 
 function read_crochet(file: string) {
@@ -62,7 +56,7 @@ interface Options {
   disclose_debug: boolean;
   capabilities: Set<string>;
   interactive: boolean;
-  target?: Target;
+  target?: Pkg.Target;
   web: {
     port: number;
     www_root: string;
@@ -299,18 +293,6 @@ async function test([file]: string[], options: Options) {
   process.exitCode = failures.length;
 }
 
-async function build([file]: string[], options: Options) {
-  const crochet = new CrochetForNode(
-    { universe: random_uuid(), packages: new Map() },
-    await NodeFS.from_directory(Path.dirname(file)),
-    new Set([]),
-    true,
-    false
-  );
-  // FIXME: build
-  // await crochet.build(file);
-}
-
 async function repl([file0]: string[], options: Options) {
   const file = REPL.resolve_file(file0);
   const crochet = new CrochetForNode(
@@ -335,7 +317,7 @@ async function setup_web_capabilities(file: string, options: Options) {
     false
   );
   const pkg = crochet.read_package_from_file(file);
-  const rpkg = new ResolvedPackage(pkg, options.target ?? target_web());
+  const rpkg = new Pkg.ResolvedPackage(pkg, options.target ?? Pkg.target_web());
   const required = [...pkg.meta.capabilities.requires.values()];
   const cap_map = new Map(required.map((x) => [x, [rpkg]]));
   const config = StorageConfig.load();
@@ -347,7 +329,7 @@ async function setup_web_capabilities(file: string, options: Options) {
     await crochet.request_new_capabilities(config, cap_map, pkg);
   } else if (required.length !== 0) {
     const req_set = new Set(required);
-    const missing = missing_capabilities(new Set(previous), req_set);
+    const missing = Pkg.missing_capabilities(new Set(previous), req_set);
     if (missing.size !== 0) {
       await crochet.request_updated_capabilities(
         previous,
@@ -364,13 +346,13 @@ async function setup_web_capabilities(file: string, options: Options) {
 
 async function run_web([file]: string[], options: Options) {
   const cap = await setup_web_capabilities(file, options);
-  await build([file], options);
+  await Build.build_from_file(file, Pkg.target_any());
   const config = await Server(
     file,
     options.web.port,
     options.web.www_root,
     "/",
-    target_web(),
+    Pkg.target_web(),
     cap
   );
   const web_config = JSON.parse(FS.readFileSync(file, "utf-8"))?.config || {};
@@ -382,17 +364,17 @@ async function run_web([file]: string[], options: Options) {
 
 async function playground([file]: string[], options: Options) {
   const cap = await setup_web_capabilities(file, options);
-  await build([file], options);
-  await build(
-    [Path.join(__dirname, "../../stdlib/crochet.debug.ui/crochet.json")],
-    options
+  await Build.build_from_file(file, Pkg.target_any());
+  await Build.build_from_file(
+    Path.join(__dirname, "../../stdlib/crochet.debug.ui/crochet.json"),
+    Pkg.target_any()
   );
   const config = await Server(
     file,
     options.web.port,
     Path.join(__dirname, "../../www"),
     "/playground",
-    options.target ?? target_web(),
+    options.target ?? Pkg.target_web(),
     cap
   );
   run_electron(Path.join(__dirname, "playground.js"), JSON.stringify(config));
@@ -600,7 +582,7 @@ void (async function main() {
       case "test":
         return await test(args, options);
       case "build":
-        return await build(args, options);
+        return await Build.build_from_file(args[0], Pkg.target_any());
       case "package":
         return await package_app(args, options);
       case "repl":

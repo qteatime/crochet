@@ -2,13 +2,16 @@ import * as Path from "path";
 import * as FS from "fs";
 import * as Pkg from "../pkg";
 import { Binary } from "../targets/browser";
-import { CrochetArchiveWriter } from "./codec";
+import { CrochetArchiveWriter } from "../archive/codec";
 import { BinaryReader, BinaryWriter } from "../binary/binary";
-import { CrochetArchive } from "./archive";
+import { CrochetArchive } from "../archive/archive";
 import { hash_file } from "../binary-encode";
 import { normalize_path } from "../utils/normalize-path";
 
-export function build_from_json(file: string, target: string) {
+const stdlib_root = Path.resolve(__dirname, "../../stdlib");
+const stdlib_target = Path.resolve(__dirname, "../../stdlib/_build");
+
+export function archive_from_json(file: string, target: string) {
   const source = FS.readFileSync(file, "utf-8");
   const pkg = Pkg.parse_from_string(source, file);
   const rpkg = new Pkg.ResolvedPackage(pkg, Pkg.target_any());
@@ -49,4 +52,42 @@ export function unpack(filename: string, target: string) {
     FS.mkdirSync(Path.dirname(path), { recursive: true });
     FS.writeFileSync(path, file.data);
   }
+}
+
+function* stdlib_packages() {
+  for (const dir of FS.readdirSync(stdlib_root)) {
+    const base = Path.join(stdlib_root, dir);
+    const pkg_file = Path.join(base, "crochet.json");
+    if (FS.existsSync(pkg_file)) {
+      const pkg = Pkg.parse_from_string(
+        FS.readFileSync(pkg_file, "utf-8"),
+        pkg_file
+      );
+      yield { pkg, dir: base };
+    }
+  }
+}
+
+export function main() {
+  FS.mkdirSync(stdlib_target, { recursive: true });
+  const entries = [];
+  for (const { pkg } of stdlib_packages()) {
+    const target = Path.join(stdlib_target, pkg.meta.name + ".archive");
+    const { hash } = archive_from_json(pkg.filename, target);
+    console.log(
+      "-> Built archive for",
+      pkg.meta.name,
+      `(${hash.toString("hex")})`
+    );
+    entries.push({
+      name: pkg.meta.name,
+      hash: hash.toString("hex"),
+      filename: Path.basename(target),
+    });
+  }
+  FS.writeFileSync(
+    Path.join(stdlib_target, "packages.json"),
+    JSON.stringify(entries, null, 2)
+  );
+  console.log("-> Wrote package index");
 }
