@@ -259,6 +259,7 @@ async function show_ir([file]: string[], options: Options) {
 }
 
 async function run([file]: string[], options: Options) {
+  await Build.build_from_file(file, Pkg.target_any());
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
     await NodeFS.from_directory(Path.dirname(file)),
@@ -278,6 +279,7 @@ async function run([file]: string[], options: Options) {
 }
 
 async function test([file]: string[], options: Options) {
+  await Build.build_from_file(file, Pkg.target_any());
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
     await NodeFS.from_directory(Path.dirname(file)),
@@ -295,6 +297,7 @@ async function test([file]: string[], options: Options) {
 
 async function repl([file0]: string[], options: Options) {
   const file = REPL.resolve_file(file0);
+  await Build.build_from_file(file, Pkg.target_any());
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
     await NodeFS.from_directory(Path.dirname(file)),
