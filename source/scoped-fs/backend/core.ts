@@ -5,6 +5,10 @@ export abstract class ScopedFSBackend {
   abstract name: string;
   abstract read(path: string): Promise<Buffer>;
 
+  equals(other: ScopedFSBackend): boolean {
+    return false;
+  }
+
   write(path: string, data: Buffer): Promise<void> {
     throw new Error(
       `Cannot write to ${path} in read-only file system ${this.name}.`

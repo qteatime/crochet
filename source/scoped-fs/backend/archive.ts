@@ -10,6 +10,14 @@ export class ArchiveFSMapper extends ScopedFSBackend {
     return `archive(${this.archive_path})`;
   }
 
+  equals(other: ScopedFSBackend): boolean {
+    return (
+      other instanceof ArchiveFSMapper &&
+      other.archive === this.archive &&
+      other.archive_path === this.archive_path
+    );
+  }
+
   async read(path: string): Promise<Buffer> {
     return this.archive.read(path);
   }

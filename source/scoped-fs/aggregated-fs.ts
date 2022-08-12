@@ -5,6 +5,9 @@ export class AggregatedFS {
 
   async add_scope(id: string, scope: ScopedFS) {
     if (this.scopes.has(id)) {
+      if (this.scopes.get(id)!.equals(scope)) {
+        return this;
+      }
       throw new Error(`Duplicated scope ${id}`);
     }
     this.scopes.set(id, scope);
