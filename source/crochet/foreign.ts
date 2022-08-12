@@ -124,6 +124,10 @@ export class ForeignInterface {
     return Values.make_untrusted_text(this.#universe, x);
   }
 
+  byte_array(x: Uint8Array) {
+    return Values.make_byte_array(this.#universe, x);
+  }
+
   box(x: unknown) {
     return Values.box(this.#universe, x);
   }
@@ -212,6 +216,10 @@ export class ForeignInterface {
 
   to_js_boolean(x: CrochetValue): boolean {
     return Values.get_boolean(x);
+  }
+
+  to_uint8_array(x: CrochetValue): Uint8Array {
+    return Values.to_uint8_array(x);
   }
 
   text_to_string(x: CrochetValue): string {
@@ -566,5 +574,16 @@ export class ForeignInterface {
 
   get vm() {
     return this.#vm;
+  }
+
+  // == Scoped file system access
+  async read_file(pkg: CrochetPackage, path: string) {
+    const scope = this.#vm.crochet.fs.get_scope(pkg.name);
+    return await scope.read(path);
+  }
+
+  async read_file_text(pkg: CrochetPackage, path: string) {
+    const scope = this.#vm.crochet.fs.get_scope(pkg.name);
+    return await scope.read_text(path);
   }
 }

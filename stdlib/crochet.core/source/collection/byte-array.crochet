@@ -1,0 +1,7 @@
+% crochet
+
+/// A fixed, immutable sequence of byte-size values.
+///
+/// Byte arrays are fast representations of binary data.
+type byte-array = foreign core.byte-array;
+

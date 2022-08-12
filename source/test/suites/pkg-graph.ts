@@ -19,17 +19,6 @@ for (const x of FS.readdirSync(stdlib)) {
     packages.set(pkg.meta.name, pkg);
   }
 }
-
-const resolver = {
-  async get_package(name: string) {
-    const result = packages.get(name);
-    if (result == null) {
-      throw new Error(`undefined package ${name}`);
-    }
-    return result;
-  },
-};
-
 void (async function main() {
   try {
     const [file, capabilities0] = process.argv.slice(2);
@@ -42,7 +31,7 @@ void (async function main() {
       root,
       Package.target_any(),
       new Set(packages.values()),
-      resolver
+      packages
     );
     const resolved_root = graph.get_package(root.meta.name);
 

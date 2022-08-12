@@ -1,17 +1,18 @@
 % crochet
 
-capability asset-location;
-singleton asset-location;
-protect type asset-location with asset-location;
-protect global asset-location with asset-location;
-
-
 type package-assets(pkg is any-package);
-type package-asset(pkg is any-package, path is text);
+type package-asset(pkg is any-package, global id is text, global mime-type is text);
 
-command package-assets at: (Path is static-text) =
-  new package-asset(self.pkg, foreign pkg.asset(self.pkg, Path));
+command package-assets at: (Path is static-text) do
+  let Asset = foreign pkg.asset(self.pkg, Path);
+  new package-asset(self.pkg, Asset.path, Asset.mime);
+end
 
 
+command package-asset read-as-bytes =
+  foreign pkg.read-asset(self.pkg, self.id);
+
+command package-asset read-as-text =
+  foreign pkg.read-asset-text(self.pkg, self.id);
 
 

@@ -1,8 +1,0 @@
-(define fib [n]
-  (if (<= n 1)
-    n
-    (+ (fib (- n 1)) 
-       (fib (- n 2)))))
-
-(display "(fib 6) =>" (fib 6))
-(display "(fib 15) =>" (fib 15))

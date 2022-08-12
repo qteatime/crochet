@@ -1,6 +1,0 @@
-{
-  "name": "me.qteati.o2a2",
-  "target": "browser",
-  "dependencies": ["crochet.core", "crochet.novella"],
-  "sources": ["main.crochet"]
-}

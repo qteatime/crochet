@@ -1,6 +1,6 @@
 import * as Path from "path";
 
-import { Capability, file, File, Package, Target } from "./ir";
+import { Asset, Capability, file, File, Package, Target } from "./ir";
 import { logger } from "../utils/logger";
 import { intersect, union } from "../utils/collections";
 import {
@@ -10,6 +10,7 @@ import {
   target_compatible,
 } from "./ops";
 import { target_any } from ".";
+const PosixPath = Path.posix;
 
 export interface IPackageResolution {
   get_package(name: string): Promise<Package>;
@@ -133,7 +134,7 @@ export class PackageGraph {
       ) {
         throw new Error(
           [
-            `${name} (${pkg.filename}) defines native extensions, `,
+            `${name} defines native extensions, `,
             `but has not been granted the 'native' capability.\n`,
             `${parent} has granted the capabilities: `,
             [...capabilities].join(", "),
@@ -232,19 +233,39 @@ export class PackageGraph {
   }
 }
 
+export class AssetFile {
+  constructor(readonly pkg: ResolvedPackage, readonly asset: Asset) {}
+
+  get relative_filename() {
+    return this.asset.path;
+  }
+
+  get basename() {
+    return PosixPath.basename(this.relative_filename);
+  }
+
+  get extension() {
+    return PosixPath.extname(this.relative_filename);
+  }
+
+  get mime_type() {
+    return this.asset.mime;
+  }
+}
+
 export class ResolvedFile {
   constructor(readonly pkg: ResolvedPackage, readonly file: File) {}
 
   with_basename(x: string) {
-    const dir = Path.dirname(this.file.filename);
+    const dir = PosixPath.dirname(this.file.filename);
     return new ResolvedFile(
       this.pkg,
-      file({ filename: Path.join(dir, x), target: this.file.target })
+      file({ filename: PosixPath.join(dir, x), target: this.file.target })
     );
   }
 
   get basename() {
-    return Path.basename(this.relative_filename);
+    return PosixPath.basename(this.relative_filename);
   }
 
   get relative_filename() {
@@ -252,17 +273,9 @@ export class ResolvedFile {
   }
 
   get relative_basename() {
-    const dir = Path.dirname(this.relative_filename);
-    const base = Path.basename(this.relative_filename, ".crochet");
-    return Path.join(dir, base);
-  }
-
-  get absolute_directory() {
-    return Path.dirname(this.absolute_filename);
-  }
-
-  get absolute_filename() {
-    return Path.join(this.pkg.root, this.relative_filename);
+    const dir = PosixPath.dirname(this.relative_filename);
+    const base = PosixPath.basename(this.relative_filename, ".crochet");
+    return PosixPath.join(dir, base);
   }
 
   get crochet_file(): ResolvedFile {
@@ -272,7 +285,7 @@ export class ResolvedFile {
       return new ResolvedFile(
         this.pkg,
         file({
-          filename: Path.join(this.file.filename + ".crochet"),
+          filename: PosixPath.join(this.file.filename + ".crochet"),
           target: this.file.target,
         })
       );
@@ -283,12 +296,15 @@ export class ResolvedFile {
     return this.extension === ".crochet";
   }
 
-  get binary_image() {
-    return Path.join(this.pkg.binary_root, this.relative_basename + ".croc");
+  get relative_binary_image() {
+    return PosixPath.join(
+      this.pkg.binary_dir,
+      this.relative_basename + ".croc"
+    );
   }
 
   get extension() {
-    return Path.extname(this.relative_filename);
+    return PosixPath.extname(this.relative_filename);
   }
 }
 
@@ -305,16 +321,8 @@ export class ResolvedPackage {
     return this.pkg.filename;
   }
 
-  get root() {
-    return Path.dirname(this.filename);
-  }
-
-  get binary_root() {
-    return Path.join(this.root, ".binary");
-  }
-
-  get assets_root() {
-    return Path.join(this.root, "assets");
+  get binary_dir() {
+    return ".binary";
   }
 
   get dependencies() {
@@ -360,21 +368,26 @@ export class ResolvedPackage {
   }
 
   get assets() {
-    return this.pkg.meta.assets;
+    return this.pkg.meta.assets.map((x) => {
+      return new AssetFile(this, x);
+    });
   }
 }
 
-export async function build_package_graph(
+export function build_package_graph(
   root: Package,
   target: Target,
   trusted: Set<Package>,
-  resolver: IPackageResolution
+  package_map: Map<string, Package>
 ) {
-  async function resolve(pkg: ResolvedPackage) {
+  function resolve(pkg: ResolvedPackage) {
     for (const dep of pkg.dependencies) {
       if (!packages.has(dep.name)) {
         logger.debug(`Resolving package ${dep.name} from ${pkg.name}`);
-        const dep_meta = await resolver.get_package(dep.name);
+        const dep_meta = package_map.get(dep.name);
+        if (dep_meta == null) {
+          throw new Error(`${dep.name} is not defined in the package map`);
+        }
         if (dep.name !== dep_meta.meta.name) {
           throw new Error(
             `${pkg.name} includes a dependency on ${dep.name}, but the loader returned the package ${dep.name}`
@@ -382,7 +395,7 @@ export async function build_package_graph(
         }
         const resolved_dep = new ResolvedPackage(dep_meta, target);
         packages.set(resolved_dep.name, resolved_dep);
-        await resolve(resolved_dep);
+        resolve(resolved_dep);
       }
     }
   }
@@ -390,6 +403,6 @@ export async function build_package_graph(
   const packages = new Map<string, ResolvedPackage>();
   const resolved_pkg = new ResolvedPackage(root, target);
   packages.set(resolved_pkg.name, resolved_pkg);
-  await resolve(resolved_pkg);
+  resolve(resolved_pkg);
   return new PackageGraph(resolved_pkg, target, trusted, packages);
 }

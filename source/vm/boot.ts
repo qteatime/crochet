@@ -241,6 +241,17 @@ export function make_universe(token: string) {
     native_lambdas.push(native_lambda);
   }
 
+  const ByteArray = new CrochetType(
+    null,
+    "byte-array",
+    "",
+    Any,
+    [],
+    [],
+    false,
+    null
+  );
+
   const Thunk = new CrochetType(null, "thunk", "", Any, [], [], false, null);
   const Record = new CrochetType(null, "record", "", Any, [], [], false, null);
   const List = new CrochetType(null, "list", "", Any, [], [], false, null);
@@ -300,6 +311,7 @@ export function make_universe(token: string) {
   world.native_types.define("crochet.core/core.integral", Integral);
   world.native_types.define("crochet.core/core.float-64bit", Float_64);
   world.native_types.define("crochet.core/core.integer", Integer);
+  world.native_types.define("crochet.core/core.byte-array", ByteArray);
   world.native_types.define(
     "crochet.core/core.unsafe-arbitrary-text",
     UnsafeArbitraryText
@@ -332,6 +344,7 @@ export function make_universe(token: string) {
     False,
     Integer,
     Float_64: Float_64,
+    ByteArray,
     UnsafeArbitraryText,
     UntrustedText,
     Text,

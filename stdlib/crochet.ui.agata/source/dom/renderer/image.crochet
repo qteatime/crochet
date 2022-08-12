@@ -4,4 +4,4 @@ command dom-renderer to-uri: (Image is network-image) =
   Image.uri;
 
 command dom-renderer to-uri: (Image is asset-image) =
-  asset-location resolve: Image.asset;
+  Image.asset read-as-data-url;

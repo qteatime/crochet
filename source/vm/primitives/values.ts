@@ -49,6 +49,10 @@ export function make_untrusted_text(universe: Universe, x: string) {
   return new CrochetValue(Tag.TEXT, universe.types.UntrustedText, x);
 }
 
+export function make_byte_array(universe: Universe, x: Uint8Array) {
+  return new CrochetValue(Tag.BYTE_ARRAY, universe.types.ByteArray, x);
+}
+
 export function make_static_text(universe: Universe, x: string) {
   return new CrochetValue(Tag.TEXT, universe.types.StaticText, x);
 }
@@ -293,6 +297,11 @@ export function get_boolean(x: CrochetValue) {
         )} instead`
       );
   }
+}
+
+export function to_uint8_array(x: CrochetValue) {
+  assert_tag(Tag.BYTE_ARRAY, x);
+  return x.payload;
 }
 
 export function make_boolean(universe: Universe, x: boolean) {

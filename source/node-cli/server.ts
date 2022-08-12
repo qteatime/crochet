@@ -1,13 +1,23 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
+import * as Build from "./build";
 import type * as Express from "express";
-import { CrochetForNode, build_file } from "../targets/node";
+import { NodeFS, read_package_from_file } from "../targets/node";
 import { random_uuid } from "../utils/uuid";
 import { randomUUID } from "crypto";
-import { TargetTag } from "../pkg";
+import { ScopedFS } from "../scoped-fs/api";
+import { NativeFSMapper } from "../scoped-fs/backend/native-mapper";
 
-const repo_root = Path.resolve(__dirname, "../../");
+const stdlib_root = Path.resolve(__dirname, "../../stdlib");
+
+function stdlib_packages(): {
+  name: string;
+  hash: string;
+  filename: string;
+}[] {
+  return require("../../stdlib/_build/packages.json");
+}
 
 function get_kind(x: Package.Target) {
   switch (x.tag) {
@@ -37,76 +47,55 @@ export default async (
     return source.replace(/{{crochet_config}}/g, (_) => config_str);
   };
   const index_template = template("index.html");
-  const playground_template = template("playground.html");
 
   // -- Initialisation
-  const session_id = randomUUID();
-
-  const crochet = new CrochetForNode(
-    { universe: random_uuid(), packages: new Map() },
-    false,
-    [],
-    new Set([]),
-    false,
-    true
-  );
-  const pkg = crochet.read_package_from_file(root);
-  for (const dep of pkg.meta.dependencies) {
-    const dep_pkg = await crochet.fs.read_package(dep.name);
-    await crochet.build(dep_pkg.filename);
-  }
-  const graph = await Package.build_package_graph(
-    pkg,
-    target,
-    new Set(),
-    (crochet.crochet as any).resolver
-  );
-
-  const rpkg = new Package.ResolvedPackage(pkg, target);
+  const fs = await NodeFS.from_directory(Path.dirname(root));
+  const pkg = read_package_from_file(root);
 
   // -- Set up server
   const express = require("express") as typeof Express;
   const app = express();
 
-  const app_base_dir = Path.resolve(Path.dirname(pkg.filename));
-  app.get("/app/.binary/*", async (req, res) => {
-    const path = (req.params as any)[0];
-    const resolved = Path.resolve(app_base_dir, ".binary", path);
-    const source = rpkg.sources.find(
-      (x) => Path.resolve(x.binary_image) === resolved
-    );
-    if (!source) {
-      console.error(`Unknown image ${path}`);
-      return res.status(500).send(`Unknown image ${path}`);
-    }
-    await build_file(source, rpkg);
-    res.sendFile(Path.resolve(source.binary_image));
-  });
-
-  app.get("/app/native/*", async (req, res) => {
-    const path = (req.params as any)[0];
-    const resolved = Path.resolve(app_base_dir, "native", path);
-    const source = rpkg.native_sources.find(
-      (x) => Path.resolve(x.absolute_filename) === resolved
-    );
-    if (!source) {
-      console.error(`Unknown native source ${path}`);
-      return res.status(500).send(`Unknown native source ${path}`);
-    }
-    res.sendFile(Path.resolve(source.absolute_filename));
-  });
-
-  app.get("/app/crochet.json", async (req, res) => {
-    res.sendFile(Path.resolve(root));
-  });
-
-  app.get("/app/README.md", async (req, res) => {
-    res.sendFile(Path.resolve(rpkg.readme.absolute_filename));
-  });
-
   async function try_build(res: Express.Response) {
     try {
-      await crochet.build(root);
+      await Build.build_from_file(root, Package.target_any());
+      const pkg = read_package_from_file(root);
+      const rpkg = new Package.ResolvedPackage(pkg, target);
+      const graph = Package.build_package_graph(
+        pkg,
+        target,
+        new Set(),
+        await fs.to_package_map()
+      );
+      const packages = [];
+      const stdlib = stdlib_packages();
+      for (const dep of graph.serialise(rpkg)) {
+        const scope = fs.get_scope(dep.name);
+        const dir = get_scope_root(scope);
+        const token = random_uuid();
+        if (dir.startsWith(stdlib_root)) {
+          const pkg = stdlib.find((x) => x.name === dep.name)!;
+          app.get(`/library/${token}`, (req, res) => {
+            res.sendFile(Path.resolve(stdlib_root, "_build", pkg.filename));
+          });
+          packages.push({
+            name: dep.name,
+            token: token,
+            path: `/library/${token}`,
+            hash: pkg.hash,
+            tag: "archive",
+          });
+        } else {
+          app.use(`/library/${token}`, express.static(dir));
+          packages.push({
+            name: dep.name,
+            token: token,
+            path: `/library/${token}`,
+            tag: "http",
+          });
+        }
+      }
+      return packages;
     } catch (e) {
       console.error(e);
       res.send(500);
@@ -114,49 +103,17 @@ export default async (
   }
 
   app.get("/", async (req, res) => {
-    await try_build(res);
+    const packages = await try_build(res);
     const config = {
-      session_id: session_id,
       token: random_uuid(),
-      library_root: "/library",
-      app_root: "/app/crochet.json",
-      asset_root: "/assets",
-      capabilities: [...pkg.meta.capabilities.requires.values()],
-      package_tokens: Object.fromEntries([...pkg_tokens.entries()]),
+      root_package: pkg.meta.name,
+      capabilities: [...capabilities.values()],
+      packages: packages,
     };
     res.send(index_template(config));
   });
 
-  app.get("/playground", async (req, res) => {
-    await try_build(res);
-    const config = {
-      session_id: session_id,
-      kind: get_kind(target),
-      token: random_uuid(),
-      library_root: "/library",
-      app_root: "/app/crochet.json",
-      playground_root: "/library/crochet.debug.ui/crochet.json",
-      asset_root: "/assets",
-      capabilities: [...pkg.meta.capabilities.requires.values()],
-      package_tokens: Object.fromEntries([...pkg_tokens.entries()]),
-    };
-    res.send(playground_template(config));
-  });
-
   app.use("/", express.static(www));
-  app.use("/library", express.static(Path.join(repo_root, "stdlib")));
-
-  // -- File system capabilities
-  const pkg_tokens = new Map();
-  for (const x of graph.serialise(rpkg)) {
-    const assets = x.assets_root;
-    const token = random_uuid();
-    pkg_tokens.set(x.name, token);
-    if (FS.existsSync(assets)) {
-      console.log("Installing assets for", x.name);
-      app.use(`/assets/${token}`, express.static(assets));
-    }
-  }
 
   // -- Starting servers
   const url = new URL("http://localhost");
@@ -172,10 +129,13 @@ export default async (
 
   return {
     url,
-    root: root,
-    session_id: session_id,
-    target: get_kind(target),
-    capabilities: [...pkg.meta.capabilities.requires.values()],
-    package_tokens: [...pkg_tokens.entries()],
   };
 };
+
+function get_scope_root(scope: ScopedFS) {
+  if (scope.backend instanceof NativeFSMapper) {
+    return Path.resolve(scope.backend.root);
+  } else {
+    throw new Error(`internal: not a valid scope backend`);
+  }
+}

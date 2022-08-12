@@ -1,7 +1,8 @@
 import type { ForeignInterface } from "../../../build/crochet";
 import type { CrochetValue } from "../../../build/vm";
-import type {
+import {
   CrochetForBrowser,
+  BrowserFS,
   Package,
   IR,
   Binary,
@@ -10,10 +11,10 @@ import type {
   AST,
   REPL,
 } from "../../../build/targets/browser";
-import type * as PlaygroundKernel from "../../../build/node-cli/playground-kernel";
 
 declare var Crochet: {
   CrochetForBrowser: typeof CrochetForBrowser;
+  BrowserFS: typeof BrowserFS;
   Package: typeof Package;
   IR: typeof IR;
   Binary: typeof Binary;
@@ -23,7 +24,7 @@ declare var Crochet: {
   REPL: typeof REPL;
 };
 declare var crypto: { randomUUID(): string };
-declare var Playground: PlaygroundKernel.Playground;
+declare var Playground: any;
 
 export default (ffi: ForeignInterface) => {
   type RunResult =
@@ -257,19 +258,20 @@ export default (ffi: ForeignInterface) => {
       const universe = crypto.randomUUID();
       const session = crypto.randomUUID();
 
+      // FIXME: load the correct files
       await Playground.initialise(this.session_id, true);
       const crochet = new Crochet.CrochetForBrowser(
         {
           universe: universe,
           packages: this.package_tokens,
         },
-        this.library_root,
+        await new BrowserFS(),
         new Set(this.capabilities),
         false
       );
 
       const result = await crochet
-        .boot_from_file(this.app_root, Crochet.Package.target_web())
+        .boot_from_package(this.app_root, Crochet.Package.target_web())
         .then(
           (_) => true,
           (e) => String(e)

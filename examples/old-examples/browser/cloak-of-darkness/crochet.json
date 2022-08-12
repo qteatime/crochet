@@ -1,8 +1,0 @@
-{
-  "name": "crochet.examples.browser.cloak-of-darkness",
-  "title": "Cloak of Darkness",
-  "description": "A simple interactive fiction demo.",
-  "target": "browser",
-  "dependencies": ["crochet.core", "crochet.novella"],
-  "sources": ["cloak-of-darkness.crochet"]
-}

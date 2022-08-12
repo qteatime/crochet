@@ -218,6 +218,10 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.ANY_PACKAGE, x);
       return `<package ${x.payload.name}>`;
     }
+    case Tag.BYTE_ARRAY: {
+      assert_tag(Tag.BYTE_ARRAY, x);
+      return `<byte-array: ${x.payload.length} bytes>`;
+    }
     default:
       throw unreachable(x.tag, `Value ${x}`);
   }

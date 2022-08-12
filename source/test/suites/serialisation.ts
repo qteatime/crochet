@@ -11,7 +11,11 @@ import { logger } from "../../utils/logger";
 
 const pkgRoot = Path.join(__dirname, "../../../stdlib");
 const packages = FS.readdirSync(pkgRoot)
-  .filter((x) => FS.statSync(Path.join(pkgRoot, x)).isDirectory())
+  .filter(
+    (x) =>
+      FS.statSync(Path.join(pkgRoot, x)).isDirectory() &&
+      FS.existsSync(Path.join(pkgRoot, x, "crochet.json"))
+  )
   .map((x) => {
     const file = Path.join(pkgRoot, x, "crochet.json");
     return { file, data: JSON.parse(FS.readFileSync(file, "utf-8")) };
@@ -31,7 +35,10 @@ for (const pkg of packages) {
   for (const source of pkg.sources) {
     if (source.extension === ".crochet") {
       console.log(`  - ${source.relative_filename}`);
-      const crochet_source = FS.readFileSync(source.absolute_filename, "utf-8");
+      const crochet_source = FS.readFileSync(
+        Path.join(pkgRoot, pkg.name, source.relative_filename),
+        "utf-8"
+      );
       const ast = Compiler.parse(crochet_source, source.relative_filename);
       const program = Compiler.lower_to_ir(
         source.relative_filename,

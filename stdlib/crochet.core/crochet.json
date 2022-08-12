@@ -61,6 +61,7 @@
     "source/collection/set.crochet",
     "source/collection/set-algebra.crochet",
     "source/collection/stream.crochet",
+    "source/collection/byte-array.crochet",
 
     "source/debug/constructors.crochet",
     "source/debug/coercions.crochet",
@@ -117,14 +118,10 @@
     {
       "filename": "source/package/location-browser.crochet",
       "target": "browser"
-    },
-    {
-      "filename": "source/package/location-node.crochet",
-      "target": "node"
     }
   ],
   "capabilities": {
     "requires": [],
-    "provides": ["tainting", "untainting", "asset-location"]
+    "provides": ["tainting", "untainting"]
   }
 }

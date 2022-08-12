@@ -12,5 +12,5 @@
     "sourceMap": true,
     "jsx": "react"
   },
-  "include": ["./source"]
+  "include": ["source"]
 }

@@ -7,5 +7,6 @@ import * as AST from "../../generated/crochet-grammar";
 import * as REPL from "../../node-repl/compiler";
 
 export * from "./browser";
+export * from "./fs";
 
 export { Package, IR, Compiler, Binary, VM, AST, REPL };

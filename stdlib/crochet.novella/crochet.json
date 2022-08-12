@@ -33,6 +33,6 @@
   "capabilities": {
     "requires": [],
     "provides": [],
-    "optional": ["crochet.core/asset-location"]
+    "optional": []
   }
 }

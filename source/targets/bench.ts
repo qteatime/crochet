@@ -1,6 +1,6 @@
 import * as Package from "../pkg";
 import { random_uuid } from "../utils/uuid";
-import { CrochetForNode } from "./node";
+import { CrochetForNode, NodeFS } from "./node";
 
 export class CrochetForBench extends CrochetForNode {
   constructor(
@@ -9,8 +9,7 @@ export class CrochetForBench extends CrochetForNode {
   ) {
     super(
       { universe: random_uuid(), packages: new Map() },
-      true,
-      [],
+      new NodeFS(), // FIXME: load the correct file system
       capabilities,
       false,
       false

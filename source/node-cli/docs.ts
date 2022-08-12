@@ -1,7 +1,7 @@
 import * as Path from "path";
 import * as FS from "fs";
 import * as Package from "../pkg";
-import { CrochetForNode, build, build_file } from "../targets/node";
+import { CrochetForNode, build, build_file, NodeFS } from "../targets/node";
 import type { BootedCrochet } from "../crochet";
 import {
   CrochetCapability,
@@ -85,8 +85,7 @@ export async function serve_docs(
 ) {
   const crochet = new CrochetForNode(
     { universe: random_uuid(), packages: new Map() },
-    false,
-    [],
+    await NodeFS.from_directory(Path.dirname(filename)),
     new Set([]),
     false,
     true
