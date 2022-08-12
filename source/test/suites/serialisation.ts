@@ -11,7 +11,11 @@ import { logger } from "../../utils/logger";
 
 const pkgRoot = Path.join(__dirname, "../../../stdlib");
 const packages = FS.readdirSync(pkgRoot)
-  .filter((x) => FS.statSync(Path.join(pkgRoot, x)).isDirectory())
+  .filter(
+    (x) =>
+      FS.statSync(Path.join(pkgRoot, x)).isDirectory() &&
+      FS.existsSync(Path.join(pkgRoot, x, "crochet.json"))
+  )
   .map((x) => {
     const file = Path.join(pkgRoot, x, "crochet.json");
     return { file, data: JSON.parse(FS.readFileSync(file, "utf-8")) };
