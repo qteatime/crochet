@@ -17,12 +17,16 @@ export abstract class ScopedFSBackend {
   ): Promise<(ffi: ForeignInterface) => any> {
     const module = Object.create(null);
     module.exports = Object.create(null);
-    new Function("require", "__filename", "module", "exports", source)(
-      make_restricted_require(path),
-      path,
-      module,
-      module.exports
-    );
+    if ((process as any)?.browser === true) {
+      new Function("exports", source)(module.exports);
+    } else {
+      new Function("require", "__filename", "module", "exports", source)(
+        make_restricted_require(path),
+        path,
+        module,
+        module.exports
+      );
+    }
 
     if (typeof module.exports.default === "function") {
       return module.exports.default;
