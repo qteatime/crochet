@@ -17,7 +17,7 @@
   "dependencies": {
     "@types/codemirror": "^5.60.5",
     "@types/ws": "^8.2.3",
-    "electron": "^17.0.1",
+    "electron": "^17.4.11",
     "express": "^4.17.1",
     "immutable": "^4.0.0-rc.14",
     "ohm-js": "^15.3.0",
