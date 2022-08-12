@@ -3,9 +3,8 @@ import { contextBridge, ipcRenderer } from "electron";
 import * as REPL from "../node-repl";
 import * as Pkg from "../pkg";
 import * as Spec from "../utils/spec";
-import * as Path from "path";
-import * as FS from "fs";
-import * as OS from "os";
+import { NativeFSMapper } from "../scoped-fs/backend/native-mapper";
+import { ScopedFS } from "../scoped-fs/api";
 
 let repl: REPL.NodeRepl | null = null;
 
@@ -82,21 +81,19 @@ contextBridge.exposeInMainWorld("Playground", <Playground>{
   async update_root_readme(session_id: string, code: string) {
     assert_repl(repl, session_id);
     const root_pkg = repl.vm.system.graph.root;
-    const tmp_path = make_tmp_path();
-    FS.writeFileSync(tmp_path, code);
-    FS.renameSync(tmp_path, Path.resolve(root_pkg.readme.absolute_filename));
+    await get_native_fs(repl.vm.fs.get_scope(root_pkg.name)).write_text(
+      root_pkg.readme.relative_filename,
+      code
+    );
   },
 });
 
-function make_tmp_path(retries = 10): string {
-  if (retries <= 0) {
-    throw new Error(`internal: failed to create temporary file`);
-  }
-
-  const path = Path.join(OS.tmpdir(), randomUUID());
-  if (!FS.existsSync(path)) {
-    return path;
+function get_native_fs(scope: ScopedFS) {
+  if (scope.backend instanceof NativeFSMapper) {
+    return scope.backend;
   } else {
-    return make_tmp_path(retries - 1);
+    throw new Error(
+      `Scope ${scope.name} is not backed by a writable filesystem.`
+    );
   }
 }

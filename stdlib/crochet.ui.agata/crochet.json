@@ -112,6 +112,6 @@
       "arbitrary-fonts",
       "arbitrary-dom-widgets"
     ],
-    "optional": ["crochet.core/asset-location"]
+    "optional": []
   }
 }

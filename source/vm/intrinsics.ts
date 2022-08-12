@@ -32,6 +32,7 @@ export enum Tag {
   UNKNOWN,
   PROTECTED,
   ANY_PACKAGE,
+  BYTE_ARRAY,
 }
 
 export type PayloadType = {
@@ -56,6 +57,7 @@ export type PayloadType = {
   [Tag.UNKNOWN]: unknown;
   [Tag.PROTECTED]: CrochetProtectedValue;
   [Tag.ANY_PACKAGE]: CrochetPackage;
+  [Tag.BYTE_ARRAY]: Uint8Array;
 };
 
 export interface ActionChoice {
@@ -1044,6 +1046,7 @@ export class Universe {
       False: CrochetType;
       Integer: CrochetType;
       Float_64: CrochetType;
+      ByteArray: CrochetType;
       UnsafeArbitraryText: CrochetType;
       UntrustedText: CrochetType;
       Text: CrochetType;
@@ -1098,6 +1101,10 @@ export class Universe {
 
   make_text(x: string) {
     return new CrochetValue(Tag.TEXT, this.types.Text, x);
+  }
+
+  make_byte_array(x: Uint8Array) {
+    return new CrochetValue(Tag.BYTE_ARRAY, this.types.ByteArray, x);
   }
 }
 //#endregion

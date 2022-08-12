@@ -31,7 +31,10 @@ for (const pkg of packages) {
   for (const source of pkg.sources) {
     if (source.extension === ".crochet") {
       console.log(`  - ${source.relative_filename}`);
-      const crochet_source = FS.readFileSync(source.absolute_filename, "utf-8");
+      const crochet_source = FS.readFileSync(
+        Path.join(pkgRoot, pkg.name, source.relative_filename),
+        "utf-8"
+      );
       const ast = Compiler.parse(crochet_source, source.relative_filename);
       const program = Compiler.lower_to_ir(
         source.relative_filename,

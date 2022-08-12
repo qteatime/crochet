@@ -26,11 +26,11 @@ export class BrowserFS extends AggregatedFS {
       stdlib_packages.find((x) => x.name === id && x.hash === hash) != null;
     return this.add_scope(
       id,
-      new ScopedFS(new ArchiveFSMapper(archive), is_trusted)
+      new ScopedFS(id, new ArchiveFSMapper(archive, path), is_trusted)
     );
   }
 
   async add_endpoint(id: string, root: string) {
-    return this.add_scope(id, new ScopedFS(new HttpFsMapper(root)));
+    return this.add_scope(id, new ScopedFS(id, new HttpFsMapper(root)));
   }
 }

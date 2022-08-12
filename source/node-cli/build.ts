@@ -8,35 +8,37 @@ import { execFileSync } from "child_process";
 import { logger } from "../utils/logger";
 import { hash_file } from "../binary-encode/hash";
 
-const linguaPath = Path.join(__dirname, "tools/lingua.js");
+const linguaPath = Path.join(__dirname, "../../tools/lingua.js");
 
 export async function build_from_file(
   filename: string,
   target: Package.Target
 ) {
+  const root_dir = Path.dirname(filename);
   const source = FS.readFileSync(filename, "utf-8");
   const pkg = Package.parse_from_string(source, filename);
   const rpkg = new Package.ResolvedPackage(pkg, target);
-  return await build(rpkg);
+  return await build(root_dir, rpkg);
 }
 
-export async function build(pkg: Package.ResolvedPackage) {
+export async function build(root_dir: string, pkg: Package.ResolvedPackage) {
   for (const file of pkg.sources) {
-    await build_file(file, pkg);
+    await build_file(root_dir, file, pkg);
   }
 }
 
 export async function build_file(
+  root_dir: string,
   file: Package.ResolvedFile,
   pkg: Package.ResolvedPackage
 ) {
   switch (file.extension) {
     case ".lingua":
-      await build_lingua(file, pkg);
+      await build_lingua(root_dir, file, pkg);
       break;
 
     case ".crochet":
-      await build_crochet(file, pkg);
+      await build_crochet(root_dir, file, pkg);
       break;
 
     default:
@@ -45,51 +47,65 @@ export async function build_file(
 }
 
 export async function build_lingua(
+  root_dir: string,
   file: Package.ResolvedFile,
   pkg: Package.ResolvedPackage
 ) {
   const output = execFileSync("node", [
     linguaPath,
-    file.absolute_filename,
+    Path.join(root_dir, file.relative_basename),
     "crochet",
   ]);
-  if (!is_crochet_up_to_date(file.crochet_file, output)) {
+  if (!is_crochet_up_to_date(root_dir, file.crochet_file, output)) {
     logger.debug(`Compiling ${file.relative_filename} in ${pkg.name}`);
-    FS.writeFileSync(file.crochet_file.absolute_filename, output);
-    await build_crochet(file.crochet_file, pkg);
+    FS.writeFileSync(
+      Path.join(root_dir, file.crochet_file.relative_filename),
+      output
+    );
+    await build_crochet(root_dir, file.crochet_file, pkg);
   }
 }
 
 export async function build_crochet(
+  root_dir: string,
   file: Package.ResolvedFile,
   pkg: Package.ResolvedPackage
 ) {
-  const source = FS.readFileSync(file.absolute_filename, "utf-8");
-  if (is_crochet_up_to_date(file, source)) {
+  const source = FS.readFileSync(
+    Path.join(root_dir, file.relative_filename),
+    "utf-8"
+  );
+  if (is_crochet_up_to_date(root_dir, file, source)) {
     return;
   }
   logger.debug(`Compiling ${file.relative_filename} in ${pkg.name}`);
-  await compile_crochet(file, source);
+  await compile_crochet(root_dir, file, source);
 }
 
 export async function compile_crochet(
+  root_dir: string,
   file: Package.ResolvedFile,
   source: string
 ) {
-  FS.mkdirSync(Path.dirname(file.binary_image), { recursive: true });
+  const target = Path.join(root_dir, file.relative_binary_image);
+  FS.mkdirSync(Path.dirname(target), { recursive: true });
   const ast = Compiler.parse(source, file.relative_filename);
   const program = Compiler.lower_to_ir(file.relative_filename, source, ast);
   // FIXME: actually use file streams...
   const stream = new Binary.BufferedWriter();
   BinaryEnc.encode_program(program, stream);
-  FS.writeFileSync(file.binary_image, stream.collect());
+  FS.writeFileSync(target, stream.collect());
 }
 
-function is_crochet_up_to_date(file: Package.ResolvedFile, source: string) {
-  if (!FS.existsSync(file.binary_image)) {
+function is_crochet_up_to_date(
+  root_dir: string,
+  file: Package.ResolvedFile,
+  source: string
+) {
+  if (!FS.existsSync(Path.join(root_dir, file.relative_binary_image))) {
     return false;
   }
-  const bin = FS.readFileSync(file.binary_image);
+  const bin = FS.readFileSync(Path.join(root_dir, file.relative_binary_image));
   const header = Binary.decode_header(bin);
   if (is_up_to_date(bin, source)) {
     logger.debug(`Skipping ${file} (already up-to-date)`);
@@ -113,20 +129,25 @@ function is_up_to_date(buffer: Buffer, source: string) {
 }
 
 export async function read_updated_binary(
+  root_dir: string,
   file: Package.ResolvedFile,
   pkg: Package.ResolvedPackage
 ): Promise<Buffer> {
-  if (!FS.existsSync(file.binary_image)) {
-    await build_file(file, pkg);
-    return read_updated_binary(file, pkg);
+  const target = Path.join(root_dir, file.relative_binary_image);
+  if (!FS.existsSync(target)) {
+    await build_file(root_dir, file, pkg);
+    return read_updated_binary(root_dir, file, pkg);
   }
 
-  const buffer = FS.readFileSync(file.binary_image);
-  const source = FS.readFileSync(file.crochet_file.absolute_filename, "utf-8");
+  const buffer = FS.readFileSync(target);
+  const source = FS.readFileSync(
+    Path.join(root_dir, file.crochet_file.relative_filename),
+    "utf-8"
+  );
   if (is_up_to_date(buffer, source)) {
     return buffer;
   } else {
-    await compile_crochet(file, source);
-    return read_updated_binary(file, pkg);
+    await compile_crochet(root_dir, file, source);
+    return read_updated_binary(root_dir, file, pkg);
   }
 }

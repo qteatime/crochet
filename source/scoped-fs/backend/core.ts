@@ -2,7 +2,14 @@ import type { ForeignInterface } from "../../crochet";
 import { make_restricted_require } from "../../native-ffi/restricted-require";
 
 export abstract class ScopedFSBackend {
+  abstract name: string;
   abstract read(path: string): Promise<Buffer>;
+
+  write(path: string, data: Buffer): Promise<void> {
+    throw new Error(
+      `Cannot write to ${path} in read-only file system ${this.name}.`
+    );
+  }
 
   async make_native_module(
     path: string,
@@ -22,7 +29,7 @@ export abstract class ScopedFSBackend {
     } else {
       throw new Error(
         [
-          `Native module ${path} `, // FIXME: include scope
+          `Native module ${path} in ${this.name}`,
           `does not expose a function in 'exports.default'.`,
         ].join("")
       );

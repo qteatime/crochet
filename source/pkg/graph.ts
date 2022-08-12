@@ -1,6 +1,6 @@
 import * as Path from "path";
 
-import { Capability, file, File, Package, Target } from "./ir";
+import { Asset, Capability, file, File, Package, Target } from "./ir";
 import { logger } from "../utils/logger";
 import { intersect, union } from "../utils/collections";
 import {
@@ -10,6 +10,7 @@ import {
   target_compatible,
 } from "./ops";
 import { target_any } from ".";
+const PosixPath = Path.posix;
 
 export interface IPackageResolution {
   get_package(name: string): Promise<Package>;
@@ -232,19 +233,39 @@ export class PackageGraph {
   }
 }
 
+export class AssetFile {
+  constructor(readonly pkg: ResolvedPackage, readonly asset: Asset) {}
+
+  get relative_filename() {
+    return this.asset.path;
+  }
+
+  get basename() {
+    return PosixPath.basename(this.relative_filename);
+  }
+
+  get extension() {
+    return PosixPath.extname(this.relative_filename);
+  }
+
+  get mime_type() {
+    return this.asset.mime;
+  }
+}
+
 export class ResolvedFile {
   constructor(readonly pkg: ResolvedPackage, readonly file: File) {}
 
   with_basename(x: string) {
-    const dir = Path.dirname(this.file.filename);
+    const dir = PosixPath.dirname(this.file.filename);
     return new ResolvedFile(
       this.pkg,
-      file({ filename: Path.join(dir, x), target: this.file.target })
+      file({ filename: PosixPath.join(dir, x), target: this.file.target })
     );
   }
 
   get basename() {
-    return Path.basename(this.relative_filename);
+    return PosixPath.basename(this.relative_filename);
   }
 
   get relative_filename() {
@@ -252,17 +273,9 @@ export class ResolvedFile {
   }
 
   get relative_basename() {
-    const dir = Path.dirname(this.relative_filename);
-    const base = Path.basename(this.relative_filename, ".crochet");
-    return Path.join(dir, base);
-  }
-
-  get absolute_directory() {
-    return Path.dirname(this.absolute_filename);
-  }
-
-  get absolute_filename() {
-    return Path.join(this.pkg.root, this.relative_filename);
+    const dir = PosixPath.dirname(this.relative_filename);
+    const base = PosixPath.basename(this.relative_filename, ".crochet");
+    return PosixPath.join(dir, base);
   }
 
   get crochet_file(): ResolvedFile {
@@ -272,7 +285,7 @@ export class ResolvedFile {
       return new ResolvedFile(
         this.pkg,
         file({
-          filename: Path.join(this.file.filename + ".crochet"),
+          filename: PosixPath.join(this.file.filename + ".crochet"),
           target: this.file.target,
         })
       );
@@ -283,16 +296,15 @@ export class ResolvedFile {
     return this.extension === ".crochet";
   }
 
-  get binary_image() {
-    return Path.join(this.pkg.binary_root, this.relative_basename + ".croc");
-  }
-
   get relative_binary_image() {
-    return Path.join(this.pkg.binary_dir, this.relative_basename + ".croc");
+    return PosixPath.join(
+      this.pkg.binary_dir,
+      this.relative_basename + ".croc"
+    );
   }
 
   get extension() {
-    return Path.extname(this.relative_filename);
+    return PosixPath.extname(this.relative_filename);
   }
 }
 
@@ -309,24 +321,8 @@ export class ResolvedPackage {
     return this.pkg.filename;
   }
 
-  get root() {
-    return Path.dirname(this.filename);
-  }
-
-  get binary_root() {
-    return Path.join(this.root, this.binary_dir);
-  }
-
   get binary_dir() {
     return ".binary";
-  }
-
-  get assets_root() {
-    return Path.join(this.root, this.assets_dir);
-  }
-
-  get assets_dir() {
-    return "assets";
   }
 
   get dependencies() {
@@ -372,7 +368,9 @@ export class ResolvedPackage {
   }
 
   get assets() {
-    return this.pkg.meta.assets;
+    return this.pkg.meta.assets.map((x) => {
+      return new AssetFile(this, x);
+    });
   }
 }
 

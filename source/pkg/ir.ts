@@ -52,6 +52,7 @@ export type Capabilities = {
 
 export type Asset = {
   readonly path: string;
+  readonly mime: string;
 };
 
 export type ProvideCapability = {

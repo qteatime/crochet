@@ -1,5 +1,5 @@
 import type { ForeignInterface } from "../../../build/crochet";
-import { Universe } from "../../../build/vm";
+import type { Asset } from "../../../build/pkg";
 
 export default (ffi: ForeignInterface) => {
   ffi.defun("pkg.name", (x) => {
@@ -10,36 +10,41 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("pkg.asset", (pkg0, path0) => {
     const pkg = ffi.get_underlying_package(pkg0);
     const path = ffi.text_to_string(path0);
-    const asset = pkg.metadata.assets.find((x) => x.path === path);
+    const asset = pkg.metadata.assets.find((x) => x.relative_filename === path);
     if (asset == null) {
       throw ffi.panic("invalid-asset", `No asset ${path}`);
     }
-    return ffi.text(asset.path);
+    return ffi.record(
+      new Map([
+        ["path", ffi.text(asset.relative_filename)],
+        ["mime", ffi.text(asset.mime_type)],
+      ])
+    );
   });
 
-  ffi.defun("pkg.asset-location-node", (pkg0, path0) => {
+  ffi.defmachine("pkg.read-asset", function* (pkg0, path0) {
     const pkg = ffi.get_underlying_package(pkg0);
     const path = ffi.text_to_string(path0);
-    const full_path = require("path").resolve(pkg.metadata.assets_root, path);
-    if (!full_path.startsWith(pkg.metadata.assets_root)) {
-      throw ffi.panic(
-        "invalid-asset",
-        `Asset ${path} does not have a valid path`
-      );
-    }
-    return ffi.text(full_path);
+    const buffer = yield ffi.await(
+      ffi.read_file(pkg, path).then((x) => ffi.byte_array(x))
+    );
+    return buffer;
   });
 
-  ffi.defmachine("pkg.asset-location-web", function* (pkg0, path0) {
+  ffi.defmachine("pkg.read-asset-text", function* (pkg0, path0) {
     const pkg = ffi.get_underlying_package(pkg0);
-    const path = decodeURI(ffi.text_to_string(path0));
-    if (/\b\.\.\b/.test(path)) {
-      throw ffi.panic(
-        "invalid-asset",
-        `Asset ${path} does not have a valid path`
-      );
-    }
-    const full_path = `assets/${pkg.token}/${path}`;
-    return ffi.text(full_path);
+    const path = ffi.text_to_string(path0);
+    const data = yield ffi.await(
+      ffi.read_file_text(pkg, path).then((x) => ffi.text(x))
+    );
+    return data;
+  });
+
+  ffi.defun("pkg.make-browser-asset-url", (buffer0, type0) => {
+    const buffer = ffi.to_uint8_array(buffer0);
+    const type = ffi.text_to_string(type0);
+    const blob = new Blob([buffer.buffer], { type: type });
+    const url = URL.createObjectURL(blob);
+    return ffi.text(url);
   });
 };

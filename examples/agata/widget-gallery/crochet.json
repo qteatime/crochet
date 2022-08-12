@@ -9,21 +9,10 @@
     "source/layout/section.crochet",
     "source/layout/card.crochet"
   ],
-  "dependencies": [
-    "crochet.core",
-    "crochet.concurrency",
-    {
-      "name": "crochet.ui.agata",
-      "capabilities": ["crochet.core/asset-location"]
-    }
-  ],
+  "dependencies": ["crochet.core", "crochet.concurrency", "crochet.ui.agata"],
   "capabilities": {
-    "requires": [
-      "crochet.ui.agata/ui-control",
-      "crochet.ui.agata/network",
-      "crochet.core/asset-location"
-    ],
+    "requires": ["crochet.ui.agata/ui-control", "crochet.ui.agata/network"],
     "provides": []
   },
-  "assets": ["img/sun.png"]
+  "assets": [{ "path": "assets/img/sun.png", "mime": "image/png" }]
 }

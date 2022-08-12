@@ -5,6 +5,10 @@ export class HttpFsMapper extends ScopedFSBackend {
     super();
   }
 
+  get name() {
+    return `http(${this.root})`;
+  }
+
   async read(path0: string) {
     const path = join_path(this.root, path0);
     const response = await fetch(path);

@@ -1,4 +1,6 @@
 % crochet
 
-command asset-location resolve: (Asset is package-asset) =
-  foreign pkg.asset-location-web(Asset.pkg, Asset.path);
+command package-asset read-as-data-url do
+  let Bytes = self read-as-bytes;
+  foreign pkg.make-browser-asset-url(Bytes, self mime-type);
+end

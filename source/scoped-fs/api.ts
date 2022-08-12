@@ -5,7 +5,11 @@ import * as Pkg from "../pkg";
 import { normalize_path } from "../utils/normalize-path";
 
 export class ScopedFS {
-  constructor(readonly backend: ScopedFSBackend, readonly is_trusted = false) {}
+  constructor(
+    readonly name: string,
+    readonly backend: ScopedFSBackend,
+    readonly is_trusted = false
+  ) {}
 
   async read(path: string): Promise<Buffer> {
     if (!is_relative(path)) {

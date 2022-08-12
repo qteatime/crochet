@@ -19,6 +19,7 @@ export function archive_from_json(
 ) {
   const source = FS.readFileSync(file, "utf-8");
   const pkg = Pkg.parse_from_string(source, file);
+  const root_dir = Path.dirname(file);
   const rpkg = new Pkg.ResolvedPackage(pkg, target);
 
   const writer = new Binary.BufferedWriter();
@@ -27,13 +28,19 @@ export function archive_from_json(
   for (const file of rpkg.native_sources) {
     encoder.add_file(
       file.relative_filename,
-      FS.readFileSync(Path.resolve(file.absolute_filename))
+      FS.readFileSync(Path.resolve(root_dir, file.relative_filename))
     );
   }
   for (const file of rpkg.sources) {
     encoder.add_file(
       file.relative_binary_image,
-      FS.readFileSync(Path.resolve(file.binary_image))
+      FS.readFileSync(Path.resolve(root_dir, file.relative_binary_image))
+    );
+  }
+  for (const file of rpkg.assets) {
+    encoder.add_file(
+      file.relative_filename,
+      FS.readFileSync(Path.resolve(root_dir, file.relative_filename))
     );
   }
   encoder.write(new BinaryWriter(writer));
@@ -78,6 +85,8 @@ export async function generate_stdlib_archives() {
   const entries = [];
   for (const { pkg, dir } of stdlib_packages()) {
     const target = Path.join(stdlib_target, pkg.meta.name + ".archive");
+    console.log(`-> Building ${pkg.meta.name}`);
+    await Build.build_from_file(pkg.filename, Pkg.target_any());
     const { hash } = archive_from_json(pkg.filename, target, Pkg.target_any());
     console.log(
       "-> Built archive for",

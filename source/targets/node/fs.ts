@@ -38,11 +38,14 @@ export class NodeFS extends AggregatedFS {
       );
     }
     const archive = CrochetArchive.decode(new BinaryReader(data));
-    return this.add_scope(id, new ScopedFS(new ArchiveFSMapper(archive)));
+    return this.add_scope(
+      id,
+      new ScopedFS(id, new ArchiveFSMapper(archive, path))
+    );
   }
 
   async add_directory(id: string, root: string) {
-    return this.add_scope(id, new ScopedFS(new NativeFSMapper(root)));
+    return this.add_scope(id, new ScopedFS(id, new NativeFSMapper(root)));
   }
 
   async add_stdlib() {
@@ -55,7 +58,11 @@ export class NodeFS extends AggregatedFS {
         const pkg = Pkg.parse_from_string(source, file);
         await this.add_scope(
           pkg.meta.name,
-          new ScopedFS(new NativeFSMapper(Path.resolve(root, dir)), true)
+          new ScopedFS(
+            pkg.meta.name,
+            new NativeFSMapper(Path.resolve(root, dir)),
+            true
+          )
         );
       }
     }

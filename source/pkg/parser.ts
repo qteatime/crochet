@@ -88,9 +88,13 @@ export const dependency_spec = anyOf([
 ]);
 
 export const asset_spec = anyOf([
-  map_spec(string, (x) => {
-    return asset({ path: x });
-  }),
+  spec(
+    {
+      path: string,
+      mime: string,
+    },
+    (x) => asset(x)
+  ),
 ]);
 
 export const package_spec = spec(
