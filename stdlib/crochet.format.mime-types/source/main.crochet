@@ -1,0 +1,46 @@
+% crochet
+  
+open crochet.language.json;
+
+singleton mime-type;
+
+local define database = lazy (
+  package assets at: "assets/mime.json"
+    |> _ read-as-text
+    |> json parse: _
+);
+
+local define extension-to-mime = lazy (
+  (force database)
+    | fold-from: #map empty with: { Map, Entry in
+        let Mime = Entry at: "mime";
+        Entry at: "extensions"
+          | fold-from: Map with: { Map, Extension in
+              Map at: Extension put: Mime;
+            };
+      }
+);
+
+local define mime-to-extensions = lazy (
+  (force database)
+    | fold-from: #map empty with: { Map, Entry in
+        Map at: (Entry at: "mime") put: (Entry at: "extensions")
+      }
+);
+
+
+command mime-type for-extension: (Extension is text) do
+  let Db = force extension-to-mime;
+  condition
+    when Db contains-key: Extension => #result ok: (Db at: Extension);
+    otherwise => #result error: not-found;
+  end
+end
+
+command mime-type extensions: (Mime is text) do
+  let Db = force mime-to-extensions;
+  condition
+    when Db contains-key: Mime => #result ok: (Db at: Mime);
+    otherwise => #result error: not-found;
+  end
+end

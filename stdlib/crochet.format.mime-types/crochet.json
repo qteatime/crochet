@@ -1,0 +1,17 @@
+{
+  "name": "crochet.format.mime-types",
+  "target": "*",
+  "native_sources": [],
+  "sources": ["source/main.crochet"],
+  "dependencies": ["crochet.core", "crochet.language.json"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  },
+  "assets": [
+    {
+      "path": "assets/mime.json",
+      "mime": "application/json"
+    }
+  ]
+}
