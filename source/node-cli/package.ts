@@ -3,7 +3,13 @@ import * as FS from "fs";
 import * as Package from "../pkg";
 import * as Build from "./build";
 import * as Archive from "./archive";
-import { CrochetForNode, build, build_file, NodeFS } from "../targets/node";
+import {
+  CrochetForNode,
+  build,
+  build_file,
+  NodeFS,
+  read_package_from_file,
+} from "../targets/node";
 import { unreachable } from "../utils/utils";
 import { random_uuid } from "../utils/uuid";
 import { ScopedFS } from "../scoped-fs/api";
@@ -39,21 +45,15 @@ export async function package_app(
   out_dir0: string,
   capabilities: Set<string>
 ) {
-  const crochet = new CrochetForNode(
-    { universe: random_uuid(), packages: new Map() },
-    await NodeFS.from_directory(Path.dirname(filename)),
-    new Set([]),
-    false,
-    false
-  );
-  const pkg = crochet.read_package_from_file(filename);
+  const fs = await NodeFS.from_directory(Path.dirname(filename));
+  const pkg = read_package_from_file(filename);
   const target = target0 ?? pkg.meta.target;
   const rpkg = new Package.ResolvedPackage(pkg, target);
   const graph = await Package.build_package_graph(
     pkg,
     target,
     new Set(),
-    (crochet.crochet as any).resolver
+    await fs.to_package_map()
   );
   const out_dir = Path.join(out_dir0, pkg.meta.name);
   const package_type = type_from_target(target);
@@ -68,7 +68,7 @@ export async function package_app(
   await mkdirp(lib_dir);
   const package_data = new Map<string, PkgData>();
   for (const dep of graph.serialise(rpkg)) {
-    const scope = crochet.fs.get_scope(dep.name);
+    const scope = fs.get_scope(dep.name);
     const dep_dir = get_scope_root(scope);
     const dep_pkg = await scope.read_package("crochet.json");
 

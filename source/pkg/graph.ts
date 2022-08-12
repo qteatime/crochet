@@ -376,17 +376,20 @@ export class ResolvedPackage {
   }
 }
 
-export async function build_package_graph(
+export function build_package_graph(
   root: Package,
   target: Target,
   trusted: Set<Package>,
-  resolver: IPackageResolution
+  package_map: Map<string, Package>
 ) {
-  async function resolve(pkg: ResolvedPackage) {
+  function resolve(pkg: ResolvedPackage) {
     for (const dep of pkg.dependencies) {
       if (!packages.has(dep.name)) {
         logger.debug(`Resolving package ${dep.name} from ${pkg.name}`);
-        const dep_meta = await resolver.get_package(dep.name);
+        const dep_meta = package_map.get(dep.name);
+        if (dep_meta == null) {
+          throw new Error(`${dep.name} is not defined in the package map`);
+        }
         if (dep.name !== dep_meta.meta.name) {
           throw new Error(
             `${pkg.name} includes a dependency on ${dep.name}, but the loader returned the package ${dep.name}`
@@ -394,7 +397,7 @@ export async function build_package_graph(
         }
         const resolved_dep = new ResolvedPackage(dep_meta, target);
         packages.set(resolved_dep.name, resolved_dep);
-        await resolve(resolved_dep);
+        resolve(resolved_dep);
       }
     }
   }
@@ -402,6 +405,6 @@ export async function build_package_graph(
   const packages = new Map<string, ResolvedPackage>();
   const resolved_pkg = new ResolvedPackage(root, target);
   packages.set(resolved_pkg.name, resolved_pkg);
-  await resolve(resolved_pkg);
+  resolve(resolved_pkg);
   return new PackageGraph(resolved_pkg, target, trusted, packages);
 }

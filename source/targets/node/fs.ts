@@ -61,4 +61,18 @@ export class NodeFS extends AggregatedFS {
     }
     return this;
   }
+
+  async to_package_map() {
+    const result = new Map<string, Pkg.Package>();
+    for (const { scope } of this.all_scopes()) {
+      const pkg = await scope.read_package("crochet.json");
+      result.set(pkg.meta.name, pkg);
+    }
+    return result;
+  }
+}
+
+export function read_package_from_file(filename: string) {
+  const source = SyncFS.readFileSync(filename, "utf-8");
+  return Pkg.parse_from_string(source, filename);
 }

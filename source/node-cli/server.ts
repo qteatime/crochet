@@ -3,7 +3,12 @@ import * as FS from "fs";
 import * as Package from "../pkg";
 import * as Build from "./build";
 import type * as Express from "express";
-import { CrochetForNode, build_file, NodeFS } from "../targets/node";
+import {
+  CrochetForNode,
+  build_file,
+  NodeFS,
+  read_package_from_file,
+} from "../targets/node";
 import { random_uuid } from "../utils/uuid";
 import { randomUUID } from "crypto";
 
@@ -42,19 +47,13 @@ export default async (
   // -- Initialisation
   const session_id = randomUUID();
 
-  const crochet = new CrochetForNode(
-    { universe: random_uuid(), packages: new Map() },
-    await NodeFS.from_directory(Path.dirname(root)),
-    new Set([]),
-    false,
-    true
-  );
-  const pkg = crochet.read_package_from_file(root);
-  const graph = await Package.build_package_graph(
+  const fs = await NodeFS.from_directory(Path.dirname(root));
+  const pkg = read_package_from_file(root);
+  const graph = Package.build_package_graph(
     pkg,
     target,
     new Set(),
-    (crochet.crochet as any).resolver
+    await fs.to_package_map()
   );
 
   const rpkg = new Package.ResolvedPackage(pkg, target);

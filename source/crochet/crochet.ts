@@ -121,11 +121,11 @@ export class Crochet {
 
   async boot(root: string, target: Package.Target) {
     const pkg = await this.get_package(root);
-    const graph = await Package.build_package_graph(
+    const graph = Package.build_package_graph(
       pkg,
       target,
       this.trusted,
-      this.resolver
+      this.registered_packages
     );
     const capabilities = this.safe_mode
       ? new Set([])
