@@ -26,7 +26,16 @@
         try {
           const fs = new Crochet.BrowserFS();
           for (const pkg of config.packages) {
-            await fs.add_archive(pkg.name, pkg.path, pkg.hash);
+            switch (pkg.tag) {
+              case "http":
+                await fs.add_endpoint(pkg.name, pkg.path);
+                break;
+              case "archive":
+                await fs.add_archive(pkg.name, pkg.path, pkg.hash);
+                break;
+              default:
+                throw new Error(`invalid package tag ${pkg.tag}`);
+            }
           }
 
           const crochet = new Crochet.CrochetForBrowser(

@@ -3,13 +3,7 @@ import * as FS from "fs";
 import * as Package from "../pkg";
 import * as Build from "./build";
 import * as Archive from "./archive";
-import {
-  CrochetForNode,
-  build,
-  build_file,
-  NodeFS,
-  read_package_from_file,
-} from "../targets/node";
+import { NodeFS, read_package_from_file } from "../targets/node";
 import { unreachable } from "../utils/utils";
 import { random_uuid } from "../utils/uuid";
 import { ScopedFS } from "../scoped-fs/api";
@@ -20,6 +14,7 @@ type PkgData = {
   hash: string;
   path: string;
   token: string;
+  tag: "archive" | "http";
 };
 
 export enum PackageType {
@@ -90,6 +85,7 @@ export async function package_app(
       hash: hash.toString("hex"),
       path: `library/${token}/${dep_pkg.meta.name}.archive`,
       token: token,
+      tag: "archive",
     });
   }
 
