@@ -120,7 +120,7 @@ function do_simple_value(
   depth: number,
   visited: Set<CrochetValue>
 ): string {
-  if (visited.has(x)) {
+  if (!is_primitive(x) && visited.has(x)) {
     return "[circular]";
   }
   if (depth > 5) {
@@ -288,6 +288,20 @@ function immutable_repr(x: unknown, depth: number, visited: Set<CrochetValue>) {
     )}\n]`;
   } else {
     return `<native collection>`;
+  }
+}
+
+function is_primitive(x: CrochetValue) {
+  switch (x.tag) {
+    case Tag.NOTHING:
+    case Tag.FALSE:
+    case Tag.TRUE:
+    case Tag.INTEGER:
+    case Tag.FLOAT_64:
+    case Tag.TEXT:
+      return true;
+    default:
+      return false;
   }
 }
 
