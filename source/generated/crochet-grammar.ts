@@ -51,6 +51,28 @@ export class Meta {
   }
 }
 
+const $primitive = {
+  parse_json(x: string) {
+    return JSON.parse(x);
+  },
+  parse_integer(x: string) {
+    return BigInt(x.replace(/_/g, ""));
+  },
+  parse_float(x: string) {
+    return Number(x.replace(/_/g, ""));
+  },
+  parse_boolean(x: string) {
+    switch (x) {
+      case "true": return true;
+      case "false": return false;
+      default: throw new Error(`Not a boolean ${x}`);
+    }
+  },
+  flatten_list<A>(xs: A[]) {
+    return xs.flat();
+  }
+};
+
 function $meta(x: Ohm.Node): Meta {
   return new Meta(x.source);
 }
