@@ -1,9 +1,9 @@
 % crochet
 
-local define pickles-globals = [
+local define pickles-globals = lazy [
   new pickles-native-parser(
     name -> "Text",
-    body -> { VM, X in
+    body -> { X in
       condition
         when X is text => #result ok: X;
         otherwise => #result error: new pickles-error--invalid-type("Text", X);
@@ -13,7 +13,7 @@ local define pickles-globals = [
 
   new pickles-native-parser(
     name -> "Integer",
-    body -> { VM, X in
+    body -> { X in
       condition
         when X is integer => #result ok: X;
         when X is text => #integer try-parse: X
@@ -25,7 +25,7 @@ local define pickles-globals = [
 
   new pickles-native-parser(
     name -> "Float-64bit",
-    body -> { VM, X in
+    body -> { X in
       condition
         when X is float-64bit => #result ok: X;
         when X is text => #float-64bit try-parse: X
@@ -37,7 +37,7 @@ local define pickles-globals = [
 
   new pickles-native-parser(
     name -> "Boolean",
-    body -> { VM, X in
+    body -> { X in
       condition
         when X is boolean => #result ok: X;
         when X =:= "true" => #result ok: true;
@@ -49,7 +49,7 @@ local define pickles-globals = [
 
   new pickles-native-parser(
     name -> "Nothing",
-    body -> { VM, X in
+    body -> { X in
       condition
         when X is nothing => #result ok: nothing;
         otherwise => #result error: new pickles-error--invalid-type("Nothing", X);
@@ -59,7 +59,7 @@ local define pickles-globals = [
 
   new pickles-native-parser(
     name -> "Anything",
-    body -> { VM, X in #result ok: X }
+    body -> { X in #result ok: X }
   ),
 
   new pickles-native-function(
@@ -68,13 +68,13 @@ local define pickles-globals = [
     body -> { Parser in 
       new pickles-native-parser(
         name -> "List([Parser text-representation])" flatten-into-plain-text,
-        body -> { VM, Xs in
+        body -> { Xs in
           condition
             when Xs is list =>
               Xs enumerate
                 | fold-from: (#result ok: []) with: { Previous, X in
                     Previous map: { PreviousList in
-                      VM parse: X value with: Parser
+                      Parser parse: X value
                         | map: { XResult in PreviousList append: XResult }
                         | map-error: { E in new pickles-error--invalid-list(Parser, Xs, X index, E) };
                     };
@@ -90,10 +90,10 @@ local define pickles-globals = [
 ];
 
 local define global-environment = lazy (
-  pickles-globals
+  (force pickles-globals)
     | fold-from: #environment empty with: { Env, Entry in
-        Env define: Entry name as: Entry
+        Env define: Entry.name as: Entry
       }
 );
 
-command #pickles globals = force global-environment;
+command #pickles-vm globals = force global-environment;

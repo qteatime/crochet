@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.text.parsing.lingua;
+
 abstract pickles-error;
 
 /// Raised when trying to lookup a variable that was not defined
@@ -55,7 +57,7 @@ type pickles-error--both-failed(
 ) is pickles-error;
 
 /// Raised when finding a value at a path fails
-type pickles-errror--path-not-found(
+type pickles-error--path-not-found(
   parser is ast-expression--at,
   origin is any
 ) is pickles-error;
@@ -172,7 +174,7 @@ command pickles-error--not-unpackable to-panic-message =
 command pickles-error--no-cases-matched to-panic-message do
   let Cases =
     self.parser.cases
-      |> _ map: { X in package evaluate-literal: X.value | text-representation }
+      |> _ map: { X in X.value text-representation }
       |> #text join: _ with: ", ";
   "None of the cases matched: [Cases]";
 end

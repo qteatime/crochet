@@ -33,7 +33,7 @@ command package parse: X with: (P is ast-expression--optional) in: Env do
     | or-else: { E in
         condition
           when E is pickles-error--path-not-found =>
-            #result ok: package evaluate-literal: P.default-value;
+            #result ok: (package evaluate-literal: P.default-value);
           
           otherwise =>
             #result error: E;
@@ -135,23 +135,23 @@ end
 
 command package parse: X with: (P is ast-expression--record) in: Env do
   P.fields
-    |> _ fold-from: (#result ok: #map empty)
-         with: { Result, Field in
-           Result then: { PreviousResults in
-             package parse: X with: Field in: Env record: P
-               | map: { FieldResult in
-                   PreviousResults at: FieldResult key put: FieldResult value
-                 }
-           }
-         }
-    |> _ as record;
+    | fold-from: (#result ok: #map empty)
+        with: { Result, Field in
+          Result then: { PreviousResults in
+            package parse: X with: Field in: Env record: P
+              | map: { FieldResult in
+                  PreviousResults at: FieldResult key put: FieldResult value
+                }
+          }
+        }
+    | map: (_ as record);
 end
 
 command package parse: X with: (P is ast-record-field) in: Env record: R do
   package parse: X with: P.parser in: Env
     | map: (#association key: P.name value: _)
     | map-error: { E in
-        new piclkes-error--record-failed(
+        new pickles-error--record-failed(
           record -> R,
           field -> P,
           error -> E,

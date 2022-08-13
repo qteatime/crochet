@@ -1,0 +1,67 @@
+% crochet
+
+open crochet.language.json;
+
+
+command pickles-module text-representation =
+  "<module [self.name]>" flatten-into-plain-text;
+
+command pickles-parser text-representation =
+  "<parser [self.name]>" flatten-into-plain-text;
+
+command pickles-anonymous-parser text-representation =
+  "<parser: [self.body.info source]>" flatten-into-plain-text;
+
+command pickles-function text-representation =
+  "<function [self.name]([#text join: self.formals with: ", "])>" flatten-into-plain-text;
+
+command pickles-native-parser text-representation =
+  "<native-parser [self.name]>" flatten-into-plain-text;
+
+command pickles-native-function text-representation =
+  "<native-function [self.name]([#text join: self.formals with: ", "])>" flatten-into-plain-text;
+
+command pickles-literal text-representation =
+  condition
+    when self.value is text => json serialise: self.value;
+    when self.value is integer => self.value to-text;
+    when self.value is float-64bit => self.value to-text;
+    when self.value is true => "true";
+    when self.value is false => "false";
+    when self.value is nothing => "nothing";
+  end;
+
+command ast-expression text-representation =
+  self.info source;
+
+command ast-module text-representation =
+  self.info source;
+
+command ast-declaration text-represenatation =
+  self.info source;
+
+command ast-case text-representation =
+  self.info source;
+
+command ast-sequence-item text-representation =
+  self.info source;
+
+command ast-record-field text-representation =
+  self.info source;
+
+command ast-path text-representation =
+  self.segments map: (_ text-representation)
+    |> #text join: _  with: "."
+    |> _ flatten-into-plain-text;
+
+command ast-segment--name text-representation =
+  self.text;
+
+command ast-segment--text text-representation =
+  json serialise: self.text;
+
+command ast-literal text-representation =
+  (package evaluate-literal: self) text-representation;
+
+command ast-namespace text-representation =
+  (#text join: self.segments with: ".") flatten-into-plain-text;

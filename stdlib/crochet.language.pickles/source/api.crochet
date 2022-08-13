@@ -1,0 +1,11 @@
+% crochet
+  
+singleton pickles;
+
+command pickles parse: Data with: (Schema is text) root: (Name is text) do
+  let Ast = pickles-grammar parse: Schema | value-or-panic: "Invalid Pickles schema";
+  let VM = #pickles-vm make;
+  let Module = VM load-module: Ast;
+  let Parser = Module lookup: Name;
+  Parser parse: Data;
+end

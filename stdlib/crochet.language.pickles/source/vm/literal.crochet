@@ -9,7 +9,7 @@ command package evaluate-literal: (X is ast-literal--integer) =
 command package evaluate-literal: (X is ast-literal--float) =
   new pickles-literal(X.value);
 
-command package evaluate-literal: (X is ast-litearl--boolean) =
+command package evaluate-literal: (X is ast-literal--boolean) =
   new pickles-literal(X.value);
 
 command package evaluate-literal: ast-literal--nothing =

@@ -5,6 +5,9 @@ effect pickles-evaluation with
 end
 
 handler pickles-fail-fast with
-  on pickles-evaluation.raise(Error) =>
-    panic message: error to-panic-message tag: #pickles-error data: [error -> Error];
+  on pickles-evaluation.raise(Error) do
+    panic message: Error to-panic-message tag: "pickles-exception" data: [error -> Error];
+  end
 end
+
+default handler pickles-fail-fast;

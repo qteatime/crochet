@@ -35,7 +35,7 @@ command environment define: (Name is text) as: (Value is pickles-value) do
   let Bindings = self.bindings value;
   condition
     when Bindings contains-key: Name =>
-      #pickles-vm exception: new picles-error--conflicting-variable(self, Name, Value);
+      #pickles-vm exception: new pickles-error--conflicting-variable(self, Name, Value);
     
     otherwise do
       self.bindings <- Bindings at: Name put: Value;

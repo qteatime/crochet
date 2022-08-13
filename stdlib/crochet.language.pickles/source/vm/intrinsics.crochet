@@ -1,11 +1,13 @@
 % crochet
 
+open crochet.text.parsing.lingua;
+
 abstract pickles-value;
 
 type pickles-module(
-  name is ast-namespace,
+  name is text,
   environment is environment,
-  exports is set<text>,
+  exported is set<text>,
 ) is pickles-value;
 
 type pickles-parser(

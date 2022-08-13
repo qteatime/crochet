@@ -171,7 +171,7 @@ grammar pickles_grammar : ast_module {
   token name_rest = "a".."z" | "-" | "0".."9"
   token t_name = name_start name_rest*
 
-  name = ~reserved t_name
+  name = ~reserved x:t_name -> x
 
   token variable_start = "A".."Z"
   token variable_rest = "a".."z" | "A".."Z" | "-" | "0".."9"
