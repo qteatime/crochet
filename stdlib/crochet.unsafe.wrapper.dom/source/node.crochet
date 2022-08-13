@@ -1,0 +1,74 @@
+% crochet
+
+abstract dom-node;
+type dom-node-simple(box is unknown) is dom-node;
+type dom-element(box is unknown) is dom-node;
+type dom-fragment(box is unknown) is dom-node;
+
+type dom-class-list(element is dom-element);
+type dom-event(box is unknown);
+type dom-subscriber(element is dom-element, name is text, listener is unknown);
+
+
+command dom-node append: (Node is dom-node) do
+  foreign dom.append-node(self.box, Node.box);
+  self;
+end
+
+command dom-node prepend: (Node is dom-node) do
+  foreign dom.prepend-node(self.box, Node);
+  self;
+end
+
+command dom-node remove-contents do
+  foreign dom.remove-contents(self.box);
+  self;
+end
+
+command dom-node detach do
+  foreign dom.detach-node(self.box);
+  self;
+end
+
+
+command dom-element set: (Attribute is text) to: (Value is text) do
+  foreign dom.set-attribute(self.box, Attribute, Value);
+  self;
+end
+
+command dom-element set-style: (Style is record) do
+  foreign dom.set-style(self.box, Style);
+  self;
+end
+
+
+command dom-element classes =
+  new dom-class-list(self);
+
+command dom-class-list add: (Name is text) do
+  foreign dom.add-class(self.element.box, Name);
+  self;
+end
+
+command dom-class-list remove: (Name is text) do
+  foreign dom.remove-class(self.element.box, Name);
+  self;
+end
+
+command dom-class-list toggle: (Name is text) do
+  foreign dom.toggle-class(self.element.box, Name);
+  self;
+end
+
+
+command dom-element on: (Event is text) do: (Handler is (dom-event -> nothing)) do
+  let Fun = { Ev in Handler(new dom-event(Ev)) } capture;
+  let Ref = foreign dom.add-listener(self.box, Event, Fun);
+  new dom-subscriber(self, Event, Ref);
+end
+
+command dom-subscriber unsubscribe do
+  foreign dom.remove-listener(self.element.box, self.name, self.listener);
+  self;
+end
+

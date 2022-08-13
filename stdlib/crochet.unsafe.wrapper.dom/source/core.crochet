@@ -1,0 +1,23 @@
+% crochet
+  
+capability unsafe-dom;
+
+singleton dom;
+protect type dom with unsafe-dom;
+protect global dom with unsafe-dom;
+
+
+command dom make-text: (Text is text) =
+  foreign dom.make-text(Text);
+
+command dom from-node: (Node is unknown) =
+  new dom-node-simple(foreign dom.get-node(Node));
+
+command dom from-element: (Node is unknown) =
+  new dom-element(foreign dom.get-element(Node));
+
+command dom make-element: (Tag is text) =
+  new dom-element(foreign dom.make-element(Tag));
+
+command dom make-fragment =
+  new dom-fragment(foreign dom.make-fragment());

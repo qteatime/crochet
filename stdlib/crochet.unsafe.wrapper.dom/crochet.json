@@ -1,0 +1,11 @@
+{
+  "name": "crochet.unsafe.wrapper.dom",
+  "target": "browser",
+  "native_sources": [],
+  "sources": ["source/core.crochet", "source/node.crochet"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": [],
+    "provides": ["unsafe-dom"]
+  }
+}
