@@ -1,0 +1,16 @@
+% crochet
+
+open crochet.ui.agata;
+
+type pw-split-panel(
+  left is widget,
+  right is widget,
+);
+
+implement to-widget for pw-split-panel;
+
+command pw-split-panel as widget do
+  #widget flex-row: [
+    #flex-child 
+  ]
+end

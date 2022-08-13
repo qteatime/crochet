@@ -1,0 +1,30 @@
+% crochet
+  
+open crochet.language.pickles;
+open crochet.ui.agata;
+open crochet.concurrency;
+
+singleton plugin-screen;
+
+implement to-widget for plugin-screen;
+
+command plugin-screen as widget do
+  let Code = #observable-cell with-value: "";
+  let Json = #observable-cell with-value: "";
+
+  #widget flex-row: [
+    #flex-child fluid: (
+      #widget code-editor
+        | mode: "pickles"
+        | auto-resize: true
+        | value: Code
+    ),
+
+    #flex-child fluid: (
+      #widget code-editor
+        | mode: "json"
+        | auto-resize: true
+        | value: Json
+    ),
+  ];
+end

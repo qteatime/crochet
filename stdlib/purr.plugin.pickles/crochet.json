@@ -1,0 +1,17 @@
+{
+  "name": "purr.plugin.pickles",
+  "description": "Development tools for Pickles",
+  "target": "*",
+  "native_sources": [],
+  "sources": ["source/main.crochet", "source/editor.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.language.pickles",
+    "crochet.ui.agata",
+    "crochet.concurrency"
+  ],
+  "capabilities": {
+    "requires": ["crochet.ui.agata/ui-control"],
+    "provides": []
+  }
+}

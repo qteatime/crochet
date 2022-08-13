@@ -1,0 +1,7 @@
+% crochet
+
+abstract widget;
+
+trait to-widget with
+  command X as widget -> widget;
+end

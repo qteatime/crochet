@@ -1,0 +1,94 @@
+% crochet
+
+abstract text-option is transform-option;
+
+type text-option--align(value is agata-variable<text-align>) is text-option;
+type text-option--decoration(value is agata-variable<text-decoration>) is text-option;
+type text-option--transform(value is agata-variable<text-transform>) is text-option;
+type text-option--overflow(value is agata-variable<text-overflow>) is text-option;
+type text-option--whitespace(value is agata-variable<text-whitespace>) is text-option;
+type text-option--word-break(value is agata-variable<text-word-break>) is text-option;
+type text-option--letter-spacing(value is agata-variable<text-letter-spacing>) is text-option;
+type text-option--line-height(value is agata-variable<text-line-height>) is text-option;
+
+command text-option--align key = "text-align";
+command text-option--decoration key = "text-decoration";
+command text-option--transform key = "text-transform";
+command text-option--overflow key = "text-overflow";
+command text-option--whitespace key = "white-space";
+command text-option--word-break key = "word-break";
+command text-option--letter-spacing key = "letter-spacing";
+command text-option--line-height key = "line-height";
+
+
+enum text-align =
+  left,
+  center,
+  right,
+  justify,
+  at-start,
+  at-end;
+
+enum text-decoration =
+  underline,
+  overline,
+  line-through,
+  none;
+
+enum text-transform =
+  uppercase,
+  lowercase,
+  capitalize,
+  none;
+
+enum text-overflow =
+  truncate,
+  ellipsis,
+  clip;
+
+enum text-whitespace =
+  collapse,
+  no-wrap,
+  preserve,
+  preserve-lines,
+  preserve-and-wrap;
+
+enum text-word-break =
+  break-normal,
+  break-words,
+  break-all;
+
+enum text-letter-spacing =
+  tight,
+  normal,
+  wide;
+
+enum text-line-height =
+  single,
+  one-and-half,
+  double;
+
+
+command widget-transform text-align: (X has to-agata-variable<text-align>) =
+  self add-option: new text-option--align(X as agata-variable);
+
+command widget-transform text-decoration: (X has to-agata-variable<text-decoration>) =
+  self add-option: new text-option--decoration(X as agata-variable);
+
+command widget-transform text-transform: (X has to-agata-variable<text-transform>) =
+  self add-option: new text-option--transform(X as agata-variable);
+
+command widget-transform text-overflow: (X has to-agata-variable<text-overflow>) =
+  self add-option: new text-option--overflow(X as agata-variable);
+
+command widget-transform white-space: (X has to-agata-variable<text-whitespace>) =
+  self add-option: new text-option--whitespace(X as agata-variable);
+
+command widget-transform word-break: (X has to-agata-variable<text-word-break>) =
+  self add-option: new text-option--word-break(X as agata-variable);
+
+command widget-transform letter-spacing: (X has to-agata-variable<text-letter-spacing>) =
+  self add-option: new text-option--letter-spacing(X as agata-variable);
+
+command widget-transform line-height: (X has to-agata-variable<text-line-height>) =
+  self add-option: new text-option--line-height(X as agata-variable);

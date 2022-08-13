@@ -1,0 +1,20 @@
+% crochet
+
+open crochet.concurrency;
+
+abstract agata-variable;
+
+type agata-variable-reactive(value is observable-cell<X>) is agata-variable;
+type agata-variable-immutable(value is A) is agata-variable;
+
+trait to-agata-variable with
+  command X as agata-variable -> agata-variable;
+end
+
+implement to-agata-variable for observable-cell;
+command observable-cell as agata-variable =
+  new agata-variable-reactive(self);
+
+implement to-agata-variable for any;
+command any as agata-variable =
+  new agata-variable-immutable(self);

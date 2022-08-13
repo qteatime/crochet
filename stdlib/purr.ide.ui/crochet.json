@@ -1,0 +1,12 @@
+{
+  "name": "purr.ide.ui",
+  "target": "*",
+  "description": "An extension to Agata for building IDE tools",
+  "native_sources": [],
+  "sources": ["source/main.crochet"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

@@ -1,0 +1,59 @@
+% crochet
+
+abstract font-option is transform-option;
+
+type font-option--family(value is agata-variable<font-family>) is font-option;
+type font-option--weight(value is agata-variable<font-weight>) is font-option;
+type font-option--style(value is agata-variable<font-style>) is font-option;
+type font-option--size(value is agata-variable<font-size>) is font-option;
+
+command font-option--family key = "font-family";
+command font-option--weight key = "font-weight";
+command font-option--style key = "font-style";
+command font-option--size key = "font-size";
+
+
+enum font-family =
+  serif,
+  sans-serif,
+  monospace,
+  display,
+  body;
+
+enum font-weight =
+  thin,
+  extra-light,
+  light,
+  regular,
+  medium,
+  semi-bold,
+  bold,
+  extra-bold,
+  black;
+
+enum font-style =
+  normal,
+  italic;
+
+enum font-size =
+  extra-small,
+  small,
+  base,
+  large,
+  extra-large,
+  large-2x,
+  large-3x,
+  large-4x;
+
+
+command widget-transform font-family: (X has to-agata-variable<font-family>) =
+  self add-option: new font-option--family(X as agata-variable);
+
+command widget-transform font-weight: (X has to-agata-variable<font-weight>) =
+  self add-option: new font-option--weight(X as agata-variable);
+
+command widget-transform font-style: (X has to-agata-variable<font-style>) =
+  self add-option: new font-option--style(X as agata-variable);
+
+command widget-transform font-size: (X has to-agata-variable<font-size>) =
+  self add-option: new font-option--size(X as agata-variable);

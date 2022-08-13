@@ -1,0 +1,102 @@
+% crochet
+
+type widget-flex(
+  items is list<widget>,
+  options is option-list<flex-option>,
+) is widget;
+
+type flex-child(
+  content is widget,
+  options is option-list<flex-child-option>
+) is widget;
+
+type flex-option--layout(value is agata-variable<flex-layout>) is option;
+type flex-option--gap(value is agata-variable<integer>) is option;
+type flex-option--wrap(value is agata-variable<flex-wrap>) is option;
+type flex-option--align(value is agata-variable<flex-align>) is option;
+type flex-option--justify(value is agata-variable<flex-justify>) is option;
+
+type flex-child-option--grow(value is agata-variable<integer>) is option;
+type flex-child-option--shrink(value is agata-variable<integer>) is option;
+type flex-child-option--basis(value is agata-variable<integer>) is option;
+
+command flex-option--layout key = "flex-layout";
+command flex-option--gap key = "flex-gap";
+command flex-option--wrap key = "flex-wrap";
+command flex-option--align key = "flex-align";
+command flex-option--justify key = "flex-justify";
+
+command flex-child-option--grow key = "flex-grow";
+command flex-child-option--shrink key = "flex-shrink";
+command flex-child-option--basis key = "flex-basis";
+
+enum flex-layout = 
+  row,
+  row-reverse,
+  column,
+  column-reverse;
+
+enum flex-wrap =
+  no-wrap,
+  wrap,
+  wrap-reverse;
+
+enum flex-align =
+  normal,
+  flex-start,
+  flex-end,
+  center,
+  stretch,
+  baseline;
+
+enum flex-justify =
+  normal,
+  flex-start,
+  flex-end,
+  center,
+  left,
+  right,
+  baseline,
+  space-between,
+  space-around,
+  space-evenly,
+  stretch;
+
+
+command #widget flex: (Items is list<X has to-widget>) =
+  new widget-flex(
+    items -> self.items map: (X as widget),
+    options -> #option-list empty,
+  );
+
+command widget flex-child =
+  new flex-child(
+    content -> self,
+    options -> #option-list empty
+  );
+
+
+command widget-flex flex-layout: (Layout has to-agata-variable<flex-layout>) =
+  new widget-flex(self with options -> self.options add: new flex-option--layout(Layout as agata-variable));
+
+command widget-flex flex-gap: (Gap has to-agata-variable<integer>) =
+  new widget-flex(self with options -> self.options add: new flex-option--gap(Gap as agata-variable));
+
+command widget-flex flex-wrap: (Wrap has to-agata-variable<flex-wrap>) =
+  new widget-flex(self with options -> self.options add: new flex-option--wrap(Wrap as agata-variable));
+
+command widget-flex flex-align: (Align has to-agata-variable<flex-align>) =
+  new widget-flex(self with options -> self.options add: new flex-option--align(Align as agata-variable));
+
+command widget-flex flex-justify: (Justify has to-agata-variable<flex-justify>) =
+  new widget-flex(self with options -> self.options add: new flex-option--justify(Justify as agata-variable));
+
+
+command flex-child flex-grow: (X has to-agata-variable<integer>) =
+  new flex-child(self with options -> self.options add: new flex-child-option--grow(X as agata-variable));
+
+command flex-child flex-shrink: (X has to-agata-variable<integer>) =
+  new flex-child(self with options -> self.options add: new flex-child-option--shrink(X as agata-variable));
+
+command flex-child flex-basis: (X has to-agata-variable<integer>) =
+  new flex-child(self with options -> self.options add: new flex-child-option--basis(X as agata-variable));

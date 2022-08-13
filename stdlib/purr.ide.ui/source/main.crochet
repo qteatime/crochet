@@ -1,0 +1,7 @@
+% crochet
+  
+command main: (Args is list) do
+  "Hello, world";
+test
+  assert (main: []) =:= "Hello, world";
+end
