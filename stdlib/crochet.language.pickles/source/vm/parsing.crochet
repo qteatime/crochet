@@ -48,11 +48,32 @@ command package parse: X with: (P is ast-expression--apply) in: Env do
 end
 
 command package parse: X with: (P is ast-expression--match) in: Env do
-  // TODO
+  package parse: X with: P.parser in: Env
+    | then: { Value in
+        P.cases
+          | fold-from: (#result error: nothing)
+            with: { Previous, Case in
+              Previous
+                | or-else: { _ in package parse: X with: Case in: Env selector: Value }
+            }
+          | map-error: { _ in new pickles-error--no-cases-matched(P, X, Value) };
+      };
+end
+
+command package parse: X with: (P is ast-case--when) in: Env selector: V do
+  P.value
+    | parse: V
+    | then: { _ in package parse: X with: P.body in: Env };
+end
+
+command package parse: X with: (P is ast-case--default) in: Env selector: _ do
+  package parse: X with: P.body in: Env;
 end
 
 command package parse: X with: (P is ast-expression--at) in: Env do
-  // TODO
+  pickles-traversal get: P.path from: X
+    | map-error: { E in new pickles-error--path-not-found(P, X) }
+    | then: (package parse: _ with: P.parser in: Env);
 end
 
 command package parse: X with: (P is ast-expression--variable) in: Env do
@@ -62,19 +83,75 @@ end
 
 command package parse: X with: (P is ast-expression--literal) in: Env do
   let Lit = package evaluate-literal: P.value;
-  // TODO
+  P parse: X;
 end
 
 command package parse: _ with: (P is ast-expression--constant) in: Env do
-  package evaluate-literal: P.value;
+  (package evaluate-literal: P.value).value;
 end
 
 command package parse: X with: (P is ast-expression--sequence) in: Env do
-  // TODO
+  P.items enumerate
+    | fold-from: (#result ok: [])
+      with: { Result, Item in
+        Result then: { PreviousResults in
+          package parse: X with: Item value in: Env
+            | map: { ItemResults in
+                PreviousResults ++ ItemResults;
+              }
+            | map-error: { E in
+                new pickles-error--sequence-failed(
+                  sequence -> P,
+                  parser -> Item value,
+                  index -> Item index,
+                  error -> E,
+                  value -> X,
+                );
+              }
+        }
+      };
+end
+
+command package parse: X with: (P is ast-sequence-item--value) in: Env do
+  package parse: X with: P.parser in: Env
+    | map: { X in [X] };
+end
+
+command package parse: X with: (P is ast-sequence-item--unpack) in: Env do
+  package parse: X with: P.parser in: Env
+    | then: { Xs in
+        condition
+          when Xs is list => #result ok: Xs;
+          otherwise => #result error: new pickles-error--not-unpackable(P, X, Xs);
+        end
+      }
 end
 
 command package parse: X with: (P is ast-expression--record) in: Env do
-  // TODO
+  P.fields
+    |> _ fold-from: (#result ok: #map empty)
+         with: { Result, Field in
+           Result then: { PreviousResults in
+             package parse: X with: Field in: Env record: P
+               | map: { FieldResult in
+                   PreviousResults at: FieldResult key put: FieldResult value
+                 }
+           }
+         }
+    |> _ as record;
+end
+
+command package parse: X with: (P is ast-record-field) in: Env record: R do
+  package parse: X with: P.parser in: Env
+    | map: (#association key: P.name value: _)
+    | map-error: { E in
+        new piclkes-error--record-failed(
+          record -> R,
+          field -> P,
+          error -> E,
+          value -> X
+        );
+      }
 end
 
 command package parse: X with: (P is pickles-value) in: _ do

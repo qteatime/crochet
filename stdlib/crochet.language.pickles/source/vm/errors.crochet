@@ -55,7 +55,7 @@ type pickles-error--both-failed(
 
 /// Raised when finding a value at a path fails
 type pickles-errror--path-not-found(
-  path is ast-path,
+  parser is ast-expression--at,
   origin is any
 ) is pickles-error;
 
@@ -69,4 +69,35 @@ type pickles-error--not-a-function(
 type pickles-error--not-equals(
   expected is pickles-value,
   actual is any,
+) is pickles-error;
+
+/// Raised when an item in a sequence fails
+type pickles-error--sequence-failed(
+  sequence is ast-expression--sequence,
+  parser is ast-expression,
+  index is integer,
+  error is pickles-error,
+  value is any,
+) is pickles-error;
+
+/// Raised when an item in a record parser fails
+type pickles-error--record-failed(
+  record is ast-expression--record,
+  field is ast-record-field,
+  error is pickles-error,
+  value is any,
+) is pickles-error;
+
+/// Raised when we can't unpack a sequence item because it's not a list
+type pickles-error--not-unpackable(
+  parser is ast-sequence-item--unpack,
+  origin is any,
+  value is any,
+) is pickles-error;
+
+/// Raised when no cases match a value
+type pickles-error--no-cases-matched(
+  parser is ast-expression--match,
+  origin is any,
+  selector is any
 ) is pickles-error;

@@ -1,0 +1,31 @@
+% crochet
+
+singleton pickles-traversal;
+
+trait pickles-traversable with
+  command pickles-traversal get: (Segment is text) from: Value -> result<A, not-found>;
+end
+
+
+command pickles-traversal get: (Path is ast-path) from: (Value has pickles-traversable) do
+  Path.segments
+    | fold-from: (#result ok: Value)
+      with: { X, Segment in
+        pickles-traversal get: Segment from: X;
+      }
+end
+
+
+implement pickles-traversable for map;
+command pickles-traversal get: (Segment is text) from: (Map is map<text, A>) do
+  condition
+    when Map contains-key: Segment => #result ok: Map at: Segment;
+    otherwise => #result error: not-found;
+  end
+end
+
+
+implement pickles-traversable for record;
+command pickles-traversal get: (Segment is text) from: (Record is record) do
+  pickles-traversal get: Segment from: (#map from: Record);
+end
