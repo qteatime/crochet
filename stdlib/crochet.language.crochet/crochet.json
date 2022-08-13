@@ -1,0 +1,18 @@
+{
+  "name": "crochet.language.crochet",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/grammars/package-name.lingua",
+    "source/package/name.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.parsing.lingua",
+    "crochet.format.mime-types"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

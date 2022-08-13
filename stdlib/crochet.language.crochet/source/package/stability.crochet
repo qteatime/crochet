@@ -1,0 +1,3 @@
+% crochet
+
+enum package-stability = unknown, experimental, stable, frozen, deprecated;
