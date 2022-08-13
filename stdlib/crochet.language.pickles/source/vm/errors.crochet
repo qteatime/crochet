@@ -1,0 +1,72 @@
+% crochet
+
+abstract pickles-error;
+
+/// Raised when trying to lookup a variable that was not defined
+type pickles-error--undefined-variable(
+  environment is environment,
+  name is text
+) is pickles-error;
+
+/// Raised when trying to define a variable with the same name of an existing one
+type pickles-error--conflicting-variable(
+  environment is environment,
+  name is text,
+  value is pickles-value
+) is pickles-error;
+
+/// Raised when the parser cannot work with the value's type
+type pickles-error--invalid-type(
+  expected-type is text,
+  actual is any
+) is pickles-error;
+
+/// Raised when one of the items in the list does not adhere to the list's parser
+type pickles-error--invalid-list(
+  parser is pickles-value,
+  actual is any,
+  error is pickles-error,
+) is pickles-error;
+
+/// Raised when trying to look up a module that wasn't loaded
+type pickles-error--module-not-found(
+  name is text,
+) is pickles-error;
+
+/// Raised when trying to look up a name that isn't exported
+type pickles-error--not-exported(
+  module is pickles-module,
+  name is text
+) is pickles-error;
+
+/// Raised when trying to parse with something that can't be used as a parser
+type pickles-error--not-a-parser(
+  parser is pickles-value,
+  value is any,
+) is pickles-error;
+
+/// Raised when both sides of an union fail
+type pickles-error--both-failed(
+  union is ast-expression--union,
+  left is pickles-error,
+  right is pickles-error,
+  value is any,
+) is pickles-error;
+
+/// Raised when finding a value at a path fails
+type pickles-errror--path-not-found(
+  path is ast-path,
+  origin is any
+) is pickles-error;
+
+/// Raised when trying to apply something that isn't a function
+type pickles-error--not-a-function(
+  value is pickles-value,
+  arguments is list<pickles-value>,
+) is pickles-error;
+
+/// Raised when a literal parser doesn't find an exact match
+type pickles-error--not-equals(
+  expected is pickles-value,
+  actual is any,
+) is pickles-error;

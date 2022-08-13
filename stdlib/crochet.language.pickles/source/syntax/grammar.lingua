@@ -1,0 +1,236 @@
+type ast_module(
+  info: interval,
+  name: ast_namespace,
+  declarations: ast_declaration[]
+)
+
+type ast_declaration =
+  | Let(info: interval, name: text, body: ast_expression)
+  | LetFun(info: interval, name: text, formals: text[], body: ast_expression)
+
+type ast_expression =
+  | Union(info: interval, left: ast_expression, right: ast_expression)
+  | Optional(info: interval, parser: ast_expression, default_value: ast_literal)
+  | Apply(info: interval, name: text, args: ast_expression[])
+  | Match(info: interval, parser: ast_expression, cases: ast_case[])
+  | At(info: interval, parser: ast_expression, path: ast_path)
+  | Variable(info: interval, name: text)
+  | Literal(info: interval, value: ast_literal)
+  | Constant(info: interval, value: ast_literal)
+  | Sequence(info: interval, items: ast_sequence_item[])
+  | Record(info: interval, fields: ast_record_field[])
+
+type ast_case =
+  | When(info: interval, value: ast_literal, body: ast_expression)
+  | Default(info: interval, body: ast_expression)
+
+type ast_sequence_item =
+  | Value(info: interval, parser: ast_expression)
+  | Unpack(info: interval, parser: ast_expression)
+
+type ast_record_field(info: interval, name: text, parser: ast_expression)
+
+type ast_path(info: interval, segments: ast_segment[])
+
+type ast_segment =
+  | Name(text: text)
+  | Text(text: text)
+
+type ast_literal =
+  | Text(value: text)
+  | Integer(value: integer)
+  | Float(value: float_64bit)
+  | Boolean(value: boolean)
+  | Nothing()
+
+type ast_namespace(segments: text[])
+
+
+grammar pickles_grammar : ast_module {
+  Module =
+    | header module_ n:namespace xs:Declaration* end
+      -> ast_module(meta, n, xs)
+
+  Declaration =
+    | LetDeclaration
+
+  LetDeclaration =
+    | let_ n:variable "=" e:Expression ";"
+      -> ast_declaration.Let(meta, n, e)
+    | let_ n:variable "(" ps:List1<variable, ","> ")" "=" e:Expression ";"
+      -> ast_declaration.LetFun(meta, n, ps, e)
+
+  
+  Expression =
+    | AtExpression
+
+  AtExpression =
+    | e:BinaryExpression at_ p:Path
+      -> ast_expression.At(meta, e, p)
+    | BinaryExpression
+
+  Path =
+    | xs:NonemptyListOf<PathSegment, ".">
+      -> ast_path(meta, xs)
+
+  PathSegment =
+    | x:name      -> ast_segment.Name(x)
+    | x:variable  -> ast_segment.Name(x)
+    | x:text      -> ast_segment.Text(x.value)
+
+  BinaryExpression =
+    | UnionExpression
+    | OptionalExpression
+    | AtExpression
+    | ApplyExpression
+
+  UnionExpression =
+    | l:ApplyExpression "|" r:UnionExpression
+      -> ast_expression.Union(meta, l, r)
+    | ApplyExpression
+
+  OptionalExpression =
+    | l:ApplyExpression "??" r:Literal
+      -> ast_expression.Optional(meta, l, r)
+
+  ApplyExpression =
+    | n:variable "(" xs:List<Expression, ","> ")"
+      -> ast_expression.Apply(meta, n, xs)
+    | PrimaryExpression
+
+  PrimaryExpression =
+    | n:variable                -> ast_expression.Variable(meta, n)
+    | l:Literal                 -> ast_expression.Literal(meta, l)
+    | constant_ l:Literal       -> ast_expression.Constant(meta, l)
+    | MatchExpression
+    | SequenceExpression
+    | RecordExpression
+    | "(" e:Expression ")"      -> e
+  
+  SequenceExpression =
+    | "[" xs:List<SequenceItem, ","> "]"
+      -> ast_expression.Sequence(meta, xs)
+
+  SequenceItem =
+    | "..." e:Expression  -> ast_sequence_item.Unpack(meta, e)
+    | e:Expression        -> ast_sequence_item.Value(meta, e)
+
+  RecordExpression =
+    | "{" xs:List<RecordField, ","> "}"
+      -> ast_expression.Record(meta, xs)
+
+  RecordField =
+    | n:t_name ":" e:Expression -> ast_record_field(meta, n, e)
+
+  MatchExpression =
+    | match_ e:Expression with_ xs:MatchCase+ end_
+      -> ast_expression.Match(meta, e, xs)
+
+  MatchCase =
+    | when_ v:Literal "=>" e:Expression ";"
+      -> ast_case.When(meta, v, e)
+    | otherwise_ "=>" e:Expression ";"
+      -> ast_case.Default(meta, e)
+
+  Literal =
+    | x:float -> x
+    | x:integer -> x
+    | x:boolean -> x
+    | x:text -> x
+    | nothing_ -> ast_literal.Nothing()
+
+  List<P, Sep> =
+    | xs:NonemptyListOf<P, Sep> Sep?  -> xs
+    | xs:ListOf<P, Sep>               -> xs
+
+  List1<P, Sep> =
+    | xs:NonemptyListOf<P, Sep> Sep?  -> xs
+
+
+  token header (a file header) =
+    | "%" hs* "pickles/1" 
+
+  token line =
+    | (~newline any)*
+
+  token hs =
+    | " " | "\t"
+
+  token newline =
+    | "\r\n" | "\r" | "\n"
+
+  token comment (a comment) =
+    | "//" line
+
+  space += comment
+
+  namespace =
+    | xs:nonemptyListOf<name, ".">  -> ast_namespace(xs)
+
+  token name_start = "a".."z"
+  token name_rest = "a".."z" | "-" | "0".."9"
+  token t_name = name_start name_rest*
+
+  name = ~reserved t_name
+
+  token variable_start = "A".."Z"
+  token variable_rest = "a".."z" | "A".."Z" | "-" | "0".."9"
+  token variable = variable_start variable_rest*
+
+  token dec_digit = "0".."9" | "_"
+
+  token t_integer (an integer) =
+    | ~"_" "-"? dec_digit+
+
+  token t_float (a floating point number) =
+    | ~"_" "-"? dec_digit+ "." dec_digit+
+
+  integer =
+    | x:t_integer -> ast_literal.Integer(@parse_integer(x))
+  
+  float =
+    | x:t_float -> ast_literal.Float(@parse_float(x))
+
+  t_boolean =
+    | true_ | false_
+
+  boolean =
+    | x:t_boolean -> ast_literal.Boolean(@parse_boolean(x))
+
+  token hex_digit = "0".."9" | "a".."f" | "A".."F"
+
+  token text_character =
+    | "\\" escape_sequence
+    | ~("\"") any
+  
+  token escape_sequence =
+    | "u" hex_digit hex_digit hex_digit hex_digit
+    | "x" hex_digit hex_digit
+    | any
+
+  token t_text (a piece of text) =
+    | "\"" text_character* "\""
+  
+  text =
+    | x:t_text -> ast_literal.Text(@parse_text(x))
+
+
+  kw<w> = x:w ~name_rest -> x
+
+  let_ = kw<"let">
+  constant_ = kw<"constant">
+  match_ = kw<"match">
+  with_ = kw<"with">
+  when_ = kw<"when">
+  otherwise_ = kw<"otherwise">
+  end_ = kw<"end">
+  at_ = kw<"at">
+  nothing_ = kw<"nothing">
+  true_ = kw<"true">
+  false_ = kw<"false">
+  module_ = kw<"module">
+
+  reserved =
+    | let_ | constant_ | match_ | with_ | when_ | otherwise_
+    | end_ | at_ | nothing_ | true_ | false_ | module_
+}

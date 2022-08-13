@@ -1,0 +1,26 @@
+% crochet
+
+command package make-thunk: (X is ast-expression) in: Env =
+  new pickles-anonymous-parser(
+    environment -> Env,
+    body -> X
+  );
+
+command package apply: (F is pickles-native-function) to: (Args is list<pickles-value>) =
+  F.body apply: Args;
+
+command package apply: (F is pickles-function) to: (Args is list<pickles-value>) do
+  let Env = F.environment clone;
+  for Binding in F.formals zip: Args do
+    Env define: Binding first to: Binding second;
+  end
+  new pickles-parser(
+    name -> "[F.name]([Args map: (_ text-representation) |> #text join: _ with: ", "])" flatten-into-plain-text,
+    body -> F.body,
+    location -> F.location,
+    environment -> Env,
+  );
+end
+
+command package apply: (F is pickles-value) to: (Args is list<pickles-value>) =
+  #pickles-vm exception: new pickles-error--not-a-function(F, Args);

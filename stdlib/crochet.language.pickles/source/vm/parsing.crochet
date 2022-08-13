@@ -1,0 +1,82 @@
+% crochet
+
+command pickles-value parse: Value =
+  #pickles-vm exception: new pickles-error--not-a-parser(self, Value);
+
+command pickles-native-parser parse: Value =
+  self.body(Value);
+
+command pickles-parser parse: Value =
+  package parse: Value with: self.body in: self.environment;
+
+command pickles-literal parse: Value do
+  condition
+    when Value =:= self.value => #result ok: Value;
+    otherwise => #pickles-vm exception: new pickles-error--not-equals(self, Value);
+  end
+end
+
+
+// -- Internal parsing from non-first-class values
+command package parse: X with: (P is ast-expression--union) in: Env do
+  package parse: X with: P.left in: Env
+    | or-else: { E1 in
+        package parse: X with: P.right in: Env
+          | map-error: { E2 in
+              new pickles-error--both-failed(P, E1, E2, X);
+            }
+      };
+end
+
+command package parse: X with: (P is ast-expression--optional) in: Env do
+  package parse: X with: P.parser in: Env
+    | or-else: { E in
+        condition
+          when E is pickles-error--path-not-found =>
+            #result ok: package evaluate-literal: P.default-value;
+          
+          otherwise =>
+            #result error: E;
+        end
+      };
+end
+
+command package parse: X with: (P is ast-expression--apply) in: Env do
+  let Fun = Env lookup: P.name;
+  let Args = P.args map: (package make-thunk: _ in: Env);
+  package parse: X with: (package apply: Fun to: Args) in: Env;
+end
+
+command package parse: X with: (P is ast-expression--match) in: Env do
+  // TODO
+end
+
+command package parse: X with: (P is ast-expression--at) in: Env do
+  // TODO
+end
+
+command package parse: X with: (P is ast-expression--variable) in: Env do
+  let Parser = Env lookup: P.name;
+  package parse: X with: Parser in: Env;
+end
+
+command package parse: X with: (P is ast-expression--literal) in: Env do
+  let Lit = package evaluate-literal: P.value;
+  // TODO
+end
+
+command package parse: _ with: (P is ast-expression--constant) in: Env do
+  package evaluate-literal: P.value;
+end
+
+command package parse: X with: (P is ast-expression--sequence) in: Env do
+  // TODO
+end
+
+command package parse: X with: (P is ast-expression--record) in: Env do
+  // TODO
+end
+
+command package parse: X with: (P is pickles-value) in: _ do
+  P parse: X;
+end

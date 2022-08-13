@@ -1,0 +1,5 @@
+% crochet
+
+effect pickles-evaluation with
+  raise(error is pickles-error); // -> any
+end

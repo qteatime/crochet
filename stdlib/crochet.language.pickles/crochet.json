@@ -1,0 +1,28 @@
+{
+  "name": "crochet.language.pickles",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet",
+
+    "source/syntax/grammar.lingua",
+
+    "source/vm/effect.crochet",
+    "source/vm/environment.crochet",
+    "source/vm/errors.crochet",
+    "source/vm/evaluator.crochet",
+    "source/vm/globals.crochet",
+    "source/vm/intrinsics.crochet"
+  ],
+  "dependencies": ["crochet.core", "crochet.text.parsing.lingua"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  },
+  "assets": [
+    {
+      "path": "example.pickles",
+      "mime": "text/plain"
+    }
+  ]
+}

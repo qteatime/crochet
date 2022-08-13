@@ -1,0 +1,11 @@
+% crochet
+
+command pickles-module lookup: (Name is text) do
+  condition
+    when self.exported contains: Name =>
+      self.environment lookup: Name;
+    
+    otherwise =>
+      #pickles-vm exception: new pickles-error--not-exported(self, Name);
+  end
+end

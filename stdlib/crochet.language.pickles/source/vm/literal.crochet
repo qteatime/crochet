@@ -1,0 +1,16 @@
+% crochet
+
+command package evaluate-literal: (X is ast-literal--text) =
+  new pickles-literal(X.value);
+
+command package evaluate-literal: (X is ast-literal--integer) =
+  new pickles-literal(X.value);
+
+command package evaluate-literal: (X is ast-literal--float) =
+  new pickles-literal(X.value);
+
+command package evaluate-literal: (X is ast-litearl--boolean) =
+  new pickles-literal(X.value);
+
+command package evaluate-literal: ast-literal--nothing =
+  new pickles-literal(nothing);
