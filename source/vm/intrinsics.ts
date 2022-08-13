@@ -189,10 +189,23 @@ export class CrochetCapability {
 //#endregion
 
 //#region Core operations
-export function equals(left: CrochetValue, right: CrochetValue): boolean {
+export function equals(left: CrochetValue, right: CrochetValue) {
+  return do_equals(left, right, new Set());
+}
+
+export function do_equals(
+  left: CrochetValue,
+  right: CrochetValue,
+  visited: Set<CrochetValue>
+): boolean {
   if (left.tag !== right.tag) {
     return false;
   }
+  if (left !== right && (visited.has(left) || visited.has(right))) {
+    return false;
+  }
+  visited.add(left);
+  visited.add(right);
 
   switch (left.tag) {
     case Tag.NOTHING:
@@ -233,7 +246,7 @@ export function equals(left: CrochetValue, right: CrochetValue): boolean {
         if (typeof a === "string" && typeof b === "string") {
           if (a !== b) return false;
         } else if (a instanceof CrochetValue && b instanceof CrochetValue) {
-          if (!equals(a, b)) return false;
+          if (!do_equals(a, b, visited)) return false;
         } else {
           return false;
         }
@@ -249,7 +262,7 @@ export function equals(left: CrochetValue, right: CrochetValue): boolean {
         return false;
       }
       for (const [a, b] of zip(l.payload, r.payload)) {
-        if (!equals(a, b)) return false;
+        if (!do_equals(a, b, visited)) return false;
       }
       return true;
     }
@@ -264,7 +277,7 @@ export function equals(left: CrochetValue, right: CrochetValue): boolean {
 
       for (const [k, v] of l.payload.entries()) {
         const rv = r.payload.get(k);
-        if (rv == null || !equals(v, rv)) {
+        if (rv == null || !do_equals(v, rv, visited)) {
           return false;
         }
       }

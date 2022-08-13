@@ -112,6 +112,22 @@ export function trait_name(x: CrochetTrait) {
 }
 
 export function simple_value(x: CrochetValue): string {
+  return do_simple_value(x, 0, new Set());
+}
+
+function do_simple_value(
+  x: CrochetValue,
+  depth: number,
+  visited: Set<CrochetValue>
+): string {
+  if (visited.has(x)) {
+    return "[circular]";
+  }
+  if (depth > 5) {
+    return "(...)";
+  }
+  visited.add(x);
+
   switch (x.tag) {
     case Tag.NOTHING:
       return "nothing";
@@ -130,7 +146,8 @@ export function simple_value(x: CrochetValue): string {
     case Tag.INSTANCE: {
       assert_tag(Tag.INSTANCE, x);
       const fields = x.payload.map(
-        (v, i) => `${x.type.fields[i]} -> ${simple_value(v)}`
+        (v, i) =>
+          `${x.type.fields[i]} -> ${do_simple_value(v, depth + 1, visited)}`
       );
       if (fields.length > 0) {
         return `<${type_name(x.type)}>(\n${block(2, fields.join("\n"))}\n)`;
@@ -141,7 +158,11 @@ export function simple_value(x: CrochetValue): string {
     case Tag.INTERPOLATION: {
       assert_tag(Tag.INTERPOLATION, x);
       return `i"${x.payload
-        .map((x) => (typeof x === "string" ? x : `[${simple_value(x)}]`))
+        .map((x) =>
+          typeof x === "string"
+            ? x
+            : `[${do_simple_value(x, depth + 1, visited)}]`
+        )
         .join("")}"`;
     }
     case Tag.LAMBDA: {
@@ -162,7 +183,7 @@ export function simple_value(x: CrochetValue): string {
         return "[->]";
       }
       const pairs = [...x.payload.entries()].map(
-        ([k, v]) => `${k} -> ${simple_value(v)}`
+        ([k, v]) => `${k} -> ${do_simple_value(v, depth + 1, visited)}`
       );
       return `[\n${block(2, pairs.join(",\n"))}\n]`;
     }
@@ -172,7 +193,11 @@ export function simple_value(x: CrochetValue): string {
     case Tag.THUNK: {
       assert_tag(Tag.THUNK, x);
       if (x.payload.value != null) {
-        return `<thunk ${simple_value(x.payload.value)}>`;
+        return `<thunk ${do_simple_value(
+          x.payload.value,
+          depth + 1,
+          visited
+        )}>`;
       } else {
         return `<thunk>`;
       }
@@ -181,7 +206,7 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.LIST, x);
       return `[\n${block(
         2,
-        x.payload.map((x) => simple_value(x)).join(", ")
+        x.payload.map((x) => do_simple_value(x, depth + 1, visited)).join(", ")
       )}\n]`;
     }
     case Tag.TYPE: {
@@ -192,15 +217,15 @@ export function simple_value(x: CrochetValue): string {
       assert_tag(Tag.UNKNOWN, x);
       const repr =
         x.payload instanceof CrochetValue
-          ? simple_value(x.payload)
+          ? do_simple_value(x.payload, depth + 1, visited)
           : im.isImmutable(x.payload)
-          ? immutable_repr(x.payload)
-          : `native ${inspect(x.payload, false, 3)}`;
+          ? immutable_repr(x.payload, depth + 1, visited)
+          : `native`;
       return `<unknown>(${repr})`;
     }
     case Tag.CELL: {
       assert_tag(Tag.CELL, x);
-      return `<cell ${simple_value(x.payload.value)}>`;
+      return `<cell ${do_simple_value(x.payload.value, depth + 1, visited)}>`;
     }
     case Tag.ACTION: {
       assert_tag(Tag.ACTION, x);
@@ -212,7 +237,11 @@ export function simple_value(x: CrochetValue): string {
     }
     case Tag.PROTECTED: {
       assert_tag(Tag.PROTECTED, x);
-      return `<protected ${simple_value(x.payload.value)}>`;
+      return `<protected ${do_simple_value(
+        x.payload.value,
+        depth + 1,
+        visited
+      )}>`;
     }
     case Tag.ANY_PACKAGE: {
       assert_tag(Tag.ANY_PACKAGE, x);
@@ -227,13 +256,13 @@ export function simple_value(x: CrochetValue): string {
   }
 }
 
-function immutable_repr(x: unknown) {
+function immutable_repr(x: unknown, depth: number, visited: Set<CrochetValue>) {
   if (im.isList(x)) {
     return `<native list>[\n${block(
       2,
       x
         .toArray()
-        .map((x) => simple_value(x as any))
+        .map((x) => do_simple_value(x as any, depth + 1, visited))
         .join(", ")
     )}\n]`;
   } else if (im.isMap(x)) {
@@ -241,7 +270,12 @@ function immutable_repr(x: unknown) {
       return "<native map>[->]";
     }
     const pairs = [...x.entries()].map(
-      ([k, v]) => `${simple_value(k as any)} -> ${simple_value(v as any)}`
+      ([k, v]) =>
+        `${do_simple_value(k as any, depth + 1, visited)} -> ${do_simple_value(
+          v as any,
+          depth + 1,
+          visited
+        )}`
     );
     return `<native map>[\n${block(2, pairs.join(",\n"))}\n]`;
   } else if (im.isSet(x)) {
@@ -249,7 +283,7 @@ function immutable_repr(x: unknown) {
       2,
       x
         .toArray()
-        .map((x) => simple_value(x as any))
+        .map((x) => do_simple_value(x as any, depth + 1, visited))
         .join(", ")
     )}\n]`;
   } else {
