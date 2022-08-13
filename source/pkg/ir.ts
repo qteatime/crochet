@@ -48,6 +48,7 @@ export type Capabilities = {
   readonly requires: Set<Capability>;
   readonly provides: Set<ProvideCapability>;
   readonly optional: Set<Capability>;
+  readonly trusted: Set<Capability>;
 };
 
 export type Asset = {

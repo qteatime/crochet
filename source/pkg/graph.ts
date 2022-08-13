@@ -110,10 +110,20 @@ export class PackageGraph {
     ) {
       const name = pkg.name;
 
+      // check trusted capabilities
+      if (pkg.trusted_capabilities.size > 0 && !self.trusted.has(pkg.pkg)) {
+        throw new Error(
+          [
+            `${name} defines trusted capabilities, `,
+            `but the package is not part of Crochet's Trusted Computing Base.\n`,
+          ].join("")
+        );
+      }
+
       // check missing capabilities
       const missing = [
         ...missing_capabilities(capabilities, pkg.required_capabilities),
-      ];
+      ].filter((x) => !pkg.trusted_capabilities.has(x));
       if (missing.length !== 0) {
         throw new Error(
           [
@@ -365,6 +375,10 @@ export class ResolvedPackage {
   get provided_capabilities() {
     const provided = [...this.pkg.meta.capabilities.provides];
     return new Set(provided.map((x) => `${this.name}/${x.name}`));
+  }
+
+  get trusted_capabilities() {
+    return this.pkg.meta.capabilities.trusted;
   }
 
   get assets() {
