@@ -172,4 +172,12 @@ export default (ffi: ForeignInterface) => {
     const interval = ffi.unbox(interval0) as Ohm.Interval;
     return ffi.text(interval.getLineAndColumnMessage());
   });
+
+  ffi.defun("lingua.parse-text", (x0) => {
+    const x = ffi.text_to_string(x0);
+    if (!/^"/.test(x) || !/"$/.test(x)) {
+      throw new Error(`Invalid string`);
+    }
+    return ffi.text(JSON.parse(x));
+  });
 };
