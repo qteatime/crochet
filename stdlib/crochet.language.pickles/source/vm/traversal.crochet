@@ -22,6 +22,10 @@ command pickles-traversal get: (Path is ast-path) from: (Value has pickles-trave
       }
 end
 
+implement pickles-traversable for any;
+command pickles-traversal get: _ from: _ do
+  #result error: not-found;
+end
 
 implement pickles-traversable for map;
 command pickles-traversal get: (Segment is text) from: (Map is map<text, A>) do

@@ -73,7 +73,7 @@ local define pickles-globals = lazy [
             when Xs is list =>
               Xs enumerate
                 | fold-from: (#result ok: []) with: { Previous, X in
-                    Previous map: { PreviousList in
+                    Previous then: { PreviousList in
                       Parser parse: X value
                         | map: { XResult in PreviousList append: XResult }
                         | map-error: { E in new pickles-error--invalid-list(Parser, Xs, X index, E) };

@@ -113,7 +113,7 @@ command pickles-error--conflicting-variable to-panic-message =
   "Duplicated variable [self.name]";
 
 command pickles-error--invalid-type to-panic-message =
-  "Expected a value of matching [self.expected-type]";
+  "Expected a value matching [self.expected-type]";
 
 command pickles-error--invalid-list to-panic-message =
   "Value at index [self.index to-text] failed list parser [self.parser text-representation]: [self.error to-panic-message]";

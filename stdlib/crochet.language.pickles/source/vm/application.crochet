@@ -12,7 +12,7 @@ command package apply: (F is pickles-native-function) to: (Args is list<pickles-
 command package apply: (F is pickles-function) to: (Args is list<pickles-value>) do
   let Env = F.environment clone;
   for Binding in F.formals zip: Args do
-    Env define: Binding first to: Binding second;
+    Env define: Binding first as: Binding second;
   end
   new pickles-parser(
     name -> "[F.name]([Args map: (_ text-representation) |> #text join: _ with: ", "])" flatten-into-plain-text,

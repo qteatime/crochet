@@ -29,10 +29,5 @@
     "requires": [],
     "provides": []
   },
-  "assets": [
-    {
-      "path": "example.pickles",
-      "mime": "text/plain"
-    }
-  ]
+  "assets": []
 }

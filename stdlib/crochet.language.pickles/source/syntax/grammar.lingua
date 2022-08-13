@@ -79,9 +79,8 @@ grammar pickles_grammar : ast_module {
     | x:text      -> ast_segment.Text(x.value)
 
   BinaryExpression =
-    | UnionExpression
     | OptionalExpression
-    | AtExpression
+    | UnionExpression
     | ApplyExpression
 
   UnionExpression =

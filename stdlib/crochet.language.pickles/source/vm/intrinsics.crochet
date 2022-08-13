@@ -6,7 +6,7 @@ abstract pickles-value;
 
 type pickles-module(
   name is text,
-  environment is environment,
+  bindings is map<text, pickles-value>,
   exported is set<text>,
 ) is pickles-value;
 

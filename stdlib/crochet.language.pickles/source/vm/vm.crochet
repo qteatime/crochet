@@ -19,6 +19,7 @@ command #pickles-vm exception: (Error is pickles-error) =
 command pickles-vm load-module: (Ast is ast-module) do
   let Env = self.globals clone;
   let Definitions = Ast.declarations map: (package evaluate-declaration: _ in: Env);
+  let Bindings = Definitions fold-from: #map empty with: { Map, X in Map at: X.name put: X };
   for Definition in Definitions do
     Env define: Definition.name as: Definition;
   end
@@ -27,7 +28,7 @@ command pickles-vm load-module: (Ast is ast-module) do
   let Module =
     new pickles-module(
       name -> Name,
-      environment -> Env,
+      bindings -> Bindings,
       exported -> #set from: (Definitions map: { X in X.name }),
     );
 
