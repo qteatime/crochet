@@ -1,0 +1,70 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.ui.agata;
+
+singleton screen-welcome;
+implement agata-page for screen-welcome;
+
+command screen-welcome uri-pattern =
+  #uri-pattern from-text: "#!/";
+
+command screen-welcome instantiate-page: Bindings =
+  self;
+
+
+implement to-widget for screen-welcome;
+command screen-welcome as widget do
+  let Projects = #observable-cell with-value: purr projects;
+
+  #widget flex-column: [
+    Projects map: { X in
+      condition
+        when X is-empty => self render-no-projects;
+        otherwise => self render-projects: X;
+      end
+    };
+  ]
+end
+
+command screen-welcome render-no-projects do
+  #widget section: [
+    #widget title: "No projects",
+    #widget text: "Create or import a project to start",
+
+    #widget space | vertical: (2.0 as rem),
+
+    self render-actions,
+  ];
+end
+
+command screen-welcome render-actions do
+  #widget flex-column: [
+    #widget action-button: "New project"
+      | icon: "plus"
+      | description: "Create a new Crochet project",
+
+    #widget action-button: "Import"
+      | icon: "file-import"
+      | description: "Add an existing Crochet project to Purr",
+  ];
+end
+
+command screen-welcome render-projects: Projects do
+  #widget flex-column: [
+    self render-actions,
+
+    #widget space | vertical: (2.0 as rem),
+
+    #widget flex-row: (Projects map: (self render-project: _))
+  ];
+end
+
+command screen-welcome render-project: Project do
+  #widget card-button: [
+    #card-child header: Project title,
+    #card-child meta: Project name,
+    #card-child image: Project cover,
+    #card-child body: Project description,
+  ];
+end

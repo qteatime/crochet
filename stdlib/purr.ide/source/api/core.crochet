@@ -1,0 +1,47 @@
+% crochet
+
+singleton purr;
+
+abstract purr-project;
+type purr-project--crochet(pkg is crochet-package);
+
+type crochet-package-name(name is text);
+type relative-path(path is text);
+type mime-type(mime is text);
+type crochet-capability-name(name is text);
+type crochet-capability(source is crochet-package-name, name is crochet-capability-name);
+
+type crochet-package(
+  name is crochet-package-name,
+  target is crochet-package-target,
+  native-sources is list<crochet-file>,
+  sources is list<crochet-file>,
+  assets is list<crochet-file>,
+  dependencies is list<crochet-dependency>,
+  capabilities is crochet-capabilities,
+);
+
+enum crochet-package-target = any, browser, node;
+
+type crochet-file(
+  filename is relative-path,
+  mime-type is mime-type,
+  target is crochet-package-target,
+);
+
+type crochet-dependency(
+  name is crochet-package-name,
+  capabilities is list<crochet-capability>,
+);
+
+type crochet-capabilities(
+  required is list<crochet-capability>,
+  provided is list<crochet-capability-name>,
+  optional is list<crochet-capability>,
+);
+
+
+command purr projects =
+  [
+
+  ];

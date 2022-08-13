@@ -1,0 +1,15 @@
+{
+  "name": "purr.ide",
+  "target": "*",
+  "native_sources": [],
+  "sources": ["source/main.crochet"],
+  "dependencies": ["crochet.core", "crochet.ui.agata"],
+  "capabilities": {
+    "requires": [
+      "crochet.ui.agata/ui-control",
+      "crochet.ui.agata/arbitrary-dom-widgets",
+      "native"
+    ],
+    "provides": []
+  }
+}
