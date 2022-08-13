@@ -71,13 +71,14 @@ local define pickles-globals = [
         body -> { VM, Xs in
           condition
             when Xs is list =>
-              Xs fold-from: (#result ok: []) with: { Previous, X in
-                Previous map: { PreviousList in
-                  VM parse: X with: Parser
-                    | map: { XResult in PreviousList append: XResult }
-                };
-              }
-              | map-error: { E in new pickles-error--invalid-list(Parser, Xs, E) };
+              Xs enumerate
+                | fold-from: (#result ok: []) with: { Previous, X in
+                    Previous map: { PreviousList in
+                      VM parse: X value with: Parser
+                        | map: { XResult in PreviousList append: XResult }
+                        | map-error: { E in new pickles-error--invalid-list(Parser, Xs, X index, E) };
+                    };
+                  };
             
             otherwise =>
               #result error: new pickles-error--invalid-type("List", Xs);

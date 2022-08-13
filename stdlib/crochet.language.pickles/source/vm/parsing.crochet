@@ -50,25 +50,31 @@ end
 command package parse: X with: (P is ast-expression--match) in: Env do
   package parse: X with: P.parser in: Env
     | then: { Value in
-        P.cases
-          | fold-from: (#result error: nothing)
-            with: { Previous, Case in
-              Previous
-                | or-else: { _ in package parse: X with: Case in: Env selector: Value }
-            }
-          | map-error: { _ in new pickles-error--no-cases-matched(P, X, Value) };
+        let Selected = P.cases find-first: (package case-accepts: _ selector: Value);
+        condition
+          when Selected is ok =>
+            package parse: X with: Selected value in: Env;
+          otherwise =>
+            #result error: new pickles-error--no-cases-matched(P, X, Value);
+        end
       };
 end
 
-command package parse: X with: (P is ast-case--when) in: Env selector: V do
-  P.value
-    | parse: V
-    | then: { _ in package parse: X with: P.body in: Env };
-end
+command package case-accepts: (P is ast-case--when) selector: V =
+  (P.value parse: V) is ok;
 
-command package parse: X with: (P is ast-case--default) in: Env selector: _ do
+command package case-accepts: (P is ast-case--default) selector: _ =
+  true;
+
+
+command package parse: X with: (P is ast-case--when) in: Env do
   package parse: X with: P.body in: Env;
 end
+
+command package parse: X with: (P is ast-case--default) in: Env do
+  package parse: X with: P.body in: Env;
+end
+
 
 command package parse: X with: (P is ast-expression--at) in: Env do
   pickles-traversal get: P.path from: X

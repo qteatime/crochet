@@ -25,6 +25,7 @@ type pickles-error--invalid-type(
 type pickles-error--invalid-list(
   parser is pickles-value,
   actual is any,
+  index is integer,
   error is pickles-error,
 ) is pickles-error;
 
@@ -101,3 +102,78 @@ type pickles-error--no-cases-matched(
   origin is any,
   selector is any
 ) is pickles-error;
+
+
+command pickles-error--undefined-variable to-panic-message =
+  "Variable [self.name] is not defined";
+
+command pickles-error--conflicting-variable to-panic-message =
+  "Duplicated variable [self.name]";
+
+command pickles-error--invalid-type to-panic-message =
+  "Expected a value of matching [self.expected-type]";
+
+command pickles-error--invalid-list to-panic-message =
+  "Value at index [self.index to-text] failed list parser [self.parser text-representation]: [self.error to-panic-message]";
+
+command pickles-error--module-not-found to-panic-message =
+  "Module [self.name] is not defined";
+
+command pickles-error--not-exported to-panic-message =
+  "Cannot read [self.name] from module [self.module.name] because it's not exported";
+
+command pickles-error--not-a-parser to-panic-message =
+  "Expected a parser but got [self.parser text-representation]";
+
+command pickles-error--both-failed to-panic-message do
+  let Messages =
+    [self.left] ++ package collect-union-errors: self.right parser: self.union.right
+      |> _ map: { X in " - [X.parser text-representation]:\n  [X.error to-panic-message]"}
+      |> #text join: _ with: "\n";
+
+  "None of the following parsers in the union succeeded:\n\n[Messages]";
+end
+
+command package collect-union-errors: (X is pickles-error--both-failed) parser: P =
+  condition
+    when X.right is pickles-error--both-failed =>
+      [
+        [parser -> X.union.left, error -> X.left],
+      ] ++ (package collect-union-errors: X.right parser: X.union.right);
+    otherwise =>
+      [
+        [parser -> X.union.left, error -> X.left],
+        [parser -> X.union.right, error -> X.right]
+      ];
+  end;
+
+command package collect-union-errors: (X is pickles-error) parser: P =
+  [parser -> P, error -> X];
+
+
+command pickles-error--path-not-found to-panic-message =
+  "Path [self.parser.path text-representation] not found";
+
+command pickles-error--not-a-function to-panic-message =
+  "[self.value text-representation] is not a function";
+
+command pickles-error--not-equals to-panic-message =
+  "Expected exactly [self.expected text-representation]";
+
+command pickles-error--sequence-failed to-panic-message =
+  "Failed at index [self.index to-text] because: [self.error to-panic-message]";
+
+command pickles-error--record-failed to-panic-message =
+  "Failed at field [self.field.name] because: [self.error to-panic-message]";
+
+command pickles-error--not-unpackable to-panic-message =
+  "Parsed value is not a list";
+
+command pickles-error--no-cases-matched to-panic-message do
+  let Cases =
+    self.parser.cases
+      |> _ map: { X in package evaluate-literal: X.value | text-representation }
+      |> #text join: _ with: ", ";
+  "None of the cases matched: [Cases]";
+end
+

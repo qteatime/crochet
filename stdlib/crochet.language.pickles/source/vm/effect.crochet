@@ -3,3 +3,8 @@
 effect pickles-evaluation with
   raise(error is pickles-error); // -> any
 end
+
+handler pickles-fail-fast with
+  on pickles-evaluation.raise(Error) =>
+    panic message: error to-panic-message tag: #pickles-error data: [error -> Error];
+end
