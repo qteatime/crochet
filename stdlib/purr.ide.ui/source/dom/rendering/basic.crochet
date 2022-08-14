@@ -47,3 +47,13 @@ end
 command dom-renderer render: (W is widget-space) do
   dom make-element: "div" class: "purr-ui-space";
 end
+
+command dom-renderer render: (W is widget-thin-icon) do
+  let Class = "purr-ui-icon far fa-[W.name]" flatten-into-plain-text;
+  dom make-element: "i" class: Class;
+end
+
+command dom-renderer render: (W is widget-solid-icon) do
+  let Class = "purr-ui-icon fas fa-[W.name]" flatten-into-plain-text;
+  dom make-element: "i" class: Class;
+end

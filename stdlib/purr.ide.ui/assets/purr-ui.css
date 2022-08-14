@@ -58,6 +58,11 @@
   width: 2rem;
 }
 
+.purr-ui-title-bar-button {
+  text-align: center;
+  font-size: 1.75rem;
+}
+
 .purr-ui-title-bar-title {
   font-size: 2rem;
   font-weight: bold;

@@ -1,3 +1,9 @@
+/* temporary hack until fonts are made into assets */
+@import url("/fonts/roboto.css");
+@import url("/fonts/fa-solid.css");
+@import url("/fonts/fa-regular.css");
+@import url("/fontawesome.min.css");
+
 html,
 body {
   margin: 0;
