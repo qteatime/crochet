@@ -1,0 +1,192 @@
+/*! Based on modern-normalize v1.1.0 | MIT License | https://github.com/sindresorhus/modern-normalize */
+
+.purr-ui-root {
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 2;
+  tab-size: 2;
+}
+
+.purr-ui-root *,
+.purr-ui-root ::before,
+.purr-ui-root ::after {
+  box-sizing: border-box;
+}
+
+.purr-ui-root hr {
+  height: 0;
+  color: inherit;
+}
+
+.purr-ui-root abbr[title] {
+  text-decoration: underline dotted;
+}
+
+.purr-ui-root b,
+.purr-ui-root strong {
+  font-weight: bolder;
+}
+
+.purr-ui-root code,
+.purr-ui-root kbd,
+.purr-ui-root samp,
+.purr-ui-root pre {
+  font-family: var(--font-family-monospace);
+  font-size: 1em;
+}
+
+.purr-ui-root small {
+  font-size: 80%;
+}
+
+.purr-ui-root sub,
+.purr-ui-root sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.purr-ui-root sub {
+  bottom: -0.25em;
+}
+
+.purr-ui-root sup {
+  top: -0.5em;
+}
+
+.purr-ui-root table {
+  text-indent: 0;
+  border-color: inherit;
+}
+
+.purr-ui-root button,
+.purr-ui-root input,
+.purr-ui-root optgroup,
+.purr-ui-root select,
+.purr-ui-root textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.purr-ui-root button,
+.purr-ui-root select {
+  text-transform: none;
+}
+
+.purr-ui-root button,
+.purr-ui-root [type="button"],
+.purr-ui-root [type="reset"],
+.purr-ui-root [type="submit"] {
+  -webkit-appearance: button;
+}
+
+.purr-ui-root ::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+.purr-ui-root :-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+.purr-ui-root :-moz-ui-invalid {
+  box-shadow: none;
+}
+
+.purr-ui-root legend {
+  padding: 0;
+}
+
+.purr-ui-root progress {
+  vertical-align: baseline;
+}
+
+.purr-ui-root ::-webkit-inner-spin-button,
+.purr-ui-root ::-webkit-outer-spin-button {
+  height: auto;
+}
+
+.purr-ui-root ::-webkit-inner-spin-button,
+.purr-ui-root ::-webkit-outer-spin-button {
+  height: auto;
+}
+
+.purr-ui-root [type="search"] {
+  -webkit-appearance: textfield;
+  outline-offset: -2px;
+}
+
+.purr-ui-root ::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+.purr-ui-root ::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
+
+.purr-ui-root summary {
+  display: list-item;
+}
+
+/*! Based on tailwindcss | MIT licence | https://github.com/tailwindlabs/tailwindcss */
+.purr-ui-root blockquote,
+.purr-ui-root dl,
+.purr-ui-root dd,
+.purr-ui-root h1,
+.purr-ui-root h2,
+.purr-ui-root h3,
+.purr-ui-root h4,
+.purr-ui-root h5,
+.purr-ui-root h6,
+.purr-ui-root hr,
+.purr-ui-root figure,
+.purr-ui-root p,
+.purr-ui-root pre {
+  margin: 0;
+}
+
+.purr-ui-root h1,
+.purr-ui-root h2,
+.purr-ui-root h3,
+.purr-ui-root h4,
+.purr-ui-root h5,
+.purr-ui-root h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.purr-ui-root ol,
+.purr-ui-root ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.purr-ui-root img,
+.purr-ui-root svg,
+.purr-ui-root video,
+.purr-ui-root canvas,
+.purr-ui-root audio,
+.purr-ui-root iframe,
+.purr-ui-root embed,
+.purr-ui-root object {
+  display: block;
+  vertical-align: middle;
+}
+
+.purr-ui-root *,
+.purr-ui-root ::before,
+.purr-ui-root ::after {
+  border-width: 0;
+  border-style: none;
+  border-color: var(--color-border);
+}
+
+.purr-ui-root button:focus {
+  outline: 1px dotted;
+  outline: 5px auto -webkit-focus-ring-color;
+}

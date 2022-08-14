@@ -1,7 +1,6 @@
 % crochet
 
 abstract renderer;
-abstract live-widget;
 
 trait renderer with
   command Renderer render: widget -> node;

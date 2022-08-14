@@ -1,6 +1,5 @@
 % crochet
 
-open crochet.time;
 open crochet.concurrency;
 open crochet.unsafe.wrapper.dom;
 
