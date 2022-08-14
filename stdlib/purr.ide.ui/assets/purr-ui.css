@@ -22,7 +22,7 @@
     Helvetica, Arial, sans-serif;
   --font-family-monospace: ui-monospace, SFMono-Regular, Consolas,
     "Liberation Mono", monospace;
-  --font-family-display: "PT Sans Caption", var(--font-family-sans-serif);
+  --font-family-display: "Roboto", var(--font-family-sans-serif);
   --font-family-body: "Roboto", var(--font-family-sans-serif);
 }
 
@@ -65,8 +65,8 @@
 }
 
 .purr-ui-title-bar-title {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 1.75rem;
+  font-weight: 500;
   font-family: var(--font-family-display);
 }
 
