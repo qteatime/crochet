@@ -1,0 +1,20 @@
+% crochet
+
+effect purr-ui-rendering with
+  get-shared-renderer(); // -> renderer
+end
+
+effect purr-ui-presentation with
+  show(widget is widget); // -> nothing
+end
+
+
+singleton purr-ui;
+protect type purr-ui with ui-control;
+protect global purr-ui with ui-control;
+
+
+command purr-ui show: (Widget has to-widget) do
+  perform purr-ui-presentation.show(Widget as widget | commit);
+  self;
+end

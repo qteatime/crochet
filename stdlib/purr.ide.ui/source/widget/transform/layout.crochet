@@ -1,0 +1,68 @@
+% crochet
+
+abstract layout-option is transform-option;
+
+type layout-option--columns(value is purr-variable<integer>) is layout-option;
+type layout-option--object-fit(value is purr-variable<object-fit>) is layout-option;
+type layout-option--object-position(value is purr-variable<object-position>) is layout-option;
+type layout-option--overflow-horizontal(value is purr-variable<overflow>) is layout-option;
+type layout-option--overflow-vertical(value is purr-variable<overflow>) is layout-option;
+type layout-option--position(value is purr-variable<position>) is layout-option;
+
+command layout-option--columns key = "columns";
+command layout-option--object-fit key = "object-fit";
+command layout-option--object-position key = "object-position";
+command layout-option--overflow-horizontal key = "overflow-x";
+command layout-option--overflow-vertical key = "overflow-y";
+command layout-option--position key = "position";
+
+
+enum object-fit =
+  contain,
+  cover,
+  fill,
+  none,
+  scale-down;
+
+enum object-position =
+  top,
+  top-right,
+  right,
+  bottom-right,
+  bottom,
+  bottom-left,
+  left,
+  top-left,
+  center;
+
+enum overflow =
+  auto,
+  hidden,
+  clip,
+  visible,
+  scroll;
+
+enum position =
+  static,
+  sticky;
+
+command widget-transform columns: (X has to-purr-variable<integer>) =
+  self add-option: new layout-option--columns(X as purr-variable);
+
+command widget-transform object-fit: (X has to-purr-variable<object-fit>) =
+  self add-option: new layout-option--object-fit(X as purr-variable);
+
+command widget-transform object-position: (X has to-purr-variable<object-position>) =
+  self add-option: new layout-option--object-position(X as purr-variable);
+
+command widget-transform overflow-horizontal: (X has to-purr-variable<overflow>) =
+  self add-option: new layout-option--overflow-horizontal(X as purr-variable);
+
+command widget-transform overflow-vertical: (X has to-purr-variable<overflow>) =
+  self add-option: new layout-option--overflow-vertical(X as purr-variable);
+
+command widget-transform overflow: X =
+  self overflow-horizontal: X | overflow-vertical: X;
+
+command widget-transform position: (X has to-purr-variable<position>) =
+  self add-option: new layout-option--position(X as purr-variable);

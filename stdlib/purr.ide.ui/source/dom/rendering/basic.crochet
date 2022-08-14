@@ -1,0 +1,15 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer render: (W is widget-text) do
+  let Node = dom make-element: "div" class: "purr-ui.text";
+  Node append: (dom make-text: W.contents);
+  Node;
+end
+
+command dom-renderer render: (W is widget-dynamic) do
+  let Surface = package make-dom-surface;
+  W.renderer(Surface);
+  Surface.node;
+end

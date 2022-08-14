@@ -10,21 +10,24 @@ type flex-child(
   options is option-list<flex-child-option>
 ) is widget;
 
-type flex-option--layout(value is agata-variable<flex-layout>) is option;
-type flex-option--gap(value is agata-variable<integer>) is option;
-type flex-option--wrap(value is agata-variable<flex-wrap>) is option;
-type flex-option--align(value is agata-variable<flex-align>) is option;
-type flex-option--justify(value is agata-variable<flex-justify>) is option;
+type flex-option--layout(value is purr-variable<flex-layout>) is option;
+type flex-option--column-gap(value is purr-variable<text-size>) is option;
+type flex-option--row-gap(value is purr-variable<text-size>) is option;
+type flex-option--wrap(value is purr-variable<flex-wrap>) is option;
+type flex-option--align-content(value is purr-variable<flex-align>) is option;
+type flex-option--align-items(value is purr-variable<flex-align>) is option;
+type flex-option--justify-content(value is purr-variable<flex-justify>) is option;
 
-type flex-child-option--grow(value is agata-variable<integer>) is option;
-type flex-child-option--shrink(value is agata-variable<integer>) is option;
-type flex-child-option--basis(value is agata-variable<integer>) is option;
+type flex-child-option--grow(value is purr-variable<boolean>) is option;
+type flex-child-option--shrink(value is purr-variable<boolean>) is option;
+type flex-child-option--basis(value is purr-variable<size>) is option;
 
 command flex-option--layout key = "flex-layout";
 command flex-option--gap key = "flex-gap";
 command flex-option--wrap key = "flex-wrap";
-command flex-option--align key = "flex-align";
-command flex-option--justify key = "flex-justify";
+command flex-option--align-content key = "flex-align-content";
+command flex-option--align-items key = "flex-align-items";
+command flex-option--justify-content key = "flex-justify-content";
 
 command flex-child-option--grow key = "flex-grow";
 command flex-child-option--shrink key = "flex-shrink";
@@ -76,27 +79,36 @@ command widget flex-child =
   );
 
 
-command widget-flex flex-layout: (Layout has to-agata-variable<flex-layout>) =
-  new widget-flex(self with options -> self.options add: new flex-option--layout(Layout as agata-variable));
+command widget-flex flex-layout: (Layout has to-purr-variable<flex-layout>) =
+  new widget-flex(self with options -> self.options add: new flex-option--layout(Layout as purr-variable));
 
-command widget-flex flex-gap: (Gap has to-agata-variable<integer>) =
-  new widget-flex(self with options -> self.options add: new flex-option--gap(Gap as agata-variable));
+command widget-flex flex-row-gap: (Gap has to-purr-variable<text-size>) =
+  new widget-flex(self with options -> self.options add: new flex-option--row-gap(Gap as purr-variable));
 
-command widget-flex flex-wrap: (Wrap has to-agata-variable<flex-wrap>) =
-  new widget-flex(self with options -> self.options add: new flex-option--wrap(Wrap as agata-variable));
+command widget-flex flex-column-gap: (Gap has to-purr-variable<text-size>) =
+  new widget-flex(self with options -> self.options add: new flex-option--column-gap(Gap as purr-variable));
 
-command widget-flex flex-align: (Align has to-agata-variable<flex-align>) =
-  new widget-flex(self with options -> self.options add: new flex-option--align(Align as agata-variable));
+command widget-flex gap: Gap =
+  self flex-row-gap: Gap | flex-column-gap: Gap;
 
-command widget-flex flex-justify: (Justify has to-agata-variable<flex-justify>) =
-  new widget-flex(self with options -> self.options add: new flex-option--justify(Justify as agata-variable));
+command widget-flex flex-wrap: (Wrap has to-purr-variable<flex-wrap>) =
+  new widget-flex(self with options -> self.options add: new flex-option--wrap(Wrap as purr-variable));
+
+command widget-flex flex-align-content: (Align has to-purr-variable<flex-align>) =
+  new widget-flex(self with options -> self.options add: new flex-option--align-content(Align as purr-variable));
+
+command widget-flex flex-align-items: (Align has to-purr-variable<flex-align>) =
+  new widget-flex(self with options -> self.options add: new flex-option--align-items(Align as purr-variable));
+
+command widget-flex flex-justify-content: (Justify has to-purr-variable<flex-justify>) =
+  new widget-flex(self with options -> self.options add: new flex-option--justify-content(Justify as purr-variable));
 
 
-command flex-child flex-grow: (X has to-agata-variable<integer>) =
-  new flex-child(self with options -> self.options add: new flex-child-option--grow(X as agata-variable));
+command flex-child flex-grow: (X has to-purr-variable<boolean>) =
+  new flex-child(self with options -> self.options add: new flex-child-option--grow(X as purr-variable));
 
-command flex-child flex-shrink: (X has to-agata-variable<integer>) =
-  new flex-child(self with options -> self.options add: new flex-child-option--shrink(X as agata-variable));
+command flex-child flex-shrink: (X has to-purr-variable<boolean>) =
+  new flex-child(self with options -> self.options add: new flex-child-option--shrink(X as purr-variable));
 
-command flex-child flex-basis: (X has to-agata-variable<integer>) =
-  new flex-child(self with options -> self.options add: new flex-child-option--basis(X as agata-variable));
+command flex-child flex-basis: (X has to-purr-variable<size>) =
+  new flex-child(self with options -> self.options add: new flex-child-option--basis(X as purr-variable));

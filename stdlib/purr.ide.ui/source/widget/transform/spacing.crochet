@@ -1,0 +1,66 @@
+% crochet
+
+abstract spacing-option is transform-option;
+
+type spacing-option--padding-top(value is purr-variable<text-size>) is spacing-option;
+type spacing-option--padding-right(value is purr-variable<text-size>) is spacing-option;
+type spacing-option--padding-bottom(value is purr-variable<text-size>) is spacing-option;
+type spacing-option--padding-left(value is purr-variable<text-size>) is spacing-option;
+
+type spacing-option--margin-top(value is purr-variable<text-size>) is spacing-option;
+type spacing-option--margin-right(value is purr-variable<text-size>) is spacing-option;
+type spacing-option--margin-bottom(value is purr-variable<text-size>) is spacing-option;
+type spacing-option--margin-left(value is purr-variable<text-size>) is spacing-option;
+
+command spacing-option--padding-top key = "padding-top";
+command spacing-option--padding-right key = "padding-right";
+command spacing-option--padding-bottom key = "padding-bottom";
+command spacing-option--padding-left key = "padding-left";
+command spacing-option--margin-top key = "margin-top";
+command spacing-option--margin-right key = "margin-right";
+command spacing-option--margin-bottom key = "margin-bottom";
+command spacing-option--margin-left key = "margin-left";
+
+
+command widget-transform padding-top: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--padding-top(X as purr-variable);
+
+command widget-transform padding-right: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--padding-right(X as purr-variable);
+
+command widget-transform padding-bottom: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--padding-bottom(X as purr-variable);
+
+command widget-transform padding-left: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--padding-left(X as purr-variable);
+
+command widget-transform padding-horizontal: X =
+  self padding-left: X | padding-right: X;
+
+command widget-transform padding-vertical: X =
+  self padding-top: X | padding-bottom: X;
+
+command widget-transform padding: X =
+  self padding-horizontal: X | padding-vertical: X;
+
+
+command widget-transform margin-top: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--margin-top(X as purr-variable);
+
+command widget-transform margin-right: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--margin-right(X as purr-variable);
+
+command widget-transform margin-bottom: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--margin-bottom(X as purr-variable);
+
+command widget-transform margin-left: (X has to-purr-variable<text-size>) =
+  self add-option: new spacing-option--margin-left(X as purr-variable);
+
+command widget-transform margin-horizontal: X =
+  self margin-left: X | margin-right: X;
+
+command widget-transform margin-vertical: X =
+  self margin-top: X | margin-bottom: X;
+
+command widget-transform margin: X =
+  self margin-horizontal: X | margin-vertical: X;

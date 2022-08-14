@@ -2,17 +2,21 @@
 
 abstract text-option is transform-option;
 
-type text-option--align(value is agata-variable<text-align>) is text-option;
-type text-option--decoration(value is agata-variable<text-decoration>) is text-option;
-type text-option--transform(value is agata-variable<text-transform>) is text-option;
-type text-option--overflow(value is agata-variable<text-overflow>) is text-option;
-type text-option--whitespace(value is agata-variable<text-whitespace>) is text-option;
-type text-option--word-break(value is agata-variable<text-word-break>) is text-option;
-type text-option--letter-spacing(value is agata-variable<text-letter-spacing>) is text-option;
-type text-option--line-height(value is agata-variable<text-line-height>) is text-option;
+type text-option--align(value is purr-variable<text-align>) is text-option;
+type text-option--decoration(value is purr-variable<text-decoration>) is text-option;
+type text-option--decoration-color(value is purr-variable<color>) is text-option;
+type text-option--decoration-style(value is purr-variable<text-decoration-style>) is text-option;
+type text-option--transform(value is purr-variable<text-transform>) is text-option;
+type text-option--overflow(value is purr-variable<text-overflow>) is text-option;
+type text-option--whitespace(value is purr-variable<text-whitespace>) is text-option;
+type text-option--word-break(value is purr-variable<text-word-break>) is text-option;
+type text-option--letter-spacing(value is purr-variable<text-letter-spacing>) is text-option;
+type text-option--line-height(value is purr-variable<text-line-height>) is text-option;
 
 command text-option--align key = "text-align";
 command text-option--decoration key = "text-decoration";
+command text-option--decoration-color key = "text-decoration-color";
+command text-option--decoration-style key = "text-decoration-style";
 command text-option--transform key = "text-transform";
 command text-option--overflow key = "text-overflow";
 command text-option--whitespace key = "white-space";
@@ -35,6 +39,13 @@ enum text-decoration =
   line-through,
   none;
 
+enum text-decoration-style =
+  solid,
+  double,
+  dotted,
+  dashed,
+  wavy;
+
 enum text-transform =
   uppercase,
   lowercase,
@@ -54,9 +65,9 @@ enum text-whitespace =
   preserve-and-wrap;
 
 enum text-word-break =
-  break-normal,
-  break-words,
-  break-all;
+  normal,
+  words,
+  all;
 
 enum text-letter-spacing =
   tight,
@@ -64,31 +75,37 @@ enum text-letter-spacing =
   wide;
 
 enum text-line-height =
-  single,
-  one-and-half,
+  fit,
+  comfortable,
   double;
 
 
-command widget-transform text-align: (X has to-agata-variable<text-align>) =
-  self add-option: new text-option--align(X as agata-variable);
+command widget-transform text-align: (X has to-purr-variable<text-align>) =
+  self add-option: new text-option--align(X as purr-variable);
 
-command widget-transform text-decoration: (X has to-agata-variable<text-decoration>) =
-  self add-option: new text-option--decoration(X as agata-variable);
+command widget-transform text-decoration: (X has to-purr-variable<text-decoration>) =
+  self add-option: new text-option--decoration(X as purr-variable);
 
-command widget-transform text-transform: (X has to-agata-variable<text-transform>) =
-  self add-option: new text-option--transform(X as agata-variable);
+command widget-transform text-decoration-color: (X has to-purr-variable<color>) =
+  self add-option: new text-option--decoration-color(X as purr-variable);
 
-command widget-transform text-overflow: (X has to-agata-variable<text-overflow>) =
-  self add-option: new text-option--overflow(X as agata-variable);
+command widget-transform text-decoration-style: (X has to-purr-variable<text-decoration-style>) =
+  self add-option: new text-option--decoration-style(X as purr-variable);
 
-command widget-transform white-space: (X has to-agata-variable<text-whitespace>) =
-  self add-option: new text-option--whitespace(X as agata-variable);
+command widget-transform text-transform: (X has to-purr-variable<text-transform>) =
+  self add-option: new text-option--transform(X as purr-variable);
 
-command widget-transform word-break: (X has to-agata-variable<text-word-break>) =
-  self add-option: new text-option--word-break(X as agata-variable);
+command widget-transform text-overflow: (X has to-purr-variable<text-overflow>) =
+  self add-option: new text-option--overflow(X as purr-variable);
 
-command widget-transform letter-spacing: (X has to-agata-variable<text-letter-spacing>) =
-  self add-option: new text-option--letter-spacing(X as agata-variable);
+command widget-transform white-space: (X has to-purr-variable<text-whitespace>) =
+  self add-option: new text-option--whitespace(X as purr-variable);
 
-command widget-transform line-height: (X has to-agata-variable<text-line-height>) =
-  self add-option: new text-option--line-height(X as agata-variable);
+command widget-transform word-break: (X has to-purr-variable<text-word-break>) =
+  self add-option: new text-option--word-break(X as purr-variable);
+
+command widget-transform letter-spacing: (X has to-purr-variable<text-letter-spacing>) =
+  self add-option: new text-option--letter-spacing(X as purr-variable);
+
+command widget-transform line-height: (X has to-purr-variable<text-line-height>) =
+  self add-option: new text-option--line-height(X as purr-variable);

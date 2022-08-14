@@ -19,5 +19,8 @@ command dom from-element: (Node is unknown) =
 command dom make-element: (Tag is text) =
   new dom-element(foreign dom.make-element(Tag));
 
+command dom make-element: (Tag is text) class: (Class is text) =
+  new dom-element(foreign dom.make-element-with-class(Tag, Class));
+
 command dom make-fragment =
   new dom-fragment(foreign dom.make-fragment());

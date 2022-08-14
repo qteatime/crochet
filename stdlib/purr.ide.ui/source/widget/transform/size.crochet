@@ -1,0 +1,35 @@
+% crochet
+
+abstract size-option is transform-option;
+
+type size-option--width(value is purr-variable<size>) is size-option;
+type size-option--minimum-width(value is purr-variable<size>) is size-option;
+type size-option--maximum-width(value is purr-variable<size>) is size-option;
+type size-option--height(value is purr-variable<size>) is size-option;
+type size-option--minimum-height(value is purr-variable<size>) is size-option;
+type size-option--maximum-height(value is purr-variable<size>) is size-option;
+
+command size-option--width key = "width";
+command size-option--minimum-width key = "min-width";
+command size-option--maximum-width key = "max-width";
+command size-option--height key = "height";
+command size-option--minimum-height key = "min-height";
+command size-option--maximum-height key = "max-height";
+
+command widget-transform width: (X has to-purr-variable<size>) =
+  self add-option: new size-option--width(X as purr-variable);
+
+command widget-transform minimum-width: (X has to-purr-variable<size>) =
+  self add-option: new size-option--minimum-width(X as purr-variable);
+
+command widget-transform maximum-width: (X has to-purr-variable<size>) =
+  self add-option: new size-option--maximum-width(X as purr-variable);
+
+command widget-transform height: (X has to-purr-variable<size>) =
+  self add-option: new size-option--height(X as purr-variable);
+
+command widget-transform minimum-height: (X has to-purr-variable<size>) =
+  self add-option: new size-option--minimum-height(X as purr-variable);
+
+command widget-transform maximum-height: (X has to-purr-variable<size>) =
+  self add-option: new size-option--maximum-height(X as purr-variable);

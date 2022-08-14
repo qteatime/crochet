@@ -20,6 +20,14 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(document.createElement(ffi.text_to_string(tag)));
   });
 
+  ffi.defun("dom.make-element-with-class", (tag0, klass0) => {
+    const tag = ffi.text_to_string(tag0);
+    const klass = ffi.text_to_string(klass0);
+    const el = document.createElement(tag);
+    el.className = klass;
+    return ffi.box(el);
+  });
+
   ffi.defun("dom.make-fragment", () => {
     return ffi.box(document.createDocumentFragment());
   });
@@ -75,6 +83,14 @@ export default (ffi: ForeignInterface) => {
     for (const [key, value] of styles.entries()) {
       (el.style as any)[key] = ffi.text_to_string(value);
     }
+    return ffi.nothing;
+  });
+
+  ffi.defun("dom.set-style-property", (el0, name0, value0) => {
+    const el = ffi.unbox_typed(HTMLElement, el0);
+    const name = ffi.text_to_string(name0);
+    const value = ffi.text_to_string(value0);
+    (el.style as any)[name] = value;
     return ffi.nothing;
   });
 

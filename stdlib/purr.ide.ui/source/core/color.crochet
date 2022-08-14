@@ -1,0 +1,24 @@
+% crochet
+
+enum color =
+  transparent,
+  black,
+  white,
+  slate-50,
+  slate-100,
+  slate-200,
+  slate-300,
+  slate-400,
+  slate-500,
+  slate-600,
+  slate-700,
+  slate-800,
+  slate-900;
+
+// #fbfcff -- white
+// #d0ccd0 -- gray
+// #605856 -- dark gray
+// #1c6e8c -- light blue
+// #274156 -- dark blue
+
+// #fafafa #9ea6aa #7e7690 #7e8498 #31394b

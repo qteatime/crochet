@@ -2,19 +2,19 @@
 
 open crochet.concurrency;
 
-abstract agata-variable;
+abstract purr-variable;
 
-type agata-variable-reactive(value is observable-cell<X>) is agata-variable;
-type agata-variable-immutable(value is A) is agata-variable;
+type purr-variable-reactive(value is observable-cell<X>) is purr-variable;
+type purr-variable-immutable(value is A) is purr-variable;
 
-trait to-agata-variable with
-  command X as agata-variable -> agata-variable;
+trait to-purr-variable with
+  command X as purr-variable -> purr-variable;
 end
 
-implement to-agata-variable for observable-cell;
-command observable-cell as agata-variable =
-  new agata-variable-reactive(self);
+implement to-purr-variable for observable-cell;
+command observable-cell as purr-variable =
+  new purr-variable-reactive(self);
 
-implement to-agata-variable for any;
-command any as agata-variable =
-  new agata-variable-immutable(self);
+implement to-purr-variable for any;
+command any as purr-variable =
+  new purr-variable-immutable(self);

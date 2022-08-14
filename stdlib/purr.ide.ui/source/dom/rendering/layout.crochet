@@ -1,0 +1,34 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer render: (W is widget-flow) do
+  let Node = dom make-element: "div" class: "purr-ui.flow";
+  for Child in W.contents do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is widget-container) do
+  let Node = dom make-element: "div" class: "purr-ui.container";
+  for Child in W.contents do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is widget-flex) do
+  let Node = dom make-element: "div" class: "purr-ui.flex";
+  self apply-options: W.options to: Node;
+  for Child in W.items do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is flex-child) do
+  let Node = dom make-element: "div" class: "purr-ui.flex-child";
+  self apply-options: W.options to: Node;
+  Node;
+end

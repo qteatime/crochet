@@ -1,0 +1,57 @@
+% crochet
+
+enum size =
+  // fixed sizes
+  zero,
+  pixel,
+  // computed based on content
+  auto,
+  fit-content,
+  minimum-content,
+  maximum-content,
+  // computed based on text size
+  extra-small,
+  small,
+  base,
+  large,
+  extra-large,
+  large-2x,
+  large-3x,
+  large-4x,
+  // computed based on grid
+  columns-1,
+  columns-2,
+  columns-3,
+  columns-4,
+  columns-5,
+  columns-6,
+  columns-7,
+  columns-8,
+  columns-9,
+  columns-10,
+  columns-11,
+  columns-12,
+  // computed based on screen size
+  fill,
+  screen
+  // fixed screen sizes
+  small-screen,
+  medium-screen,
+  large-screen,
+  extra-large-screen;
+
+enum text-size =
+  extra-small,
+  small,
+  base,
+  large,
+  extra-large,
+  large-2x,
+  large-3x,
+  large-4x;
+
+enum line-size =
+  none,
+  pixel,
+  thin,
+  thick;

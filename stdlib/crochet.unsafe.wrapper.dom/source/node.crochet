@@ -41,6 +41,11 @@ command dom-element set-style: (Style is record) do
   self;
 end
 
+command dom-element set-style: (Name is text) to: (Value is text) do
+  foreign dom.set-style-property(self.box, Name, Value);
+  self;
+end
+
 
 command dom-element classes =
   new dom-class-list(self);

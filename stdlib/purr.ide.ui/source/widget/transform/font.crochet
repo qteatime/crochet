@@ -2,15 +2,17 @@
 
 abstract font-option is transform-option;
 
-type font-option--family(value is agata-variable<font-family>) is font-option;
-type font-option--weight(value is agata-variable<font-weight>) is font-option;
-type font-option--style(value is agata-variable<font-style>) is font-option;
-type font-option--size(value is agata-variable<font-size>) is font-option;
+type font-option--family(value is purr-variable<font-family>) is font-option;
+type font-option--weight(value is purr-variable<font-weight>) is font-option;
+type font-option--style(value is purr-variable<font-style>) is font-option;
+type font-option--size(value is purr-variable<text-size>) is font-option;
+type font-option--color(value is purr-variable<color>) is font-option;
 
 command font-option--family key = "font-family";
 command font-option--weight key = "font-weight";
 command font-option--style key = "font-style";
 command font-option--size key = "font-size";
+command font-option--color key = "color";
 
 
 enum font-family =
@@ -35,25 +37,18 @@ enum font-style =
   normal,
   italic;
 
-enum font-size =
-  extra-small,
-  small,
-  base,
-  large,
-  extra-large,
-  large-2x,
-  large-3x,
-  large-4x;
 
+command widget-transform font-family: (X has to-purr-variable<font-family>) =
+  self add-option: new font-option--family(X as purr-variable);
 
-command widget-transform font-family: (X has to-agata-variable<font-family>) =
-  self add-option: new font-option--family(X as agata-variable);
+command widget-transform font-weight: (X has to-purr-variable<font-weight>) =
+  self add-option: new font-option--weight(X as purr-variable);
 
-command widget-transform font-weight: (X has to-agata-variable<font-weight>) =
-  self add-option: new font-option--weight(X as agata-variable);
+command widget-transform font-style: (X has to-purr-variable<font-style>) =
+  self add-option: new font-option--style(X as purr-variable);
 
-command widget-transform font-style: (X has to-agata-variable<font-style>) =
-  self add-option: new font-option--style(X as agata-variable);
+command widget-transform font-size: (X has to-purr-variable<text-size>) =
+  self add-option: new font-option--size(X as purr-variable);
 
-command widget-transform font-size: (X has to-agata-variable<font-size>) =
-  self add-option: new font-option--size(X as agata-variable);
+command widget-transform font-color: (X has to-purr-variable<color>) =
+  self add-option: new font-option--color(X as purr-variable);

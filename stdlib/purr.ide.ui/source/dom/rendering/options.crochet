@@ -1,0 +1,27 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer apply-options: (Options is option-list<A>) to: (Node is dom-node) do
+  for Option in Options.options do
+    self apply-option: Option to: Node;
+  end
+  Node;
+end
+
+command dom-renderer set-style: (Key is text) to: (Value is purr-variable-immutable<X>) in: (Node is dom-node) do
+  Node set-style: Key to: (self context: Key to-property: Value.value);
+end
+
+command dom-renderer set-style: (Key is text) to: (Value is purr-variable-reactive<X>) in: (Node is dom-node) do
+  Value.value stream subscribe: { X in Node set-style: Key to: (self context: Key to-property: X) };
+end
+
+
+command dom-renderer set-property: (Key is text) to: (Value is purr-variable-immutable<X>) in: (Node is dom-node) do
+  Node set: Key to: (self context: Key to-property: Value.value);
+end
+
+command dom-renderer set-property: (Key is text) to: (Value is purr-variable-reactive<X>) in: (Node is dom-node) do
+  Value.value stream subscribe: { X in Node set: Key to: (self context: Key to-property: X) };
+end
