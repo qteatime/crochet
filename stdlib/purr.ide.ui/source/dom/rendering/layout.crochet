@@ -17,3 +17,25 @@ command dom-renderer render: (W is widget-container) do
   end
   Node;
 end
+
+command dom-renderer render: (W is widget-title-bar) do
+  let Node = dom make-element: "div" class: "purr-ui-title-bar";
+  
+  let Button = dom make-element: "div" class: "purr-ui-title-bar-button";
+  Button append: (self render: W.action-button);
+  Node append: Button;
+
+  let Title = dom make-element: "div" class: "purr-ui-title-bar-title";
+  Title append: (self render: W.title);
+  Node append: Title;
+
+  let Middle = dom make-element: "div" class: "purr-ui-title-bar-middle";
+  Middle append: (self render: W.middle);
+  Node append: Middle;
+
+  let Right = dom make-element: "div" class: "purr-ui-title-bar-right";
+  Right append: (self render: W.right);
+  Node append: Right;
+
+  Node;
+end

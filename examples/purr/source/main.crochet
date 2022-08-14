@@ -15,7 +15,9 @@ end
 
 command purr run do
   #widget app-frame
-    | header: "Some header"
+    | header: (
+        #widget title-bar: "Purr"
+      )
     | status: "Some status"
     | body: (#widget align-centered: "Hello, there");
 end

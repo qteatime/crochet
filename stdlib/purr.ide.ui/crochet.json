@@ -31,9 +31,10 @@
 
     "source/widget/layout/container.crochet",
     "source/widget/layout/flow.crochet",
-    "source/widget/layout/app.crochet",
+    "source/widget/layout/app-frame.crochet",
     "source/widget/layout/align.crochet",
     "source/widget/layout/flex.crochet",
+    "source/widget/layout/title-bar.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",

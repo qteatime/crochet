@@ -1,4 +1,4 @@
-html {
+.purr-ui-root {
   --color-black: #2f2f2f;
   --color-white: #fafafa;
 
@@ -21,13 +21,18 @@ html {
     Helvetica, Arial, sans-serif;
   --font-family-monospace: ui-monospace, SFMono-Regular, Consolas,
     "Liberation Mono", monospace;
-  --font-family-display: var(--font-family-sans-serif);
-  --font-family-body: var(--font-family-sans-serif);
+  --font-family-display: "PT Sans Caption", var(--font-family-sans-serif);
+  --font-family-body: "Roboto", var(--font-family-sans-serif);
 }
 
 :host(.purr-ui) {
   width: 100vw;
   height: 100vh;
+}
+
+.purr-ui-root {
+  font-family: var(--font-family-body);
+  font-size: 16px;
 }
 
 .purr-ui-root,
@@ -36,4 +41,32 @@ html {
 .purr-ui-fragment {
   width: 100%;
   height: 100%;
+}
+
+.purr-ui-title-bar {
+  height: 3rem;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: row;
+  column-gap: 1rem;
+  align-items: baseline;
+  padding: 0 0.5rem;
+}
+
+.purr-ui-title-bar-button {
+  width: 2rem;
+}
+
+.purr-ui-title-bar-title {
+  font-size: 2rem;
+  font-weight: bold;
+  font-family: var(--font-family-display);
+}
+
+.purr-ui-title-bar-middle {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 }
