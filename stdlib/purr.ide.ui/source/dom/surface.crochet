@@ -4,6 +4,7 @@ open crochet.unsafe.wrapper.dom;
 
 type dom-surface(node is dom-node) is surface;
 
+
 command dom-surface replace-contents: (Widget has to-widget) do
   let Node = dom-renderer render: (Widget as widget);
   self.node replace-contents: Node;
@@ -34,5 +35,5 @@ end
 
 
 command package make-dom-surface do
-  new dom-surface(dom make-element: "div" class: "purr-ui.surface");
+  new dom-surface(dom make-element: "div" class: "purr-ui-surface");
 end

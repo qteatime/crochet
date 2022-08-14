@@ -1,0 +1,35 @@
+% crochet
+
+implement to-widget for widget;
+command widget as widget =
+  self;
+
+
+implement to-widget for text;
+command text as widget =
+  #widget text: self;
+
+
+implement to-widget for integer;
+command integer as widget =
+  #widget text: self to-text;
+
+
+implement to-widget for float-64bit;
+command float-64bit as widget =
+  #widget text: self to-text;
+
+
+implement to-widget for list;
+command list as widget =
+  #widget fragment: self;
+
+
+implement to-widget for boolean;
+command true as widget = #widget text: "true";
+command false as widget = #widget text: "false";
+
+
+implement to-widget for interpolation;
+command interpolation as widget =
+  #widget flow: (self parts map: (_ as widget));

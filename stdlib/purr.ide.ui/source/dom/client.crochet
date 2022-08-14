@@ -1,0 +1,21 @@
+% crochet
+
+open crochet.time;
+open crochet.concurrency;
+open crochet.unsafe.wrapper.dom;
+
+singleton purr-ui-dom;
+protect type purr-ui-dom with ui-control;
+protect global purr-ui-dom with ui-control;
+
+
+handler purr-ui-dom-renderer root: (Root is unknown) do
+  let Surface = new dom-surface(dom from-element: Root);
+  Surface.node classes add: "purr-ui-root";
+  let References = #cell with-value: #map empty;
+with
+  on purr-ui-presentation.show(Widget) do
+    Surface replace-contents: Widget;
+    continue with nothing;
+  end
+end

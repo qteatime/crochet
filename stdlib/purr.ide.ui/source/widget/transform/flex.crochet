@@ -1,0 +1,97 @@
+% crochet
+
+abstract flex-option is transform-option;
+
+type flex-option--layout(value is purr-variable<flex-layout>) is flex-option;
+type flex-option--column-gap(value is purr-variable<text-size>) is flex-option;
+type flex-option--row-gap(value is purr-variable<text-size>) is flex-option;
+type flex-option--wrap(value is purr-variable<flex-wrap>) is flex-option;
+type flex-option--align-content(value is purr-variable<flex-align>) is flex-option;
+type flex-option--align-items(value is purr-variable<flex-align>) is flex-option;
+type flex-option--justify-content(value is purr-variable<flex-justify>) is flex-option;
+
+type flex-child-option--grow(value is purr-variable<boolean>) is flex-option;
+type flex-child-option--shrink(value is purr-variable<boolean>) is flex-option;
+type flex-child-option--basis(value is purr-variable<size>) is flex-option;
+
+
+command flex-option--layout key = "flex-layout";
+command flex-option--gap key = "flex-gap";
+command flex-option--wrap key = "flex-wrap";
+command flex-option--align-content key = "flex-align-content";
+command flex-option--align-items key = "flex-align-items";
+command flex-option--justify-content key = "flex-justify-content";
+
+command flex-child-option--grow key = "flex-grow";
+command flex-child-option--shrink key = "flex-shrink";
+command flex-child-option--basis key = "flex-basis";
+
+
+
+enum flex-layout = 
+  row,
+  row-reverse,
+  column,
+  column-reverse;
+
+enum flex-wrap =
+  no-wrap,
+  wrap,
+  wrap-reverse;
+
+enum flex-align =
+  normal,
+  flex-start,
+  flex-end,
+  center,
+  stretch,
+  baseline;
+
+enum flex-justify =
+  normal,
+  flex-start,
+  flex-end,
+  center,
+  left,
+  right,
+  baseline,
+  space-between,
+  space-around,
+  space-evenly,
+  stretch;
+
+
+
+command widget-transform flex-layout: (Layout has to-purr-variable<flex-layout>) =
+  self add-option: new flex-option--layout(Layout as purr-variable);
+
+command widget-transform flex-row-gap: (Gap has to-purr-variable<text-size>) =
+  self add-option: new flex-option--row-gap(Gap as purr-variable);
+
+command widget-transform flex-column-gap: (Gap has to-purr-variable<text-size>) =
+  self add-option: new flex-option--column-gap(Gap as purr-variable);
+
+command widget-transform gap: Gap =
+  self flex-row-gap: Gap | flex-column-gap: Gap;
+
+command widget-transform flex-wrap: (Wrap has to-purr-variable<flex-wrap>) =
+  self add-option: new flex-option--wrap(Wrap as purr-variable);
+
+command widget-transform flex-align-content: (Align has to-purr-variable<flex-align>) =
+  self add-option: new flex-option--align-content(Align as purr-variable);
+
+command widget-transform flex-align-items: (Align has to-purr-variable<flex-align>) =
+  self add-option: new flex-option--align-items(Align as purr-variable);
+
+command widget-transform flex-justify-content: (Justify has to-purr-variable<flex-justify>) =
+  self add-option: new flex-option--justify-content(Justify as purr-variable);
+
+
+command flex-child flex-grow: (X has to-purr-variable<boolean>) =
+  self add-option: new flex-child-option--grow(X as purr-variable);
+
+command flex-child flex-shrink: (X has to-purr-variable<boolean>) =
+  self add-option: new flex-child-option--shrink(X as purr-variable);
+
+command flex-child flex-basis: (X has to-purr-variable<size>) =
+  self add-option: new flex-child-option--basis(X as purr-variable);

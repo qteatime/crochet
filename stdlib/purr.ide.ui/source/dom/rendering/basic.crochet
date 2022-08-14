@@ -2,8 +2,21 @@
 
 open crochet.unsafe.wrapper.dom;
 
+command dom-renderer render-to-element: (W is widget) do
+  let Node = self render: W;
+  condition
+    when Node is dom-element =>
+      Node;
+
+    otherwise =>
+      dom make-element: "div" class: "purr-ui-fragment"
+        | append: Node;
+  end
+end
+
+
 command dom-renderer render: (W is widget-text) do
-  let Node = dom make-element: "div" class: "purr-ui.text";
+  let Node = dom make-element: "div" class: "purr-ui-text";
   Node append: (dom make-text: W.contents);
   Node;
 end
@@ -12,4 +25,18 @@ command dom-renderer render: (W is widget-dynamic) do
   let Surface = package make-dom-surface;
   W.renderer(Surface);
   Surface.node;
+end
+
+command dom-renderer render: (W is widget-transform) do
+  let Node = self render-to-element: W.contents;
+  self apply-options: W.options to: Node;
+  Node;
+end
+
+command dom-renderer render: (W is widget-fragment) do
+  let Node = dom make-fragment;
+  for Child in W.contents do
+    Node append: Child;
+  end
+  Node;
 end

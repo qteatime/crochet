@@ -1,0 +1,65 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer render: (W is widget-observable) do
+  let Data = new observable-cell-widget(self, #cell with-value: nothing);
+  self render: (#widget dynamic: (Data setup: _));
+end
+
+local type observable-cell-widget(
+  cell is observable-cell,
+  subscriber is cell
+);
+
+command observable-cell-widget setup: (Surface is surface) do
+  Surface on-attached: {
+    self maybe-unsubscribe;
+    self.subscriber <- self.cell stream subscribe: (Surface replace-contents: _);
+  };
+
+  Surface on-detached: {
+    self maybe-unsubscribe;
+    self.subscriber <- nothing;
+  };
+end
+
+command observable-cell-widget maybe-unsubscribe do
+  let Subscriber = self.subscriber value;
+  condition
+    when Subscriber is nothing => nothing;
+    otherwise => self.cell stream unsubscribe: Subscriber;
+  end
+end
+
+
+command dom-renderer render: (W is widget-event-stream) do
+  let Data = new event-stream-widget(self, #cell with-value: nothing);
+  self render: (#widget dynamic: (Data setup: _));
+end
+
+local type event-stream-widget(
+  listener is event-stream-listener,
+  subscriber is cell
+);
+
+command event-stream-widget setup: (Surface is surface) do
+  Surface on-attached: {
+    self maybe-unsubscribe;
+    self.subscriber <- self.cell stream subscribe: (Surface append: _);
+  };
+
+  Surface on-detached: {
+    self maybe-unsubscribe;
+    self.subscriber <- nothing;
+  };
+end
+
+command event-stream-widget maybe-unsubscribe do
+  let Subscriber = self.subscriber value;
+  condition
+    when Subscriber is nothing => nothing;
+    otherwise => self.cell stream unsubscribe: Subscriber;
+  end
+end
