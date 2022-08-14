@@ -91,6 +91,6 @@
 }
 
 .purr-ui-button:disabled {
-  color: var(--color-slate-500);
-  background: var(--color-slate-200);
+  color: var(--color-slate-400);
+  background: var(--color-slate-100);
 }
