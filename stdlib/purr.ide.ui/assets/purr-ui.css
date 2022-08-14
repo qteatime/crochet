@@ -25,12 +25,13 @@ html {
   --font-family-body: var(--font-family-sans-serif);
 }
 
-.purr-ui {
+.purr-ui,
+.purr-ui-root {
+  /* TODO: shadow dom messes this up */
   width: 100vw;
   height: 100vh;
 }
 
-.purr-ui-root,
 .purr-ui-container,
 .purr-ui-surface,
 .purr-ui-fragment {

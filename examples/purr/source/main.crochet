@@ -14,14 +14,8 @@ command main-html: Root do
 end
 
 command purr run do
-  #widget container: [
-    "Hello",
-    "Here"
-  ]
-  | transform
-  | display: #display flex
-  | flex-layout: #flex-layout row
-  | flex-gap: #text-size large-2x
-  | flex-justify-content: #flex-justify center
-  | flex-align-items: #flex-align center
+  #widget app-frame
+    | header: "Some header"
+    | status: "Some status"
+    | body: (#widget align-centered: "Hello, there");
 end

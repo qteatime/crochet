@@ -5,6 +5,7 @@ html {
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 2;
   tab-size: 2;
+  height: 100%;
 }
 
 body {

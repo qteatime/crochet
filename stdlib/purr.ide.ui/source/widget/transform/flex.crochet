@@ -10,12 +10,12 @@ type flex-option--align-content(value is purr-variable<flex-align>) is flex-opti
 type flex-option--align-items(value is purr-variable<flex-align>) is flex-option;
 type flex-option--justify-content(value is purr-variable<flex-justify>) is flex-option;
 
-type flex-child-option--grow(value is purr-variable<boolean>) is flex-option;
-type flex-child-option--shrink(value is purr-variable<boolean>) is flex-option;
+type flex-child-option--grow(value is purr-variable<flex-grow>) is flex-option;
+type flex-child-option--shrink(value is purr-variable<flex-shrink>) is flex-option;
 type flex-child-option--basis(value is purr-variable<size>) is flex-option;
 
 
-command flex-option--layout key = "flex-layout";
+command flex-option--layout key = "flex-direction";
 command flex-option--row-gap key = "row-gap";
 command flex-option--column-gap key = "column-gap";
 command flex-option--wrap key = "flex-wrap";
@@ -27,7 +27,13 @@ command flex-child-option--grow key = "flex-grow";
 command flex-child-option--shrink key = "flex-shrink";
 command flex-child-option--basis key = "flex-basis";
 
+enum flex-grow =
+  no,
+  grow;
 
+enum flex-shrink =
+  no,
+  shrink;
 
 enum flex-layout = 
   row,

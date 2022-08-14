@@ -1,0 +1,13 @@
+% crochet
+
+command #widget flex-row: (Xs is list<X has to-widget>) =
+  #widget container: Xs
+    | transform
+    | display: #display flex
+    | flex-layout: #flex-layout row;
+
+command #widget flex-column: (Xs is list<X has to-widget>) =
+  #widget container: Xs
+    | transform
+    | display: #display flex
+    | flex-layout: #flex-layout column;

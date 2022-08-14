@@ -1,0 +1,10 @@
+% crochet
+
+command #widget align-centered: (X has to-widget) =
+  #widget container: [X]
+    | transform
+    | display: #display flex
+    | flex-layout: #flex-layout row
+    | flex-justify-content: #flex-justify center
+    | flex-align-items: #flex-align center
+    | text-align: #text-align center;

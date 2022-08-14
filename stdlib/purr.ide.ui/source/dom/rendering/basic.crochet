@@ -43,3 +43,7 @@ command dom-renderer render: (W is widget-fragment) do
   end
   Node;
 end
+
+command dom-renderer render: (W is widget-space) do
+  dom make-element: "div" class: "purr-ui-space";
+end

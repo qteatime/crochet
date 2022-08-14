@@ -1,0 +1,42 @@
+% crochet
+
+type widget-app-frame(
+  header is widget,
+  body is widget,
+  status is widget
+);
+
+implement to-widget for widget-app-frame;
+command widget-app-frame as widget do
+  #widget container: [
+    self.header,
+    self.body
+      | transform
+      | flex-grow: #flex-grow grow,
+    self.status
+  ]
+  | transform
+  | display: #display flex
+  | flex-layout: #flex-layout column
+  | flex-align-content: #flex-align stretch
+  | flex-justify-content: #flex-justify stretch;
+end
+
+command #widget app-frame: (Body has to-widget) =
+  #widget app-frame body: Body;
+
+command #widget app-frame =
+  new widget-app-frame(
+    header -> #widget space,
+    body -> #widget space,
+    status -> #widget space,
+  );
+
+command widget-app-frame body: (X has to-widget) =
+  new widget-app-frame(self with body -> X as widget);
+
+command widget-app-frame header: (X has to-widget) =
+  new widget-app-frame(self with header -> X as widget);
+
+command widget-app-frame status: (X has to-widget) =
+  new widget-app-frame(self with status -> X as widget);

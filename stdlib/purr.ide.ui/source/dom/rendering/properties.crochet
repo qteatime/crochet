@@ -193,3 +193,7 @@ command dom-renderer context: _ to-property: display--inline = "inline";
 command dom-renderer context: _ to-property: display--inline-block = "inline-block";
 command dom-renderer context: _ to-property: display--flex = "flex";
 
+command dom-renderer context: _ to-property: flex-grow--no = "0";
+command dom-renderer context: _ to-property: flex-grow--grow = "1";
+command dom-renderer context: _ to-property: flex-shrink--no = "0";
+command dom-renderer context: _ to-property: flex-shrink--shrink = "1";

@@ -27,9 +27,13 @@
     "source/widget/basic/fragment.crochet",
     "source/widget/basic/observable.crochet",
     "source/widget/basic/text.crochet",
+    "source/widget/basic/space.crochet",
 
     "source/widget/layout/container.crochet",
     "source/widget/layout/flow.crochet",
+    "source/widget/layout/app.crochet",
+    "source/widget/layout/align.crochet",
+    "source/widget/layout/flex.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",
