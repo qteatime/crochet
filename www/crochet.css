@@ -1,3 +1,8 @@
+html,
+body {
+  margin: 0;
+}
+
 .crochet-error {
   white-space: pre-wrap;
   font-family: monospace;
