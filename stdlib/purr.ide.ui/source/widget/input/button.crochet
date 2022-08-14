@@ -1,0 +1,34 @@
+% crochet
+
+type widget-button(
+  content is widget,
+  style is button-style,
+  disabled is purr-variable<boolean>,
+  active is purr-variable<boolean>,
+) is widget;
+
+enum button-style =
+  standard,
+  primary,
+  dangerous,
+  clear;
+
+command #widget button: (Content has to-widget) =
+  new widget-button(
+    content -> Content as widget,
+    style -> #button-style standard,
+    disabled -> false as purr-variable,
+    active -> false as purr-variable,
+  );
+
+command widget-button content: (Content has to-widget) =
+  new widget-button(self with content -> Content as widget);
+
+command widget-button style: (Style is button-style) =
+  new widget-button(self with style -> Style);
+
+command widget-button disabled: (X has to-purr-variable) =
+  new widget-button(self with disabled -> X as purr-variable);
+
+command widget-button active: (X has to-purr-variable) =
+  new widget-button(self with active -> X as purr-variable);

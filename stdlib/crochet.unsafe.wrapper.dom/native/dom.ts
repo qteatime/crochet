@@ -77,6 +77,13 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("dom.unset-attribute", (el0, attr0) => {
+    const el = ffi.unbox_typed(HTMLElement, el0);
+    const attr = ffi.text_to_string(attr0);
+    el.removeAttribute(attr);
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.set-style", (el0, styles0) => {
     const el = ffi.unbox_typed(HTMLElement, el0);
     const styles = ffi.record_to_map(styles0);

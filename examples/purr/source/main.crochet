@@ -20,5 +20,8 @@ command purr run do
           | action-button: (#widget icon: "bars")
       )
     | status: "Some status"
-    | body: (#widget align-centered: "Hello, there");
+    | body: (#widget align-centered: [
+        "Hello, there",
+        #widget button: "Button"
+      ]);
 end

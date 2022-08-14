@@ -14,6 +14,7 @@
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
 
+  --color-accent: #1c6e8c;
   --color-border: var(--color-slate-200);
 
   --font-family-serif: serif;
@@ -74,4 +75,22 @@
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+}
+
+.purr-ui-button {
+  border-radius: 0.125rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-slate-300);
+  font-weight: bold;
+  font-family: var(--font-family-sans-serif);
+  color: var(--color-black);
+}
+
+.purr-ui-button:not(:disabled):hover {
+  background: var(--color-slate-200);
+}
+
+.purr-ui-button:disabled {
+  color: var(--color-slate-500);
+  background: var(--color-slate-200);
 }

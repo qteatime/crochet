@@ -17,6 +17,7 @@
     "source/dom/rendering/observable.crochet",
     "source/dom/rendering/options.crochet",
     "source/dom/rendering/properties.crochet",
+    "source/dom/rendering/input.crochet",
     "source/dom/client.crochet",
     "source/dom/renderer.crochet",
     "source/dom/surface.crochet",
@@ -29,6 +30,8 @@
     "source/widget/basic/text.crochet",
     "source/widget/basic/space.crochet",
     "source/widget/basic/icon.crochet",
+
+    "source/widget/input/button.crochet",
 
     "source/widget/layout/container.crochet",
     "source/widget/layout/flow.crochet",

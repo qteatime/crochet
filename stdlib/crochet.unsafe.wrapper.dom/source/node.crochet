@@ -40,6 +40,11 @@ command dom-element set: (Attribute is text) to: (Value is text) do
   self;
 end
 
+command dom-element unset: (Attribute is text) do
+  foreign dom.unset-attribute(self.box, Attribute);
+  self;
+end
+
 command dom-element set-style: (Style is record) do
   foreign dom.set-style(self.box, Style);
   self;

@@ -39,7 +39,7 @@ end
 command dom-renderer render: (W is widget-fragment) do
   let Node = dom make-fragment;
   for Child in W.contents do
-    Node append: Child;
+    Node append: (self render: Child);
   end
   Node;
 end
