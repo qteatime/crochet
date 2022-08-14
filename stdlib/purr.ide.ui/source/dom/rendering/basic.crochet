@@ -14,6 +14,9 @@ command dom-renderer render-to-element: (W is widget) do
   end
 end
 
+command dom-renderer render: (W is widget-committed) do
+  W.node.node;
+end
 
 command dom-renderer render: (W is widget-text) do
   let Node = dom make-element: "div" class: "purr-ui-text";

@@ -25,9 +25,9 @@ command dom-renderer context: _ to-property: size--small = "0.75rem";
 command dom-renderer context: _ to-property: size--base = "1rem";
 command dom-renderer context: _ to-property: size--large = "1.25rem";
 command dom-renderer context: _ to-property: size--extra-large = "1.5rem";
-command dom-renderer context: _ to-property: size--large2x = "2rem";
-command dom-renderer context: _ to-property: size--large3x = "3rem";
-command dom-renderer context: _ to-property: size--large4x = "4rem";
+command dom-renderer context: _ to-property: size--large-2x = "2rem";
+command dom-renderer context: _ to-property: size--large-3x = "3rem";
+command dom-renderer context: _ to-property: size--large-4x = "4rem";
 command dom-renderer context: _ to-property: size--columns-1 = "calc((1/12) * 100%)";
 command dom-renderer context: _ to-property: size--columns-2 = "calc((2/12) * 100%)";
 command dom-renderer context: _ to-property: size--columns-3 = "calc((3/12) * 100%)";
@@ -45,7 +45,7 @@ command dom-renderer context: C to-property: size--screen =
   condition
     when ["width", "min-width", "max-width"] contains: C => "100vw";
     when ["height", "min-height", "max-height"] contains: C => "100vh";
-    otherwise => "100%"
+    otherwise => "100%";
   end;
 command dom-renderer context: _ to-property: size--small-screen = "640px";
 command dom-renderer context: _ to-property: size--medium-screen = "728px";
@@ -187,3 +187,9 @@ command dom-renderer context: _ to-property: text-letter-spacing--wide = "0.02em
 command dom-renderer context: _ to-property: text-line-height--fit = "1em";
 command dom-renderer context: _ to-property: text-line-height--comfortable = "1.5em";
 command dom-renderer context: _ to-property: text-line-height--double = "2em";
+
+command dom-renderer context: _ to-property: display--block = "block";
+command dom-renderer context: _ to-property: display--inline = "inline";
+command dom-renderer context: _ to-property: display--inline-block = "inline-block";
+command dom-renderer context: _ to-property: display--flex = "flex";
+

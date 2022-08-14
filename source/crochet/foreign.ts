@@ -461,6 +461,10 @@ export class ForeignInterface {
     return random_uuid();
   }
 
+  notify_error(error: any) {
+    this.#vm.crochet.notify_error(error);
+  }
+
   // == Tracing (only exposed for debug package)
   trace_constraint = {
     log_tag(tag: CrochetValue) {

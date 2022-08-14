@@ -7,5 +7,5 @@ type background-option--color(value is purr-variable<color>) is background-optio
 command background-option--color key = "background-color";
 
 
-command widget-transform background-color: (X has to-purr-variable<color>) =
+command widget-transform background-color: (X has to-purr-variable) =
   self add-option: new background-option--color(X as purr-variable);

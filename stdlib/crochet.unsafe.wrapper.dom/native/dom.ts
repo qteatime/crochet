@@ -122,7 +122,6 @@ export default (ffi: ForeignInterface) => {
         yield ffi.apply(handler, [ffi.box(ev)]);
         return ffi.nothing;
       });
-      // TODO: handle errors here
     };
 
     el.addEventListener(name, fun);
@@ -135,5 +134,25 @@ export default (ffi: ForeignInterface) => {
     const fun = ffi.unbox_typed(Function, handler0);
     el.removeEventListener(name, fun as any);
     return ffi.nothing;
+  });
+
+  // CSS-related stuff
+  ffi.defun("dom.add-css", (parent0, css0) => {
+    const parent = ffi.unbox_typed(Node, parent0);
+    const css = ffi.text_to_string(css0);
+    const el = document.createElement("style");
+    el.setAttribute("type", "text/css");
+    el.setAttribute("rel", "stylesheet");
+    el.textContent = css;
+    parent.appendChild(el);
+    return ffi.nothing;
+  });
+
+  // Encapsulation-related stuff
+  ffi.defun("dom.attach-shadow", (el0, mode0) => {
+    const el = ffi.unbox_typed(HTMLElement, el0);
+    const mode = ffi.text_to_string(mode0);
+    const shadow = el.attachShadow({ mode: mode as any });
+    return ffi.box(shadow);
   });
 };

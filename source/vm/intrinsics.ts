@@ -1078,7 +1078,8 @@ export class Universe {
       ActionChoice: CrochetType;
       Effect: CrochetType;
       Package: CrochetType;
-    }
+    },
+    readonly notify_error: (error: any) => void
   ) {
     this.nothing = new CrochetValue(Tag.NOTHING, types.Nothing, null);
     this.true = new CrochetValue(Tag.TRUE, types.True, null);

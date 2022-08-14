@@ -1,6 +1,7 @@
 % crochet
 
 type widget-transform(contents is widget, options is option-list<transform-option>) is widget;
+abstract transform-option is option;
 
 command widget transform =
   new widget-transform(

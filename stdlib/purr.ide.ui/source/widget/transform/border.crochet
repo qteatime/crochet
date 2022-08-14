@@ -57,88 +57,88 @@ enum border-style =
   none;
 
 
-command widget-transform border-radius-top: (X has to-purr-variable<border-radius>) =
+command widget-transform border-radius-top: (X has to-purr-variable) =
   self add-option: new border-option--radius-top(X as purr-variable);
 
-command widget-transform border-radius-right: (X has to-purr-variable<border-radius>) =
+command widget-transform border-radius-right: (X has to-purr-variable) =
   self add-option: new border-option--radius-right(X as purr-variable);
 
-command widget-transform border-radius-bottom: (X has to-purr-variable<border-radius>) =
+command widget-transform border-radius-bottom: (X has to-purr-variable) =
   self add-option: new border-option--radius-bottom(X as purr-variable);
 
-command widget-transform border-radius-left: (X has to-purr-variable<border-radius>) =
+command widget-transform border-radius-left: (X has to-purr-variable) =
   self add-option: new border-option--radius-left(X as purr-variable);
 
 command widget-transform border-radius-horizontal: X =
   self border-radius-left: X | border-radius-right: X;
 
-command widget-trasform border-radius-vertical: X =
+command widget-transform border-radius-vertical: X =
   self border-radius-top: X | border-radius-bottom: X;
 
 command widget-transform border-radius: X =
   self border-radius-horizontal: X | border-radius-vertical: X;
 
 
-command widget-transform border-width-top: (X has to-purr-variable<line-size>) =
+command widget-transform border-width-top: (X has to-purr-variable) =
   self add-option: new border-option--width-top(X as purr-variable);
 
-command widget-transform border-width-right: (X has to-purr-variable<line-size>) =
+command widget-transform border-width-right: (X has to-purr-variable) =
   self add-option: new border-option--width-right(X as purr-variable);
 
-command widget-transform border-width-bottom: (X has to-purr-variable<line-size>) =
+command widget-transform border-width-bottom: (X has to-purr-variable) =
   self add-option: new border-option--width-bottom(X as purr-variable);
 
-command widget-transform border-width-left: (X has to-purr-variable<line-size>) =
+command widget-transform border-width-left: (X has to-purr-variable) =
   self add-option: new border-option--width-left(X as purr-variable);
 
 command widget-transform border-width-horizontal: X =
   self border-width-left: X | border-width-right: X;
 
-command widget-trasform border-width-vertical: X =
+command widget-transform border-width-vertical: X =
   self border-width-top: X | border-width-bottom: X;
 
 command widget-transform border-width: X =
   self border-width-horizontal: X | border-width-vertical: X;
 
 
-command widget-transform border-color-top: (X has to-purr-variable<color>) =
+command widget-transform border-color-top: (X has to-purr-variable) =
   self add-option: new border-option--color-top(X as purr-variable);
 
-command widget-transform border-color-right: (X has to-purr-variable<color>) =
+command widget-transform border-color-right: (X has to-purr-variable) =
   self add-option: new border-option--color-right(X as purr-variable);
 
-command widget-transform border-color-bottom: (X has to-purr-variable<color>) =
+command widget-transform border-color-bottom: (X has to-purr-variable) =
   self add-option: new border-option--color-bottom(X as purr-variable);
 
-command widget-transform border-color-left: (X has to-purr-variable<color>) =
+command widget-transform border-color-left: (X has to-purr-variable) =
   self add-option: new border-option--color-left(X as purr-variable);
 
 command widget-transform border-color-horizontal: X =
   self border-color-left: X | border-color-right: X;
 
-command widget-trasform border-color-vertical: X =
+command widget-transform border-color-vertical: X =
   self border-color-top: X | border-color-bottom: X;
 
 command widget-transform border-color: X =
   self border-color-horizontal: X | border-color-vertical: X;
 
 
-command widget-transform border-style-top: (X has to-purr-variable<border-style>) =
+command widget-transform border-style-top: (X has to-purr-variable) =
   self add-option: new border-option--style-top(X as purr-variable);
 
-command widget-transform border-style-right: (X has to-purr-variable<border-style>) =
+command widget-transform border-style-right: (X has to-purr-variable) =
   self add-option: new border-option--style-right(X as purr-variable);
 
-command widget-transform border-style-bottom: (X has to-purr-variable<border-style>) =
+command widget-transform border-style-bottom: (X has to-purr-variable) =
   self add-option: new border-option--style-bottom(X as purr-variable);
 
-command widget-transform border-style-left: (X has to-purr-variable<border-style>) =
+command widget-transform border-style-left: (X has to-purr-variable) =
   self add-option: new border-option--style-left(X as purr-variable);
 
 command widget-transform border-style-horizontal: X =
   self border-style-left: X | border-style-right: X;
 
-command widget-trasform border-style-vertical: X =
+command widget-transform border-style-vertical: X =
   self border-style-top: X | border-style-bottom: X;
 
 command widget-transform border-style: X =

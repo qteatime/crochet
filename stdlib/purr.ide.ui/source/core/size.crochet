@@ -33,7 +33,7 @@ enum size =
   columns-12,
   // computed based on screen size
   fill,
-  screen
+  screen,
   // fixed screen sizes
   small-screen,
   medium-screen,

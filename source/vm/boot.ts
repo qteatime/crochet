@@ -34,7 +34,10 @@ import {
 import { Contexts } from "./simulation";
 import { CrochetTrace } from "./tracing";
 
-export function make_universe(token: string) {
+export function make_universe(
+  token: string,
+  on_error: (error: any) => void = () => {}
+) {
   const world = new CrochetWorld();
 
   // Core types
@@ -335,35 +338,42 @@ export function make_universe(token: string) {
   world.native_types.define("crochet.core/core.action-choice", ActionChoice);
   world.native_types.define("crochet.core/core.package", Package);
 
-  return new Universe(token, new CrochetTrace(), world, XorShift.new_random(), {
-    Any,
-    Unknown,
-    Protected,
-    Nothing,
-    True,
-    False,
-    Integer,
-    Float_64: Float_64,
-    ByteArray,
-    UnsafeArbitraryText,
-    UntrustedText,
-    Text,
-    StaticText,
-    DynamicText,
-    Interpolation,
-    Function: functions,
-    NativeFunctions: native_lambdas,
-    Thunk,
-    Record,
-    List: List,
-    Enum,
-    Type,
-    Cell,
-    Action,
-    ActionChoice,
-    Effect,
-    Package,
-  });
+  return new Universe(
+    token,
+    new CrochetTrace(),
+    world,
+    XorShift.new_random(),
+    {
+      Any,
+      Unknown,
+      Protected,
+      Nothing,
+      True,
+      False,
+      Integer,
+      Float_64: Float_64,
+      ByteArray,
+      UnsafeArbitraryText,
+      UntrustedText,
+      Text,
+      StaticText,
+      DynamicText,
+      Interpolation,
+      Function: functions,
+      NativeFunctions: native_lambdas,
+      Thunk,
+      Record,
+      List: List,
+      Enum,
+      Type,
+      Cell,
+      Action,
+      ActionChoice,
+      Effect,
+      Package,
+    },
+    on_error
+  );
 }
 
 export function load_module(

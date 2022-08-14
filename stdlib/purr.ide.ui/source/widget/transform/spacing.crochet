@@ -22,16 +22,16 @@ command spacing-option--margin-bottom key = "margin-bottom";
 command spacing-option--margin-left key = "margin-left";
 
 
-command widget-transform padding-top: (X has to-purr-variable<text-size>) =
+command widget-transform padding-top: (X has to-purr-variable) =
   self add-option: new spacing-option--padding-top(X as purr-variable);
 
-command widget-transform padding-right: (X has to-purr-variable<text-size>) =
+command widget-transform padding-right: (X has to-purr-variable) =
   self add-option: new spacing-option--padding-right(X as purr-variable);
 
-command widget-transform padding-bottom: (X has to-purr-variable<text-size>) =
+command widget-transform padding-bottom: (X has to-purr-variable) =
   self add-option: new spacing-option--padding-bottom(X as purr-variable);
 
-command widget-transform padding-left: (X has to-purr-variable<text-size>) =
+command widget-transform padding-left: (X has to-purr-variable) =
   self add-option: new spacing-option--padding-left(X as purr-variable);
 
 command widget-transform padding-horizontal: X =
@@ -44,16 +44,16 @@ command widget-transform padding: X =
   self padding-horizontal: X | padding-vertical: X;
 
 
-command widget-transform margin-top: (X has to-purr-variable<text-size>) =
+command widget-transform margin-top: (X has to-purr-variable) =
   self add-option: new spacing-option--margin-top(X as purr-variable);
 
-command widget-transform margin-right: (X has to-purr-variable<text-size>) =
+command widget-transform margin-right: (X has to-purr-variable) =
   self add-option: new spacing-option--margin-right(X as purr-variable);
 
-command widget-transform margin-bottom: (X has to-purr-variable<text-size>) =
+command widget-transform margin-bottom: (X has to-purr-variable) =
   self add-option: new spacing-option--margin-bottom(X as purr-variable);
 
-command widget-transform margin-left: (X has to-purr-variable<text-size>) =
+command widget-transform margin-left: (X has to-purr-variable) =
   self add-option: new spacing-option--margin-left(X as purr-variable);
 
 command widget-transform margin-horizontal: X =

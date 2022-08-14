@@ -1,0 +1,16 @@
+{
+  "name": "purr",
+  "target": "browser",
+  "native_sources": [],
+  "sources": ["source/main.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    "crochet.time",
+    "purr.ide.ui"
+  ],
+  "capabilities": {
+    "requires": ["purr.ide.ui/ui-control"],
+    "provides": []
+  }
+}

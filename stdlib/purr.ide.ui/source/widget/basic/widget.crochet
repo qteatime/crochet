@@ -1,7 +1,13 @@
 % crochet
 
 abstract widget;
+abstract rendered-widget;
+type widget-committed(node is rendered-widget) is widget;
 
 trait to-widget with
   command X as widget -> widget;
+end
+
+command widget commit do
+  new widget-committed(perform purr-ui-presentation.commit(self));
 end

@@ -1,13 +1,11 @@
 % crochet
 
-effect purr-ui-rendering with
-  get-shared-renderer(); // -> renderer
-end
-
 effect purr-ui-presentation with
+  commit(widget is widget); // -> rendered-widget
   show(widget is widget); // -> nothing
 end
 
+capability ui-control;
 
 singleton purr-ui;
 protect type purr-ui with ui-control;

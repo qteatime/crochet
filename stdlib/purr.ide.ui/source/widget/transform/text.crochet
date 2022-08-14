@@ -80,32 +80,32 @@ enum text-line-height =
   double;
 
 
-command widget-transform text-align: (X has to-purr-variable<text-align>) =
+command widget-transform text-align: (X has to-purr-variable) =
   self add-option: new text-option--align(X as purr-variable);
 
-command widget-transform text-decoration: (X has to-purr-variable<text-decoration>) =
+command widget-transform text-decoration: (X has to-purr-variable) =
   self add-option: new text-option--decoration(X as purr-variable);
 
-command widget-transform text-decoration-color: (X has to-purr-variable<color>) =
+command widget-transform text-decoration-color: (X has to-purr-variable) =
   self add-option: new text-option--decoration-color(X as purr-variable);
 
-command widget-transform text-decoration-style: (X has to-purr-variable<text-decoration-style>) =
+command widget-transform text-decoration-style: (X has to-purr-variable) =
   self add-option: new text-option--decoration-style(X as purr-variable);
 
-command widget-transform text-transform: (X has to-purr-variable<text-transform>) =
+command widget-transform text-transform: (X has to-purr-variable) =
   self add-option: new text-option--transform(X as purr-variable);
 
-command widget-transform text-overflow: (X has to-purr-variable<text-overflow>) =
+command widget-transform text-overflow: (X has to-purr-variable) =
   self add-option: new text-option--overflow(X as purr-variable);
 
-command widget-transform white-space: (X has to-purr-variable<text-whitespace>) =
+command widget-transform white-space: (X has to-purr-variable) =
   self add-option: new text-option--whitespace(X as purr-variable);
 
-command widget-transform word-break: (X has to-purr-variable<text-word-break>) =
+command widget-transform word-break: (X has to-purr-variable) =
   self add-option: new text-option--word-break(X as purr-variable);
 
-command widget-transform letter-spacing: (X has to-purr-variable<text-letter-spacing>) =
+command widget-transform letter-spacing: (X has to-purr-variable) =
   self add-option: new text-option--letter-spacing(X as purr-variable);
 
-command widget-transform line-height: (X has to-purr-variable<text-line-height>) =
+command widget-transform line-height: (X has to-purr-variable) =
   self add-option: new text-option--line-height(X as purr-variable);

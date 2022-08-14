@@ -16,20 +16,20 @@ command size-option--height key = "height";
 command size-option--minimum-height key = "min-height";
 command size-option--maximum-height key = "max-height";
 
-command widget-transform width: (X has to-purr-variable<size>) =
+command widget-transform width: (X has to-purr-variable) =
   self add-option: new size-option--width(X as purr-variable);
 
-command widget-transform minimum-width: (X has to-purr-variable<size>) =
+command widget-transform minimum-width: (X has to-purr-variable) =
   self add-option: new size-option--minimum-width(X as purr-variable);
 
-command widget-transform maximum-width: (X has to-purr-variable<size>) =
+command widget-transform maximum-width: (X has to-purr-variable) =
   self add-option: new size-option--maximum-width(X as purr-variable);
 
-command widget-transform height: (X has to-purr-variable<size>) =
+command widget-transform height: (X has to-purr-variable) =
   self add-option: new size-option--height(X as purr-variable);
 
-command widget-transform minimum-height: (X has to-purr-variable<size>) =
+command widget-transform minimum-height: (X has to-purr-variable) =
   self add-option: new size-option--minimum-height(X as purr-variable);
 
-command widget-transform maximum-height: (X has to-purr-variable<size>) =
+command widget-transform maximum-height: (X has to-purr-variable) =
   self add-option: new size-option--maximum-height(X as purr-variable);

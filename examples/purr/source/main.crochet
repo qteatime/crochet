@@ -1,0 +1,27 @@
+% crochet
+  
+open crochet.concurrency;
+open purr.ide.ui;
+
+singleton purr;
+
+command main-html: Root do
+  handle
+    purr-ui show: purr run;
+  with
+    use purr-ui-dom-renderer root: Root;
+  end
+end
+
+command purr run do
+  #widget container: [
+    "Hello",
+    "Here"
+  ]
+  | transform
+  | display: #display flex
+  | flex-layout: #flex-layout row
+  | flex-gap: #text-size large-2x
+  | flex-justify-content: #flex-justify center
+  | flex-align-items: #flex-align center
+end

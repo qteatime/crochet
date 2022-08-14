@@ -8,7 +8,7 @@ protect global dom with unsafe-dom;
 
 
 command dom make-text: (Text is text) =
-  foreign dom.make-text(Text);
+  new dom-node-simple(foreign dom.make-text(Text));
 
 command dom from-node: (Node is unknown) =
   new dom-node-simple(foreign dom.get-node(Node));

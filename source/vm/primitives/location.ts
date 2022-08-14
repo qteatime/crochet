@@ -220,7 +220,7 @@ function do_simple_value(
           ? do_simple_value(x.payload, depth + 1, visited)
           : im.isImmutable(x.payload)
           ? immutable_repr(x.payload, depth + 1, visited)
-          : `native`;
+          : `native ${maybe_native_class_name(x.payload)}`;
       return `<unknown>(${repr})`;
     }
     case Tag.CELL: {
@@ -481,4 +481,24 @@ export function block(indent: number, text: string) {
     .split(/\n/)
     .map((x) => " ".repeat(indent) + x)
     .join("\n");
+}
+
+function might_be_class(x: unknown) {
+  if (typeof x === "function" && typeof x.prototype !== "undefined") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function maybe_native_class_name(x: unknown) {
+  if (might_be_class(x)) {
+    return `class ${(x as any).name || "(Anonymous)"}`;
+  } else if (x === null) {
+    return "null";
+  } else if (typeof x === "object" && might_be_class((x as any)?.constructor)) {
+    return `instance ${(x as any)?.constructor?.name || "(Anonymous)"}`;
+  } else {
+    return typeof x;
+  }
 }

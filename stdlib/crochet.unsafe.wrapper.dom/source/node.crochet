@@ -25,6 +25,10 @@ command dom-node remove-contents do
   self;
 end
 
+command dom-node replace-contents: (Node is dom-node) do
+  self remove-contents | append: Node;
+end
+
 command dom-node detach do
   foreign dom.detach-node(self.box);
   self;
@@ -77,3 +81,16 @@ command dom-subscriber unsubscribe do
   self;
 end
 
+
+command dom-node add-css: (Css is text) do
+  foreign dom.add-css(self.box, Css);
+  self;
+end
+
+command dom-element attach-closed-shadow do
+  new dom-node-simple(foreign dom.attach-shadow(self.box, "closed"));
+end
+
+command dom-element attach-open-shadow do
+  new dom-node-simple(foreign dom.attach-shadow(self.box, "open"));
+end

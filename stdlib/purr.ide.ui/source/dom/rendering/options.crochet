@@ -4,7 +4,7 @@ open crochet.unsafe.wrapper.dom;
 
 command dom-renderer apply-options: (Options is option-list<A>) to: (Node is dom-node) do
   for Option in Options.options do
-    self apply-option: Option to: Node;
+    self set-style: Option key to: Option.value in: Node;
   end
   Node;
 end

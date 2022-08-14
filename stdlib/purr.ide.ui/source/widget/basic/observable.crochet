@@ -7,7 +7,7 @@ type widget-event-stream(stream is event-stream-listener<X has to-widget>) is wi
 
 
 
-command #widget observable: (X is observable<A has to-widget>) =
+command #widget observable: (X is observable-cell<A has to-widget>) =
   new widget-observable(X);
 
 command #widget event-stream: (X is event-stream-listener<A has to-widget>) =

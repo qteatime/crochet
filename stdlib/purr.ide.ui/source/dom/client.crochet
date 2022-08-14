@@ -8,13 +8,27 @@ protect type purr-ui-dom with ui-control;
 protect global purr-ui-dom with ui-control;
 
 
+type dom-rendered-widget(node is dom-node) is rendered-widget;
+
+
 handler purr-ui-dom-renderer root: (Root is unknown) do
-  let Surface = new dom-surface(dom from-element: Root);
-  Surface.node classes add: "purr-ui-root";
+  let Render-root = dom make-element: "div" class: "purr-ui";
+  (dom from-element: Root) append: Render-root;
+  let Shadow = Render-root attach-closed-shadow;
+  Shadow add-css: (package assets at: "assets/normalize.css" | read-as-text);
+  Shadow add-css: (package assets at: "assets/purr-ui.css" | read-as-text);
+  let Purr-root = dom make-element: "div" class: "purr-ui-root";
+  Shadow append: Purr-root;
+  let Surface = new dom-surface(Purr-root);
   let References = #cell with-value: #map empty;
 with
   on purr-ui-presentation.show(Widget) do
     Surface replace-contents: Widget;
     continue with nothing;
+  end
+
+  on purr-ui-presentation.commit(Widget) do
+    let Node = dom-renderer render: Widget;
+    continue with new dom-rendered-widget(Node);
   end
 end

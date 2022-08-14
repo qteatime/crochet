@@ -110,20 +110,10 @@ export class PackageGraph {
     ) {
       const name = pkg.name;
 
-      // check trusted capabilities
-      if (pkg.trusted_capabilities.size > 0 && !self.trusted.has(pkg.pkg)) {
-        throw new Error(
-          [
-            `${name} defines trusted capabilities, `,
-            `but the package is not part of Crochet's Trusted Computing Base.\n`,
-          ].join("")
-        );
-      }
-
       // check missing capabilities
       const missing = [
         ...missing_capabilities(capabilities, pkg.required_capabilities),
-      ].filter((x) => !pkg.trusted_capabilities.has(x));
+      ];
       if (missing.length !== 0) {
         throw new Error(
           [
@@ -152,6 +142,16 @@ export class PackageGraph {
         );
       }
 
+      // check trusted capabilities
+      if (pkg.trusted_capabilities.size > 0 && !self.trusted.has(pkg.pkg)) {
+        throw new Error(
+          [
+            `${name} defines trusted capabilities, `,
+            `but the package is not part of Crochet's Trusted Computing Base.\n`,
+          ].join("")
+        );
+      }
+
       // commit required capabilities
       pkg.granted_capabilities.clear();
       for (const x of pkg.required_capabilities) {
@@ -161,6 +161,9 @@ export class PackageGraph {
         if (capabilities.has(x)) {
           pkg.granted_capabilities.add(x);
         }
+      }
+      for (const x of pkg.trusted_capabilities) {
+        pkg.granted_capabilities.add(x);
       }
 
       // check dependencies recursively

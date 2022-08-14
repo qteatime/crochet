@@ -38,17 +38,17 @@ enum font-style =
   italic;
 
 
-command widget-transform font-family: (X has to-purr-variable<font-family>) =
+command widget-transform font-family: (X has to-purr-variable) =
   self add-option: new font-option--family(X as purr-variable);
 
-command widget-transform font-weight: (X has to-purr-variable<font-weight>) =
+command widget-transform font-weight: (X has to-purr-variable) =
   self add-option: new font-option--weight(X as purr-variable);
 
-command widget-transform font-style: (X has to-purr-variable<font-style>) =
+command widget-transform font-style: (X has to-purr-variable) =
   self add-option: new font-option--style(X as purr-variable);
 
-command widget-transform font-size: (X has to-purr-variable<text-size>) =
+command widget-transform font-size: (X has to-purr-variable) =
   self add-option: new font-option--size(X as purr-variable);
 
-command widget-transform font-color: (X has to-purr-variable<color>) =
+command widget-transform font-color: (X has to-purr-variable) =
   self add-option: new font-option--color(X as purr-variable);

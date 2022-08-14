@@ -50,5 +50,15 @@
     "requires": [],
     "provides": ["ui-control"],
     "trusted": ["crochet.unsafe.wrapper.dom/unsafe-dom"]
-  }
+  },
+  "assets": [
+    {
+      "path": "assets/normalize.css",
+      "mime": "text/css"
+    },
+    {
+      "path": "assets/purr-ui.css",
+      "mime": "text/css"
+    }
+  ]
 }
