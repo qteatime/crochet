@@ -28,6 +28,11 @@ command dom-renderer context: _ to-property: size--extra-large = "1.5rem";
 command dom-renderer context: _ to-property: size--large-2x = "2rem";
 command dom-renderer context: _ to-property: size--large-3x = "3rem";
 command dom-renderer context: _ to-property: size--large-4x = "4rem";
+command dom-renderer context: _ to-property: size--large-5x = "5rem";
+command dom-renderer context: _ to-property: size--large-6x = "6rem";
+command dom-renderer context: _ to-property: size--large-7x = "7rem";
+command dom-renderer context: _ to-property: size--large-8x = "8rem";
+command dom-renderer context: _ to-property: size--large-9x = "9rem";
 command dom-renderer context: _ to-property: size--columns-1 = "calc((1/12) * 100%)";
 command dom-renderer context: _ to-property: size--columns-2 = "calc((2/12) * 100%)";
 command dom-renderer context: _ to-property: size--columns-3 = "calc((3/12) * 100%)";
@@ -60,6 +65,11 @@ command dom-renderer context: _ to-property: text-size--extra-large = "1.25rem";
 command dom-renderer context: _ to-property: text-size--large-2x = "2rem";
 command dom-renderer context: _ to-property: text-size--large-3x = "3rem";
 command dom-renderer context: _ to-property: text-size--large-4x = "4rem";
+command dom-renderer context: _ to-property: text-size--large-5x = "5rem";
+command dom-renderer context: _ to-property: text-size--large-6x = "6rem";
+command dom-renderer context: _ to-property: text-size--large-7x = "7rem";
+command dom-renderer context: _ to-property: text-size--large-8x = "8rem";
+command dom-renderer context: _ to-property: text-size--large-9x = "9rem";
 
 command dom-renderer context: _ to-property: line-size--none = "0px";
 command dom-renderer context: _ to-property: line-size--pixel = "1px";
@@ -197,3 +207,11 @@ command dom-renderer context: _ to-property: flex-grow--no = "0";
 command dom-renderer context: _ to-property: flex-grow--grow = "1";
 command dom-renderer context: _ to-property: flex-shrink--no = "0";
 command dom-renderer context: _ to-property: flex-shrink--shrink = "1";
+
+
+command dom-renderer to-property: (X is true) = "true";
+command dom-renderer to-property: (X is false) = "false";
+command dom-renderer to-property: (X is integer) = X to-text;
+command dom-renderer to-property: (X is float-64bit) = X to-text;
+command dom-renderer to-property: (X is text) = X;
+command dom-renderer to-property: (X is 'enum) = X to-enum-text;

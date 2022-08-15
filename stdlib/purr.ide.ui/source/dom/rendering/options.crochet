@@ -19,11 +19,11 @@ end
 
 
 command dom-renderer set-property: (Key is text) to: (Value is purr-variable-immutable<X>) in: (Node is dom-node) do
-  Node set: Key to: Value.value;
+  Node set: Key to: (self to-property: Value.value);
 end
 
 command dom-renderer set-property: (Key is text) to: (Value is purr-variable-reactive<X>) in: (Node is dom-node) do
-  Value.value stream subscribe: { X in Node set: Key to: X };
+  Value.value stream subscribe: { X in Node set: Key to: (self to-property: X) };
 end
 
 command dom-renderer set-boolean: (Key is text) to: (Value is purr-variable-immutable<X>) in: (Node is dom-node) do

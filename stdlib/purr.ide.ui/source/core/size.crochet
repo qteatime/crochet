@@ -18,6 +18,11 @@ enum size =
   large-2x,
   large-3x,
   large-4x,
+  large-5x,
+  large-6x,
+  large-7x,
+  large-8x,
+  large-9x,
   // computed based on grid
   columns-1,
   columns-2,
@@ -48,7 +53,12 @@ enum text-size =
   extra-large,
   large-2x,
   large-3x,
-  large-4x;
+  large-4x,
+  large-5x,
+  large-6x,
+  large-7x,
+  large-8x,
+  large-9x;
 
 enum line-size =
   none,

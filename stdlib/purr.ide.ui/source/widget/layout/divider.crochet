@@ -1,0 +1,36 @@
+% crochet
+
+type widget-divider(
+  content is widget,
+  alignment is purr-variable<divider-alignment>,
+  orientation is purr-variable<divider-orientation>,
+) is widget;
+
+enum divider-alignment =
+  at-start,
+  at-center,
+  at-end;
+
+enum divider-orientation =
+  horizontal,
+  vertical;
+
+command #widget divider =
+  new widget-divider(
+    content -> #widget space,
+    alignment -> #divider-alignment at-center as purr-variable,
+    orientation -> #divider-orientation horizontal as purr-variable,
+  );
+
+command #widget vertical-divider =
+  #widget divider orientation: #divider-orientation vertical;
+
+
+command widget-divider content: (X has to-widget) =
+  new widget-divider(self with content -> X as widget);
+
+command widget-divider alignment: (X has to-purr-variable) =
+  new widget-divider(self with alignment -> X as purr-variable);
+
+command widget-divider orientation: (X has to-purr-variable) =
+  new widget-divider(self with orientation -> X as purr-variable);

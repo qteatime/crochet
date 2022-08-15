@@ -34,10 +34,28 @@ command purr run do
 
           #widget button: "Button",
           #widget icon-button: (#widget icon: "heart"),
+
+          #widget divider,
+          #widget divider content: "Some text",
+          #widget divider content: "Some text" | alignment: #divider-alignment at-end,
+          #widget divider content: "Some text" | alignment: #divider-alignment at-start,
+          #widget flex-row: [
+            "a",
+            #widget divider | orientation: #divider-orientation vertical,
+            "b",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical,
+            "c",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-start,
+            "d",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-end,
+            "e",
+          ]
+          | transform
+          | minimum-height: #size large-9x
+          | flex-align-items: #flex-align center,
         ]
         | transform
         | flex-gap: #text-size large-3x
         | flex-align-items: #flex-align center
-        | flex-justify-content: #flex-align center
       );
 end

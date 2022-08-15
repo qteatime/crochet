@@ -54,3 +54,15 @@ command dom-renderer render: (W is widget-category-section) do
     | append: (Header append: Title | append: Actions)
     | append: Body;
 end
+
+command dom-renderer render: (W is widget-divider) do
+  let Node = dom make-element: "div" class: "purr-ui-divider";
+  self set-property: "data-alignment" to: W.alignment in: Node;
+  self set-property: "data-orientation" to: W.orientation in: Node;
+  let Content = dom make-element: "div" class: "purr-ui-divider-content";
+  Content append: (self render: W.content);
+  Node append: (dom make-element: "div" class: "purr-ui-divider-before");
+  Node append: Content;
+  Node append: (dom make-element: "div" class: "purr-ui-divider-after");
+  Node;
+end
