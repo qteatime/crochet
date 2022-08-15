@@ -12,5 +12,11 @@
   "capabilities": {
     "requires": ["purr.ide.ui/ui-control"],
     "provides": []
-  }
+  },
+  "assets": [
+    {
+      "path": "assets/sun.png",
+      "mime": "image/png"
+    }
+  ]
 }

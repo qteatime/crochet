@@ -26,33 +26,129 @@ command purr run do
     | body: (
         #widget flex-column: [
           #widget category-section
+            | title: "Cards"
+            | body: (
+                #widget flex-row: [
+                  #widget card: [
+                    #card-child header: "The Sun",
+                    #card-child media: (#widget image: (package assets at: "assets/sun.png")),
+                    #card-child body: "Some text goes here and it can keep going on and on and on."
+                  ],
+
+                  #widget card: [
+                    #card-child header: "Core",
+                    #card-child meta: (
+                      #widget flex-row: [
+                        "crochet.core",
+                        "experimental"
+                      ]
+                      | transform
+                      | flex-justify-content: #flex-justify space-between
+                    ),
+                    #card-child body: "Some text goes here and it can keep going on and on and on.",
+                    #card-child footer: (
+                      #widget flex-row: [ 
+                        #widget icon-button: (#widget icon: "heart"),
+                        #widget icon-button: (#widget icon: "download"),
+                        #widget space | transform | flex-grow: #flex-grow grow,
+                        #widget button: "View package"
+                      ]
+                      | transform
+                      | flex-gap: #text-size extra-small
+                    )
+                  ],
+
+                  #widget card: [
+                    #card-child header: "Core",
+                    #card-child meta: (
+                      #widget flex-row: [
+                        "crochet.core",
+                        "experimental"
+                      ]
+                      | transform
+                      | flex-justify-content: #flex-justify space-between
+                    ),
+                    #card-child content: #widget divider,
+                    #card-child body: "Some text goes here and it can keep going on and on and on.",
+                    #card-child action: (
+                      #widget button: "Install package"
+                    )
+                  ],
+                ]
+                | transform
+                | flex-align-items: #flex-align stretch
+                | flex-gap: #text-size base
+                | flex-wrap: #flex-wrap wrap
+              ),
+
+          #widget category-section
+            | title: "Fluid cards"
+            | body: (
+                #widget fluid-card: [
+                  #card-child header: (
+                    #widget flex-row: [
+                      ("Json" as widget)
+                        | transform
+                        | flex-grow: #flex-grow grow,
+                      #widget icon-button: (#widget icon: "pen")
+                        | transform
+                        | font-size: #text-size base,
+                      #widget icon-button: (#widget icon: "copy")
+                        | transform
+                        | font-size: #text-size base,
+                    ]
+                    | transform
+                    | flex-gap: #text-size extra-small
+                    | flex-justify-content: #flex-justify space-between
+                    | flex-align-items: #flex-align baseline
+                  ),
+                  #card-child media: (#widget image: (package assets at: "assets/sun.png"))
+                ]
+              ),
+
+          #widget category-section
             | title: "Recent projects"
             | actions: (#widget button: "See all" | style: #button-style clear)
             | body: (
                 "Contents go here yay"
               ),
 
-          #widget button: "Button",
-          #widget icon-button: (#widget icon: "heart"),
+          #widget category-section
+            | title: "Buttons"
+            | body: [
+                #widget button: "Button",
+                #widget icon-button: (#widget icon: "heart"),
+              ],
 
-          #widget divider,
-          #widget divider content: "Some text",
-          #widget divider content: "Some text" | alignment: #divider-alignment at-end,
-          #widget divider content: "Some text" | alignment: #divider-alignment at-start,
-          #widget flex-row: [
-            "a",
-            #widget divider | orientation: #divider-orientation vertical,
-            "b",
-            #widget divider content: "ok" | orientation: #divider-orientation vertical,
-            "c",
-            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-start,
-            "d",
-            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-end,
-            "e",
-          ]
-          | transform
-          | minimum-height: #size large-9x
-          | flex-align-items: #flex-align center,
+          #widget category-section
+            | title: "Dividers"
+            | body: (
+                #widget flex-column: [
+                  #widget divider,
+                  #widget divider content: "Some text",
+                  #widget divider content: "Some text" | alignment: #divider-alignment at-end,
+                  #widget divider content: "Some text" | alignment: #divider-alignment at-start,
+                ]
+              ),
+
+          #widget category-section
+            | title: "Vertical dividers"
+            | body: (
+                #widget flex-row: [
+                  "a",
+                  #widget divider | orientation: #divider-orientation vertical,
+                  "b",
+                  #widget divider content: "ok" | orientation: #divider-orientation vertical,
+                  "c",
+                  #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-start,
+                  "d",
+                  #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-end,
+                  "e",
+                ]
+                | transform
+                | minimum-height: #size large-9x
+                | flex-align-items: #flex-align center
+              ),
         ]
         | transform
         | flex-gap: #text-size large-3x

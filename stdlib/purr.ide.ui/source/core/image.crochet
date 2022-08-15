@@ -1,0 +1,8 @@
+% crochet
+
+abstract image;
+
+type asset-image(asset is package-asset) is image;
+
+command #image from-asset: (Asset is package-asset) =
+  new asset-image(Asset);

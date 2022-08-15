@@ -57,3 +57,8 @@ command dom-renderer render: (W is widget-solid-icon) do
   let Class = "purr-ui-icon fas fa-[W.name]" flatten-into-plain-text;
   dom make-element: "i" class: Class;
 end
+
+command dom-renderer render: (W is widget-image) do
+  dom make-element: "img" class: "purr-ui-image"
+    | set: "src" to: (self to-uri: W.source);
+end

@@ -1,0 +1,4 @@
+% crochet
+
+command dom-renderer to-uri: (X is asset-image) =
+  X.asset read-as-data-url;

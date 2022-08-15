@@ -11,6 +11,7 @@
     "source/core/rendering.crochet",
     "source/core/size.crochet",
     "source/core/surface.crochet",
+    "source/core/image.crochet",
 
     "source/dom/rendering/basic.crochet",
     "source/dom/rendering/layout.crochet",
@@ -18,6 +19,7 @@
     "source/dom/rendering/options.crochet",
     "source/dom/rendering/properties.crochet",
     "source/dom/rendering/input.crochet",
+    "source/dom/rendering/source.crochet",
     "source/dom/client.crochet",
     "source/dom/renderer.crochet",
     "source/dom/surface.crochet",
@@ -30,6 +32,7 @@
     "source/widget/basic/text.crochet",
     "source/widget/basic/space.crochet",
     "source/widget/basic/icon.crochet",
+    "source/widget/basic/image.crochet",
 
     "source/widget/input/button.crochet",
 
@@ -41,6 +44,7 @@
     "source/widget/layout/title-bar.crochet",
     "source/widget/layout/section.crochet",
     "source/widget/layout/divider.crochet",
+    "source/widget/layout/card.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",

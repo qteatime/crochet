@@ -66,3 +66,40 @@ command dom-renderer render: (W is widget-divider) do
   Node append: (dom make-element: "div" class: "purr-ui-divider-after");
   Node;
 end
+
+command dom-renderer render: (W is widget-card) do
+  let Node = dom make-element: "div" class: "purr-ui-card";
+  self set-property: "data-style" to: W.style in: Node;
+  for Child in W.contents do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is card-child-header) =
+  dom make-element: "div" class: "purr-ui-card-header"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-body) =
+  dom make-element: "div" class: "purr-ui-card-body"
+    | append: (self render: W.content);
+  
+command dom-renderer render: (W is card-child-meta) =
+  dom make-element: "div" class: "purr-ui-card-meta"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-media) =
+  dom make-element: "div" class: "purr-ui-card-media"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-footer) =
+  dom make-element: "div" class: "purr-ui-card-footer"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-content) =
+  dom make-element: "div" class: "purr-ui-card-content"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-action) =
+  dom make-element: "div" class: "purr-ui-card-action"
+    | append: (self render: W.content);
