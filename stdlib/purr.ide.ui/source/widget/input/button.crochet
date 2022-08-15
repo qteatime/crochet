@@ -3,6 +3,7 @@
 type widget-button(
   content is widget,
   style is button-style,
+  kind is button-kind,
   disabled is purr-variable<boolean>,
   active is purr-variable<boolean>,
 ) is widget;
@@ -13,10 +14,15 @@ enum button-style =
   dangerous,
   clear;
 
+enum button-kind =
+  text,
+  icon;
+
 command #widget button: (Content has to-widget) =
   new widget-button(
     content -> Content as widget,
     style -> #button-style standard,
+    kind -> #button-kind text,
     disabled -> false as purr-variable,
     active -> false as purr-variable,
   );
@@ -32,3 +38,11 @@ command widget-button disabled: (X has to-purr-variable) =
 
 command widget-button active: (X has to-purr-variable) =
   new widget-button(self with active -> X as purr-variable);
+
+command widget-button kind: (X is button-kind) =
+  new widget-button(self with kind -> X);
+
+
+command #widget icon-button: (Icon has to-widget) =
+  #widget button: Icon
+    | kind: #button-kind icon;

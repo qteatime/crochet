@@ -15,7 +15,14 @@
   --color-slate-900: #0f172a;
 
   --color-accent: #1c6e8c;
-  --color-border: var(--color-slate-200);
+  --color-border: var(--color-slate-300);
+
+  --color-button: var(--color-accent);
+  --color-button-text: var(--color-white);
+  --color-button-disabled: var(--color-slate-300);
+  --color-button-hover: var(--color-accent);
+  --color-button-active: var(--color-accent);
+  --color-button-clear-text: var(--color-accent);
 
   --font-family-serif: serif;
   --font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto,
@@ -32,14 +39,13 @@
 }
 
 .purr-ui-root {
+  background: var(--color-white);
   font-family: var(--font-family-body);
   font-size: 16px;
 }
 
 .purr-ui-root,
-.purr-ui-container,
-.purr-ui-surface,
-.purr-ui-fragment {
+.purr-ui-container {
   width: 100%;
   height: 100%;
 }
@@ -47,7 +53,7 @@
 .purr-ui-title-bar {
   height: 3rem;
   border-bottom: 1px solid var(--color-border);
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: row;
   column-gap: 1rem;
@@ -61,7 +67,7 @@
 
 .purr-ui-title-bar-button {
   text-align: center;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
 }
 
 .purr-ui-title-bar-title {
@@ -78,19 +84,56 @@
 }
 
 .purr-ui-button {
-  border-radius: 0.125rem;
-  padding: 0.5rem 1rem;
-  background: var(--color-slate-300);
-  font-weight: bold;
+  border-radius: 1em;
+  padding: 0.6rem 1.25rem;
+  background: var(--color-button);
+  font-weight: 500;
   font-family: var(--font-family-sans-serif);
-  color: var(--color-black);
+  color: var(--color-button-text);
+  cursor: pointer;
 }
 
 .purr-ui-button:not(:disabled):hover {
-  background: var(--color-slate-200);
+  background: var(--color-button-hover);
 }
 
 .purr-ui-button:disabled {
-  color: var(--color-slate-400);
-  background: var(--color-slate-100);
+  background: var(--color-button-disabled);
+}
+
+.purr-ui-button[data-kind="icon"] {
+  border-radius: 100%;
+  padding: 0.6rem;
+}
+
+.purr-ui-button[data-style="clear"],
+.purr-ui-button[data-style="clear"]:hover {
+  background: transparent;
+  color: var(--color-button-clear-text);
+  padding: 0;
+}
+
+.purr-ui-category-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.5rem;
+  padding: 1.5rem 1rem;
+  background: var(--color-white);
+  /* reset */
+  font-size: 1rem;
+  text-align: left;
+  font-weight: normal;
+}
+
+.purr-ui-category-section-header {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.purr-ui-category-section-title {
+  font-weight: 500;
+  font-size: 1.5rem;
 }

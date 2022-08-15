@@ -39,3 +39,18 @@ command dom-renderer render: (W is widget-title-bar) do
 
   Node;
 end
+
+command dom-renderer render: (W is widget-category-section) do
+  let Node = dom make-element: "div" class: "purr-ui-category-section";
+  let Header = dom make-element: "div" class: "purr-ui-category-section-header";
+  let Title = dom make-element: "div" class: "purr-ui-category-section-title"
+                | append: (self render: W.title);
+  let Actions = dom make-element: "div" class: "purr-ui-category-section-actions"
+                  | append: (self render: W.actions);
+  let Body = dom make-element: "div" class: "purr-ui-category-section-body"
+              | append: (self render: W.body);
+  
+  Node
+    | append: (Header append: Title | append: Actions)
+    | append: Body;
+end

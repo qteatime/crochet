@@ -6,7 +6,7 @@ abstract transform-option is option;
 command widget transform =
   new widget-transform(
     contents -> self,
-    options -> #option-list empty
+    options -> #option-list empty,
   );
 
 command widget-transform add-option: (Option is transform-option) =

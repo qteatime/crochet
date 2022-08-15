@@ -39,6 +39,7 @@
     "source/widget/layout/align.crochet",
     "source/widget/layout/flex.crochet",
     "source/widget/layout/title-bar.crochet",
+    "source/widget/layout/section.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",

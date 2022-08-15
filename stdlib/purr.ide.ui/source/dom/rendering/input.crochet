@@ -7,9 +7,10 @@ command dom-renderer render: (W is widget-button) do
   let Node = dom make-element: "button" class: "purr-ui-button";
 
   Node set: "data-style" to: W.style to-enum-text;
+  Node set: "data-kind" to: W.kind to-enum-text;
   self set-boolean: "disabled" to: W.disabled in: Node;
   self set-boolean: "data-active" to: W.active in: Node;
-  
+    
   Node append: (self render: W.content);
 
   Node;

@@ -33,3 +33,9 @@ command widget-transform minimum-height: (X has to-purr-variable) =
 
 command widget-transform maximum-height: (X has to-purr-variable) =
   self add-option: new size-option--maximum-height(X as purr-variable);
+
+command widget-transform size-auto =
+  self width: #size auto | height: #size auto;
+
+command widget-transform size-fill =
+  self width: #size fill | height: #size fill;

@@ -17,11 +17,27 @@ command purr run do
   #widget app-frame
     | header: (
         #widget title-bar: "Purr"
-          | action-button: (#widget icon: "bars")
+          | action-button: (
+              #widget icon-button: (#widget icon: "bars")
+                | style: #button-style clear
+            )
       )
-    | status: "Some status"
-    | body: (#widget align-centered: [
-        "Hello, there",
-        #widget button: "Button"
-      ]);
+    | footer: "Some footer"
+    | body: (
+        #widget flex-column: [
+          #widget category-section
+            | title: "Recent projects"
+            | actions: (#widget button: "See all" | style: #button-style clear)
+            | body: (
+                "Contents go here yay"
+              ),
+
+          #widget button: "Button",
+          #widget icon-button: (#widget icon: "heart"),
+        ]
+        | transform
+        | flex-gap: #text-size large-3x
+        | flex-align-items: #flex-align center
+        | flex-justify-content: #flex-align center
+      );
 end

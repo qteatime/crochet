@@ -7,4 +7,5 @@ command #widget align-centered: (X has to-widget) =
     | flex-layout: #flex-layout row
     | flex-justify-content: #flex-justify center
     | flex-align-items: #flex-align center
-    | text-align: #text-align center;
+    | width: #size auto
+    | height: #size auto;
