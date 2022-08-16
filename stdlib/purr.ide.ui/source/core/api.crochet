@@ -16,3 +16,16 @@ command purr-ui show: (Widget has to-widget) do
   perform purr-ui-presentation.show(Widget as widget | commit);
   self;
 end
+
+command purr-ui router: (Name is static-text) accepts: (Selectors is list<any>) do
+  let Router = new router(
+    name -> Name,
+    selectors -> Selectors,
+  );
+  perform purr-ui-navigation.make-router(Router);
+end
+
+command purr-ui navigate: (Page has purr-ui-page) do
+  perform purr-ui-navigation.navigate(Page render-page as widget | commit, Page);
+  self;
+end

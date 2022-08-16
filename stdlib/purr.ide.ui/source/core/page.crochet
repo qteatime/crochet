@@ -1,0 +1,25 @@
+% crochet
+
+trait purr-ui-page with
+  command Self render-page -> widget;
+  command Self location-selector -> any;
+end
+
+command (X has purr-ui-page) location-selector = X;
+
+
+effect purr-ui-navigation with
+  navigate(widget is widget, page is any has purr-ui-page); // -> nothing
+  make-router(router is router); // -> nothing
+end
+
+type router(
+  name is static-text,
+  selectors is list<any>,
+);
+
+
+command router accepts: (Page has purr-ui-page) do
+  let Selector = Page location-selector;
+  self.selectors some: { S in S =:= Selector };
+end

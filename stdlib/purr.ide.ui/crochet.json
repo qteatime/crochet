@@ -12,6 +12,7 @@
     "source/core/size.crochet",
     "source/core/surface.crochet",
     "source/core/image.crochet",
+    "source/core/page.crochet",
 
     "source/dom/rendering/basic.crochet",
     "source/dom/rendering/layout.crochet",

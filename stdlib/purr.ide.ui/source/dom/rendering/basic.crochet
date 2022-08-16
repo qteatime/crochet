@@ -86,3 +86,8 @@ command dom-choose-renderer render-current do
     end
   end
 end
+
+
+command dom-renderer render: (W is dom-router) do
+  W.node;
+end

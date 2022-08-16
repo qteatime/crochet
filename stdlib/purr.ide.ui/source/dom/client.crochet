@@ -7,8 +7,12 @@ singleton purr-ui-dom;
 protect type purr-ui-dom with ui-control;
 protect global purr-ui-dom with ui-control;
 
-
 type dom-rendered-widget(node is dom-node) is rendered-widget;
+
+type dom-router(
+  node is dom-node,
+  router is router,
+) is widget;
 
 
 handler purr-ui-dom-renderer root: (Root is unknown) do
@@ -22,6 +26,7 @@ handler purr-ui-dom-renderer root: (Root is unknown) do
   Shadow append: Purr-root;
   let Surface = new dom-surface(Purr-root);
   let References = #cell with-value: #map empty;
+  let Routers = #cell with-value: [];
 with
   on purr-ui-presentation.show(Widget) do
     Surface replace-contents: Widget;
@@ -31,5 +36,31 @@ with
   on purr-ui-presentation.commit(Widget) do
     let Node = dom-renderer render: Widget;
     continue with new dom-rendered-widget(Node);
+  end
+
+  on purr-ui-navigation.make-router(Router) do
+    let Node = dom make-element: "div" class: "purr-ui-router"
+                | set: "data-name" to: Router.name;
+    let Dom-router = new dom-router(Node, Router);
+    Routers <- Routers value append: Dom-router;
+    continue with Dom-router;
+  end
+
+  on purr-ui-navigation.navigate(Widget, Page) do
+    for Router in Routers value do
+      Router render-page: Page contents: Widget;
+    end
+    continue with nothing;
+  end
+end
+
+
+command dom-router render-page: (Page has purr-ui-page) contents: Widget do
+  condition
+    when self.router accepts: Page =>
+      self.node replace-contents: (dom-renderer render: Widget);
+
+    otherwise =>
+      nothing;
   end
 end

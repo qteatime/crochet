@@ -13,7 +13,19 @@ command main-html: Root do
   end
 end
 
+enum pages =
+  start,
+  choose,
+  tabs,
+  cards,
+  sections,
+  buttons,
+  dividers;
+
 command purr run do
+  let Router = purr-ui router: "root" accepts: (#pages start to: #pages dividers);
+  purr-ui navigate: #pages start;
+
   #widget app-frame
     | header: (
         #widget title-bar: "Purr"
@@ -23,174 +35,227 @@ command purr run do
             )
       )
     | footer: "Some footer"
-    | body: (
-        #widget flex-column: [
-          #widget category-section
-            | title: "Choose"
-            | body: (
-                do
-                  let V = #observable-cell with-value: nothing;
-                  #widget flex-column: [
-                    #widget flex-row: [
-                      #widget button: "A" | on-click: { _ in V <- "A" },
-                      #widget button: "B" | on-click: { _ in V <- "B" },
-                      #widget button: "1" | on-click: { _ in V <- 1 },
-                      #widget button: "true" | on-click: { _ in V <- true }
-                    ],
+    | body: Router;
+end
 
-                    #widget given: V
-                      | when: { X in X =:= "A" } show: { _ in "Hello A" }
-                      | when: { X in X =:= "B" } show: { _ in "Hello B" }
-                      | when: #integer show: { I in "Hello an integer: [I]" }
-                      | default: { _ in "Not here" },
-                  ]
-                end
-              ),
+implement purr-ui-page for pages;
+implement purr-ui-page for pages--start;
+implement purr-ui-page for pages--choose;
+implement purr-ui-page for pages--tabs;
+implement purr-ui-page for pages--cards;
+implement purr-ui-page for pages--sections;
+implement purr-ui-page for pages--buttons;
+implement purr-ui-page for pages--dividers;
 
-          #widget category-section
-            | title: "Tabs"
-            | body: (
-                #widget tabbed-panel: [
-                  #tab id: "code"
-                    | header: "Code"
-                    | content: "A",
-                  #tab id: "test"
-                    | header: "Test"
-                    | content: "B",
-                  #tab id: "browser"
-                    | header: "Browser"
-                    | content: "C",
-                ]
-                | selected: "code"
-              ),
+command pages--start render-page =
+  #widget flex-column: [
+    #widget button: "Choose" | on-click: { _ in purr-ui navigate: #pages choose },
+    #widget button: "Tabs" | on-click: { _ in purr-ui navigate: #pages tabs },
+    #widget button: "Cards" | on-click: { _ in purr-ui navigate: #pages cards },
+    #widget button: "Sections" | on-click: { _ in purr-ui navigate: #pages sections },
+    #widget button: "Buttons" | on-click: { _ in purr-ui navigate: #pages buttons },
+    #widget button: "Dividers" | on-click: { _ in purr-ui navigate: #pages dividers },
+  ]
+  | transform
+  | flex-gap: #text-size base
+  | flex-align-items: #flex-align center;
 
-          #widget category-section
-            | title: "Cards"
-            | body: (
-                #widget flex-row: [
-                  #widget card: [
-                    #card-child header: "The Sun",
-                    #card-child media: (#widget image: (package assets at: "assets/sun.png")),
-                    #card-child body: "Some text goes here and it can keep going on and on and on."
-                  ],
-
-                  #widget card: [
-                    #card-child header: "Core",
-                    #card-child meta: (
-                      #widget flex-row: [
-                        "crochet.core",
-                        "experimental"
-                      ]
-                      | transform
-                      | flex-justify-content: #flex-justify space-between
-                    ),
-                    #card-child body: "Some text goes here and it can keep going on and on and on.",
-                    #card-child footer: (
-                      #widget flex-row: [ 
-                        #widget icon-button: (#widget icon: "heart"),
-                        #widget icon-button: (#widget icon: "download"),
-                        #widget space | transform | flex-grow: #flex-grow grow,
-                        #widget button: "View package"
-                      ]
-                      | transform
-                      | flex-gap: #text-size extra-small
-                    )
-                  ],
-
-                  #widget card: [
-                    #card-child header: "Core",
-                    #card-child meta: (
-                      #widget flex-row: [
-                        "crochet.core",
-                        "experimental"
-                      ]
-                      | transform
-                      | flex-justify-content: #flex-justify space-between
-                    ),
-                    #card-child content: #widget divider,
-                    #card-child body: "Some text goes here and it can keep going on and on and on.",
-                    #card-child action: (
-                      #widget button: "Install package"
-                    )
-                  ],
-                ]
-                | transform
-                | flex-align-items: #flex-align stretch
-                | flex-gap: #text-size base
-                | flex-wrap: #flex-wrap wrap
-              ),
-
-          #widget category-section
-            | title: "Fluid cards"
-            | body: (
-                #widget fluid-card: [
-                  #card-child header: (
-                    #widget flex-row: [
-                      ("Json" as widget)
-                        | transform
-                        | flex-grow: #flex-grow grow,
-                      #widget icon-button: (#widget icon: "pen")
-                        | transform
-                        | font-size: #text-size base,
-                      #widget icon-button: (#widget icon: "copy")
-                        | transform
-                        | font-size: #text-size base,
-                    ]
-                    | transform
-                    | flex-gap: #text-size extra-small
-                    | flex-justify-content: #flex-justify space-between
-                    | flex-align-items: #flex-align baseline
-                  ),
-                  #card-child media: (#widget image: (package assets at: "assets/sun.png"))
-                ]
-              ),
-
-          #widget category-section
-            | title: "Recent projects"
-            | actions: (#widget button: "See all" | style: #button-style clear)
-            | body: (
-                "Contents go here yay"
-              ),
-
-          #widget category-section
-            | title: "Buttons"
-            | body: [
-                #widget button: "Button",
-                #widget icon-button: (#widget icon: "heart"),
+command pages--choose render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Choose"
+      | body: (
+          do
+            let V = #observable-cell with-value: nothing;
+            #widget flex-column: [
+              #widget flex-row: [
+                #widget button: "A" | on-click: { _ in V <- "A" },
+                #widget button: "B" | on-click: { _ in V <- "B" },
+                #widget button: "1" | on-click: { _ in V <- 1 },
+                #widget button: "true" | on-click: { _ in V <- true }
               ],
 
-          #widget category-section
-            | title: "Dividers"
-            | body: (
-                #widget flex-column: [
-                  #widget divider,
-                  #widget divider content: "Some text",
-                  #widget divider content: "Some text" | alignment: #divider-alignment at-end,
-                  #widget divider content: "Some text" | alignment: #divider-alignment at-start,
-                ]
-              ),
+              #widget given: V
+                | when: { X in X =:= "A" } show: { _ in "Hello A" }
+                | when: { X in X =:= "B" } show: { _ in "Hello B" }
+                | when: #integer show: { I in "Hello an integer: [I]" }
+                | default: { _ in "Not here" },
+            ]
+          end
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
 
-          #widget category-section
-            | title: "Vertical dividers"
-            | body: (
+command pages--tabs render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Tabs"
+      | body: (
+          #widget tabbed-panel: [
+            #tab id: "code"
+              | header: "Code"
+              | content: "A",
+            #tab id: "test"
+              | header: "Test"
+              | content: "B",
+            #tab id: "browser"
+              | header: "Browser"
+              | content: "C",
+          ]
+          | selected: "code"
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--cards render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Cards"
+      | body: (
+          #widget flex-row: [
+            #widget card: [
+              #card-child header: "The Sun",
+              #card-child media: (#widget image: (package assets at: "assets/sun.png")),
+              #card-child body: "Some text goes here and it can keep going on and on and on."
+            ],
+
+            #widget card: [
+              #card-child header: "Core",
+              #card-child meta: (
                 #widget flex-row: [
-                  "a",
-                  #widget divider | orientation: #divider-orientation vertical,
-                  "b",
-                  #widget divider content: "ok" | orientation: #divider-orientation vertical,
-                  "c",
-                  #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-start,
-                  "d",
-                  #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-end,
-                  "e",
+                  "crochet.core",
+                  "experimental"
                 ]
                 | transform
-                | minimum-height: #size large-9x
-                | flex-align-items: #flex-align center
+                | flex-justify-content: #flex-justify space-between
               ),
-        ]
-        | transform
-        | flex-gap: #text-size large-3x
-        | flex-align-items: #flex-align center
-      );
-end
+              #card-child body: "Some text goes here and it can keep going on and on and on.",
+              #card-child footer: (
+                #widget flex-row: [ 
+                  #widget icon-button: (#widget icon: "heart"),
+                  #widget icon-button: (#widget icon: "download"),
+                  #widget space | transform | flex-grow: #flex-grow grow,
+                  #widget button: "View package"
+                ]
+                | transform
+                | flex-gap: #text-size extra-small
+              )
+            ],
+
+            #widget card: [
+              #card-child header: "Core",
+              #card-child meta: (
+                #widget flex-row: [
+                  "crochet.core",
+                  "experimental"
+                ]
+                | transform
+                | flex-justify-content: #flex-justify space-between
+              ),
+              #card-child content: #widget divider,
+              #card-child body: "Some text goes here and it can keep going on and on and on.",
+              #card-child action: (
+                #widget button: "Install package"
+              )
+            ],
+          ]
+          | transform
+          | flex-align-items: #flex-align stretch
+          | flex-gap: #text-size base
+          | flex-wrap: #flex-wrap wrap
+        ),
+
+    #widget category-section
+      | title: "Fluid cards"
+      | body: (
+          #widget fluid-card: [
+            #card-child header: (
+              #widget flex-row: [
+                ("Json" as widget)
+                  | transform
+                  | flex-grow: #flex-grow grow,
+                #widget icon-button: (#widget icon: "pen")
+                  | transform
+                  | font-size: #text-size base,
+                #widget icon-button: (#widget icon: "copy")
+                  | transform
+                  | font-size: #text-size base,
+              ]
+              | transform
+              | flex-gap: #text-size extra-small
+              | flex-justify-content: #flex-justify space-between
+              | flex-align-items: #flex-align baseline
+            ),
+            #card-child media: (#widget image: (package assets at: "assets/sun.png"))
+          ]
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--sections render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Recent projects"
+      | actions: (#widget button: "See all" | style: #button-style clear)
+      | body: (
+          "Contents go here yay"
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--buttons render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Buttons"
+      | body: [
+          #widget button: "Button",
+          #widget icon-button: (#widget icon: "heart"),
+        ],
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--dividers render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Dividers"
+      | body: (
+          #widget flex-column: [
+            #widget divider,
+            #widget divider content: "Some text",
+            #widget divider content: "Some text" | alignment: #divider-alignment at-end,
+            #widget divider content: "Some text" | alignment: #divider-alignment at-start,
+          ]
+        ),
+
+    #widget category-section
+      | title: "Vertical dividers"
+      | body: (
+          #widget flex-row: [
+            "a",
+            #widget divider | orientation: #divider-orientation vertical,
+            "b",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical,
+            "c",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-start,
+            "d",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-end,
+            "e",
+          ]
+          | transform
+          | minimum-height: #size large-9x
+          | flex-align-items: #flex-align center
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
