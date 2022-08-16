@@ -1,0 +1,38 @@
+% crochet
+
+type widget-tabbed-panel(
+  tabs is list<tab>,
+  selected is purr-variable<any>
+) is widget;
+
+type tab(
+  id is any,
+  header is widget,
+  content is widget
+);
+
+
+command #widget tabbed-panel: (Tabs is list) =
+  new widget-tabbed-panel(
+    tabs -> Tabs map: (package to-tab: _),
+    selected -> nothing as purr-variable,
+  );
+
+command package to-tab: (X is tab) = X;
+
+command widget-tabbed-panel selected: (X has to-purr-variable) =
+  new widget-tabbed-panel(self with selected -> X as purr-variable);
+
+
+command #tab id: Id =
+  new tab(
+    id -> Id,
+    header -> #widget space,
+    content -> #widget space,
+  );
+
+command tab header: (X has to-widget) =
+  new tab(self with header -> X as widget);
+
+command tab content: (X has to-widget) =
+  new tab(self with content -> X as widget);

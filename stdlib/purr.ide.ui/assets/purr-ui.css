@@ -28,6 +28,7 @@
   --color-text-secondary: var(--color-slate-500);
 
   --color-background: var(--color-white);
+  --color-background-hover: var(--color-slate-100);
 
   --font-family-serif: serif;
   --font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto,
@@ -241,4 +242,55 @@
   width: 100%;
   border-radius: 0;
   padding: 1rem;
+}
+
+.purr-ui-tabbed-panel-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.purr-ui-tabbed-panel-header-container {
+  height: 3rem;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.purr-ui-tabbed-panel-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.1rem 1rem;
+  cursor: pointer;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.purr-ui-tabbed-panel-header[data-selected="true"] {
+  font-weight: bold;
+  color: var(--color-accent);
+  border-bottom: 3px solid var(--color-accent);
+  background: var(--color-background-hover);
+}
+
+.purr-ui-tabbed-panel-header:hover {
+  background: var(--color-background-hover);
+}
+
+.purr-ui-tabbed-panel-content-container {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.purr-ui-tabbed-panel-content {
+  height: 100%;
+}
+
+.purr-ui-tabbed-panel-content:not([data-selected="true"]) {
+  display: none;
 }

@@ -45,6 +45,7 @@
     "source/widget/layout/section.crochet",
     "source/widget/layout/divider.crochet",
     "source/widget/layout/card.crochet",
+    "source/widget/layout/tabbed-panel.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",

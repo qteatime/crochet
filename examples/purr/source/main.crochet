@@ -26,6 +26,23 @@ command purr run do
     | body: (
         #widget flex-column: [
           #widget category-section
+            | title: "Tabs"
+            | body: (
+                #widget tabbed-panel: [
+                  #tab id: "code"
+                    | header: "Code"
+                    | content: "A",
+                  #tab id: "test"
+                    | header: "Test"
+                    | content: "B",
+                  #tab id: "browser"
+                    | header: "Browser"
+                    | content: "C",
+                ]
+                | selected: "code"
+              ),
+
+          #widget category-section
             | title: "Cards"
             | body: (
                 #widget flex-row: [
