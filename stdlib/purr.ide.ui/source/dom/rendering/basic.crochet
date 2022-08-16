@@ -62,3 +62,27 @@ command dom-renderer render: (W is widget-image) do
   dom make-element: "img" class: "purr-ui-image"
     | set: "src" to: (self to-uri: W.source);
 end
+
+
+command dom-renderer render: (W is widget-choose) do
+  let Node = dom make-element: "div" class: "purr-ui-choose";
+  let Renderer = new dom-choose-renderer(self, W);
+
+  Node replace-contents: Renderer render-current;
+  W.current subscribe: { _ in Node replace-contents: Renderer render-current };
+  
+  Node;
+end
+
+local type dom-choose-renderer(renderer is dom-renderer, widget is widget-choose);
+
+command dom-choose-renderer render-current do
+  let Current = package current-choice: self.widget;
+  condition
+    when Current is ok => self.renderer render: Current value;
+    when Current is error do
+      dom make-element: "div" class: "pur-ui-choose-error"
+        | append: (dom make-text: "(No content matched)");
+    end
+  end
+end

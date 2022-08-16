@@ -113,6 +113,8 @@
     "source/traits/sequence.crochet",
     "source/traits/set-algebra.crochet",
 
+    "source/types/static-type.crochet",
+
     "source/package/core.crochet",
     "source/package/assets.crochet",
     {

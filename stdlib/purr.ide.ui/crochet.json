@@ -33,6 +33,7 @@
     "source/widget/basic/space.crochet",
     "source/widget/basic/icon.crochet",
     "source/widget/basic/image.crochet",
+    "source/widget/basic/choose.crochet",
 
     "source/widget/input/button.crochet",
 

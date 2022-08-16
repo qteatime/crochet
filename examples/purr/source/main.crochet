@@ -26,6 +26,28 @@ command purr run do
     | body: (
         #widget flex-column: [
           #widget category-section
+            | title: "Choose"
+            | body: (
+                do
+                  let V = #observable-cell with-value: nothing;
+                  #widget flex-column: [
+                    #widget flex-row: [
+                      #widget button: "A" | on-click: { _ in V <- "A" },
+                      #widget button: "B" | on-click: { _ in V <- "B" },
+                      #widget button: "1" | on-click: { _ in V <- 1 },
+                      #widget button: "true" | on-click: { _ in V <- true }
+                    ],
+
+                    #widget given: V
+                      | when: { X in X =:= "A" } show: { _ in "Hello A" }
+                      | when: { X in X =:= "B" } show: { _ in "Hello B" }
+                      | when: #integer show: { I in "Hello an integer: [I]" }
+                      | default: { _ in "Not here" },
+                  ]
+                end
+              ),
+
+          #widget category-section
             | title: "Tabs"
             | body: (
                 #widget tabbed-panel: [

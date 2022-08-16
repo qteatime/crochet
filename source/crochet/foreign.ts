@@ -374,6 +374,23 @@ export class ForeignInterface {
     }
   }
 
+  is_instance_of(t0: CrochetValue, x: CrochetValue) {
+    if (t0.tag === Tag.TYPE) {
+      Values.assert_tag(Tag.TYPE, t0);
+      const t1 = Types.get_static_type(this.#universe, t0.payload);
+      const t = this.static_type_to_type(t1);
+      if (t == null) {
+        throw this.panic(
+          "invalid-type",
+          `internal: could not get the underlying type of static type`
+        );
+      }
+      return Types.is_subtype(x.type, t);
+    } else {
+      throw this.panic("invalid-type", "Expected a static-type");
+    }
+  }
+
   is_subtype(x: CrochetType, y: CrochetType) {
     return Types.is_subtype(x, y);
   }

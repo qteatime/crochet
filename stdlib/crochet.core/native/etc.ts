@@ -25,4 +25,8 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("thunk.is-forced", (x) => ffi.boolean(ffi.is_thunk_forced(x)));
+
+  ffi.defun("types.is-instance", (t, x) => {
+    return ffi.boolean(ffi.is_instance_of(t, x));
+  });
 };

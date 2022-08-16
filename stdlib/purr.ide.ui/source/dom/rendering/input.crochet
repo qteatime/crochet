@@ -12,6 +12,7 @@ command dom-renderer render: (W is widget-button) do
   self set-boolean: "data-active" to: W.active in: Node;
     
   Node append: (self render: W.content);
+  Node on: "click" do: { _ in W.on-click(nothing) } capture;
 
   Node;
 end
