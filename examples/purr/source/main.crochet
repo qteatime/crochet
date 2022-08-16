@@ -8,13 +8,13 @@ singleton purr;
 command main-html: Root do
   handle
     purr-ui show: purr run;
+    purr-ui navigate: #pages choose;
   with
     use purr-ui-dom-renderer root: Root;
   end
 end
 
 enum pages =
-  start,
   choose,
   tabs,
   cards,
@@ -23,8 +23,7 @@ enum pages =
   dividers;
 
 command purr run do
-  let Router = purr-ui router: "root" accepts: (#pages start to: #pages dividers);
-  purr-ui navigate: #pages start;
+  let Router = purr-ui router: "root" accepts: (#pages choose to: #pages dividers);
 
   #widget app-frame
     | header: (
@@ -35,11 +34,20 @@ command purr run do
             )
       )
     | footer: "Some footer"
-    | body: Router;
+    | body: (
+        #widget flex-row: [
+          purr menu,
+          Router
+            | transform
+            | flex-grow: #flex-grow grow
+        ]
+        | transform
+        | flex-align-items: #flex-align stretch
+        | flex-gap: #text-size base
+      );
 end
 
 implement purr-ui-page for pages;
-implement purr-ui-page for pages--start;
 implement purr-ui-page for pages--choose;
 implement purr-ui-page for pages--tabs;
 implement purr-ui-page for pages--cards;
@@ -47,18 +55,20 @@ implement purr-ui-page for pages--sections;
 implement purr-ui-page for pages--buttons;
 implement purr-ui-page for pages--dividers;
 
-command pages--start render-page =
-  #widget flex-column: [
-    #widget button: "Choose" | on-click: { _ in purr-ui navigate: #pages choose },
-    #widget button: "Tabs" | on-click: { _ in purr-ui navigate: #pages tabs },
-    #widget button: "Cards" | on-click: { _ in purr-ui navigate: #pages cards },
-    #widget button: "Sections" | on-click: { _ in purr-ui navigate: #pages sections },
-    #widget button: "Buttons" | on-click: { _ in purr-ui navigate: #pages buttons },
-    #widget button: "Dividers" | on-click: { _ in purr-ui navigate: #pages dividers },
-  ]
-  | transform
-  | flex-gap: #text-size base
-  | flex-align-items: #flex-align center;
+command purr menu =
+  #widget navigation: [
+    "Basic",
+    #widget link: "Choose" | to: #pages choose,
+    #widget link: "Dividers" | to: #pages dividers,
+
+    "Layout",
+    #widget link: "Tabs" | to: #pages tabs,
+    #widget link: "Cards" | to: #pages cards,
+    #widget link: "Sections" | to: #pages sections,
+
+    "Input",
+    #widget link: "Buttons" | to: #pages buttons,
+  ];
 
 command pages--choose render-page =
   #widget flex-column: [

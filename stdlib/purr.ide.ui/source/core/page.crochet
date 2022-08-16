@@ -11,6 +11,7 @@ command (X has purr-ui-page) location-selector = X;
 effect purr-ui-navigation with
   navigate(widget is widget, page is any has purr-ui-page); // -> nothing
   make-router(router is router); // -> nothing
+  watch-selector(selector is any); // -> observable-cell<boolean>
 end
 
 type router(

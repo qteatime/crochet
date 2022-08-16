@@ -135,6 +135,22 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(fun);
   });
 
+  ffi.defun("dom.trap-listener", (el0, name0, handler) => {
+    const el = ffi.unbox_typed(HTMLElement, el0);
+    const name = ffi.text_to_string(name0);
+    const fun = function (ev: Event) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(handler, [ffi.box(ev)]);
+        return ffi.nothing;
+      });
+    };
+
+    el.addEventListener(name, fun);
+    return ffi.box(fun);
+  });
+
   ffi.defun("dom.remove-listener", (el0, name0, handler0) => {
     const el = ffi.unbox_typed(HTMLElement, el0);
     const name = ffi.text_to_string(name0);

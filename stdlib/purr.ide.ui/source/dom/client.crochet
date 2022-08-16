@@ -27,6 +27,7 @@ handler purr-ui-dom-renderer root: (Root is unknown) do
   let Surface = new dom-surface(Purr-root);
   let References = #cell with-value: #map empty;
   let Routers = #cell with-value: [];
+  let Current-selector = #observable-cell with-value: #map empty;
 with
   on purr-ui-presentation.show(Widget) do
     Surface replace-contents: Widget;
@@ -48,17 +49,23 @@ with
 
   on purr-ui-navigation.navigate(Widget, Page) do
     for Router in Routers value do
-      Router render-page: Page contents: Widget;
+      Router render-page: Page contents: Widget selector: Current-selector;
     end
     continue with nothing;
+  end
+
+  on purr-ui-navigation.watch-selector(Selector) do
+    continue with Current-selector map: { M in M values some: { X in X =:= Selector } };
   end
 end
 
 
-command dom-router render-page: (Page has purr-ui-page) contents: Widget do
+command dom-router render-page: (Page has purr-ui-page) contents: Widget selector: Selector do
   condition
-    when self.router accepts: Page =>
+    when self.router accepts: Page do
+      Selector <- Selector value at: self put: Page location-selector;
       self.node replace-contents: (dom-renderer render: Widget);
+    end
 
     otherwise =>
       nothing;

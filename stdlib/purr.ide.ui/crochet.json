@@ -35,6 +35,7 @@
     "source/widget/basic/icon.crochet",
     "source/widget/basic/image.crochet",
     "source/widget/basic/choose.crochet",
+    "source/widget/basic/link.crochet",
 
     "source/widget/input/button.crochet",
 
@@ -48,6 +49,7 @@
     "source/widget/layout/divider.crochet",
     "source/widget/layout/card.crochet",
     "source/widget/layout/tabbed-panel.crochet",
+    "source/widget/layout/navigation.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",

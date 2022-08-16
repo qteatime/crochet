@@ -91,3 +91,31 @@ end
 command dom-renderer render: (W is dom-router) do
   W.node;
 end
+
+
+command dom-renderer render: (W is widget-link) do
+  let Node = dom make-element: "a" class: "purr-ui-link";
+  Node set: "data-target" to: (self render-link-target: W.target);
+  Node set: "href" to: (self render-link-href: W.target);
+  Node append: (self render: W.content);
+  self handle-link: Node target: W.target;
+  Node;
+end
+
+command dom-renderer render-link-target: link-target-none = "none";
+command dom-renderer render-link-target: link-target-local = "local";
+
+command dom-renderer render-link-href: link-target-none = "#";
+command dom-renderer render-link-href: link-target-local = "#";
+
+command dom-renderer handle-link: _ target: link-target-none =
+  nothing;
+
+command dom-renderer handle-link: Node target: (T is link-target-local) do
+  Node trap: "click" do: { _ in
+    purr-ui navigate: T.page;
+  };
+
+  let Is-active = perform purr-ui-navigation.watch-selector(T.page location-selector);
+  self set-boolean: "data-active" to: (Is-active as purr-variable) in: Node;
+end

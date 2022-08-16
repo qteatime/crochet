@@ -166,3 +166,20 @@ command dom-renderer render: (W is widget-tabbed-panel) do
 
   Node;
 end
+
+
+command dom-renderer render: (W is widget-navigation) do
+  let Node = dom make-element: "nav" class: "purr-ui-navigation";
+  for Child in W.items do
+    Node append: (self render-nav-child: Child);
+  end
+  Node;
+end
+
+command dom-renderer render-nav-child: (X is navigation-child-header) =
+  dom make-element: "div" class: "purr-ui-navigation-header"
+    | append: (self render: X.content);
+
+command dom-renderer render-nav-child: (X is navigation-child-link) =
+  dom make-element: "div" class: "purr-ui-navigation-link"
+    | append: (self render: X.link);

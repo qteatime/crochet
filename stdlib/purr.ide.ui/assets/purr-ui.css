@@ -30,6 +30,8 @@
   --color-background: var(--color-white);
   --color-background-hover: var(--color-slate-100);
 
+  --color-navigation-header: var(--color-slate-500);
+
   --font-family-serif: serif;
   --font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
@@ -293,4 +295,47 @@
 
 .purr-ui-tabbed-panel-content:not([data-selected="true"]) {
   display: none;
+}
+
+.purr-ui-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem;
+  background: var(--color-background);
+  border-right: 1px solid var(--color-border);
+  min-width: 12rem;
+}
+
+.purr-ui-navigation-header {
+  padding-left: 0.75rem;
+}
+
+.purr-ui-navigation-header {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.6em;
+  margin: 1.5rem 0 0.2rem;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.purr-ui-navigation-link .purr-ui-link {
+  display: block;
+  text-decoration: none;
+  color: var(--color-text);
+  line-height: 1.4em;
+  padding-left: 0.75rem;
+}
+
+.purr-ui-navigation-link .purr-ui-link[data-active="true"] {
+  font-weight: bold;
+  border-left: 3px solid var(--color-accent);
+  padding-left: 0.5rem;
+  color: var(--color-accent);
+}
+
+.purr-ui-navigation-link .purr-ui-link:hover {
+  border-left: 3px solid var(--color-slate-400);
+  padding-left: 0.5rem;
 }
