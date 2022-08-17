@@ -456,6 +456,17 @@ export class ForeignInterface {
     return action.payload.action.fired.has(value);
   }
 
+  async debug_perspectives(value: CrochetValue) {
+    return await this.#vm.debug_perspectives(value);
+  }
+
+  async debug_representations(
+    value: CrochetValue,
+    perspectives: CrochetType[]
+  ) {
+    return await this.#vm.debug_representations(value, perspectives);
+  }
+
   // == Collection features
   get collection() {
     return Collection;

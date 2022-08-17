@@ -21,10 +21,11 @@ enum pages =
   sections,
   buttons,
   dividers,
-  breadcrumbs;
+  breadcrumbs,
+  lenses;
 
 command purr run do
-  let Router = purr-ui router: "root" accepts: (#pages choose to: #pages breadcrumbs);
+  let Router = purr-ui router: "root" accepts: (pages lower-bound to: pages upper-bound);
 
   #widget app-frame
     | header: (
@@ -56,6 +57,7 @@ implement purr-ui-page for pages--sections;
 implement purr-ui-page for pages--buttons;
 implement purr-ui-page for pages--dividers;
 implement purr-ui-page for pages--breadcrumbs;
+implement purr-ui-page for pages--lenses;
 
 command purr menu =
   #widget navigation: [
@@ -71,7 +73,24 @@ command purr menu =
 
     "Input",
     #widget link: "Buttons" | to: #pages buttons,
+
+    "Code",
+    #widget link: "Lenses" | to: #pages lenses,
   ];
+
+command pages--lenses render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Single perspective"
+      | body: (#widget lens: [1, 2, 3] perspective: default-perspective),
+
+    #widget category-section
+      | title: "All perspectives"
+      | body: (#widget lenses: [1, 2, 3]),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
 
 command pages--breadcrumbs render-page =
   #widget category-section

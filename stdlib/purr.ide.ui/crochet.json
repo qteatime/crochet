@@ -2,7 +2,7 @@
   "name": "purr.ide.ui",
   "target": "*",
   "description": "An extension to Agata for building IDE tools",
-  "native_sources": [],
+  "native_sources": ["native/lens.js", "native/representation.js"],
   "sources": [
     "source/core/api.crochet",
     "source/core/color.crochet",
@@ -21,6 +21,7 @@
     "source/dom/rendering/properties.crochet",
     "source/dom/rendering/input.crochet",
     "source/dom/rendering/source.crochet",
+    "source/dom/rendering/code.crochet",
     "source/dom/client.crochet",
     "source/dom/renderer.crochet",
     "source/dom/surface.crochet",
@@ -36,6 +37,8 @@
     "source/widget/basic/image.crochet",
     "source/widget/basic/choose.crochet",
     "source/widget/basic/link.crochet",
+
+    "source/widget/code/lens.crochet",
 
     "source/widget/input/button.crochet",
 
@@ -80,6 +83,10 @@
     },
     {
       "path": "assets/purr-ui.css",
+      "mime": "text/css"
+    },
+    {
+      "path": "assets/lens.css",
       "mime": "text/css"
     }
   ]

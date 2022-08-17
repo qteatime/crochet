@@ -21,6 +21,7 @@ handler purr-ui-dom-renderer root: (Root is unknown) do
   let Shadow = Render-root attach-closed-shadow;
   Shadow add-css: (package assets at: "assets/normalize.css" | read-as-text);
   Shadow add-css: (package assets at: "assets/purr-ui.css" | read-as-text);
+  Shadow add-css: (package assets at: "assets/lens.css" | read-as-text);
   Shadow append: (dom make-element: "link" | set: "rel" to: "stylesheet" | set: "href" to: "/crochet.css");
   let Purr-root = dom make-element: "div" class: "purr-ui-root";
   Shadow append: Purr-root;
