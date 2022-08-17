@@ -1,0 +1,15 @@
+% crochet
+
+type widget-breadcrumbs(
+  items is list<widget>,
+  separator is widget,
+) is widget;
+
+command #widget breadcrumbs: (Xs is list<X has to-widget>) =
+  new widget-breadcrumbs(
+    items -> Xs map: (_ as widget),
+    separator -> #widget icon: "angle-right",
+  );
+
+command widget-breadcrumbs separator: (W has to-widget) =
+  new widget-breadcrumbs(self with separator -> W as widget);

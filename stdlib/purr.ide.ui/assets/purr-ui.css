@@ -339,3 +339,15 @@
   border-left: 3px solid var(--color-slate-400);
   padding-left: 0.5rem;
 }
+
+.purr-ui-breadcrumbs {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+  justify-content: start;
+}
+
+.purr-ui-breadcrumbs-separator {
+  color: var(--color-text-secondary);
+}

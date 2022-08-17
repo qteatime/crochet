@@ -104,6 +104,25 @@ test
 end
 
 
+/// Inserts `Separator` between each item of the sequence.
+command (Xs has finite-sequence, countable-container, appendable-sequence, chainable-collection) intersperse: (Separator is A) do
+  condition
+    when Xs count <= 1 =>
+      Xs;
+
+    otherwise do
+      let Prefix = Xs empty | append: Xs first;
+      let Suffix = Xs rest flat-map: { X in Xs empty | append: Separator | append: X };
+      Prefix ++ Suffix;
+    end
+  end
+test
+  assert ([] intersperse: 0) === [];
+  assert ([1] intersperse: 0) === [1];
+  assert ([1, 2, 3] intersperse: 0) === [1, 0, 2, 0, 3];
+end
+
+
 command (X has indexed-sequence) second =
   X at: 2;
 

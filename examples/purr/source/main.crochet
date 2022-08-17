@@ -20,10 +20,11 @@ enum pages =
   cards,
   sections,
   buttons,
-  dividers;
+  dividers,
+  breadcrumbs;
 
 command purr run do
-  let Router = purr-ui router: "root" accepts: (#pages choose to: #pages dividers);
+  let Router = purr-ui router: "root" accepts: (#pages choose to: #pages breadcrumbs);
 
   #widget app-frame
     | header: (
@@ -54,6 +55,7 @@ implement purr-ui-page for pages--cards;
 implement purr-ui-page for pages--sections;
 implement purr-ui-page for pages--buttons;
 implement purr-ui-page for pages--dividers;
+implement purr-ui-page for pages--breadcrumbs;
 
 command purr menu =
   #widget navigation: [
@@ -65,10 +67,22 @@ command purr menu =
     #widget link: "Tabs" | to: #pages tabs,
     #widget link: "Cards" | to: #pages cards,
     #widget link: "Sections" | to: #pages sections,
+    #widget link: "Breadcrumbs" | to: #pages breadcrumbs,
 
     "Input",
     #widget link: "Buttons" | to: #pages buttons,
   ];
+
+command pages--breadcrumbs render-page =
+  #widget category-section
+    | title: "Breadcrumbs"
+    | body: (
+        #widget breadcrumbs: [
+          #widget flex-row: [#widget icon: "home", #widget space | transform | width: #text-size base, "Home"],
+          #widget link: "Sections" | to: #pages sections,
+          #widget link: "Breadcrumbs" | to: self
+        ]
+      );
 
 command pages--choose render-page =
   #widget flex-column: [

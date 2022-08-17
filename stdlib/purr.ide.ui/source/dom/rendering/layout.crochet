@@ -183,3 +183,22 @@ command dom-renderer render-nav-child: (X is navigation-child-header) =
 command dom-renderer render-nav-child: (X is navigation-child-link) =
   dom make-element: "div" class: "purr-ui-navigation-link"
     | append: (self render: X.link);
+
+
+local type breadcrumb-separator(content is widget);
+command dom-renderer render: (W is widget-breadcrumbs) do
+  let Node = dom make-element: "div" class: "purr-ui-breadcrumbs";
+  let Items = W.items intersperse: new breadcrumb-separator(W.separator);
+  for Child in Items do
+    Node append: (self render-breadcrumb-item: Child);
+  end
+  Node;
+end
+
+command dom-renderer render-breadcrumb-item: (W is breadcrumb-separator) =
+  dom make-element: "div" class: "purr-ui-breadcrumbs-separator"
+    | append: (self render: W.content);
+
+command dom-renderer render-breadcrumb-item: (W is widget) =
+  dom make-element: "div" class: "purr-ui-breadcrumbs-item"
+    | append: (self render: W);

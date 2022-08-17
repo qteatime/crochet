@@ -50,6 +50,7 @@
     "source/widget/layout/card.crochet",
     "source/widget/layout/tabbed-panel.crochet",
     "source/widget/layout/navigation.crochet",
+    "source/widget/layout/breadcrumbs.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",
