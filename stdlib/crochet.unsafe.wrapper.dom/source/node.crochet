@@ -109,3 +109,20 @@ end
 
 command dom-event mouse-button =
   foreign ev.mouse-button(self.box);
+
+
+command dom-element query-selector: (Selector is text) do
+  let Result = foreign dom.query-selector(self.box, Selector);
+  condition
+    when Result is nothing => #result error: not-found;
+    otherwise => #result ok: new dom-element(Result);
+  end
+end
+
+
+command dom-element input-value
+requires
+  input :: dom is-input: self
+do
+  foreign dom.input-value(self.box);
+end

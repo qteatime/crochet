@@ -6,6 +6,7 @@ abstract reference;
 
 type reference-widget(name is text) is reference;
 type reference-button(name is text, clicked is event-stream<click-event>) is reference;
+type reference-text-input(name is text, value is observable-cell<text>) is reference;
 
 
 command #reference anything: (Name is text) =
@@ -17,6 +18,15 @@ command #reference buttons: (Name is text) =
     clicked -> #event-stream empty,
   );
 
+command #reference text-input: (Name is text) =
+  new reference-text-input(
+    name -> Name,
+    value -> #observable-cell with-value: "",
+  );
+
 
 command reference-button clicked =
   self.clicked listener;
+
+command reference-text-input value =
+  self.value read-only;

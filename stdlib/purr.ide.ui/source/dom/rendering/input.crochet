@@ -16,3 +16,21 @@ command dom-renderer render: (W is widget-button) do
 
   Node;
 end
+
+command dom-renderer render: (W is widget-text-input) do
+  let Node = dom make-element: "label" class: "purr-ui-text-input";
+  let Label = dom make-element: "div" class: "purr-ui-text-input-label"
+                | append: (self render: W.label);
+  let Input = dom make-element: "input" class: "purr-ui-text-input-control";
+
+  self set-property: "value" to: W.value in: Input;
+  self set-property: "placeholder" to: W.placeholder in: Input;
+  self set-boolean: "disabled" to: W.disabled in: Input;
+  self set-boolean: "readonly" to: W.read-only in: Input;
+  self set-property: "data-disabled" to: W.disabled in: Node;
+  self set-property: "data-read-only" to: W.read-only in: Node;
+
+  Node append: Label;
+  Node append: Input;
+  Node;
+end

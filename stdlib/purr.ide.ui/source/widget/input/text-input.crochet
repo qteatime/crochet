@@ -1,0 +1,30 @@
+% crochet
+
+type widget-text-input(
+  label is widget,
+  value is purr-variable<text>,
+  placeholder is purr-variable<text>,
+  disabled is purr-variable<boolean>,
+  read-only is purr-variable<boolean>,
+) is widget;
+
+command #widget text-input: (Label has to-widget) =
+  new widget-text-input(
+    label -> Label as widget,
+    value -> "" as purr-variable,
+    placeholder -> "" as purr-variable,
+    disabled -> false as purr-variable,
+    read-only -> false as purr-variable,
+  );
+
+command widget-text-input value: (X has to-purr-variable) =
+  new widget-text-input(self with value -> X as purr-variable);
+
+command widget-text-input placeholder: (X has to-purr-variable) =
+  new widget-text-input(self with placeholder -> X as purr-variable);
+
+command widget-text-input disabled: (X has to-purr-variable) =
+  new widget-text-input(self with disabled -> X as purr-variable);
+
+command widget-text-input read-only: (X has to-purr-variable) =
+  new widget-text-input(self with read-only -> X as purr-variable);

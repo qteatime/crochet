@@ -101,6 +101,17 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("dom.query-selector", (el0, selector0) => {
+    const el = ffi.unbox_typed(HTMLElement, el0);
+    const selector = ffi.text_to_string(selector0);
+    const result = el.querySelector(selector);
+    if (result == null) {
+      return ffi.nothing;
+    } else {
+      return ffi.box(result);
+    }
+  });
+
   // Classes
   ffi.defun("dom.add-class", (el0, name) => {
     const el = ffi.unbox_typed(HTMLElement, el0);
@@ -195,5 +206,14 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("dom.is-button-element", (x) => {
     return ffi.boolean(ffi.unbox(x) instanceof HTMLButtonElement);
+  });
+
+  ffi.defun("dom.is-input", (x) => {
+    return ffi.boolean(ffi.unbox(x) instanceof HTMLInputElement);
+  });
+
+  ffi.defun("dom.input-value", (el0) => {
+    const el = ffi.unbox_typed(HTMLInputElement, el0);
+    return ffi.untrusted_text(el.value);
   });
 };

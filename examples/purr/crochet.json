@@ -10,7 +10,7 @@
     "purr.ide.ui"
   ],
   "capabilities": {
-    "requires": ["purr.ide.ui/ui-control"],
+    "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting"],
     "provides": []
   },
   "assets": [

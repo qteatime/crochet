@@ -46,6 +46,7 @@
     "source/widget/code/lens.crochet",
 
     "source/widget/input/button.crochet",
+    "source/widget/input/text-input.crochet",
 
     "source/widget/layout/container.crochet",
     "source/widget/layout/flow.crochet",

@@ -139,3 +139,24 @@ do
     R.clicked publish: (self to-purr-mouse-event: Ev)
   };
 end
+
+command dom-renderer install-reference: (R is reference-text-input) in: Node do
+  let Input-node = Node query-selector: ".purr-ui-text-input-control"
+                    | value-or-panic: "internal: not a text-input";
+  
+  let Change-value = {
+    let Current = Input-node input-value;
+    condition
+      when not (Current =:= R.value value) =>
+        R.value <- Current;
+
+      otherwise =>
+        nothing;
+    end
+  };
+
+  R.value <- Input-node input-value;
+  Input-node on: "keydown" do: { _ in Change-value() };
+  Input-node on: "keyup" do: { _ in Change-value() };
+  Input-node on: "change" do: { _ in Change-value() };
+end

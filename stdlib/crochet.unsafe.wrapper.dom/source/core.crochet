@@ -28,3 +28,6 @@ command dom make-fragment =
 
 command dom is-button-element: (X is dom-element) =
   foreign dom.is-button-element(X.box);
+
+command dom is-input: (X is dom-element) =
+  foreign dom.is-input(X.box);
