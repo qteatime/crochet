@@ -159,6 +159,11 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("ev.mouse-button", (ev0) => {
+    const ev = ffi.unbox_typed(MouseEvent, ev0);
+    return ffi.integer(BigInt(ev.button));
+  });
+
   // CSS-related stuff
   ffi.defun("dom.add-css", (parent0, css0) => {
     const parent = ffi.unbox_typed(Node, parent0);
@@ -177,5 +182,18 @@ export default (ffi: ForeignInterface) => {
     const mode = ffi.text_to_string(mode0);
     const shadow = el.attachShadow({ mode: mode as any });
     return ffi.box(shadow);
+  });
+
+  // Tests
+  ffi.defun("dom.is-node", (x) => {
+    return ffi.boolean(ffi.unbox(x) instanceof Node);
+  });
+
+  ffi.defun("dom.is-element", (x) => {
+    return ffi.boolean(ffi.unbox(x) instanceof HTMLElement);
+  });
+
+  ffi.defun("dom.is-button-element", (x) => {
+    return ffi.boolean(ffi.unbox(x) instanceof HTMLButtonElement);
   });
 };

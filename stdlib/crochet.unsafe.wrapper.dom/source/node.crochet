@@ -6,8 +6,8 @@ type dom-element(box is unknown) is dom-node;
 type dom-fragment(box is unknown) is dom-node;
 
 type dom-class-list(element is dom-element);
-type dom-event(box is unknown);
 type dom-subscriber(element is dom-element, name is text, listener is unknown);
+type dom-event(box is unknown);
 
 
 command dom-node append: (Node is dom-node) do
@@ -105,3 +105,7 @@ end
 command dom-element attach-open-shadow do
   new dom-node-simple(foreign dom.attach-shadow(self.box, "open"));
 end
+
+
+command dom-event mouse-button =
+  foreign ev.mouse-button(self.box);

@@ -351,3 +351,9 @@
 .purr-ui-breadcrumbs-separator {
   color: var(--color-text-secondary);
 }
+
+.purr-ui-flow > * {
+  display: inline-block;
+  vertical-align: baseline;
+  white-space: break-spaces;
+}

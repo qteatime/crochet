@@ -4,7 +4,7 @@ open crochet.concurrency;
 open crochet.unsafe.wrapper.dom;
 
 command dom-renderer render: (W is widget-observable) do
-  let Data = new observable-cell-widget(self, #cell with-value: nothing);
+  let Data = new observable-cell-widget(W.observable, #cell with-value: nothing);
   self render: (#widget dynamic: (Data setup: _));
 end
 
@@ -17,6 +17,7 @@ command observable-cell-widget setup: (Surface is surface) do
   Surface on-attached: {
     self maybe-unsubscribe;
     self.subscriber <- self.cell stream subscribe: (Surface replace-contents: _);
+    Surface replace-contents: (self.cell value);
   };
 
   Surface on-detached: {
@@ -35,7 +36,7 @@ end
 
 
 command dom-renderer render: (W is widget-event-stream) do
-  let Data = new event-stream-widget(self, #cell with-value: nothing);
+  let Data = new event-stream-widget(W.stream, #cell with-value: nothing);
   self render: (#widget dynamic: (Data setup: _));
 end
 

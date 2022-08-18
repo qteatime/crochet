@@ -119,3 +119,23 @@ command dom-renderer handle-link: Node target: (T is link-target-local) do
   let Is-active = perform purr-ui-navigation.watch-selector(T.page location-selector);
   self set-boolean: "data-active" to: (Is-active as purr-variable) in: Node;
 end
+
+
+command dom-renderer render: (W is widget-reference) do
+  let Node = self render-to-element: W.content;
+  self install-reference: W.reference in: Node;
+  Node;
+end
+
+command dom-renderer install-reference: (R is reference) in: Node do
+  nothing;
+end
+
+command dom-renderer install-reference: (R is reference-button) in: Node
+requires
+  button :: dom is-button-element: Node
+do
+  Node on: "click" do: { Ev in
+    R.clicked publish: (self to-purr-mouse-event: Ev)
+  };
+end

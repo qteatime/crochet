@@ -10,6 +10,7 @@ command main-html: Root do
     purr-ui show: purr run;
     purr-ui navigate: #pages choose;
   with
+    use logical-time;
     use purr-ui-dom-renderer root: Root;
   end
 end
@@ -254,8 +255,19 @@ command pages--sections render-page =
   | flex-gap: #text-size large-3x
   | flex-align-items: #flex-align center;
 
-command pages--buttons render-page =
+command pages--buttons render-page do
+  let Clicks = #reference buttons: "clicks";
+  let N = Clicks clicked map: { _ in 1 }
+            |> #observable-cell from-stream: _ initial-value: 0
+            |> _ fold-with: { S, X in S push: (S state + X) };
   #widget flex-column: [
+    #widget category-section
+      | title: "Using references"
+      | body: [
+          #widget button: "You've clicked me [N] times!"
+            | reference: Clicks
+        ],
+
     #widget category-section
       | title: "Buttons"
       | body: [
@@ -266,6 +278,7 @@ command pages--buttons render-page =
   | transform
   | flex-gap: #text-size large-3x
   | flex-align-items: #flex-align center;
+end
 
 command pages--dividers render-page =
   #widget flex-column: [

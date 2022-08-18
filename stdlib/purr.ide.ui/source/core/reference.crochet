@@ -1,0 +1,22 @@
+% crochet
+
+open crochet.concurrency;
+
+abstract reference;
+
+type reference-widget(name is text) is reference;
+type reference-button(name is text, clicked is event-stream<click-event>) is reference;
+
+
+command #reference anything: (Name is text) =
+  new reference-widget(Name);
+
+command #reference buttons: (Name is text) =
+  new reference-button(
+    name -> Name,
+    clicked -> #event-stream empty,
+  );
+
+
+command reference-button clicked =
+  self.clicked listener;

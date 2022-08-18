@@ -1,0 +1,28 @@
+% crochet
+
+type logical-time(value is integer);
+
+effect logical-time with
+  tick(); // -> logical-time
+end
+
+
+handler logical-time do
+  let Current = #cell with-value: 0;
+with
+  on logical-time.tick() do
+    let T = new logical-time(Current value);
+    Current <- Current value + 1;
+    continue with T;
+  end
+end
+
+
+implement equality for logical-time;
+command (T1 is logical-time) === (T2 is logical-time) = T1.value === T2.value;
+
+implement total-ordering for logical-time;
+command (T1 is logical-time) < (T2 is logical-time) = T1.value < T2.value;
+command (T1 is logical-time) > (T2 is logical-time) = T1.value > T2.value;
+command (T1 is logical-time) <= (T2 is logical-time) = T1.value <= T2.value;
+command (T1 is logical-time) >= (T2 is logical-time) = T1.value >= T2.value;

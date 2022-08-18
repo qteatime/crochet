@@ -13,6 +13,9 @@
     "source/core/surface.crochet",
     "source/core/image.crochet",
     "source/core/page.crochet",
+    "source/core/reference.crochet",
+    "source/core/event.crochet",
+    "source/core/logical-time.crochet",
 
     "source/dom/rendering/basic.crochet",
     "source/dom/rendering/layout.crochet",
@@ -25,6 +28,7 @@
     "source/dom/client.crochet",
     "source/dom/renderer.crochet",
     "source/dom/surface.crochet",
+    "source/dom/event.crochet",
 
     "source/widget/basic/widget.crochet",
     "source/widget/basic/conversions.crochet",
@@ -37,6 +41,7 @@
     "source/widget/basic/image.crochet",
     "source/widget/basic/choose.crochet",
     "source/widget/basic/link.crochet",
+    "source/widget/basic/reference.crochet",
 
     "source/widget/code/lens.crochet",
 
