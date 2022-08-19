@@ -3,7 +3,7 @@
 effect purr-ui-presentation with
   commit(widget is widget); // -> rendered-widget
   show(widget is widget); // -> nothing
-  show-modal(widget is widget); // -> purr-modal
+  show-modal(widget is widget, config is modal-configuration); // -> purr-modal
   close-modal(modal is purr-modal); // -> nothing
 end
 
@@ -20,7 +20,12 @@ command purr-ui show: (Widget has to-widget) do
 end
 
 command purr-ui show-modal: (Widget has to-widget) do
-  perform purr-ui-presentation.show-modal(Widget as widget | commit);
+  perform purr-ui-presentation.show-modal(Widget as widget | commit, modal-configuration-message-box);
+  self;
+end
+
+command purr-ui slide-in: (Widget has to-widget) direction: (Direction is slide-in-direction) do
+  perform purr-ui-presentation.show-modal(Widget as widget | commit, new modal-configuration-slide-in(Direction));
   self;
 end
 

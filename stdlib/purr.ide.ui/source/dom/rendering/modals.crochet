@@ -2,7 +2,7 @@
 
 open crochet.unsafe.wrapper.dom;
 
-command dom-renderer render-modal: (W is widget) do
+command dom-renderer render-modal: (W is widget) configuration: Config do
   let Node = dom make-element: "div" class: "purr-ui-modal-container";
   let Shadow = dom make-element: "div" class: "purr-ui-modal-shadow";
   let Contents = dom make-element: "div" class: "purr-ui-modal-contents";
@@ -20,9 +20,19 @@ command dom-renderer render-modal: (W is widget) do
                       | append: (self render: (#widget icon-button: (#widget icon: "times")));
   let Close-handler = Close-button trap: "click" do: Close;
 
+  self apply-modal-configuration: Config to: Contents;
   Node append: Shadow;
   Node append: Contents;
   Contents append: Close-button;
   Contents append: (self render: W);
   Modal;
+end
+
+command dom-renderer apply-modal-configuration: modal-configuration-message-box to: Node do
+  Node set: "data-style" to: "message-box";
+end
+
+command dom-renderer apply-modal-configuration: (X is modal-configuration-slide-in) to: Node do
+  Node set: "data-style" to: "slide-in";
+  Node set: "data-direction" to: X.direction to-enum-text;
 end

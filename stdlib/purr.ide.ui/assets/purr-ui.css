@@ -418,14 +418,17 @@
   background: var(--color-background);
   position: relative;
   z-index: 1;
-  padding: 2.5rem 2rem;
-  border-radius: 0.5rem;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
-  min-width: 50%;
-  max-width: 80%;
 }
 
-.purr-ui-modal-close-button {
+.purr-ui-modal-contents[data-style="message-box"] {
+  min-width: 50%;
+  max-width: 80%;
+  padding: 2.5rem 2rem;
+  border-radius: 0.5rem;
+}
+
+.purr-ui-modal-contents[data-style="message-box"] .purr-ui-modal-close-button {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -439,4 +442,46 @@
 .purr-ui-modal-close-button .purr-ui-button:hover {
   background: var(--color-slate-100);
   color: var(--color-accent);
+}
+
+.purr-ui-modal-contents[data-style="slide-in"] .purr-ui-modal-close-button {
+  display: none;
+}
+
+.purr-ui-modal-contents[data-style="slide-in"][data-direction="from-left"] {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  animation: show-from-left 300ms ease-out forwards;
+}
+
+.purr-ui-modal-contents[data-style="slide-in"][data-direction="from-right"] {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 100%;
+  animation: show-from-right 300ms ease-out forwards;
+}
+
+@keyframes show-from-left {
+  from {
+    opacity: 0;
+    left: -100%;
+  }
+  to {
+    opacity: 1;
+    left: 0px;
+  }
+}
+
+@keyframes show-from-right {
+  from {
+    opacity: 0;
+    right: -100%;
+  }
+  to {
+    opacity: 1;
+    right: 0px;
+  }
 }

@@ -26,6 +26,13 @@ enum pages =
   breadcrumbs,
   lenses;
 
+command purr side-bar do
+  purr menu
+    | transform
+    | maximum-width: #size columns-4
+    | height: #size fill;
+end
+
 command purr run do
   let Router = purr-ui router: "root" accepts: (pages lower-bound to: pages upper-bound);
 
@@ -35,6 +42,9 @@ command purr run do
           | action-button: (
               #widget icon-button: (#widget icon: "bars")
                 | style: #button-style clear
+                | on-click: { _ in
+                    purr-ui slide-in: purr side-bar direction: #slide-in-direction from-left;
+                  }
             )
       )
     | footer: "Some footer"

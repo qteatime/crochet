@@ -48,8 +48,8 @@ with
     continue with new dom-rendered-widget(Node);
   end
 
-  on purr-ui-presentation.show-modal(Widget) do
-    let Modal = dom-renderer render-modal: Widget;
+  on purr-ui-presentation.show-modal(Widget, Config) do
+    let Modal = dom-renderer render-modal: Widget configuration: Config;
     Modal-root append: Modal.node;
     continue with Modal;
   end

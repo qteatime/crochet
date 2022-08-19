@@ -2,5 +2,13 @@
 
 abstract purr-modal;
 
+abstract modal-configuration;
+singleton modal-configuration-message-box is modal-configuration;
+type modal-configuration-slide-in(direction is slide-in-direction) is modal-configuration;
+
+enum slide-in-direction =
+  from-right,
+  from-left;
+
 command purr-modal close =
   perform purr-ui-presentation.close-modal(self);
