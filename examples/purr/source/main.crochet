@@ -24,7 +24,8 @@ enum pages =
   text-input,
   dividers,
   breadcrumbs,
-  lenses;
+  lenses,
+  checkboxes;
 
 command purr side-bar do
   purr menu
@@ -71,6 +72,7 @@ implement purr-ui-page for pages--dividers;
 implement purr-ui-page for pages--breadcrumbs;
 implement purr-ui-page for pages--lenses;
 implement purr-ui-page for pages--text-input;
+implement purr-ui-page for pages--checkboxes;
 
 command purr menu =
   #widget navigation: [
@@ -87,6 +89,7 @@ command purr menu =
     "Input",
     #widget link: "Buttons" | to: #pages buttons,
     #widget link: "Text input" | to: #pages text-input,
+    #widget link: "Checkboxes" | to: #pages checkboxes,
 
     "Code",
     #widget link: "Lenses" | to: #pages lenses,
@@ -267,6 +270,21 @@ command pages--sections render-page =
   | transform
   | flex-gap: #text-size large-3x
   | flex-align-items: #flex-align center;
+
+command pages--checkboxes render-page do
+  let Disable = #reference checkbox: "disable";
+  #widget category-section
+    | title: "Checkboxes"
+    | body: (
+        #widget flex-column: [
+          #widget checkbox: "Disable editing"
+            | reference: Disable,
+
+          #widget text-input: "Edit this!"
+            | disabled: Disable checked,
+        ]
+      );
+end
 
 command pages--text-input render-page do
   let Text = #reference text-input: "text";

@@ -143,7 +143,8 @@ end
 command dom-renderer install-reference: (R is reference-text-input) in: Node do
   let Input-node = Node query-selector: ".purr-ui-text-input-control"
                     | value-or-panic: "internal: not a text-input";
-  
+  assert dom is-input: Input-node;
+
   let Change-value = {
     let Current = Input-node input-value;
     condition
@@ -159,4 +160,13 @@ command dom-renderer install-reference: (R is reference-text-input) in: Node do
   Input-node on: "keydown" do: { _ in Change-value() };
   Input-node on: "keyup" do: { _ in Change-value() };
   Input-node on: "change" do: { _ in Change-value() };
+end
+
+command dom-renderer install-reference: (R is reference-checkbox) in: Node do
+  let Input-node = Node query-selector: ".purr-ui-checkbox-content"
+                    | value-or-panic: "internal: not a text-input";
+  assert dom is-input: Input-node;
+
+  R.checked <- Input-node input-checked;
+  Input-node on: "change" do: { _ in R.checked <- Input-node input-checked };
 end

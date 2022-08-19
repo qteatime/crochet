@@ -1,0 +1,24 @@
+% crochet
+
+type widget-checkbox(
+  label is widget,
+  checked is purr-variable<boolean>,
+  disabled is purr-variable<boolean>
+) is widget;
+
+command #widget checkbox: (Label has to-widget) =
+  new widget-checkbox(
+    label -> Label as widget,
+    checked -> false as purr-variable,
+    disabled -> false as purr-variable,
+  );
+
+command #widget checkbox =
+  #widget checkbox: #widget space;
+
+command widget-checkbox checked: (X has to-purr-variable) =
+  new widget-checkbox(self with checked -> X as purr-variable);
+
+command widget-checkbox disabled: (X has to-purr-variable) =
+  new widget-checkbox(self with disabled -> X as purr-variable);
+

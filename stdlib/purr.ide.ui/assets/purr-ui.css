@@ -1,3 +1,25 @@
+@keyframes show-from-left {
+  from {
+    opacity: 0;
+    left: -100%;
+  }
+  to {
+    opacity: 1;
+    left: 0px;
+  }
+}
+
+@keyframes show-from-right {
+  from {
+    opacity: 0;
+    right: -100%;
+  }
+  to {
+    opacity: 1;
+    right: 0px;
+  }
+}
+
 .purr-ui-root {
   --color-black: #2f2f2f;
   --color-white: #fafafa;
@@ -362,11 +384,7 @@
 }
 
 .purr-ui-text-input {
-  border: 1px solid var(--color-border);
-  background: var(--color-background);
-  padding: 1rem 0.25rem 0.5rem 0.25rem;
   position: relative;
-  border-radius: 0.25rem;
   margin-top: 0.8rem;
 }
 
@@ -378,19 +396,24 @@
   left: 0.75rem;
   padding: 0 0.25rem;
   color: var(--color-text-secondary);
+  z-index: 2;
 }
 
 .purr-ui-text-input-control {
-  border: 0;
-  background: 0;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  padding: 1rem 0.5rem 0.5rem 0.5rem;
   display: block;
   width: 100%;
   font-size: 1rem;
   color: var(--color-text);
+  border-radius: 0.25rem;
+  position: relative;
+  z-index: 1;
 }
 
-.purr-ui-text-input[data-disabled="true"] {
-  background: var(--color-input-disabled-background);
+.purr-ui-text-input-control[disabled] {
+  opacity: 0.5;
 }
 
 .purr-ui-modal-container {
@@ -464,24 +487,9 @@
   animation: show-from-right 300ms ease-out forwards;
 }
 
-@keyframes show-from-left {
-  from {
-    opacity: 0;
-    left: -100%;
-  }
-  to {
-    opacity: 1;
-    left: 0px;
-  }
-}
-
-@keyframes show-from-right {
-  from {
-    opacity: 0;
-    right: -100%;
-  }
-  to {
-    opacity: 1;
-    right: 0px;
-  }
+.purr-ui-checkbox {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: baseline;
 }

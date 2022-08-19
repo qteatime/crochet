@@ -13,3 +13,6 @@ command widget-button reference: (Ref is reference-button) =
 
 command widget-text-input reference: (Ref is reference-text-input) =
   new widget-reference(self, Ref);
+
+command widget-checkbox reference: (Ref is reference-checkbox) =
+  new widget-reference(self, Ref);

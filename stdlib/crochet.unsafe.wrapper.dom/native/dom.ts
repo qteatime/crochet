@@ -216,4 +216,9 @@ export default (ffi: ForeignInterface) => {
     const el = ffi.unbox_typed(HTMLInputElement, el0);
     return ffi.untrusted_text(el.value);
   });
+
+  ffi.defun("dom.input-checked", (el0) => {
+    const el = ffi.unbox_typed(HTMLInputElement, el0);
+    return ffi.boolean(el.checked);
+  });
 };

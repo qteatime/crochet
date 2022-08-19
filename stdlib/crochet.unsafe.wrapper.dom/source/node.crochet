@@ -126,3 +126,10 @@ requires
 do
   foreign dom.input-value(self.box);
 end
+
+command dom-element input-checked
+requires
+  input :: dom is-input: self
+do
+  foreign dom.input-checked(self.box);
+end

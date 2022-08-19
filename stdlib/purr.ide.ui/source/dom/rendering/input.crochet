@@ -34,3 +34,17 @@ command dom-renderer render: (W is widget-text-input) do
   Node append: Input;
   Node;
 end
+
+
+command dom-renderer render: (W is widget-checkbox) do
+  let Node = dom make-element: "label" class: "purr-ui-checkbox";
+  let Label = dom make-element: "div" class: "purr-ui-checkbox-label"
+                | append: (self render: W.label);
+  let Input = dom make-element: "input" class: "purr-ui-checkbox-content"
+                | set: "type" to: "checkbox";
+  self set-boolean: "disabled" to: W.disabled in: Input;
+  self set-boolean: "checked" to: W.checked in: Input;
+  Node append: Input;
+  Node append: Label;
+  Node;
+end

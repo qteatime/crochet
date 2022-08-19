@@ -7,6 +7,7 @@ abstract reference;
 type reference-widget(name is text) is reference;
 type reference-button(name is text, clicked is event-stream<click-event>) is reference;
 type reference-text-input(name is text, value is observable-cell<text>) is reference;
+type reference-checkbox(name is text, checked is observable-cell<boolean>) is reference;
 
 
 command #reference anything: (Name is text) =
@@ -24,9 +25,17 @@ command #reference text-input: (Name is text) =
     value -> #observable-cell with-value: "",
   );
 
+command #reference checkbox: (Name is text) =
+  new reference-checkbox(
+    name -> Name,
+    checked -> #observable-cell with-value: false,
+  );
 
 command reference-button clicked =
   self.clicked listener;
 
 command reference-text-input value =
   self.value read-only;
+
+command reference-checkbox checked =
+  self.checked read-only;

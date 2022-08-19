@@ -49,6 +49,7 @@
 
     "source/widget/input/button.crochet",
     "source/widget/input/text-input.crochet",
+    "source/widget/input/checkbox.crochet",
 
     "source/widget/layout/container.crochet",
     "source/widget/layout/flow.crochet",
