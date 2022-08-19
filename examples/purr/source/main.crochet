@@ -21,6 +21,7 @@ enum pages =
   cards,
   sections,
   buttons,
+  text-input,
   dividers,
   breadcrumbs,
   lenses;
@@ -59,6 +60,7 @@ implement purr-ui-page for pages--buttons;
 implement purr-ui-page for pages--dividers;
 implement purr-ui-page for pages--breadcrumbs;
 implement purr-ui-page for pages--lenses;
+implement purr-ui-page for pages--text-input;
 
 command purr menu =
   #widget navigation: [
@@ -74,6 +76,7 @@ command purr menu =
 
     "Input",
     #widget link: "Buttons" | to: #pages buttons,
+    #widget link: "Text input" | to: #pages text-input,
 
     "Code",
     #widget link: "Lenses" | to: #pages lenses,
@@ -255,47 +258,53 @@ command pages--sections render-page =
   | flex-gap: #text-size large-3x
   | flex-align-items: #flex-align center;
 
-command pages--buttons render-page do
+command pages--text-input render-page do
   let Text = #reference text-input: "text";
   let Name = Text value map: { X in
               (untaint make-trusted: X) ascii to-upper-case to-text
              };
+  #widget category-section
+    | title: "Text input"
+    | body: (
+        #widget flex-column: [
+          #widget text-input: "Your name"
+            | reference: Text,
+
+          #widget text-input: "You've typed"
+            | value: Name
+            | disabled: (Name map: { X in not X is-empty }),
+
+          "Hello, [Name]"
+        ]
+        | transform
+        | flex-gap: #text-size base
+      );
+end
+
+command pages--buttons render-page do
+  let Clicks = #reference buttons: "clicks";
+  let N = Clicks clicked map: { _ in 1 }
+            |> #observable-cell from-stream: _ initial-value: 0
+            |> _ fold-with: { S, X in S push: (S state + X) };
   #widget flex-column: [
-    #widget text-input: "Your name"
-      | reference: Text,
+    #widget category-section
+      | title: "Using references"
+      | body: [
+          #widget button: "You've clicked me [N] times!"
+            | reference: Clicks
+        ],
 
-    #widget text-input: "You've typed"
-      | value: Name
-      | disabled: (Name map: { X in not X is-empty }),
-
-    "Hello, [Name]"
+    #widget category-section
+      | title: "Buttons"
+      | body: (#widget flex-row: [
+          #widget button: "Button",
+          #widget icon-button: (#widget icon: "heart")
+            | on-click: { _ in purr-ui show-modal: ("Hello there friend!") },
+        ] | transform | flex-gap: #text-size base),
   ]
   | transform
-  | flex-gap: #text-size base;
-
-
-  // let Clicks = #reference buttons: "clicks";
-  // let N = Clicks clicked map: { _ in 1 }
-  //           |> #observable-cell from-stream: _ initial-value: 0
-  //           |> _ fold-with: { S, X in S push: (S state + X) };
-  // #widget flex-column: [
-  //   #widget category-section
-  //     | title: "Using references"
-  //     | body: [
-  //         #widget button: "You've clicked me [N] times!"
-  //           | reference: Clicks
-  //       ],
-
-  //   #widget category-section
-  //     | title: "Buttons"
-  //     | body: [
-  //         #widget button: "Button",
-  //         #widget icon-button: (#widget icon: "heart"),
-  //       ],
-  // ]
-  // | transform
-  // | flex-gap: #text-size large-3x
-  // | flex-align-items: #flex-align center;
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
 end
 
 command pages--dividers render-page =

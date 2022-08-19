@@ -16,6 +16,7 @@
     "source/core/reference.crochet",
     "source/core/event.crochet",
     "source/core/logical-time.crochet",
+    "source/core/modal.crochet",
 
     "source/dom/rendering/basic.crochet",
     "source/dom/rendering/layout.crochet",
@@ -25,6 +26,7 @@
     "source/dom/rendering/input.crochet",
     "source/dom/rendering/source.crochet",
     "source/dom/rendering/code.crochet",
+    "source/dom/rendering/modals.crochet",
     "source/dom/client.crochet",
     "source/dom/renderer.crochet",
     "source/dom/surface.crochet",

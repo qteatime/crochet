@@ -1,0 +1,6 @@
+% crochet
+
+abstract purr-modal;
+
+command purr-modal close =
+  perform purr-ui-presentation.close-modal(self);

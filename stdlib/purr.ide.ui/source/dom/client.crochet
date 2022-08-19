@@ -14,18 +14,26 @@ type dom-router(
   router is router,
 ) is widget;
 
+type dom-modal(node is dom-node) is purr-modal;
+
 
 handler purr-ui-dom-renderer root: (Root is unknown) do
   let Render-root = dom make-element: "div" class: "purr-ui";
   (dom from-element: Root) append: Render-root;
+
   let Shadow = Render-root attach-closed-shadow;
   Shadow add-css: (package assets at: "assets/normalize.css" | read-as-text);
   Shadow add-css: (package assets at: "assets/purr-ui.css" | read-as-text);
   Shadow add-css: (package assets at: "assets/lens.css" | read-as-text);
   Shadow append: (dom make-element: "link" | set: "rel" to: "stylesheet" | set: "href" to: "/crochet.css");
+
   let Purr-root = dom make-element: "div" class: "purr-ui-root";
+  let Content-root = dom make-element: "div" class: "purr-ui-content-root";
+  let Modal-root = dom make-element: "div" class: "purr-ui-modal-root";
+  Purr-root append: Content-root | append: Modal-root;
   Shadow append: Purr-root;
-  let Surface = new dom-surface(Purr-root);
+
+  let Surface = new dom-surface(Content-root);
   let References = #cell with-value: #map empty;
   let Routers = #cell with-value: [];
   let Current-selector = #observable-cell with-value: #map empty;
@@ -38,6 +46,18 @@ with
   on purr-ui-presentation.commit(Widget) do
     let Node = dom-renderer render: Widget;
     continue with new dom-rendered-widget(Node);
+  end
+
+  on purr-ui-presentation.show-modal(Widget) do
+    let Modal = dom-renderer render-modal: Widget;
+    Modal-root append: Modal.node;
+    continue with Modal;
+  end
+
+  on purr-ui-presentation.close-modal(Modal) do
+    assert Modal is dom-modal;
+    Modal.node detach;
+    continue with nothing;
   end
 
   on purr-ui-navigation.make-router(Router) do

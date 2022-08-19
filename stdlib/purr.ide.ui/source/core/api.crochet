@@ -3,6 +3,8 @@
 effect purr-ui-presentation with
   commit(widget is widget); // -> rendered-widget
   show(widget is widget); // -> nothing
+  show-modal(widget is widget); // -> purr-modal
+  close-modal(modal is purr-modal); // -> nothing
 end
 
 capability ui-control;
@@ -14,6 +16,11 @@ protect global purr-ui with ui-control;
 
 command purr-ui show: (Widget has to-widget) do
   perform purr-ui-presentation.show(Widget as widget | commit);
+  self;
+end
+
+command purr-ui show-modal: (Widget has to-widget) do
+  perform purr-ui-presentation.show-modal(Widget as widget | commit);
   self;
 end
 

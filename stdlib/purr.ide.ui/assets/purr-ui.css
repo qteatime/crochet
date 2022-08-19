@@ -56,6 +56,7 @@
 }
 
 .purr-ui-root,
+.purr-ui-content-root,
 .purr-ui-container {
   width: 100%;
   height: 100%;
@@ -390,4 +391,52 @@
 
 .purr-ui-text-input[data-disabled="true"] {
   background: var(--color-input-disabled-background);
+}
+
+.purr-ui-modal-container {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.purr-ui-modal-shadow {
+  background: rgba(255, 255, 255, 0.8);
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+.purr-ui-modal-contents {
+  background: var(--color-background);
+  position: relative;
+  z-index: 1;
+  padding: 2.5rem 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
+  min-width: 50%;
+  max-width: 80%;
+}
+
+.purr-ui-modal-close-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.purr-ui-modal-close-button .purr-ui-button {
+  background: none;
+  color: var(--color-text);
+}
+
+.purr-ui-modal-close-button .purr-ui-button:hover {
+  background: var(--color-slate-100);
+  color: var(--color-accent);
 }
