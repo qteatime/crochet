@@ -23,7 +23,7 @@ command dom-renderer render: (W is widget-text-input) do
                 | append: (self render: W.label);
   let Input = dom make-element: "input" class: "purr-ui-text-input-control";
 
-  self set-property: "value" to: W.value in: Input;
+  self set-input-value: W.value in: Input;
   self set-property: "placeholder" to: W.placeholder in: Input;
   self set-boolean: "disabled" to: W.disabled in: Input;
   self set-boolean: "readonly" to: W.read-only in: Input;
@@ -43,7 +43,7 @@ command dom-renderer render: (W is widget-checkbox) do
   let Input = dom make-element: "input" class: "purr-ui-checkbox-content"
                 | set: "type" to: "checkbox";
   self set-boolean: "disabled" to: W.disabled in: Input;
-  self set-boolean: "checked" to: W.checked in: Input;
+  self set-input-checked: "checked" to: W.checked in: Input;
   Node append: Input;
   Node append: Label;
   Node;

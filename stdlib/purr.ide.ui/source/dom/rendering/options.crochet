@@ -9,35 +9,31 @@ command dom-renderer apply-options: (Options is option-list<A>) to: (Node is dom
   Node;
 end
 
-command dom-renderer set-style: (Key is text) to: (Value is purr-variable-immutable<X>) in: (Node is dom-node) do
-  Node set-style: Key to: (self context: Key to-property: Value.value);
+command dom-renderer set-style: Key to: Value in: Node do
+  Value subscribe: { X in
+    Node set-style: Key to: (self context: Key to-property: X);
+  };
 end
 
-command dom-renderer set-style: (Key is text) to: (Value is purr-variable-reactive<X>) in: (Node is dom-node) do
-  Value.value stream subscribe: { X in Node set-style: Key to: (self context: Key to-property: X) };
+command dom-renderer set-property: Key to: Value in: Node do
+  Value subscribe: { X in
+    Node set: Key to: (self to-property: X);
+  };
 end
 
-
-command dom-renderer set-property: (Key is text) to: (Value is purr-variable-immutable<X>) in: (Node is dom-node) do
-  Node set: Key to: (self to-property: Value.value);
+command dom-renderer set-input-value: Value in: Node do
+  Value subscribe: (Node set-input-value: _);
 end
 
-command dom-renderer set-property: (Key is text) to: (Value is purr-variable-reactive<X>) in: (Node is dom-node) do
-  Value.value stream subscribe: { X in Node set: Key to: (self to-property: X) };
+command dom-renderer set-input-checked: Value in: Node do
+  Value subscribe: (Node set-input-checked: _);
 end
 
-command dom-renderer set-boolean: (Key is text) to: (Value is purr-variable-immutable<X>) in: (Node is dom-node) do
-  condition
-    when Value.value => Node set: Key to: "true";
-    otherwise => Node unset: Key;
-  end
-end
-
-command dom-renderer set-boolean: (Key is text) to: (Value is purr-variable-reactive<X>) in: (Node is dom-node) do
-  Value.value stream subscribe: { X in
+command dom-renderer set-boolean: Key to: Value in: Node do
+  Value subscribe: { X in
     condition
       when X => Node set: Key to: "true";
       otherwise => Node unset: Key;
     end
-  }
+  };
 end

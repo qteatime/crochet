@@ -217,8 +217,20 @@ export default (ffi: ForeignInterface) => {
     return ffi.untrusted_text(el.value);
   });
 
+  ffi.defun("dom.set-input-value", (el0, value) => {
+    const el = ffi.unbox_typed(HTMLInputElement, el0);
+    el.value = ffi.text_to_string(value);
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.input-checked", (el0) => {
     const el = ffi.unbox_typed(HTMLInputElement, el0);
     return ffi.boolean(el.checked);
+  });
+
+  ffi.defun("dom.set-input-checked", (el0, value) => {
+    const el = ffi.unbox_typed(HTMLInputElement, el0);
+    el.checked = ffi.to_js_boolean(value);
+    return ffi.nothing;
   });
 };

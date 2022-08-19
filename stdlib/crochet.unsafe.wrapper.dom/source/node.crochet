@@ -121,15 +121,27 @@ end
 
 
 command dom-element input-value
-requires
-  input :: dom is-input: self
+requires input :: dom is-input: self
 do
   foreign dom.input-value(self.box);
 end
 
+command dom-element set-input-value: (Value is text)
+requires input :: dom is-input: self
+do
+  foreign dom.set-input-value(self.box, Value);
+  self;
+end
+
 command dom-element input-checked
-requires
-  input :: dom is-input: self
+requires input :: dom is-input: self
 do
   foreign dom.input-checked(self.box);
+end
+
+command dom-element set-input-checked: (Value is boolean)
+requires input :: dom is-input: self
+do
+  foreign dom.set-input-checked(self.box, Value);
+  self;
 end
