@@ -2,18 +2,27 @@
 
 open crochet.concurrency;
 open purr.ide.ui;
+open crochet.language.pickles;
+open crochet.language.json;
+open crochet.debug;
 
-local abstract page;
-local type page--coding(editor is editor) is page;
-local type page--testing(editor is editor) is page;
 
 local type editor(
   code is observable-cell<text>,
+  root is observable-cell<text>,
   json is observable-cell<text>,
+  data is observable-cell<result<any, json-error>>,
+  ast is observable-cell<result<ast-module, text>>,
 );
 
 implement purr-ui-page for pages--editor;
 command pages--editor render-page do
+  let Code = #observable-cell with-value: "";
+  let Root = #observable-cell with-value: "";
+  let Json = #observable-cell with-value: "";
+  let Data = Json map: (json try-parse: _);
+  let Ast = Code map: (pickles-grammar parse: _);
+
   #widget app-frame
     | header: (
         #widget title-bar: (
@@ -21,66 +30,183 @@ command pages--editor render-page do
         )
       )
     | body: new editor(
-        code -> #observable-cell with-value: "",
-        json -> #observable-cell with-value: "",
-      );
+        code -> Code,
+        root -> Root,
+        json -> Json,
+        data -> Data,
+        ast -> Ast,
+      )
 end
 
 
 implement to-widget for editor;
 command editor as widget do
-  let Coding-page = new page--coding(self);
-  let Router =
-    purr-ui make-router: (
-      #router cached: "pickles-editor"
-        | accepts: [#page--coding, #page--testing]
-        | initial-page: Coding-page
-    );
-
-  #widget flex-row: [
-    self menu: [coding -> Coding-page, testing -> new page--testing(self)],
-    Router
+  #widget container: [
+    #widget flex-column: [
+      #widget flex-row: [
+        self pickles-editor
+          | transform
+          | flex-grow: #flex-grow grow
+          | width: #size columns-6,
+        #widget vertical-divider
+          | content: (#widget icon: "plus"),
+        self json-editor
+          | flex-grow: #flex-grow grow
+          | width: #size columns-6,
+      ]
       | transform
-      | flex-grow: #flex-grow grow
-      | overflow: #overflow hidden,
+      | flex-align-items: #flex-align stretch
+      | flex-shrink: #flex-shrink no
+      | height: #size columns-6,
+
+      self rule-editor,
+      self results
+        | transform
+        | height: #size fill,
+    ]
+    | transform
+    | flex-gap: #text-size small
+    | height: #size fill,
   ]
   | transform
-  | flex-gap: #text-size base;
-end
-
-command editor menu: Pages do 
-  #widget navigation: [
-    #widget link: "Code" | to: Pages.coding,
-    #widget link: "Test" | to: Pages.testing,
-  ];
+  | padding: #text-size base;
 end
 
 
-implement purr-ui-page for page--coding;
-command page--coding location-selector = #page--coding;
-
-command page--coding render-page do
+command editor pickles-editor do
   let Code = #reference code-editor: "code";
   let Input = Code value
                | map: (untaint make-trusted: _);
-  Input stream subscribe: { X in self.editor.code <- X };
+  Input stream subscribe: { X in self.code <- X };
 
-  #widget container: [
+  #widget flex-column: [
+    "Pickles schema",
     #widget code-editor: "javascript"
-      | value: self.editor.code
+      | value: self.code
       | reference: Code
+      | transform
+      | flex-grow: #flex-grow grow,
+
+    self.ast map: (self render-parse-error: _),
   ]
-  | transform
-  | padding: #text-size base
+  | transform 
+  | flex-gap: #text-size small;
 end
 
+command editor json-editor do
+  let Json = #reference code-editor: "json";
+  let Input = Json value map: (untaint make-trusted: _);
+  Input stream subscribe: { X in self.json <- X };
 
-implement purr-ui-page for page--testing;
-command page--testing location-selector = #page--testing;
-
-command page--testing render-page do
   #widget flex-column: [
-    "Current code:",
-    self.editor.code
-  ];
+    "JSON data",
+    #widget code-editor: "json"
+      | value: self.json
+      | reference: Json
+      | transform
+      | flex-grow: #flex-grow grow,
+
+    self.data map: (self render-parse-error: _),
+  ]
+  | transform 
+  | flex-gap: #text-size small;
+end
+
+command editor rule-editor do
+  let Rule = #reference text-input: "rule";
+  let Input = Rule value map: (untaint make-trusted: _);
+  Input stream subscribe: { X in self.root <- X };
+
+  #widget text-input: "Initial rule"
+    | reference: Rule;
+end
+
+command editor results do
+  #widget tabbed-panel: [
+    #tab id: "ast"
+      | header: "AST"
+      | content:
+          (self pickles-ast as widget
+            | transform
+            | padding: #text-size small
+            | overflow: #overflow auto),
+
+    #tab id: "parsed"
+      | header: "Parsed data"
+      | content:
+          (self pickles-parse-results as widget
+            | transform
+            | padding: #text-size small
+            | overflow: #overflow auto),
+  ]
+  | selected: "ast"
+  | transform
+  | background-color: #color white;
+end
+
+command editor pickles-ast =
+  self.ast map: (self render-pickles-ast: _);
+
+command editor render-pickles-ast: error = "(Could not construct an AST)";
+command editor render-pickles-ast: (X is ok) = #widget lenses: X value;
+
+
+command editor pickles-parse-results do
+  self.ast zip: self.data
+           and: self.root
+           with: (self schema: _ parse: _ from: _);
+end
+
+command editor schema: (Ast is ok) parse: (Json is ok) from: (Root is text) do
+  let VM = #pickles-vm make;
+  let Module = VM load-module: Ast value;
+  let Result =
+    handle
+      let Rule = Module lookup: Root;
+      Rule parse: Json value;
+    with
+      use pickles-reify-errors;
+    end;
+  
+  condition
+    when Result is pickles-error =>
+      self error-message: Result to-panic-message;
+
+    when Result is error =>
+      self error-message: Result reason to-panic-message;
+
+    otherwise =>
+      #widget lenses: Result value;
+  end
+end
+
+command editor schema: (Ast is error) parse: _ from: _ =
+  self error-message: Ast reason;
+
+command editor schema: _ parse: (Json is error) from: _ =
+  self error-message: Json reason to-formatted-message;
+
+
+command editor render-parse-error: ok =
+  #widget space;
+
+command editor render-parse-error: (R is error) do
+  #widget card: [
+    #card-child body: (self error-message: (self render-error-message: R reason))
+  ]
+  | style: #card-style fluid
+  | transform
+  | minimum-height: #size columns-4
+  | overflow-vertical: #overflow auto;
+end
+
+command editor render-error-message: (X is text) = X;
+command editor render-error-message: (X is json-error) = X to-formatted-message;
+
+
+command editor error-message: Text do
+  (Text as widget)
+    | transform
+    | font-family: #font-family monospace
+    | white-space: #text-whitespace preserve-and-wrap;
 end

@@ -16,6 +16,10 @@ type foldable-observable-cell(
   stream is foldable-event-stream
 ) is observable-cell;
 
+type zipped-observable-cell(
+  sources is list<subscriber<A>>,
+  result is mutable-observable-cell<C>,
+) is observable-cell;
 
 
 command #observable-cell with-value: Initial do
@@ -91,3 +95,53 @@ command foldable-observable-cell stream =
 
 command foldable-observable-cell value =
   self.stream.state value;
+
+
+command #observable-cell zip: (Cells is record<observable-cell>) with: (F is (list -> A)) do
+  let Cell-map = #map from: Cells;
+  let Initial-value = F((Cell-map map: { X in X value value }) as record);
+
+  let Result = #observable-cell with-value: Initial-value;
+
+  let Subs = Cell-map map: { Cell in
+    Cell value stream subscribe: { Value in
+      let Values = Cell-map map: { X in X value value } | at: Cell key put: Value;
+      Result <- F(Values as record);
+    };
+  };
+
+  new zipped-observable-cell(Subs values, Result);
+test
+  let R = #cell with-value: [];
+  let A = #observable-cell with-value: 1;
+  let B = #observable-cell with-value: 2;
+  let C = #observable-cell with-value: 3;
+  let X = #observable-cell zip: [a -> A, b -> B, c -> C] with: { V in V };
+  R <- [X value];
+  X stream subscribe: { V in R <- R value append: V };
+  A <- 2;
+  B <- 3;
+  C <- 4;
+  assert X value =:= [a -> 2, b -> 3, c -> 4];
+  assert R value =:= [
+    [a -> 1, b -> 2, c -> 3],
+    [a -> 2, b -> 2, c -> 3],
+    [a -> 2, b -> 3, c -> 3],
+    [a -> 2, b -> 3, c -> 4],
+  ];
+end
+
+command observable-cell zip: (That is observable-cell) with: (F is ((A, B) -> C)) do
+  #observable-cell zip: [a -> self, b -> That] with: { X in F(X.a, X.b) };
+end
+
+command observable-cell zip: (A is observable-cell) and: (B is observable-cell) with: (F is ((A, B, C) -> D)) do
+  #observable-cell zip: [a -> self, b -> A, c -> B] with: { X in F(X.a, X.b, X.c) };
+end
+
+command zipped-observable-cell stream =
+  self.result stream;
+
+command zipped-observable-cell value =
+  self.result value;
+

@@ -7,8 +7,10 @@
   "dependencies": [
     "crochet.core",
     "crochet.language.pickles",
+    "crochet.language.json",
     "purr.ide.ui",
-    "crochet.concurrency"
+    "crochet.concurrency",
+    "crochet.debug"
   ],
   "capabilities": {
     "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting"],

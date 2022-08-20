@@ -10,4 +10,10 @@ handler pickles-fail-fast with
   end
 end
 
+handler pickles-reify-errors with
+  on pickles-evaluation.raise(Error) do
+    Error;
+  end
+end
+
 default handler pickles-fail-fast;

@@ -86,7 +86,8 @@
     "crochet.core",
     "crochet.concurrency",
     "crochet.text.regex",
-    "crochet.unsafe.wrapper.dom"
+    "crochet.unsafe.wrapper.dom",
+    "crochet.debug"
   ],
   "capabilities": {
     "requires": [],

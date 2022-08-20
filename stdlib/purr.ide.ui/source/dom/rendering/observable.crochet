@@ -13,10 +13,16 @@ local type observable-cell-widget(
   subscriber is cell
 );
 
+open crochet.debug;
+
 command observable-cell-widget setup: (Surface is surface) do
   Surface on-attached: {
+    transcript tag: "cell" inspect: [cell -> self, subscribed -> Surface];
     self maybe-unsubscribe;
-    self.subscriber <- self.cell stream subscribe: (Surface replace-contents: _);
+    self.subscriber <- self.cell stream subscribe: { X in 
+      transcript tag: "cell" inspect: [updated -> X, surface -> Surface];
+      Surface replace-contents: X
+    };
     Surface replace-contents: (self.cell value);
   };
 
