@@ -91,6 +91,7 @@ w.task("build-browser", ["build-grammar", "build-ts", "package-stdlib"], () => {
 w.task("build-stdlib", [], () => {
   exec(`npm run build-stdlib`);
   exec(`npm run bundle-codemirror`);
+  exec(`npm run bundle-lingua`);
 }).with_doc("Compiles the TypeScript stdlib source to JavaScript");
 
 w.task("package-stdlib", ["build-stdlib"], async () => {

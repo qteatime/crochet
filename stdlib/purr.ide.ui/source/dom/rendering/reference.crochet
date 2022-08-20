@@ -59,3 +59,13 @@ command dom-renderer install-reference: (R is reference-code-editor) in: Node do
   let Editor = Node.extra;
   Editor watch-value: { V in R.value <- V };
 end
+
+command dom-renderer install-reference: (R is reference-select-one) in: Node do
+  let Meta = Node.extra;
+  assert Meta is select-one-metadata;
+
+  Meta translate: Meta.input select-value do: { X in R.selected <- X };
+  Meta.input on: "change" do: { _ in
+    Meta translate: Meta.input select-value do: { X in R.selected <- X };
+  };
+end

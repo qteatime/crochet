@@ -1,5 +1,20 @@
-import * as Ohm from "ohm-js";
-const OhmUtil = require("ohm-js/src/util");
+import type * as Ohm from "ohm-js";
+
+declare var Lingua_Ohm: any;
+
+let ohm: typeof Ohm = null as any;
+let ohm_util: any = null;
+if (
+  typeof require === "undefined" ||
+  (typeof process === "undefined" && typeof Lingua_Ohm !== "undefined")
+) {
+  ohm = Lingua_Ohm.Ohm;
+  ohm_util = Lingua_Ohm.Util;
+} else {
+  ohm = require("ohm-js");
+  ohm_util = require("ohm-js/src/util");
+}
+
 import type {
   CrochetValue,
   ForeignInterface,
@@ -65,7 +80,7 @@ export default (ffi: ForeignInterface) => {
   }
 
   ffi.defun("lingua.make-grammar", (text) => {
-    const grammar = Ohm.grammar(ffi.text_to_string(text));
+    const grammar = ohm.grammar(ffi.text_to_string(text));
     (grammar as any)._checkTopDownActionDict = () => {};
     return ffi.box(grammar);
   });
@@ -141,7 +156,7 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("lingua.interval-position", (interval0) => {
     const interval = ffi.unbox(interval0) as Ohm.Node;
-    const { lineNum, colNum } = OhmUtil.getLineAndColumn(
+    const { lineNum, colNum } = ohm_util.getLineAndColumn(
       (interval as any).sourceString,
       interval.startIdx
     );

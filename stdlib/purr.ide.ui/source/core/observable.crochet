@@ -28,8 +28,10 @@ command purr-variable-immutable value =
   self.value;
 
 
-command purr-variable-reactive subscribe: (F is (A -> nothing)) =
+command purr-variable-reactive subscribe: (F is (A -> nothing)) do
+  F(self.value value);
   self.value stream subscribe: F;
+end
 
 command purr-variable-immutable subscribe: (F is (A -> nothing)) do
   F(self.value);

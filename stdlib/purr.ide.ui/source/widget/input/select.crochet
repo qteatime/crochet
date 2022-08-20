@@ -1,0 +1,41 @@
+% crochet
+
+type widget-select-one(
+  label is widget,
+  options is purr-variable<select-option>,
+  disabled is purr-variable<boolean>,
+  selected is purr-variable<A>,
+  read-only is purr-variable<boolean>,
+) is widget;
+
+abstract select-option;
+type select-option-pickable(value is A, label is text) is select-option;
+type select-option-group(label is text, items is list<select-options>) is select-option;
+
+command #select-option label: (Name is text) value: (Value is A) =
+  new select-option-pickable(value -> Value, label -> Name);
+
+command #select-option group: (Name is text) with: (Items is list<select-option>) =
+  new select-option-group(label -> Name, items -> Items);
+
+
+command #widget select-one: (Label has to-widget) =
+  new widget-select-one(
+    label -> Label as widget,
+    options -> [] as purr-variable,
+    disabled -> false as purr-variable,
+    selected -> nothing as purr-variable,
+    read-only -> false as purr-variable,
+  );
+
+command widget-select-one options: (Options has to-purr-variable) =
+  new widget-select-one(self with options -> Options as purr-variable);
+
+command widget-select-one disabled: (X has to-purr-variable) =
+  new widget-select-one(self with disabled -> X as purr-variable);
+
+command widget-select-one selected: (X has to-purr-variable) =
+  new widget-select-one(self with selected -> X as purr-variable);
+
+command widget-select-one read-only: (X has to-purr-variable) =
+  new widget-select-one(self with read-only -> X as purr-variable);

@@ -12,6 +12,7 @@
     "build-grammar": "node make.js build-grammar",
     "build-browser": "browserify -e build/targets/browser/index.js -o www/crochet.js -s Crochet",
     "bundle-codemirror": "browserify -e stdlib/purr.ide.ui/npm-native/code-mirror.js -o stdlib/purr.ide.ui/native/code-mirror.js -s CodeMirror",
+    "bundle-lingua": "browserify -e stdlib/crochet.text.parsing.lingua/native/lingua-ohm.js -o stdlib/crochet.text.parsing.lingua/native/lingua-ohm.bundle.js -s Lingua_Ohm",
     "test": "node make.js run-tests",
     "benchmark": "node make.js benchmark"
   },

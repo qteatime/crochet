@@ -139,5 +139,6 @@ local define primitives = lazy #map from: [
   },
 ];
 
+
 command #lingua primitive: Name =
   (force primitives) at: Name;

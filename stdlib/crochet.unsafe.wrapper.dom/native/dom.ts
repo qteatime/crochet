@@ -230,6 +230,21 @@ export default (ffi: ForeignInterface) => {
     return ffi.boolean(ffi.unbox(x) instanceof HTMLInputElement);
   });
 
+  ffi.defun("dom.is-select", (x) => {
+    return ffi.boolean(ffi.unbox(x) instanceof HTMLSelectElement);
+  });
+
+  ffi.defun("dom.select-value", (el0) => {
+    const el = ffi.unbox_typed(HTMLSelectElement, el0);
+    return ffi.text(el.value);
+  });
+
+  ffi.defun("dom.set-select-value", (el0, value) => {
+    const el = ffi.unbox_typed(HTMLSelectElement, el0);
+    el.value = ffi.text_to_string(value);
+    return ffi.nothing;
+  });
+
   ffi.defun("dom.input-value", (el0) => {
     const el = ffi.unbox_typed(HTMLInputElement, el0);
     return ffi.untrusted_text(el.value);

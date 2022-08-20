@@ -385,23 +385,28 @@
   white-space: break-spaces;
 }
 
-.purr-ui-text-input {
+.purr-ui-text-input,
+.purr-ui-select-one {
   position: relative;
   margin-top: 0.8rem;
 }
 
-.purr-ui-text-input-label {
+.purr-ui-text-input-label,
+.purr-ui-select-one-label {
   font-size: 0.8rem;
-  background: var(--color-background);
+  background: var(--color-slate-200);
   position: absolute;
-  top: -0.4rem;
+  top: -0.6rem;
   left: 0.75rem;
-  padding: 0 0.25rem;
+  padding: 0.15rem 0.5rem;
   color: var(--color-text-secondary);
   z-index: 2;
+  border-radius: 0.5rem;
+  text-shadow: 0px 1px 1px #fff;
 }
 
-.purr-ui-text-input-control {
+.purr-ui-text-input-control,
+.purr-ui-select-one-content {
   border: 1px solid var(--color-border);
   background: var(--color-background);
   padding: 1rem 0.5rem 0.5rem 0.5rem;
@@ -414,8 +419,33 @@
   z-index: 1;
 }
 
-.purr-ui-text-input-control[disabled] {
+.purr-ui-text-input-control[disabled],
+.purr-ui-select-one-content[disabled] {
   opacity: 0.5;
+}
+
+.purr-ui-select-one {
+  display: grid;
+  grid-template-areas: "select";
+  align-items: center;
+}
+
+.purr-ui-select-one-content {
+  appearance: none;
+  grid-area: select;
+}
+
+.purr-ui-select-one::after {
+  grid-area: select;
+  content: "";
+  width: 0.8em;
+  height: 0.5em;
+  background: var(--color-text-secondary);
+  clip-path: polygon(100% 0%, 0% 0%, 50% 100%);
+  justify-self: end;
+  position: relative;
+  z-index: 3;
+  margin-right: 0.75rem;
 }
 
 .purr-ui-modal-container {

@@ -139,6 +139,18 @@ do
   self;
 end
 
+command dom-element select-value
+requires select :: self is-select
+do
+  foreign dom.select-value(self.box);
+end
+
+command dom-element set-select-value: (Value is text)
+requires select :: self is-select
+do
+  foreign dom.set-select-value(self.box, Value);
+end
+
 command dom-element input-checked
 requires input :: dom is-input: self
 do
@@ -151,3 +163,7 @@ do
   foreign dom.set-input-checked(self.box, Value);
   self;
 end
+
+
+command dom-element is-select =
+  foreign dom.is-select(self.box);

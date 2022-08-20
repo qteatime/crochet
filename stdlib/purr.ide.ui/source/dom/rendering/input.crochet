@@ -48,3 +48,88 @@ command dom-renderer render: (W is widget-checkbox) do
   Node append: Label;
   self extend: Node with: Input;
 end
+
+
+type select-one-metadata(input is dom-node, choice-map is cell<map<text, A>>);
+
+command select-one-metadata translate: Key do: (F is (A -> nothing)) do
+  condition
+    when self.choice-map value contains-key: Key =>
+      F(self.choice-map value at: Key);
+    
+    otherwise =>
+      nothing;
+  end
+end
+
+command select-one-metadata reverse-translate: Value do
+  self.choice-map value entries
+    | find-first: { Entry in Entry value =:= Value }
+    | map: { X in X key }
+    | value-or-default: "";
+end
+
+command select-one-metadata associate: Key with: Value do
+  self.choice-map <- self.choice-map value at: Key put: Value;
+  self;
+end
+
+command select-one-metadata reset do
+  self.choice-map <- #map empty;
+  self;
+end
+
+command dom-renderer render: (W is widget-select-one) do
+  let Node = dom make-element: "label" class: "purr-ui-select-one";
+  let Label = dom make-element: "div" class: "purr-ui-select-one-label"
+                | append: (self render: W.label);
+  let Input = dom make-element: "select" class: "purr-ui-select-one-content";
+  
+  self set-boolean: "disabled" to: W.disabled in: Input;
+  self set-boolean: "data-disabled" to: W.disabled in: Node;
+  self set-boolean: "readonly" to: W.read-only in: Input;
+  
+  let Choices = #cell with-value: #map empty;
+  let Meta = new select-one-metadata(input -> Input, choice-map -> Choices);
+  W.options subscribe: (self render-select-options: _ input: Input selected: W.selected meta: Meta);
+
+  Node append: Label;
+  Node append: Input;
+
+  self extend: Node with: Meta;
+end
+
+command dom-renderer render-select-options: Options input: Input selected: Selected meta: Meta do
+  Input remove-contents;
+  Meta reset;
+
+  for Option in Options enumerate do
+    let Node = self render-select-option: Option value index: Option index to-text meta: Meta;
+    Input append: Node;
+  end
+
+  Selected subscribe: { Value in
+    let Key = Meta reverse-translate: Value;
+    Input set-select-value: Key;
+  };
+end
+
+command dom-renderer render-select-option: (X is select-option-pickable) index: Index meta: Meta do
+  let Node = dom make-element: "option"
+              | set: "value" to: Index
+              | append: (dom make-text: X.label);
+  Meta associate: Index with: X.value;        
+  Node;
+end
+
+command dom-renderer render-select-option: (X is select-option-group) index: Index meta: Meta do
+  let Node = dom make-element: "optgroup"
+              | set: "label" to: X.label;
+  for Child in X.items enumerate do
+    let To-append = self render-select-option: Child value
+                         index: "[Index].[Child index to-text]" flatten-into-plain-text
+                         meta: Meta;
+    Node append: To-append;
+  end
+  Node;
+end

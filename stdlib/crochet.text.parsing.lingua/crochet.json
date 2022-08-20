@@ -5,13 +5,10 @@
   "dependencies": ["crochet.core"],
   "native_sources": [
     {
-      "filename": "native/lingua-bundle.js",
+      "filename": "native/lingua-ohm.bundle.js",
       "target": "browser"
     },
-    {
-      "filename": "native/lingua.js",
-      "target": "node"
-    }
+    "native/lingua.js"
   ],
   "sources": ["source/core.crochet"],
   "capabilities": {

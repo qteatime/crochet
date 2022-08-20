@@ -10,6 +10,8 @@ command pickles-module lookup: (Name is text) do
   end
 end
 
+command pickles-module exported = self.exported;
+
 command pickles-module parse: Data with: (Root is text) do
   let Parser = self lookup: Root;
   let Result = Parser parse: Data;

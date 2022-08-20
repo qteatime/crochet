@@ -113,11 +113,16 @@ command editor json-editor do
 end
 
 command editor rule-editor do
-  let Rule = #reference text-input: "rule";
-  let Input = Rule value map: (untaint make-trusted: _);
-  Input stream subscribe: { X in self.root <- X };
+  let Rule = #reference select-one: "rule";
+  Rule selected stream subscribe: { X in self.root <- X };
+  let Options = self.ast
+                  | map: (self exported-bindings: _)
+                  | map: { Xs in [#select-option label: "-- Choose a rule --" value: ""]
+                              ++ (Xs map: { X in #select-option label: X value: X }) };
 
-  #widget text-input: "Initial rule"
+  #widget select-one: "Initial rule"
+    | options: Options
+    | selected: self.root
     | reference: Rule;
 end
 
@@ -210,3 +215,13 @@ command editor error-message: Text do
     | font-family: #font-family monospace
     | white-space: #text-whitespace preserve-and-wrap;
 end
+
+
+command editor exported-bindings: (Ast is ok) do
+  let VM = #pickles-vm make;
+  let Module = VM load-module: Ast value;
+  Module exported values;
+end
+
+command editor exported-bindings: (Ast is error) =
+  [];

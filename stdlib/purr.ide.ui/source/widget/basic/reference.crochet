@@ -17,5 +17,8 @@ command widget-text-input reference: (Ref is reference-text-input) =
 command widget-checkbox reference: (Ref is reference-checkbox) =
   new widget-reference(self, Ref);
 
+command widget-select-one reference: (Ref is reference-select-one) =
+  new widget-reference(self, Ref);
+
 command widget-code-editor reference: (Ref is reference-code-editor) =
   new widget-reference(self, Ref);
