@@ -35,7 +35,7 @@ command purr side-bar do
 end
 
 command purr run do
-  let Router = purr-ui router: "root" accepts: (pages lower-bound to: pages upper-bound);
+  let Router = purr-ui make-router: (#router basic: "root" accepts: (pages lower-bound to: pages upper-bound));
 
   #widget app-frame
     | header: (

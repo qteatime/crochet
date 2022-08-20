@@ -11,5 +11,5 @@ command #widget code-editor: (M has to-purr-variable) =
     value -> "" as purr-variable,
   );
 
-command widget-code-editor code-value: (X has to-purr-variable) =
+command widget-code-editor value: (X has to-purr-variable) =
   new widget-code-editor(self with value -> X as purr-variable);

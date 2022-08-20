@@ -64,13 +64,19 @@ with
     let Node = dom make-element: "div" class: "purr-ui-router"
                 | set: "data-name" to: Router.name;
     let Dom-router = new dom-router(Node, Router);
+    package render-initial-page: Dom-router selector: Current-selector;
     Routers <- Routers value append: Dom-router;
     continue with Dom-router;
   end
 
   on purr-ui-navigation.navigate(Widget, Page) do
     for Router in Routers value do
-      Router render-page: Page contents: Widget selector: Current-selector;
+      package render-page: Page
+              contents: Widget
+              selector: Current-selector
+              node: Router.node
+              router: Router
+              router-kind: Router.router;
     end
     continue with nothing;
   end
@@ -80,15 +86,64 @@ with
   end
 end
 
-
-command dom-router render-page: (Page has purr-ui-page) contents: Widget selector: Selector do
+command package render-initial-page: Router selector: Selector do
   condition
-    when self.router accepts: Page do
-      Selector <- Selector value at: self put: Page location-selector;
-      self.node replace-contents: (dom-renderer render: Widget);
+    when Router.router.initial-page is record do
+      let Page = Router.router.initial-page;
+      package render-page: Page.page
+              contents: Page.widget
+              selector: Selector
+              node: Router.node
+              router: Router
+              router-kind: Router.router;
     end
 
-    otherwise =>
-      nothing;
+    otherwise do
+      assert Router.router.initial-page is nothing;
+    end
+  end
+end
+
+command package render-page: (Page has purr-ui-page)
+                contents: Widget
+                selector: Selector
+                node: Node
+                router: Router
+                router-kind: (R is basic-router)
+do
+  condition
+    when R accepts: Page do
+      Selector <- Selector value at: Router put: Page location-selector;
+      Router.node replace-contents: (dom-renderer render: Widget);
+    end
+
+    otherwise => nothing;
+  end
+end
+
+command package render-page: (Page has purr-ui-page)
+                contents: Widget
+                selector: Selector
+                node: Node
+                router: Router
+                router-kind: (R is cached-router)
+do
+  condition
+    when R accepts: Page do
+      Selector <- Selector value at: Router put: Page location-selector;
+      let Render = condition
+                     when R.render-cache value contains-key: Page =>
+                       R.render-cache value at: Page;
+
+                     otherwise do
+                       let N = dom-renderer render: Widget;
+                       R.render-cache <- R.render-cache value at: Page put: N;
+                       N;
+                     end
+                   end;
+      Router.node replace-contents: Render;
+    end
+
+    otherwise => nothing;
   end
 end

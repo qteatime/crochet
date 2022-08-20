@@ -3,7 +3,9 @@
 open crochet.concurrency;
 open purr.ide.ui;
 
-local enum state = coding, testing;
+local abstract page;
+local type page--coding(editor is editor) is page;
+local type page--testing(editor is editor) is page;
 
 local type editor(
   code is observable-cell<text>,
@@ -27,11 +29,16 @@ end
 
 implement to-widget for editor;
 command editor as widget do
-  let Router = purr-ui
-                | router: "pickles-editor" accepts: (state lower-bound to: state upper-bound);
+  let Coding-page = new page--coding(self);
+  let Router =
+    purr-ui make-router: (
+      #router cached: "pickles-editor"
+        | accepts: [#page--coding, #page--testing]
+        | initial-page: Coding-page
+    );
 
   #widget flex-row: [
-    self menu,
+    self menu: [coding -> Coding-page, testing -> new page--testing(self)],
     Router
       | transform
       | flex-grow: #flex-grow grow
@@ -41,30 +48,39 @@ command editor as widget do
   | flex-gap: #text-size base;
 end
 
-command editor menu do 
+command editor menu: Pages do 
   #widget navigation: [
-    #widget link: "Code" | to: #state coding,
-    #widget link: "Test" | to: #state testing,
+    #widget link: "Code" | to: Pages.coding,
+    #widget link: "Test" | to: Pages.testing,
   ];
 end
 
-implement purr-ui-page for state--coding;
-command state--coding render-page do
+
+implement purr-ui-page for page--coding;
+command page--coding location-selector = #page--coding;
+
+command page--coding render-page do
   let Code = #reference code-editor: "code";
   let Input = Code value
                | map: (untaint make-trusted: _);
+  Input stream subscribe: { X in self.editor.code <- X };
 
   #widget container: [
     #widget code-editor: "javascript"
-      | reference: Code,
-
-    "Is empty: [Input map: (_ is-empty)]"
+      | value: self.editor.code
+      | reference: Code
   ]
   | transform
   | padding: #text-size base
 end
 
-implement purr-ui-page for state--testing;
-command state--testing render-page do
-  "todo";
+
+implement purr-ui-page for page--testing;
+command page--testing location-selector = #page--testing;
+
+command page--testing render-page do
+  #widget flex-column: [
+    "Current code:",
+    self.editor.code
+  ];
 end
