@@ -1,0 +1,61 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+
+command dom-renderer render: (W is widget-reference) do
+  let Node = self render: W.content;
+  self maybe-install-reference: W.reference in: Node;
+  Node;
+end
+
+command dom-renderer maybe-install-reference: (R is reference) in: (Node is extended-dom-node) do
+  self install-reference: R in: Node;
+end
+
+command dom-renderer maybe-install-reference: _ in: _ do
+  nothing;
+end
+
+command dom-renderer install-reference: (R is reference-button) in: (Node is extended-dom-node) do
+  let Button-node = Node.extra;
+  assert dom is-button-element: Button-node;
+
+  Button-node on: "click" do: { Ev in
+    R.clicked publish: (self to-purr-mouse-event: Ev)
+  };
+end
+
+command dom-renderer install-reference: (R is reference-text-input) in: Node do
+  let Input-node = Node.extra;
+  assert dom is-input: Input-node;
+
+  let Change-value = {
+    let Current = Input-node input-value;
+    condition
+      when not (Current =:= R.value value) =>
+        R.value <- Current;
+
+      otherwise =>
+        nothing;
+    end
+  };
+
+  R.value <- Input-node input-value;
+  Input-node delay-on: "keydown" do: { _ in Change-value() };
+  Input-node delay-on: "keyup" do: { _ in Change-value() };
+  Input-node on: "change" do: { _ in Change-value() };
+end
+
+command dom-renderer install-reference: (R is reference-checkbox) in: Node do
+  let Input-node = Node.extra;
+  assert dom is-input: Input-node;
+
+  R.checked <- Input-node input-checked;
+  Input-node on: "change" do: { _ in R.checked <- Input-node input-checked };
+end
+
+command dom-renderer install-reference: (R is reference-code-editor) in: Node do
+  let Editor = Node.extra;
+  Editor watch-value: { V in R.value <- V };
+end

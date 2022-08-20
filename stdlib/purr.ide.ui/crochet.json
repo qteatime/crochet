@@ -32,6 +32,7 @@
     "source/dom/rendering/source.crochet",
     "source/dom/rendering/code.crochet",
     "source/dom/rendering/modals.crochet",
+    "source/dom/rendering/reference.crochet",
     "source/dom/client.crochet",
     "source/dom/renderer.crochet",
     "source/dom/surface.crochet",

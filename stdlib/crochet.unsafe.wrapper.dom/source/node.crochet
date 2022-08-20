@@ -75,6 +75,12 @@ command dom-class-list toggle: (Name is text) do
 end
 
 
+command dom-element delay-on: (Event is text) do: (Handler is (dom-event -> nothing)) do
+  let Fun = { Ev in Handler(new dom-event(Ev)) } capture;
+  let Ref = foreign dom.add-delay-listener(self.box, Event, Fun);
+  new dom-subscriber(self, Event, Ref);
+end
+
 command dom-element on: (Event is text) do: (Handler is (dom-event -> nothing)) do
   let Fun = { Ev in Handler(new dom-event(Ev)) } capture;
   let Ref = foreign dom.add-listener(self.box, Event, Fun);

@@ -25,4 +25,5 @@ body {
   padding: 3em;
   align-items: center;
   overflow: auto;
+  z-index: 99;
 }

@@ -14,7 +14,7 @@ command dom-renderer render: (W is widget-button) do
   Node append: (self render: W.content);
   Node on: "click" do: { _ in W.on-click(nothing) } capture;
 
-  Node;
+  self extend: Node with: Node;
 end
 
 command dom-renderer render: (W is widget-text-input) do
@@ -32,7 +32,7 @@ command dom-renderer render: (W is widget-text-input) do
 
   Node append: Label;
   Node append: Input;
-  Node;
+  self extend: Node with: Input;
 end
 
 
@@ -43,8 +43,8 @@ command dom-renderer render: (W is widget-checkbox) do
   let Input = dom make-element: "input" class: "purr-ui-checkbox-content"
                 | set: "type" to: "checkbox";
   self set-boolean: "disabled" to: W.disabled in: Input;
-  self set-input-checked: "checked" to: W.checked in: Input;
+  self set-input-checked: W.checked in: Input;
   Node append: Input;
   Node append: Label;
-  Node;
+  self extend: Node with: Input;
 end

@@ -28,7 +28,6 @@ export default (ffi: ForeignInterface) => {
   ffi.defmachine("code-mirror.watch-value", function* (cm0, fn) {
     const cm = ffi.unbox_typed(EditorShell, cm0);
     let timer: any = null;
-    debugger;
     yield ffi.await(
       ffi.run_asynchronously(function* () {
         yield ffi.apply(fn, [
@@ -40,7 +39,7 @@ export default (ffi: ForeignInterface) => {
     cm.on_update((x) => {
       if (x.docChanged) {
         clearTimeout(timer);
-        setTimeout(() => {
+        timer = setTimeout(() => {
           ffi.run_asynchronously(function* () {
             yield ffi.apply(fn, [ffi.untrusted_text(x.state.doc.toString())]);
             return ffi.nothing;
