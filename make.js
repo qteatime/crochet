@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 const execSync = require("child_process").execSync;
+const Path = require("path");
+const FS = require("fs");
 
 class World {
   constructor() {
@@ -58,6 +60,16 @@ function exec(command, opts) {
 
 const w = new World();
 
+w.task("install-deps", [], () => {
+  exec(`npm install`);
+  const stdlib = Path.join(__dirname, "stdlib");
+  for (const dir of FS.readdirSync(stdlib)) {
+    if (FS.existsSync(Path.join(dir, "package-json"))) {
+      exec(`npm install`, { cwd: dir });
+    }
+  }
+}).with_doc("Install all dependencies for the project");
+
 w.task("build-grammar", [], () => {
   exec(
     `node tools/lingua.js source/grammar/crochet.lingua > source/generated/crochet-grammar.ts`
@@ -78,6 +90,7 @@ w.task("build-browser", ["build-grammar", "build-ts", "package-stdlib"], () => {
 
 w.task("build-stdlib", [], () => {
   exec(`npm run build-stdlib`);
+  exec(`npm run bundle-codemirror`);
 }).with_doc("Compiles the TypeScript stdlib source to JavaScript");
 
 w.task("package-stdlib", ["build-stdlib"], async () => {

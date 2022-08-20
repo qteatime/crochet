@@ -35,12 +35,13 @@ export abstract class ScopedFSBackend {
     if (typeof module.exports.default === "function") {
       return module.exports.default;
     } else {
-      throw new Error(
+      console.warn(
         [
           `Native module ${path} in ${this.name}`,
           `does not expose a function in 'exports.default'.`,
         ].join("")
       );
+      return (ffi) => {};
     }
   }
 }

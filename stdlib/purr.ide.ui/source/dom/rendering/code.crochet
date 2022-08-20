@@ -37,3 +37,10 @@ command dom-renderer render: (W is widget-lenses-all) do
   Node append: Representations;
   Node;
 end
+
+
+command dom-renderer render: (W is widget-code-editor) do
+  let Node = dom make-element: "div" class: "purr-ui-code-editor";
+  let Editor = foreign code-mirror.make-editor(dom unbox: Node, [->]);
+  Node;
+end

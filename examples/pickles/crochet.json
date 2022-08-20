@@ -3,15 +3,15 @@
   "description": "Development tools for Pickles",
   "target": "*",
   "native_sources": [],
-  "sources": ["source/main.crochet", "source/editor.crochet"],
+  "sources": ["source/main.crochet", "source/pages/editor.crochet"],
   "dependencies": [
     "crochet.core",
     "crochet.language.pickles",
-    "crochet.ui.agata",
+    "purr.ide.ui",
     "crochet.concurrency"
   ],
   "capabilities": {
-    "requires": ["crochet.ui.agata/ui-control"],
+    "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting"],
     "provides": []
   }
 }

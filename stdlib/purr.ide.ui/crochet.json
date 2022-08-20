@@ -2,7 +2,12 @@
   "name": "purr.ide.ui",
   "target": "*",
   "description": "An extension to Agata for building IDE tools",
-  "native_sources": ["native/lens.js", "native/representation.js"],
+  "native_sources": [
+    "native/lens.js",
+    "native/representation.js",
+    "native/code-mirror.js",
+    "native/code-mirror-ffi.js"
+  ],
   "sources": [
     "source/core/api.crochet",
     "source/core/color.crochet",
@@ -46,6 +51,7 @@
     "source/widget/basic/reference.crochet",
 
     "source/widget/code/lens.crochet",
+    "source/widget/code/editor.crochet",
 
     "source/widget/input/button.crochet",
     "source/widget/input/text-input.crochet",

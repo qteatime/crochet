@@ -1,0 +1,17 @@
+% crochet
+
+open purr.ide.ui;
+
+singleton pickles-ide;
+enum pages = editor;
+
+command main-html: Root do
+  handle
+    let Router = purr-ui router: "pickles-ide" accepts: (pages lower-bound to: pages upper-bound);
+    purr-ui show: Router;
+    purr-ui navigate: #pages editor;
+  with
+    use logical-time;
+    use purr-ui-dom-renderer root: Root;
+  end
+end

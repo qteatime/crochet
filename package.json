@@ -11,6 +11,7 @@
     "build-stdlib": "tsc -p stdlib",
     "build-grammar": "node make.js build-grammar",
     "build-browser": "browserify -e build/targets/browser/index.js -o www/crochet.js -s Crochet",
+    "bundle-codemirror": "browserify -e stdlib/purr.ide.ui/npm-native/code-mirror.js -o stdlib/purr.ide.ui/native/code-mirror.js -s CodeMirror",
     "test": "node make.js run-tests",
     "benchmark": "node make.js benchmark"
   },
