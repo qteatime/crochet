@@ -8,6 +8,9 @@ command dom-renderer render-to-element: (W is widget) do
     when Node is dom-element =>
       Node;
 
+    when Node is extended-dom-node =>
+      Node.node;
+
     otherwise =>
       dom make-element: "div" class: "purr-ui-fragment"
         | append: Node;
@@ -122,7 +125,7 @@ end
 
 
 command dom-renderer render: (W is widget-reference) do
-  let Node = self render-to-element: W.content;
+  let Node = self render: W.content;
   self install-reference: W.reference in: Node;
   Node;
 end
@@ -169,4 +172,9 @@ command dom-renderer install-reference: (R is reference-checkbox) in: Node do
 
   R.checked <- Input-node input-checked;
   Input-node on: "change" do: { _ in R.checked <- Input-node input-checked };
+end
+
+command dom-renderer install-reference: (R is reference-code-editor) in: Node do
+  let Editor = Node.extra;
+  Editor watch-value: { V in R.value <- V };
 end

@@ -41,6 +41,6 @@ end
 
 command dom-renderer render: (W is widget-code-editor) do
   let Node = dom make-element: "div" class: "purr-ui-code-editor";
-  let Editor = foreign code-mirror.make-editor(dom unbox: Node, [->]);
-  Node;
+  let Editor = new code-editor-shell(foreign code-mirror.make-editor(dom unbox: Node, [->]));
+  self extend: Node with: Editor;
 end

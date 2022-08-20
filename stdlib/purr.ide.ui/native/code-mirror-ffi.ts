@@ -25,9 +25,30 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(editor);
   });
 
-  ffi.defun("code-mirror.get-value", (cm0) => {
+  ffi.defmachine("code-mirror.watch-value", function* (cm0, fn) {
     const cm = ffi.unbox_typed(EditorShell, cm0);
-    return ffi.text(cm.get_value());
+    let timer: any = null;
+    debugger;
+    yield ffi.await(
+      ffi.run_asynchronously(function* () {
+        yield ffi.apply(fn, [
+          ffi.untrusted_text(cm.view?.state.doc.toString() ?? ""),
+        ]);
+        return ffi.nothing;
+      })
+    );
+    cm.on_update((x) => {
+      if (x.docChanged) {
+        clearTimeout(timer);
+        setTimeout(() => {
+          ffi.run_asynchronously(function* () {
+            yield ffi.apply(fn, [ffi.untrusted_text(x.state.doc.toString())]);
+            return ffi.nothing;
+          });
+        }, 250);
+      }
+    });
+    return ffi.nothing;
   });
 
   // function get_editor(x: CrochetValue) {

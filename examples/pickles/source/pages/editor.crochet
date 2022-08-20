@@ -27,7 +27,8 @@ end
 
 implement to-widget for editor;
 command editor as widget do
-  let Router = purr-ui router: "pickles-editor" accepts: (state lower-bound to: state upper-bound);
+  let Router = purr-ui
+                | router: "pickles-editor" accepts: (state lower-bound to: state upper-bound);
 
   #widget flex-row: [
     self menu,
@@ -49,8 +50,15 @@ end
 
 implement purr-ui-page for state--coding;
 command state--coding render-page do
+  let Code = #reference code-editor: "code";
+  let Input = Code value
+               | map: (untaint make-trusted: _);
+
   #widget container: [
     #widget code-editor: "javascript"
+      | reference: Code,
+
+    "Is empty: [Input map: (_ is-empty)]"
   ]
   | transform
   | padding: #text-size base

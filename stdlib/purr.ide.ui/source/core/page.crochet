@@ -24,3 +24,4 @@ command router accepts: (Page has purr-ui-page) do
   let Selector = Page location-selector;
   self.selectors some: { S in S =:= Selector };
 end
+

@@ -8,6 +8,7 @@ type reference-widget(name is text) is reference;
 type reference-button(name is text, clicked is event-stream<click-event>) is reference;
 type reference-text-input(name is text, value is observable-cell<text>) is reference;
 type reference-checkbox(name is text, checked is observable-cell<boolean>) is reference;
+type reference-code-editor(name is text, value is observable-cell<text>) is reference;
 
 
 command #reference anything: (Name is text) =
@@ -31,6 +32,12 @@ command #reference checkbox: (Name is text) =
     checked -> #observable-cell with-value: false,
   );
 
+command #reference code-editor: (Name is text) =
+  new reference-code-editor(
+    name -> Name,
+    value -> #observable-cell with-value: "",
+  );
+
 command reference-button clicked =
   self.clicked listener;
 
@@ -39,3 +46,6 @@ command reference-text-input value =
 
 command reference-checkbox checked =
   self.checked read-only;
+
+command reference-code-editor value =
+  self.value read-only;

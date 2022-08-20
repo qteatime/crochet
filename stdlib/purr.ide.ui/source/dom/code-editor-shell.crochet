@@ -1,0 +1,8 @@
+% crochet
+
+type code-editor-shell(box is unknown);
+
+command code-editor-shell watch-value: (F is (unsafe-arbitrary-text -> nothing)) do
+  foreign code-mirror.watch-value(self.box, { X in F(X) } capture);
+  self;
+end

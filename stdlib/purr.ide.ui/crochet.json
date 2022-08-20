@@ -36,6 +36,7 @@
     "source/dom/renderer.crochet",
     "source/dom/surface.crochet",
     "source/dom/event.crochet",
+    "source/dom/code-editor-shell.crochet",
 
     "source/widget/basic/widget.crochet",
     "source/widget/basic/conversions.crochet",
