@@ -3,15 +3,25 @@
 type widget-text-input(
   label is widget,
   value is purr-variable<text>,
+  accept is purr-variable<text-input-accept>,
   placeholder is purr-variable<text>,
   disabled is purr-variable<boolean>,
   read-only is purr-variable<boolean>,
 ) is widget;
 
+enum text-input-accept =
+  text,
+  email,
+  number,
+  password,
+  telephone,
+  url;
+
 command #widget text-input: (Label has to-widget) =
   new widget-text-input(
     label -> Label as widget,
     value -> "" as purr-variable,
+    accept -> #text-input-accept text as purr-variable,
     placeholder -> "" as purr-variable,
     disabled -> false as purr-variable,
     read-only -> false as purr-variable,
@@ -22,6 +32,9 @@ command widget-text-input value: (X has to-purr-variable) =
 
 command widget-text-input placeholder: (X has to-purr-variable) =
   new widget-text-input(self with placeholder -> X as purr-variable);
+
+command widget-text-input accept: (X has to-purr-variable) =
+  new widget-text-input(self with accept -> X as purr-variable);
 
 command widget-text-input disabled: (X has to-purr-variable) =
   new widget-text-input(self with disabled -> X as purr-variable);

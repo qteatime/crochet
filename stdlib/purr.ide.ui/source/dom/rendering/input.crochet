@@ -23,6 +23,7 @@ command dom-renderer render: (W is widget-text-input) do
   let Input = dom make-element: "input" class: "purr-ui-text-input-control";
 
   self set-input-value: W.value in: Input;
+  self set-property: "type" to: (W.accept map: (self to-input-type: _)) in: Input;
   self set-property: "placeholder" to: W.placeholder in: Input;
   self set-boolean: "disabled" to: W.disabled in: Input;
   self set-boolean: "readonly" to: W.read-only in: Input;
@@ -33,6 +34,9 @@ command dom-renderer render: (W is widget-text-input) do
   Node append: Input;
   self extend: Node with: Input;
 end
+
+command dom-renderer to-input-type: text-input-accept--telephone = "tel";
+command dom-renderer to-input-type: (X is text-input-accept) = X to-enum-text;
 
 
 command dom-renderer render: (W is widget-checkbox) do

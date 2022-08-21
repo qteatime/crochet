@@ -28,6 +28,13 @@ command purr-variable-immutable value =
   self.value;
 
 
+command purr-variable-reactive map: (F is (A -> B)) =
+  new purr-variable-reactive(self.value map: F);
+
+command purr-variable-immutable map: (F is (A -> B)) =
+  new purr-variable-immutable(F(self.value));
+
+
 command purr-variable-reactive subscribe: (F is (A -> nothing)) do
   F(self.value value);
   self.value stream subscribe: F;
