@@ -5,42 +5,42 @@ open crochet.text.parsing.lingua;
 abstract pickles-value;
 
 type pickles-module(
-  name is text,
+  global name is text,
   bindings is map<text, pickles-value>,
   exported is set<text>,
 ) is pickles-value;
 
 type pickles-parser(
-  name is text,
-  body is ast-expression,
-  location is interval,
+  global name is text,
+  global body is ast-expression,
+  global location is interval,
   environment is environment
 ) is pickles-value;
 
 type pickles-anonymous-parser(
   environment is environment,
-  body is ast-expression,
+  global body is ast-expression,
 ) is pickles-value;
 
 type pickles-function(
-  name is text,
-  formals is list<text>,
-  body is ast-expression,
+  global name is text,
+  global formals is list<text>,
+  global body is ast-expression,
   environment is environment,
-  location is interval,
+  global location is interval,
 ) is pickles-value;
 
 type pickles-native-parser(
-  name is text,
+  global name is text,
   body is ((A) -> result<parser-state, parser-error>),
 ) is pickles-value;
 
 type pickles-native-function(
-  name is text,
-  formals is list<text>,
+  global name is text,
+  global formals is list<text>,
   body is function, // (A...) -> pickles-value,
 ) is pickles-value;
 
 type pickles-literal(
-  value is any, // any Crochet primitive
+  global value is any, // any Crochet primitive
 ) is pickles-value;

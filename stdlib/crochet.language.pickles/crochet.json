@@ -4,6 +4,7 @@
   "native_sources": [],
   "sources": [
     "source/syntax/grammar.lingua",
+    "source/syntax/ast.crochet",
 
     "source/vm/application.crochet",
     "source/vm/effect.crochet",
@@ -17,13 +18,15 @@
     "source/vm/text-representation.crochet",
     "source/vm/traversal.crochet",
     "source/vm/vm.crochet",
+    "source/vm/tracing.crochet",
 
     "source/api.crochet"
   ],
   "dependencies": [
     "crochet.core",
     "crochet.text.parsing.lingua",
-    "crochet.language.json"
+    "crochet.language.json",
+    "crochet.concurrency"
   ],
   "capabilities": {
     "requires": [],

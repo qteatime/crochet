@@ -13,6 +13,15 @@ local type editor(
   json is observable-cell<text>,
   data is observable-cell<result<any, json-error>>,
   ast is observable-cell<result<ast-module, text>>,
+  evaluation is observable-cell<result<pickles-evaluation-result, any>>,
+);
+
+type pickles-evaluation-result(
+  ast is ast-module,
+  rule is text,
+  input is any,
+  result is result<any, text>,
+  events is list<pickles-trace-event>,
 );
 
 implement purr-ui-page for pages--editor;
@@ -22,6 +31,7 @@ command pages--editor render-page do
   let Json = #observable-cell with-value: "";
   let Data = Json map: (json try-parse: _);
   let Ast = Code map: (pickles-grammar parse: _);
+  let Evaluation = Ast zip: Data and: Root with: (package schema: _ parse: _ from: _);
 
   #widget app-frame
     | header: (
@@ -35,6 +45,7 @@ command pages--editor render-page do
         json -> Json,
         data -> Data,
         ast -> Ast,
+        evaluation -> Evaluation,
       )
 end
 
@@ -129,20 +140,31 @@ end
 command editor results do
   #widget tabbed-panel: [
     #tab id: "ast"
-      | header: "AST"
+      | header: "Grammar structure"
       | content:
           (self pickles-ast as widget
             | transform
             | padding: #text-size small
-            | overflow: #overflow auto),
+            | overflow: #overflow auto
+            | maximum-height: #size small-screen),
 
     #tab id: "parsed"
-      | header: "Parsed data"
+      | header: "Parsed result"
       | content:
           (self pickles-parse-results as widget
             | transform
             | padding: #text-size small
-            | overflow: #overflow auto),
+            | overflow: #overflow auto
+            | maximum-height: #size small-screen),
+
+    #tab id: "trace"
+      | header: "Execution explanation"
+      | content:
+          (self pickles-trace-results as widget
+            | transform
+            | padding: #text-size small
+            | overflow: #overflow auto
+            | maximum-height: #size small-screen),
   ]
   | selected: "ast"
   | transform
@@ -156,40 +178,150 @@ command editor render-pickles-ast: error = "(Could not construct an AST)";
 command editor render-pickles-ast: (X is ok) = #widget lenses: X value;
 
 
-command editor pickles-parse-results do
-  self.ast zip: self.data
-           and: self.root
-           with: (self schema: _ parse: _ from: _);
-end
+command editor pickles-parse-results =
+  self.evaluation map: (self pickles-parse-results: _);
 
-command editor schema: (Ast is ok) parse: (Json is ok) from: (Root is text) do
-  let VM = #pickles-vm make;
-  let Module = VM load-module: Ast value;
-  let Result =
-    handle
-      let Rule = Module lookup: Root;
-      Rule parse: Json value;
-    with
-      use pickles-reify-errors;
-    end;
-  
+command editor pickles-parse-results: (Result is ok) do
+  let Eval-result = (Result value).result;
   condition
-    when Result is pickles-error =>
-      self error-message: Result to-panic-message;
+    when Eval-result is ok =>
+      #widget lenses: Eval-result value;
 
-    when Result is error =>
-      self error-message: Result reason to-panic-message;
-
-    otherwise =>
-      #widget lenses: Result value;
+    when Eval-result is error =>
+      self error-message: (self render-error-message: Eval-result reason);
   end
 end
 
-command editor schema: (Ast is error) parse: _ from: _ =
-  self error-message: Ast reason;
+command editor pickles-parse-results: (Result is error) =
+  self error-message: (self render-error-message: Result reason);
 
-command editor schema: _ parse: (Json is error) from: _ =
-  self error-message: Json reason to-formatted-message;
+
+command editor pickles-trace-results =
+  self.evaluation map: (self pickles-trace-results: _);
+
+command editor pickles-trace-results: (Results is ok) =
+  #widget vertical-timeline: ((Results value).events map: (self render-event: _));
+
+command editor render-event: (E is pickles-trace-event-invoke) =
+  #widget card: [
+    #card-child meta: "INVOKE",
+    #card-child meta: (self to-event-location: E location),
+    #card-child header: (self event-header: E parser),
+    // #card-child body: (#widget lens: E arguments perspective: default-perspective),
+    // #card-child content: (#widget divider),
+    #card-child body: (#widget lens: E input perspective: default-perspective),
+  ]
+  | style: #card-style fluid;
+
+command editor render-event: (E is pickles-trace-event-return) =
+  #widget card: [
+    #card-child meta: "RETURN",
+    #card-child meta: (self to-event-location: E location),
+    #card-child header: (self event-header: E parser),
+    #card-child content: (#widget divider),
+    #card-child body: (#widget lens: E result perspective: default-perspective),
+  ]
+  | style: #card-style fluid;
+
+command editor render-event: (E is pickles-trace-event-result) =
+  #widget card: [
+    #card-child meta: "OK",
+    #card-child meta: (self to-event-location: E location),
+    #card-child body: (#widget lens: E data perspective: default-perspective),
+  ]
+  | style: #card-style fluid;
+
+command editor render-event: (E is pickles-trace-event-error) =
+  #widget card: [
+    #card-child meta: "ERROR",
+    #card-child meta: (self to-event-location: E location),
+    #card-child body: (self error-message: E error to-panic-message),
+    // #card-child body: (#widget lenses: E error)
+  ]
+  | style: #card-style fluid;
+
+command editor render-event: (E is pickles-trace-event-traverse) =
+  #widget card: [
+    #card-child meta: "TRAVERSE",
+    #card-child meta: (self to-event-location: E location),
+    #card-child header: (E path to-text),
+    #card-child body: (#widget lens: E input perspective: default-perspective),
+    #card-child content: (#widget divider),
+    #card-child body: (#widget lens: E value perspective: default-perspective),
+  ]
+  | style: #card-style fluid;
+
+command editor to-event-location: X =
+  (self event-location: X) as widget
+    | transform
+    | font-family: #font-family monospace
+    | white-space: #text-whitespace preserve-and-wrap;
+
+command editor event-location: (L is pickles-trace-span) =
+  self event-location: L location;
+
+command editor event-location: (L is pickles-parser) =
+  "[L name] at [L location annotated-source]";
+
+command editor event-location: (L is pickles-anonymous-parser) =
+  self event-location: L body;
+
+command editor event-location: (L is pickles-function) =
+  "[L name]([#text join: L formals with: ", "]) at [L location annotated-source]";
+
+command editor event-location: (L is pickles-native-parser) =
+  "<native: [L name]>";
+
+command editor event-location: (L is pickles-native-function) =
+  "<native: [L name]([#text join: L formals with: ", "])>";
+
+command editor event-location: (L is pickles-literal) =
+  "<literal: [#widget lens: L value perspective: default-perspective]>";
+
+command editor event-location: (L is ast-declaration) =
+  L info annotated-source;
+
+command editor event-location: (L is ast-expression) =
+  L info annotated-source;
+
+command editor event-location: (L is ast-literal) =
+  "<literal>"; // self event-location: L evaluate;
+
+command editor event-location: _ =
+  "<unknown>";
+
+
+command editor event-header: (L is pickles-parser) =
+  L name;
+
+command editor event-header: (L is pickles-anonymous-parser) =
+  "(anonymous)";
+
+command editor event-header: (L is pickles-function) =
+  "[L name]([#text join: L formals with: ", "])";
+
+command editor event-header: (L is pickles-native-parser) =
+  "<native: [L name]>";
+
+command editor event-header: (L is pickles-native-function) =
+  "<native: [L name]([#text join: L formals with: ", "])>";
+
+command editor event-header: _ =
+  "<unknown>";
+
+
+command editor pickles-trace-results: (Result is error) =
+  self error-message: (self render-error-message: Result reason);
+
+
+command package schema: (Ast is ok) parse: (Json is ok) from: (Root is text) =
+  #result ok: (package trace-evaluation: Ast value input: Json value rule: Root);
+
+command package schema: (Ast is error) parse: _ from: _ =
+  #result error: (Ast reason);
+
+command package schema: _ parse: (Json is error) from: _ =
+  #result error: (Json reason);
 
 
 command editor render-parse-error: ok =
@@ -207,6 +339,7 @@ end
 
 command editor render-error-message: (X is text) = X;
 command editor render-error-message: (X is json-error) = X to-formatted-message;
+command editor render-error-message: (X is pickles-error) = X to-panic-message;
 
 
 command editor error-message: Text do
@@ -225,3 +358,39 @@ end
 
 command editor exported-bindings: (Ast is error) =
   [];
+
+
+command package trace-evaluation: Ast input: Input rule: Root do
+  let Events = #cell with-value: [];
+  let Tracer = #pickles-tracer make;
+  let Subscription = Tracer events subscribe: { Ev in Events <- Events value append: Ev };
+
+  let VM = #pickles-vm make;
+  let Module = VM load-module: Ast;
+  let Result0 =
+    handle
+      let Rule = Module lookup: Root;
+      Rule parse: Input;
+    with
+      use pickles-reify-errors;
+      use pickles-tracing trace-all: Tracer;
+    end;
+  
+  let Result =
+    condition
+      when Result0 is pickles-error => #result error: Result0;
+      otherwise => Result0;
+    end;
+
+  Tracer events unsubscribe: Subscription;
+
+  new pickles-evaluation-result(
+    ast -> Ast,
+    rule -> Root,
+    input -> Input,
+    result -> Result,
+    events -> Events value,
+  );
+end
+
+

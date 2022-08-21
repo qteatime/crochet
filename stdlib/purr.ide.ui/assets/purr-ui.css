@@ -537,3 +537,36 @@
 .purr-ui-code-editor > .cm-editor {
   height: 100%;
 }
+
+.purr-ui-vertical-timeline {
+  padding: 1rem 0rem 1rem 4rem;
+  position: relative;
+}
+
+.purr-ui-vertical-timeline::before {
+  content: "";
+  position: absolute;
+  top: 0px;
+  left: 2rem;
+  width: 0.2rem;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 0.2rem;
+}
+
+.purr-ui-vertical-timeline-item {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.purr-ui-vertical-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -2.5rem;
+  top: 0px;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 100%;
+  border: 3px solid var(--color-white);
+  background: var(--color-accent);
+}

@@ -1,0 +1,9 @@
+% crochet
+
+command ast-expression info = self.info;
+command ast-declaration info = self.info;
+command ast-literal evaluate = package evaluate-literal: self;
+
+command ast-path to-text = self.segments map: (_ to-text) |> #text join: _ with: ".";
+command ast-segment--name to-text = self.text;
+command ast-segment--text to-text = self.text;

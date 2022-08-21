@@ -11,8 +11,10 @@ command #pickles-vm make =
     modules -> #cell with-value: #map empty,
   );
 
-command #pickles-vm exception: (Error is pickles-error) =
+command #pickles-vm exception: (Error is pickles-error) do
+  perform pickles-tracing.trace-error(Error);
   perform pickles-evaluation.raise(Error);
+end
 
 
 

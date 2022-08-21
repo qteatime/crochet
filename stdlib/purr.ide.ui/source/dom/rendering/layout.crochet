@@ -202,3 +202,14 @@ command dom-renderer render-breadcrumb-item: (W is breadcrumb-separator) =
 command dom-renderer render-breadcrumb-item: (W is widget) =
   dom make-element: "div" class: "purr-ui-breadcrumbs-item"
     | append: (self render: W);
+
+
+command dom-renderer render: (W is widget-vertical-timeline) do
+  let Node = dom make-element: "ul" class: "purr-ui-vertical-timeline";
+  for Child in W.items do
+    let Child-node = dom make-element: "li" class: "purr-ui-vertical-timeline-item";
+    Child-node append: (self render: Child);
+    Node append: Child-node;
+  end
+  Node;
+end

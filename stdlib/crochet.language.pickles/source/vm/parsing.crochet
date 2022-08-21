@@ -3,28 +3,41 @@
 command pickles-value parse: Value =
   #pickles-vm exception: new pickles-error--not-a-parser(self, Value);
 
-command pickles-native-parser parse: Value =
-  self.body(Value);
+command pickles-native-parser parse: Value do
+  #pickles-tracer invoke: self with: [] input: Value do: {
+    self.body(Value);
+  };
+end
 
 command pickles-parser parse: Value =
-  package parse: Value with: self.body in: self.environment;
+  #pickles-tracer invoke: self with: [] input: Value do: {
+    package trace-parse: Value with: self.body in: self.environment;
+  };
 
 command pickles-anonymous-parser parse: Value =
-  package parse: Value with: self.body in: self.environment;
+  #pickles-tracer invoke: self with: [] input: Value do: {
+    package trace-parse: Value with: self.body in: self.environment;
+  };
 
 command pickles-literal parse: Value do
-  condition
-    when Value =:= self.value => #result ok: Value;
-    otherwise => #pickles-vm exception: new pickles-error--not-equals(self, Value);
-  end
+  #pickles-tracer invoke: self with: [] input: Value do: {
+    condition
+      when Value =:= self.value => #result ok: Value;
+      otherwise => #pickles-vm exception: new pickles-error--not-equals(self, Value);
+    end
+  };
 end
 
 
 // -- Internal parsing from non-first-class values
+command package trace-parse: X with: P in: Env do
+  #pickles-tracer span: P do: { package parse: X with: P in: Env };
+end
+
 command package parse: X with: (P is ast-expression--union) in: Env do
-  package parse: X with: P.left in: Env
+  package trace-parse: X with: P.left in: Env
     | recover: { E1 in
-        package parse: X with: P.right in: Env
+        package trace-parse: X with: P.right in: Env
           | map-error: { E2 in
               new pickles-error--both-failed(P, E1, E2, X);
             }
@@ -32,7 +45,7 @@ command package parse: X with: (P is ast-expression--union) in: Env do
 end
 
 command package parse: X with: (P is ast-expression--optional) in: Env do
-  package parse: X with: P.parser in: Env
+  package trace-parse: X with: P.parser in: Env
     | recover: { E in
         condition
           when E is pickles-error--path-not-found =>
@@ -47,16 +60,18 @@ end
 command package parse: X with: (P is ast-expression--apply) in: Env do
   let Fun = Env lookup: P.name;
   let Args = P.args map: (package make-thunk: _ in: Env);
-  package parse: X with: (package apply: Fun to: Args) in: Env;
+  #pickles-tracer invoke: Fun with: Args input: X do: {
+    package parse: X with: (package apply: Fun to: Args) in: Env;
+  };
 end
 
 command package parse: X with: (P is ast-expression--match) in: Env do
-  package parse: X with: P.parser in: Env
+  package trace-parse: X with: P.parser in: Env
     | then: { Value in
         let Selected = P.cases find-first: (package case-accepts: _ selector: Value);
         condition
           when Selected is ok =>
-            package parse: X with: Selected value in: Env;
+            package trace-parse: X with: Selected value in: Env;
           otherwise =>
             #result error: new pickles-error--no-cases-matched(P, X, Value);
         end
@@ -71,23 +86,24 @@ command package case-accepts: (P is ast-case--default) selector: _ =
 
 
 command package parse: X with: (P is ast-case--when) in: Env do
-  package parse: X with: P.body in: Env;
+  package trace-parse: X with: P.body in: Env;
 end
 
 command package parse: X with: (P is ast-case--default) in: Env do
-  package parse: X with: P.body in: Env;
+  package trace-parse: X with: P.body in: Env;
 end
 
 
 command package parse: X with: (P is ast-expression--at) in: Env do
-  pickles-traversal get: P.path from: X
-    | map-error: { E in new pickles-error--path-not-found(P, X) }
-    | then: (package parse: _ with: P.parser in: Env);
+  let Result = pickles-traversal get: P.path from: X
+                | map-error: { E in new pickles-error--path-not-found(P, X) };
+  #pickles-tracer traversed: P.path in: X result: Result;
+  Result then: (package trace-parse: _ with: P.parser in: Env);
 end
 
 command package parse: X with: (P is ast-expression--variable) in: Env do
   let Parser = Env lookup: P.name;
-  package parse: X with: Parser in: Env;
+  package trace-parse: X with: Parser in: Env;
 end
 
 command package parse: X with: (P is ast-expression--literal) in: Env do
@@ -104,7 +120,7 @@ command package parse: X with: (P is ast-expression--sequence) in: Env do
     | fold-from: (#result ok: [])
       with: { Result, Item in
         Result then: { PreviousResults in
-          package parse: X with: Item value in: Env
+          package trace-parse: X with: Item value in: Env
             | map: { ItemResults in
                 PreviousResults ++ ItemResults;
               }
@@ -122,12 +138,12 @@ command package parse: X with: (P is ast-expression--sequence) in: Env do
 end
 
 command package parse: X with: (P is ast-sequence-item--value) in: Env do
-  package parse: X with: P.parser in: Env
+  package trace-parse: X with: P.parser in: Env
     | map: { X in [X] };
 end
 
 command package parse: X with: (P is ast-sequence-item--unpack) in: Env do
-  package parse: X with: P.parser in: Env
+  package trace-parse: X with: P.parser in: Env
     | then: { Xs in
         condition
           when Xs is list => #result ok: Xs;
@@ -151,7 +167,7 @@ command package parse: X with: (P is ast-expression--record) in: Env do
 end
 
 command package parse: X with: (P is ast-record-field) in: Env record: R do
-  package parse: X with: P.parser in: Env
+  package trace-parse: X with: P.parser in: Env
     | map: (#association key: P.name value: _)
     | map-error: { E in
         new pickles-error--record-failed(
