@@ -337,9 +337,29 @@ command pages--buttons render-page do
             #widget toggle-button: "A"
               | when-active: "B",
 
-            #widget toggle-icon-button: (#widget icon: "heart")
+            #widget toggle-icon-button: (#widget icon: "microphone")
+              | when-active: (#widget icon: "microphone-slash"),
           ] | transform | flex-gap: #text-size base
         ),
+
+    #widget category-section
+      | title: "Button groups"
+      | body: (
+          do
+            let View = #reference toggle-button-group: "view" initial-value: "";
+            #widget flex-column: [
+              #widget toggle-button-group: [
+                #toggle-button-group-child icon-button: (#widget icon: "list") value: "Lists",
+                #toggle-button-group-child icon-button: (#widget icon: "border-all") value: "Grid",
+                #toggle-button-group-child icon-button: (#widget icon: "image") value: "Single"
+              ]
+              | value: "Lists"
+              | reference: View,
+
+              "Current view: [View value]"
+            ]
+          end
+        )
   ]
   | transform
   | flex-gap: #text-size large-3x

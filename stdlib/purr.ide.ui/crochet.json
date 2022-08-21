@@ -60,6 +60,7 @@
     "source/widget/input/checkbox.crochet",
     "source/widget/input/select.crochet",
     "source/widget/input/toggle-button.crochet",
+    "source/widget/input/toggle-button-group.crochet",
 
     "source/widget/layout/container.crochet",
     "source/widget/layout/flow.crochet",

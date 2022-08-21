@@ -143,6 +143,8 @@
   font-weight: 400;
   color: var(--color-text);
   background: var(--color-slate-200);
+  width: 2.5em;
+  text-align: center;
 }
 
 .purr-ui-button[data-kind="icon"]:hover {
@@ -598,4 +600,22 @@
   border-radius: 100%;
   border: 3px solid var(--color-white);
   background: var(--color-accent);
+}
+
+.purr-ui-toggle-button-group {
+  display: flex;
+  flex-direction: row;
+  background: var(--color-slate-200);
+  width: fit-content;
+  padding: 0 1rem;
+  border-radius: 2rem;
+}
+
+.purr-ui-toggle-button-group .purr-ui-button.purr-ui-toggle-button {
+  border-radius: 0;
+}
+
+.purr-ui-toggle-button-group
+  .purr-ui-button.purr-ui-toggle-button:not(:last-child) {
+  border-right: 1px solid var(--color-slate-100);
 }

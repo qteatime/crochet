@@ -7,6 +7,7 @@ abstract reference;
 type reference-widget(name is text) is reference;
 type reference-button(name is text, clicked is event-stream<click-event>) is reference;
 type reference-toggle-button(name is text, active is observable-cell<boolean>) is reference;
+type reference-toggle-button-group(name is text, value is observable-cell<any>) is reference;
 type reference-text-input(name is text, value is observable-cell<text>) is reference;
 type reference-checkbox(name is text, checked is observable-cell<boolean>) is reference;
 type reference-select-one(name is text, selected is observable-cell<A>) is reference;
@@ -52,6 +53,12 @@ command #reference toggle-button: (Name is text) =
     value -> #observable-cell with-value: false,
   );
 
+command #reference toggle-button-group: (Name is text) initial-value: Value =
+  new reference-toggle-button-group(
+    name -> Name,
+    value -> #observable-cell with-value: Value,
+  );
+
 command reference-button clicked =
   self.clicked listener;
 
@@ -69,3 +76,6 @@ command reference-code-editor value =
 
 command reference-toggle-button active =
   self.active read-only;
+
+command reference-toggle-button-group value =
+  self.value read-only;

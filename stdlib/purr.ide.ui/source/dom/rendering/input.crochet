@@ -161,3 +161,39 @@ command dom-renderer render: (W is widget-toggle-button) do
 
   self extend: Node with: [node -> Node, active -> Is-active];
 end
+
+
+command dom-renderer render: (W is widget-toggle-button-group) do
+  let Node = dom make-element: "div" class: "purr-ui-toggle-button-group";
+  
+  let Value = #observable-cell with-value: W.value value;
+  W.value subscribe: (Value <- _);
+
+  for Child in W.items do
+    Node append: (self render: Child value: Value);
+  end
+
+  self extend: Node with: Value;
+end
+
+command dom-renderer render: (W is toggle-button-group-child) value: Value do
+  let Node = dom make-element: "div" class: "purr-ui-button purr-ui-toggle-button";
+
+  let Is-active = Value map: { X in X =:= W.value };
+
+  Node set: "data-kind" to: W.button.kind to-enum-text;
+  self set-boolean: "disabled" to: W.button.disabled in: Node;
+  self set-boolean: "data-active" to: (Is-active as purr-variable) in: Node;
+  
+  let Content = dom make-element: "div" class: "purr-ui-toggle-button-idle"
+                  | append: (self render: W.button.content);
+  let Active = dom make-element: "div" class: "purr-ui-toggle-button-active"
+                | append: (self render: W.button.active-content);
+  Node append: Content | append: Active;
+
+  Node on: "click" do: { Ev in
+    Value <- W.value;
+  };
+
+  Node;
+end

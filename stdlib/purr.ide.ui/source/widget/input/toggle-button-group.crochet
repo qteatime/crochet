@@ -1,0 +1,33 @@
+% crochet
+
+type widget-toggle-button-group(
+  items is list<toggle-button-group-child>,
+  value is purr-variable<any>,
+) is widget;
+
+type toggle-button-group-child(
+  button is widget-toggle-button,
+  value is any,
+) is widget;
+
+command #widget toggle-button-group: (Items is list) =
+  new widget-toggle-button-group(
+    items -> Items map: (package to-toggle-button-group-child: _),
+    value -> nothing as purr-variable,
+  );
+
+command package to-toggle-button-group-child: (X is toggle-button-group-child) =
+  X;
+
+command #toggle-button-group-child button: (X is widget-toggle-button) value: V =
+  new toggle-button-group-child(X, V);
+
+command #toggle-button-group-child button: (X has to-widget) value: V =
+  new toggle-button-group-child(#widget toggle-button: X, V);
+
+command #toggle-button-group-child icon-button: (X has to-widget) value: V =
+  new toggle-button-group-child(#widget toggle-icon-button: X, V);
+
+
+command widget-toggle-button-group value: (V has to-purr-variable) =
+  new widget-toggle-button-group(self with value -> V as purr-variable);

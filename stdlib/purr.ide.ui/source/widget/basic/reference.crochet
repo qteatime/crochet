@@ -25,3 +25,6 @@ command widget-code-editor reference: (Ref is reference-code-editor) =
 
 command widget-toggle-button reference: (Ref is reference-toggle-button) =
   new widget-reference(self, Ref);
+
+command widget-toggle-button-group reference: (Ref is reference-toggle-button-group) =
+  new widget-reference(self, Ref);
