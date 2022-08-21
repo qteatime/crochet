@@ -35,7 +35,7 @@ command purr side-bar do
 end
 
 command purr run do
-  let Router = purr-ui make-router: (#router basic: "root" accepts: (pages lower-bound to: pages upper-bound));
+  let Router = purr-ui make-router: (#router basic: "root" | accepts: (pages lower-bound to: pages upper-bound));
 
   #widget app-frame
     | header: (
@@ -329,6 +329,17 @@ command pages--buttons render-page do
           #widget icon-button: (#widget icon: "heart")
             | on-click: { _ in purr-ui show-modal: ("Hello there friend!") },
         ] | transform | flex-gap: #text-size base),
+
+    #widget category-section
+      | title: "Toggle buttons"
+      | body: (
+          #widget flex-row: [
+            #widget toggle-button: "A"
+              | when-active: "B",
+
+            #widget toggle-icon-button: (#widget icon: "heart")
+          ] | transform | flex-gap: #text-size base
+        ),
   ]
   | transform
   | flex-gap: #text-size large-3x

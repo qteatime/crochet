@@ -69,3 +69,10 @@ command dom-renderer install-reference: (R is reference-select-one) in: Node do
     Meta translate: Meta.input select-value do: { X in R.selected <- X };
   };
 end
+
+command dom-renderer install-reference: (R is reference-toggle-button) in: Node do
+  let Button = Node.extra;
+  assert dom is-button-element: Button.node;
+
+  Button.active subscribe: { X in R.active <- X };
+end

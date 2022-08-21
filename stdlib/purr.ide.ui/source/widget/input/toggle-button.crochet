@@ -1,0 +1,34 @@
+% crochet
+
+type widget-toggle-button(
+  content is widget,
+  active-content is widget,
+  kind is button-kind,
+  disabled is purr-variable<boolean>,
+  active is purr-variable<boolean>,
+) is widget;
+
+command #widget toggle-button: (X has to-widget) =
+  new widget-toggle-button(
+    content -> X as widget,
+    active-content -> X as widget,
+    kind -> #button-kind text,
+    disabled -> false as purr-variable,
+    active -> false as purr-variable,
+  );
+
+command #widget toggle-icon-button: (X has to-widget) =
+  #widget toggle-button: X
+    | kind: #button-kind icon;
+
+command widget-toggle-button when-active: (X has to-widget) =
+  new widget-toggle-button(self with active-content -> X as widget);
+
+command widget-toggle-button kind: (X is button-kind) =
+  new widget-toggle-button(self with kind -> X);
+
+command widget-toggle-button disabled: (X has to-purr-variable) =
+  new widget-toggle-button(self with disabled -> X as purr-variable);
+
+command #widget-toggle-button active: (X has to-purr-variable) =
+  new widget-toggle-button(self with active -> X as purr-variable);

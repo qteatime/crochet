@@ -22,3 +22,6 @@ command widget-select-one reference: (Ref is reference-select-one) =
 
 command widget-code-editor reference: (Ref is reference-code-editor) =
   new widget-reference(self, Ref);
+
+command widget-toggle-button reference: (Ref is reference-toggle-button) =
+  new widget-reference(self, Ref);

@@ -5,7 +5,6 @@ type widget-button(
   style is button-style,
   kind is button-kind,
   disabled is purr-variable<boolean>,
-  active is purr-variable<boolean>,
   on-click is (any -> nothing), // FIXME: support proper events
 ) is widget;
 
@@ -25,7 +24,6 @@ command #widget button: (Content has to-widget) =
     style -> #button-style standard,
     kind -> #button-kind text,
     disabled -> false as purr-variable,
-    active -> false as purr-variable,
     on-click -> { _ in nothing },
   );
 
@@ -37,9 +35,6 @@ command widget-button style: (Style is button-style) =
 
 command widget-button disabled: (X has to-purr-variable) =
   new widget-button(self with disabled -> X as purr-variable);
-
-command widget-button active: (X has to-purr-variable) =
-  new widget-button(self with active -> X as purr-variable);
 
 command widget-button kind: (X is button-kind) =
   new widget-button(self with kind -> X);

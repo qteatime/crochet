@@ -9,7 +9,6 @@ command dom-renderer render: (W is widget-button) do
   Node set: "data-style" to: W.style to-enum-text;
   Node set: "data-kind" to: W.kind to-enum-text;
   self set-boolean: "disabled" to: W.disabled in: Node;
-  self set-boolean: "data-active" to: W.active in: Node;
     
   Node append: (self render: W.content);
   Node on: "click" do: { _ in W.on-click(nothing) } capture;
@@ -132,4 +131,29 @@ command dom-renderer render-select-option: (X is select-option-group) index: Ind
     Node append: To-append;
   end
   Node;
+end
+
+
+command dom-renderer render: (W is widget-toggle-button) do
+  let Node = dom make-element: "div" class: "purr-ui-button purr-ui-toggle-button";
+
+  let Is-active = #observable-cell with-value: W.active value;
+  W.active subscribe: (Is-active <- _);
+
+  Node set: "data-kind" to: W.kind to-enum-text;
+  self set-boolean: "disabled" to: W.disabled in: Node;
+  self set-boolean: "data-active" to: (Is-active as purr-variable) in: Node;
+  
+  let Content = dom make-element: "div" class: "purr-ui-toggle-button-idle"
+                  | append: (self render: W.content);
+  let Active = dom make-element: "div" class: "purr-ui-toggle-button-active"
+                | append: (self render: W.active-content);
+  Node append: Content | append: Active;
+
+  
+  Node on: "click" do: { Ev in
+    Is-active <- not (Is-active value);
+  };
+
+  self extend: Node with: [node -> Node, active -> Is-active];
 end
