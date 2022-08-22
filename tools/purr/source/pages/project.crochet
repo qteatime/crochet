@@ -1,21 +1,56 @@
 % crochet
 
 open purr.ide.ui;
+open crochet.concurrency;
 
 type purr-project-page(project is purr-project) is purr-page;
 
 implement purr-ui-page for purr-project-page;
 command purr-project-page location-selector = #purr-project-page;
 
+effect project-page with
+  open-app(App is purr-application);
+  show-app(App is purr-application);
+end
+
 command purr-project-page render-page do
+  let App-home = new application-home(self.project);
+  let Current-application = #observable-cell with-value: App-home;
+  let Open-applications = #observable-cell with-value: [App-home];
+  let App-state = Current-application zip: Open-applications with: { Current, Open in [current -> Current, all -> Open] };
+
   handle
-    #purr-page title: self title menu: self side-menu body: [
-      
-    ]
+    #purr-page title: self title menu: self side-menu body: (
+      #widget flex-column: [
+        Current-application map: (_ render-application)
+          |> _ as widget
+          |> _ transform
+          |> _ height: #size fill
+          |> _ overflow: #overflow auto,
+
+        App-state map: (self app-bar: _)
+          |> _ as widget
+          |> _ transform
+          |> _ flex-shrink: #flex-shrink no,
+      ]
+    )
     |> _ as widget
     |> _ commit;
   with
     use purr-project-state project: self.project;
+
+    on project-page.open-app(App) do
+      assert Open-applications value none: { X in X =:= App };
+      Open-applications <- Open-applications value append: App;
+      Current-application <- App;
+      continue with nothing;
+    end
+
+    on project-page.show-app(App) do
+      assert Open-applications value some: { X in X =:= App };
+      Current-application <- App;
+      continue with nothing;
+    end
   end
 end
 
@@ -26,3 +61,18 @@ command purr-project-page side-menu =
   #widget navigation: [
     #widget link: "Close" | to: purr-welcome-page,
   ];
+
+command purr-project-page app-bar: (Apps is record) =
+  #widget flex-row: (
+    Apps.all map: (self app-indicator: _ current: Apps.current)
+  )
+  | transform
+  | flex-gap: #text-size base
+  | flex-justify-content: #flex-justify center
+  | flex-align-items: #flex-align center
+  | background-color: #color white;
+
+command purr-project-page app-indicator: (App is purr-application) current: (Current is purr-application) =
+  pui application-indicator: App
+      action: { _ in perform project-page.show-app(App) } capture
+      current: (App =:= Current);

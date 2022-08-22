@@ -1,0 +1,21 @@
+% crochet
+
+open purr.ide.ui;
+
+type application-home(project is purr-project) is purr-application;
+
+command application-home title = "Start";
+command application-home icon = #widget icon: "home";
+command application-home description = "Quick access to your applications and activities";
+
+command application-home render-application do
+  #widget flex-column: [
+    pui heading-2: "Applications",
+    #widget space | transform | height: #text-size large-3x,
+
+    pui application-list: purr current-project value applications
+        action: { App in perform project-page.open-app(App) } capture,
+  ]
+  | transform
+  | padding: #text-size large-2x;
+end

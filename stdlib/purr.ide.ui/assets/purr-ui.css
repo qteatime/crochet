@@ -142,7 +142,8 @@
   font-weight: 400;
   color: var(--color-text);
   background: var(--color-slate-200);
-  width: 2.5em;
+  width: 2em;
+  height: 2em;
   text-align: center;
 }
 

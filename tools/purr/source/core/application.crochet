@@ -1,0 +1,10 @@
+% crochet
+
+abstract purr-application;
+
+trait purr-application with
+  command Self title -> text;
+  command Self icon -> widget; // probably need an image
+  command Self description -> text;
+  command Self render-application -> widget;
+end

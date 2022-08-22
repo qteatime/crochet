@@ -9,11 +9,17 @@
     "source/core/api.crochet",
     "source/core/project.crochet",
     "source/core/project-state.crochet",
+    "source/core/application.crochet",
+
+    "source/applications/configure/core.crochet",
+
+    "source/applications/home/core.crochet",
 
     "source/ui/core.crochet",
     "source/ui/section.crochet",
     "source/ui/typography.crochet",
     "source/ui/button.crochet",
+    "source/ui/specialised.crochet",
 
     "source/pages/core.crochet",
     "source/pages/welcome.crochet",

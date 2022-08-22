@@ -49,3 +49,5 @@ command pui-action-button as widget =
     | text-align: #text-align left
   )
   | on-click: self.on-click;
+
+// --

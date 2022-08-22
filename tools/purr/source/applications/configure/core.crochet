@@ -1,0 +1,13 @@
+% crochet
+
+open purr.ide.ui;
+
+type application-configure(project is purr-project) is purr-application;
+
+command application-configure title = "Configure";
+command application-configure icon = #widget icon: "cog";
+command application-configure description = "View and update the configuration of your project";
+
+command application-configure render-application do
+  "Configuration";
+end

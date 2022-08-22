@@ -1,0 +1,53 @@
+% crochet
+
+open purr.ide.ui;
+
+command pui application-indicator: (App is purr-application) action: F current: Current do
+  let Widget = 
+    #widget flex-column: [
+      #widget icon-button: App icon
+        | on-click: { _ in F(App) }
+        | transform
+        | font-size: #text-size large-2x,
+
+      (App title as widget)
+        | transform
+        | font-weight: #font-weight semi-bold,
+    ]
+    | transform
+    | width: #size fit-content
+    | height: #size fit-content
+    | flex-align-items: #flex-align center
+    | flex-gap: #text-size extra-small;
+
+  condition
+    when Current => Widget transform background-color: #color slate-200;
+    otherwise => Widget;
+  end
+end
+
+command pui application-button: (App is purr-application) action: F do
+  #widget flex-column: [
+    #widget icon-button: App icon
+      | on-click: { _ in F(App) }
+      | transform
+      | font-size: #text-size large-3x,
+
+    (App title as widget)
+      | transform
+      | font-weight: #font-weight semi-bold,
+  ]
+  | transform
+  | width: #size fit-content
+  | height: #size fit-content
+  | flex-align-items: #flex-align center
+  | flex-gap: #text-size extra-small
+end
+
+command pui application-list: (Apps is list<purr-application>) action: F do
+  #widget flex-row: (
+    Apps map: (self application-button: _ action: F)
+  )
+  | transform
+  | flex-gap: #text-size large-2x;
+end
