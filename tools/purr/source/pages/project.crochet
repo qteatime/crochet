@@ -11,14 +11,16 @@ command purr-project-page render-page do
   handle
     #purr-page title: self title menu: self side-menu body: [
       
-    ];
+    ]
+    |> _ as widget
+    |> _ commit;
   with
     use purr-project-state project: self.project;
   end
 end
 
 command purr-project-page title =
-  self.project title;
+  purr current-project map: (_ title);
 
 command purr-project-page side-menu =
   #widget navigation: [

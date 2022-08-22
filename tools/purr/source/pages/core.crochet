@@ -9,7 +9,7 @@ command #purr-page all = [
   #purr-project-page,
 ];
 
-command #purr-page title: (Title is text) menu: (Menu has to-widget) body: (Content has to-widget) do
+command #purr-page title: (Title has to-widget) menu: (Menu has to-widget) body: (Content has to-widget) do
   #widget app-frame
     | header: (
         #widget title-bar: Title

@@ -1,12 +1,28 @@
 % crochet
 
+open crochet.concurrency;
+
 effect purr-project-state with
-  current-project(); // -> purr-project
+  current-project(); // -> observable-cell<purr-project>
+  update-project(Current is purr-project, Project is purr-project); // -> boolean
 end
 
 handler purr-project-state project: Initial do
-  let Project = #cell with-value: Initial;
+  let Project = #observable-cell with-value: Initial;
+  let Read-only-project = Project read-only;
 with
   on purr-project-state.current-project() =>
-    continue with Project value;
+    continue with Read-only-project;
+
+  on purr-project-state.update-project(Current, New-project) do
+    condition
+      when Project value =:= Current do
+        Project <- New-project;
+        continue with true;
+      end
+
+      otherwise =>
+        continue with false;
+    end
+  end
 end

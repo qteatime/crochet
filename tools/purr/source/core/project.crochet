@@ -16,4 +16,7 @@ type purr-project-crochet-meta(
   global description is text,
 );
 
+command purr-project-crochet-meta set-title: (Title is text) =
+  new purr-project-crochet-meta(self with title -> Title);
+
 command purr-project-crochet title = self meta title;
