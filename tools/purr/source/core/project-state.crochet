@@ -1,0 +1,12 @@
+% crochet
+
+effect purr-project-state with
+  current-project(); // -> purr-project
+end
+
+handler purr-project-state project: Initial do
+  let Project = #cell with-value: Initial;
+with
+  on purr-project-state.current-project() =>
+    continue with Project value;
+end

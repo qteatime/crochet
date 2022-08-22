@@ -1,0 +1,26 @@
+% crochet
+
+open purr.ide.ui;
+
+type purr-project-page(project is purr-project) is purr-page;
+
+implement purr-ui-page for purr-project-page;
+command purr-project-page location-selector = #purr-project-page;
+
+command purr-project-page render-page do
+  handle
+    #purr-page title: self title menu: self side-menu body: [
+      
+    ];
+  with
+    use purr-project-state project: self.project;
+  end
+end
+
+command purr-project-page title =
+  self.project title;
+
+command purr-project-page side-menu =
+  #widget navigation: [
+    #widget link: "Close" | to: purr-welcome-page,
+  ];

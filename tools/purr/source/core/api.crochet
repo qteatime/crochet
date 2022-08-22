@@ -1,0 +1,23 @@
+% crochet
+
+open purr.ide.ui;
+
+command purr projects = [];
+
+command purr ask-for-project =
+  #result ok: (
+    new purr-project-crochet(
+      id -> new purr-project-id("id"),
+      meta -> new purr-project-crochet-meta(
+        name -> "cloak-of-darkness",
+        title -> "Cloak of Darkness",
+        description -> "A small interactive fiction demo with Novella",
+      ),
+    )
+  );
+
+command purr open-project: (Project is purr-project) =
+  purr-ui navigate: new purr-project-page(Project);
+
+command purr current-project =
+  perform purr-project-state.current-project();

@@ -1,0 +1,29 @@
+% crochet
+
+open purr.ide.ui;
+
+abstract purr-page;
+
+command #purr-page all = [
+  purr-welcome-page,
+  #purr-project-page,
+];
+
+command #purr-page title: (Title is text) menu: (Menu has to-widget) body: (Content has to-widget) do
+  #widget app-frame
+    | header: (
+        #widget title-bar: Title
+          | action-button: (
+              #widget icon-button: (#widget icon: "bars")
+                | style: #button-style clear
+                | on-click: { _ in purr-ui slide-in: Menu direction: #slide-in-direction from-left }
+            )
+      )
+    | body: Content
+end
+
+command #purr-page side-menu do
+  #widget navigation: [
+    
+  ];
+end

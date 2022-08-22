@@ -1,0 +1,42 @@
+{
+  "name": "purr",
+  "description": "Purr: a secure, extensible, and privacy-respecting IDE for any language",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet",
+
+    "source/core/api.crochet",
+    "source/core/project.crochet",
+    "source/core/project-state.crochet",
+
+    "source/ui/core.crochet",
+    "source/ui/section.crochet",
+    "source/ui/typography.crochet",
+    "source/ui/button.crochet",
+
+    "source/pages/core.crochet",
+    "source/pages/welcome.crochet",
+    "source/pages/project.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    "crochet.time",
+    "crochet.language.pickles",
+    "crochet.language.json",
+    "purr.ide.ui"
+  ],
+  "capabilities": {
+    "requires": ["purr.ide.ui/ui-control"],
+    "provides": []
+  },
+  "config": {
+    "electron": {
+      "window": {
+        "width": 1280,
+        "height": 720
+      }
+    }
+  }
+}

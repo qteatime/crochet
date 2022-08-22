@@ -1,0 +1,51 @@
+% crochet
+
+open purr.ide.ui;
+
+type pui-action-button(
+  icon is widget,
+  title is widget,
+  description is widget,
+  on-click is (A -> nothing),
+);
+
+command pui action-button: (Title has to-widget) =
+  new pui-action-button(
+    icon -> #widget space,
+    title -> Title as widget,
+    description -> #widget space,
+    on-click -> { _ in nothing },
+  );
+
+command pui-action-button icon: (Icon is static-text) =
+  new pui-action-button(self with icon -> #widget icon: Icon);
+
+command pui-action-button description: (X has to-widget) =
+  new pui-action-button(self with description -> X as widget);
+
+command pui-action-button on-click: F =
+  new pui-action-button(self with on-click -> F);
+
+implement to-widget for pui-action-button;
+command pui-action-button as widget =
+  #widget button: (
+    #widget flex-row: [
+      self.icon,
+      #widget flex-column: [
+        self.title
+          | transform
+          | font-weight: #font-weight semi-bold,
+        self.description
+          | transform
+          | font-weight: #font-weight regular
+          | font-size: #text-size small,
+      ]
+      | transform
+      | flex-grow: #flex-grow grow
+    ]
+    | transform
+    | flex-align-items: #flex-align center
+    | flex-gap: #text-size base
+    | text-align: #text-align left
+  )
+  | on-click: self.on-click;

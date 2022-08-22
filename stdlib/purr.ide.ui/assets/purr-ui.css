@@ -39,11 +39,10 @@
   --color-accent: #1c6e8c;
   --color-border: var(--color-slate-300);
 
-  --color-button: var(--color-accent);
-  --color-button-text: var(--color-white);
-  --color-button-disabled: var(--color-slate-300);
-  --color-button-hover: var(--color-accent);
-  --color-button-active: var(--color-accent);
+  --color-button: var(--color-slate-200);
+  --color-button-text: var(--color-text);
+  --color-button-hover: var(--color-slate-300);
+  --color-button-active: var(--color-slate-500);
   --color-button-clear-text: var(--color-accent);
 
   --color-text: var(--color-black);
@@ -119,7 +118,7 @@
 }
 
 .purr-ui-button {
-  border-radius: 1em;
+  border-radius: 50em;
   padding: 0.6rem 1.25rem;
   background: var(--color-button);
   font-weight: 500;
@@ -134,7 +133,7 @@
 }
 
 .purr-ui-button:disabled {
-  background: var(--color-button-disabled);
+  opacity: 0.5;
 }
 
 .purr-ui-button[data-kind="icon"] {
@@ -492,12 +491,13 @@
 }
 
 .purr-ui-modal-shadow {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.2);
   position: absolute;
   top: 0px;
   left: 0px;
   width: 100%;
   height: 100%;
+  backdrop-filter: blur(5px);
 }
 
 .purr-ui-modal-contents {
@@ -608,7 +608,7 @@
   background: var(--color-slate-200);
   width: fit-content;
   padding: 0 1rem;
-  border-radius: 2rem;
+  border-radius: 50rem;
 }
 
 .purr-ui-toggle-button-group .purr-ui-button.purr-ui-toggle-button {

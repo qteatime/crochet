@@ -1,0 +1,20 @@
+% crochet
+  
+open purr.ide.ui;
+
+singleton purr;
+
+command main-html: Root do
+  handle
+    let Router = purr-ui make-router: package purr-router;
+    purr-ui show: Router;
+  with
+    use logical-time;
+    use purr-ui-dom-renderer root: Root;
+  end
+end
+
+command package purr-router =
+  #router basic: "purr"
+    | accepts: #purr-page all
+    | initial-page: purr-welcome-page;

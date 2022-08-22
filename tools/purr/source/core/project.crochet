@@ -1,0 +1,19 @@
+% crochet
+
+abstract purr-project;
+
+type purr-project-id(id is text);
+
+
+type purr-project-crochet(
+  id is purr-project-id,
+  global meta is purr-project-crochet-meta,
+) is purr-project;
+
+type purr-project-crochet-meta(
+  global name is text,
+  global title is text,
+  global description is text,
+);
+
+command purr-project-crochet title = self meta title;

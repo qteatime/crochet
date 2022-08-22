@@ -1,0 +1,36 @@
+% crochet
+
+open purr.ide.ui;
+
+type pui-highlight-heading(title is widget, sub-title is widget);
+command pui highlight-heading: (Title has to-widget) =
+  new pui-highlight-heading(
+    title -> Title as widget,
+    sub-title -> #widget space
+  );
+
+command pui-highlight-heading sub-title: (X has to-widget) =
+  new pui-highlight-heading(self with sub-title -> X as widget);
+
+implement to-widget for pui-highlight-heading;
+command pui-highlight-heading as widget =
+  #widget flex-column: [
+    pui heading-1: self.title,
+    pui heading-2: self.sub-title
+      |> pui secondary-text: _
+      |> _ transform
+      |> _ font-weight: #font-weight regular,
+  ]
+  | transform
+  | flex-gap: #text-size small
+  | text-align: #text-align center
+  | padding-vertical: #text-size large-3x
+  | height: #size fit-content;
+
+
+command pui action-buttons: (Content is list<X has to-widget>) =
+  #widget flex-column: Content
+    | transform
+    | flex-gap: #text-size extra-small
+    | maximum-width: #size columns-6
+    | height: #size fit-content;

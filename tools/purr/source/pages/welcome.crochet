@@ -1,0 +1,54 @@
+% crochet
+
+open purr.ide.ui;
+
+singleton purr-welcome-page is purr-page;
+
+implement purr-ui-page for purr-welcome-page;
+command purr-welcome-page render-page do
+  let Projects = purr projects;
+
+  #purr-page title: "Purr" menu: self side-menu body: [
+    condition
+      when Projects is-empty => self quick-start;
+      otherwise => self show-projects: Projects;
+    end
+  ];
+end
+
+command purr-welcome-page side-menu =
+  #widget navigation: [
+
+  ]
+  | transform
+  | width: #size columns-4
+  | height: #size fill;
+
+command purr-welcome-page quick-start =
+  #widget flex-column: [
+    pui highlight-heading: "No projects here yet."
+      | sub-title: "Import a project to start using Purr",
+
+    pui action-buttons: [
+      pui action-button: "Import project"
+        | description: "Imports an existing project from your files"
+        | icon: "file-import"
+        | on-click: { _ in self do-import-project },
+    ]
+    | transform
+    | margin-top: #text-size large-3x,
+  ]
+  | transform
+  | flex-justify-content: #flex-justify center
+  | flex-align-items: #flex-align center
+  | height: #size fill;
+
+command purr-welcome-page do-import-project do
+  let Project = purr ask-for-project;
+  condition
+    when Project is error => nothing;
+    when Project is ok do
+      purr open-project: Project value;
+    end
+  end
+end
