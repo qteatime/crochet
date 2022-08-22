@@ -489,6 +489,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  z-index: 900;
 }
 
 .purr-ui-modal-shadow {

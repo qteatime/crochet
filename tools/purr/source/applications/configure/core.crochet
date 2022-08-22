@@ -8,6 +8,75 @@ command application-configure title = "Configure";
 command application-configure icon = #widget icon: "cog";
 command application-configure description = "View and update the configuration of your project";
 
+enum application-configure-pages =
+  meta-data,
+  capabilities;
+
 command application-configure render-application do
-  "Configuration";
+  #widget tabbed-panel: [
+    #tab id: "meta-data"
+      | header: "Meta-data"
+      | content: self meta-data,
+
+    #tab id: "capabilities"
+      | header: "Capabilities"
+      | content: self capabilities,
+  ]
+  | selected: "meta-data";
+end
+
+command application-configure title: Title actions: Actions body: Body do
+  #widget flex-column: [
+    #widget flex-row: [
+      pui heading-2: Title,
+      Actions,
+    ]
+    | transform
+    | flex-align-items: #flex-align baseline
+    | flex-justify-content: #flex-justify space-between,
+    Body,
+  ]
+  | transform
+  | flex-gap: #text-size base
+  | padding-horizontal: #text-size large-2x
+  | padding-vertical: #text-size base; 
+end
+
+command application-configure meta-data do
+  let Name = #reference text-input: "name";
+  let Title = #reference text-input: "title";
+  let Description = #reference text-input: "description";
+  let Project = purr current-project;
+
+  self
+    title: "Meta-data"
+    actions: #widget space
+    body: (
+      #widget flex-column: [
+        #widget text-input: "Name"
+          | value: (Project map: { X in X meta name })
+          | placeholder: "domain.you.your.project"
+          | reference: Name,
+
+        #widget text-input: "Title"
+          | value: (Project map: { X in X meta title })
+          | placeholder: "Your Great Project"
+          | reference: Title,
+
+        #widget text-input: "Description"
+          | value: (Project map: { X in X meta description})
+          | placeholder: "Does this and that and that other thing"
+          | reference: Description,
+      ]
+      | transform
+      | flex-gap: #text-size base
+    );
+end
+
+
+command application-configure capabilities do
+  self
+    title: "Capabilities"
+    actions: #widget space
+    body: "";
 end
