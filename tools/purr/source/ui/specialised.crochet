@@ -7,7 +7,12 @@ command pui application-indicator: (App is purr-application) action: F current: 
     #widget button: (
       #widget flex-column: [
         App icon | transform | font-size: (2.0 as root-em),
-        (App title as widget) | transform | font-size: (0.8 as root-em),
+        (App title as widget)
+          | transform
+          | font-size: (0.7 as root-em)
+          | font-weight: #font-weight regular
+          | text-overflow: #text-overflow ellipsis
+          | overflow: #overflow hidden,
       ]
       | transform
       | font-color: (
@@ -16,7 +21,6 @@ command pui application-indicator: (App is purr-application) action: F current: 
             otherwise => #color text;
           end
         )
-      | width: #size fit-content
       | height: #size fit-content
       | flex-align-items: #flex-align center
       | flex-gap: #text-size extra-small
@@ -26,6 +30,8 @@ command pui application-indicator: (App is purr-application) action: F current: 
     | on-click: { _ in F(App) }
     | style: #button-style clear
     | transform
+    | text-align: #text-align center
+    | width: (8.0 as root-em)
     | border-radius: #border-radius square;
 
   condition
@@ -42,21 +48,14 @@ command pui application-indicator: (App is purr-application) action: F current: 
 end
 
 command pui application-button: (App is purr-application) action: F do
-  #widget flex-column: [
-    #widget icon-button: App icon
-      | on-click: { _ in F(App) }
-      | transform
-      | font-size: #text-size large-3x,
-
-    (App title as widget)
-      | transform
-      | font-weight: #font-weight semi-bold,
+  #widget card-button: [
+    #card-child media: (App icon | transform | font-size: (3.0 as root-em)),
+    #card-child header: (pui ellipsis-text: App title),
+    #card-child meta: App description
   ]
+  | on-click: { _ in F(App) }
   | transform
-  | width: #size fit-content
-  | height: #size fit-content
-  | flex-align-items: #flex-align center
-  | flex-gap: #text-size extra-small
+  | width: (12.0 as root-em)
 end
 
 command pui application-list: (Apps is list<purr-application>) action: F do
@@ -64,5 +63,7 @@ command pui application-list: (Apps is list<purr-application>) action: F do
     Apps map: (self application-button: _ action: F)
   )
   | transform
-  | flex-gap: #text-size large-2x;
+  | flex-align-items: #flex-align stretch
+  | flex-gap: #text-size large-2x
+  | height: #size fit-content;
 end

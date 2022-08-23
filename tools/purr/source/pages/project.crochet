@@ -85,7 +85,7 @@ command purr-project-page app-bar: (Apps is record) =
     )
     | transform
     | flex-justify-content: #flex-justify center
-    | flex-align-items: #flex-align center,
+    | flex-align-items: #flex-align stretch,
   ];
 
 command purr-project-page app-indicator: (App is purr-application) current: (Current is purr-application) =

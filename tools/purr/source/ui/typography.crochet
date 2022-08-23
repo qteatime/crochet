@@ -36,3 +36,10 @@ command pui secondary-text: (X has to-widget) =
   (X as widget)
     | transform
     | font-color: #color text-secondary;
+
+command pui ellipsis-text: (X has to-widget) =
+  (X as widget)
+    | transform
+    | overflow: #overflow hidden
+    | white-space: #text-whitespace no-wrap
+    | text-overflow: #text-overflow ellipsis;

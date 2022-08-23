@@ -16,7 +16,8 @@ enum button-style =
 
 enum button-kind =
   text,
-  icon;
+  icon,
+  card;
 
 command #widget button: (Content has to-widget) =
   new widget-button(
@@ -46,3 +47,7 @@ command widget-button on-click: (F is (any -> nothing)) =
 command #widget icon-button: (Icon has to-widget) =
   #widget button: Icon
     | kind: #button-kind icon;
+
+command #widget card-button: Items =
+  #widget button: (#widget card: Items)
+    | kind: #button-kind card;

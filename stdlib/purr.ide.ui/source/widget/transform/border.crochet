@@ -2,10 +2,10 @@
 
 abstract border-option is transform-option;
 
-type border-option--radius-top(value is purr-variable<border-radius>) is border-option;
-type border-option--radius-right(value is purr-variable<border-radius>) is border-option;
-type border-option--radius-bottom(value is purr-variable<border-radius>) is border-option;
-type border-option--radius-left(value is purr-variable<border-radius>) is border-option;
+type border-option--radius-top-left(value is purr-variable<border-radius>) is border-option;
+type border-option--radius-top-right(value is purr-variable<border-radius>) is border-option;
+type border-option--radius-bottom-left(value is purr-variable<border-radius>) is border-option;
+type border-option--radius-bottom-right(value is purr-variable<border-radius>) is border-option;
 
 type border-option--width-top(value is purr-variable<line-size>) is border-option;
 type border-option--width-right(value is purr-variable<line-size>) is border-option;
@@ -22,25 +22,25 @@ type border-option--style-right(value is purr-variable<border-style>) is border-
 type border-option--style-bottom(value is purr-variable<border-style>) is border-option;
 type border-option--style-left(value is purr-variable<border-style>) is border-option;
 
-command border-option--radius-top key = "border-radius-top";
-command border-option--radius-right key = "border-radius-right";
-command border-option--radius-bottom key = "border-radius-bottom";
-command border-option--radius-left key = "border-radius-left";
+command border-option--radius-top-left key = "border-radius-top-left";
+command border-option--radius-top-right key = "border-radius-top-right";
+command border-option--radius-bottom-left key = "border-radius-bottom-left";
+command border-option--radius-bottom-right key = "border-radius-bottom-right";
 
-command border-option--width-top key = "border-width-top";
-command border-option--width-right key = "border-width-right";
-command border-option--width-bottom key = "border-width-bottom";
-command border-option--width-left key = "border-width-left";
+command border-option--width-top key = "border-top-width";
+command border-option--width-right key = "border-right-width";
+command border-option--width-bottom key = "border-bottom-width";
+command border-option--width-left key = "border-left-width";
 
-command border-option--color-top key = "border-color-top";
-command border-option--color-right key = "border-color-right";
-command border-option--color-bottom key = "border-color-bottom";
-command border-option--color-left key = "border-color-left";
+command border-option--color-top key = "border-top-color";
+command border-option--color-right key = "border-right-color";
+command border-option--color-bottom key = "border-bottom-color";
+command border-option--color-left key = "border-left-color";
 
-command border-option--style-top key = "border-style-top";
-command border-option--style-right key = "border-style-right";
-command border-option--style-bottom key = "border-style-bottom";
-command border-option--style-left key = "border-style-left";
+command border-option--style-top key = "border-top-style";
+command border-option--style-right key = "border-right-style";
+command border-option--style-bottom key = "border-bottom-style";
+command border-option--style-left key = "border-left-style";
 
 
 enum border-radius =
@@ -57,26 +57,32 @@ enum border-style =
   none;
 
 
-command widget-transform border-radius-top: (X has to-purr-variable) =
-  self add-option: new border-option--radius-top(X as purr-variable);
+command widget-transform border-radius-top-left: (X has to-purr-variable) =
+  self add-option: new border-option--radius-top-left(X as purr-variable);
 
-command widget-transform border-radius-right: (X has to-purr-variable) =
-  self add-option: new border-option--radius-right(X as purr-variable);
+command widget-transform border-radius-top-right: (X has to-purr-variable) =
+  self add-option: new border-option--radius-top-right(X as purr-variable);
 
-command widget-transform border-radius-bottom: (X has to-purr-variable) =
-  self add-option: new border-option--radius-bottom(X as purr-variable);
+command widget-transform border-radius-bottom-left: (X has to-purr-variable) =
+  self add-option: new border-option--radius-bottom-left(X as purr-variable);
 
-command widget-transform border-radius-left: (X has to-purr-variable) =
-  self add-option: new border-option--radius-left(X as purr-variable);
+command widget-transform border-radius-bottom-right: (X has to-purr-variable) =
+  self add-option: new border-option--radius-bottom-right(X as purr-variable);
 
-command widget-transform border-radius-horizontal: X =
-  self border-radius-left: X | border-radius-right: X;
+command widget-transform border-radius-top: X =
+  self border-radius-top-left: X | border-radius-top-right: X;
 
-command widget-transform border-radius-vertical: X =
-  self border-radius-top: X | border-radius-bottom: X;
+command widget-transform border-radius-bottom: X =
+  self border-radius-bottom-left: X | border-radius-bottom-right: X;
+
+command widget-transform border-radius-left: X =
+  self border-radius-top-left: X | border-radius-bottom-left: X;
+
+command widget-transform border-radius-right: X =
+  self border-radius-top-right: X | border-radius-bottom-right: X;
 
 command widget-transform border-radius: X =
-  self border-radius-horizontal: X | border-radius-vertical: X;
+  self border-radius-top: X | border-radius-bottom: X;
 
 
 command widget-transform border-width-top: (X has to-purr-variable) =

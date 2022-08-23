@@ -189,6 +189,8 @@ command dom-renderer context: _ to-property: text-transform--lowercase = "lowerc
 command dom-renderer context: _ to-property: text-transform--capitalize = "capitalize";
 command dom-renderer context: _ to-property: text-transform--none = "none";
 
+command dom-renderer context: _ to-property: (X is text-overflow) = X to-enum-text;
+
 command dom-renderer context: _ to-property: text-whitespace--collapse = "normal";
 command dom-renderer context: _ to-property: text-whitespace--no-wrap = "nowrap";
 command dom-renderer context: _ to-property: text-whitespace--preserve = "pre";
