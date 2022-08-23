@@ -15,14 +15,19 @@ end
 
 command purr-project-page render-page do
   let App-home = new application-home(self.project);
-  let Current-application = #observable-cell with-value: App-home;
-  let Open-applications = #observable-cell with-value: [App-home];
-  let App-state = Current-application zip: Open-applications with: { Current, Open in [current -> Current, all -> Open] };
+  let Current-application = #observable-cell with-value: [app -> nothing, node -> nothing];
+  let Open-applications = #observable-cell with-value: [];
+  let App-state = Current-application zip: Open-applications with: { Current, Open in [current -> Current.app, all -> Open.app] };
 
   handle
+    let App-home-rec = [app -> App-home, node -> App-home render-application commit];
+    Current-application <- App-home-rec;
+    Open-applications <- [App-home-rec];
+
     #purr-page title: self title menu: self side-menu body: (
       #widget flex-column: [
-        Current-application map: (_ render-application)
+        Current-application
+          |> _ map: { X in X.node }
           |> _ as widget
           |> _ transform
           |> _ height: #size fill
@@ -40,15 +45,26 @@ command purr-project-page render-page do
     use purr-project-state project: self.project;
 
     on project-page.open-app(App) do
-      assert Open-applications value none: { X in X =:= App };
-      Open-applications <- Open-applications value append: App;
-      Current-application <- App;
-      continue with nothing;
+      let Existing-app = Open-applications value find-first: { X in X.app =:= App };
+      condition
+        when Existing-app is ok do
+          Current-application <- Existing-app value;
+          continue with nothing;
+        end
+
+        when Existing-app is error do
+          let App-rec = [app -> App, node -> App render-application commit];
+          Open-applications <- Open-applications value append: App-rec;
+          Current-application <- App-rec;
+          continue with nothing;
+        end
+      end
     end
 
     on project-page.show-app(App) do
-      assert Open-applications value some: { X in X =:= App };
-      Current-application <- App;
+      let App-rec = Open-applications value find-first: { X in X.app =:= App }
+                      | value-or-panic: "internal: application is not open";
+      Current-application <- App-rec;
       continue with nothing;
     end
   end

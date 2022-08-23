@@ -19,7 +19,7 @@ type purr-project-crochet-meta(
 command purr-project-crochet title = self meta title;
 
 command purr-project-crochet applications = [
-  new application-configure(self),
+  new application-configure(self)
 ];
 
 command purr-project-crochet-meta set-title: (Title is text) =
