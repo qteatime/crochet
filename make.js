@@ -110,7 +110,7 @@ w.task("build", ["build-browser", "build-purr"], () => {}).with_doc(
   "Builds a complete Crochet system"
 );
 
-w.task("test", ["build", "run-tests"], () => {}).with_doc(
+w.task("test", ["install-deps", "build", "run-tests"], () => {}).with_doc(
   "Builds Crochet and runs all tests"
 );
 
