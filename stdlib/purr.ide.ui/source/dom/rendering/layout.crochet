@@ -213,3 +213,11 @@ command dom-renderer render: (W is widget-vertical-timeline) do
   end
   Node;
 end
+
+
+command dom-renderer render: (W is widget-panel) do
+  let Node = dom make-element: "div" class: "purr-ui-panel";
+  self set-property: "data-anchor" to: W.anchor in: Node;
+  Node append: (self render: W.contents);
+  Node;
+end

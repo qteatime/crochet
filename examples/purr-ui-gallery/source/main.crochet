@@ -25,7 +25,8 @@ enum pages =
   dividers,
   breadcrumbs,
   lenses,
-  checkboxes;
+  checkboxes,
+  panel;
 
 command purr side-bar do
   purr menu
@@ -73,6 +74,7 @@ implement purr-ui-page for pages--breadcrumbs;
 implement purr-ui-page for pages--lenses;
 implement purr-ui-page for pages--text-input;
 implement purr-ui-page for pages--checkboxes;
+implement purr-ui-page for pages--panel;
 
 command purr menu =
   #widget navigation: [
@@ -85,6 +87,7 @@ command purr menu =
     #widget link: "Cards" | to: #pages cards,
     #widget link: "Sections" | to: #pages sections,
     #widget link: "Breadcrumbs" | to: #pages breadcrumbs,
+    #widget link: "Panels" | to: #pages panel,
 
     "Input",
     #widget link: "Buttons" | to: #pages buttons,
@@ -94,6 +97,34 @@ command purr menu =
     "Code",
     #widget link: "Lenses" | to: #pages lenses,
   ];
+
+command pages--panel render-page do
+  #widget flex-row: [
+    #widget left-panel: "left"
+      | transform
+      | width: (10.0 as root-em),
+
+    #widget flex-column: [
+      #widget top-panel: "top"
+        | transform
+        | height: (10.0 as root-em),
+
+      #widget bottom-panel: "bottom"
+        | transform
+        | height: (10.0 as root-em),
+    ]
+    | transform
+    | flex-grow: #flex-grow grow,
+
+    #widget right-panel: "right"
+      | transform
+      | width: (10.0 as root-em),
+  ]
+  | transform
+  | flex-gap: #text-size base
+  | flex-align-items: #flex-align stretch
+  | flex-justify-content: #flex-justify stretch;
+end
 
 command pages--lenses render-page =
   #widget flex-column: [

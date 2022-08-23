@@ -1,0 +1,23 @@
+% crochet
+
+type widget-panel(
+  contents is widget,
+  anchor is purr-variable<panel-anchor>,
+) is widget;
+
+enum panel-anchor =
+  top,
+  right,
+  bottom,
+  left;
+
+command #widget panel: (Content has to-widget) anchor: (Anchor has to-purr-variable) =
+  new widget-panel(
+    contents -> Content as widget,
+    anchor -> Anchor as purr-variable,
+  );
+
+command #widget top-panel: Content = #widget panel: Content anchor: #panel-anchor top;
+command #widget left-panel: Content = #widget panel: Content anchor: #panel-anchor left;
+command #widget bottom-panel: Content = #widget panel: Content anchor: #panel-anchor bottom;
+command #widget right-panel: Content = #widget panel: Content anchor: #panel-anchor right;

@@ -1,5 +1,25 @@
 % crochet
 
+command dom-renderer context: _ to-property: (X is root-em) =
+  "[X.value to-text]rem" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is em) =
+  "[X.value to-text]em" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is pixels) =
+  "[X.value to-text]px" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is percent) =
+  "[X.value to-text]%" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is viewport-width) =
+  "[X.value to-text]vw" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is viewport-height) =
+  "[X.value to-text]vh" flatten-into-plain-text;
+
+
+
 command dom-renderer context: _ to-property: color--transparent = "transparent";
 command dom-renderer context: _ to-property: (X is color) = "var(--color-[X to-enum-text])" flatten-into-plain-text;
 

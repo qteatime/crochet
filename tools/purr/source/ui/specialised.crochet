@@ -4,24 +4,39 @@ open purr.ide.ui;
 
 command pui application-indicator: (App is purr-application) action: F current: Current do
   let Widget = 
-    #widget flex-column: [
-      #widget icon-button: App icon
-        | on-click: { _ in F(App) }
-        | transform
-        | font-size: #text-size large-2x,
-
-      (App title as widget)
-        | transform
-        | font-weight: #font-weight semi-bold,
-    ]
+    #widget button: (
+      #widget flex-column: [
+        App icon | transform | font-size: (2.0 as root-em),
+        (App title as widget) | transform | font-size: (0.8 as root-em),
+      ]
+      | transform
+      | font-color: (
+          condition
+            when Current => #color accent;
+            otherwise => #color text;
+          end
+        )
+      | width: #size fit-content
+      | height: #size fit-content
+      | flex-align-items: #flex-align center
+      | flex-gap: #text-size extra-small
+      | padding-horizontal: (1.0 as root-em)
+      | padding-vertical: (0.5 as root-em)
+    )
+    | on-click: { _ in F(App) }
+    | style: #button-style clear
     | transform
-    | width: #size fit-content
-    | height: #size fit-content
-    | flex-align-items: #flex-align center
-    | flex-gap: #text-size extra-small;
+    | border-radius: #border-radius square;
 
   condition
-    when Current => Widget transform background-color: #color background-dark-2;
+    when Current =>
+      Widget
+        | transform
+        | background-color: #color tab-active-bg
+        | font-color: #color accent
+        | border-width-top: (3 as pixels)
+        | border-style-top: #border-style solid
+        | border-color-top: #color accent;
     otherwise => Widget;
   end
 end

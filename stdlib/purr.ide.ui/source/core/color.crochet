@@ -68,4 +68,11 @@ enum color =
   text-secondary,
   background,
   background-dark-1,
-  background-dark-2;
+  background-dark-2,
+  button,
+  button-text,
+  button-hover,
+  button-active,
+  button-clear-text,
+  tab-active-bg,
+  tab-hover-bg;

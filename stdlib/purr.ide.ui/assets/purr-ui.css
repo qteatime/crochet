@@ -27,16 +27,16 @@
   --color-white: #fafafa;
 
   /* todo: tweak this */
-  --color-neutral-50: #fafafd;
-  --color-neutral-100: #fdfdfa;
-  --color-neutral-200: #fbfcf6;
-  --color-neutral-300: #f6f6ed;
-  --color-neutral-400: #eeeee3;
-  --color-neutral-500: #e3e4d6;
-  --color-neutral-600: #c0c49c;
-  --color-neutral-700: #9fa46b;
-  --color-neutral-800: #7e8444;
-  --color-neutral-900: #666d29;
+  --color-neutral-50: #fdfafc;
+  --color-neutral-100: #edf4f8;
+  --color-neutral-200: #dbe9f2;
+  --color-neutral-300: #bbcdda;
+  --color-neutral-400: #95a6b6;
+  --color-neutral-500: #667586;
+  --color-neutral-600: #4a5b73;
+  --color-neutral-700: #334460;
+  --color-neutral-800: #202f4d;
+  --color-neutral-900: #132040;
   --color-blue-grey-100: #edf4f8;
   --color-blue-grey-200: #dbe9f2;
   --color-blue-grey-300: #bbcdda;
@@ -89,13 +89,16 @@
   --color-accent-dark-1: var(--color-red-700);
   --color-accent-dark-2: var(--color-red-800);
 
-  --color-border: var(--color-neutral-500);
+  --color-border: var(--color-neutral-400);
 
   --color-button: var(--color-neutral-200);
   --color-button-text: var(--color-text);
   --color-button-hover: var(--color-neutral-300);
-  --color-button-active: var(--color-neutral-500);
+  --color-button-active: var(--color-neutral-400);
   --color-button-clear-text: var(--color-accent);
+
+  --color-tab-active-bg: var(--color-red-100);
+  --color-tab-hover-bg: var(--color-red-100);
 
   --color-text: var(--color-black);
   --color-text-secondary: var(--color-blue-grey-500);
@@ -105,15 +108,15 @@
   --color-background-dark-2: var(--color-neutral-200);
   --color-background-hover: var(--color-neutral-100);
 
-  --color-navigation-header: var(--color-neutral-500);
+  --color-navigation-header: var(--color-text-secondary);
 
-  --color-input-label-background: var(--color-neutral-400);
+  --color-input-label-background: var(--color-neutral-200);
   --color-input-label-text: var(--color-text-secondary);
   --color-input-background: var(--color-pure-white);
   --color-input-disabled-background: var(--color-neutral-300);
 
   --color-toggle-button-background: var(--color-neutral-400);
-  --color-toggle-button-border: var(--color-neutral-200);
+  --color-toggle-button-border: var(--color-neutral-100);
 
   --font-family-serif: serif;
   --font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto,
@@ -216,6 +219,7 @@
   background: transparent;
   color: var(--color-button-clear-text);
   padding: 0;
+  border-radius: 0;
 }
 
 .purr-ui-button.purr-ui-toggle-button {
@@ -394,11 +398,11 @@
   font-weight: bold;
   color: var(--color-accent);
   border-bottom: 3px solid var(--color-accent);
-  background: var(--color-background-hover);
+  background: var(--color-tab-active-bg);
 }
 
 .purr-ui-tabbed-panel-header:hover {
-  background: var(--color-background-hover);
+  background: var(--color-tab-hover-bg);
 }
 
 .purr-ui-tabbed-panel-content-container {
@@ -680,4 +684,25 @@
 .purr-ui-toggle-button-group
   .purr-ui-button.purr-ui-toggle-button:not(:last-child) {
   border-right: 1px solid var(--color-toggle-button-border);
+}
+
+.purr-ui-panel {
+  background: var(--color-background);
+}
+
+.purr-ui-panel[data-anchor="top"] {
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+}
+.purr-ui-panel[data-anchor="right"] {
+  border-left: 1px solid var(--color-border);
+  box-shadow: -1px 0px 3px rgba(0, 0, 0, 0.3);
+}
+.purr-ui-panel[data-anchor="bottom"] {
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0px -1px 3px rgba(0, 0, 0, 0.3);
+}
+.purr-ui-panel[data-anchor="left"] {
+  border-right: 1px solid var(--color-border);
+  box-shadow: 1px 0px 3px rgba(0, 0, 0, 0.3);
 }

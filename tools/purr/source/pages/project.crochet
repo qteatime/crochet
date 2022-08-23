@@ -63,14 +63,14 @@ command purr-project-page side-menu =
   ];
 
 command purr-project-page app-bar: (Apps is record) =
-  #widget flex-row: (
-    Apps.all map: (self app-indicator: _ current: Apps.current)
-  )
-  | transform
-  | flex-gap: #text-size base
-  | flex-justify-content: #flex-justify center
-  | flex-align-items: #flex-align center
-  | background-color: #color white;
+  #widget bottom-panel: [
+    #widget flex-row: (
+      Apps.all map: (self app-indicator: _ current: Apps.current)
+    )
+    | transform
+    | flex-justify-content: #flex-justify center
+    | flex-align-items: #flex-align center,
+  ];
 
 command purr-project-page app-indicator: (App is purr-application) current: (Current is purr-application) =
   pui application-indicator: App

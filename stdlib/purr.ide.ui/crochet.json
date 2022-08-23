@@ -22,6 +22,7 @@
     "source/core/event.crochet",
     "source/core/logical-time.crochet",
     "source/core/modal.crochet",
+    "source/core/units.crochet",
 
     "source/dom/rendering/basic.crochet",
     "source/dom/rendering/layout.crochet",
@@ -75,6 +76,7 @@
     "source/widget/layout/navigation.crochet",
     "source/widget/layout/breadcrumbs.crochet",
     "source/widget/layout/vertical-timeline.crochet",
+    "source/widget/layout/panel.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",
