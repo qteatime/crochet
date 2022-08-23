@@ -35,7 +35,7 @@
     "crochet.debug"
   ],
   "capabilities": {
-    "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting"],
+    "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting", "native"],
     "provides": []
   },
   "config": {

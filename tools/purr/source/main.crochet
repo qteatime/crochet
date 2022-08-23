@@ -4,7 +4,7 @@ open purr.ide.ui;
 
 singleton purr;
 
-command main-html: Root do
+command main-html: Root driver: Driver do
   handle
     let Router = purr-ui make-router: package purr-router;
     purr-ui show: Router;

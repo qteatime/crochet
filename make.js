@@ -99,7 +99,14 @@ w.task("package-stdlib", ["build-stdlib"], async () => {
   await require("./build/node-cli/archive").generate_stdlib_archives();
 }).with_doc("Creates proper package files for all of the stdlib");
 
-w.task("build", ["build-browser"], () => {}).with_doc(
+w.task("build-purr", [], () => {
+  FS.copyFileSync(
+    Path.join(__dirname, "www/crochet.js"),
+    Path.join(__dirname, "tools/purr/www/crochet.js")
+  );
+}).with_doc("Builds the Purr tool");
+
+w.task("build", ["build-browser", "build-purr"], () => {}).with_doc(
   "Builds a complete Crochet system"
 );
 

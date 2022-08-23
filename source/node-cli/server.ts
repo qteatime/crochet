@@ -40,6 +40,8 @@ export default async (
   target: Package.Target,
   capabilities: Set<string>
 ) => {
+  const session_id = random_uuid();
+
   // -- Templating
   const template = (filename: string) => (config: unknown) => {
     const config_str = JSON.stringify(config).replace(/</g, "\\u003c");
@@ -105,6 +107,7 @@ export default async (
   app.get("/", async (req, res) => {
     const packages = await try_build(res);
     const config = {
+      session_id: session_id,
       token: random_uuid(),
       root_package: pkg.meta.name,
       capabilities: [...capabilities.values()],
@@ -129,6 +132,7 @@ export default async (
 
   return {
     url,
+    session_id,
   };
 };
 

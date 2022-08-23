@@ -15,3 +15,6 @@ _build
 *.lingua.crochet
 *:Zone.Identifier
 !stdlib/**/vendor-native/**/*.js
+tools/purr/www/*.css
+tools/purr/www/*.js
+tools/purr/www/fonts
