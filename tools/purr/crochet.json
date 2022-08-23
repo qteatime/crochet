@@ -12,8 +12,8 @@
     "source/core/application.crochet",
 
     "source/applications/configure/core.crochet",
-
     "source/applications/home/core.crochet",
+    "source/applications/run-crochet/core.crochet",
 
     "source/ui/core.crochet",
     "source/ui/section.crochet",

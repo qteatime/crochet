@@ -1,0 +1,13 @@
+% crochet
+
+open purr.ide.ui;
+
+type application-run-crochet(project is purr-project) is purr-application;
+
+command application-run-crochet title = "Run";
+command application-run-crochet icon = #widget icon: "play";
+command application-run-crochet description = "Run your project";
+
+command application-run-crochet render-application do
+  #widget space;
+end
