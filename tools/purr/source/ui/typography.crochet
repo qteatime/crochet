@@ -35,4 +35,4 @@ command pui heading-5: (X has to-widget) =
 command pui secondary-text: (X has to-widget) =
   (X as widget)
     | transform
-    | font-color: #color slate-500;
+    | font-color: #color text-secondary;

@@ -13,7 +13,7 @@ command widget-app-frame as widget do
     self.body
       | transform
       | flex-grow: #flex-grow grow
-      | background-color: #color slate-100
+      | background-color: #color background-dark-1
       | overflow: #overflow auto,
     self.footer
   ]

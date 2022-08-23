@@ -21,7 +21,7 @@ command pui application-indicator: (App is purr-application) action: F current: 
     | flex-gap: #text-size extra-small;
 
   condition
-    when Current => Widget transform background-color: #color slate-200;
+    when Current => Widget transform background-color: #color background-dark-2;
     otherwise => Widget;
   end
 end

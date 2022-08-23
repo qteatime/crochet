@@ -21,39 +21,99 @@
 }
 
 .purr-ui-root {
+  --color-pure-white: #fff;
+  --color-pure-black: #fff;
   --color-black: #2f2f2f;
   --color-white: #fafafa;
 
   /* todo: tweak this */
-  --color-slate-50: #f8fafc;
-  --color-slate-100: #f1f5f9;
-  --color-slate-200: #e2e8f0;
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
-  --color-slate-600: #475569;
-  --color-slate-700: #334155;
-  --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
+  --color-neutral-50: #fafafd;
+  --color-neutral-100: #fdfdfa;
+  --color-neutral-200: #fbfcf6;
+  --color-neutral-300: #f6f6ed;
+  --color-neutral-400: #eeeee3;
+  --color-neutral-500: #e3e4d6;
+  --color-neutral-600: #c0c49c;
+  --color-neutral-700: #9fa46b;
+  --color-neutral-800: #7e8444;
+  --color-neutral-900: #666d29;
+  --color-blue-grey-100: #edf4f8;
+  --color-blue-grey-200: #dbe9f2;
+  --color-blue-grey-300: #bbcdda;
+  --color-blue-grey-400: #95a6b6;
+  --color-blue-grey-500: #667586;
+  --color-blue-grey-600: #4a5b73;
+  --color-blue-grey-700: #334460;
+  --color-blue-grey-800: #202f4d;
+  --color-blue-grey-900: #132040;
+  --color-green-100: #d8fcd8;
+  --color-green-200: #b3f9ba;
+  --color-green-300: #89ed9e;
+  --color-green-400: #68dc8b;
+  --color-green-500: #3bc673;
+  --color-green-600: #2baa6b;
+  --color-green-700: #1d8e61;
+  --color-green-800: #127256;
+  --color-green-900: #0b5f4e;
+  --color-blue-100: #dfe8fe;
+  --color-blue-200: #c0d0fe;
+  --color-blue-300: #a0b7fe;
+  --color-blue-400: #89a2fd;
+  --color-blue-500: #6281fc;
+  --color-blue-600: #4761d8;
+  --color-blue-700: #3146b5;
+  --color-blue-800: #1f2f92;
+  --color-blue-900: #121e78;
+  --color-yellow-100: #fff8da;
+  --color-yellow-200: #ffefb5;
+  --color-yellow-300: #ffe490;
+  --color-yellow-400: #ffd975;
+  --color-yellow-500: #ffc747;
+  --color-yellow-600: #dba333;
+  --color-yellow-700: #b78123;
+  --color-yellow-800: #936216;
+  --color-yellow-900: #7a4b0d;
+  --color-red-100: #ffe8e3;
+  --color-red-200: #ffccc8;
+  --color-red-300: #ffadaf;
+  --color-red-400: #ff99a5;
+  --color-red-500: #ff7795;
+  --color-red-600: #db5680;
+  --color-red-700: #b73b6e;
+  --color-red-800: #93255d;
+  --color-red-900: #7a1652;
 
-  --color-accent: #1c6e8c;
-  --color-border: var(--color-slate-300);
+  --color-accent: var(--color-red-600);
+  --color-accent-light-1: var(--color-red-500);
+  --color-accent-light-2: var(--color-red-400);
+  --color-accent-dark-1: var(--color-red-700);
+  --color-accent-dark-2: var(--color-red-800);
 
-  --color-button: var(--color-slate-200);
+  --color-border: var(--color-neutral-500);
+
+  --color-button: var(--color-neutral-200);
   --color-button-text: var(--color-text);
-  --color-button-hover: var(--color-slate-300);
-  --color-button-active: var(--color-slate-500);
+  --color-button-hover: var(--color-neutral-300);
+  --color-button-active: var(--color-neutral-500);
   --color-button-clear-text: var(--color-accent);
 
   --color-text: var(--color-black);
-  --color-text-secondary: var(--color-slate-500);
+  --color-text-secondary: var(--color-blue-grey-500);
 
-  --color-background: var(--color-white);
-  --color-background-hover: var(--color-slate-100);
+  --color-background: var(--color-neutral-50);
+  --color-background-dark-1: var(--color-neutral-100);
+  --color-background-dark-2: var(--color-neutral-200);
+  --color-background-hover: var(--color-neutral-100);
 
-  --color-navigation-header: var(--color-slate-500);
+  --color-navigation-header: var(--color-neutral-500);
 
-  --color-input-disabled-background: var(--color-slate-300);
+  --color-input-label-background: var(--color-neutral-400);
+  --color-input-label-text: var(--color-text-secondary);
+  --color-input-background: var(--color-pure-white);
+  --color-input-disabled-background: var(--color-neutral-300);
+
+  --color-toggle-button-background: var(--color-neutral-400);
+  --color-toggle-button-border: var(--color-neutral-200);
 
   --font-family-serif: serif;
   --font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto,
@@ -141,14 +201,14 @@
   padding: 0.6rem;
   font-weight: 400;
   color: var(--color-text);
-  background: var(--color-slate-200);
+  background: var(--color-neutral-200);
   width: 2em;
   height: 2em;
   text-align: center;
 }
 
 .purr-ui-button[data-kind="icon"]:hover {
-  background: var(--color-slate-300);
+  background: var(--color-neutral-300);
 }
 
 .purr-ui-button[data-style="clear"],
@@ -159,17 +219,17 @@
 }
 
 .purr-ui-button.purr-ui-toggle-button {
-  background: var(--color-slate-200);
+  background: var(--color-neutral-200);
   color: var(--color-text);
 }
 
 .purr-ui-button.purr-ui-toggle-button:hover {
-  background: var(--color-slate-300);
+  background: var(--color-neutral-300);
 }
 
 .purr-ui-button.purr-ui-toggle-button[data-active="true"],
 .purr-ui-button.purr-ui-toggle-button[data-active="true"]:hover {
-  background: var(--color-slate-500);
+  background: var(--color-neutral-500);
   color: var(--color-white);
 }
 
@@ -393,7 +453,7 @@
 }
 
 .purr-ui-navigation-link .purr-ui-link:hover {
-  border-left: 3px solid var(--color-slate-400);
+  border-left: 3px solid var(--color-neutral-400);
   padding-left: 0.5rem;
 }
 
@@ -425,21 +485,21 @@
 .purr-ui-text-input-label,
 .purr-ui-select-one-label {
   font-size: 0.8rem;
-  background: var(--color-slate-200);
+  background: var(--color-input-label-background);
   position: absolute;
   top: -0.6rem;
   left: 0.75rem;
   padding: 0.15rem 0.5rem;
-  color: var(--color-text-secondary);
+  color: var(--color-input-label-text);
   z-index: 2;
   border-radius: 0.5rem;
-  text-shadow: 0px 1px 1px #fff;
+  font-weight: 500;
 }
 
 .purr-ui-text-input-control,
 .purr-ui-select-one-content {
   border: 1px solid var(--color-border);
-  background: var(--color-background);
+  background: var(--color-input-background);
   padding: 1rem 0.5rem 0.5rem 0.5rem;
   display: block;
   width: 100%;
@@ -528,7 +588,7 @@
 }
 
 .purr-ui-modal-close-button .purr-ui-button:hover {
-  background: var(--color-slate-100);
+  background: var(--color-neutral-100);
   color: var(--color-accent);
 }
 
@@ -562,7 +622,7 @@
 .purr-ui-code-editor {
   border: 1px solid var(--color-border);
   height: 100%;
-  background: var(--color-background);
+  background: var(--color-input-background);
   border-radius: 0.5rem;
   overflow: auto;
 }
@@ -600,14 +660,14 @@
   width: 1.25rem;
   height: 1.25rem;
   border-radius: 100%;
-  border: 3px solid var(--color-white);
+  border: 3px solid var(--color-background);
   background: var(--color-accent);
 }
 
 .purr-ui-toggle-button-group {
   display: flex;
   flex-direction: row;
-  background: var(--color-slate-200);
+  background: var(--color-toggle-button-background);
   width: fit-content;
   padding: 0 1rem;
   border-radius: 50rem;
@@ -619,5 +679,5 @@
 
 .purr-ui-toggle-button-group
   .purr-ui-button.purr-ui-toggle-button:not(:last-child) {
-  border-right: 1px solid var(--color-slate-100);
+  border-right: 1px solid var(--color-toggle-button-border);
 }

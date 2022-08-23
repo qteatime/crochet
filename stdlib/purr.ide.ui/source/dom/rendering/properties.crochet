@@ -1,18 +1,7 @@
 % crochet
 
 command dom-renderer context: _ to-property: color--transparent = "transparent";
-command dom-renderer context: _ to-property: color--black = "var(--color-black)";
-command dom-renderer context: _ to-property: color--white = "var(--color-white)";
-command dom-renderer context: _ to-property: color--slate-50 = "var(--color-slate-50)";
-command dom-renderer context: _ to-property: color--slate-100 = "var(--color-slate-100)";
-command dom-renderer context: _ to-property: color--slate-200 = "var(--color-slate-200)";
-command dom-renderer context: _ to-property: color--slate-300 = "var(--color-slate-300)";
-command dom-renderer context: _ to-property: color--slate-400 = "var(--color-slate-400)";
-command dom-renderer context: _ to-property: color--slate-500 = "var(--color-slate-500)";
-command dom-renderer context: _ to-property: color--slate-600 = "var(--color-slate-600)";
-command dom-renderer context: _ to-property: color--slate-700 = "var(--color-slate-700)";
-command dom-renderer context: _ to-property: color--slate-800 = "var(--color-slate-800)";
-command dom-renderer context: _ to-property: color--slate-900 = "var(--color-slate-900)";
+command dom-renderer context: _ to-property: (X is color) = "var(--color-[X to-enum-text])" flatten-into-plain-text;
 
 command dom-renderer context: _ to-property: size--zero = "0px";
 command dom-renderer context: _ to-property: size--pixel = "1px";
