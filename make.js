@@ -64,7 +64,7 @@ w.task("install-deps", [], () => {
   exec(`npm install`);
   const stdlib = Path.join(__dirname, "stdlib");
   for (const dir of FS.readdirSync(stdlib)) {
-    if (FS.existsSync(Path.join(dir, "package-json"))) {
+    if (FS.existsSync(Path.join(stdlib, dir, "package-json"))) {
       exec(`npm install`, { cwd: dir });
     }
   }
