@@ -3,14 +3,20 @@
 open purr.ide.ui;
 
 singleton purr;
+protect type purr with internal;
+protect global purr with internal;
 
-command main-html: Root driver: Driver do
+
+command main-html: Root driver: Driver-box do
+  let Driver = new purr-driver(Driver-box);
+
   handle
     let Router = purr-ui make-router: package purr-router;
     purr-ui show: Router;
   with
     use logical-time;
     use purr-ui-dom-renderer root: Root;
+    use purr-driver connect: Driver;
   end
 end
 

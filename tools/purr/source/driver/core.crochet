@@ -1,0 +1,30 @@
+% crochet
+
+effect purr-driver with
+  get-driver(); // -> purr-driver
+end
+
+handler purr-driver connect: Driver with
+  on purr-driver.get-driver() => continue with Driver;
+end
+
+type purr-driver(driver is unknown);
+type purr-driver-projects(driver is unknown);
+type purr-driver-crochet-project(driver is unknown, id is text);
+
+command purr-driver projects =
+  new purr-driver-projects(self.driver);
+
+
+command purr-driver-projects list do
+  let Projects = foreign driver.projects.list(self.driver);
+  Projects map: { X in new purr-driver-crochet-project(self.driver, X) };
+end
+
+command purr-driver-projects import do
+  let Project = foreign driver.projects.import(self.driver);
+  new purr-driver-crochet-project(self.driver, Project);
+end
+
+command purr-driver-crochet-project read-metadata =
+  foreign driver.projects.read-metadata(self.driver, self.id);

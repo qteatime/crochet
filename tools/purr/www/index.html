@@ -55,7 +55,7 @@
             child.remove();
           }
 
-          const purr = {}; // TODO: get purr api here
+          const purr = await Purr.connect(config.session_id);
 
           await crochet
             .run("main-html: _ driver: _", [

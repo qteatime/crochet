@@ -3,21 +3,19 @@
 open purr.ide.ui;
 
 command purr projects = [];
+//  purr driver projects list map: (package to-project: _);
+// end
 
-command purr ask-for-project =
-  #result ok: (
-    new purr-project-crochet(
-      id -> new purr-project-id("id"),
-      meta -> new purr-project-crochet-meta(
-        name -> "cloak-of-darkness",
-        title -> "Cloak of Darkness",
-        description -> "A small interactive fiction demo with Novella",
-      ),
-    )
-  );
+command purr ask-for-project do
+  let Project = package to-project: purr driver projects import;
+  #result ok: Project;
+end
 
 command purr open-project: (Project is purr-project) =
   purr-ui navigate: new purr-project-page(Project);
 
 command purr current-project =
   perform purr-project-state.current-project();
+
+command purr driver =
+  perform purr-driver.get-driver();

@@ -2,7 +2,7 @@
   "name": "purr",
   "description": "Purr: a secure, extensible, and privacy-respecting IDE for any language",
   "target": "*",
-  "native_sources": [],
+  "native_sources": ["native/driver.js"],
   "sources": [
     "source/main.crochet",
 
@@ -10,6 +10,8 @@
     "source/core/project.crochet",
     "source/core/project-state.crochet",
     "source/core/application.crochet",
+
+    "source/driver/core.crochet",
 
     "source/applications/configure/core.crochet",
     "source/applications/home/core.crochet",

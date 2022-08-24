@@ -1,20 +1,25 @@
 % crochet
 
+open crochet.language.json;
+
 abstract purr-project;
 
 type purr-project-id(id is text);
 
 
 type purr-project-crochet(
-  id is purr-project-id,
+  id is purr-driver-crochet-project,
   global meta is purr-project-crochet-meta,
 ) is purr-project;
 
-type purr-project-crochet-meta(
-  global name is text,
-  global title is text,
-  global description is text,
-);
+type purr-project-crochet-meta(meta is any);
+
+
+command package to-project: (X is purr-driver-crochet-project) do
+  let Meta = json parse: X read-metadata;
+  new purr-project-crochet(X, new purr-project-crochet-meta(Meta));
+end
+
 
 command purr-project-crochet title = self meta title;
 
@@ -23,5 +28,14 @@ command purr-project-crochet applications = [
   new application-configure(self),
 ];
 
+command purr-project-crochet-meta name =
+  self.meta at: "name";
+
+command purr-project-crochet-meta title =
+  self.meta at: "title" default: self name;
+
+command purr-project-crochet-meta description =
+  self.meta at: "description" default: "";
+
 command purr-project-crochet-meta set-title: (Title is text) =
-  new purr-project-crochet-meta(self with title -> Title);
+  new purr-project-crochet-meta(self with meta -> self.meta at: "title" put: Title);

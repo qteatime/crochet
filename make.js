@@ -105,6 +105,7 @@ w.task("build-purr", [], () => {
     Path.join(__dirname, "www/crochet.js"),
     Path.join(__dirname, "tools/purr/www/crochet.js")
   );
+  exec(`npm run build-tools-ts`);
 }).with_doc("Builds the Purr tool");
 
 w.task("build", ["build-browser", "build-purr"], () => {}).with_doc(
