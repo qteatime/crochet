@@ -63,9 +63,11 @@ const w = new World();
 w.task("install-deps", [], () => {
   exec(`npm install`);
   const stdlib = Path.join(__dirname, "stdlib");
+  console.log("-->", stdlib);
   for (const dir of FS.readdirSync(stdlib)) {
-    if (FS.existsSync(Path.join(stdlib, dir, "package-json"))) {
-      exec(`npm install`, { cwd: dir });
+    console.log("=> at", `stdlib/${dir}`);
+    if (FS.existsSync(Path.join(stdlib, dir, "package.json"))) {
+      exec(`npm install`, { cwd: Path.join(stdlib, dir) });
     }
   }
 }).with_doc("Install all dependencies for the project");
