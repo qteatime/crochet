@@ -1,7 +1,7 @@
 % crochet
 
 command pickles-value parse: Value =
-  #pickles-vm exception: new pickles-error--not-a-parser(self, Value);
+  #result error: new pickles-error--not-a-parser(self, Value);
 
 command pickles-native-parser parse: Value do
   #pickles-tracer invoke: self with: [] input: Value do: {
@@ -23,7 +23,7 @@ command pickles-literal parse: Value do
   #pickles-tracer invoke: self with: [] input: Value do: {
     condition
       when Value =:= self.value => #result ok: Value;
-      otherwise => #pickles-vm exception: new pickles-error--not-equals(self, Value);
+      otherwise => #result error: new pickles-error--not-equals(self, Value);
     end
   };
 end

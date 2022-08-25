@@ -129,7 +129,7 @@ command pickles-error--not-a-parser to-panic-message =
 
 command pickles-error--both-failed to-panic-message do
   let Messages =
-    [self.left] ++ package collect-union-errors: self.right parser: self.union.right
+    [self.left] ++ (package collect-union-errors: self.right parser: self.union.right)
       |> _ map: { X in " - [X.parser text-representation]:\n  [X.error to-panic-message]"}
       |> #text join: _ with: "\n";
 
@@ -150,7 +150,7 @@ command package collect-union-errors: (X is pickles-error--both-failed) parser: 
   end;
 
 command package collect-union-errors: (X is pickles-error) parser: P =
-  [parser -> P, error -> X];
+  [[parser -> P, error -> X]];
 
 
 command pickles-error--path-not-found to-panic-message =
