@@ -7,8 +7,7 @@ command purr projects = [];
 // end
 
 command purr ask-for-project do
-  let Project = package to-project: purr driver projects import;
-  #result ok: Project;
+  package to-project: purr driver projects import;
 end
 
 command purr open-project: (Project is purr-project) =

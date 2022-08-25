@@ -6,6 +6,8 @@
   "sources": [
     "source/main.crochet",
 
+    "source/_lang.crochet/package.crochet",
+
     "source/core/api.crochet",
     "source/core/project.crochet",
     "source/core/project-state.crochet",
@@ -40,6 +42,12 @@
     "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting", "native"],
     "provides": []
   },
+  "assets": [
+    {
+      "path": "assets/package.pickles",
+      "mime": "text/plain"
+    }
+  ],
   "config": {
     "electron": {
       "window": {

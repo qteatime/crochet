@@ -3,6 +3,7 @@ import * as FS from "fs";
 import * as Pkg from "../pkg";
 import { sync as glob } from "glob";
 import { sfs } from "./sfs";
+import * as Server from "../node-cli/server";
 
 export const projects = {
   list_own() {
@@ -30,8 +31,12 @@ export class CrochetProject extends Project {
   }
 
   async read_metadata() {
-    const source = FS.readFileSync(this.root, "utf-8");
-    Pkg.parse_from_string(source, "");
-    return source;
+    return FS.readFileSync(this.root, "utf-8");
+  }
+}
+
+export class CrochetServer extends Project {
+  constructor(readonly project: CrochetProject) {
+    super();
   }
 }

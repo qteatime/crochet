@@ -1,6 +1,7 @@
 % crochet
 
 open purr.ide.ui;
+open crochet.debug;
 
 singleton purr-welcome-page is purr-page;
 
@@ -46,7 +47,11 @@ command purr-welcome-page quick-start =
 command purr-welcome-page do-import-project do
   let Project = purr ask-for-project;
   condition
-    when Project is error => nothing;
+    when Project is error do
+      transcript tag: "import-error" inspect: Project;
+      purr-ui show-modal: "Failed to import project.";
+    end
+
     when Project is ok do
       purr open-project: Project value;
     end

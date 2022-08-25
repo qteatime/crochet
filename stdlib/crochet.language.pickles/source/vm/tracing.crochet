@@ -17,6 +17,9 @@ handler pickles-tracing-disabled with
   on pickles-tracing.exit-span(_) => continue with nothing;
   on pickles-tracing.trace-result(X) => continue with X;
   on pickles-tracing.trace-error(X) => continue with X;
+  on pickles-tracing.trace-traverse(_, _, X) => continue with X;
+  on pickles-tracing.trace-invoke(_, _, _) => continue with nothing;
+  on pickles-tracing.trace-return(_, _, _, _) => continue with nothing;
 end
 
 default handler pickles-tracing-disabled;

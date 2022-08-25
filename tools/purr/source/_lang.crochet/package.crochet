@@ -1,0 +1,95 @@
+% crochet
+
+open crochet.language.json;
+open crochet.language.pickles;
+
+define package-parser = lazy (
+  pickles from-schema: (package assets at: "assets/package.pickles" | read-as-text)
+    | lookup-module: "package"
+    | lookup: "Package"
+);
+
+type crochet-package(meta is any);
+
+enum crochet-package-stability = 
+  experimental, stable, frozen, deprecated, unknown;
+
+enum crochet-package-target =
+  any, browser, node;
+
+
+command #crochet-package try-parse: (Json is text) -> result<crochet-package, any> do
+  json try-parse: Json
+    | then: { X in (force package-parser) parse: X }
+    | map: { X in new crochet-package(X) };
+end
+
+command crochet-package name = self.meta.name;
+command crochet-package title = self.meta.title;
+command crochet-package description = self.meta.description;
+
+command crochet-package target =
+  #crochet-package-target from-enum-text: self.meta.target;
+
+command crochet-package stability =
+  #crochet-package-stability from-enum-text: self.meta.stability;
+
+command crochet-package capabilities =
+  new crochet-package-capabilities(self.meta.capabilities);
+
+
+type crochet-package-capabilities(meta is any);
+
+enum crochet-capability-risk =
+  low, medium, high, critical, unknown;
+
+enum crochet-capability-kind =
+  required, optional, trusted;
+
+command crochet-package-capabilities requested =
+  self.meta.requested
+    | map: { X in new crochet-package-requested-capability(X) };
+
+command crochet-package-capabilities provided =
+  self.meta.provided
+    | map: { X in new crochet-package-provided-capability(X) };
+
+command crochet-package-capabilities strictly-required =
+  self requested keep-if: { X in X kind === #crochet-capability-kind required };
+
+command crochet-package-capabilities optional =
+  self requested keep-if: { X in X kind === #crochet-capability-kind optional };
+
+command crochet-package-capabilities trusted =
+  self requested keep-if: { X in X kind === #crochet-capability-kind trusted };
+
+command crochet-package-capabilities user-grantable =
+  self strictly-required ++ self optional;
+
+
+type crochet-package-requested-capability(meta is any);
+
+command crochet-package-requested-capability name =
+  self.meta.name;
+
+command crochet-package-requested-capability reason =
+  self.meta.reason;
+
+command crochet-package-requested-capability kind =
+  #crochet-capability-kind from-enum-text: self.meta.kind;
+
+
+type crochet-package-provided-capability(meta is any);
+
+command crochet-package-provided-capability name =
+  self.meta.name;
+
+command crochet-package-provided-capability title =
+  self.meta.title;
+
+command crochet-package-provided-capability description =
+  self.meta.description;
+
+command crochet-package-provided-capability risk =
+  #crochet-capability-risk from-enum-text: self.meta.risk;
+
