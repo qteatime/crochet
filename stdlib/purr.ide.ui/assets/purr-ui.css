@@ -434,6 +434,7 @@
 
 .purr-ui-tabbed-panel-content {
   height: 100%;
+  overflow: auto;
 }
 
 .purr-ui-tabbed-panel-content:not([data-selected="true"]) {

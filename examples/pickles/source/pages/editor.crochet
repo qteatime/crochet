@@ -73,7 +73,8 @@ command editor as widget do
       self rule-editor,
       self results
         | transform
-        | height: #size fill,
+        | flex-grow: #flex-grow grow
+        | overflow: #overflow hidden,
     ]
     | transform
     | flex-gap: #text-size small
@@ -144,27 +145,21 @@ command editor results do
       | content:
           (self pickles-ast as widget
             | transform
-            | padding: #text-size small
-            | overflow: #overflow auto
-            | maximum-height: #size small-screen),
+            | padding: #text-size small),
 
     #tab id: "parsed"
       | header: "Parsed result"
       | content:
           (self pickles-parse-results as widget
             | transform
-            | padding: #text-size small
-            | overflow: #overflow auto
-            | maximum-height: #size small-screen),
+            | padding: #text-size small),
 
     #tab id: "trace"
       | header: "Execution explanation"
       | content:
           (self pickles-trace-results as widget
             | transform
-            | padding: #text-size small
-            | overflow: #overflow auto
-            | maximum-height: #size small-screen),
+            | padding: #text-size small),
   ]
   | selected: "ast"
   | transform
