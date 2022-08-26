@@ -22,10 +22,10 @@ type border-option--style-right(value is purr-variable<border-style>) is border-
 type border-option--style-bottom(value is purr-variable<border-style>) is border-option;
 type border-option--style-left(value is purr-variable<border-style>) is border-option;
 
-command border-option--radius-top-left key = "border-radius-top-left";
-command border-option--radius-top-right key = "border-radius-top-right";
-command border-option--radius-bottom-left key = "border-radius-bottom-left";
-command border-option--radius-bottom-right key = "border-radius-bottom-right";
+command border-option--radius-top-left key = "border-top-left-radius";
+command border-option--radius-top-right key = "border-top-right-radius";
+command border-option--radius-bottom-left key = "border-bottom-left-radius";
+command border-option--radius-bottom-right key = "border-bottom-right-radius";
 
 command border-option--width-top key = "border-top-width";
 command border-option--width-right key = "border-right-width";
@@ -149,3 +149,30 @@ command widget-transform border-style-vertical: X =
 
 command widget-transform border-style: X =
   self border-style-horizontal: X | border-style-vertical: X;
+
+command widget-transform border-top: W style: S color: C =
+  self border-width-top: W
+    | border-style-top: S
+    | border-color-top: C;
+
+command widget-transform border-left: W style: S color: C =
+  self border-width-left: W
+    | border-style-left: S
+    | border-color-left: C;
+
+command widget-transform border-right: W style: S color: C =
+  self border-width-right: W
+    | border-style-right: S
+    | border-color-right: C;
+
+command widget-transform border-bottom: W style: S color: C =
+  self border-width-bottom: W
+    | border-style-bottom: S
+    | border-color-bottom: C;
+
+command widget-transform border: W style: S color: C =
+  self
+    | border-top: W style: S color: C
+    | border-right: W style: S color: C
+    | border-bottom: W style: S color: C
+    | border-left: W style: S color: C;

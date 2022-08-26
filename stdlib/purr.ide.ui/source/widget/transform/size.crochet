@@ -8,6 +8,7 @@ type size-option--maximum-width(value is purr-variable<size>) is size-option;
 type size-option--height(value is purr-variable<size>) is size-option;
 type size-option--minimum-height(value is purr-variable<size>) is size-option;
 type size-option--maximum-height(value is purr-variable<size>) is size-option;
+type size-option--aspect-ratio(value is purr-variable<aspect-ratio>) is size-option;
 
 command size-option--width key = "width";
 command size-option--minimum-width key = "min-width";
@@ -15,6 +16,7 @@ command size-option--maximum-width key = "max-width";
 command size-option--height key = "height";
 command size-option--minimum-height key = "min-height";
 command size-option--maximum-height key = "max-height";
+command size-option--aspect-ratio key = "aspect-ratio";
 
 command widget-transform width: (X has to-purr-variable) =
   self add-option: new size-option--width(X as purr-variable);
@@ -39,3 +41,6 @@ command widget-transform size-auto =
 
 command widget-transform size-fill =
   self width: #size fill | height: #size fill;
+
+command widget-transform aspect-ratio: (X has to-purr-variable) =
+  self add-option: new size-option--aspect-ratio(X as purr-variable);

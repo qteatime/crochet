@@ -15,12 +15,12 @@ enum application-configure-pages =
 command application-configure render-application do
   #widget tabbed-panel: [
     #tab id: "meta-data"
-      | header: "Meta-data"
-      | content: self meta-data,
+      | header: "Basic information"
+      | content: self basic-info,
 
-    #tab id: "capabilities"
-      | header: "Capabilities"
-      | content: self capabilities,
+    #tab id: "crochet"
+      | header: "Crochet package"
+      | content: self crochet-package,
   ]
   | layout: #tabbed-panel-layout vertical-left
   | selected: "meta-data";
@@ -44,36 +44,136 @@ command application-configure title: Title actions: Actions body: Body do
   | height: #size fit-content; 
 end
 
-command application-configure meta-data do
+command application-configure crochet-package do
   let Name = #reference text-input: "name";
+  let Target = #reference select-one: "target";
+  let Project = purr current-project;
+
+  self
+    title: "Crochet package"
+    actions: #widget space
+    body: (
+      #widget flex-column: [
+        #widget flex-column: [
+          #widget text-input: "Name"
+            | value: (Project map: { X in X meta name })
+            | placeholder: "name.your.project"
+            | reference: Name,
+          pui secondary-text: "
+            The name uniquely identifies your package. It's conventionally
+            written in a 'reverse domain' form. For example, if you own
+            a domain like 'cute-games.com', and are working on a project
+            called 'Sweetz', your name could be 'com.cute-games.sweetz'.
+          "
+            | transform
+            | font-size: #text-size small
+        ]
+        | transform
+        | flex-gap: (0.5 as root-em),
+
+        #widget flex-column: [
+          #widget select-one: "Target platform"
+            | options: [
+                #select-option label: "Any platform" value: #crochet-package-target any,
+                #select-option label: "Web Browsers" value: #crochet-package-target browser,
+                #select-option label: "Node.js" value: #crochet-package-target node,
+              ]
+            | selected: (Project map: { X in X meta target })
+            | reference: Target,
+          pui secondary-text: "
+            The platforms that your package aims to (or is known to) work on. 'Any Platform'
+            means that your package does not use any platform-specific feature, and can run
+            anywhere Crochet does.
+          "
+            | transform
+            | font-size: #text-size small,
+        ]
+        | transform
+        | flex-gap: (0.5 as root-em),
+      ]
+      | transform
+      | flex-gap: (1.5 as root-em)
+    );
+end
+
+command application-configure basic-info do
   let Title = #reference text-input: "title";
   let Description = #reference text-input: "description";
   let Project = purr current-project;
 
   self
-    title: "Meta-data"
+    title: "Basic information"
     actions: #widget space
     body: (
-      #widget flex-column: [
-        #widget text-input: "Name"
-          | value: (Project map: { X in X meta name })
-          | placeholder: "domain.you.your.project"
-          | reference: Name,
+      #widget flex-row: [
+        #widget flex-column: [
+          #widget text-input: "Title"
+            | value: (Project map: { X in X title })
+            | placeholder: "Your Great Project"
+            | reference: Title,
 
-        #widget text-input: "Title"
-          | value: (Project map: { X in X meta title })
-          | placeholder: "Your Great Project"
-          | reference: Title,
+          #widget text-input: "Description"
+            | value: (Project map: { X in X description})
+            | placeholder: "Does this and that and that other thing"
+            | reference: Description,
+        ]
+        | transform
+        | flex-gap: (1.5 as root-em),
 
-        #widget text-input: "Description"
-          | value: (Project map: { X in X meta description})
-          | placeholder: "Does this and that and that other thing"
-          | reference: Description,
+        #widget flex-column: [
+          ("Cover image" as widget)
+            | transform
+            | font-weight: #font-weight medium,
+
+          #widget flex-column: [
+            (Project map: { X in self render-cover: X cover }) as widget
+              | transform
+              | width: #size fill
+          ]
+          | transform
+          | background-color: #color neutral-900
+          | width: #size fill
+          | aspect-ratio: (#aspect-ratio width: 16 height: 9)
+          | border-radius: #border-radius rounded
+          | overflow: #overflow hidden
+          | flex-align-items: #flex-align center
+          | flex-justify-content: #flex-justify stretch
+          | border: #line-size pixel style: #border-style solid color: #color border,
+          
+          Project map: { X in self cover-image-actions: X cover }
+        ]
+        | transform
+        | flex-gap: (0.5 as root-em),
       ]
       | transform
-      | flex-gap: #text-size base
+      | flex-gap: (3.0 as root-em)
     );
 end
+
+command application-configure cover-image-actions: (X is error) =
+  pui action-button: "Add cover image"
+    |> _ icon: "images"
+    |> _ as widget
+    |> _ transform
+    |> _ width: #size fill;
+
+command application-configure cover-image-actions: (X is ok) =
+  #widget flex-column: [
+    pui action-button: "Add cover image"
+      | icon: "images",
+
+    pui action-button: "Remove cover image"
+      | icon: "times"
+  ]
+  | transform
+  | flex-gap: (0.5 as root-em);
+
+command application-configure render-cover: (X is error) =
+  #widget space;
+
+command application-configure render-cover: (X is ok) =
+  #widget image: (package assets at: "assets/a.png");
+
 
 
 command application-configure capabilities do

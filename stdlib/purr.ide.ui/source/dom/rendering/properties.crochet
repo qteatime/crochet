@@ -114,7 +114,7 @@ command dom-renderer context: _ to-property: flex-justify--space-evenly = "space
 command dom-renderer context: _ to-property: flex-justify--stretch = "stretch";
 
 command dom-renderer context: _ to-property: border-radius--square = "0px";
-command dom-renderer context: _ to-property: border-radius--rounded = "0.125rem";
+command dom-renderer context: _ to-property: border-radius--rounded = "0.25rem";
 command dom-renderer context: _ to-property: border-radius--fully-rounded = "100%";
 
 command dom-renderer context: _ to-property: border-style--solid = "solid";
@@ -219,6 +219,8 @@ command dom-renderer context: _ to-property: flex-grow--grow = "1";
 command dom-renderer context: _ to-property: flex-shrink--no = "0";
 command dom-renderer context: _ to-property: flex-shrink--shrink = "1";
 
+command dom-renderer context: _ to-property: (X is aspect-ratio) =
+  "[X.width to-text]/[X.height to-text]" flatten-into-plain-text;
 
 command dom-renderer to-property: (X is true) = "true";
 command dom-renderer to-property: (X is false) = "false";

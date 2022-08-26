@@ -47,6 +47,10 @@
     {
       "path": "assets/package.pickles",
       "mime": "text/plain"
+    },
+    {
+      "path": "assets/a.png",
+      "mime": "image/png"
     }
   ],
   "config": {

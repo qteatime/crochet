@@ -65,3 +65,11 @@ enum line-size =
   pixel,
   thin,
   thick;
+
+type aspect-ratio(
+  width is integer,
+  height is integer,
+);
+
+command #aspect-ratio width: (W is integer) height: (H is integer) =
+  new aspect-ratio(W, H);

@@ -75,4 +75,5 @@ enum color =
   button-active,
   button-clear-text,
   tab-active-bg,
-  tab-hover-bg;
+  tab-hover-bg,
+  border;
