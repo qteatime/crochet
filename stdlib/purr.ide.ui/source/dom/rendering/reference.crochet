@@ -27,24 +27,13 @@ command dom-renderer install-reference: (R is reference-button) in: (Node is ext
 end
 
 command dom-renderer install-reference: (R is reference-text-input) in: Node do
-  let Input-node = Node.extra;
-  assert dom is-input: Input-node;
-
-  let Change-value = {
-    let Current = Input-node input-value;
+  let Input-value = Node.extra;
+  Input-value stream subscribe: { Value in
     condition
-      when not (Current =:= R.value value) =>
-        R.value <- Current;
-
-      otherwise =>
-        nothing;
+      when Value is ok => R.value <- Value value;
+      otherwise => nothing;
     end
   };
-
-  R.value <- Input-node input-value;
-  Input-node delay-on: "keydown" do: { _ in Change-value() };
-  Input-node delay-on: "keyup" do: { _ in Change-value() };
-  Input-node on: "change" do: { _ in Change-value() };
 end
 
 command dom-renderer install-reference: (R is reference-checkbox) in: Node do

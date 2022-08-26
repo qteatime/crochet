@@ -2,6 +2,7 @@
 
 open crochet.language.json;
 open crochet.language.pickles;
+open crochet.text.regex;
 
 define package-parser = lazy (
   pickles from-schema: (package assets at: "assets/package.pickles" | read-as-text)
@@ -93,3 +94,17 @@ command crochet-package-provided-capability description =
 command crochet-package-provided-capability risk =
   #crochet-capability-risk from-enum-text: self.meta.risk;
 
+
+local define package-name-re = lazy (
+  regex from-text: "^\[a-z\]\[a-z0-9\\-\]*(?:\\.\[a-z\]\[a-z0-9\\-\]*)*$"
+    | compile
+);
+
+type crochet-package-error-invalid-name(name is unsafe-arbitrary-text);
+
+command #crochet-package try-parse-name: (Name is unsafe-arbitrary-text) do
+  let Re = force package-name-re;
+  Re search-first: Name
+    | map: (_ matched-text)
+    | map-error: { _ in new crochet-package-error-invalid-name(Name) };
+end

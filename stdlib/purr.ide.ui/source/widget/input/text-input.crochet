@@ -7,6 +7,7 @@ type widget-text-input(
   placeholder is purr-variable<text>,
   disabled is purr-variable<boolean>,
   read-only is purr-variable<boolean>,
+  validation is (A -> result<A, widget>),
 ) is widget;
 
 enum text-input-accept =
@@ -25,6 +26,7 @@ command #widget text-input: (Label has to-widget) =
     placeholder -> "" as purr-variable,
     disabled -> false as purr-variable,
     read-only -> false as purr-variable,
+    validation -> { X in #result ok: X },
   );
 
 command widget-text-input value: (X has to-purr-variable) =
@@ -41,3 +43,6 @@ command widget-text-input disabled: (X has to-purr-variable) =
 
 command widget-text-input read-only: (X has to-purr-variable) =
   new widget-text-input(self with read-only -> X as purr-variable);
+
+command widget-text-input validation: (X is (A -> result<A, widget>)) =
+  new widget-text-input(self with validation -> X);

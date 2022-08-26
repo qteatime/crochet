@@ -90,6 +90,7 @@
   --color-accent-dark-2: var(--color-red-800);
 
   --color-border: var(--color-neutral-400);
+  --color-border-error: var(--color-red-600);
 
   --color-button: var(--color-neutral-200);
   --color-button-text: var(--color-text);
@@ -102,6 +103,7 @@
 
   --color-text: var(--color-black);
   --color-text-secondary: var(--color-blue-grey-500);
+  --color-text-error: var(--color-red-600);
 
   --color-background: var(--color-neutral-50);
   --color-background-dark-1: var(--color-neutral-100);
@@ -626,6 +628,18 @@
 .purr-ui-text-input-control[disabled],
 .purr-ui-select-one-content[disabled] {
   opacity: 0.5;
+}
+
+.purr-ui-text-input[data-invalid="true"] .purr-ui-text-input-control {
+  border-color: var(--color-border-error);
+  outline-color: var(--color-border-error);
+  color: var(--color-text-error);
+}
+
+.purr-ui-input-validation-error {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-error);
 }
 
 .purr-ui-select-one {

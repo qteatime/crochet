@@ -36,6 +36,7 @@
     "crochet.time",
     "crochet.language.pickles",
     "crochet.language.json",
+    "crochet.text.regex",
     "purr.ide.ui",
     "crochet.debug"
   ],

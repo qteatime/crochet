@@ -58,6 +58,22 @@ command application-configure crochet-package do
           #widget text-input: "Name"
             | value: (Project map: { X in X meta name })
             | placeholder: "name.your.project"
+            | validation: { X in
+                #crochet-package try-parse-name: X
+                  | map-error: { _ in 
+                      #widget flex-column: [
+                        "
+                        Name segments must start with a lowercase letter ('a' to 'z'),
+                        and may only contain lowercase letters, digits ('0' to '9'),
+                        and hyphens ('-'). A name can be made out of multiple segments
+                        separated by a dot ('.');
+                        ",
+                        "
+                        E.g.: 'name.your.project'
+                        "
+                      ]
+                    }
+              }
             | reference: Name,
           pui secondary-text: "
             The name uniquely identifies your package. It's conventionally
