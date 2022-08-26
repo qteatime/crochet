@@ -6,24 +6,35 @@ abstract purr-project;
 
 type purr-project-id(id is text);
 
-
 type purr-project-crochet(
   id is purr-driver-crochet-project,
+  global title is text,
+  global description is text,
   global meta is crochet-package,
 ) is purr-project;
 
 
-command package to-project: (X is purr-driver-crochet-project) do
-  #crochet-package try-parse: X read-metadata
-    | map: { Meta in new purr-project-crochet(X, Meta) };
+command package metadata-to-project: (X is purr-driver-crochet-project) do
+  let Meta = X read-metadata;
+  let Kind = Meta.meta.kind;
+  condition  
+    when Kind =:= "crochet" do
+      #crochet-package try-parse: Meta.meta.source
+        | map: { Pkg in
+            new purr-project-crochet(
+              id -> X,
+              title -> Meta.title,
+              description -> Meta.description,
+              meta -> Pkg
+            )
+          };
+    end
+  end
 end
 
-
-command purr-project-crochet title =
-  condition
-    when self meta title is-empty => self meta name;
-    otherwise => self meta title;
-  end;
+// TODO: covers
+command purr-project-crochet cover =
+  #result error: not-found;
 
 command purr-project-crochet applications = [
   new application-run-crochet(self),

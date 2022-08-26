@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import * as FS from "fs";
 import { random_uuid } from "../utils/uuid";
 import * as Projects from "./projects";
+import { PurrProject, PurrRepository } from "./repository";
 
 const configp = ipcRenderer.invoke("purr:get-config");
 
@@ -36,12 +37,13 @@ class Heap {
 
 function make_purr() {
   const heap = new Heap();
+  const repo = PurrRepository.at_default_location();
 
   return {
     projects: {
       list() {
-        const files = Projects.projects.list_examples();
-        return files.map((x) => heap.allocate(x));
+        const projects = repo.projects();
+        return projects.map((x) => heap.allocate(x));
       },
 
       async import() {
@@ -49,13 +51,15 @@ function make_purr() {
         if (!result || result.length !== 1) {
           throw new Error(`invalid selection`);
         }
-        const project = new Projects.CrochetProject(result[0]);
-        await project.read_metadata();
+        const project = await repo.import_project(result[0]);
+        if (project == null) {
+          throw new Error(`invalid project`);
+        }
         return heap.allocate(project);
       },
 
       async read_metadata(x: string) {
-        const project = heap.typed_deref(Projects.CrochetProject, x);
+        const project: PurrProject = heap.typed_deref(PurrProject as any, x);
         const meta = await project.read_metadata();
         return meta;
       },

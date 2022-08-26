@@ -24,6 +24,7 @@
     "source/ui/typography.crochet",
     "source/ui/button.crochet",
     "source/ui/specialised.crochet",
+    "source/ui/capabilities.crochet",
 
     "source/pages/core.crochet",
     "source/pages/welcome.crochet",

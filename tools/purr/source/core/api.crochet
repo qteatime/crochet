@@ -1,13 +1,23 @@
 % crochet
 
 open purr.ide.ui;
+open crochet.debug;
 
-command purr projects = [];
-//  purr driver projects list map: (package to-project: _);
-// end
+command purr projects =
+  purr driver projects list
+    | fold-from: []
+      with: { Projects, Meta in
+        package metadata-to-project: Meta
+          | map: { X in Projects append: X }
+          | map-error: { Error in
+              transcript tag: "corrupted-project" inspect: [meta -> Meta, error -> Error];
+              Error;
+            }
+          | value-or-default: Projects;
+      };
 
 command purr ask-for-project do
-  package to-project: purr driver projects import;
+  package metadata-to-project: purr driver projects import;
 end
 
 command purr open-project: (Project is purr-project) =

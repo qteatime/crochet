@@ -13,6 +13,8 @@ type flex-option--justify-content(value is purr-variable<flex-justify>) is flex-
 type flex-child-option--grow(value is purr-variable<flex-grow>) is flex-option;
 type flex-child-option--shrink(value is purr-variable<flex-shrink>) is flex-option;
 type flex-child-option--basis(value is purr-variable<size>) is flex-option;
+type flex-child-option--align-self(value is purr-variable<flex-align>) is flex-option;
+type flex-child-option--justify-self(value is purr-variable<flex-justify>) is flex-option;
 
 
 command flex-option--layout key = "flex-direction";
@@ -26,6 +28,8 @@ command flex-option--justify-content key = "justify-content";
 command flex-child-option--grow key = "flex-grow";
 command flex-child-option--shrink key = "flex-shrink";
 command flex-child-option--basis key = "flex-basis";
+command flex-child-option--align-self key = "align-self";
+command flex-child-option--justify-self key = "justify-self";
 
 enum flex-grow =
   no,
@@ -102,3 +106,9 @@ command widget-transform flex-shrink: (X has to-purr-variable) =
 
 command widget-transform flex-basis: (X has to-purr-variable) =
   self add-option: new flex-child-option--basis(X as purr-variable);
+
+command widget-transform flex-align-self: (X has to-purr-variable) =
+  self add-option: new flex-child-option--align-self(X as purr-variable);
+  
+command widget-transform flex-justify-self: (X has to-purr-variable) =
+  self add-option: new flex-child-option--justify-self(X as purr-variable);

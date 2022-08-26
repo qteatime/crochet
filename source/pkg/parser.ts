@@ -101,6 +101,8 @@ export const asset_spec = anyOf([
 export const package_spec = spec(
   {
     name: string,
+    title: optional(string, ""),
+    description: optional(string, ""),
     target: optional(target_spec, target_any()),
     sources: array(file_spec),
     native_sources: optional(array(file_spec), []),

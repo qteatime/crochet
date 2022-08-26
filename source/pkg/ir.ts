@@ -1,5 +1,7 @@
 export type PackageMeta = {
   readonly name: string;
+  readonly title: string;
+  readonly description: string;
   readonly target: Target;
   readonly sources: File[];
   readonly native_sources: File[];

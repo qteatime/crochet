@@ -5,31 +5,31 @@ open purr.ide.ui;
 command pui heading-1: (X has to-widget) =
   (X as widget)
     | transform
-    | font-weight: #font-weight semi-bold
+    | font-weight: #font-weight medium
     | font-size: #text-size large-3x;
 
 command pui heading-2: (X has to-widget) =
   (X as widget)
     | transform
-    | font-weight: #font-weight semi-bold
+    | font-weight: #font-weight medium
     | font-size: #text-size large-2x;
 
 command pui heading-3: (X has to-widget) =
   (X as widget)
     | transform
-    | font-weight: #font-weight semi-bold
+    | font-weight: #font-weight medium
     | font-size: #text-size extra-large;
 
 command pui heading-4: (X has to-widget) =
   (X as widget)
     | transform
-    | font-weight: #font-weight semi-bold
+    | font-weight: #font-weight medium
     | font-size: #text-size large;
 
 command pui heading-5: (X has to-widget) =
   (X as widget)
     | transform
-    | font-weight: #font-weight semi-bold
+    | font-weight: #font-weight medium
     | font-size: #text-size base;
 
 command pui secondary-text: (X has to-widget) =

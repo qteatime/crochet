@@ -78,5 +78,70 @@ command application-configure capabilities do
   self
     title: "Capabilities"
     actions: #widget space
-    body: "";
+    body: (
+      #widget tabbed-panel: [
+        #tab id: "requested"
+          | header: "Requested"
+          | content: self requested-capabilities,
+        
+        #tab id: "provided"
+          | header: "Provided"
+          | content: self provided-capabilities,
+      ]
+      | selected: "requested"
+    );
+end
+
+command application-configure requested-capabilities do
+  let Capabilities = purr current-project map: { X in X meta capabilities };
+  let Required = Capabilities map: { X in X strictly-required };
+  let Optional = Capabilities map: { X in X optional };
+  let Trusted = Capabilities map: { X in X trusted };
+
+  #widget flex-column: [
+    self capability-section: "Required"
+        description: "The package needs these capabilities to run."
+        items: Required,
+
+    self capability-section: "Optional"
+        description: "The package can use these capabilities to provide additional features."
+        items: Optional,
+
+    self capability-section: "Trusted"
+        description: "The package will be granted these capabilities automatically when
+                      included as part of Crochet's Trusted Computing Base (standard library)."
+        items: Trusted,
+  ]
+  | transform
+  | padding-vertical: (1.0 as root-em);
+end
+
+command application-configure capability-section: Title description: Desc items: Items-cell do
+  Items-cell map: { Items in 
+    condition
+      when Items is-empty => [];
+      otherwise =>
+        #widget card: [
+          #card-child header: (
+            #widget flex-column: [
+              Title,
+              (Desc as widget)
+                | transform
+                | font-size: #text-size small
+            ]
+          ),
+          #card-child body: (
+            #widget flex-column: (Items map: (pui requested-capability: _))
+              | flex-gap: (1.0 as root-em)
+          )
+        ]
+        | style: #card-style fluid
+        | transform
+        | margin-bottom: (2.0 as root-em);
+    end
+  };
+end
+
+command application-configure provided-capabilities do
+  "";
 end

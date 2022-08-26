@@ -1,0 +1,62 @@
+% crochet
+
+open crochet.concurrency;
+open purr.ide.ui;
+
+command pui requested-capability-reason: (X is crochet-package-requested-capability) =
+  condition
+    when X reason is-empty => "(The package did not include a reason for requesting this capability)";
+    otherwise => "The package's reason: [X reason]";
+  end;
+
+command pui requested-capability: (X is crochet-package-requested-capability) =
+  #widget flex-column: [
+    (X name as widget)
+      | transform
+      | font-weight: #font-weight medium,
+
+    ((pui requested-capability-reason: X) as widget)
+      | transform
+      | font-size: #text-size small
+      | font-color: #color text-secondary,
+  ];
+
+local singleton pui-cap;
+type pui-request-capabilities(
+  global widget is widget,
+  global selected is observable-cell<set<crochet-package-requested-capability>>
+);
+
+implement to-widget for pui-request-capabilities;
+
+command pui request-capabilities: (Xs is list<crochet-package-requested-capability>) do
+  let Selected = #observable-cell with-value: #set empty;
+  new pui-request-capabilities(
+    widget -> #widget flex-column: (Xs map: (#pui-request-capabilities render: _ selected: _)),
+    selected -> Selected
+  );
+end
+
+command #pui-request-capabilities render: (X is crochet-package-requested-capability) selected: (S is observable-cell) do
+  let Name = "grant-capability:[X name]" flatten-into-plain-text;
+  let Ref = #reference checkbox: Name;
+  Ref checked map: { Checked in
+    condition
+      when Checked and S value contains: X => S <- S value remove: X;
+      when not Checked => S <- S value add: X;
+      otherwise => nothing;
+    end
+  };
+
+  #widget flex-row: [
+    #widget checkbox: Name
+      | reference: Ref,
+
+    pui requested-capability: X
+      | transform
+      | flex-grow: #flex-grow grow,
+  ]
+  | transform
+  | flex-align: #flex-align start
+  | flex-gap: (1.0 as root-em);
+end

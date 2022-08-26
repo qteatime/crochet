@@ -30,19 +30,23 @@ command purr-welcome-page quick-start =
     pui highlight-heading: "No projects here yet."
       | sub-title: "Import a project to start using Purr",
 
-    pui action-buttons: [
-      pui action-button: "Import project"
-        | description: "Imports an existing project from your files"
-        | icon: "file-import"
-        | on-click: { _ in self do-import-project },
-    ]
-    | transform
-    | margin-top: #text-size large-3x,
+    self actions
+      | transform
+      | margin-top: #text-size large-3x,
   ]
   | transform
   | flex-justify-content: #flex-justify center
   | flex-align-items: #flex-align center
   | height: #size fill;
+
+command purr-welcome-page actions do
+  pui action-buttons: [
+    pui action-button: "Import project"
+      | description: "Imports an existing project from your files"
+      | icon: "file-import"
+      | on-click: { _ in self do-import-project },
+  ];
+end
 
 command purr-welcome-page do-import-project do
   let Project = purr ask-for-project;
@@ -57,3 +61,49 @@ command purr-welcome-page do-import-project do
     end
   end
 end
+
+command purr-welcome-page show-projects: (Projects is list<purr-project>) do
+  #widget flex-column: [
+    self actions
+      | transform
+      | margin-bottom: (3.0 as root-em)
+      | flex-align-self: #flex-align center,
+
+    pui heading-2: "All projects",
+    #widget space | transform | height: (2.0 as root-em),
+
+    #widget flex-row: (Projects map: (self show-project: _))
+      | transform
+      | flex-align-items: #flex-align stretch
+      | flex-gap: (1.0 as root-em)
+      | height: #size fit-content,
+  ]
+  | transform
+  | padding: (1.0 as root-em)
+  | width: #size fill
+  | height: #size fill;
+end
+
+command purr-welcome-page show-project: (Project is purr-project) do
+  #widget card-button: [
+    #card-child media: (self project-cover: Project cover),
+    #card-child header: (pui ellipsis-text: Project title),
+    #card-child meta: Project description
+  ]
+  | on-click: { _ in purr open-project: Project }
+  | transform
+  | width: (16.0 as root-em);
+end
+
+command purr-welcome-page project-cover: (Cover is ok) =
+  Cover value as widget;
+
+command purr-welcome-page project-cover: (Cover is error) =
+  #widget flex-column: ["No cover"]
+    | transform
+    | flex-align-items: #flex-align center
+    | flex-justify-content: #flex-justify center
+    | background-color: #color neutral-900
+    | font-color: #color white
+    | width: (16.0 as root-em)
+    | height: (9.0 as root-em);

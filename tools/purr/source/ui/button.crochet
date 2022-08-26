@@ -34,7 +34,7 @@ command pui-action-button as widget =
       #widget flex-column: [
         self.title
           | transform
-          | font-weight: #font-weight semi-bold,
+          | font-weight: #font-weight medium,
         self.description
           | transform
           | font-weight: #font-weight regular
