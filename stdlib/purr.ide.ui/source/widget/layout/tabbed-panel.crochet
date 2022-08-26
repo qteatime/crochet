@@ -2,6 +2,7 @@
 
 type widget-tabbed-panel(
   tabs is list<tab>,
+  layout is purr-variable<tabbed-panel-layout>,
   selected is purr-variable<any>
 ) is widget;
 
@@ -11,10 +12,17 @@ type tab(
   content is widget
 );
 
+enum tabbed-panel-layout =
+  horizontal-top,
+  horizontal-bottom,
+  vertical-left,
+  vertical-right;
+
 
 command #widget tabbed-panel: (Tabs is list) =
   new widget-tabbed-panel(
     tabs -> Tabs map: (package to-tab: _),
+    layout -> #tabbed-panel-layout horizontal-top as purr-variable,
     selected -> nothing as purr-variable,
   );
 
@@ -22,6 +30,9 @@ command package to-tab: (X is tab) = X;
 
 command widget-tabbed-panel selected: (X has to-purr-variable) =
   new widget-tabbed-panel(self with selected -> X as purr-variable);
+
+command widget-tabbed-panel layout: (X has to-purr-variable) =
+  new widget-tabbed-panel(self with layout -> X as purr-variable);
 
 
 command #tab id: Id =

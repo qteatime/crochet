@@ -22,6 +22,7 @@ command application-configure render-application do
       | header: "Capabilities"
       | content: self capabilities,
   ]
+  | layout: #tabbed-panel-layout vertical-left
   | selected: "meta-data";
 end
 
@@ -39,7 +40,8 @@ command application-configure title: Title actions: Actions body: Body do
   | transform
   | flex-gap: #text-size base
   | padding-horizontal: #text-size large-2x
-  | padding-vertical: #text-size base; 
+  | padding-vertical: #text-size base
+  | height: #size fit-content; 
 end
 
 command application-configure meta-data do

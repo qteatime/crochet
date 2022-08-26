@@ -111,6 +111,8 @@ command dom-renderer render: (W is widget-tabbed-panel) do
   let Header = dom make-element: "div" class: "purr-ui-tabbed-panel-header-container";
   let Content = dom make-element: "div" class: "purr-ui-tabbed-panel-content-container";
 
+  self set-property: "data-layout" to: W.layout in: Node;
+
   Node append: Header;
   Node append: Content;
 
