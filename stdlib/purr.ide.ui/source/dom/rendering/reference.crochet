@@ -27,12 +27,14 @@ command dom-renderer install-reference: (R is reference-button) in: (Node is ext
 end
 
 command dom-renderer install-reference: (R is reference-text-input) in: Node do
-  let Input-value = Node.extra;
-  Input-value stream subscribe: { Value in
-    condition
-      when Value is ok => R.value <- Value value;
-      otherwise => nothing;
-    end
+  let Input-values = Node.extra;
+
+  Input-values.raw stream subscribe: { Value in
+    R.value <- Value;
+  };
+
+  Input-values.validated stream subscribe: { Value in
+    R.validated-value <- Value;
   };
 end
 

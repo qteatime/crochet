@@ -60,7 +60,7 @@ command dom-renderer render: (W is widget-text-input) do
   Node append: Label;
   Node append: Input;
   Node append: Error;
-  self extend: Node with: Validated-value;
+  self extend: Node with: [validated -> Validated-value, raw -> Input-value];
 end
 
 command dom-renderer to-input-type: text-input-accept--telephone = "tel";
