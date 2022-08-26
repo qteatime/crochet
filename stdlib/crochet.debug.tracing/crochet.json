@@ -17,7 +17,8 @@
   ],
   "dependencies": ["crochet.core", "crochet.debug"],
   "capabilities": {
-    "requires": ["crochet.debug/internal"],
-    "provides": ["tracing"]
+    "requires": [],
+    "provides": ["tracing"],
+    "trusted": ["crochet.debug/internal"]
   }
 }

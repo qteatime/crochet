@@ -3,19 +3,20 @@
   "target": "*",
   "dependencies": [
     "crochet.codec.basic",
+    "crochet.concurrency",
     "crochet.core",
     "crochet.debug",
-    {
-      "name": "crochet.debug.tracing",
-      "capabilities": ["crochet.debug/internal"]
-    },
+    "crochet.debug.tracing",
+    "crochet.format.mime-types",
     "crochet.language.csv",
     "crochet.language.json",
+    "crochet.language.pickles",
     "crochet.mathematics",
+    "crochet.network.types",
     "crochet.random",
     "crochet.text.parsing.lingua",
-    "crochet.time",
-    "crochet.concurrency"
+    "crochet.text.regex",
+    "crochet.time"
   ],
   "native_sources": ["native/throw-native.js"],
   "sources": [
