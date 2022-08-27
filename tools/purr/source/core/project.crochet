@@ -83,7 +83,7 @@ type purr-project-change-error--invalid-meta(reason is purr-changeset-error) is 
 command purr-project-change--title apply: (P is purr-project-crochet) =
   #change-result compare: P.title and: self.value then: {
     #change-result
-      updated: new purr-project-crochet(self with title -> self.value)
+      updated: new purr-project-crochet(P with title -> self.value)
       audit-log: [
         path -> "title",
         value -> self.value,
@@ -93,7 +93,7 @@ command purr-project-change--title apply: (P is purr-project-crochet) =
 command purr-project-change--description apply: (P is purr-project-crochet) =
   #change-result compare: P.description and: self.value then: {
     #change-result
-      updated: new purr-project-crochet(self with description -> self.value)
+      updated: new purr-project-crochet(P with description -> self.value)
       audit-log: [
         path -> "description",
         value -> self.value,

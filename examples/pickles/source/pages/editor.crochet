@@ -192,7 +192,8 @@ command editor pickles-parse-results: (Result is error) =
 
 
 command editor pickles-trace-results =
-  self.evaluation map: (self pickles-trace-results: _);
+  #widget space;
+  // self.evaluation map: (self pickles-trace-results: _);
 
 command editor pickles-trace-results: (Results is ok) =
   #widget vertical-timeline: ((Results value).events map: (self render-event: _));

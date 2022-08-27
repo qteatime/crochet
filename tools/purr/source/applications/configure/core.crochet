@@ -63,37 +63,19 @@ command application-configure crochet-package do
 
   let Form = (Name validated-value zip: Target selected with: { N, T in N map: { N in [name -> N, target -> T] }});
   let Raw-form = Name value zip: Target selected with: { N, T in [name -> N, target -> T] };
-  let Has-changes = Raw-form zip: Initial with: { A, B in not (A =:= B) };
-  let Is-valid = Form map: { X in X is ok };
 
   self
     title: "Crochet package"
     actions: (
-      #widget flex-row: [
-        #widget icon-button: (#widget icon: "undo")
-          | on-click: { _ in Initial <- Initial value }
-          | transform
-          | visible: Has-changes,
-
-        #widget icon-button: (#widget icon: "check")
-          | on-click: { _ in
-              Form value
-                | map: { X in
-                    purr update-project: (
-                      Project value changeset
-                        | meta: { M in M name: X.name | target: X.target }
-                    )
-                  }
-                | recover: { _ in
-                    purr show-modal: "Could not update the project meta-data.";
-                  }
-            }
-          | transform
-          | font-color: #color green-800
-          | visible: (Has-changes zip: Is-valid with: (_ and _)),
-      ]
-      | transform
-      | flex-gap: (1.0 as root-em)
+      self action-panel-initial: Initial
+           raw: Raw-form
+           form: Form
+           save: { Changes in
+            purr update-project: (
+              Project value changeset           
+                | meta: { M in M name: Changes.name | target: Changes.target }
+            );
+           }
     )
     body: (
       #widget flex-column: [
@@ -155,24 +137,76 @@ command application-configure crochet-package do
     );
 end
 
+command application-configure action-panel-initial: Initial raw: Raw form: Form save: Save do
+  let Has-changes = Initial zip: Raw with: { I, R in not (I =:= R) };
+  let Is-valid = Form map: { F in F is ok };
+
+  #widget flex-row: [
+    #widget icon-button: (#widget icon: "undo")
+      | on-click: { _ in Initial <- Initial value }
+      | transform
+      | visible: Has-changes,
+
+    #widget icon-button: (#widget icon: "check")
+      | on-click: { _ in
+          Form value
+            | map: { X in Save(X) }
+            | recover: { _ in
+                purr show-modal: "Cannot update the information because some fields contain
+                                  unsupported data.";
+              }
+        }
+      | transform
+      | font-color: #color green-800
+      | visible: (Has-changes zip: Is-valid with: (_ and _)),
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
 command application-configure basic-info do
   let Title = #reference text-input: "title";
   let Description = #reference text-input: "description";
   let Project = purr current-project;
 
+  let Initial = #observable-cell with-value: [
+    title -> Project value title,
+    description -> Project value description,
+  ];
+  Project stream subscribe: { X in Initial <- [title -> X title, description -> X description]};
+  let Raw-form = Title value zip: Description value with: { T, D in [title -> T, description -> D]};
+  let Form = Raw-form map: { F in
+    #result ok: [
+      title -> untaint make-trusted: F.title,
+      description -> untaint make-trusted: F.description
+    ]
+  };
+  
   self
     title: "Basic information"
-    actions: #widget space
+    actions: (
+      self action-panel-initial: Initial
+           raw: Raw-form
+           form: Form
+           save: { Changes in
+             purr update-project: (
+               Project value changeset
+                 | title: Changes.title
+                 | description: Changes.description
+                 | meta: { M in M title: Changes.title | description: Changes.description }
+             );
+           }
+    )
     body: (
       #widget flex-row: [
         #widget flex-column: [
           #widget text-input: "Title"
-            | value: (Project map: { X in X title })
+            | value: (Initial map: { X in X.title })
             | placeholder: "Your Great Project"
             | reference: Title,
 
           #widget text-input: "Description"
-            | value: (Project map: { X in X description})
+            | value: (Initial map: { X in X.description})
             | placeholder: "Does this and that and that other thing"
             | reference: Description,
         ]

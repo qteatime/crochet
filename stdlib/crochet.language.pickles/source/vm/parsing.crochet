@@ -172,6 +172,7 @@ command package parse: X with: (P is ast-record-field) in: Env record: R do
     | map-error: { E in
         new pickles-error--record-failed(
           record -> R,
+          parser -> P,
           field -> P,
           error -> E,
           value -> X

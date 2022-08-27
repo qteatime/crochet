@@ -46,7 +46,10 @@ export const file_spec = anyOf([
   ),
 ]);
 
-export const capability_spec = map_spec(string, capability);
+export const capability_spec = anyOf([
+  map_spec(string, capability),
+  spec({ name: string, reason: string }, (x) => capability(x.name)),
+]);
 
 export const capability_provide_spec = anyOf([
   spec(
@@ -105,6 +108,7 @@ export const package_spec = spec(
     title: optional(string, ""),
     description: optional(string, ""),
     target: optional(target_spec, target_any()),
+    stability: optional(string, "unknown"),
     sources: array(file_spec),
     native_sources: optional(array(file_spec), []),
     dependencies: optional(array(dependency_spec), []),

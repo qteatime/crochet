@@ -212,7 +212,6 @@ export class CrochetProject extends PurrProject {
   }
 
   async update_linked_meta(new_meta0: any) {
-    debugger;
     const new_meta = Spec.parse(new_meta0, CrochetProject.change_spec);
     const file = this.filename();
     FS.writeFileSync(file, JSON.stringify(new_meta, null, 2));

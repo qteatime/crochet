@@ -86,6 +86,7 @@ type pickles-error--sequence-failed(
 /// Raised when an item in a record parser fails
 type pickles-error--record-failed(
   record is ast-expression--record,
+  parser is ast-record-field,
   field is ast-record-field,
   error is pickles-error,
   value is any,
