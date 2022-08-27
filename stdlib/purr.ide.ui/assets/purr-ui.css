@@ -656,6 +656,10 @@
   grid-area: select;
 }
 
+.purr-ui-select-one {
+  padding-right: 1.5rem;
+}
+
 .purr-ui-select-one::after {
   grid-area: select;
   content: "";
@@ -667,6 +671,7 @@
   position: relative;
   z-index: 3;
   margin-right: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .purr-ui-modal-container {

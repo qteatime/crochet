@@ -120,6 +120,9 @@ command crochet-package stability =
 command crochet-package capabilities =
   new crochet-package-capabilities(self.meta.capabilities);
 
+command crochet-package sources =
+  new crochet-package-sources(self.meta.sources, self.meta."native_sources");
+
 
 type crochet-package-capabilities(meta is any);
 
@@ -180,6 +183,29 @@ command crochet-package-provided-capability description =
 command crochet-package-provided-capability risk =
   #crochet-capability-risk from-enum-text: self.meta.risk;
 
+
+type crochet-package-sources(
+  crochet is list<any>,
+  native is list<any>
+);
+
+enum crochet-package-source-kind =
+  crochet, native;
+
+type crochet-package-source(global kind is crochet-package-source-kind, meta is any);
+
+command crochet-package-sources crochet =
+  self.crochet map: { X in new crochet-package-source(#crochet-package-source-kind crochet, X) };
+
+command crochet-package-sources native =
+  self.native map: { X in new crochet-package-source(#crochet-package-source-kind native, X) };
+
+command crochet-package-sources all =
+  self.crochet ++ self.native;
+
+
+command crochet-package-source id = self.meta.filename;
+command crochet-package-source target = #crochet-package-target from-enum-text: self.meta.target;
 
 // Name validation
 local define package-name-re = lazy (

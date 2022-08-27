@@ -21,8 +21,12 @@ command application-configure render-application do
       | content: self basic-info,
 
     #tab id: "crochet"
-      | header: "Crochet package"
+      | header: "Package meta-data"
       | content: self crochet-package,
+
+    #tab id: "sources"
+      | header: "Source files"
+      | content: self source-files,
   ]
   | layout: #tabbed-panel-layout vertical-left
   | selected: "meta-data"
@@ -366,4 +370,75 @@ end
 
 command application-configure provided-capabilities do
   "";
+end
+
+
+command application-configure source-files do
+  self
+    title: "Source files"
+    actions: #widget space
+    body: (
+      #widget tabbed-panel: [
+        #tab id: "crochet"
+          | header: "Crochet modules"
+          | content: self crochet-source-files,
+
+        #tab id: "native"
+          | header: "Native modules"
+          | content: self native-source-files,
+      ]
+      | selected: "crochet"
+    )
+end
+
+command application-configure crochet-source-files do
+  let Project = purr current-project;
+
+  Project map: { X in 
+    #widget flex-column: (
+      X meta sources crochet map: (self render-source-file: _)
+    )
+    | transform
+    | flex-gap: (0.5 as root-em)
+    | margin-top: (1.0 as root-em)
+  };
+end
+
+
+command application-configure native-source-files do
+  let Project = purr current-project;
+
+  Project map: { X in 
+    #widget flex-column: (
+      X meta sources native map: (self render-source-file: _)
+    )
+    | transform
+    | flex-gap: (0.5 as root-em)
+    | margin-top: (1.0 as root-em)
+  };
+end
+
+command application-configure render-source-file: (File is crochet-package-source) do
+  #widget flex-column: [
+    #widget flex-row: [
+      #widget icon-button: (#widget icon: "trash"),
+      (File id as widget)
+        | transform
+        | flex-grow: #flex-grow grow,
+      #widget select-one: "Included on"
+         | options: [
+             #select-option label: "Any platform" value: #crochet-package-target any,
+             #select-option label: "Web Browsers" value: #crochet-package-target browser,
+             #select-option label: "Node.js" value: #crochet-package-target node,
+           ]
+    ]
+    | transform
+    | flex-align-items: #flex-align center
+    | flex-gap: (1.0 as root-em),
+
+    #widget divider
+      | transform
+      | padding: (0.0 as root-em)
+      | padding-top: (0.5 as root-em),
+  ]
 end
