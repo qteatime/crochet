@@ -167,13 +167,13 @@ grammar pickles_grammar : ast_module {
     | xs:nonemptyListOf<name, ".">  -> ast_namespace(xs)
 
   token name_start = "a".."z"
-  token name_rest = "a".."z" | "-" | "0".."9"
+  token name_rest = "a".."z" | "-" | "_" | "0".."9"
   token t_name = name_start name_rest*
 
   name = ~reserved x:t_name -> x
 
   token variable_start = "A".."Z"
-  token variable_rest = "a".."z" | "A".."Z" | "-" | "0".."9"
+  token variable_rest = "a".."z" | "A".."Z" | "-" | "_" | "0".."9"
   token variable = variable_start variable_rest*
 
   token dec_digit = "0".."9" | "_"

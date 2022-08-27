@@ -110,27 +110,31 @@ enum crochet-capability-kind =
   required, optional, trusted;
 
 command crochet-package-capabilities requested =
-  self.meta.requested
-    | map: { X in new crochet-package-requested-capability(X) };
+  self strictly-required
+    ++ self optional
+    ++ self trusted;
 
 command crochet-package-capabilities provided =
-  self.meta.provided
+  self.meta.provides
     | map: { X in new crochet-package-provided-capability(X) };
 
 command crochet-package-capabilities strictly-required =
-  self requested keep-if: { X in X kind === #crochet-capability-kind required };
+  self.meta."requires"
+    map: { X in new crochet-package-requested-capability(#crochet-capability-kind required, X) };
 
 command crochet-package-capabilities optional =
-  self requested keep-if: { X in X kind === #crochet-capability-kind optional };
+  self.meta.optional
+    map: { X in new crochet-package-requested-capability(#crochet-capability-kind optional, X) };
 
 command crochet-package-capabilities trusted =
-  self requested keep-if: { X in X kind === #crochet-capability-kind trusted };
+  self.meta.trusted
+    map: { X in new crochet-package-requested-capability(#crochet-capability-kind trusted, X) };
 
 command crochet-package-capabilities user-grantable =
   self strictly-required ++ self optional;
 
 
-type crochet-package-requested-capability(meta is any);
+type crochet-package-requested-capability(kind is crochet-capability-kind, meta is any);
 
 command crochet-package-requested-capability name =
   self.meta.name;
@@ -139,7 +143,7 @@ command crochet-package-requested-capability reason =
   self.meta.reason;
 
 command crochet-package-requested-capability kind =
-  #crochet-capability-kind from-enum-text: self.meta.kind;
+  #crochet-capability-kind from-enum-text: self.kind;
 
 
 type crochet-package-provided-capability(meta is any);

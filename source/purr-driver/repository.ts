@@ -130,15 +130,15 @@ export abstract class PurrProject {
   }
 
   update_project_meta(new_meta0: any, changelog: any[]) {
-    const base_meta = this.project_meta();
+    const meta = this.project_meta();
     const new_meta = Spec.parse(new_meta0, PurrProject.project_change_spec);
-    base_meta.title = new_meta.title;
-    base_meta.description = new_meta.description;
+    meta.title = new_meta.title;
+    meta.description = new_meta.description;
     this.repo.audit_log.append(this, "purr.metadata.changed", {
       changelog,
     });
-    FS.writeFileSync(this.meta_file, JSON.stringify(new_meta, null, 2));
     this.update_linked_meta(new_meta.meta);
+    FS.writeFileSync(this.meta_file, JSON.stringify(meta, null, 2));
   }
 
   static parse_with_id(
@@ -212,6 +212,7 @@ export class CrochetProject extends PurrProject {
   }
 
   async update_linked_meta(new_meta0: any) {
+    debugger;
     const new_meta = Spec.parse(new_meta0, CrochetProject.change_spec);
     const file = this.filename();
     FS.writeFileSync(file, JSON.stringify(new_meta, null, 2));
@@ -262,17 +263,19 @@ export class CrochetProject extends PurrProject {
     (x) => x
   );
 
+  static target_spec = Spec.anyOf([
+    Spec.equal("any" as const),
+    Spec.equal("*" as const),
+    Spec.equal("browser" as const),
+    Spec.equal("node" as const),
+  ]);
+
   static change_spec = Spec.spec(
     {
       name: Spec.string,
       title: Spec.string,
       description: Spec.string,
-      target: Spec.anyOf([
-        Spec.equal("any" as const),
-        Spec.equal("*" as const),
-        Spec.equal("browser" as const),
-        Spec.equal("node" as const),
-      ]),
+      target: CrochetProject.target_spec,
       stability: Spec.anyOf([
         Spec.equal("experimental" as const),
         Spec.equal("stable" as const),
@@ -280,12 +283,43 @@ export class CrochetProject extends PurrProject {
         Spec.equal("deprecated" as const),
         Spec.equal("unknown" as const),
       ]),
+      sources: Spec.array(
+        Spec.spec(
+          {
+            filename: Spec.string,
+            target: CrochetProject.target_spec,
+          },
+          (x) => x
+        )
+      ),
+      native_sources: Spec.array(
+        Spec.spec(
+          {
+            filename: Spec.string,
+            target: CrochetProject.target_spec,
+          },
+          (x) => x
+        )
+      ),
+      assets: Spec.array(
+        Spec.spec({ path: Spec.string, mime: Spec.string }, (x) => x)
+      ),
+      dependencies: Spec.array(
+        Spec.spec(
+          {
+            name: Spec.string,
+            capabilities: Spec.array(Spec.string),
+            target: CrochetProject.target_spec,
+          },
+          (x) => x
+        )
+      ),
       capabilities: Spec.spec(
         {
-          required: Spec.array(CrochetProject.capability_request_spec),
+          requires: Spec.array(CrochetProject.capability_request_spec),
           optional: Spec.array(CrochetProject.capability_request_spec),
           trusted: Spec.array(CrochetProject.capability_request_spec),
-          provided: Spec.array(CrochetProject.capability_provide_spec),
+          provides: Spec.array(CrochetProject.capability_provide_spec),
         },
         (x) => x
       ),
