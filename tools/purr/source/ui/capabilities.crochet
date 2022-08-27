@@ -9,17 +9,82 @@ command pui requested-capability-reason: (X is crochet-package-requested-capabil
     otherwise => "The package's reason: [X reason]";
   end;
 
-command pui requested-capability: (X is crochet-package-requested-capability) =
+command pui requested-capability: (X is crochet-package-requested-capability) do
+  let Library = #crochet-library shared-instance;
+  let Capability =
+    Library lookup-capability: X name
+      | value-or-default: new crochet-package-provided-capability([
+          name -> X name,
+          title -> X name,
+          description -> "",
+          risk -> "unknown",
+        ]);
+
   #widget flex-column: [
+
+    #widget flex-row: [
+      (Capability title as widget)
+        | transform
+        | font-color: (pui risk-color: Capability risk)
+        | font-weight: #font-weight medium
+        | font-size: #text-size extra-large,
+
+      pui capability-risk: Capability risk,
+    ]
+    | transform
+    | flex-gap: (1.0 as root-em)
+    | flex-align-items: #flex-align center,
+
     (X name as widget)
       | transform
-      | font-weight: #font-weight medium,
+      | font-family: #font-family monospace
+      | font-size: #text-size small,
+
+    #widget space
+      | transform
+      | height: (0.5 as root-em),
+
+    (Capability description as widget)
+      | transform
+      | font-color: #color text-secondary,
+
+    #widget space
+      | transform
+      | height: (1.0 as root-em),
 
     ((pui requested-capability-reason: X) as widget)
       | transform
       | font-size: #text-size small
       | font-color: #color text-secondary,
-  ];
+  ]
+  | transform
+  | flex-gap: (0.25 as root-em);
+end
+
+command pui capability-risk: (X is crochet-capability-risk) =
+  (X to-enum-text as widget)
+    | transform
+    | border-radius: (10.0 as root-em)
+    | padding-horizontal: (0.75 as root-em)
+    | padding-vertical: (0.1 as root-em)
+    | font-size: #text-size extra-small
+    | background-color: (pui risk-background-color: X)
+    | text-transform: #text-transform uppercase
+    | font-weight: #font-weight medium
+    | width: #size fit-content;
+
+command pui risk-color: crochet-capability-risk--low = #color text;
+command pui risk-color: crochet-capability-risk--medium = #color yellow-600;
+command pui risk-color: crochet-capability-risk--high = #color red-600;
+command pui risk-color: crochet-capability-risk--critical = #color red-800;
+command pui risk-color: crochet-capability-risk--unknown = #color text;
+
+command pui risk-background-color: crochet-capability-risk--low = #color neutral-200;
+command pui risk-background-color: crochet-capability-risk--medium = #color yellow-200;
+command pui risk-background-color: crochet-capability-risk--high = #color red-200;
+command pui risk-background-color: crochet-capability-risk--critical = #color red-300;
+command pui risk-background-color: crochet-capability-risk--unknown = #color neutral-200;
+
 
 local singleton pui-cap;
 type pui-request-capabilities(

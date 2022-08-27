@@ -12,11 +12,26 @@ handler purr-driver connect: Driver with
 end
 
 type purr-driver(driver is unknown);
+type purr-driver-crochet-library(driver is unknown);
 type purr-driver-projects(driver is unknown);
 type purr-driver-crochet-project(driver is unknown, id is text);
 
 command purr-driver projects =
   new purr-driver-projects(self.driver);
+
+command purr-driver crochet-library =
+  new purr-driver-crochet-library(self.driver);
+
+
+command purr-driver-crochet-library find-all-packages do
+  let Packages = foreign driver.crochet-library.find-all-packages(self.driver);
+  Packages
+    | fold-from: [] with: { List, Meta in
+        #crochet-package try-parse: Meta
+          | map: (List append: _)
+          | value-or-default: List;
+      };
+end
 
 
 command purr-driver-projects list do

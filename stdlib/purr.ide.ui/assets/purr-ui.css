@@ -654,9 +654,6 @@
 .purr-ui-select-one-content {
   appearance: none;
   grid-area: select;
-}
-
-.purr-ui-select-one {
   padding-right: 1.5rem;
 }
 

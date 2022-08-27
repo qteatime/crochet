@@ -1,0 +1,77 @@
+% crochet
+
+type crochet-library(
+  packages is cell<map<text, crochet-package>>,
+  capabilities is cell<map<text, crochet-package-provided-capability>>,
+);
+
+effect crochet-library with
+  find-service(); // -> crochet-library
+  refresh(Packages is list<crochet-package>); // -> nothing
+end
+
+
+command #crochet-library shared-instance =
+  perform crochet-library.find-service();
+
+
+local define intrinsic-capabilities = [
+  new crochet-package-provided-capability([
+    name -> "native",
+    title -> "Access to native modules",
+    description ->
+      "Allows loading native modules. Extreme care should be taken when
+       granting this capability, as it prevents Crochet from guaranteeing
+       its security policies.",
+    risk -> "critical",
+  ])
+];
+
+
+handler crochet-library-shared library: (Library is crochet-library) with
+  on crochet-library.find-service() =>
+    continue with Library;
+
+  on crochet-library.refresh(Packages) do
+    Library.packages <- #map empty;
+    Library.capabilities <- #map empty;
+    for Pkg in Packages do
+      package load-package: Pkg in: Library;
+    end
+    for Cap in intrinsic-capabilities do
+      Library.capabilities <- Library.capabilities value at: Cap name put: Cap;
+    end
+    continue with nothing;
+  end
+end
+
+
+command #crochet-library empty =
+  new crochet-library(
+    packages -> #cell with-value: #map empty,
+    capabilities -> #cell with-value: #map empty,
+  );
+
+
+command package load-package: (Package is crochet-package) in: (Library is crochet-library) do
+  condition
+    when Library.packages contains-key: Package name =>
+      package remove-package: Package name from: Library;
+    otherwise =>
+      nothing;
+  end
+
+  Library.packages <- Library.packages value at: Package name put: Package;
+  for Capability in Package capabilities provided do
+    let Name = "[Package name]/[Capability name]" flatten-into-plain-text;
+    Library.capabilities <- Library.capabilities value at: Name put: Capability;
+  end
+end
+
+
+command crochet-library lookup-capability: (Name is text) =
+  condition
+    when self.capabilities value contains-key: Name => #result ok: (self.capabilities value at: Name);
+    otherwise => #result error: not-found;
+  end;
+

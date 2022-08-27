@@ -25,6 +25,13 @@ export default (ffi: ForeignInterface) => {
     return ffi.list(driver.projects.list().map((x: any) => ffi.text(x)));
   });
 
+  ffi.defun("driver.crochet-library.find-all-packages", (driver0) => {
+    const driver = ffi.unbox(driver0) as any;
+    return ffi.list(
+      driver.crochet_library.read_metadata().map((x: any) => ffi.text(x))
+    );
+  });
+
   ffi.defmachine("driver.projects.import", function* (driver0) {
     const driver = ffi.unbox(driver0) as any;
     const project = yield ffi.await(

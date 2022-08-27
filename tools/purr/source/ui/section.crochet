@@ -34,3 +34,28 @@ command pui action-buttons: (Content is list<X has to-widget>) =
     | flex-gap: #text-size extra-small
     | maximum-width: #size columns-6
     | height: #size fit-content;
+
+
+command pui list: (Items is list<X has to-widget>) =
+  #widget flex-column: (
+    Items enumerate map: { X in
+      #widget flex-column: [
+        (X value as widget)
+          | transform
+          | padding-vertical: (0.8 as root-em)
+          | padding-horizontal: (1.0 as root-em),
+
+        condition
+          when X index === Items count => #widget space;
+          otherwise =>
+            #widget divider
+              | transform
+              | padding: (0.0 as root-em);
+        end
+      ]
+    }
+  )
+  | transform
+  | background-color: #color background
+  | border-radius: (0.5 as root-em)
+  | overflow: #overflow hidden;

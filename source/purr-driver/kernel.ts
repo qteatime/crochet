@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import * as FS from "fs";
 import { random_uuid } from "../utils/uuid";
+import { CrochetLibrary } from "./crochet-library";
 import * as Projects from "./projects";
 import { PurrProject, PurrRepository } from "./repository";
 
@@ -38,8 +39,21 @@ class Heap {
 function make_purr() {
   const heap = new Heap();
   const repo = PurrRepository.at_default_location();
+  const library = new CrochetLibrary(repo);
+  library.refresh();
 
   return {
+    crochet_library: {
+      refresh() {
+        library.refresh();
+        return null;
+      },
+
+      read_metadata() {
+        return library.read_metadata();
+      },
+    },
+
     projects: {
       list() {
         const projects = repo.projects();
