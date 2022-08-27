@@ -95,12 +95,13 @@ command purr-welcome-page show-project: (Project is purr-project) do
   | width: (16.0 as root-em);
 end
 
-command purr-welcome-page project-cover: (Cover is ok) =
-  Cover value as widget;
+command purr-welcome-page project-cover: (X is ok) =
+  #widget image: (#image mime: (X value).mime bytes: (X value).bytes);
 
 command purr-welcome-page project-cover: (Cover is error) =
   #widget flex-column: ["No cover"]
     | transform
+    | font-size: (2.0 as root-em)
     | flex-align-items: #flex-align center
     | flex-justify-content: #flex-justify center
     | background-color: #color neutral-900

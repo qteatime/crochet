@@ -51,3 +51,21 @@ command purr-driver-crochet-project update-linked-meta: Meta changelog: (Log is 
   );
   self;
 end
+
+command purr-driver-crochet-project update-cover-image do
+  foreign driver.projects.update-cover-image(self.driver, self.id);
+  self;
+end
+
+command purr-driver-crochet-project remove-cover-image do
+  foreign driver.projects.remove-cover-image(self.driver, self.id);
+  self;
+end
+
+command purr-driver-crochet-project read-cover-image do
+  let Result = foreign driver.projects.read-cover-image(self.driver, self.id);
+  condition
+    when Result is nothing => #result error: not-found;
+    otherwise => #result ok: new purr-file-binary(mime -> Result.mime, bytes -> Result.data);
+  end
+end

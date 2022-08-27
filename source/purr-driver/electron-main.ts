@@ -27,6 +27,23 @@ async function createWindow() {
     });
   });
 
+  ipcMain.handle(
+    "purr:select-image-dialog",
+    (_, title: string, label: string) => {
+      const result = dialog.showOpenDialogSync({
+        title: title,
+        buttonLabel: label,
+        filters: [{ name: "Image files", extensions: ["png", "jpg", "jpeg"] }],
+        properties: ["openFile"],
+      });
+      if (result != null && result.length === 1) {
+        return result[0];
+      } else {
+        return null;
+      }
+    }
+  );
+
   mainWindow.loadURL(config.url);
 }
 

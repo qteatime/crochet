@@ -73,4 +73,48 @@ export default (ffi: ForeignInterface) => {
       return ffi.nothing;
     }
   );
+
+  ffi.defmachine(
+    "driver.projects.update-cover-image",
+    function* (driver0, id0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      yield ffi.await(
+        driver.projects.update_cover_image(id).then((_: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
+
+  ffi.defmachine(
+    "driver.projects.remove-cover-image",
+    function* (driver0, id0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      yield ffi.await(
+        driver.projects.remove_cover_image(id).then((_: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
+
+  ffi.defmachine("driver.projects.read-cover-image", function* (driver0, id0) {
+    const driver = ffi.unbox(driver0) as any;
+    const id = ffi.text_to_string(id0);
+    const result: any = ffi.unbox(
+      yield ffi.await(
+        driver.projects.read_cover_image(id).then((x: any) => ffi.box(x))
+      )
+    );
+    if (result == null) {
+      return ffi.nothing;
+    } else {
+      return ffi.record(
+        new Map<string, CrochetValue>([
+          ["mime", ffi.text(result.mime)],
+          ["data", ffi.byte_array(result.data)],
+        ])
+      );
+    }
+  });
 };

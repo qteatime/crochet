@@ -3,6 +3,10 @@
 abstract image;
 
 type asset-image(asset is package-asset) is image;
+type binary-image(mime is text, bytes is byte-array) is image;
 
 command #image from-asset: (Asset is package-asset) =
   new asset-image(Asset);
+
+command #image mime: (Mime is text) bytes: (Bytes is byte-array) =
+  new binary-image(Mime, Bytes);

@@ -257,7 +257,8 @@ command application-configure basic-info do
           Project map: { X in self cover-image-actions: X cover }
         ]
         | transform
-        | flex-gap: (0.5 as root-em),
+        | flex-gap: (0.5 as root-em)
+        | maximum-width: (24.0 as root-em),
       ]
       | transform
       | flex-gap: (3.0 as root-em)
@@ -267,17 +268,20 @@ end
 command application-configure cover-image-actions: (X is error) =
   pui action-button: "Add cover image"
     |> _ icon: "images"
+    |> _ on-click: { _ in purr update-cover-image: purr current-project value }
     |> _ as widget
     |> _ transform
     |> _ width: #size fill;
 
 command application-configure cover-image-actions: (X is ok) =
   #widget flex-column: [
-    pui action-button: "Add cover image"
-      | icon: "images",
+    pui action-button: "Replace cover image"
+      | icon: "images"
+      | on-click: { _ in purr update-cover-image: purr current-project value },
 
     pui action-button: "Remove cover image"
       | icon: "times"
+      | on-click: { _ in purr remove-cover-image: purr current-project value },
   ]
   | transform
   | flex-gap: (0.5 as root-em);
@@ -286,7 +290,9 @@ command application-configure render-cover: (X is error) =
   #widget space;
 
 command application-configure render-cover: (X is ok) =
-  #widget image: (package assets at: "assets/a.png");
+  #widget image: (#image mime: (X value).mime bytes: (X value).bytes)
+    | transform
+    | width: #size fill;
 
 
 

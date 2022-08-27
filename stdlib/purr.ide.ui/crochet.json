@@ -6,7 +6,8 @@
     "native/lens.js",
     "native/representation.js",
     "native/code-mirror.js",
-    "native/code-mirror-ffi.js"
+    "native/code-mirror-ffi.js",
+    "native/dom.js"
   ],
   "sources": [
     "source/core/api.crochet",

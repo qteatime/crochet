@@ -5,6 +5,7 @@ import * as Spec from "../utils/spec";
 import * as Pkg from "../pkg";
 import { random_uuid } from "../utils/uuid";
 import { AuditLog } from "./audit";
+import { mime } from "./mime";
 
 const repo_base =
   OS.platform() === "darwin"
@@ -83,6 +84,7 @@ export class PurrRepository {
         {
           title: base_meta.title,
           description: base_meta.description,
+          cover: "",
           project: {
             kind: kind,
             file: file,
@@ -120,8 +122,16 @@ export abstract class PurrProject {
   abstract read_metadata(): Promise<any>;
   abstract update_linked_meta(meta: any): Promise<void>;
 
+  get dir() {
+    return this.repo.project_dir(this);
+  }
+
   get meta_file() {
-    return Path.join(this.repo.project_dir(this), "purr.json");
+    return Path.join(this.dir, "purr.json");
+  }
+
+  get cover_file() {
+    return Path.join(this.dir, "cover");
   }
 
   project_meta() {
@@ -139,6 +149,44 @@ export abstract class PurrProject {
     });
     this.update_linked_meta(new_meta.meta);
     FS.writeFileSync(this.meta_file, JSON.stringify(meta, null, 2));
+  }
+
+  update_cover_image(filename: string) {
+    const type = mime[Path.extname(filename)] ?? null;
+    if (type == null) {
+      throw new Error(`invalid image`);
+    }
+    this.repo.audit_log.append(this, "purr.cover.changed", {
+      source: filename,
+    });
+    FS.copyFileSync(filename, this.cover_file);
+    const meta = this.project_meta();
+    meta.cover = type;
+    FS.writeFileSync(this.meta_file, JSON.stringify(meta, null, 2));
+  }
+
+  remove_cover_image() {
+    const meta = this.project_meta();
+    if (!meta.cover) {
+      return;
+    }
+    this.repo.audit_log.append(this, "purr.cover.removed", {});
+    FS.unlinkSync(this.cover_file);
+    meta.cover = "";
+    FS.writeFileSync(this.meta_file, JSON.stringify(meta, null, 2));
+  }
+
+  read_cover_image() {
+    const meta = this.project_meta();
+    if (!meta.cover) {
+      return null;
+    } else {
+      const data = FS.readFileSync(this.cover_file);
+      return {
+        mime: meta.cover,
+        data: new Uint8Array(data),
+      };
+    }
   }
 
   static parse_with_id(
@@ -179,6 +227,7 @@ export abstract class PurrProject {
     {
       title: Spec.string,
       description: Spec.string,
+      cover: Spec.string,
       project: Spec.spec(
         {
           kind: Spec.string,

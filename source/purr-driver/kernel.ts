@@ -69,6 +69,32 @@ function make_purr() {
         await project.update_project_meta(updates, changelog);
         return null;
       },
+
+      async read_cover_image(x: string) {
+        const project: PurrProject = heap.typed_deref(PurrProject as any, x);
+        const image = await project.read_cover_image();
+        return image;
+      },
+
+      async remove_cover_image(x: string) {
+        const project: PurrProject = heap.typed_deref(PurrProject as any, x);
+        await project.remove_cover_image();
+        return null;
+      },
+
+      async update_cover_image(x: string) {
+        const project: PurrProject = heap.typed_deref(PurrProject as any, x);
+        const image = await ipcRenderer.invoke(
+          "purr:select-image-dialog",
+          "Choose a cover image",
+          "Use image"
+        );
+        if (image == null) {
+          throw new Error(`invalid image`);
+        }
+        await project.update_cover_image(image);
+        return null;
+      },
     },
   };
 }

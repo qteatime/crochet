@@ -13,6 +13,7 @@
     "source/core/project-state.crochet",
     "source/core/application.crochet",
     "source/core/changeset.crochet",
+    "source/core/file.crochet",
 
     "source/driver/core.crochet",
 
@@ -49,10 +50,6 @@
     {
       "path": "assets/package.pickles",
       "mime": "text/plain"
-    },
-    {
-      "path": "assets/a.png",
-      "mime": "image/png"
     }
   ],
   "config": {

@@ -10,6 +10,7 @@ type purr-project-crochet(
   id is purr-driver-crochet-project,
   global title is text,
   global description is text,
+  global cover is result<purr-binary-file, not-found>,
   global meta is crochet-package,
 ) is purr-project;
 
@@ -22,6 +23,7 @@ command package serialise-changes: (X is purr-project-crochet) =
 
 command package metadata-to-project: (X is purr-driver-crochet-project) do
   let Meta = X read-metadata;
+  let Cover = X read-cover-image;
   let Kind = Meta.meta.kind;
   condition  
     when Kind =:= "crochet" do
@@ -31,16 +33,13 @@ command package metadata-to-project: (X is purr-driver-crochet-project) do
               id -> X,
               title -> Meta.title,
               description -> Meta.description,
+              cover -> Cover,
               meta -> Pkg
             )
           };
     end
   end
 end
-
-// TODO: covers
-command purr-project-crochet cover =
-  #result error: not-found;
 
 command purr-project-crochet applications = [
   new application-run-crochet(self),

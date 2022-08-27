@@ -5,6 +5,8 @@ open crochet.concurrency;
 effect purr-project-state with
   current-project(); // -> observable-cell<purr-project>
   update-project(Changeset is purr-project-changeset); // -> result<purr-project, purr-changeset-error>
+  update-cover-image(Project is purr-project); // -> nothing
+  remove-cover-image(Project is purr-project); // -> nothing
 end
 
 handler purr-project-state project: Initial do
@@ -13,6 +15,38 @@ handler purr-project-state project: Initial do
 with
   on purr-project-state.current-project() =>
     continue with Read-only-project;
+
+  on purr-project-state.remove-cover-image(New-project) do
+    condition
+      when Project value =:= New-project do
+        let Driver = (Project value).id;
+        Driver remove-cover-image;
+        let Image = Driver read-cover-image;
+        Project <- new purr-project-crochet(Project value with cover -> Image);
+        continue with nothing;
+      end
+
+      // TODO: proper error handling
+      otherwise =>
+        continue with nothing;
+    end
+  end
+
+  on purr-project-state.update-cover-image(New-project) do
+    condition
+      when Project value =:= New-project do
+        let Driver = (Project value).id;
+        Driver update-cover-image;
+        let Image = Driver read-cover-image;
+        Project <- new purr-project-crochet(Project value with cover -> Image);
+        continue with nothing;
+      end
+
+      // TODO: proper error handling
+      otherwise =>
+        continue with nothing;
+    end
+  end
 
   on purr-project-state.update-project(Changeset) do
     condition

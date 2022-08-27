@@ -26,6 +26,12 @@ command purr open-project: (Project is purr-project) =
 command purr update-project: (Changeset is purr-project-changeset) =
   perform purr-project-state.update-project(Changeset);
 
+command purr update-cover-image: (Project is purr-project) =
+  perform purr-project-state.update-cover-image(Project);
+
+command purr remove-cover-image: (Project is purr-project) =
+  perform purr-project-state.remove-cover-image(Project);
+
 command purr current-project =
   perform purr-project-state.current-project();
 
