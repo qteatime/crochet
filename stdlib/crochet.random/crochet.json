@@ -16,9 +16,24 @@
   "capabilities": {
     "requires": [],
     "provides": [
-      "read-shared-instance",
-      "update-shared-instance",
-      "randomness-source"
+      {
+        "name": "read-shared-instance",
+        "title": "Use the shared PRNG",
+        "description": "Allows access to the shared predictable random number generator. Code holding this capability is able to change this shared instance when it generates new numbers, which can create confusion if that's not expected.",
+        "risk": "low"
+      },
+      {
+        "name": "update-shared-instance",
+        "title": "Replace the shared PRNG",
+        "description": "Allows replacing the shared predictable random number generator. Code holding this capability has complete control over the shared random number generation, therefore extra care should be taken with any package requesting this capability.",
+        "risk": "high"
+      },
+      {
+        "name": "randomness-source",
+        "title": "Install a randomness source provider",
+        "description": "Allows installing randomness source providers—used when constructing a PRNG with a random seed. Code holding this capability may change the behaviour of new PRNG instances significantly, which can create confusion if that's not expected.",
+        "risk": "medium"
+      }
     ]
   }
 }

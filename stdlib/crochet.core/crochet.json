@@ -124,6 +124,19 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": ["tainting", "untainting"]
+    "provides": [
+      {
+        "name": "tainting",
+        "title": "Mark values as untrusted",
+        "risk": "low",
+        "description": "Allow tainting values—marking them as 'not trusted'. Untrusted values can be passed around, but cannot be mixed with trusted values. It's generally safe to grant this capability."
+      },
+      {
+        "name": "untainting",
+        "title": "Mark values as trusted",
+        "risk": "critical",
+        "description": "Allow untainting values—marking them as 'trusted'. Because Crochet relies on being able to track which values come from trustworthy places and non-trustworthy ones, extra care shoule be taken with packages requesting this capability."
+      }
+    ]
   }
 }

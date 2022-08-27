@@ -9,10 +9,10 @@ let Package = {
   target: Target at target,
   stability: (Stability at stability) ?? "unknown",
   capabilities: Capabilities at capabilities,
-  native_sources: List(Source) at "native_sources",
+  native_sources: (List(Source) at "native_sources") | [],
   sources: List(Source) at sources,
-  dependencies: List(Dependency) at dependencies,
-  assets: List(Asset) at assets,
+  dependencies: (List(Dependency) at dependencies) | [],
+  assets: (List(Asset) at assets) | [],
 };
 
 let Target =

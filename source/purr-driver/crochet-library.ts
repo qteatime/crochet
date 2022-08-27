@@ -20,11 +20,10 @@ export class CrochetLibrary {
   }
 
   refresh() {
-    this.packages = [];
-    this.add_stdlib();
+    this.packages = [...this.find_stdlib()];
   }
 
-  private add_stdlib() {
+  private find_stdlib() {
     const result = [];
     for (const x of FS.readdirSync(stdlib)) {
       const dir = Path.join(stdlib, x);

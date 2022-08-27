@@ -98,7 +98,14 @@
   ],
   "capabilities": {
     "requires": [],
-    "provides": ["ui-control"],
+    "provides": [
+      {
+        "name": "ui-control",
+        "title": "Control Purr IDE's UI",
+        "description": "Allows access to replacing widgets, navigating to different pages, showing modal messages, and other similarly powerful features of Purr IDE's UI. Granting this capability to packages besides your application is not advisable.",
+        "risk": "high"
+      }
+    ],
     "trusted": ["crochet.unsafe.wrapper.dom/unsafe-dom"]
   },
   "assets": [

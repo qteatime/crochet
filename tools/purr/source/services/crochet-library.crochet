@@ -52,26 +52,31 @@ command #crochet-library empty =
     capabilities -> #cell with-value: #map empty,
   );
 
+open crochet.debug;
 
 command package load-package: (Package is crochet-package) in: (Library is crochet-library) do
   condition
-    when Library.packages contains-key: Package name =>
+    when Library.packages value contains-key: Package name =>
       package remove-package: Package name from: Library;
     otherwise =>
       nothing;
   end
 
+  transcript tag: "add-package" inspect: Package;
   Library.packages <- Library.packages value at: Package name put: Package;
   for Capability in Package capabilities provided do
     let Name = "[Package name]/[Capability name]" flatten-into-plain-text;
+    transcript tag: "add-capability" inspect: [name -> Name, cap -> Capability];
     Library.capabilities <- Library.capabilities value at: Name put: Capability;
   end
 end
 
 
-command crochet-library lookup-capability: (Name is text) =
+command crochet-library lookup-capability: (Name is text) do
+  transcript tag: "lookup-capability" inspect: [name -> Name, map -> self.capabilities value];
   condition
     when self.capabilities value contains-key: Name => #result ok: (self.capabilities value at: Name);
     otherwise => #result error: not-found;
-  end;
+  end
+end
 

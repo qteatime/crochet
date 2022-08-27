@@ -14,6 +14,13 @@
   "dependencies": ["crochet.core", "crochet.time"],
   "capabilities": {
     "requires": [],
-    "provides": ["wall-clock-timer"]
+    "provides": [
+      {
+        "name": "wall-clock-timer",
+        "title": "High-precision timer",
+        "risk": "high",
+        "description": "Used for getting the current time of the computer, with milliseconds precision. This capability has a high risk because it can be abused to access sensitive data using the Spectre vulnerability. Most packages should request a lower precision timer instead, which has a lower risk."
+      }
+    ]
   }
 }

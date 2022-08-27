@@ -6,6 +6,13 @@
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
-    "provides": ["unsafe-dom"]
+    "provides": [
+      {
+        "name": "unsafe-dom",
+        "title": "Unsafe, unrestricted DOM access",
+        "description": "Allows access to all low-level APIs in the Browser's DOM. When this capability is granted Crochet will not be able to guarantee any of its security properties.",
+        "risk": "critical"
+      }
+    ]
   }
 }
