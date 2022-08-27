@@ -53,15 +53,15 @@ command crochet-package-change--name apply: (P is crochet-package) =
 
 command crochet-package-change--target apply: (P is crochet-package) =
   package change: P path: "target"
-          old: { P.meta.target to-enum-text }
+          old: { P.meta.target }
           new: { self.value to-enum-text }
-          update: { M in [M with target -> self.value] };
+          update: { M in [M with target -> self.value to-enum-text] };
 
 command crochet-package-change--stability apply: (P is crochet-package) =
   package change: P path: "stability"
-          old: { P.meta.stability to-enum-text }
+          old: { P.meta.stability }
           new: { self.value to-enum-text }
-          update: { M in [M with stability -> self.value] };
+          update: { M in [M with stability -> self.value to-enum-text] };
 
 command crochet-package-change--title apply: (P is crochet-package) =
   package change: P path: "title"
