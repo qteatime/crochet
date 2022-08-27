@@ -41,7 +41,7 @@ command widget-button kind: (X is button-kind) =
   new widget-button(self with kind -> X);
 
 command widget-button on-click: (F is (any -> nothing)) =
-  new widget-button(self with on-click -> F);
+  new widget-button(self with on-click -> F capture);
 
 
 command #widget icon-button: (Icon has to-widget) =

@@ -9,6 +9,7 @@ type layout-option--overflow-horizontal(value is purr-variable<overflow>) is lay
 type layout-option--overflow-vertical(value is purr-variable<overflow>) is layout-option;
 type layout-option--position(value is purr-variable<position>) is layout-option;
 type layout-option--display(value is purr-variable<display>) is layout-option;
+type layout-option--visibility(value is purr-variable<visibility>) is layout-option;
 
 command layout-option--columns key = "columns";
 command layout-option--object-fit key = "object-fit";
@@ -17,6 +18,7 @@ command layout-option--overflow-horizontal key = "overflow-x";
 command layout-option--overflow-vertical key = "overflow-y";
 command layout-option--position key = "position";
 command layout-option--display key = "display";
+command layout-option--visibility key = "visibility";
 
 
 enum object-fit =
@@ -54,6 +56,11 @@ enum display =
   inline-block,
   flex;
 
+enum visibility =
+  visible,
+  hidden,
+  collapse;
+
 
 command widget-transform columns: (X has to-purr-variable) =
   self add-option: new layout-option--columns(X as purr-variable);
@@ -78,3 +85,14 @@ command widget-transform position: (X has to-purr-variable) =
 
 command widget-transform display: (X has to-purr-variable) =
   self add-option: new layout-option--display(X as purr-variable);
+
+command widget-transform visibility: (X has to-purr-variable) =
+  self add-option: new layout-option--visibility(X as purr-variable);
+
+command widget-transform visible: (X has to-purr-variable) =
+  self visibility: (X map: { Visible in
+    condition
+      when Visible => #visibility visible;
+      otherwise => #visibility collapse;
+    end
+  });

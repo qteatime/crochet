@@ -45,4 +45,4 @@ command widget-text-input read-only: (X has to-purr-variable) =
   new widget-text-input(self with read-only -> X as purr-variable);
 
 command widget-text-input validation: (X is (A -> result<A, widget>)) =
-  new widget-text-input(self with validation -> X);
+  new widget-text-input(self with validation -> X capture);

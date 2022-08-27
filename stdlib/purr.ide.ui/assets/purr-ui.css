@@ -95,6 +95,7 @@
   --color-button: var(--color-neutral-200);
   --color-button-text: var(--color-text);
   --color-button-hover: var(--color-neutral-300);
+  --color-button-disabled-text: var(--color-neutral-500);
   --color-button-active: var(--color-neutral-400);
   --color-button-clear-text: var(--color-accent);
 
@@ -203,6 +204,8 @@
 
 .purr-ui-button:disabled {
   opacity: 0.5;
+  color: var(--color-button-disabled-text);
+  cursor: default;
 }
 
 .purr-ui-button[data-kind="icon"] {
@@ -217,7 +220,7 @@
   line-height: 2.2em;
 }
 
-.purr-ui-button[data-kind="icon"]:hover {
+.purr-ui-button[data-kind="icon"]:not(:disabled):hover {
   background: var(--color-neutral-300);
 }
 

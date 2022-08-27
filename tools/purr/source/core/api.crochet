@@ -23,6 +23,9 @@ end
 command purr open-project: (Project is purr-project) =
   purr-ui navigate: new purr-project-page(Project);
 
+command purr update-project: (Changeset is purr-project-changeset) =
+  perform purr-project-state.update-project(Changeset);
+
 command purr current-project =
   perform purr-project-state.current-project();
 

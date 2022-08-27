@@ -13,6 +13,12 @@ type purr-project-crochet(
   global meta is crochet-package,
 ) is purr-project;
 
+command package serialise-changes: (X is purr-project-crochet) =
+  [
+    title -> X title,
+    description -> X description,
+    meta -> X meta serialise,
+  ];
 
 command package metadata-to-project: (X is purr-driver-crochet-project) do
   let Meta = X read-metadata;
@@ -40,3 +46,75 @@ command purr-project-crochet applications = [
   new application-run-crochet(self),
   new application-configure(self),
 ];
+
+
+// Changesets
+type purr-project-changeset(
+  from is purr-project,
+  changes is list<purr-project-change>
+) is purr-changeset;
+
+command purr-project changeset =
+  new purr-project-changeset(
+    from -> self,
+    changes -> []
+  );
+
+command purr-project-changeset append: (X is purr-project-change) =
+  new purr-project-changeset(self with changes -> self.changes append: X);
+
+command purr-project-changeset title: (X is text) =
+  self append: new purr-project-change--title(X);
+
+command purr-project-changeset description: (X is text) =
+  self append: new purr-project-change--description(X);
+
+command purr-project-changeset meta: (F is (crochet-package-changeset -> crochet-package-changeset)) =
+  self append: new purr-project-change--meta(F(self.from meta changeset));
+
+
+abstract purr-project-change is purr-change;
+type purr-project-change--title(value is text) is purr-project-change;
+type purr-project-change--description(value is text) is purr-project-change;
+type purr-project-change--meta(changes is crochet-package-changeset) is purr-project-change;
+
+type purr-project-change-error--invalid-meta(reason is purr-changeset-error) is purr-change-error;
+
+command purr-project-change--title apply: (P is purr-project-crochet) =
+  #change-result compare: P.title and: self.value then: {
+    #change-result
+      updated: new purr-project-crochet(self with title -> self.value)
+      audit-log: [
+        path -> "title",
+        value -> self.value,
+      ];
+  };
+
+command purr-project-change--description apply: (P is purr-project-crochet) =
+  #change-result compare: P.description and: self.value then: {
+    #change-result
+      updated: new purr-project-crochet(self with description -> self.value)
+      audit-log: [
+        path -> "description",
+        value -> self.value,
+      ];
+  };
+
+command purr-project-change--meta apply: (P is purr-project-crochet) do
+  let Changeset = new crochet-package-changeset(from -> P meta, changes -> self.changes.changes);
+  Changeset apply
+    | map-error: { X in new purr-project-change-error--invalid-meta(X) }
+    | map: { Ctx in
+        condition
+          when Ctx.log is-empty => #change-result no-op;
+          otherwise =>
+            #change-result
+              updated: new purr-project-crochet(P with meta -> Ctx.value)
+              audit-log: [
+                path -> "meta",
+                log -> Ctx.log
+              ];
+        end
+      }
+    | value-or-reason;
+end

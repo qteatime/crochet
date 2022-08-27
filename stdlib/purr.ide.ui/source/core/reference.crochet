@@ -97,11 +97,17 @@ command reference-button clicked =
 command reference-text-input value =
   self.value read-only;
 
+command reference-text-input initial-value: (Value is text) =
+  new reference-text-input(self with value -> #observable-cell with-value: Value);
+
 command reference-text-input validated-value =
   self.validated-value read-only;
 
 command reference-checkbox checked =
   self.checked read-only;
+
+command reference-select-one initially-selected: (Value is any) =
+  new reference-select-one(self with selected -> #observable-cell with-value: Value);
 
 command reference-select-one selected =
   self.selected read-only;

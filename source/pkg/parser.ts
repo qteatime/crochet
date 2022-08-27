@@ -30,6 +30,7 @@ function set<T>(x: AnySpec<T>) {
 
 export const target_spec = anyOf([
   map_spec(equal("*"), () => target_any()),
+  map_spec(equal("any"), () => target_any()),
   map_spec(equal("node"), () => target_node()),
   map_spec(equal("browser"), () => target_web()),
 ]);

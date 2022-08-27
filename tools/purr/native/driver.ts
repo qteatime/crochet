@@ -5,14 +5,14 @@ export default (ffi: ForeignInterface) => {
     const x = ffi.unbox(x0) as any;
     return ffi.record(
       new Map<string, CrochetValue>([
-        ["title", ffi.text(x.title)],
-        ["description", ffi.text(x.description)],
+        ["title", ffi.text(x.purr.title)],
+        ["description", ffi.text(x.purr.description)],
         [
           "meta",
           ffi.record(
             new Map<string, CrochetValue>([
-              ["kind", ffi.text(x.meta.kind)],
-              ["source", ffi.text(x.meta.source)],
+              ["kind", ffi.text(x.purr.project.kind)],
+              ["source", ffi.text(x.crochet)],
             ])
           ),
         ],
@@ -41,4 +41,36 @@ export default (ffi: ForeignInterface) => {
     );
     return parse_meta(meta);
   });
+
+  ffi.defmachine(
+    "driver.projects.update-meta",
+    function* (driver0, id0, meta0, changelog0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const meta = JSON.parse(ffi.text_to_string(meta0));
+      const changelog = JSON.parse(ffi.text_to_string(changelog0));
+      yield ffi.await(
+        driver.projects
+          .update_project_metadata(id, meta, changelog)
+          .then((_: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
+
+  ffi.defmachine(
+    "driver.projects.update-linked-meta",
+    function* (driver0, id0, meta0, changelog0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const meta = JSON.parse(ffi.text_to_string(meta0));
+      const changelog = JSON.parse(ffi.text_to_string(changelog0));
+      yield ffi.await(
+        driver.projects
+          .update_linked_metadata(id, meta, changelog)
+          .then((_: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
 };

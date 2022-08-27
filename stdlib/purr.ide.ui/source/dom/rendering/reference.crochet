@@ -29,6 +29,9 @@ end
 command dom-renderer install-reference: (R is reference-text-input) in: Node do
   let Input-values = Node.extra;
 
+  R.value <- Input-values.raw value;
+  R.validated-value <- Input-values.validate(Input-values.raw value);
+
   Input-values.raw stream subscribe: { Value in
     R.value <- Value;
   };

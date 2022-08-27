@@ -1,6 +1,8 @@
 % crochet
 
 open purr.ide.ui;
+open crochet.concurrency;
+open crochet.debug;
 
 type application-configure(project is purr-project) is purr-application;
 
@@ -23,14 +25,19 @@ command application-configure render-application do
       | content: self crochet-package,
   ]
   | layout: #tabbed-panel-layout vertical-left
-  | selected: "meta-data";
+  | selected: "meta-data"
+  | commit;
 end
 
 command application-configure title: Title actions: Actions body: Body do
   #widget flex-column: [
     #widget flex-row: [
-      pui heading-2: Title,
-      Actions,
+      pui heading-2: Title
+        | transform
+        | flex-grow: #flex-grow grow,
+      (Actions as widget)
+        | transform
+        | width: #size fit-content,
     ]
     | transform
     | flex-align-items: #flex-align baseline
@@ -45,18 +52,54 @@ command application-configure title: Title actions: Actions body: Body do
 end
 
 command application-configure crochet-package do
+  let Project = purr current-project;
   let Name = #reference text-input: "name";
   let Target = #reference select-one: "target";
-  let Project = purr current-project;
+  let Initial = #observable-cell with-value: [
+                 name -> Project value meta name,
+                 target -> Project value meta target
+               ];
+  Project stream subscribe: { X in Initial <- [name -> X meta name, target -> X meta target] };
+
+  let Form = (Name validated-value zip: Target selected with: { N, T in N map: { N in [name -> N, target -> T] }});
+  let Raw-form = Name value zip: Target selected with: { N, T in [name -> N, target -> T] };
+  let Has-changes = Raw-form zip: Initial with: { A, B in not (A =:= B) };
+  let Is-valid = Form map: { X in X is ok };
 
   self
     title: "Crochet package"
-    actions: #widget space
+    actions: (
+      #widget flex-row: [
+        #widget icon-button: (#widget icon: "undo")
+          | on-click: { _ in Initial <- Initial value }
+          | transform
+          | visible: Has-changes,
+
+        #widget icon-button: (#widget icon: "check")
+          | on-click: { _ in
+              Form value
+                | map: { X in
+                    purr update-project: (
+                      Project value changeset
+                        | meta: { M in M name: X.name | target: X.target }
+                    )
+                  }
+                | recover: { _ in
+                    purr show-modal: "Could not update the project meta-data.";
+                  }
+            }
+          | transform
+          | font-color: #color green-800
+          | visible: (Has-changes zip: Is-valid with: (_ and _)),
+      ]
+      | transform
+      | flex-gap: (1.0 as root-em)
+    )
     body: (
       #widget flex-column: [
         #widget flex-column: [
           #widget text-input: "Name"
-            | value: (Project map: { X in X meta name })
+            | value: (Initial map: { X in X.name })
             | placeholder: "name.your.project"
             | validation: { X in
                 #crochet-package try-parse-name: X
@@ -94,7 +137,7 @@ command application-configure crochet-package do
                 #select-option label: "Web Browsers" value: #crochet-package-target browser,
                 #select-option label: "Node.js" value: #crochet-package-target node,
               ]
-            | selected: (Project map: { X in X meta target })
+            | selected: (Initial map: { X in X.target })
             | reference: Target,
           pui secondary-text: "
             The platforms that your package aims to (or is known to) work on. 'Any Platform'

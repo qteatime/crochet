@@ -4,26 +4,88 @@ open crochet.language.json;
 open crochet.language.pickles;
 open crochet.text.regex;
 
+type crochet-package(meta is any);
+
+// Parsing and serialisation
 define package-parser = lazy (
   pickles from-schema: (package assets at: "assets/package.pickles" | read-as-text)
     | lookup-module: "package"
     | lookup: "Package"
 );
 
-type crochet-package(meta is any);
-
-enum crochet-package-stability = 
-  experimental, stable, frozen, deprecated, unknown;
-
-enum crochet-package-target =
-  any, browser, node;
-
-
 command #crochet-package try-parse: (Json is text) -> result<crochet-package, any> do
   json try-parse: Json
     | then: { X in (force package-parser) parse: X }
     | map: { X in new crochet-package(X) };
 end
+
+command crochet-package serialise =
+  self.meta;
+
+// Changesets
+type crochet-package-changeset(
+  from is crochet-package,
+  changes is list<crochet-package-change>,
+) is purr-changeset;
+
+abstract crochet-package-change is purr-change;
+type crochet-package-change--name(value is text) is crochet-package-change;
+type crochet-package-change--target(value is crochet-package-target) is crochet-package-change;
+type crochet-package-change--stability(value is crochet-package-stability) is crochet-package-change;
+
+
+command crochet-package-change--name apply: (P is crochet-package) =
+  #change-result compare: P.meta.name and: self.value then: {
+    #change-result
+      updated: new crochet-package(P with meta -> [P.meta with name -> self.value])
+      audit-log: [
+        path -> "name",
+        value -> self.value,
+      ];
+  };
+
+command crochet-package-change--stability apply: (P is crochet-package) =
+  #change-result compare: P.meta.stability and: self.value then: {
+    #change-result
+      updated: new crochet-package(P with meta -> [P.meta with stability -> self.value to-enum-text])
+      audit-log: [
+        path -> "stability",
+        value -> self.value,
+      ];
+  };
+
+command crochet-package-change--target apply: (P is crochet-package) =
+  #change-result compare: P.meta.target and: self.value then: {
+    #change-result
+      updated: new crochet-package(P with meta -> [P.meta with target -> self.value to-enum-text])
+      audit-log: [
+        path -> "target",
+        value -> self.value to-enum-text,
+      ];
+  };
+
+command crochet-package changeset =
+  new crochet-package-changeset(
+    from -> self,
+    changes -> [],
+  );
+
+command crochet-package-changeset append: (X is crochet-package-change) =
+  new crochet-package-changeset(self with changes -> self.changes append: X);
+
+command crochet-package-changeset name: (Value is text) =
+  self append: new crochet-package-change--name(Value);
+
+command crochet-package-changeset target: (Target is crochet-package-target) =
+  self append: new crochet-package-change--target(Target);
+
+
+// Types and accessors
+enum crochet-package-stability = 
+  experimental, stable, frozen, deprecated, unknown;
+
+enum crochet-package-target =
+  any, browser, node;
 
 command crochet-package name = self.meta.name;
 command crochet-package title = self.meta.title;
@@ -95,6 +157,7 @@ command crochet-package-provided-capability risk =
   #crochet-capability-risk from-enum-text: self.meta.risk;
 
 
+// Name validation
 local define package-name-re = lazy (
   regex from-text: "^\[a-z\]\[a-z0-9\\-\]*(?:\\.\[a-z\]\[a-z0-9\\-\]*)*$"
     | compile

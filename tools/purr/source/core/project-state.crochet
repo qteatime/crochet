@@ -4,7 +4,7 @@ open crochet.concurrency;
 
 effect purr-project-state with
   current-project(); // -> observable-cell<purr-project>
-  update-project(Current is purr-project, Project is purr-project); // -> boolean
+  update-project(Changeset is purr-project-changeset); // -> result<purr-project, purr-changeset-error>
 end
 
 handler purr-project-state project: Initial do
@@ -14,15 +14,29 @@ with
   on purr-project-state.current-project() =>
     continue with Read-only-project;
 
-  on purr-project-state.update-project(Current, New-project) do
+  on purr-project-state.update-project(Changeset) do
     condition
-      when Project value =:= Current do
-        Project <- New-project;
-        continue with true;
+      when Project value =:= Changeset.from do
+        let Result = Changeset apply;
+        condition
+          when Result is ok do
+            let Driver = (Project value).id;
+            let Change = Result value;
+            Driver update-meta: (package serialise-changes: Change.value) changelog: Change.log;
+            Project <- Change.value;
+            continue with #result ok: Change.value;
+          end
+
+          otherwise do
+            continue with Result;
+          end
+        end
       end
 
       otherwise =>
-        continue with false;
+        continue with #result error: (
+          #purr-changeset-error diverged: Project value from: Changeset
+        );
     end
   end
 end

@@ -40,6 +40,7 @@ command dom-renderer render: (W is widget-text-input) do
   Input on: "change" do: { _ in Change-value() };
 
   let Validated-value = Input-value map: W.validation;
+  W.value subscribe: { X in Input-value <- X };
 
   self set-input-value: W.value in: Input;
   self set-property: "type" to: (W.accept map: (self to-input-type: _)) in: Input;
@@ -60,7 +61,7 @@ command dom-renderer render: (W is widget-text-input) do
   Node append: Label;
   Node append: Input;
   Node append: Error;
-  self extend: Node with: [validated -> Validated-value, raw -> Input-value];
+  self extend: Node with: [validated -> Validated-value, raw -> Input-value, validate -> W.validation];
 end
 
 command dom-renderer to-input-type: text-input-accept--telephone = "tel";

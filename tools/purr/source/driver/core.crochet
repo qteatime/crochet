@@ -1,5 +1,8 @@
 % crochet
 
+open crochet.language.json;
+
+
 effect purr-driver with
   get-driver(); // -> purr-driver
 end
@@ -28,3 +31,23 @@ end
 
 command purr-driver-crochet-project read-metadata =
   foreign driver.projects.read-metadata(self.driver, self.id);
+
+command purr-driver-crochet-project update-meta: Meta changelog: (Log is list) do
+  foreign driver.projects.update-meta(
+    self.driver,
+    self.id,
+    json serialise: Meta,
+    json serialise: Log,
+  );
+  self;
+end
+
+command purr-driver-crochet-project update-linked-meta: Meta changelog: (Log is list) do
+  foreign driver.projects.update-linked-meta(
+    self.driver,
+    self.id,
+    json serialise: Meta,
+    json serialise: Log,
+  );
+  self;
+end

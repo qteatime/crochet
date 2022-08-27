@@ -63,6 +63,12 @@ function make_purr() {
         const meta = await project.read_metadata();
         return meta;
       },
+
+      async update_project_metadata(x: string, updates: any, changelog: any) {
+        const project: PurrProject = heap.typed_deref(PurrProject as any, x);
+        await project.update_project_meta(updates, changelog);
+        return null;
+      },
     },
   };
 }

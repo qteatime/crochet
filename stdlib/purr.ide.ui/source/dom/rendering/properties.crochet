@@ -219,6 +219,8 @@ command dom-renderer context: _ to-property: flex-grow--grow = "1";
 command dom-renderer context: _ to-property: flex-shrink--no = "0";
 command dom-renderer context: _ to-property: flex-shrink--shrink = "1";
 
+command dom-renderer context: _ to-property: (X is visibility) = X to-enum-text;
+
 command dom-renderer context: _ to-property: (X is aspect-ratio) =
   "[X.width to-text]/[X.height to-text]" flatten-into-plain-text;
 
