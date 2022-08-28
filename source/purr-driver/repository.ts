@@ -365,6 +365,28 @@ export class CrochetProject extends PurrProject {
     FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
   }
 
+  async update_provided_capability(new_cap0: any) {
+    const new_cap = Spec.parse(
+      new_cap0,
+      CrochetProject.capability_provide_spec
+    );
+    const meta = this.linked_metadata();
+    if (!meta.capabilities.provides.some((x) => x.name === new_cap.name)) {
+      throw new Error(`internal: capability does not exist ${name}`);
+    }
+    meta.capabilities.provides = meta.capabilities.provides.map((x) =>
+      x.name === new_cap.name ? new_cap : x
+    );
+    this.repo.audit_log.append(
+      this,
+      "purr.project.provided-capabilities.updated",
+      {
+        capability: new_cap,
+      }
+    );
+    FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
+  }
+
   static accepts(file: string) {
     return Path.basename(file) === "crochet.json";
   }

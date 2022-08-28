@@ -174,6 +174,21 @@ export default (ffi: ForeignInterface) => {
   );
 
   ffi.defmachine(
+    "driver.projects.update-provided-capability",
+    function* (driver0, id0, cap0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const cap = JSON.parse(ffi.text_to_string(cap0));
+      yield ffi.await(
+        driver.projects
+          .update_provided_capability(id, cap)
+          .then((x: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
+
+  ffi.defmachine(
     "driver.projects.remove-capability",
     function* (driver0, id0, name0, kind0) {
       const driver = ffi.unbox(driver0) as any;

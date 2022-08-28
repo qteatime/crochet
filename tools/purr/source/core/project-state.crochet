@@ -28,6 +28,10 @@ effect purr-project-state with
     Current is purr-project,
     Capability is crochet-package-requested-capability
   ); // -> nothing
+  update-provided-capability(
+    Current is purr-project,
+    Capability is crochet-package-provided-capability
+  ); // -> nothing
 end
 
 handler purr-project-state project: Initial do
@@ -74,6 +78,13 @@ with
   end
 
   on purr-project-state.update-requested-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver update-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.update-provided-capability(Current, Capability) do
     assert Project value =:= Current;
     let Driver = (Project value).id;
     Driver update-capability: Capability;

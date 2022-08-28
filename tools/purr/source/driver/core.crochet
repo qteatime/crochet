@@ -109,3 +109,8 @@ command purr-driver-crochet-project update-capability: (Capability is crochet-pa
   foreign driver.projects.update-capability(self.driver, self.id, Capability name, Capability reason, Capability kind to-enum-text);
   self;
 end
+
+command purr-driver-crochet-project update-capability: (Capability is crochet-package-provided-capability) do
+  foreign driver.projects.update-provided-capability(self.driver, self.id, json serialise: Capability serialise);
+  self;
+end

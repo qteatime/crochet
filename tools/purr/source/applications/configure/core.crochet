@@ -404,7 +404,10 @@ command application-configure provided-capability: Capability do
   #widget flex-row: [
     pui capability-summary: Capability,
     #widget flex-row: [
-      #widget icon-button: (#widget icon: "pen"),
+      #widget icon-button: (#widget icon: "pen")
+        | on-click: { _ in
+            let Modal = purr-ui show-modal: (self edit-provided-capability: Capability close: { Modal close });
+          },
       #widget icon-button: (#widget icon: "trash")
         | on-click: { _ in
             purr remove-capability: Capability from: purr current-project value;
@@ -418,6 +421,52 @@ command application-configure provided-capability: Capability do
   | flex-gap: (1.0 as root-em);
 end
 
+open crochet.debug;
+command application-configure edit-provided-capability: Capability close: Close do
+  let Form = #observable-cell with-value: (#result error: nothing);
+  let Is-invalid = Form map: { X in X is error };
+  let Not-updated = Form map: { X in
+    transcript tag: "current" inspect: X;
+    condition
+      when X is error => true;
+      when X is ok => Capability serialise =:= [X value with risk -> condition
+                                                                       when (X value).risk is nothing => "";
+                                                                       otherwise => (X value).risk to-enum-text;
+                                                                     end];
+    end
+  };
+
+  #widget flex-column: [
+    pui heading-2: "Update provided capability",
+
+    self provided-capability-editor: (#result ok: Capability) output: Form
+      | transform
+      | flex-grow: #flex-grow grow
+      | overflow-vertical: #overflow auto,
+
+    #widget button: "Update capability"
+      | disabled: (Is-invalid zip: Not-updated with: (_ or _))
+      | on-click: { _ in
+          let Project = purr current-project value;
+          let Data = Form value value-or-panic: "unexpected form state";
+          let Capability = new crochet-package-provided-capability(
+            Project meta name,
+            [
+              name -> Data.name,
+              title -> Data.title,
+              risk -> Data.risk to-enum-text,
+              description -> Data.description,
+            ]
+          );
+          purr update-capability: Capability in: Project;
+          Close();
+        },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-height: (75.0 as viewport-height);
+end
+
 command application-configure add-provided-capability-close: Close do
   let Form = #observable-cell with-value: (#result error: nothing);
   let Is-invalid = Form map: { X in X is error };
@@ -425,7 +474,7 @@ command application-configure add-provided-capability-close: Close do
   #widget flex-column: [
     pui heading-2: "Add a provided capability",
 
-    self provided-capability-editor-output: Form
+    self provided-capability-editor: (#result error: not-found) output: Form
       | transform
       | flex-grow: #flex-grow grow
       | overflow-vertical: #overflow auto,
@@ -453,7 +502,10 @@ command application-configure add-provided-capability-close: Close do
   | maximum-height: (75.0 as viewport-height);
 end
 
-command application-configure provided-capability-editor-output: Output do
+command application-configure provided-capability-editor: Maybe-capability output: Output do
+  let Initial = Maybe-capability
+                  | map: { X in [name -> X name, title -> X title, description -> X description, risk -> X risk]}
+                  | value-or-default: [name -> "", title -> "", description -> "", risk -> #crochet-capability-risk unknown];
   let Name-ref = #reference text-input: "name";
   let Title-ref = #reference text-input: "title";
   let Description-ref = #reference text-input: "description";
@@ -476,6 +528,8 @@ command application-configure provided-capability-editor-output: Output do
 
   #widget flex-column: [
     #widget text-input: "Name"
+      | value: Initial.name
+      | read-only: (Maybe-capability is ok)
       | placeholder: "capability-name"
       | validation: { X in
           #crochet-package try-parse-capability-name: X
@@ -484,6 +538,7 @@ command application-configure provided-capability-editor-output: Output do
       | reference: Name-ref,
     
     #widget text-input: "Title"
+      | value: Initial.title
       | placeholder: "Short capability description"
       | validation: { X0 in 
           let X = untaint make-trusted: X0;
@@ -503,7 +558,7 @@ command application-configure provided-capability-editor-output: Output do
             #select-option label: "Critical" value: #crochet-capability-risk critical,
             #select-option label: "Unknown" value: #crochet-capability-risk unknown,
           ]
-          | selected: #crochet-capability-risk unknown
+          | selected: Initial.risk
           | reference: Risk-ref,
 
       pui secondary-text: "
@@ -517,6 +572,7 @@ command application-configure provided-capability-editor-output: Output do
     | flex-gap: (0.25 as root-em),
 
     #widget text-input: "Description"
+      | value: Initial.description
       | reference: Description-ref
       | transform
       | maximum-height: (4.0 as root-em),

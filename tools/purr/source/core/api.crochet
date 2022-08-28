@@ -69,6 +69,12 @@ command purr update-capability: (Capability is crochet-package-requested-capabil
   self;
 end
 
+command purr update-capability: (Capability is crochet-package-provided-capability) in: (Project is purr-project) do
+  perform purr-project-state.update-provided-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
 command purr current-project =
   perform purr-project-state.current-project();
 
