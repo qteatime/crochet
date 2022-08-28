@@ -18,7 +18,7 @@ command #widget given: (X has to-purr-variable) =
   );
 
 command widget-choose when: (F is (any -> boolean)) show: (X is (any -> to-widget)) =
-  new widget-choose(self with conditions -> self.conditions append: new choice-condition(F, X));
+  new widget-choose(self with conditions -> self.conditions append: new choice-condition(F capture, X capture));
 
 command widget-choose when: (F is (any -> boolean)) show: (X has to-widget) do
   let Widget = (X as widget) commit;

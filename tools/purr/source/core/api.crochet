@@ -32,6 +32,12 @@ command purr update-cover-image: (Project is purr-project) =
 command purr remove-cover-image: (Project is purr-project) =
   perform purr-project-state.remove-cover-image(Project);
 
+command purr add-capability: (Capability is crochet-package-requested-capability) to: (Project is purr-project) do
+  perform purr-project-state.add-requested-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
 command purr current-project =
   perform purr-project-state.current-project();
 

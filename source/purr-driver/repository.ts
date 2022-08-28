@@ -144,7 +144,7 @@ export abstract class PurrProject {
     const new_meta = Spec.parse(new_meta0, PurrProject.project_change_spec);
     meta.title = new_meta.title;
     meta.description = new_meta.description;
-    this.repo.audit_log.append(this, "purr.metadata.changed", {
+    this.repo.audit_log.append(this, "purr.project.metadata.changed", {
       changelog,
     });
     this.update_linked_meta(new_meta.meta);
@@ -156,7 +156,7 @@ export abstract class PurrProject {
     if (type == null) {
       throw new Error(`invalid image`);
     }
-    this.repo.audit_log.append(this, "purr.cover.changed", {
+    this.repo.audit_log.append(this, "purr.project.cover.changed", {
       source: filename,
     });
     FS.copyFileSync(filename, this.cover_file);
@@ -170,7 +170,7 @@ export abstract class PurrProject {
     if (!meta.cover) {
       return;
     }
-    this.repo.audit_log.append(this, "purr.cover.removed", {});
+    this.repo.audit_log.append(this, "purr.project.cover.removed", {});
     FS.unlinkSync(this.cover_file);
     meta.cover = "";
     FS.writeFileSync(this.meta_file, JSON.stringify(meta, null, 2));
@@ -256,14 +256,38 @@ export class CrochetProject extends PurrProject {
     };
   }
 
+  linked_metadata() {
+    return Spec.parse(
+      JSON.parse(FS.readFileSync(this.filename(), "utf-8")),
+      CrochetProject.meta_spec
+    );
+  }
+
   filename() {
     return this.project_meta().project.file;
   }
 
   async update_linked_meta(new_meta0: any) {
-    const new_meta = Spec.parse(new_meta0, CrochetProject.change_spec);
+    const new_meta = Spec.parse(new_meta0, CrochetProject.meta_spec);
     const file = this.filename();
     FS.writeFileSync(file, JSON.stringify(new_meta, null, 2));
+  }
+
+  async add_capability(new_cap0: any, kind0: string) {
+    const new_cap = Spec.parse(
+      new_cap0,
+      CrochetProject.capability_request_spec
+    );
+    const kind = Spec.parse(kind0, CrochetProject.capability_kind_spec);
+    const meta = this.linked_metadata();
+    if (meta.capabilities[kind].some((x) => x.name === new_cap.name)) {
+      throw new Error(`internal: capability already exists ${new_cap.name}`);
+    }
+    meta.capabilities[kind].push(new_cap);
+    this.repo.audit_log.append(this, "purr.project.capabilities.added", {
+      new_capability: new_cap,
+    });
+    FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
   }
 
   static accepts(file: string) {
@@ -295,6 +319,12 @@ export class CrochetProject extends PurrProject {
     (x) => x
   );
 
+  static capability_kind_spec = Spec.anyOf([
+    Spec.map_spec(Spec.equal("required" as const), (_) => "requires" as const),
+    Spec.equal("optional" as const),
+    Spec.equal("trusted" as const),
+  ]);
+
   static capability_provide_spec = Spec.spec(
     {
       name: Spec.string,
@@ -318,7 +348,7 @@ export class CrochetProject extends PurrProject {
     Spec.equal("node" as const),
   ]);
 
-  static change_spec = Spec.spec(
+  static meta_spec = Spec.spec(
     {
       name: Spec.string,
       title: Spec.string,

@@ -368,7 +368,7 @@ command application-configure capability-section: Title description: Desc items:
           | flex-align-items: #flex-align center
         )
         | on-click: { _ in
-            purr-ui show-modal: (self add-capability: Kind)
+            purr-ui show-modal: (self add-capability: Kind);
           }
         | transform
         | margin: (1.0 as root-em)
@@ -407,7 +407,6 @@ local type add-capability-mode--review(cap is crochet-package-provided-capabilit
 
 command application-configure add-capability: (Kind is crochet-capability-kind) do
   let Mode = #observable-cell with-value: add-capability-mode--search;
-  
 
   #widget flex-column: [
     pui heading-2: "Add [Kind to-enum-text] capabilities",
@@ -509,6 +508,17 @@ command application-configure add-capability-review: Cap-mode kind: Kind mode: M
       | height: #size fit-content,
 
       #widget button: "Add capability"
+        | on-click: { _ in
+            let Capability = new crochet-package-requested-capability(
+              Kind,
+              [
+                name -> Capability name,
+                reason -> untaint make-trusted: Reason-ref value value
+              ]
+            );
+            purr add-capability: Capability to: purr current-project value;
+            Mode <- add-capability-mode--search
+          }
     ]
     | transform
     | flex-gap: (1.0 as root-em),
@@ -528,6 +538,7 @@ command application-configure render-add-capability: Capability mode: Mode do
       | on-click: { _ in Mode <- new add-capability-mode--review(Capability) },
   ]
   | transform
+  | height: #size fit-content
   | flex-align-items: #flex-align center
   | flex-gap: (1.0 as root-em);
 end

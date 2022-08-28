@@ -124,4 +124,20 @@ export default (ffi: ForeignInterface) => {
       );
     }
   });
+
+  ffi.defmachine(
+    "driver.projects.add-capability",
+    function* (driver0, id0, cap0, kind0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const cap = JSON.parse(ffi.text_to_string(cap0));
+      const kind = ffi.text_to_string(kind0);
+      yield ffi.await(
+        driver.projects
+          .add_capability(id, cap, kind)
+          .then((x: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
 };

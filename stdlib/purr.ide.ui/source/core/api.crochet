@@ -21,7 +21,6 @@ end
 
 command purr-ui show-modal: (Widget has to-widget) do
   perform purr-ui-presentation.show-modal(Widget as widget | commit, modal-configuration-message-box);
-  self;
 end
 
 command purr-ui slide-in: (Widget has to-widget) direction: (Direction is slide-in-direction) do

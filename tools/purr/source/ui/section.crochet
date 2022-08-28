@@ -53,6 +53,8 @@ command pui list: (Items is list<X has to-widget>) =
               | padding: (0.0 as root-em);
         end
       ]
+      | transform
+      | height: #size fit-content
     }
   )
   | transform

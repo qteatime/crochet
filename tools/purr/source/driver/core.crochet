@@ -84,3 +84,8 @@ command purr-driver-crochet-project read-cover-image do
     otherwise => #result ok: new purr-file-binary(mime -> Result.mime, bytes -> Result.data);
   end
 end
+
+command purr-driver-crochet-project add-capability: (Capability is crochet-package-requested-capability) do
+  foreign driver.projects.add-capability(self.driver, self.id, json serialise: Capability serialise, Capability kind to-enum-text);
+  self;
+end

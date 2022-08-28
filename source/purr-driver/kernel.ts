@@ -2,8 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import * as FS from "fs";
 import { random_uuid } from "../utils/uuid";
 import { CrochetLibrary } from "./crochet-library";
-import * as Projects from "./projects";
-import { PurrProject, PurrRepository } from "./repository";
+import { CrochetProject, PurrProject, PurrRepository } from "./repository";
 
 const configp = ipcRenderer.invoke("purr:get-config");
 
@@ -107,6 +106,15 @@ function make_purr() {
           throw new Error(`invalid image`);
         }
         await project.update_cover_image(image);
+        return null;
+      },
+
+      async add_capability(x: string, capability: any, kind: string) {
+        const project: CrochetProject = heap.typed_deref(
+          CrochetProject as any,
+          x
+        );
+        await project.add_capability(capability, kind);
         return null;
       },
     },
