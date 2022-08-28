@@ -137,6 +137,12 @@ function make_purr() {
         await project.remove_capability(name, kind);
         return null;
       },
+
+      async remove_provided_capability(x: string, name: string) {
+        const project = heap.typed_deref(CrochetProject, x);
+        await project.remove_provided_capability(name);
+        return null;
+      },
     },
   };
 }

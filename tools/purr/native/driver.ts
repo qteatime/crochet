@@ -188,4 +188,19 @@ export default (ffi: ForeignInterface) => {
       return ffi.nothing;
     }
   );
+
+  ffi.defmachine(
+    "driver.projects.remove-provided-capability",
+    function* (driver0, id0, name0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const name = ffi.text_to_string(name0);
+      yield ffi.await(
+        driver.projects
+          .remove_provided_capability(id, name)
+          .then((x: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
 };

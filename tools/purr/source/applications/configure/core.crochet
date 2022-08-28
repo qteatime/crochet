@@ -405,7 +405,10 @@ command application-configure provided-capability: Capability do
     pui capability-summary: Capability,
     #widget flex-row: [
       #widget icon-button: (#widget icon: "pen"),
-      #widget icon-button: (#widget icon: "trash"),
+      #widget icon-button: (#widget icon: "trash")
+        | on-click: { _ in
+            purr remove-capability: Capability from: purr current-project value;
+          },
     ]
     | transform
     | width: #size fit-content

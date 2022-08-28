@@ -100,6 +100,11 @@ command purr-driver-crochet-project remove-capability: (Capability is crochet-pa
   self;
 end
 
+command purr-driver-crochet-project remove-capability: (Capability is crochet-package-provided-capability) do
+  foreign driver.projects.remove-provided-capability(self.driver, self.id, Capability name);
+  self;
+end
+
 command purr-driver-crochet-project update-capability: (Capability is crochet-package-requested-capability) do
   foreign driver.projects.update-capability(self.driver, self.id, Capability name, Capability reason, Capability kind to-enum-text);
   self;
