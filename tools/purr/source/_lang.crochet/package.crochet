@@ -125,7 +125,7 @@ command crochet-package stability =
   #crochet-package-stability from-enum-text: self.meta.stability;
 
 command crochet-package capabilities =
-  new crochet-package-capabilities(self.meta.capabilities);
+  new crochet-package-capabilities(self.meta.name, self.meta.capabilities);
 
 command crochet-package sources =
   new crochet-package-sources(self.meta.sources, self.meta."native_sources");
@@ -133,7 +133,7 @@ command crochet-package sources =
 command crochet-package dependencies =
   new crochet-package-dependencies(self.meta.dependencies);
 
-type crochet-package-capabilities(meta is any);
+type crochet-package-capabilities(pkg is text, meta is any);
 
 enum crochet-capability-risk =
   low, medium, high, critical, unknown;
@@ -148,7 +148,7 @@ command crochet-package-capabilities requested =
 
 command crochet-package-capabilities provided =
   self.meta.provides
-    | map: { X in new crochet-package-provided-capability(X) };
+    | map: { X in new crochet-package-provided-capability(self.pkg, X) };
 
 command crochet-package-capabilities strictly-required =
   self.meta."requires"
@@ -178,10 +178,16 @@ command crochet-package-requested-capability kind =
   self.kind;
 
 
-type crochet-package-provided-capability(meta is any);
+type crochet-package-provided-capability(pkg is text, meta is any);
 
 command crochet-package-provided-capability name =
   self.meta.name;
+
+command crochet-package-provided-capability qualified-name =
+  condition
+    when self.pkg is-empty => self name;
+    otherwise => "[self.pkg]/[self name]" flatten-into-plain-text;
+  end;
 
 command crochet-package-provided-capability title =
   self.meta.title;

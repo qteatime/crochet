@@ -16,15 +16,18 @@ command #crochet-library shared-instance =
 
 
 local define intrinsic-capabilities = [
-  new crochet-package-provided-capability([
-    name -> "native",
-    title -> "Access to native modules",
-    description ->
-      "Allows loading native modules. Extreme care should be taken when
-       granting this capability, as it prevents Crochet from guaranteeing
-       its security policies.",
-    risk -> "critical",
-  ])
+  new crochet-package-provided-capability(
+    "",
+    [
+      name -> "native",
+      title -> "Access to native modules",
+      description ->
+        "Allows loading native modules. Extreme care should be taken when
+        granting this capability, as it prevents Crochet from guaranteeing
+        its security policies.",
+      risk -> "critical",
+    ]
+  )
 ];
 
 
@@ -88,15 +91,7 @@ command crochet-library grantable-capabilities: (Package is crochet-package) do
   Package dependencies all
     | flat-map: { Dependency in
         self lookup-package: Dependency name
-          | map: { Pkg in
-              Pkg capabilities provided
-                | map: { Capability in
-                    new crochet-package-provided-capability(
-                      Capability with
-                        meta -> [Capability.meta with name -> "[Pkg name]/[Capability name]" flatten-into-plain-text]
-                    );
-                  }
-            }
+          | map: { Pkg in Pkg capabilities provided }
           | value-or-default: []
       };
 end

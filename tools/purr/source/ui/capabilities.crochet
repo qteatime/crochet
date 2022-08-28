@@ -24,7 +24,7 @@ command pui capability-summary: (Capability is crochet-package-provided-capabili
     | flex-gap: (1.0 as root-em)
     | flex-align-items: #flex-align center,
 
-    (Capability name as widget)
+    (Capability qualified-name as widget)
       | transform
       | font-family: #font-family monospace
       | font-size: #text-size small,
@@ -37,7 +37,7 @@ command pui requested-capability: (X is crochet-package-requested-capability) do
   let Library = #crochet-library shared-instance;
   let Capability =
     Library lookup-capability: X name
-      | value-or-default: new crochet-package-provided-capability([
+      | value-or-default: new crochet-package-provided-capability("", [
           name -> X name,
           title -> X name,
           description -> "",
