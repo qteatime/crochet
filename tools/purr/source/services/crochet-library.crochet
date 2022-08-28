@@ -62,21 +62,41 @@ command package load-package: (Package is crochet-package) in: (Library is croch
       nothing;
   end
 
-  transcript tag: "add-package" inspect: Package;
   Library.packages <- Library.packages value at: Package name put: Package;
   for Capability in Package capabilities provided do
     let Name = "[Package name]/[Capability name]" flatten-into-plain-text;
-    transcript tag: "add-capability" inspect: [name -> Name, cap -> Capability];
     Library.capabilities <- Library.capabilities value at: Name put: Capability;
   end
 end
 
 
 command crochet-library lookup-capability: (Name is text) do
-  transcript tag: "lookup-capability" inspect: [name -> Name, map -> self.capabilities value];
   condition
     when self.capabilities value contains-key: Name => #result ok: (self.capabilities value at: Name);
     otherwise => #result error: not-found;
   end
 end
 
+command crochet-library lookup-package: (Name is text) do
+  condition
+    when self.packages value contains-key: Name => #result ok: (self.packages value at: Name);
+    otherwise => #result error: not-found;
+  end
+end
+
+command crochet-library grantable-capabilities: (Package is crochet-package) do
+  Package dependencies all
+    | flat-map: { Dependency in
+        self lookup-package: Dependency name
+          | map: { Pkg in
+              Pkg capabilities provided
+                | map: { Capability in
+                    new crochet-package-provided-capability(
+                      Capability with
+                        meta -> [Capability.meta with name -> "[Pkg name]/[Capability name]" flatten-into-plain-text]
+                    );
+                  }
+            }
+          | value-or-default: []
+      };
+end

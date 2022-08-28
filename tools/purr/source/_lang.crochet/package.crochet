@@ -123,6 +123,8 @@ command crochet-package capabilities =
 command crochet-package sources =
   new crochet-package-sources(self.meta.sources, self.meta."native_sources");
 
+command crochet-package dependencies =
+  new crochet-package-dependencies(self.meta.dependencies);
 
 type crochet-package-capabilities(meta is any);
 
@@ -221,3 +223,27 @@ command #crochet-package try-parse-name: (Name is unsafe-arbitrary-text) do
     | map: (_ matched-text)
     | map-error: { _ in new crochet-package-error-invalid-name(Name) };
 end
+
+
+type crochet-package-dependencies(meta is any);
+
+command crochet-package-dependencies all =
+  self.meta map: { X in new crochet-package-dependency(X) };
+
+
+type crochet-package-dependency(meta is any);
+
+command crochet-package-dependency name =
+  self.meta.name;
+
+command crochet-package-dependency capabilities =
+  self.capabilities map: { X in
+    new crochet-package-requested-capability(
+      #crochet-capability-kind required,
+      [name -> X, reason -> ""]
+    )
+  };
+
+command crochet-package-dependency target =
+  #crochet-package-target from-enum-text: self.target;
+

@@ -327,22 +327,25 @@ command application-configure requested-capabilities do
   #widget flex-column: [
     self capability-section: "Required"
         description: "The package needs these capabilities to run."
-        items: Required,
+        items: Required
+        kind: #crochet-capability-kind required,
 
     self capability-section: "Optional"
         description: "The package can use these capabilities to provide additional features."
-        items: Optional,
+        items: Optional
+        kind: #crochet-capability-kind optional,
 
     self capability-section: "Trusted"
         description: "The package will be granted these capabilities automatically when
                       included as part of Crochet's Trusted Computing Base (standard library)."
-        items: Trusted,
+        items: Trusted
+        kind: #crochet-capability-kind trusted,
   ]
   | transform
   | padding-vertical: (1.0 as root-em);
 end
 
-command application-configure capability-section: Title description: Desc items: Items-cell do
+command application-configure capability-section: Title description: Desc items: Items-cell kind: (Kind is crochet-capability-kind) do
   Items-cell map: { Items in 
     #widget flex-column: [
       pui heading-3: Title,
@@ -354,7 +357,22 @@ command application-configure capability-section: Title description: Desc items:
         | transform
         | height: (1.0 as root-em),
 
-      pui list: (Items map: (self requested-capability: _))
+      pui list: ([
+        #widget button: (
+          #widget flex-row: [
+            #widget icon: "plus",
+            "Add a new [Kind to-enum-text] capability"
+          ]
+          | transform
+          | flex-gap: (1.0 as root-em)
+          | flex-align-items: #flex-align center
+        )
+        | on-click: { _ in
+            purr-ui show-modal: (self add-capability: Kind)
+          }
+        | transform
+        | margin: (1.0 as root-em)
+      ] ++ (Items map: (self requested-capability: _)))
     ]
     | transform
     | margin-bottom: (1.5 as root-em);
@@ -382,3 +400,52 @@ command application-configure requested-capability: X =
   | transform
   | flex-gap: (1.0 as root-em)
   | flex-align-items: #flex-align center;
+
+command application-configure add-capability: (Kind is crochet-capability-kind) do
+  let Library = #crochet-library shared-instance;
+  let OCapabilities = purr current-project map: { X in Library grantable-capabilities: X meta };
+  let Current = purr current-project map: { X in
+    X meta capabilities user-grantable
+      |> _ map: (_ name)
+      |> #set from: _;
+  };
+  let Input = #observable-cell with-value: "";
+  let Search-ref = #reference text-input: "search";
+  let Filtered-capabilities = Search-ref value zip: OCapabilities and: Current with: { Value, Capabilities, Granted in
+    let Trusted-value = untaint make-trusted: Value;
+    Capabilities
+      | keep-if: { C in (C name contains: Trusted-value)
+                        or (C title contains: Trusted-value) }
+      | remove-if: { C in Granted contains: C name };
+  };
+
+  #widget flex-column: [
+    pui heading-2: "Add [Kind to-enum-text] capabilities",
+
+    #widget text-input: "Capability name or title"
+      | placeholder: "Type to search"
+      | value: Input
+      | reference: Search-ref,
+    
+    Filtered-capabilities map: { Xs in
+      pui list: (Xs slice-to: 4 | map: (self render-add-capability: _))
+    },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | minimum-height: (25.0 as root-em)
+  | height: (75.0 as viewport-height);
+end
+
+command application-configure render-add-capability: Capability do
+  #widget flex-row: [
+    pui capability-summary: Capability
+      | transform
+      | flex-grow: #flex-grow grow,
+
+    #widget icon-button: (#widget icon: "chevron-right")
+  ]
+  | transform
+  | flex-align-items: #flex-align center
+  | flex-gap: (1.0 as root-em);
+end
