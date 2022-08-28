@@ -12,6 +12,10 @@ effect purr-project-state with
     Current is purr-project,
     Capability is crochet-package-requested-capability
   ); // -> nothing
+  remove-requested-capability(
+    Current is purr-project,
+    Capability is crochet-package-requested-capability
+  ); // -> nothing
 end
 
 handler purr-project-state project: Initial do
@@ -47,6 +51,13 @@ with
     assert Project value =:= Current;
     let Driver = (Project value).id;
     Driver add-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.remove-requested-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver remove-capability: Capability;
     continue with nothing;
   end
 

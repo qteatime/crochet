@@ -391,7 +391,8 @@ command application-configure requested-capability: X =
 
     #widget flex-row: [
       #widget icon-button: (#widget icon: "pen"),
-      #widget icon-button: (#widget icon: "trash"),
+      #widget icon-button: (#widget icon: "trash")
+        | on-click: { _ in purr remove-capability: X from: purr current-project value },
     ]
     | transform
     | flex-gap: (0.5 as root-em)

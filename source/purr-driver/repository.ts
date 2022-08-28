@@ -273,6 +273,22 @@ export class CrochetProject extends PurrProject {
     FS.writeFileSync(file, JSON.stringify(new_meta, null, 2));
   }
 
+  async remove_capability(name: string, kind0: string) {
+    const kind = Spec.parse(kind0, CrochetProject.capability_kind_spec);
+    const meta = this.linked_metadata();
+    if (!meta.capabilities[kind].some((x) => x.name === name)) {
+      throw new Error(`internal: capability does not exist ${name}`);
+    }
+    meta.capabilities[kind] = meta.capabilities[kind].filter(
+      (x) => x.name !== name
+    );
+    this.repo.audit_log.append(this, "purr.project.capabilities.removed", {
+      kind: kind,
+      name: name,
+    });
+    FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
+  }
+
   async add_capability(new_cap0: any, kind0: string) {
     const new_cap = Spec.parse(
       new_cap0,
@@ -285,6 +301,7 @@ export class CrochetProject extends PurrProject {
     }
     meta.capabilities[kind].push(new_cap);
     this.repo.audit_log.append(this, "purr.project.capabilities.added", {
+      kind: kind,
       new_capability: new_cap,
     });
     FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));

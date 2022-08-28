@@ -38,6 +38,12 @@ command purr add-capability: (Capability is crochet-package-requested-capability
   self;
 end
 
+command purr remove-capability: (Capability is crochet-package-requested-capability) from: (Project is purr-project) do
+  perform purr-project-state.remove-requested-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
 command purr current-project =
   perform purr-project-state.current-project();
 

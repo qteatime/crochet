@@ -110,11 +110,14 @@ function make_purr() {
       },
 
       async add_capability(x: string, capability: any, kind: string) {
-        const project: CrochetProject = heap.typed_deref(
-          CrochetProject as any,
-          x
-        );
+        const project = heap.typed_deref(CrochetProject, x);
         await project.add_capability(capability, kind);
+        return null;
+      },
+
+      async remove_capability(x: string, name: string, kind: string) {
+        const project = heap.typed_deref(CrochetProject, x);
+        await project.remove_capability(name, kind);
         return null;
       },
     },
