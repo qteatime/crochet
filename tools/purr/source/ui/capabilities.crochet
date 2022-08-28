@@ -35,14 +35,7 @@ end
 
 command pui requested-capability: (X is crochet-package-requested-capability) do
   let Library = #crochet-library shared-instance;
-  let Capability =
-    Library lookup-capability: X name
-      | value-or-default: new crochet-package-provided-capability("", [
-          name -> X name,
-          title -> X name,
-          description -> "",
-          risk -> "unknown",
-        ]);
+  let Capability = Library lookup-details: X;
 
   #widget flex-column: [
     pui capability-summary: Capability,

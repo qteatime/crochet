@@ -87,6 +87,17 @@ command crochet-library lookup-package: (Name is text) do
   end
 end
 
+command crochet-library lookup-details: (X is crochet-package-requested-capability) do
+  self
+    | lookup-capability: X name
+    | value-or-default: new crochet-package-provided-capability("", [
+        name -> X name,
+        title -> X name,
+        description -> "",
+        risk -> "unknown",
+      ]);
+end
+
 command crochet-library grantable-capabilities: (Package is crochet-package) do
   Package dependencies all
     | flat-map: { Dependency in

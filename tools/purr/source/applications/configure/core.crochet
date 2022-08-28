@@ -177,8 +177,8 @@ command application-configure action-panel-initial: Initial raw: Raw form: Form 
           Form value
             | map: { X in Save(X) }
             | recover: { _ in
-                purr show-modal: "Cannot update the information because some fields contain
-                                  unsupported data.";
+                purr-ui show-modal: "Cannot update the information because some fields contain
+                                     unsupported data.";
               }
         }
       | transform
@@ -390,7 +390,10 @@ command application-configure requested-capability: X =
       | flex-grow: #flex-grow grow,
 
     #widget flex-row: [
-      #widget icon-button: (#widget icon: "pen"),
+      #widget icon-button: (#widget icon: "pen")
+        | on-click: { _ in
+            let Modal = purr-ui show-modal: (self edit-capability: X close: { Modal close })
+          },
       #widget icon-button: (#widget icon: "trash")
         | on-click: { _ in purr remove-capability: X from: purr current-project value },
     ]
@@ -401,6 +404,39 @@ command application-configure requested-capability: X =
   | transform
   | flex-gap: (1.0 as root-em)
   | flex-align-items: #flex-align center;
+
+
+command application-configure edit-capability: (Capability is crochet-package-requested-capability) close: Close do
+  let Reason-cell = #observable-cell with-value: Capability reason;
+  let Reason = Reason-cell map: (untaint make-trusted: _);
+  let Not-updated = Reason map: { X in X =:= Capability reason };
+  let Source-capability = #crochet-library shared-instance lookup-details: Capability;
+
+  #widget flex-column: [
+    pui heading-2: "Update capability",
+
+    self render-capability-review-details: Source-capability,
+    self reason-editor: Capability reason output: Reason-cell,
+
+    #widget button: "Update capability"
+      | disabled: Not-updated
+      | on-click: { _ in
+          let Capability = new crochet-package-requested-capability(
+            Capability with
+              meta -> [
+                Capability.meta with reason -> Reason value
+              ]
+          );
+          purr update-capability: Capability in: purr current-project value;
+          Close();
+        }
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-width: (35.0 as root-em)
+  | minimum-height: (25.0 as root-em)
+  | height: (75.0 as viewport-height);
+end
 
 local abstract add-capability-mode;
 local singleton add-capability-mode--search is add-capability-mode;
@@ -464,49 +500,15 @@ end
 
 command application-configure add-capability-review: Cap-mode kind: Kind mode: Mode do
   let Capability = Cap-mode.cap;
-  let Reason-ref = #reference text-input: "reason";
+  let Reason = #observable-cell with-value: Capability reason;
 
   #widget flex-row: [
     #widget icon-button: (#widget icon: "chevron-left")
       | on-click: { _ in Mode <- add-capability-mode--search },
 
     #widget flex-column: [
-      #widget flex-row: [
-        #widget flex-column: [
-          pui heading-3: Capability title,
-          (Capability name as widget)
-            | transform
-            | font-family: #font-family monospace,
-        ]
-        | transform
-        | flex-grow: #flex-grow grow,
-
-        pui capability-risk: Capability risk,
-      ]
-      | transform
-      | flex-align-items: #flex-align center
-      | height: #size fit-content,
-
-      pui secondary-text: Capability description
-        | transform
-        | flex-grow: #flex-grow grow
-        | overflow: #overflow auto
-        | white-space: #text-whitespace preserve-and-wrap,
-
-      #widget flex-column: [
-        #widget text-input: "Usage reason"
-          | reference: Reason-ref,
-
-        pui secondary-text: "
-          Giving a reason for why your package needs this capability allows
-          users to make more informed risk decisions. Keep it short, and focus
-          on what it enables your package to do.
-          "
-          | transform
-          | font-size: #text-size small,
-      ]
-      | transform
-      | height: #size fit-content,
+      self render-capability-review-details: Capability,
+      self reason-editor: Capability reason output: Reason,
 
       #widget button: "Add capability"
         | on-click: { _ in
@@ -514,7 +516,7 @@ command application-configure add-capability-review: Cap-mode kind: Kind mode: M
               Kind,
               [
                 name -> Capability name,
-                reason -> untaint make-trusted: Reason-ref value value
+                reason -> untaint make-trusted: Reason value
               ]
             );
             purr add-capability: Capability to: purr current-project value;
@@ -527,6 +529,55 @@ command application-configure add-capability-review: Cap-mode kind: Kind mode: M
   | transform
   | flex-gap: (1.0 as root-em)
   | flex-align-items: #flex-align flex-start;
+end
+
+command application-configure reason-editor: Reason output: Cell do
+  let Reason-ref = #reference text-input: "reason";
+  Reason-ref value stream subscribe: { X in Cell <- X };
+
+  #widget flex-column: [
+    #widget text-input: "Usage reason"
+      | value: Reason
+      | reference: Reason-ref,
+
+    pui secondary-text: "
+      Giving a reason for why your package needs this capability allows
+      users to make more informed risk decisions. Keep it short, and focus
+      on what it enables your package to do.
+      "
+      | transform
+      | font-size: #text-size small,
+  ]
+  | transform
+  | height: #size fit-content;
+end
+
+command application-configure render-capability-review-details: Capability do
+  #widget flex-column: [
+    #widget flex-row: [
+      #widget flex-column: [
+        pui heading-3: Capability title,
+        (Capability name as widget)
+          | transform
+          | font-family: #font-family monospace,
+      ]
+      | transform
+      | flex-grow: #flex-grow grow,
+
+      pui capability-risk: Capability risk,
+    ]
+    | transform
+    | flex-align-items: #flex-align center
+    | height: #size fit-content,
+
+    pui secondary-text: Capability description
+      | transform
+      | flex-grow: #flex-grow grow
+      | overflow: #overflow auto
+      | white-space: #text-whitespace preserve-and-wrap,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
 end
 
 command application-configure render-add-capability: Capability mode: Mode do
