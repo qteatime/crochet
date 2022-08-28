@@ -17,7 +17,14 @@ command purr projects =
       };
 
 command purr ask-for-project do
-  package metadata-to-project: purr driver projects import;
+  let Maybe-project = package metadata-to-project: purr driver projects import;
+  Maybe-project map: { Project in 
+    let Driver = Project.id;
+    Driver update-meta: (package serialise-changes: Project) changelog: [
+      [operation -> "migrated-metadata"]
+    ];
+    Project;
+  };
 end
 
 command purr open-project: (Project is purr-project) =

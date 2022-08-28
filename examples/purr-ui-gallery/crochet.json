@@ -1,22 +1,57 @@
 {
   "name": "purr",
+  "title": "Purr UI Gallery",
+  "description": "",
   "target": "browser",
-  "native_sources": [],
-  "sources": ["source/main.crochet"],
-  "dependencies": [
-    "crochet.core",
-    "crochet.concurrency",
-    "crochet.time",
-    "purr.ide.ui"
+  "stability": "unknown",
+  "sources": [
+    {
+      "filename": "source/main.crochet",
+      "target": "any"
+    }
   ],
-  "capabilities": {
-    "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting"],
-    "provides": []
-  },
+  "native_sources": [],
   "assets": [
     {
       "path": "assets/sun.png",
       "mime": "image/png"
     }
-  ]
+  ],
+  "dependencies": [
+    {
+      "name": "crochet.core",
+      "capabilities": [],
+      "target": "any"
+    },
+    {
+      "name": "crochet.concurrency",
+      "capabilities": [],
+      "target": "any"
+    },
+    {
+      "name": "crochet.time",
+      "capabilities": [],
+      "target": "any"
+    },
+    {
+      "name": "purr.ide.ui",
+      "capabilities": [],
+      "target": "any"
+    }
+  ],
+  "capabilities": {
+    "requires": [
+      {
+        "name": "purr.ide.ui/ui-control",
+        "reason": ""
+      },
+      {
+        "name": "crochet.core/untainting",
+        "reason": ""
+      }
+    ],
+    "optional": [],
+    "trusted": [],
+    "provides": []
+  }
 }
