@@ -401,7 +401,31 @@ command application-configure requested-capability: X =
   | flex-gap: (1.0 as root-em)
   | flex-align-items: #flex-align center;
 
+local abstract add-capability-mode;
+local singleton add-capability-mode--search is add-capability-mode;
+local type add-capability-mode--review(cap is crochet-package-provided-capability) is add-capability-mode;
+
 command application-configure add-capability: (Kind is crochet-capability-kind) do
+  let Mode = #observable-cell with-value: add-capability-mode--search;
+  
+
+  #widget flex-column: [
+    pui heading-2: "Add [Kind to-enum-text] capabilities",
+
+    #widget given: Mode
+      | when: #add-capability-mode--search show: (self add-capability-search: Kind mode: Mode)
+      | when: #add-capability-mode--review show: (self add-capability-review: _ kind: Kind mode: Mode)
+      | transform
+      | height: #size fill
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-width: (35.0 as root-em)
+  | minimum-height: (25.0 as root-em)
+  | height: (75.0 as viewport-height);
+end
+
+command application-configure add-capability-search: Kind mode: Mode do
   let Library = #crochet-library shared-instance;
   let OCapabilities = purr current-project map: { X in Library grantable-capabilities: X meta };
   let Current = purr current-project map: { X in
@@ -420,30 +444,88 @@ command application-configure add-capability: (Kind is crochet-capability-kind) 
   };
 
   #widget flex-column: [
-    pui heading-2: "Add [Kind to-enum-text] capabilities",
-
     #widget text-input: "Capability name or title"
       | placeholder: "Type to search"
       | value: Input
       | reference: Search-ref,
     
-    Filtered-capabilities map: { Xs in
-      pui list: (Xs slice-to: 4 | map: (self render-add-capability: _))
-    },
+    Filtered-capabilities
+      |> _ map: { Xs in
+           pui list: (Xs slice-to: 4 | map: (self render-add-capability: _ mode: Mode))
+         }
+      |> _ as widget
+      |> _ transform
+      |> _ height: #size fill
+      |> _ overflow: #overflow auto,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+command application-configure add-capability-review: Cap-mode kind: Kind mode: Mode do
+  let Capability = Cap-mode.cap;
+  let Reason-ref = #reference text-input: "reason";
+
+  #widget flex-row: [
+    #widget icon-button: (#widget icon: "chevron-left")
+      | on-click: { _ in Mode <- add-capability-mode--search },
+
+    #widget flex-column: [
+      #widget flex-row: [
+        #widget flex-column: [
+          pui heading-3: Capability title,
+          (Capability name as widget)
+            | transform
+            | font-family: #font-family monospace,
+        ]
+        | transform
+        | flex-grow: #flex-grow grow,
+
+        pui capability-risk: Capability risk,
+      ]
+      | transform
+      | flex-align-items: #flex-align center
+      | height: #size fit-content,
+
+      pui secondary-text: Capability description
+        | transform
+        | flex-grow: #flex-grow grow
+        | overflow: #overflow auto
+        | white-space: #text-whitespace preserve-and-wrap,
+
+      #widget flex-column: [
+        #widget text-input: "Usage reason"
+          | reference: Reason-ref,
+
+        pui secondary-text: "
+          Giving a reason for why your package needs this capability allows
+          users to make more informed risk decisions. Keep it short, and focus
+          on what it enables your package to do.
+          "
+          | transform
+          | font-size: #text-size small,
+      ]
+      | transform
+      | height: #size fit-content,
+
+      #widget button: "Add capability"
+    ]
+    | transform
+    | flex-gap: (1.0 as root-em),
   ]
   | transform
   | flex-gap: (1.0 as root-em)
-  | minimum-height: (25.0 as root-em)
-  | height: (75.0 as viewport-height);
+  | flex-align-items: #flex-align flex-start;
 end
 
-command application-configure render-add-capability: Capability do
+command application-configure render-add-capability: Capability mode: Mode do
   #widget flex-row: [
     pui capability-summary: Capability
       | transform
       | flex-grow: #flex-grow grow,
 
     #widget icon-button: (#widget icon: "chevron-right")
+      | on-click: { _ in Mode <- new add-capability-mode--review(Capability) },
   ]
   | transform
   | flex-align-items: #flex-align center

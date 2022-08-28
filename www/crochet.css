@@ -25,5 +25,6 @@ body {
   padding: 3em;
   align-items: center;
   overflow: auto;
-  z-index: 99;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
 }
