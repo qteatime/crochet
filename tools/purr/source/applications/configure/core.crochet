@@ -271,11 +271,11 @@ end
 
 command application-configure cover-image-actions: (X is error) =
   pui action-button: "Add cover image"
-    |> _ icon: "images"
-    |> _ on-click: { _ in purr update-cover-image: purr current-project value }
-    |> _ as widget
-    |> _ transform
-    |> _ width: #size fill;
+    | icon: "images"
+    | on-click: { _ in purr update-cover-image: purr current-project value }
+    | as widget
+    | transform
+    | width: #size fill;
 
 command application-configure cover-image-actions: (X is ok) =
   #widget flex-column: [
@@ -358,20 +358,14 @@ command application-configure capability-section: Title description: Desc items:
         | height: (1.0 as root-em),
 
       pui list: ([
-        #widget button: (
-          #widget flex-row: [
-            #widget icon: "plus",
-            "Add a new [Kind to-enum-text] capability"
-          ]
+        pui action-button: "Add a [Kind to-enum-text] capability"
+          | icon: "plus"
+          | on-click: { _ in
+              purr-ui show-modal: (self add-capability: Kind);
+            }
+          | as widget
           | transform
-          | flex-gap: (1.0 as root-em)
-          | flex-align-items: #flex-align center
-        )
-        | on-click: { _ in
-            purr-ui show-modal: (self add-capability: Kind);
-          }
-        | transform
-        | margin: (1.0 as root-em)
+          | margin: (1.0 as root-em)
       ] ++ (Items map: (self requested-capability: _)))
     ]
     | transform
@@ -380,7 +374,42 @@ command application-configure capability-section: Title description: Desc items:
 end
 
 command application-configure provided-capabilities do
-  "";
+  let OCapabilities = purr current-project map: { X in X meta capabilities provided };
+
+  #widget flex-column: [
+    pui secondary-text: "
+      Capabilities that this package provides to allow controlled access to
+      its powerful functionality.
+    ",
+
+    OCapabilities map: { Capabilities in
+      pui list: ([
+        pui action-button: "Add a provided capability"
+          | icon: "plus"
+          | as widget
+          | transform
+          | margin: (1.0 as root-em)
+      ] ++ (Capabilities map: (self provided-capability: _)))
+    },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | padding-vertical: (1.0 as root-em);
+end
+
+command application-configure provided-capability: Capability do
+  #widget flex-row: [
+    pui capability-summary: Capability,
+    #widget flex-row: [
+      #widget icon-button: (#widget icon: "pen"),
+      #widget icon-button: (#widget icon: "trash"),
+    ]
+    | transform
+    | width: #size fit-content
+    | flex-gap: (1.0 as root-em)
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
 end
 
 command application-configure requested-capability: X =
