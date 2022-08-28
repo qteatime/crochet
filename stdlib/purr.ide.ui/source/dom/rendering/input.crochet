@@ -54,7 +54,7 @@ command dom-renderer render: (W is widget-text-input) do
   Validated-value stream subscribe: { Value in
     condition
       when Value is ok => Error remove-contents;
-      when Value is error => Error replace-contents: (self render: Value reason);
+      when Value is error => Error replace-contents: (self render: (Value reason as widget));
     end
   };
 

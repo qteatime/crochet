@@ -237,6 +237,19 @@ command #crochet-package try-parse-name: (Name is unsafe-arbitrary-text) do
     | map-error: { _ in new crochet-package-error-invalid-name(Name) };
 end
 
+local define capability-name-re = lazy (
+  regex from-text: "^\[a-z\]\[a-zA-Z0-9\\-\]*$"
+    | compile
+);
+
+type crochet-package-error-invalid-capability-name(name is unsafe-arbitrary-text);
+
+command #crochet-package try-parse-capability-name: (Name is unsafe-arbitrary-text) do
+  let Re = force capability-name-re;
+  Re search-first: Name
+    | map: (_ matched-text)
+    | map-error: { _ in new crochet-package-error-invalid-capability-name(Name) };
+end
 
 type crochet-package-dependencies(meta is any);
 

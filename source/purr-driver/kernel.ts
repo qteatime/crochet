@@ -109,6 +109,12 @@ function make_purr() {
         return null;
       },
 
+      async add_provided_capability(x: string, capability: any) {
+        const project = heap.typed_deref(CrochetProject, x);
+        await project.add_provided_capability(capability);
+        return null;
+      },
+
       async add_capability(x: string, capability: any, kind: string) {
         const project = heap.typed_deref(CrochetProject, x);
         await project.add_capability(capability, kind);

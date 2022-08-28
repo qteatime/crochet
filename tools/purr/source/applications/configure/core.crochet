@@ -386,6 +386,9 @@ command application-configure provided-capabilities do
       pui list: ([
         pui action-button: "Add a provided capability"
           | icon: "plus"
+          | on-click: { _ in
+              let Modal = purr-ui show-modal: (self add-provided-capability-close: { Modal close });
+            }
           | as widget
           | transform
           | margin: (1.0 as root-em)
@@ -407,6 +410,113 @@ command application-configure provided-capability: Capability do
     | transform
     | width: #size fit-content
     | flex-gap: (1.0 as root-em)
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+command application-configure add-provided-capability-close: Close do
+  let Form = #observable-cell with-value: (#result error: nothing);
+  let Is-invalid = Form map: { X in X is error };
+
+  #widget flex-column: [
+    pui heading-2: "Add a provided capability",
+
+    self provided-capability-editor-output: Form
+      | transform
+      | flex-grow: #flex-grow grow
+      | overflow-vertical: #overflow auto,
+
+    #widget button: "Add capability"
+      | disabled: Is-invalid
+      | on-click: { _ in
+          let Project = purr current-project value;
+          let Data = Form value value-or-panic: "unexpected form state";
+          let Capability = new crochet-package-provided-capability(
+            Project meta name,
+            [
+              name -> Data.name,
+              title -> Data.title,
+              risk -> Data.risk to-enum-text,
+              description -> Data.description,
+            ]
+          );
+          purr add-capability: Capability to: Project;
+          Close();
+        },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-height: (75.0 as viewport-height);
+end
+
+command application-configure provided-capability-editor-output: Output do
+  let Name-ref = #reference text-input: "name";
+  let Title-ref = #reference text-input: "title";
+  let Description-ref = #reference text-input: "description";
+  let Risk-ref = #reference select-one: "risk";
+  let Form = #observable-cell
+              | zip: [
+                  name -> Name-ref validated-value,
+                  title -> Title-ref validated-value,
+                  description -> Description-ref value,
+                  risk -> Risk-ref selected,
+                ]
+                with: { Data in
+                  Data.name then: { Name in
+                    Data.title map: { Title in
+                      [Data with name -> Name, title -> Title];
+                    }
+                  }
+                };
+  Form stream subscribe: { X in Output <- X };
+
+  #widget flex-column: [
+    #widget text-input: "Name"
+      | placeholder: "capability-name"
+      | validation: { X in
+          #crochet-package try-parse-capability-name: X
+            | map-error: { _ in "Must be a valid Crochet capability name" }
+        }
+      | reference: Name-ref,
+    
+    #widget text-input: "Title"
+      | placeholder: "Short capability description"
+      | validation: { X0 in 
+          let X = untaint make-trusted: X0;
+          condition 
+            when X is-empty => #result error: "Cannot be empty";
+            otherwise => #result ok: X;
+          end
+        }
+      | reference: Title-ref,
+
+    #widget flex-column: [
+      #widget select-one: "Risk"
+        | options: [
+            #select-option label: "Low" value: #crochet-capability-risk low,
+            #select-option label: "Medium" value: #crochet-capability-risk medium,
+            #select-option label: "High" value: #crochet-capability-risk high,
+            #select-option label: "Critical" value: #crochet-capability-risk critical,
+            #select-option label: "Unknown" value: #crochet-capability-risk unknown,
+          ]
+          | selected: #crochet-capability-risk unknown
+          | reference: Risk-ref,
+
+      pui secondary-text: "
+        Consider how much harm can be caused if someone abuses this capability.
+        "
+        | transform
+        | font-size: #text-size small,
+    ]
+    | transform
+    | height: #size fit-content
+    | flex-gap: (0.25 as root-em),
+
+    #widget text-input: "Description"
+      | reference: Description-ref
+      | transform
+      | maximum-height: (4.0 as root-em),
   ]
   | transform
   | flex-gap: (1.0 as root-em);
