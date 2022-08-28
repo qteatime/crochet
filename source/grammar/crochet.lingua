@@ -1053,6 +1053,7 @@ grammar Crochet : Program {
 
   partialSignature<t> =
     | kws:signaturePair<t>+       -> PartialSignature.Keyword(meta, kws)
+    | op:as r:castType            -> PartialSignature.Binary(meta, op, r)
     | op:infix_symbol r:t         -> PartialSignature.Binary(meta, op, r)
     | n:atom                      -> PartialSignature.Unary(meta, n)
     | n:not                       -> PartialSignature.Unary(meta, n)
