@@ -1,5 +1,7 @@
 {
   "name": "crochet.concurrency",
+  "title": "Concurrency primitives",
+  "description": "Crochet's standard concurrency primitives, covering actors, reactive streams, promises, and CSP channels.",
   "target": "*",
   "native_sources": ["native/promise.js", "native/timer.js", "native/actor.js"],
   "sources": [

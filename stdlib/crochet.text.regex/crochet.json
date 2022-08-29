@@ -1,5 +1,7 @@
 {
   "name": "crochet.text.regex",
+  "title": "Regular expressions",
+  "description": "Functionality for using regular expression patterns to look for and extract certain parts of a piece of text.",
   "target": "*",
   "native_sources": ["native/native.js"],
   "sources": [

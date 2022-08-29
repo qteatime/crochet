@@ -1,5 +1,7 @@
 {
   "name": "crochet.language.pickles",
+  "title": "Pickles",
+  "description": "A small language for parsing structured data with complex normalisation rules",
   "target": "*",
   "native_sources": [],
   "sources": [

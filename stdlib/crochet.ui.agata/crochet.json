@@ -1,5 +1,7 @@
 {
   "name": "crochet.ui.agata",
+  "title": "Agata",
+  "description": "A UI library for modern desktop-like/phone-like applications",
   "target": "*",
   "native_sources": [
     "native/dom.js",

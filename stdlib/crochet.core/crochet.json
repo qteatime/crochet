@@ -1,5 +1,7 @@
 {
   "name": "crochet.core",
+  "title": "Core",
+  "description": "Crochet's basic standard primitives",
   "target": "*",
   "stability": "experimental",
   "native_sources": [

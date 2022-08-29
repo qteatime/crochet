@@ -1,5 +1,6 @@
 {
   "name": "crochet.novella",
+  "title": "Novella",
   "target": "browser",
   "description": "A tool for writing interactive story books",
   "stability": "experimental",

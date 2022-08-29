@@ -1,5 +1,7 @@
 {
   "name": "crochet.unsafe.wrapper.dom",
+  "title": "DOM unsafe wrapper",
+  "description": "Low-level access to the Browser's DOM. This package is not sandboxed!",
   "target": "browser",
   "native_sources": ["native/dom.js"],
   "sources": ["source/core.crochet", "source/node.crochet"],

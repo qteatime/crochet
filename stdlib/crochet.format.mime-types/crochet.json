@@ -1,5 +1,7 @@
 {
   "name": "crochet.format.mime-types",
+  "title": "Mime types",
+  "description": "A database of mime types and extensions commonly associated with them",
   "target": "*",
   "native_sources": [],
   "sources": ["source/main.crochet"],

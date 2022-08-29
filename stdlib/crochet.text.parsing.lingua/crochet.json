@@ -1,5 +1,7 @@
 {
   "name": "crochet.text.parsing.lingua",
+  "title": "Lingua",
+  "description": "A small language for describing parsers based on the PEG formalism",
   "target": "*",
   "stability": "experimental",
   "dependencies": ["crochet.core"],

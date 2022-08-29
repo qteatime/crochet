@@ -1,5 +1,7 @@
 {
   "name": "crochet.language.csv",
+  "title": "CSV language support",
+  "description": "Reading and writing data in the CSV format.",
   "target": "*",
   "stability": "experimental",
   "sources": ["grammar/csv.lingua", "source/csv.crochet"],

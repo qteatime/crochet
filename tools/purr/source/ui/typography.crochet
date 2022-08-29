@@ -43,3 +43,16 @@ command pui ellipsis-text: (X has to-widget) =
     | overflow: #overflow hidden
     | white-space: #text-whitespace no-wrap
     | text-overflow: #text-overflow ellipsis;
+
+command pui chip: (X has to-widget) color: (C is color) =
+  (X as widget)
+    | transform
+    | border-radius: (10.0 as root-em)
+    | padding-horizontal: (0.75 as root-em)
+    | padding-vertical: (0.1 as root-em)
+    | font-size: #text-size extra-small
+    | background-color: C
+    | text-transform: #text-transform uppercase
+    | font-weight: #font-weight medium
+    | width: #size fit-content
+    | height: #size fit-content;

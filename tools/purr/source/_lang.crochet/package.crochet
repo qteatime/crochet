@@ -183,10 +183,13 @@ type crochet-package-provided-capability(pkg is text, meta is any);
 command crochet-package-provided-capability name =
   self.meta.name;
 
+command crochet-package-provided-capability package-name =
+  self.pkg;
+
 command crochet-package-provided-capability qualified-name =
   condition
-    when self.pkg is-empty => self name;
-    otherwise => "[self.pkg]/[self name]" flatten-into-plain-text;
+    when self package-name is-empty => self name;
+    otherwise => "[self package-name]/[self name]" flatten-into-plain-text;
   end;
 
 command crochet-package-provided-capability title =

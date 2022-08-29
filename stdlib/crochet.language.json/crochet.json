@@ -1,5 +1,7 @@
 {
   "name": "crochet.language.json",
+  "title": "JSON language support",
+  "description": "Reading and writing data in the JSON format.",
   "target": "*",
   "stability": "experimental",
   "native_sources": ["native/json.js"],

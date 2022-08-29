@@ -1,7 +1,8 @@
 {
   "name": "purr.ide.ui",
+  "title": "Purr IDE's UI",
   "target": "*",
-  "description": "An extension to Agata for building IDE tools",
+  "description": "A restricted UI library for building IDE tools that need to run in mixed trust contexts.",
   "native_sources": [
     "native/lens.js",
     "native/representation.js",

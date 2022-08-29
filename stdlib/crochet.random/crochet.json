@@ -1,5 +1,7 @@
 {
   "name": "crochet.random",
+  "title": "Random",
+  "description": "Provides basic support for predictable pseudo-random number generation, as needed by video games and stochastic model checking.",
   "target": "*",
   "stability": "experimental",
   "dependencies": ["crochet.core"],

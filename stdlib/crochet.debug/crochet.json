@@ -1,5 +1,7 @@
 {
   "name": "crochet.debug",
+  "title": "Debug",
+  "description": "Primitive debugging tools, intended for instrumenting packages with user-defined debugging information.",
   "target": "*",
   "stability": "experimental",
   "sources": [

@@ -1,5 +1,7 @@
 {
   "name": "crochet.time",
+  "title": "Time",
+  "description": "Provides support for working with dates, points in time, and durations.",
   "target": "*",
   "stability": "experimental",
   "native_sources": ["native/time.js"],

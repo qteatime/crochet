@@ -5,7 +5,7 @@ module package
 let Package = {
   name: Text at name,
   title: (Text at title) ?? "",
-  description: (Text at title) ?? "",
+  description: (Text at description) ?? "",
   target: Target at target,
   stability: (Stability at stability) ?? "unknown",
   capabilities: Capabilities at capabilities,
