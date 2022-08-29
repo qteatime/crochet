@@ -80,9 +80,11 @@ command application-configure dependency-risk: Dependency package: Package proje
   let Use-set = #set from: (Project meta capabilities requested | map: (_ name));
   let Using = Package capabilities provided
                 | keep-if: { X in Use-set contains: X qualified-name };
+  let Trusted = Package capabilities trusted
+                  | map: (Library lookup-details: _);
   let Granting = Dependency capabilities
                   | map: (Library lookup-details: _);
-  let Known-risks = (Using ++ Granting) map: (_ risk);
+  let Known-risks = (Using ++ Trusted ++ Granting) map: (_ risk);
 
   ([#crochet-capability-risk low] ++ Known-risks)
     | maximum;
