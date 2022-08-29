@@ -60,4 +60,5 @@ command pui list: (Items is list<X has to-widget>) =
   | transform
   | background-color: #color background
   | border-radius: (0.5 as root-em)
-  | overflow: #overflow hidden;
+  | overflow: #overflow hidden
+  | height: #size fit-content;

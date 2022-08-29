@@ -87,6 +87,11 @@ command crochet-library lookup-package: (Name is text) do
   end
 end
 
+command crochet-library search-package-by-text: (Text is text) do
+  self.packages value values
+    | keep-if: { X in (X name contains: Text) or (X title contains: Text) or (X description contains: Text) };
+end
+
 command crochet-library lookup-details: (X is crochet-package-requested-capability) do
   self
     | lookup-capability: X name

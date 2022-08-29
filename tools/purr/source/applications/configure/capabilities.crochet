@@ -388,13 +388,13 @@ command application-configure add-capability-search: Kind mode: Mode do
       | reference: Search-ref,
     
     Filtered-capabilities
-      |> _ map: { Xs in
-           pui list: (Xs slice-to: 4 | map: (self render-add-capability: _ mode: Mode))
-         }
-      |> _ as widget
-      |> _ transform
-      |> _ height: #size fill
-      |> _ overflow: #overflow auto,
+      | map: { Xs in
+          pui list: (Xs slice-to: 4 | map: (self render-add-capability: _ mode: Mode))
+        }
+      | as widget
+      | transform
+      | height: #size fill
+      | overflow: #overflow auto,
   ]
   | transform
   | flex-gap: (1.0 as root-em);
