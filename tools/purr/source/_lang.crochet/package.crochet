@@ -263,7 +263,7 @@ command crochet-package-dependency name =
   self.meta.name;
 
 command crochet-package-dependency capabilities =
-  self.capabilities map: { X in
+  self.meta.capabilities map: { X in
     new crochet-package-requested-capability(
       #crochet-capability-kind required,
       [name -> X, reason -> ""]

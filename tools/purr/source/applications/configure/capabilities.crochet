@@ -1,0 +1,498 @@
+% crochet
+
+open purr.ide.ui;
+open crochet.concurrency;
+open crochet.debug;
+
+command application-configure capabilities do
+  self
+    title: "Capabilities"
+    actions: #widget space
+    body: (
+      #widget tabbed-panel: [
+        #tab id: "requested"
+          | header: "Requested"
+          | content: self requested-capabilities,
+        
+        #tab id: "provided"
+          | header: "Provided"
+          | content: self provided-capabilities,
+      ]
+      | selected: "requested"
+    );
+end
+
+command application-configure requested-capabilities do
+  let Capabilities = purr current-project map: { X in X meta capabilities };
+  let Required = Capabilities map: { X in X strictly-required };
+  let Optional = Capabilities map: { X in X optional };
+  let Trusted = Capabilities map: { X in X trusted };
+
+  #widget flex-column: [
+    self capability-section: "Required"
+        description: "The package needs these capabilities to run."
+        items: Required
+        kind: #crochet-capability-kind required,
+
+    self capability-section: "Optional"
+        description: "The package can use these capabilities to provide additional features."
+        items: Optional
+        kind: #crochet-capability-kind optional,
+
+    self capability-section: "Trusted"
+        description: "The package will be granted these capabilities automatically when
+                      included as part of Crochet's Trusted Computing Base (standard library)."
+        items: Trusted
+        kind: #crochet-capability-kind trusted,
+  ]
+  | transform
+  | padding-vertical: (1.0 as root-em);
+end
+
+command application-configure capability-section: Title description: Desc items: Items-cell kind: (Kind is crochet-capability-kind) do
+  Items-cell map: { Items in 
+    #widget flex-column: [
+      pui heading-3: Title,
+      pui secondary-text: Desc
+        | transform
+        | font-size: #text-size small,
+
+      #widget space
+        | transform
+        | height: (1.0 as root-em),
+
+      pui list: ([
+        pui action-button: "Add a [Kind to-enum-text] capability"
+          | icon: "plus"
+          | on-click: { _ in
+              purr-ui show-modal: (self add-capability: Kind);
+            }
+          | as widget
+          | transform
+          | margin: (1.0 as root-em)
+      ] ++ (Items map: (self requested-capability: _)))
+    ]
+    | transform
+    | margin-bottom: (1.5 as root-em);
+  };
+end
+
+command application-configure provided-capabilities do
+  let OCapabilities = purr current-project map: { X in X meta capabilities provided };
+
+  #widget flex-column: [
+    pui secondary-text: "
+      Capabilities that this package provides to allow controlled access to
+      its powerful functionality.
+    ",
+
+    OCapabilities map: { Capabilities in
+      pui list: ([
+        pui action-button: "Add a provided capability"
+          | icon: "plus"
+          | on-click: { _ in
+              let Modal = purr-ui show-modal: (self add-provided-capability-close: { Modal close });
+            }
+          | as widget
+          | transform
+          | margin: (1.0 as root-em)
+      ] ++ (Capabilities map: (self provided-capability: _)))
+    },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | padding-vertical: (1.0 as root-em);
+end
+
+command application-configure provided-capability: Capability do
+  #widget flex-row: [
+    pui capability-summary: Capability,
+    #widget flex-row: [
+      #widget icon-button: (#widget icon: "pen")
+        | on-click: { _ in
+            let Modal = purr-ui show-modal: (self edit-provided-capability: Capability close: { Modal close });
+          },
+      #widget icon-button: (#widget icon: "trash")
+        | on-click: { _ in
+            purr remove-capability: Capability from: purr current-project value;
+          },
+    ]
+    | transform
+    | width: #size fit-content
+    | flex-gap: (1.0 as root-em)
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+open crochet.debug;
+command application-configure edit-provided-capability: Capability close: Close do
+  let Form = #observable-cell with-value: (#result error: nothing);
+  let Is-invalid = Form map: { X in X is error };
+  let Not-updated = Form map: { X in
+    transcript tag: "current" inspect: X;
+    condition
+      when X is error => true;
+      when X is ok => Capability serialise =:= [X value with risk -> condition
+                                                                       when (X value).risk is nothing => "";
+                                                                       otherwise => (X value).risk to-enum-text;
+                                                                     end];
+    end
+  };
+
+  #widget flex-column: [
+    pui heading-2: "Update provided capability",
+
+    self provided-capability-editor: (#result ok: Capability) output: Form
+      | transform
+      | flex-grow: #flex-grow grow
+      | overflow-vertical: #overflow auto,
+
+    #widget button: "Update capability"
+      | disabled: (Is-invalid zip: Not-updated with: (_ or _))
+      | on-click: { _ in
+          let Project = purr current-project value;
+          let Data = Form value value-or-panic: "unexpected form state";
+          let Capability = new crochet-package-provided-capability(
+            Project meta name,
+            [
+              name -> Data.name,
+              title -> Data.title,
+              risk -> Data.risk to-enum-text,
+              description -> Data.description,
+            ]
+          );
+          purr update-capability: Capability in: Project;
+          Close();
+        },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-height: (75.0 as viewport-height);
+end
+
+command application-configure add-provided-capability-close: Close do
+  let Form = #observable-cell with-value: (#result error: nothing);
+  let Is-invalid = Form map: { X in X is error };
+
+  #widget flex-column: [
+    pui heading-2: "Add a provided capability",
+
+    self provided-capability-editor: (#result error: not-found) output: Form
+      | transform
+      | flex-grow: #flex-grow grow
+      | overflow-vertical: #overflow auto,
+
+    #widget button: "Add capability"
+      | disabled: Is-invalid
+      | on-click: { _ in
+          let Project = purr current-project value;
+          let Data = Form value value-or-panic: "unexpected form state";
+          let Capability = new crochet-package-provided-capability(
+            Project meta name,
+            [
+              name -> Data.name,
+              title -> Data.title,
+              risk -> Data.risk to-enum-text,
+              description -> Data.description,
+            ]
+          );
+          purr add-capability: Capability to: Project;
+          Close();
+        },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-height: (75.0 as viewport-height);
+end
+
+command application-configure provided-capability-editor: Maybe-capability output: Output do
+  let Initial = Maybe-capability
+                  | map: { X in [name -> X name, title -> X title, description -> X description, risk -> X risk]}
+                  | value-or-default: [name -> "", title -> "", description -> "", risk -> #crochet-capability-risk unknown];
+  let Name-ref = #reference text-input: "name";
+  let Title-ref = #reference text-input: "title";
+  let Description-ref = #reference text-input: "description";
+  let Risk-ref = #reference select-one: "risk";
+  let Form = #observable-cell
+              | zip: [
+                  name -> Name-ref validated-value,
+                  title -> Title-ref validated-value,
+                  description -> Description-ref value,
+                  risk -> Risk-ref selected,
+                ]
+                with: { Data in
+                  Data.name then: { Name in
+                    Data.title map: { Title in
+                      [Data with name -> Name, title -> Title];
+                    }
+                  }
+                };
+  Form stream subscribe: { X in Output <- X };
+
+  #widget flex-column: [
+    #widget text-input: "Name"
+      | value: Initial.name
+      | read-only: (Maybe-capability is ok)
+      | placeholder: "capability-name"
+      | validation: { X in
+          #crochet-package try-parse-capability-name: X
+            | map-error: { _ in "Must be a valid Crochet capability name" }
+        }
+      | reference: Name-ref,
+    
+    #widget text-input: "Title"
+      | value: Initial.title
+      | placeholder: "Short capability description"
+      | validation: { X0 in 
+          let X = untaint make-trusted: X0;
+          condition 
+            when X is-empty => #result error: "Cannot be empty";
+            otherwise => #result ok: X;
+          end
+        }
+      | reference: Title-ref,
+
+    #widget flex-column: [
+      #widget select-one: "Risk"
+        | options: [
+            #select-option label: "Low" value: #crochet-capability-risk low,
+            #select-option label: "Medium" value: #crochet-capability-risk medium,
+            #select-option label: "High" value: #crochet-capability-risk high,
+            #select-option label: "Critical" value: #crochet-capability-risk critical,
+            #select-option label: "Unknown" value: #crochet-capability-risk unknown,
+          ]
+          | selected: Initial.risk
+          | reference: Risk-ref,
+
+      pui secondary-text: "
+        Consider how much harm can be caused if someone abuses this capability.
+        "
+        | transform
+        | font-size: #text-size small,
+    ]
+    | transform
+    | height: #size fit-content
+    | flex-gap: (0.25 as root-em),
+
+    #widget text-input: "Description"
+      | value: Initial.description
+      | reference: Description-ref
+      | transform
+      | maximum-height: (4.0 as root-em),
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+command application-configure requested-capability: X =
+  #widget flex-row: [
+    (pui requested-capability: X)
+      | transform
+      | flex-grow: #flex-grow grow,
+
+    #widget flex-row: [
+      #widget icon-button: (#widget icon: "pen")
+        | on-click: { _ in
+            let Modal = purr-ui show-modal: (self edit-capability: X close: { Modal close })
+          },
+      #widget icon-button: (#widget icon: "trash")
+        | on-click: { _ in purr remove-capability: X from: purr current-project value },
+    ]
+    | transform
+    | flex-gap: (0.5 as root-em)
+    | width: #size fit-content,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | flex-align-items: #flex-align center;
+
+
+command application-configure edit-capability: (Capability is crochet-package-requested-capability) close: Close do
+  let Reason-cell = #observable-cell with-value: Capability reason;
+  let Reason = Reason-cell map: (untaint make-trusted: _);
+  let Not-updated = Reason map: { X in X =:= Capability reason };
+  let Source-capability = #crochet-library shared-instance lookup-details: Capability;
+
+  #widget flex-column: [
+    pui heading-2: "Update capability",
+
+    self render-capability-review-details: Source-capability,
+    self reason-editor: Capability reason output: Reason-cell,
+
+    #widget button: "Update capability"
+      | disabled: Not-updated
+      | on-click: { _ in
+          let Capability = new crochet-package-requested-capability(
+            Capability with
+              meta -> [
+                Capability.meta with reason -> Reason value
+              ]
+          );
+          purr update-capability: Capability in: purr current-project value;
+          Close();
+        }
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-width: (35.0 as root-em)
+  | minimum-height: (25.0 as root-em)
+  | height: (75.0 as viewport-height);
+end
+
+local abstract add-capability-mode;
+local singleton add-capability-mode--search is add-capability-mode;
+local type add-capability-mode--review(cap is crochet-package-provided-capability) is add-capability-mode;
+
+command application-configure add-capability: (Kind is crochet-capability-kind) do
+  let Mode = #observable-cell with-value: add-capability-mode--search;
+
+  #widget flex-column: [
+    pui heading-2: "Add [Kind to-enum-text] capabilities",
+
+    #widget given: Mode
+      | when: #add-capability-mode--search show: (self add-capability-search: Kind mode: Mode)
+      | when: #add-capability-mode--review show: (self add-capability-review: _ kind: Kind mode: Mode)
+      | transform
+      | height: #size fill
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-width: (35.0 as root-em)
+  | minimum-height: (25.0 as root-em)
+  | height: (75.0 as viewport-height);
+end
+
+command application-configure add-capability-search: Kind mode: Mode do
+  let Library = #crochet-library shared-instance;
+  let OCapabilities = purr current-project map: { X in Library grantable-capabilities: X meta };
+  let Current = purr current-project map: { X in
+    X meta capabilities user-grantable
+      |> _ map: (_ name)
+      |> #set from: _;
+  };
+  let Input = #observable-cell with-value: "";
+  let Search-ref = #reference text-input: "search";
+  let Filtered-capabilities = Search-ref value zip: OCapabilities and: Current with: { Value, Capabilities, Granted in
+    let Trusted-value = untaint make-trusted: Value;
+    Capabilities
+      | keep-if: { C in (C name contains: Trusted-value)
+                        or (C title contains: Trusted-value) }
+      | remove-if: { C in Granted contains: C name };
+  };
+
+  #widget flex-column: [
+    #widget text-input: "Capability name or title"
+      | placeholder: "Type to search"
+      | value: Input
+      | reference: Search-ref,
+    
+    Filtered-capabilities
+      |> _ map: { Xs in
+           pui list: (Xs slice-to: 4 | map: (self render-add-capability: _ mode: Mode))
+         }
+      |> _ as widget
+      |> _ transform
+      |> _ height: #size fill
+      |> _ overflow: #overflow auto,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+command application-configure add-capability-review: Cap-mode kind: Kind mode: Mode do
+  let Capability = Cap-mode.cap;
+  let Reason = #observable-cell with-value: Capability reason;
+
+  #widget flex-row: [
+    #widget icon-button: (#widget icon: "chevron-left")
+      | on-click: { _ in Mode <- add-capability-mode--search },
+
+    #widget flex-column: [
+      self render-capability-review-details: Capability,
+      self reason-editor: Capability reason output: Reason,
+
+      #widget button: "Add capability"
+        | on-click: { _ in
+            let Capability = new crochet-package-requested-capability(
+              Kind,
+              [
+                name -> Capability name,
+                reason -> untaint make-trusted: Reason value
+              ]
+            );
+            purr add-capability: Capability to: purr current-project value;
+            Mode <- add-capability-mode--search
+          }
+    ]
+    | transform
+    | flex-gap: (1.0 as root-em),
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | flex-align-items: #flex-align flex-start;
+end
+
+command application-configure reason-editor: Reason output: Cell do
+  let Reason-ref = #reference text-input: "reason";
+  Reason-ref value stream subscribe: { X in Cell <- X };
+
+  #widget flex-column: [
+    #widget text-input: "Usage reason"
+      | value: Reason
+      | reference: Reason-ref,
+
+    pui secondary-text: "
+      Giving a reason for why your package needs this capability allows
+      users to make more informed risk decisions. Keep it short, and focus
+      on what it enables your package to do.
+      "
+      | transform
+      | font-size: #text-size small,
+  ]
+  | transform
+  | height: #size fit-content;
+end
+
+command application-configure render-capability-review-details: Capability do
+  #widget flex-column: [
+    #widget flex-row: [
+      #widget flex-column: [
+        pui heading-3: Capability title,
+        (Capability name as widget)
+          | transform
+          | font-family: #font-family monospace,
+      ]
+      | transform
+      | flex-grow: #flex-grow grow,
+
+      pui capability-risk: Capability risk,
+    ]
+    | transform
+    | flex-align-items: #flex-align center
+    | height: #size fit-content,
+
+    pui secondary-text: Capability description
+      | transform
+      | flex-grow: #flex-grow grow
+      | overflow: #overflow auto
+      | white-space: #text-whitespace preserve-and-wrap,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+command application-configure render-add-capability: Capability mode: Mode do
+  #widget flex-row: [
+    pui capability-summary: Capability
+      | transform
+      | flex-grow: #flex-grow grow,
+
+    #widget icon-button: (#widget icon: "chevron-right")
+      | on-click: { _ in Mode <- new add-capability-mode--review(Capability) },
+  ]
+  | transform
+  | height: #size fit-content
+  | flex-align-items: #flex-align center
+  | flex-gap: (1.0 as root-em);
+end

@@ -1,0 +1,98 @@
+% crochet
+
+open purr.ide.ui;
+open crochet.concurrency;
+open crochet.debug;
+
+command application-configure dependencies do
+  self
+    title: "Dependencies"
+    actions: #widget space
+    body: self list-dependencies;
+end
+
+command application-configure list-dependencies do
+  purr current-project map: { Project in 
+    pui list: ([
+      pui action-button: "Add a dependency"
+        | icon: "plus"
+        | as widget
+        | transform
+        | margin: (1.0 as root-em)
+    ] ++ (Project meta dependencies all map: (self render-dependency: _ project: Project)));
+  };
+end
+
+command application-configure render-dependency: Dependency project: Project do
+  #crochet-library shared-instance lookup-package: Dependency name
+    | map: { Package in
+        #widget flex-column: [
+          #widget flex-column: [
+            pui heading-3: Package title,
+            pui secondary-text: Package name
+              | transform
+              | font-family: #font-family monospace,
+
+            #widget space
+              | transform
+              | height: (1.0 as root-em),
+
+            pui secondary-text: Package description,
+          ]
+          | transform
+          | border-bottom: (1 as pixels) style: #border-style solid color: #color neutral-200,
+
+          #widget container: [
+            pui list: ((Package capabilities user-grantable ++ Package capabilities provided) 
+                        | map: (self render-dependency: Dependency package: Package capability: _))
+              | transform
+              | background-color: #color neutral-100,
+          ]
+          | transform
+          | background-color: #color neutral-100,
+        ]
+        | transform
+        | flex-gap: (0.5 as root-em);
+      }
+    | value-or-default: "Unknown package [Dependency name]";
+end
+
+command application-configure render-dependency: Dependency package: Package capability: Capability do
+  let Granted = Dependency capabilities some: { X in X name =:= Capability name };
+
+  #widget flex-row: [
+    #widget checkbox: ""
+      | checked: Granted,
+
+    #widget flex-column: [
+      (pui secondary-text: (self dependency-capability-kind: Capability))
+        | transform
+        | font-weight: #font-weight semi-bold
+        | font-size: #text-size small
+        | text-transform: #text-transform uppercase,    
+
+      self dependency-capability-summary: Capability
+    ]
+    | transform
+    | flex-gap: (0.25 as root-em)
+    | flex-grow: #flex-grow grow
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | flex-align-items: #flex-align center;
+end
+
+command application-configure dependency-capability-kind: (Capability is crochet-package-requested-capability) =
+  Capability kind to-enum-text;
+
+command application-configure dependency-capability-kind: (Capability is crochet-package-provided-capability) =
+  "provided";
+
+
+command application-configure dependency-capability-summary: (Capability is crochet-package-requested-capability) do
+  pui capability-summary: (Library lookup-details: Capability);
+end
+
+command application-configure dependency-capability-summary: (Capability is crochet-package-provided-capability) do
+  pui capability-summary: Capability;
+end

@@ -20,6 +20,9 @@
     "source/driver/core.crochet",
 
     "source/applications/configure/core.crochet",
+    "source/applications/configure/capabilities.crochet",
+    "source/applications/configure/dependencies.crochet",
+    "source/applications/configure/meta.crochet",
     "source/applications/home/core.crochet",
     "source/applications/run-crochet/core.crochet",
 
@@ -29,6 +32,7 @@
     "source/ui/button.crochet",
     "source/ui/specialised.crochet",
     "source/ui/capabilities.crochet",
+    "source/ui/package.crochet",
 
     "source/pages/core.crochet",
     "source/pages/welcome.crochet",

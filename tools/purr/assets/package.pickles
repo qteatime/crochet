@@ -78,7 +78,7 @@ let Dependency =
   {
     name: Text at name,
     capabilities: List(Text) at capabilities,
-    target: Target at target,
+    target: (Target at target) ?? "any",
   }
 | {
     name: Text,
