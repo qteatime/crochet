@@ -75,6 +75,24 @@ command purr update-capability: (Capability is crochet-package-provided-capabili
   self;
 end
 
+command purr project: (Project is purr-project) add-dependency: (Dependency is crochet-package-dependency) do
+  perform purr-project-state.add-dependency(Project, Dependency);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr project: (Project is purr-project) update-dependency: (Dependency is crochet-package-dependency) do
+  perform purr-project-state.update-dependency(Project, Dependency);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr project: (Project is purr-project) remove-dependency: (Dependency is crochet-package-dependency) do
+  perform purr-project-state.remove-dependency(Project, Dependency);
+  perform purr-project-state.refresh();
+  self;
+end
+
 command purr current-project =
   perform purr-project-state.current-project();
 

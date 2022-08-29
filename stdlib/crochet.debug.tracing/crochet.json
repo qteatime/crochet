@@ -1,5 +1,7 @@
 {
   "name": "crochet.debug.tracing",
+  "title": "Tracing debugging",
+  "description": "Support for ad-hoc debugging by capturing details of a program's execution in a trace.",
   "target": "*",
   "native_sources": ["native/trace.js", "native/reflection.js"],
   "sources": [

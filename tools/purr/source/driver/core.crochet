@@ -114,3 +114,18 @@ command purr-driver-crochet-project update-capability: (Capability is crochet-pa
   foreign driver.projects.update-provided-capability(self.driver, self.id, json serialise: Capability serialise);
   self;
 end
+
+command purr-driver-crochet-project remove-dependency: (Dependency is crochet-package-dependency) do
+  foreign driver.projects.remove-dependency(self.driver, self.id, Dependency name);
+  self;
+end
+
+command purr-driver-crochet-project update-dependency: (Dependency is crochet-package-dependency) do
+  foreign driver.projects.update-dependency(self.driver, self.id, json serialise: Dependency serialise);
+  self;
+end
+
+command purr-driver-crochet-project add-dependency: (Dependency is crochet-package-dependency) do
+  foreign driver.projects.add-dependency(self.driver, self.id, json serialise: Dependency serialise);
+  self;
+end

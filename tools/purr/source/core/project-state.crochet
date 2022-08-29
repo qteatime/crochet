@@ -8,6 +8,7 @@ effect purr-project-state with
   update-project(Changeset is purr-project-changeset); // -> result<purr-project, purr-changeset-error>
   update-cover-image(Project is purr-project); // -> nothing
   remove-cover-image(Project is purr-project); // -> nothing
+
   add-requested-capability(
     Current is purr-project,
     Capability is crochet-package-requested-capability
@@ -32,6 +33,10 @@ effect purr-project-state with
     Current is purr-project,
     Capability is crochet-package-provided-capability
   ); // -> nothing
+
+  add-dependency(Current is purr-project, Dependency is crochet-package-dependency); // -> nothing
+  update-dependency(Current is purr-project, Dependency is crochet-package-dependency); // -> nothing
+  remove-dependency(Current is purr-project, Dependency is crochet-package-dependency); // -> nothing
 end
 
 handler purr-project-state project: Initial do
@@ -102,6 +107,27 @@ with
     assert Project value =:= Current;
     let Driver = (Project value).id;
     Driver remove-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.add-dependency(Current, Dependency) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver add-dependency: Dependency;
+    continue with nothing;
+  end
+
+  on purr-project-state.update-dependency(Current, Dependency) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver update-dependency: Dependency;
+    continue with nothing;
+  end
+
+  on purr-project-state.remove-dependency(Current, Dependency) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver remove-dependency: Dependency;
     continue with nothing;
   end
 

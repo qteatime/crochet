@@ -387,6 +387,47 @@ export class CrochetProject extends PurrProject {
     FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
   }
 
+  async remove_dependency(name: string) {
+    const meta = this.linked_metadata();
+    if (!meta.dependencies.some((x) => x.name === name)) {
+      throw new Error(`internal: dependency does not exist ${name}`);
+    }
+    meta.dependencies = meta.dependencies.filter((x) => x.name !== name);
+    this.repo.audit_log.append(this, "purr.project.dependency.removed", {
+      name,
+    });
+    FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
+  }
+
+  async update_dependency(dep0: any) {
+    const dep = Spec.parse(dep0, CrochetProject.dependency_spec);
+    const meta = this.linked_metadata();
+    if (!meta.dependencies.some((x) => x.name === dep.name)) {
+      throw new Error(`internal: dependency does not exist ${dep.name}`);
+    }
+    meta.dependencies = meta.dependencies.map((x) =>
+      x.name === dep.name ? dep : x
+    );
+    this.repo.audit_log.append(this, "purr.project.dependency.updated", {
+      new_dependency: dep,
+      old_dependency: meta.dependencies.find((x) => x.name === dep.name),
+    });
+    FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
+  }
+
+  async add_dependency(dep0: any) {
+    const dep = Spec.parse(dep0, CrochetProject.dependency_spec);
+    const meta = this.linked_metadata();
+    if (meta.dependencies.some((x) => x.name === dep.name)) {
+      throw new Error(`internal: dependency already exists ${dep.name}`);
+    }
+    meta.dependencies.push(dep);
+    this.repo.audit_log.append(this, "purr.project.dependency.added", {
+      dependency: dep,
+    });
+    FS.writeFileSync(this.filename(), JSON.stringify(meta, null, 2));
+  }
+
   static accepts(file: string) {
     return Path.basename(file) === "crochet.json";
   }
@@ -445,6 +486,15 @@ export class CrochetProject extends PurrProject {
     Spec.equal("node" as const),
   ]);
 
+  static dependency_spec = Spec.spec(
+    {
+      name: Spec.string,
+      capabilities: Spec.array(Spec.string),
+      target: CrochetProject.target_spec,
+    },
+    (x) => x
+  );
+
   static meta_spec = Spec.spec(
     {
       name: Spec.string,
@@ -479,16 +529,7 @@ export class CrochetProject extends PurrProject {
       assets: Spec.array(
         Spec.spec({ path: Spec.string, mime: Spec.string }, (x) => x)
       ),
-      dependencies: Spec.array(
-        Spec.spec(
-          {
-            name: Spec.string,
-            capabilities: Spec.array(Spec.string),
-            target: CrochetProject.target_spec,
-          },
-          (x) => x
-        )
-      ),
+      dependencies: Spec.array(CrochetProject.dependency_spec),
       capabilities: Spec.spec(
         {
           requires: Spec.array(CrochetProject.capability_request_spec),

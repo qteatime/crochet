@@ -218,4 +218,45 @@ export default (ffi: ForeignInterface) => {
       return ffi.nothing;
     }
   );
+
+  ffi.defmachine(
+    "driver.projects.remove-dependency",
+    function* (driver0, id0, name0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const name = ffi.text_to_string(name0);
+      yield ffi.await(
+        driver.projects
+          .remove_dependency(id, name)
+          .then((x: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
+
+  ffi.defmachine(
+    "driver.projects.update-dependency",
+    function* (driver0, id0, dep0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const dep = JSON.parse(ffi.text_to_string(dep0));
+      yield ffi.await(
+        driver.projects.update_dependency(id, dep).then((x: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
+
+  ffi.defmachine(
+    "driver.projects.add-dependency",
+    function* (driver0, id0, dep0) {
+      const driver = ffi.unbox(driver0) as any;
+      const id = ffi.text_to_string(id0);
+      const dep = JSON.parse(ffi.text_to_string(dep0));
+      yield ffi.await(
+        driver.projects.add_dependency(id, dep).then((x: any) => ffi.nothing)
+      );
+      return ffi.nothing;
+    }
+  );
 };

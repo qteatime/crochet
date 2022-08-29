@@ -149,6 +149,24 @@ function make_purr() {
         await project.remove_provided_capability(name);
         return null;
       },
+
+      async add_dependency(x: string, dep: any) {
+        const project = heap.typed_deref(CrochetProject, x);
+        await project.add_dependency(dep);
+        return null;
+      },
+
+      async update_dependency(x: string, dep: any) {
+        const project = heap.typed_deref(CrochetProject, x);
+        await project.update_dependency(dep);
+        return null;
+      },
+
+      async remove_dependency(x: string, name: string) {
+        const project = heap.typed_deref(CrochetProject, x);
+        await project.remove_dependency(name);
+        return null;
+      },
     },
   };
 }

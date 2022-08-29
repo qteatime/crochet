@@ -62,7 +62,10 @@ command application-configure render-dependency: Dependency project: Project do
               | on-click: { _ in
                   let Modal = purr-ui show-modal: (self edit-dependency: Dependency project: Project close: { Modal close })
                 },
-            #widget icon-button: (#widget icon: "trash"),
+            #widget icon-button: (#widget icon: "trash")
+              | on-click: { _ in
+                  purr project: purr current-project value remove-dependency: Dependency;
+                },
           ]
           | transform 
           | flex-gap: (0.5 as root-em)
@@ -152,6 +155,7 @@ command application-configure edit-dependency: Dependency project: Project close
       | map: (self dependency-risk: Dependency package: _ project: Project)
       | value-or-default: #crochet-capability-risk unknown
   };
+  let Changed = State.state map: { X in not (X serialise =:= Dependency serialise) };
 
   #widget flex-column: [
     pui heading-2: "Edit dependency",
@@ -218,7 +222,12 @@ command application-configure edit-dependency: Dependency project: Project close
     | flex-grow: #flex-grow grow
     | overflow: #overflow hidden,
 
-    #widget button: "Update dependency",
+    #widget button: "Update dependency"
+      | disabled: (Changed map: (not _))
+      | on-click: { _ in
+          purr project: purr current-project value update-dependency: State.state value;
+          Close();
+        },
   ]
   | transform
   | flex-gap: (1.0 as root-em)
@@ -314,9 +323,32 @@ command dependency-editor-state edit-capabilities: OCaps do
 end
 
 command dependency-editor-state render-grantable-capability: Capability do
+  let Checked-ref = #reference checkbox: "granted";
+  let Previous = #cell with-value: Capability.granted;
+  let Updated-dependency = Checked-ref checked stream subscribe: { Checked in
+    condition
+      when Checked =:= Previous value => nothing;
+      otherwise do
+        let Dependency = self.state value;
+        let New-capabilities =
+          condition
+            when Checked => Dependency capabilities-set add: Capability.value qualified-name;
+            when not Checked => Dependency capabilities-set remove: Capability.value qualified-name;
+          end;
+
+        Previous <- Checked;
+        self.state <- 
+          new crochet-package-dependency(
+            Dependency with meta -> [Dependency.meta with capabilities -> New-capabilities values]
+          );
+      end
+    end
+  };
+
   #widget flex-row: [
     #widget checkbox: ""
-      | checked: Capability.granted,
+      | checked: Capability.granted
+      | reference: Checked-ref,
 
     #widget flex-column: [
       pui capability-summary: Capability.value,

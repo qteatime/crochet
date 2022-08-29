@@ -28,6 +28,9 @@ command crochet-package-requested-capability serialise =
 command crochet-package-provided-capability serialise =
   self.meta;
 
+command crochet-package-dependency serialise =
+  self.meta;
+
 
 // Changesets
 type crochet-package-changeset(
@@ -272,6 +275,9 @@ command crochet-package-dependency capabilities =
       [name -> X, reason -> ""]
     )
   };
+
+command crochet-package-dependency capabilities-set =
+  #set from: self.meta.capabilities;
 
 command crochet-package-dependency target =
   #crochet-package-target from-enum-text: self.target;
