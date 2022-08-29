@@ -402,7 +402,7 @@ end
 
 command application-configure add-capability-review: Cap-mode kind: Kind mode: Mode do
   let Capability = Cap-mode.cap;
-  let Reason = #observable-cell with-value: Capability reason;
+  let Reason = #observable-cell with-value: "";
 
   #widget flex-row: [
     #widget icon-button: (#widget icon: "chevron-left")
@@ -410,14 +410,14 @@ command application-configure add-capability-review: Cap-mode kind: Kind mode: M
 
     #widget flex-column: [
       self render-capability-review-details: Capability,
-      self reason-editor: Capability reason output: Reason,
+      self reason-editor: "" output: Reason,
 
       #widget button: "Add capability"
         | on-click: { _ in
             let Capability = new crochet-package-requested-capability(
               Kind,
               [
-                name -> Capability name,
+                name -> Capability qualified-name,
                 reason -> untaint make-trusted: Reason value
               ]
             );
