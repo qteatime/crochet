@@ -147,6 +147,11 @@ command application-configure edit-dependency: Dependency project: Project close
     project -> Project,
     library -> Library,
   );
+  let Risk = State.state map: { Dependency in
+    Package
+      | map: (self dependency-risk: Dependency package: _ project: Project)
+      | value-or-default: #crochet-capability-risk unknown
+  };
 
   #widget flex-column: [
     pui heading-2: "Edit dependency",
@@ -154,8 +159,11 @@ command application-configure edit-dependency: Dependency project: Project close
     #widget flex-column: [
       #widget flex-row: [
         pui heading-3: Dependency name,
+        Risk map: { R in pui chip: R to-enum-text color: (pui risk-background-color: R) },
       ]
       | transform
+      | flex-align-items: #flex-align center
+      | flex-gap: (1.0 as root-em)
       | height: #size fit-content,
 
       pui secondary-text: (Package map: (_ title) | value-or-default: "")
