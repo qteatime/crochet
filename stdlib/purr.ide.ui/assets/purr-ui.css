@@ -763,6 +763,10 @@
   height: 100%;
 }
 
+.purr-ui-code-editor .cm-content {
+  font-family: var(--font-family-monospace);
+}
+
 .purr-ui-vertical-timeline {
   padding: 1rem 0rem 1rem 4rem;
   position: relative;

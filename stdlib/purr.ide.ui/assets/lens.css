@@ -4,7 +4,7 @@
 }
 
 .value-lens-unknown {
-  font-family: "Source Sans Pro", monospace;
+  font-family: var(--font-family-monospace);
   white-space: pre-wrap;
   padding: 0.5em;
   border: 1px dashed #9b9b9b;
@@ -49,7 +49,7 @@
 }
 
 .value-lens-code {
-  font-family: "Source Sans Pro", monospace;
+  font-family: var(--font-family-monospace);
   white-space: pre-wrap;
 }
 

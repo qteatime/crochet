@@ -1,0 +1,20 @@
+% crochet
+  
+open purr.ide.ui;
+
+singleton cobbles;
+enum pages = code;
+
+command main-html: Root do
+  handle
+    let Router = purr-ui make-router: (
+      #router basic: "cobbles-ide"
+        | accepts: (pages lower-bound to: pages upper-bound)
+        | initial-page: #pages code
+    );
+    purr-ui show: Router;
+  with
+    use logical-time;
+    use purr-ui-dom-renderer root: Root;
+  end
+end
