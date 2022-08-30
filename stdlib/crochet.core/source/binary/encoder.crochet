@@ -1,0 +1,86 @@
+% crochet
+
+type binary-encoder(
+  buffers is list<byte-array>
+);
+
+command #binary-encoder empty =
+  new binary-encoder([]);
+
+command binary-encoder as byte-array =
+  foreign byte.concat(self.buffers);
+
+// -- Low-level appenders
+command binary-encoder append-raw-bytes: (Bytes is byte-array) =
+  new binary-encoder(self.buffers append: Bytes);
+
+command binary-encoder append-boolean: (X is boolean) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 1);
+  Bytes view put-boolean: X at: 0;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+command binary-encoder append-integer-8bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 1);
+  Bytes view put-integer-8bit: X at: 0;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+command binary-encoder append-integer-16bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 2);
+  Bytes view put-integer-16bit: X at: 0 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+command binary-encoder append-integer-32bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 4);
+  Bytes view put-integer-32bit: X at: 0 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+
+command binary-encoder append-unsigned-integer-8bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 1);
+  Bytes view put-unsigned-integer-8bit: X at: 0;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+command binary-encoder append-unsigned-integer-16bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 2);
+  Bytes view put-unsigned-integer-16bit: X at: 0 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+command binary-encoder append-unsigned-integer-32bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 4);
+  Bytes view put-unsigned-integer-32bit: X at: 0 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+command binary-encoder append-float-32bit: (X is float-64bit) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 4);
+  Bytes view put-float-32bit: X at: 0 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+command binary-encoder append-float-64bit: (X is float-64bit) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 4);
+  Bytes view put-float-64bit: X at: 0 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes);
+end
+
+// -- High-level appenders
+command binary-encoder append: (X is boolean) =
+  self append-boolean: X;
+
+command binary-encoder append: (X is integer) =
+  self append-raw-bytes: (foreign byte.encode-bigint(X));
+
+command binary-encoder append: (X is float-64bit) =
+  self append-raw-bytes: (foreign byte.encode-bytes(X));
+
+command binary-encoder append: (X is text) =
+  self append-raw-bytes: (foreign byte.encode-text(X));
+
+command binary-encoder append: (X is byte-array) =
+  self append-raw-bytes: (foreign byte.encode-bytes(X));

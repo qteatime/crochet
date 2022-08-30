@@ -15,7 +15,7 @@ type Type_Expr =
 type Name(name: Text)
 
 
-grammar Cobbles_Grammar : Module {
+grammar Ljt_Grammar : Module {
   Module =
     | header xs:Declaration* end
       -> Module(meta, xs)
@@ -59,7 +59,7 @@ grammar Cobbles_Grammar : Module {
       -> Name(n)
 
   // -- Lexical --
-  token header (a file header) = space* "%" hs* "cobbles/0" nl
+  token header (a file header) = space* "%" hs* "ljt/0" nl
   token hs = " " | "\t"
   token nl = "\r\n" | "\n" | "\r"
   token line = (~nl any)*

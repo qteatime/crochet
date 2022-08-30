@@ -12,10 +12,10 @@ local type editor(
 implement purr-ui-page for pages--code;
 command pages--code render-page do
   let Code = #observable-cell with-value: "";
-  let Ast = Code map: (cobbles-grammar parse: _);
+  let Ast = Code map: (ljt-grammar parse: _);
 
   #widget app-frame
-    | header: (#widget title-bar: "Cobbles IDE")
+    | header: (#widget title-bar: "LJT IDE")
     | body: new editor(
         code -> Code,
         ast -> Ast,
@@ -92,7 +92,7 @@ end
 
 
 command editor grammar-editor-types: error =
-  "(Could not parse the Cobbles grammar)";
+  "(Could not parse the Ljt grammar)";
 
 command editor grammar-editor-types: (Ast is ok) do
   #widget flex-column: (

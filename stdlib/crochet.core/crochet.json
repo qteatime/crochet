@@ -19,7 +19,8 @@
     "native/seal.js",
     "native/map.js",
     "native/fun.js",
-    "native/pkg.js"
+    "native/pkg.js",
+    "native/byte.js"
   ],
   "sources": [
     "source/0-types.crochet",
@@ -63,7 +64,9 @@
     "source/collection/set.crochet",
     "source/collection/set-algebra.crochet",
     "source/collection/stream.crochet",
-    "source/collection/byte-array.crochet",
+
+    "source/binary/byte-array.crochet",
+    "source/binary/view.crochet",
 
     "source/debug/constructors.crochet",
     "source/debug/coercions.crochet",

@@ -2,13 +2,13 @@
   
 open purr.ide.ui;
 
-singleton cobbles;
+singleton ljt;
 enum pages = code;
 
 command main-html: Root do
   handle
     let Router = purr-ui make-router: (
-      #router basic: "cobbles-ide"
+      #router basic: "ljt-ide"
         | accepts: (pages lower-bound to: pages upper-bound)
         | initial-page: #pages code
     );

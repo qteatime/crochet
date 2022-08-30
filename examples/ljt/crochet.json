@@ -1,10 +1,10 @@
 {
-  "name": "crochet.language.cobbles.v2",
+  "name": "crochet.language.ljt",
   "target": "*",
   "native_sources": [],
   "sources": [
     "source/main.crochet",
-    "source/syntax/cobbles-grammar.lingua",
+    "source/syntax/ljt-grammar.lingua",
     "source/pages/code.crochet"
   ],
   "dependencies": [

@@ -1,0 +1,228 @@
+% crochet
+
+// -- Universe definition
+abstract ljt-type;
+singleton t-bool is ljt-type;
+singleton t-int8 is ljt-type;
+singleton t-int16 is ljt-type;
+singleton t-int32 is ljt-type;
+singleton t-uint8 is ljt-type;
+singleton t-uint16 is ljt-type;
+singleton t-uint32 is ljt-type;
+singleton t-integer is ljt-type;
+singleton t-float32 is ljt-type;
+singleton t-float64 is ljt-type;
+singleton t-text is ljt-type;
+singleton t-nothing is ljt-type;
+
+type t-lazy(thunk is thunk) is ljt-type;
+type t-array(item is ljt-type) is ljt-type;
+type t-map(key is ljt-type, value is ljt-type) is ljt-type;
+type t-tuple(fields is list<text>, types is list<ljt-type>) is ljt-type;
+type t-optional(item is ltj-type) is ljt-type;
+type t-literal(typ is ljt-type, expected is ljt-type) is ljt-type;
+type t-choice(types is list<ljt-type>) is ljt-type;
+type t-tagged(name is text, tag is integer, typ is ljt-type) is ljt-type;
+
+
+abstract ljt-value;
+type v-bool(value is boolean) is ljt-value;
+type v-int8(value is integer) is ljt-value;
+type v-int16(value is integer) is ljt-value;
+type v-int32(value is integer) is ljt-value;
+type v-uint8(value is integer) is ljt-value;
+type v-uint16(value is integer) is ljt-value;
+type v-uint32(value is integer) is ljt-value;
+type v-integer(value is integer) is ljt-value;
+type v-float32(value is float-64bit) is ljt-value;
+type v-float64(value is float-64bit) is ljt-value;
+type v-text(value is text) is ljt-value;
+singleton v-nothing is ljt-value;
+
+type v-array(typ is ljt-type, values is list<ljt-value>) is ljt-value;
+type v-map(typ is ljt-type, value is map<ljt-value, ljt-value>) is ljt-value;
+type v-tuple(typ is ljt-type, values is list<ljt-value>) is ljt-value;
+type v-tagged(typ is ljt-type, value is ljt-value) is ljt-value;
+type v-choice(typ is ljt-type, value is ljt-value) is ljt-value;
+
+abstract v-optional is ljt-value;
+type v-just(typ is ljt-type, value is ljt-value) is v-optional;
+type v-none(typ is ljt-type) is v-optional;
+
+type v-literal(typ is ljt-type, value is ljt-value) is ljt-value;
+
+
+// -- Environments
+type ljt-env(
+  parent, // nothing or ljt-env
+  bindings is cell<map<text, ljt-type>>,
+);
+
+command #ljt-env empty =
+  new ljt-env(
+    parent -> nothing,
+    bindings -> #cell with-value: #map empty
+  );
+
+command ljt-env clone =
+  new ljt-env(
+    parent -> self,
+    bindings -> #cell with-value: #map empty
+  );
+
+command ljt-env at: Key put: Value
+requires
+  not-defined :: not (self.bindings contains-key: Key)
+do
+  self.bindings <- self.bindings at: Key put: Value;
+end
+
+command ljt-env lookup: Key do
+  condition
+    when self.bindings value contains-key: Key =>
+      self.bindings value at: Key;
+
+    when not (self.parent is nothing) =>
+      self.parent lookup: Key;
+
+    when self.parent is nothing =>
+      panic message: "undefined [Key]" tag: "ljt:lookup" data: [env -> self];
+  end
+end
+
+
+// -- Names
+type qualified-name(segments is list<text>);
+
+command #qualified-name empty =
+  new qualified-name([]);
+
+command qualified-name append: (Name is text) =
+  new qualified-name(self.segments append: Name);
+
+command qualified-name to-text =
+  #text join: self.segments with: ".";
+
+
+// -- VM
+type ljt-vm(
+  globals is ljt-env,
+  types is cell<map<text, ljt-type>>,
+  tag-map is cell<map<integer, ljt-type>>,
+  next-tag is cell<integer>,
+);
+
+command #ljt-vm make =
+  new ljt-vm(
+    globals -> force ljt-globals,
+    types -> #cell with-value: #map empty,
+    tag-map -> #cell with-value: #map empty,
+    next-tag -> #cell with-value: 1,
+  );
+
+command ljt-vm next-tag do
+  let Tag = self.next-tag value;
+  self.next-tag <- Tag + 1;
+  Tag;
+end
+
+command ljt-vm lookup-type: (Name is text) =
+  self.types value at: Name;
+
+command ljt-vm lookup-tag: (Tag is integer) =
+  self.types value at: Tag;
+
+command ljt-vm add-type: (Type is t-tagged)
+requires
+  new-type :: not (self.types value contains-key: Type.name),
+  new-tag :: not (self.tag-map value contains-key: Type.tag)
+do
+  self.types <- self.types value at: Type.name put: Type;
+  self.tag-map <- self.tag-map value at: Type.tag put: Type;
+  self;
+end
+
+command ljt-vm load-module: (Module is module) do
+  let Env = self.globals clone;
+  let Namespace = #qualified-name empty;
+  for Declaration in Module.declarations do
+    self load-declaration: Declaration namespace: Namespace env: Env;
+  end
+  self;
+end
+
+command ljt-vm load-declaration: (Declaration is declaration--type) namespace: Ns env: Env do
+  let Fields = Declaration.fields map: (self evaluate-field: _ env: Env);
+  let Type = new t-tagged(
+    name -> (Ns append: Declaration.name.name) to-text,
+    tag -> self next-tag,
+    typ -> new t-record(
+      fields -> Fields map: { X in X.name },
+      types -> Fields map: { X in X.field-type }
+    )
+  );
+  Env at: Declaration.name.name put: Type;
+  self add-type: Type;
+  self;
+end
+
+command ljt-vm load-declaration: (Declaration is declaration--union) namespace: Parent-ns env: Parent-env do
+  let Env = Parent-env clone;
+  let Ns = Parent-ns append: Declaration.name.name;
+  let Tag = self next-tag;
+  let Types = Declaration.declarations map: (self load-declaration: _ namespace: Ns env: Env);
+  let Type = new t-tagged(
+    name -> Ns to-text,
+    tag -> Tag,
+    typ -> new t-choice(Types)
+  );
+  Env at: Declaration.name.name put: Type;
+  self add-type: Type;
+  self;
+end
+
+command ljt-vm evaluate-field: (Field is field) env: Env do
+  let Type = self evaluate-type-expr: Field.typ env: Env;
+  [
+    name -> Field.name.name,
+    field-type -> Type,
+  ];
+end
+
+command ljt-vm evaluate-type-expr: (T is type-expr--named) env: Env =
+  new t-lazy(lazy Env lookup: T.name.name);
+
+command ljt-vm evaluate-type-expr: (T is type-expr--list) env: Env =
+  new t-array(self evaluate-type-expr: T.typ env: Env);
+
+command ljt-vm evaluate-type-expr: (T is type-expr--map) env: Env =
+  new t-map(
+    key -> self evaluate-type-expr: T.key env: Env,
+    value -> self evaluate-type-expr: T.value env: Env,
+  );
+
+command ljt-vm evaluate-type-expr: (T is type-expr--optional) env: Env =
+  new t-optional(
+    typ -> self evaluate-type-expr: T.typ env: Env
+  );
+
+
+// -- Globals
+define ljt-globals = lazy (
+  #ljt-env empty
+    | at: "Boolean" put: t-bool
+    | at: "Int8" put: t-int8
+    | at: "Int16" put: t-int16
+    | at: "Int32" put: t-int32
+    | at: "UInt8" put: t-uint8
+    | at: "UInt16" put: t-uint16
+    | at: "UInt32" put: t-uint32
+    | at: "Integer" put: t-integer
+    | at: "Float32" put: t-float32
+    | at: "Float64" put: t-float64
+    | at: "Text" put: t-text
+    | at: "Nothing" put: t-nothing
+);
+
+
+// -- Parsing
