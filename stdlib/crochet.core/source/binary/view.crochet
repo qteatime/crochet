@@ -42,6 +42,10 @@ requires
   new mutable-byte-array-view(foreign byte.view-slice-from(self, From));
 
 
+command byte-array-view count-bytes =
+  foreign byte.view-size(self.view);
+
+
 // -- Reading
 command byte-array-view boolean-at: (Offset is integer) =
   foreign byte.get-bool(self.view, Offset);

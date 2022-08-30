@@ -20,7 +20,8 @@
     "native/map.js",
     "native/fun.js",
     "native/pkg.js",
-    "native/byte.js"
+    "native/byte.js",
+    "native/trap.js"
   ],
   "sources": [
     "source/0-types.crochet",
@@ -67,6 +68,8 @@
 
     "source/binary/byte-array.crochet",
     "source/binary/view.crochet",
+    "source/binary/encoder.crochet",
+    "source/binary/decoder.crochet",
 
     "source/debug/constructors.crochet",
     "source/debug/coercions.crochet",
@@ -99,6 +102,7 @@
 
     "source/result/equality.crochet",
     "source/result/result.crochet",
+    "source/result/trap.crochet",
 
     "source/sealing/conversions.crochet",
     "source/sealing/secret.crochet",
@@ -141,6 +145,12 @@
         "title": "Mark values as trusted",
         "risk": "critical",
         "description": "Allow untainting values—marking them as 'trusted'. Because Crochet relies on being able to track which values come from trustworthy places and non-trustworthy ones, extra care shoule be taken with packages requesting this capability."
+      },
+      {
+        "name": "trapping-errors",
+        "title": "Trap exceptions into results",
+        "risk": "critical",
+        "description": "By default, any error in Crochet will stop the VM. This capability allows code to, instead, mark a region of code where errors turn into a `result` value instead. This may cause issues if the system enters in an unknown state as a result of continuing after the error."
       }
     ]
   }

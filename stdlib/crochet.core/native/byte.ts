@@ -24,6 +24,7 @@ export default (ffi: ForeignInterface) => {
     return {
       value: negative ? -result : result,
       offset: offset,
+      size: offset - offset0,
     };
   }
 
@@ -59,6 +60,7 @@ export default (ffi: ForeignInterface) => {
     return {
       value: result,
       offset: offset + size,
+      size: offset + size - offset0,
     };
   }
 
@@ -85,6 +87,7 @@ export default (ffi: ForeignInterface) => {
     return {
       value: result,
       offset: offset,
+      size: offset - offset0,
     };
   }
 
@@ -133,6 +136,11 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("byte.size", (x) => {
     return ffi.integer(BigInt(ffi.to_uint8_array(x).length));
+  });
+
+  ffi.defun("byte.view-size", (x0) => {
+    const x = ffi.unbox_typed(DataView, x0);
+    return ffi.integer(BigInt(x.byteLength));
   });
 
   ffi.defun("byte.at", (x, i) => {
@@ -317,7 +325,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map<string, CrochetValue>([
         ["value", ffi.integer(value.value)],
-        ["offset", ffi.float_64(value.offset)],
+        ["size", ffi.float_64(value.size)],
       ])
     );
   });
@@ -332,7 +340,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map([
         ["value", ffi.text(value.value)],
-        ["offset", ffi.float_64(value.offset)],
+        ["size", ffi.float_64(value.size)],
       ])
     );
   });
@@ -347,12 +355,23 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map([
         ["value", ffi.byte_array(value.value)],
-        ["offset", ffi.float_64(value.offset)],
+        ["size", ffi.float_64(value.size)],
       ])
     );
   });
 
   ffi.defun("byte.encode-bytes", (array) => {
     return ffi.byte_array(encode_bytes(ffi.to_uint8_array(array)));
+  });
+
+  ffi.defun("byte.get-raw-bytes", (view0, offset0, size0) => {
+    const view = ffi.unbox_typed(DataView, view0);
+    const offset = Number(ffi.integer_to_bigint(offset0)) - 1;
+    const size = Number(ffi.integer_to_bigint(size0));
+    const result = new Uint8Array(size);
+    for (let i = 0; i < size; ++i) {
+      result[i] = view.getUint8(offset + i);
+    }
+    return ffi.byte_array(result);
   });
 };
