@@ -1,0 +1,347 @@
+% crochet
+
+open crochet.concurrency;
+open purr.ide.ui;
+open crochet.debug;
+
+type encoding-editor(state is ljt-app);
+
+implement to-widget for encoding-editor;
+command encoding-editor as widget do
+  self.state.vm map: (self maybe-render: _)
+    | as widget
+    | transform
+    | height: #size fill
+    | overflow: #overflow hidden;
+end
+
+command encoding-editor maybe-render: (X is error) =
+  "(Could not construct a LJT VM from the grammar)"
+    | as widget
+    | transform
+    | padding: (1.0 as root-em);
+
+command encoding-editor maybe-render: (Vm is ok) do
+  #widget flex-row: [
+    self value-editor: Vm value
+      | transform
+      | padding: (1.0 as root-em)
+      | width: (50.0 as percent),
+
+    #widget vertical-divider
+      | content: (#widget icon: "chevron-right"),
+
+    self hex-view: Vm value
+      | transform
+      | padding: (1.0 as root-em)
+      | width: (50.0 as percent),
+  ]
+  | transform
+  | flex-wrap: #flex-wrap no-wrap
+  | overflow: #overflow hidden;
+end
+
+abstract encoding-value;
+type encoding-value-unknown is encoding-value;
+type encoding-value-ok(encoder is t-tagged, value is observable-cell<ljt-value>) is encoding-value;
+
+command encoding-editor value-editor: Vm do
+  let Values = #observable-cell with-value: [];
+
+  #widget flex-column: [
+    #widget button: "New value"
+      | on-click: { _ in
+          Values <- Values value prepend: new encoding-value-unknown;
+        },
+
+    Values map: { Xs in 
+      #widget flex-column: (Xs map: (self render-value: _ values: Values vm: Vm))
+        | transform
+        | flex-gap: (1.0 as root-em)
+        | height: #size fit-content
+    }
+    | as widget
+    | transform
+    | flex-grow: #flex-grow grow
+    | overflow: #overflow auto,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+command encoding-editor render-value: (X is encoding-value-unknown) values: Values vm: Vm do
+  let Cell = #observable-cell with-value: t-nothing;
+  Cell stream subscribe: { Type in
+    let Value = self default-value: Type;
+    Values <- Values value map: { I in
+      condition
+        when X =:= I => new encoding-value-ok(Type, #observable-cell with-value: Value);
+        otherwise => I;
+      end
+    };
+  };
+
+  #widget flex-column: [
+    self type-selector: Vm output: Cell
+  ]
+  | transform
+  | height: #size fit-content
+end
+
+command encoding-editor render-value: (X is encoding-value-ok) values: Values vm: Vm do
+  #widget card: [
+    #card-child header: X.encoder.name,
+    #card-child body: (
+      new value-editor(
+        original -> X,
+        values -> Values,
+        vm -> Vm
+      )
+      | label: "" value: X.value value set: { New-value in X.value <- New-value }
+    )
+  ]
+  | style: #card-style fluid;
+end
+
+local type value-editor(
+  original is encoding-value,
+  values is observable-cell<list<encoding-value>>,
+  vm is ljt-vm,
+);
+
+command value-editor label: Label value: (V is v-bool) set: F do
+  let Ref = #reference checkbox: "";
+  Ref checked stream subscribe: { X in F(new v-bool(X)) };
+
+  #widget checkbox: "[Label] : Boolean"
+    | checked: Value.value
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-int8) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-int8(X)) };
+
+  #widget text-input: "[Label] : Int8"
+    | validation: { X in #integer try-parse: (untaint make-trusted: X) 
+                           | validate: { X in (X >= -128) and (X <= 127) } label: "int8"
+                           | map-error: { _ in "Int8 ranges from -128 to 127 (inclusive)"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-int16) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-int16(X)) };
+
+  #widget text-input: "[Label] : Int16"
+    | validation: { X in #integer try-parse: (untaint make-trusted: X) 
+                           | validate: { X in (X >= -32_768) and (X <= 32_767) } label: "int16"
+                           | map-error: { _ in "Int16 ranges from -32 768 to 32 767 (inclusive)"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-int32) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-int32(X)) };
+
+  #widget text-input: "[Label] : Int32"
+    | validation: { X in #integer try-parse: (untaint make-trusted: X) 
+                           | validate: { X in (X >= -2_147_483_648) and (X <= 2_147_483_647) } label: "int32"
+                           | map-error: { _ in "Int32 ranges from -2 147 483 648 to 2 147 483 647 (inclusive)"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-uint8) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-uint8(X)) };
+
+  #widget text-input: "[Label] : UInt8"
+    | validation: { X in #integer try-parse: (untaint make-trusted: X) 
+                           | validate: { X in (X >= 0) and (X <= 255) } label: "uint8"
+                           | map-error: { _ in "UInt8 ranges from 0 to 255 (inclusive)"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-uint16) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-uint16(X)) };
+
+  #widget text-input: "[Label] : UInt16"
+    | validation: { X in #integer try-parse: (untaint make-trusted: X) 
+                           | validate: { X in (X >= 0) and (X < 65_535) } label: "uint16"
+                           | map-error: { _ in "UInt16 ranges from 0 to 65 535 (inclusive)"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-uint32) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-uint32(X)) };
+
+  #widget text-input: "[Label] : UInt32"
+    | validation: { X in #integer try-parse: (untaint make-trusted: X) 
+                           | validate: { X in (X >= 0) and (X < 4_294_967_295) } label: "uint32"
+                           | map-error: { _ in "UInt32 ranges from 0 to 4 294 967 295 (inclusive)"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-integer) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-integer(X)) };
+
+  #widget text-input: "[Label] : Integer"
+    | validation: { X in #integer try-parse: (untaint make-trusted: X) 
+                           | map-error: { _ in "Not a valid integer value"} 
+    | reference: Ref;
+end
+
+// TODO: restrict these to 32bit inputs as they'll be truncated by the encoder
+command value-editor label: Label value: (V is v-float32) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-float32(X)) };
+
+  #widget text-input: "[Label] : Float32"
+    | validation: { X in #float-64bit try-parse: (untaint make-trusted: X) 
+                           | map-error: { _ in "Not a valid float32 value"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-float64) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-float64(X)) };
+
+  #widget text-input: "[Label] : Float64"
+    | validation: { X in #float-64bit try-parse: (untaint make-trusted: X) 
+                           | map-error: { _ in "Not a valid float64 value"} }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: (V is v-text) set: F do
+  let Ref = #reference text-input: "";
+  Ref validated-value stream subscribe: { X in F(new v-text(X)) };
+
+  #widget text-input: "[Label] : Text"
+    | validation: { X in #result ok: (untaint make-trusted: X) }
+    | reference: Ref;
+end
+
+command value-editor label: Label value: v-nothing set: _ do
+  "[Label] : Nothing";
+end
+
+command value-editor label: Label value: (V is v-array) set: _ do
+  "[Label] : Array";
+end
+
+command value-editor label: Label value: (V is v-map) set: _ do
+  "[Label] : Map";
+end
+
+command value-editor label: Label value: (V is v-tuple) set: F do
+  #widget flex-column: (
+    V.typ.fields zip: V.values enumerate with: { Field, Entry in
+      let Setter = { X in
+        F(new v-tuple(V with values -> V.values at: Entry index put: X))
+      };
+      (self label: Field value: Entry value set: Setter)
+        | as widget
+        | transform
+        | padding-vertical: (0.5 as root-em)
+        | border-bottom: (1 as pixels) style: #border-style solid color: #color border
+    }
+  )
+  | transform
+  | height: #size fit-content;
+end
+
+command value-editor label: Label value: (V is v-tagged) set: F do
+  #widget flex-column: [
+    V.typ.name as widget
+      | transform
+      | font-weight: #font-weight bold
+      | font-size: #text-size large,
+
+    self label: "" value: V.value set: { X in new v-tagged(V with value -> X) },
+  ]
+  | transform
+  | flex-gap: (0.5 as root-em)
+end
+
+command value-editor label: Label value: (V is v-choice) set: F do
+  self label: Label value: V.value set: F;
+end
+
+command value-editor label: Label value: (V is v-optional) set: F do
+  let State = #observable-cell with-value: V;
+
+  #widget flex-column: [
+    Label as widget
+      | transform
+      | font-weight: medium,
+
+    #widget given: State
+      | when: #v-just show: { X in
+          #widget flex-row: [
+            #widget checkbox: ""
+              | checked: true,
+
+            self label: "" value: X.value set: F,
+          ]
+          | transform
+          | flex-align-items: #flex-align flex-start
+          | flex-gap: (1.0 as root-em)
+          | flex-wrap: #flex-wrap no-wrap
+          | height: #size fit-content
+        }
+      | when: #v-none show: { _ in
+          #widget checkbox: ""
+            | checked: false
+        }
+  ]
+end
+
+
+
+command encoding-editor type-selector: Vm output: Cell do
+  let Choice-ref = #reference select-one: "type";
+  Choice-ref selected stream subscribe: { Type in
+    Cell <- Type;
+  };
+
+  let Options = Vm all-types 
+                  | keep-if: { T in
+                      condition
+                        when T is t-tagged => T.typ is t-tuple;
+                        otherwise => false;
+                      end
+                    }
+                  | map: { T in #select-option label: T.name value: T };
+  #widget select-one: "Choose a type"
+    | options: Options
+    | reference: Choice-ref
+
+end
+
+command encoding-editor hex-view: Vm do
+  #widget space;
+end
+
+
+command encoding-editor default-value: t-bool = new v-bool(false);
+command encoding-editor default-value: t-int8 = new v-int8(0);
+command encoding-editor default-value: t-int16 = new v-int16(0);
+command encoding-editor default-value: t-int32 = new v-int32(0);
+command encoding-editor default-value: t-uint8 = new v-uint8(0);
+command encoding-editor default-value: t-uint16 = new v-uint16(0);
+command encoding-editor default-value: t-uint32 = new v-uint32(0);
+command encoding-editor default-value: t-float32 = new v-float32(0.0);
+command encoding-editor default-value: t-float64 = new v-float64(0.0);
+command encoding-editor default-value: t-integer = new v-integer(0);
+command encoding-editor default-value: t-text = new v-text("");
+command encoding-editor default-value: t-nothing = v-nothing;
+command encoding-editor default-value: (T is t-array) = new v-array(T, []);
+command encoding-editor default-value: (T is t-map) = new v-map(T, #map empty);
+command encoding-editor default-value: (T is t-tuple) = new v-tuple(T, T.types map: (self default-value: _));
+command encoding-editor default-value: (T is t-tagged) = new v-tagged(T, T.tag, self default-value: T.typ);
+command encoding-editor default-value: (T is t-choice) = new v-choice(T, self default-value: T.types first);
+command encoding-editor default-value: (T is t-optional) = new v-none(T);
+command encoding-editor default-value: (T is t-lazy) = self default-value: (force T.thunk);

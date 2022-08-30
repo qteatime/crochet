@@ -1,16 +1,18 @@
 % crochet
   
+open crochet.concurrency;
 open purr.ide.ui;
 
 singleton ljt;
-enum pages = code;
+enum pages = main;
+
 
 command main-html: Root do
   handle
     let Router = purr-ui make-router: (
       #router basic: "ljt-ide"
         | accepts: (pages lower-bound to: pages upper-bound)
-        | initial-page: #pages code
+        | initial-page: #pages main
     );
     purr-ui show: Router;
   with

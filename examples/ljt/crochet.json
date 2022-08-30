@@ -5,7 +5,10 @@
   "sources": [
     "source/main.crochet",
     "source/syntax/ljt-grammar.lingua",
-    "source/pages/code.crochet"
+    "source/vm/vm.crochet",
+    "source/pages/main.crochet",
+    "source/pages/grammar.crochet",
+    "source/pages/encode.crochet"
   ],
   "dependencies": [
     "crochet.core",

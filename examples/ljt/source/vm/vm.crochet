@@ -19,8 +19,7 @@ type t-lazy(thunk is thunk) is ljt-type;
 type t-array(item is ljt-type) is ljt-type;
 type t-map(key is ljt-type, value is ljt-type) is ljt-type;
 type t-tuple(fields is list<text>, types is list<ljt-type>) is ljt-type;
-type t-optional(item is ltj-type) is ljt-type;
-type t-literal(typ is ljt-type, expected is ljt-type) is ljt-type;
+type t-optional(item is ljt-type) is ljt-type;
 type t-choice(types is list<ljt-type>) is ljt-type;
 type t-tagged(name is text, tag is integer, typ is ljt-type) is ljt-type;
 
@@ -68,11 +67,18 @@ command ljt-env clone =
     bindings -> #cell with-value: #map empty
   );
 
+command ljt-env bindings =
+  condition
+    when self.parent is nothing => self.bindings value;
+    otherwise => self.parent bindings merge: self.bindings value;
+  end;
+
 command ljt-env at: Key put: Value
 requires
-  not-defined :: not (self.bindings contains-key: Key)
+  not-defined :: not (self.bindings value contains-key: Key)
 do
-  self.bindings <- self.bindings at: Key put: Value;
+  self.bindings <- self.bindings value at: Key put: Value;
+  self;
 end
 
 command ljt-env lookup: Key do
@@ -99,7 +105,8 @@ command qualified-name append: (Name is text) =
   new qualified-name(self.segments append: Name);
 
 command qualified-name to-text =
-  #text join: self.segments with: ".";
+  #text join: self.segments with: "."
+    | flatten-into-plain-text;
 
 
 // -- VM
@@ -110,18 +117,23 @@ type ljt-vm(
   next-tag is cell<integer>,
 );
 
-command #ljt-vm make =
+command #ljt-vm make do
   new ljt-vm(
     globals -> force ljt-globals,
     types -> #cell with-value: #map empty,
     tag-map -> #cell with-value: #map empty,
     next-tag -> #cell with-value: 1,
   );
+end
 
 command ljt-vm next-tag do
   let Tag = self.next-tag value;
   self.next-tag <- Tag + 1;
   Tag;
+end
+
+command ljt-vm all-types do
+  self.types value values;
 end
 
 command ljt-vm lookup-type: (Name is text) =
@@ -154,7 +166,7 @@ command ljt-vm load-declaration: (Declaration is declaration--type) namespace: N
   let Type = new t-tagged(
     name -> (Ns append: Declaration.name.name) to-text,
     tag -> self next-tag,
-    typ -> new t-record(
+    typ -> new t-tuple(
       fields -> Fields map: { X in X.name },
       types -> Fields map: { X in X.field-type }
     )
@@ -296,7 +308,7 @@ command ljt-encoder encode: (X is v-nothing) do
 end
 
 command ljt-encoder encode: (X is v-array) do
-  self encode: new v-uint32(X.values count)
+  self encode: new v-uint32(X.values count);
   for Value in X.values do
     self encode: Value;
   end

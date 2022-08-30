@@ -145,7 +145,7 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("byte.at", (x, i) => {
     return ffi.integer(
-      BigInt(ffi.to_uint8_array(x).at(Number(ffi.integer_to_bigint(i)) - 1)!)
+      BigInt(ffi.to_uint8_array(x)[Number(ffi.integer_to_bigint(i)) - 1])
     );
   });
 
