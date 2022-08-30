@@ -42,14 +42,12 @@ singleton v-nothing is ljt-value;
 type v-array(typ is ljt-type, values is list<ljt-value>) is ljt-value;
 type v-map(typ is ljt-type, value is map<ljt-value, ljt-value>) is ljt-value;
 type v-tuple(typ is ljt-type, values is list<ljt-value>) is ljt-value;
-type v-tagged(typ is ljt-type, value is ljt-value) is ljt-value;
+type v-tagged(typ is ljt-type, tag is integer, value is ljt-value) is ljt-value;
 type v-choice(typ is ljt-type, value is ljt-value) is ljt-value;
 
 abstract v-optional is ljt-value;
 type v-just(typ is ljt-type, value is ljt-value) is v-optional;
 type v-none(typ is ljt-type) is v-optional;
-
-type v-literal(typ is ljt-type, value is ljt-value) is ljt-value;
 
 
 // -- Environments
@@ -225,4 +223,116 @@ define ljt-globals = lazy (
 );
 
 
-// -- Parsing
+// -- Serialisation
+type ljt-encoder(
+  encoder is cell<binary-encoder>
+);
+
+command ljt-vm encode: (Value is ljt-value) do
+  let Encoder = new ljt-encoder(#cell with-value: #binary-encoder empty);
+
+  (Encoder encode: Value).encoder as byte-array;
+end
+
+
+command ljt-encoder encode: (X is v-bool) do
+  self.encoder <- self.encoder value append-boolean: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-int8) do
+  self.encoder <- self.encoder value append-integer-8bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-int16) do
+  self.encoder <- self.encoder value append-integer-16bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-int32) do
+  self.encoder <- self.encoder value append-integer-32bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-uint8) do
+  self.encoder <- self.encoder value append-unsigned-integer-8bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-uint16) do
+  self.encoder <- self.encoder value append-unsigned-integer-16bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-uint32) do
+  self.encoder <- self.encoder value append-unsigned-integer-32bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-float32) do
+  self.encoder <- self.encoder value append-float-32bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-float64) do
+  self.encoder <- self.encoder value append-float-64bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-integer) do
+  self.encoder <- self.encoder value append: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-text) do
+  self.encoder <- self.encoder value append: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-nothing) do
+  self.encoder <- self.encoder value append-boolean: false;
+  self;
+end
+
+command ljt-encoder encode: (X is v-array) do
+  self encode: new v-uint32(X.values count)
+  for Value in X.values do
+    self encode: Value;
+  end
+  self;
+end
+
+command ljt-encoder encode: (X is v-map) do
+  self encode: new v-uint32(X.value count);
+  for Pair in X.value entries do
+    self encode: Pair key;
+    self encode: Pair value;
+  end
+  self;
+end
+
+command ljt-encoder encode: (X is v-tuple) do
+  for Value in X.values do
+    self encode: Value;
+  end
+  self;
+end
+
+command ljt-encoder encode: (X is v-tagged) do
+  self encode: new v-uint32(X.tag);
+  self encode: X.value;
+end
+
+command ljt-encoder encode: (X is v-choice) do
+  self encode: X.value;
+end
+
+command ljt-encoder encode: (X is v-just) do
+  self encode: new v-bool(true);
+  self encode: X.value;
+end
+
+command ljt-encoder encode: (X is v-none) do
+  self encode: new v-bool(false);
+end
