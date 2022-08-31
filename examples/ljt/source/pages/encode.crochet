@@ -61,7 +61,7 @@ end
 command encoding-editor render-value: (X is encoding-value-unknown) values: Values vm: Vm do
   let Cell = #observable-cell with-value: t-bool;
   Cell stream subscribe: { Type in
-    let Value = self default-value: Type;
+    let Value = package default-value: Type;
     Values <- Values value map: { I in
       condition
         when X =:= I => new encoding-value-ok(Type, Value);
@@ -306,8 +306,55 @@ command value-editor label: Label value: (V is v-text) set: F do
     | reference: Ref;
 end
 
-command value-editor label: Label value: (V is v-array) set: _ do
-  "[Label] : Array";
+command value-editor label: Label value: (V is v-array) set: F do
+  let Current = #observable-cell with-value: V;
+  
+
+  #widget flex-column: [
+    "[Label] : Array",
+    #widget button: "Add value"
+      | on-click: { _ in
+          let V = Current value;
+          let New = new v-array(V with values -> V.values append: (package default-value: V.typ.item));
+          Current <- New;
+        },
+
+    Current map: { C in 
+      #widget flex-column: (C.values enumerate map: { X in
+        let Setter = { N in 
+          let V = Current value;
+          condition
+            when (V.values at: X index) =:= N => nothing;
+            otherwise do
+              Current <- new v-array(V with values -> V.values at: X index put: N);
+            end
+          end
+        };
+        #widget flex-row: [
+          #widget icon-button: (#widget icon: "trash")
+            | on-click: { _ in
+                let V = Current value;
+                Current <- new v-array(V with values -> V.values remove-at: X index);
+              },
+
+          self label: X index to-text value: X value set: Setter
+            | as widget
+            | transform
+            | border-bottom: (1 as pixels) style: #border-style solid color: #color border
+            | padding: (0.5 as root-em)
+        ]
+        | transform
+        | flex-align-items: #flex-align flex-start
+        | flex-gap: (1.0 as root-em)
+        | flex-wrap: #flex-wrap no-wrap
+        | height: #size fit-content
+      })
+      | transform
+      | flex-gap: (0.5 as root-em)
+    }
+  ]
+  | transform
+  | flex-gap: (0.25 as root-em);
 end
 
 command value-editor label: Label value: (V is v-map) set: _ do
@@ -405,21 +452,21 @@ command encoding-editor type-selector: Vm output: Cell do
 end
 
 
-command encoding-editor default-value: t-bool = new v-bool(false);
-command encoding-editor default-value: t-int8 = new v-int8(0);
-command encoding-editor default-value: t-int16 = new v-int16(0);
-command encoding-editor default-value: t-int32 = new v-int32(0);
-command encoding-editor default-value: t-uint8 = new v-uint8(0);
-command encoding-editor default-value: t-uint16 = new v-uint16(0);
-command encoding-editor default-value: t-uint32 = new v-uint32(0);
-command encoding-editor default-value: t-float32 = new v-float32(0.0);
-command encoding-editor default-value: t-float64 = new v-float64(0.0);
-command encoding-editor default-value: t-integer = new v-integer(0);
-command encoding-editor default-value: t-text = new v-text("");
-command encoding-editor default-value: (T is t-array) = new v-array(T, []);
-command encoding-editor default-value: (T is t-map) = new v-map(T, #map empty);
-command encoding-editor default-value: (T is t-tuple) = new v-tuple(T, T.types map: (self default-value: _));
-command encoding-editor default-value: (T is t-tagged) = new v-tagged(T, T.tag, self default-value: T.typ);
-command encoding-editor default-value: (T is t-choice) = new v-choice(T, self default-value: T.types first);
-command encoding-editor default-value: (T is t-optional) = new v-none(T);
-command encoding-editor default-value: (T is t-lazy) = self default-value: (force T.thunk);
+command package default-value: t-bool = new v-bool(false);
+command package default-value: t-int8 = new v-int8(0);
+command package default-value: t-int16 = new v-int16(0);
+command package default-value: t-int32 = new v-int32(0);
+command package default-value: t-uint8 = new v-uint8(0);
+command package default-value: t-uint16 = new v-uint16(0);
+command package default-value: t-uint32 = new v-uint32(0);
+command package default-value: t-float32 = new v-float32(0.0);
+command package default-value: t-float64 = new v-float64(0.0);
+command package default-value: t-integer = new v-integer(0);
+command package default-value: t-text = new v-text("");
+command package default-value: (T is t-array) = new v-array(T, []);
+command package default-value: (T is t-map) = new v-map(T, #map empty);
+command package default-value: (T is t-tuple) = new v-tuple(T, T.types map: (self default-value: _));
+command package default-value: (T is t-tagged) = new v-tagged(T, T.tag, self default-value: T.typ);
+command package default-value: (T is t-choice) = new v-choice(T, self default-value: T.types first);
+command package default-value: (T is t-optional) = new v-none(T);
+command package default-value: (T is t-lazy) = self default-value: (force T.thunk);

@@ -65,14 +65,20 @@ end
 
 command decoding-editor render-tab: X do
   let Type = #observable-cell with-value: nothing;
-  // Type stream subscribe: { T in 
-  //   self.state.files <- self.state.files value map: { F in
-  //     condition
-  //       when (F =:= X.file) and (not (T =:= X.file.decoder)) => new ljt-file(F with decoder -> T);
-  //       otherwise => F;
-  //     end
-  //   };
-  // };
+  Type stream subscribe: { T in 
+    let File = self.state.files value enumerate
+                | find-first: { F in F value =:= X.file };
+    let Changed = File map: { F in not ((F value).decoder =:= T) }
+                    | value-or-default: false;
+
+    condition
+      when Changed and (File is ok) =>
+        self.state.files <- self.state.files value at: File value index put: new ljt-file(File value value with decoder -> T);
+      
+      otherwise =>
+        nothing;
+    end
+  };
 
   #tab id: X.file
     | header: X.file.name
