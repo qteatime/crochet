@@ -1150,8 +1150,10 @@ grammar Crochet : Program {
   // -- Literals
   token dec_digit = "0".."9" | "_"
   token hex_digit = "0".."9" | "a".."f" | "A".."F"
+  token ehex_digit = hex_digit | "_"
 
   token t_integer (an integer) =
+    | ~"_" "0x" ehex_digit+
     | ~"_" "-"? dec_digit+
 
   token t_float (a floating point number) =

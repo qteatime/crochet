@@ -65,11 +65,11 @@ command binary-decoder take-unsigned-integer-32bit =
   trap errors-in: { self.view unsigned-integer-32bit-at: self.offset little-endian: true }
     | map: (package result: _ decoder: self skip: 4);
 
-command binary-decoder take-float32bit =
+command binary-decoder take-float-32bit =
   trap errors-in: { self.view float-32bit-at: self.offset little-endian: true }
     | map: (package result: _ decoder: self skip: 4);
 
-command binary-decoder take-float64bit =
+command binary-decoder take-float-64bit =
   trap errors-in: { self.view float-64bit-at: self.offset little-endian: true }
     | map: (package result: _ decoder: self skip: 8);
 

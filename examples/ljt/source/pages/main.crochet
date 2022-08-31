@@ -8,8 +8,11 @@ open crochet.debug;
 type ljt-app(
   code is observable-cell<text>,
   ast is observable-cell<result<module, text>>,
-  vm is observable-cell<result<ljt-vm, text>>
+  vm is observable-cell<result<ljt-vm, text>>,
+  files is observable-cell<list<ljt-file>>,
 );
+
+type ljt-file(name is text, decoder is ljt-type, content is byte-array);
 
 
 implement purr-ui-page for pages--main;
@@ -27,6 +30,7 @@ command pages--main render-page do
     code -> Code,
     ast -> Ast,
     vm -> Vm,
+    files -> #observable-cell with-value: [],
   );
 
 
@@ -40,7 +44,11 @@ command pages--main render-page do
 
           #tab id: "encode"
             | header: "Encoding"
-            | content: new encoding-editor(App)
+            | content: new encoding-editor(App),
+
+          #tab id: "decode"
+            | header: "Decoding"
+            | content: new decoding-editor(App),
         ]
         | selected: "grammar"
         | layout: #tabbed-panel-layout vertical-left

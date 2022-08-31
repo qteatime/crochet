@@ -59,7 +59,7 @@ command encoding-editor value-editor: Vm do
 end
 
 command encoding-editor render-value: (X is encoding-value-unknown) values: Values vm: Vm do
-  let Cell = #observable-cell with-value: t-nothing;
+  let Cell = #observable-cell with-value: t-bool;
   Cell stream subscribe: { Type in
     let Value = self default-value: Type;
     Values <- Values value map: { I in
@@ -79,7 +79,7 @@ end
 
 command encoding-editor render-value: (X is encoding-value-ok) values: Values vm: Vm do
   let Value = #observable-cell with-value: X.value;
-  let Bytes = Value map: { X in Vm encode: X };
+  let Bytes = Value map: { X in Vm try-encode: X };
 
   #widget flex-row: [
     #widget card: [
@@ -100,7 +100,7 @@ command encoding-editor render-value: (X is encoding-value-ok) values: Values vm
     | width: (30.0 as root-em),
 
     #widget container: [
-      Bytes map: (ljt-ui hex-view: _)
+      Bytes map: (self maybe-hex-view: _ type: X.encoder)
     ]
     | transform
     | overflow-vertical: #overflow auto
@@ -111,6 +111,31 @@ command encoding-editor render-value: (X is encoding-value-ok) values: Values vm
   | flex-wrap: #flex-wrap no-wrap
   | overflow: #overflow hidden;
 end
+
+command encoding-editor maybe-hex-view: (Error is error) type: _ =
+  "Could not encode the value";
+
+command encoding-editor maybe-hex-view: (Bytes is ok) type: T =
+  #widget flex-column: [
+    #widget flex-row: [
+      #widget icon-button: (#widget icon: "copy")
+        | on-click: { _ in
+            let Files = self.state.files value;
+            let New-file = new ljt-file(
+              name -> "Example [Files count + 1 | to-text]" flatten-into-plain-text,
+              decoder -> T,
+              content -> Bytes value
+            );
+            self.state.files <- Files append: New-file;
+          }
+    ]
+    | transform 
+    | flex-justify-content: #flex-justify flex-end
+    | padding: (0.5 as root-em)
+    | height: #size fit-content,
+
+    ljt-ui hex-view: Bytes value
+  ];
 
 local type value-editor(
   original is encoding-value,
@@ -281,10 +306,6 @@ command value-editor label: Label value: (V is v-text) set: F do
     | reference: Ref;
 end
 
-command value-editor label: Label value: v-nothing set: _ do
-  "[Label] : Nothing";
-end
-
 command value-editor label: Label value: (V is v-array) set: _ do
   "[Label] : Array";
 end
@@ -378,7 +399,7 @@ command encoding-editor type-selector: Vm output: Cell do
                       end
                     }
                   | map: { T in #select-option label: T.name value: T };
-  #widget select-one: "Choose a type"
+  #widget select-one: "Choose a type to encode"
     | options: Options
     | reference: Choice-ref;
 end
@@ -395,7 +416,6 @@ command encoding-editor default-value: t-float32 = new v-float32(0.0);
 command encoding-editor default-value: t-float64 = new v-float64(0.0);
 command encoding-editor default-value: t-integer = new v-integer(0);
 command encoding-editor default-value: t-text = new v-text("");
-command encoding-editor default-value: t-nothing = v-nothing;
 command encoding-editor default-value: (T is t-array) = new v-array(T, []);
 command encoding-editor default-value: (T is t-map) = new v-map(T, #map empty);
 command encoding-editor default-value: (T is t-tuple) = new v-tuple(T, T.types map: (self default-value: _));

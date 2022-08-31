@@ -284,6 +284,27 @@ export function do_equals(
       return true;
     }
 
+    case Tag.BYTE_ARRAY: {
+      const l = (left as CrochetValue<Tag.BYTE_ARRAY>).payload;
+      const r = (right as CrochetValue<Tag.BYTE_ARRAY>).payload;
+
+      if (l === r) {
+        return true;
+      }
+
+      if (l.byteLength !== r.byteLength) {
+        return false;
+      }
+
+      for (let i = 0; i < l.byteLength; ++i) {
+        if (l[i] !== r[i]) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
     default:
       return left === right;
   }

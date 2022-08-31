@@ -15,6 +15,10 @@
       "match": "^%[ \t]*crochet"
     },
     {
+      "name": "constant.numeric.integer.hex.crochet",
+      "match": "(?<![a-zA-Z0-9\\-])0x[0-9a-fA-F][0-9a-fA-F_]*"
+    },
+    {
       "name": "constant.numeric.integer.crochet",
       "match": "(?<![a-zA-Z0-9\\-])[\\-\\+]?[0-9][0-9_]*"
     },

@@ -10,7 +10,7 @@ abstract trapped-error;
 type trapped-error--native(error is unknown) is trapped-error;
 
 command trap errors-in: (F is (() -> any)) do
-  let Result = trap.run(F capture);
+  let Result = foreign trap.run(F capture);
   condition
     when Result.ok => #result ok: Result.value;
     otherwise => #result error: new trapped-error--native(Result.reason);
