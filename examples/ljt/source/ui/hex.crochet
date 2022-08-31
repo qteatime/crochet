@@ -17,7 +17,7 @@ command ljt-ui hex-view: (Bytes is byte-array) do
   let Rows = Bytes view chunks-of-size: 16
               | enumerate
               | map: { X in
-                  let Offset = X index * 16;
+                  let Offset = (X index - 1) * 16;
                   let Sections = X value
                                   | chunks-of-size: 4
                                   | map: { View in
