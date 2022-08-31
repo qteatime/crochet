@@ -1,0 +1,17 @@
+% crochet
+
+open crochet.concurrency;
+
+type widget-observable(observable is observable-cell<X has to-widget>) is widget;
+type widget-event-stream(stream is event-stream-listener<X has to-widget>) is widget;
+
+
+
+command #widget observable: (X is observable-cell<A has to-widget>) =
+  new widget-observable(X);
+
+command #widget event-stream: (X is event-stream-listener<A has to-widget>) =
+  new widget-event-stream(X);
+
+command #widget event-stream: (X is event-stream<A has to-widget>) =
+  self event-stream: X listener;

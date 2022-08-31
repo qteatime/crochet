@@ -1,0 +1,17 @@
+% crochet
+
+abstract purr-unit;
+
+type root-em(value is float-64bit) is purr-unit;
+type em(value is float-64bit) is purr-unit;
+type pixels(value is integer) is purr-unit;
+type percent(value is float-64bit) is purr-unit;
+type viewport-width(value is float-64bit) is purr-unit;
+type viewport-height(value is float-64bit) is purr-unit;
+
+command float-64bit as root-em = new root-em(self);
+command float-64bit as em = new em(self);
+command integer as pixels = new pixels(self);
+command float-64bit as percent = new percent(self);
+command float-64bit as viewport-width = new viewport-width(self);
+command float-64bit as viewport-height = new viewport-height(self);

@@ -1,0 +1,7 @@
+% crochet
+
+command dom-renderer to-uri: (X is asset-image) =
+  X.asset read-as-data-url;
+
+command dom-renderer to-uri: (X is binary-image) =
+  foreign dom.make-data-uri(X.mime, X.bytes);

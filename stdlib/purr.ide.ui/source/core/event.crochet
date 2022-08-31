@@ -1,0 +1,8 @@
+% crochet
+
+abstract purr-event;
+
+type purr-mouse-event(
+  global time is logical-time,
+  global button is integer,
+) is purr-event;

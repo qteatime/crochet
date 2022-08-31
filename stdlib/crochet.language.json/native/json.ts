@@ -161,6 +161,26 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(value);
   });
 
+  ffi.defun("json.try-parse", (text0, extended0) => {
+    const extended = ffi.to_js_boolean(extended0);
+    const source = ffi.text_to_string(text0);
+    try {
+      return ffi.record(
+        new Map([
+          ["ok", ffi.boolean(true)],
+          ["value", ffi.box(JSON.parse(source, make_reify(extended)))],
+        ])
+      );
+    } catch (error) {
+      return ffi.record(
+        new Map([
+          ["ok", ffi.boolean(false)],
+          ["reason", ffi.text(String(error))],
+        ])
+      );
+    }
+  });
+
   ffi.defun("json.get-type", (x0) => {
     const x = ffi.unbox_typed(Json, x0);
     if (x instanceof JsonNull) {

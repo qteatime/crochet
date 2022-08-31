@@ -1,0 +1,39 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+type dom-surface(node is dom-node) is surface;
+
+
+command dom-surface replace-contents: (Widget has to-widget) do
+  let Node = dom-renderer render: (Widget as widget);
+  self.node replace-contents: Node;
+  self;
+end
+
+command dom-surface append: (Widget has to-widget) do
+  let Node = dom-renderer render: (Widget as widget);
+  self.node append: Node;
+  self;
+end
+
+command dom-surface prepend: (Widget has to-widget) do
+  let Node = dom-renderer render: (Widget as widget);
+  self.node prepend: Node;
+  self;
+end
+
+// TODO: properly implement lifecycles
+command dom-surface on-attached: (Block is (() -> nothing)) do
+  Block();
+  self;
+end
+
+command dom-surface on-detached: (Block is (() -> nothing)) do
+  self;
+end
+
+
+command package make-dom-surface do
+  new dom-surface(dom make-element: "div" class: "purr-ui-surface");
+end

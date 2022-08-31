@@ -1,0 +1,20 @@
+% crochet
+
+type widget-lenses-specific(
+  value is any,
+  perspective is perspective
+) is widget;
+
+type widget-lenses-all(
+  value is any
+) is widget;
+
+
+command #widget lenses: Value =
+  new widget-lenses-all(Value);
+
+command #widget lens: Value perspective: (P is perspective) =
+  new widget-lenses-specific(
+    value -> Value,
+    perspective -> P,
+  );

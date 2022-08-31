@@ -347,6 +347,25 @@ async function setup_web_capabilities(file: string, options: Options) {
   return new Set(required);
 }
 
+async function run_purr(options: Options) {
+  const file = Path.resolve(__dirname, "../../tools/purr/crochet.json");
+  const purr_dir = Path.dirname(file);
+  const cap = await setup_web_capabilities(file, options);
+  const config = await Server(
+    file,
+    options.web.port,
+    Path.join(purr_dir, "www"),
+    "/",
+    Pkg.target_web(),
+    cap
+  );
+  const web_config = JSON.parse(FS.readFileSync(file, "utf-8"))?.config || {};
+  run_electron(
+    Path.resolve(__dirname, "../purr-driver/electron-main.js"),
+    JSON.stringify({ config: web_config, ...config })
+  );
+}
+
 async function run_web([file]: string[], options: Options) {
   const cap = await setup_web_capabilities(file, options);
   await Build.build_from_file(file, Pkg.target_any());
@@ -505,6 +524,7 @@ function help(command?: string) {
           "Usage:\n",
           "  crochet run <crochet.json> [-- <app-args...>]\n",
           "  crochet run-web <crochet.json> [--port PORT --www-root DIR]\n",
+          "  crochet gui <crochet.json> [--port PORT]\n",
           "  crochet docs <crochet.json> [--port PORT --target ('node' | 'browser')]\n",
           "  crochet package <crochet.json> [--package-to OUT_DIR]\n",
           "  crochet test <crochet.json> [--test-title PATTERN --test-module PATTERN --test-package PATTERN --test-show-ok]\n",
@@ -560,6 +580,8 @@ void (async function main() {
         return await run(args, options);
       case "run-web":
         return await run_web(args, options);
+      case "gui":
+        return await run_purr(options);
       case "docs":
         return await show_docs(args, options);
       case "test":

@@ -1,0 +1,58 @@
+% crochet
+
+open crochet.concurrency;
+open purr.ide.ui;
+open crochet.debug;
+
+
+type ljt-app(
+  code is observable-cell<text>,
+  ast is observable-cell<result<module, text>>,
+  vm is observable-cell<result<ljt-vm, text>>,
+  files is observable-cell<list<ljt-file>>,
+);
+
+type ljt-file(name is text, decoder is ljt-type, content is byte-array);
+
+
+implement purr-ui-page for pages--main;
+command pages--main render-page do
+  let Code = #observable-cell with-value: "";
+  let Ast = Code map: (ljt-grammar parse: _);
+  let Vm = Ast map: { Maybe-ast in
+    condition
+      when Maybe-ast is error => Maybe-ast;
+      when Maybe-ast is ok =>
+        #result ok: (#ljt-vm make | load-module: Maybe-ast value);
+    end
+  };
+  let App = new ljt-app(
+    code -> Code,
+    ast -> Ast,
+    vm -> Vm,
+    files -> #observable-cell with-value: [],
+  );
+
+
+  #widget app-frame
+    | header: (#widget title-bar: "LJT Playground")
+    | body: (
+        #widget tabbed-panel: [
+          #tab id: "grammar"
+            | header: "Grammar"
+            | content: new grammar-editor(App),
+
+          #tab id: "encode"
+            | header: "Encoding"
+            | content: new encoding-editor(App),
+
+          #tab id: "decode"
+            | header: "Decoding"
+            | content: new decoding-editor(App),
+        ]
+        | selected: "grammar"
+        | layout: #tabbed-panel-layout vertical-left
+      )
+    | as widget
+    | commit;
+end

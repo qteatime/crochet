@@ -1,0 +1,149 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.unsafe.wrapper.dom;
+
+singleton purr-ui-dom;
+protect type purr-ui-dom with ui-control;
+protect global purr-ui-dom with ui-control;
+
+type dom-rendered-widget(node is dom-node) is rendered-widget;
+
+type dom-router(
+  node is dom-node,
+  router is router,
+) is widget;
+
+type dom-modal(node is dom-node) is purr-modal;
+
+
+handler purr-ui-dom-renderer root: (Root is unknown) do
+  let Render-root = dom make-element: "div" class: "purr-ui";
+  (dom from-element: Root) append: Render-root;
+
+  let Shadow = Render-root attach-closed-shadow;
+  Shadow add-css: (package assets at: "assets/normalize.css" | read-as-text);
+  Shadow add-css: (package assets at: "assets/purr-ui.css" | read-as-text);
+  Shadow add-css: (package assets at: "assets/lens.css" | read-as-text);
+  Shadow append: (dom make-element: "link" | set: "rel" to: "stylesheet" | set: "href" to: "/crochet.css");
+
+  let Purr-root = dom make-element: "div" class: "purr-ui-root";
+  let Content-root = dom make-element: "div" class: "purr-ui-content-root";
+  let Modal-root = dom make-element: "div" class: "purr-ui-modal-root";
+  Purr-root append: Content-root | append: Modal-root;
+  Shadow append: Purr-root;
+
+  let Surface = new dom-surface(Content-root);
+  let References = #cell with-value: #map empty;
+  let Routers = #cell with-value: [];
+  let Current-selector = #observable-cell with-value: #map empty;
+with
+  on purr-ui-presentation.show(Widget) do
+    Surface replace-contents: Widget;
+    continue with nothing;
+  end
+
+  on purr-ui-presentation.commit(Widget) do
+    let Node = dom-renderer render: Widget;
+    continue with new dom-rendered-widget(Node);
+  end
+
+  on purr-ui-presentation.show-modal(Widget, Config) do
+    let Modal = dom-renderer render-modal: Widget configuration: Config;
+    Modal-root append: Modal.node;
+    continue with Modal;
+  end
+
+  on purr-ui-presentation.close-modal(Modal) do
+    assert Modal is dom-modal;
+    Modal.node detach;
+    continue with nothing;
+  end
+
+  on purr-ui-navigation.make-router(Router) do
+    let Node = dom make-element: "div" class: "purr-ui-router"
+                | set: "data-name" to: Router.name;
+    let Dom-router = new dom-router(Node, Router);
+    package render-initial-page: Dom-router selector: Current-selector;
+    Routers <- Routers value append: Dom-router;
+    continue with Dom-router;
+  end
+
+  on purr-ui-navigation.navigate(Widget, Page) do
+    for Router in Routers value do
+      package render-page: Page
+              contents: Widget
+              selector: Current-selector
+              node: Router.node
+              router: Router
+              router-kind: Router.router;
+    end
+    continue with nothing;
+  end
+
+  on purr-ui-navigation.watch-selector(Selector) do
+    continue with Current-selector map: { M in M values some: { X in X =:= Selector } };
+  end
+end
+
+command package render-initial-page: Router selector: Selector do
+  condition
+    when Router.router.initial-page is record do
+      let Page = Router.router.initial-page;
+      package render-page: Page.page
+              contents: Page.widget
+              selector: Selector
+              node: Router.node
+              router: Router
+              router-kind: Router.router;
+    end
+
+    otherwise do
+      assert Router.router.initial-page is nothing;
+    end
+  end
+end
+
+command package render-page: (Page has purr-ui-page)
+                contents: Widget
+                selector: Selector
+                node: Node
+                router: Router
+                router-kind: (R is basic-router)
+do
+  condition
+    when R accepts: Page do
+      Selector <- Selector value at: Router put: Page location-selector;
+      Router.node replace-contents: (dom-renderer render: Widget);
+    end
+
+    otherwise => nothing;
+  end
+end
+
+command package render-page: (Page has purr-ui-page)
+                contents: Widget
+                selector: Selector
+                node: Node
+                router: Router
+                router-kind: (R is cached-router)
+do
+  condition
+    when R accepts: Page do
+      Selector <- Selector value at: Router put: Page location-selector;
+      let Render = condition
+                     when R.render-cache value contains-key: Page =>
+                       R.render-cache value at: Page;
+
+                     otherwise do
+                       let N = dom-renderer render: Widget;
+                       R.render-cache <- R.render-cache value at: Page put: N;
+                       N;
+                     end
+                   end;
+      Router.node replace-contents: Render;
+    end
+
+    otherwise => nothing;
+  end
+end

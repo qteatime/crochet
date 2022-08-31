@@ -1,0 +1,17 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+singleton dom-renderer is renderer;
+
+type extended-dom-node(node is dom-element, extra is any) is dom-node;
+
+command dom-renderer extend: (Node is dom-element) with: Extra =
+  new extended-dom-node(Node, Extra);
+
+command dom-renderer to-node: (Node is dom-node) = Node;
+command dom-renderer to-node: (Node is extended-dom-node) = Node.node;
+
+command dom-node append: (X is extended-dom-node) = self append: X.node;
+command dom-node prepend: (X is extended-dom-node) = self prepend: X.node;
+command dom-node replace-contents: (X is extended-dom-node) = self replace-contents: X.node;

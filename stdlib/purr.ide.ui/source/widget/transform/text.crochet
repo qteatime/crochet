@@ -1,0 +1,111 @@
+% crochet
+
+abstract text-option is transform-option;
+
+type text-option--align(value is purr-variable<text-align>) is text-option;
+type text-option--decoration(value is purr-variable<text-decoration>) is text-option;
+type text-option--decoration-color(value is purr-variable<color>) is text-option;
+type text-option--decoration-style(value is purr-variable<text-decoration-style>) is text-option;
+type text-option--transform(value is purr-variable<text-transform>) is text-option;
+type text-option--overflow(value is purr-variable<text-overflow>) is text-option;
+type text-option--whitespace(value is purr-variable<text-whitespace>) is text-option;
+type text-option--word-break(value is purr-variable<text-word-break>) is text-option;
+type text-option--letter-spacing(value is purr-variable<text-letter-spacing>) is text-option;
+type text-option--line-height(value is purr-variable<text-line-height>) is text-option;
+
+command text-option--align key = "text-align";
+command text-option--decoration key = "text-decoration";
+command text-option--decoration-color key = "text-decoration-color";
+command text-option--decoration-style key = "text-decoration-style";
+command text-option--transform key = "text-transform";
+command text-option--overflow key = "text-overflow";
+command text-option--whitespace key = "white-space";
+command text-option--word-break key = "word-break";
+command text-option--letter-spacing key = "letter-spacing";
+command text-option--line-height key = "line-height";
+
+
+enum text-align =
+  left,
+  center,
+  right,
+  justify,
+  at-start,
+  at-end;
+
+enum text-decoration =
+  underline,
+  overline,
+  line-through,
+  none;
+
+enum text-decoration-style =
+  solid,
+  double,
+  dotted,
+  dashed,
+  wavy;
+
+enum text-transform =
+  uppercase,
+  lowercase,
+  capitalize,
+  none;
+
+enum text-overflow =
+  truncate,
+  ellipsis,
+  clip;
+
+enum text-whitespace =
+  collapse,
+  no-wrap,
+  preserve,
+  preserve-lines,
+  preserve-and-wrap;
+
+enum text-word-break =
+  normal,
+  words,
+  all;
+
+enum text-letter-spacing =
+  tight,
+  normal,
+  wide;
+
+enum text-line-height =
+  fit,
+  comfortable,
+  double;
+
+
+command widget-transform text-align: (X has to-purr-variable) =
+  self add-option: new text-option--align(X as purr-variable);
+
+command widget-transform text-decoration: (X has to-purr-variable) =
+  self add-option: new text-option--decoration(X as purr-variable);
+
+command widget-transform text-decoration-color: (X has to-purr-variable) =
+  self add-option: new text-option--decoration-color(X as purr-variable);
+
+command widget-transform text-decoration-style: (X has to-purr-variable) =
+  self add-option: new text-option--decoration-style(X as purr-variable);
+
+command widget-transform text-transform: (X has to-purr-variable) =
+  self add-option: new text-option--transform(X as purr-variable);
+
+command widget-transform text-overflow: (X has to-purr-variable) =
+  self add-option: new text-option--overflow(X as purr-variable);
+
+command widget-transform white-space: (X has to-purr-variable) =
+  self add-option: new text-option--whitespace(X as purr-variable);
+
+command widget-transform word-break: (X has to-purr-variable) =
+  self add-option: new text-option--word-break(X as purr-variable);
+
+command widget-transform letter-spacing: (X has to-purr-variable) =
+  self add-option: new text-option--letter-spacing(X as purr-variable);
+
+command widget-transform line-height: (X has to-purr-variable) =
+  self add-option: new text-option--line-height(X as purr-variable);

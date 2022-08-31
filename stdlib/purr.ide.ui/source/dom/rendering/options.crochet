@@ -1,0 +1,44 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer apply-options: (Options is option-list<A>) to: (Node is dom-node) do
+  for Option in Options.options do
+    self set-style: Option key to: Option.value in: (self to-node: Node);
+  end
+  Node;
+end
+
+command dom-renderer set-style: Key to: Value in: Node0 do
+  let Node = self to-node: Node0;
+  Value subscribe: { X in
+    Node set-style: Key to: (self context: Key to-property: X);
+  };
+end
+
+command dom-renderer set-property: Key to: Value in: Node0 do
+  let Node = self to-node: Node0;
+  Value subscribe: { X in
+    Node set: Key to: (self to-property: X);
+  };
+end
+
+command dom-renderer set-input-value: Value in: Node0 do
+  let Node = self to-node: Node0;
+  Value subscribe: (Node set-input-value: _);
+end
+
+command dom-renderer set-input-checked: Value in: Node0 do
+  let Node = self to-node: Node0;
+  Value subscribe: (Node set-input-checked: _);
+end
+
+command dom-renderer set-boolean: Key to: Value in: Node0 do
+  let Node = self to-node: Node0;
+  Value subscribe: { X in
+    condition
+      when X => Node set: Key to: "true";
+      otherwise => Node unset: Key;
+    end
+  };
+end

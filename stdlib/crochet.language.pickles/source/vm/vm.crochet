@@ -1,0 +1,65 @@
+% crochet
+
+type pickles-vm(
+  globals is environment,
+  modules is cell<map<text, pickles-module>>,
+);
+
+command #pickles-vm make =
+  new pickles-vm(
+    globals -> #pickles-vm globals,
+    modules -> #cell with-value: #map empty,
+  );
+
+command #pickles-vm exception: (Error is pickles-error) do
+  perform pickles-tracing.trace-error(Error);
+  perform pickles-evaluation.raise(Error);
+end
+
+
+
+command pickles-vm load-module: (Ast is ast-module) do
+  let Env = self.globals clone;
+  let Definitions = Ast.declarations map: (package evaluate-declaration: _ in: Env);
+  let Bindings = Definitions fold-from: #map empty with: { Map, X in Map at: X.name put: X };
+  for Definition in Definitions do
+    Env define: Definition.name as: Definition;
+  end
+
+  let Name = Ast.name text-representation;
+  let Module =
+    new pickles-module(
+      name -> Name,
+      bindings -> Bindings,
+      exported -> #set from: (Definitions map: { X in X.name }),
+    );
+
+  self.modules <- self.modules value at: Name put: Module;
+  Module;
+end
+
+command package evaluate-declaration: (X is ast-declaration--let) in: (Env is environment) =
+  new pickles-parser(
+    name -> X.name,
+    body -> X.body,
+    location -> X.info,
+    environment -> Env,
+  );
+
+command package evaluate-declaration: (X is ast-declaration--letfun) in: (Env is environment) =
+  new pickles-function(
+    name -> X.name,
+    formals -> X.formals,
+    body -> X.body,
+    location -> X.info,
+    environment -> Env,
+  );
+
+
+command pickles-vm lookup-module: (Name is text) do
+  let Modules = self.modules value;
+  condition
+    when Modules contains-key: Name => Modules at: Name;
+    otherwise => #pickles-vm exception: new pickles-error--module-not-found(Name);
+  end
+end

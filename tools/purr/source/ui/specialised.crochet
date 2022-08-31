@@ -1,0 +1,69 @@
+% crochet
+
+open purr.ide.ui;
+
+command pui application-indicator: (App is purr-application) action: F current: Current do
+  let Widget = 
+    #widget button: (
+      #widget flex-column: [
+        App icon | transform | font-size: (2.0 as root-em),
+        (App title as widget)
+          | transform
+          | font-size: (0.7 as root-em)
+          | font-weight: #font-weight regular
+          | text-overflow: #text-overflow ellipsis
+          | overflow: #overflow hidden,
+      ]
+      | transform
+      | font-color: (
+          condition
+            when Current => #color accent;
+            otherwise => #color text;
+          end
+        )
+      | height: #size fit-content
+      | flex-align-items: #flex-align center
+      | flex-gap: #text-size extra-small
+      | padding-horizontal: (1.0 as root-em)
+      | padding-vertical: (0.5 as root-em)
+    )
+    | on-click: { _ in F(App) }
+    | style: #button-style clear
+    | transform
+    | text-align: #text-align center
+    | width: (8.0 as root-em)
+    | border-radius: #border-radius square;
+
+  condition
+    when Current =>
+      Widget
+        | transform
+        | background-color: #color tab-active-bg
+        | font-color: #color accent
+        | border-width-top: (3 as pixels)
+        | border-style-top: #border-style solid
+        | border-color-top: #color accent;
+    otherwise => Widget;
+  end
+end
+
+command pui application-button: (App is purr-application) action: F do
+  #widget card-button: [
+    #card-child media: (App icon | transform | font-size: (3.0 as root-em)),
+    #card-child header: (pui ellipsis-text: App title),
+    #card-child meta: App description
+  ]
+  | on-click: { _ in F(App) }
+  | transform
+  | width: (12.0 as root-em)
+end
+
+command pui application-list: (Apps is list<purr-application>) action: F do
+  #widget flex-row: (
+    Apps map: (self application-button: _ action: F)
+  )
+  | transform
+  | flex-align-items: #flex-align stretch
+  | flex-gap: #text-size large-2x
+  | height: #size fit-content;
+end

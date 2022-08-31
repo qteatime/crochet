@@ -1,0 +1,100 @@
+% crochet
+
+type binary-decoder(
+  view is byte-array-view,
+  offset is integer,
+);
+
+type binary-decoder-next(
+  global value is any,
+  global next is binary-decoder,
+);
+
+command #binary-decoder from: (View is byte-array-view) =
+  new binary-decoder(
+    view -> View,
+    offset -> 1,
+  );
+
+
+command #binary-decoder from: (Array is byte-array) =
+  self from: Array view;
+
+command #binary-decoder from: (Array is mutable-byte-array) =
+  self from: Array.array view;
+
+
+command binary-decoder seek: (New-offset is integer)
+requires
+  in-bounds :: (New-offset >= 1) and (New-offset <= self.view count-bytes)
+=
+  new binary-decoder(self with offset -> New-offset);
+
+
+command package result: Value decoder: Decoder skip: Offset =
+  new binary-decoder-next(
+    value -> Value,
+    next -> new binary-decoder(Decoder with offset -> Decoder.offset + Offset)
+  );
+
+command binary-decoder take-boolean =
+  trap errors-in: { self.view boolean-at: self.offset }
+    | map: (package result: _ decoder: self skip: 1);
+
+command binary-decoder take-integer-8bit =
+  trap errors-in: { self.view integer-8bit-at: self.offset }
+    | map: (package result: _ decoder: self skip: 1);
+
+command binary-decoder take-integer-16bit =
+  trap errors-in: { self.view integer-16bit-at: self.offset little-endian: true }
+    | map: (package result: _ decoder: self skip: 2);
+
+command binary-decoder take-integer-32bit =
+  trap errors-in: { self.view integer-32bit-at: self.offset little-endian: true }
+    | map: (package result: _ decoder: self skip: 4);
+
+command binary-decoder take-unsigned-integer-8bit =
+  trap errors-in: { self.view unsigned-integer-8bit-at: self.offset }
+    | map: (package result: _ decoder: self skip: 1);
+
+command binary-decoder take-unsigned-integer-16bit =
+  trap errors-in: { self.view unsigned-integer-16bit-at: self.offset little-endian: true }
+    | map: (package result: _ decoder: self skip: 2);
+
+command binary-decoder take-unsigned-integer-32bit =
+  trap errors-in: { self.view unsigned-integer-32bit-at: self.offset little-endian: true }
+    | map: (package result: _ decoder: self skip: 4);
+
+command binary-decoder take-float-32bit =
+  trap errors-in: { self.view float-32bit-at: self.offset little-endian: true }
+    | map: (package result: _ decoder: self skip: 4);
+
+command binary-decoder take-float-64bit =
+  trap errors-in: { self.view float-64bit-at: self.offset little-endian: true }
+    | map: (package result: _ decoder: self skip: 8);
+
+command binary-decoder take-integer =
+  trap errors-in: { foreign byte.get-bigint(self.view.view, self.offset) }
+    | map: { Result in
+        package result: Result.value decoder: self skip: Result.size
+      };
+
+command binary-decoder take-text =
+  trap errors-in: { foreign byte.get-text(self.view.view, self.offset) }
+    | map: { Result in
+        package result: Result.value decoder: self skip: Result.size
+      };
+
+command binary-decoder take-bytes =
+  trap errors-in: { foreign byte.get-bytes(self.view.view, self.offset) }
+    | map: { Result in
+        package result: Result.value decoder: self skip: Result.size
+      };
+
+command binary-decoder take-raw-bytes: (Count is integer)
+requires
+  in-bounds :: (Count >= 0) and ((Count + self.offset) <= self.view count-bytes)
+do
+  trap errors-in: { foreign byte.get-raw-bytes(self.view.view, self.offset, Count) }
+    | map: (package result: _ decoder: self skip: Count);
+end

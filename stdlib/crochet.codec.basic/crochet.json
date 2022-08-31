@@ -1,5 +1,7 @@
 {
   "name": "crochet.codec.basic",
+  "title": "Basic codecs",
+  "description": "Encoding and decoding of hex and base64 formats.",
   "target": "*",
   "stability": "experimental",
   "dependencies": ["crochet.core"],

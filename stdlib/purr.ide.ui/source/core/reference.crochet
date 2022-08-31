@@ -1,0 +1,122 @@
+% crochet
+
+open crochet.concurrency;
+
+abstract reference;
+
+type reference-widget(
+  name is text
+) is reference;
+
+type reference-button(
+  name is text,
+  clicked is event-stream<click-event>
+) is reference;
+
+type reference-toggle-button(
+  name is text,
+  active is observable-cell<boolean>
+) is reference;
+
+type reference-toggle-button-group(
+  name is text,
+  value is observable-cell<any>
+) is reference;
+
+type reference-text-input(
+  name is text,
+  value is observable-cell<text>,
+  validated-value is observable-cell<result<A, B>>,
+) is reference;
+
+type reference-checkbox(
+  name is text,
+  checked is observable-cell<boolean>
+) is reference;
+
+type reference-select-one(
+  name is text,
+  selected is observable-cell<A>
+) is reference;
+
+type reference-code-editor(
+  name is text,
+  value is observable-cell<text>
+) is reference;
+
+
+command #reference anything: (Name is text) =
+  new reference-widget(Name);
+
+command #reference buttons: (Name is text) =
+  new reference-button(
+    name -> Name,
+    clicked -> #event-stream empty,
+  );
+
+command #reference text-input: (Name is text) =
+  new reference-text-input(
+    name -> Name,
+    value -> #observable-cell with-value: "",
+    validated-value -> #observable-cell with-value: (#result ok: ""),
+  );
+
+command #reference checkbox: (Name is text) =
+  new reference-checkbox(
+    name -> Name,
+    checked -> #observable-cell with-value: false,
+  );
+
+command #reference select-one: (Name is text) =
+  new reference-select-one(
+    name -> Name,
+    selected -> #observable-cell with-value: nothing,
+  );
+
+command #reference code-editor: (Name is text) =
+  new reference-code-editor(
+    name -> Name,
+    value -> #observable-cell with-value: "",
+  );
+
+command #reference toggle-button: (Name is text) =
+  new reference-toggle-button(
+    name -> Name,
+    value -> #observable-cell with-value: false,
+  );
+
+command #reference toggle-button-group: (Name is text) initial-value: Value =
+  new reference-toggle-button-group(
+    name -> Name,
+    value -> #observable-cell with-value: Value,
+  );
+
+command reference-button clicked =
+  self.clicked listener;
+
+command reference-text-input value =
+  self.value read-only;
+
+command reference-text-input initial-value: (Value is text) =
+  new reference-text-input(self with value -> #observable-cell with-value: Value);
+
+command reference-text-input validated-value =
+  self.validated-value read-only;
+
+command reference-checkbox checked =
+  self.checked read-only;
+
+command reference-select-one initially-selected: (Value is any) =
+  new reference-select-one(self with selected -> #observable-cell with-value: Value);
+
+command reference-select-one selected =
+  self.selected read-only;
+
+command reference-code-editor value =
+  self.value read-only;
+
+command reference-toggle-button active =
+  self.active read-only;
+
+command reference-toggle-button-group value =
+  self.value read-only;

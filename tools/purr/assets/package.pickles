@@ -1,0 +1,93 @@
+%pickles/1
+
+module package
+
+let Package = {
+  name: Text at name,
+  title: (Text at title) ?? "",
+  description: (Text at description) ?? "",
+  target: Target at target,
+  stability: (Stability at stability) ?? "unknown",
+  capabilities: Capabilities at capabilities,
+  native_sources: (List(Source) at "native_sources") | [],
+  sources: List(Source) at sources,
+  dependencies: (List(Dependency) at dependencies) | [],
+  assets: (List(Asset) at assets) | [],
+};
+
+let Target =
+  match Text with
+    when "*" => constant "any";
+    when "any" => constant "any";
+    when "browser" => constant "browser";
+    when "node" => constant "node";
+  end;
+
+let Stability =
+  "experimental"
+| "stable"
+| "frozen"
+| "deprecated"
+| constant "unknown";
+
+let Capabilities = {
+  requires: (List(Requested-capability) at requires) | [],
+  optional: (List(Requested-capability) at optional) | [],
+  trusted: (List(Requested-capability) at trusted) | [],
+  provides: (List(Provided-capability) at provides) | [],
+};
+
+let Requested-capability = 
+  {
+    name: Text at name,
+    reason: (Text at reason) ?? ""
+  }
+| {
+    name: Text,
+    reason: constant ""
+  };
+
+let Provided-capability =
+  {
+    name: Text at name,
+    title: (Text at title) ?? "",
+    description: (Text at description) ?? "",
+    risk: (Capability-risk at risk) ?? "unknown",
+  }
+| {
+    name: Text,
+    title: Text,
+    description: constant "",
+    risk: constant "unknown",
+  };
+
+let Capability-risk =
+  "low" | "medium" | "high" | "critical" | constant "unknown";
+
+let Source =
+  {
+    filename: Text at filename,
+    target: Target at target
+  }
+| {
+    filename: Text,
+    target: constant "any"
+  };
+
+let Dependency =
+  {
+    name: Text at name,
+    capabilities: List(Text) at capabilities,
+    target: (Target at target) ?? "any",
+  }
+| {
+    name: Text,
+    capabilities: [],
+    target: constant "any"
+  };
+
+let Asset =
+  {
+    path: Text at path,
+    mime: Text at mime,
+  };

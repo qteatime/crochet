@@ -1,0 +1,22 @@
+% crochet
+
+command pickles-module lookup: (Name is text) do
+  condition
+    when self.exported contains: Name =>
+      self.bindings at: Name;
+    
+    otherwise =>
+      #pickles-vm exception: new pickles-error--not-exported(self, Name);
+  end
+end
+
+command pickles-module exported = self.exported;
+
+command pickles-module parse: Data with: (Root is text) do
+  let Parser = self lookup: Root;
+  let Result = Parser parse: Data;
+  condition
+    when Result is ok => Result value;
+    otherwise => #pickles-vm exception: Result reason;
+  end
+end

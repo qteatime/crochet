@@ -1,0 +1,127 @@
+{
+  "name": "purr.ide.ui",
+  "title": "Purr IDE's UI",
+  "target": "*",
+  "description": "A restricted UI library for building IDE tools that need to run in mixed trust contexts.",
+  "native_sources": [
+    "native/lens.js",
+    "native/representation.js",
+    "native/code-mirror.js",
+    "native/code-mirror-ffi.js",
+    "native/dom.js"
+  ],
+  "sources": [
+    "source/core/api.crochet",
+    "source/core/color.crochet",
+    "source/core/observable.crochet",
+    "source/core/options.crochet",
+    "source/core/rendering.crochet",
+    "source/core/size.crochet",
+    "source/core/surface.crochet",
+    "source/core/image.crochet",
+    "source/core/page.crochet",
+    "source/core/reference.crochet",
+    "source/core/event.crochet",
+    "source/core/logical-time.crochet",
+    "source/core/modal.crochet",
+    "source/core/units.crochet",
+
+    "source/dom/rendering/basic.crochet",
+    "source/dom/rendering/layout.crochet",
+    "source/dom/rendering/observable.crochet",
+    "source/dom/rendering/options.crochet",
+    "source/dom/rendering/properties.crochet",
+    "source/dom/rendering/input.crochet",
+    "source/dom/rendering/source.crochet",
+    "source/dom/rendering/code.crochet",
+    "source/dom/rendering/modals.crochet",
+    "source/dom/rendering/reference.crochet",
+    "source/dom/client.crochet",
+    "source/dom/renderer.crochet",
+    "source/dom/surface.crochet",
+    "source/dom/event.crochet",
+    "source/dom/code-editor-shell.crochet",
+
+    "source/widget/basic/widget.crochet",
+    "source/widget/basic/conversions.crochet",
+    "source/widget/basic/dynamic.crochet",
+    "source/widget/basic/fragment.crochet",
+    "source/widget/basic/observable.crochet",
+    "source/widget/basic/text.crochet",
+    "source/widget/basic/space.crochet",
+    "source/widget/basic/icon.crochet",
+    "source/widget/basic/image.crochet",
+    "source/widget/basic/choose.crochet",
+    "source/widget/basic/link.crochet",
+    "source/widget/basic/reference.crochet",
+
+    "source/widget/code/lens.crochet",
+    "source/widget/code/editor.crochet",
+
+    "source/widget/input/button.crochet",
+    "source/widget/input/text-input.crochet",
+    "source/widget/input/checkbox.crochet",
+    "source/widget/input/select.crochet",
+    "source/widget/input/toggle-button.crochet",
+    "source/widget/input/toggle-button-group.crochet",
+
+    "source/widget/layout/container.crochet",
+    "source/widget/layout/flow.crochet",
+    "source/widget/layout/app-frame.crochet",
+    "source/widget/layout/align.crochet",
+    "source/widget/layout/flex.crochet",
+    "source/widget/layout/title-bar.crochet",
+    "source/widget/layout/section.crochet",
+    "source/widget/layout/divider.crochet",
+    "source/widget/layout/card.crochet",
+    "source/widget/layout/tabbed-panel.crochet",
+    "source/widget/layout/navigation.crochet",
+    "source/widget/layout/breadcrumbs.crochet",
+    "source/widget/layout/vertical-timeline.crochet",
+    "source/widget/layout/panel.crochet",
+    "source/widget/layout/table.crochet",
+
+    "source/widget/transform/background.crochet",
+    "source/widget/transform/border.crochet",
+    "source/widget/transform/core.crochet",
+    "source/widget/transform/flex.crochet",
+    "source/widget/transform/font.crochet",
+    "source/widget/transform/layout.crochet",
+    "source/widget/transform/size.crochet",
+    "source/widget/transform/spacing.crochet",
+    "source/widget/transform/text.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    "crochet.text.regex",
+    "crochet.unsafe.wrapper.dom",
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": [
+      {
+        "name": "ui-control",
+        "title": "Control Purr IDE's UI",
+        "description": "Allows access to replacing widgets, navigating to different pages, showing modal messages, and other similarly powerful features of Purr IDE's UI. Granting this capability to packages besides your application is not advisable.",
+        "risk": "high"
+      }
+    ],
+    "trusted": ["crochet.unsafe.wrapper.dom/unsafe-dom"]
+  },
+  "assets": [
+    {
+      "path": "assets/normalize.css",
+      "mime": "text/css"
+    },
+    {
+      "path": "assets/purr-ui.css",
+      "mime": "text/css"
+    },
+    {
+      "path": "assets/lens.css",
+      "mime": "text/css"
+    }
+  ]
+}

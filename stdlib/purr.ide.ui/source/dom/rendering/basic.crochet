@@ -1,0 +1,125 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer render-to-element: (W is widget) do
+  let Node = self render: W;
+  condition
+    when Node is dom-element =>
+      Node;
+
+    when Node is extended-dom-node =>
+      Node.node;
+
+    otherwise =>
+      dom make-element: "div" class: "purr-ui-fragment"
+        | append: Node;
+  end
+end
+
+command dom-renderer render: (W is widget-committed) do
+  W.node.node;
+end
+
+command dom-renderer render: (W is widget-text) do
+  let Node = dom make-element: "div" class: "purr-ui-text";
+  Node append: (dom make-text: W.contents);
+  Node;
+end
+
+command dom-renderer render: (W is widget-dynamic) do
+  let Surface = package make-dom-surface;
+  W.renderer(Surface);
+  Surface.node;
+end
+
+command dom-renderer render: (W is widget-transform) do
+  let Node = self render-to-element: W.contents;
+  self apply-options: W.options to: Node;
+  Node;
+end
+
+command dom-renderer render: (W is widget-fragment) do
+  let Node = dom make-fragment;
+  for Child in W.contents do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is widget-space) do
+  dom make-element: "div" class: "purr-ui-space";
+end
+
+command dom-renderer render: (W is widget-thin-icon) do
+  let Class = "purr-ui-icon far fa-[W.name]" flatten-into-plain-text;
+  dom make-element: "i" class: Class;
+end
+
+command dom-renderer render: (W is widget-solid-icon) do
+  let Class = "purr-ui-icon fas fa-[W.name]" flatten-into-plain-text;
+  dom make-element: "i" class: Class;
+end
+
+command dom-renderer render: (W is widget-image) do
+  dom make-element: "img" class: "purr-ui-image"
+    | set: "src" to: (self to-uri: W.source);
+end
+
+
+command dom-renderer render: (W is widget-choose) do
+  let Node = dom make-element: "div" class: "purr-ui-choose";
+  let Renderer = new dom-choose-renderer(self, W);
+
+  Node replace-contents: Renderer render-current;
+  W.current subscribe: { _ in Node replace-contents: Renderer render-current };
+  
+  Node;
+end
+
+local type dom-choose-renderer(renderer is dom-renderer, widget is widget-choose);
+
+command dom-choose-renderer render-current do
+  let Current = package current-choice: self.widget;
+  condition
+    when Current is ok => self.renderer render: Current value;
+    when Current is error do
+      dom make-element: "div" class: "pur-ui-choose-error"
+        | append: (dom make-text: "(No content matched)");
+    end
+  end
+end
+
+
+command dom-renderer render: (W is dom-router) do
+  W.node;
+end
+
+
+command dom-renderer render: (W is widget-link) do
+  let Node = dom make-element: "a" class: "purr-ui-link";
+  Node set: "data-target" to: (self render-link-target: W.target);
+  Node set: "href" to: (self render-link-href: W.target);
+  Node append: (self render: W.content);
+  self handle-link: Node target: W.target;
+  Node;
+end
+
+command dom-renderer render-link-target: link-target-none = "none";
+command dom-renderer render-link-target: link-target-local = "local";
+
+command dom-renderer render-link-href: link-target-none = "#";
+command dom-renderer render-link-href: link-target-local = "#";
+
+command dom-renderer handle-link: _ target: link-target-none =
+  nothing;
+
+command dom-renderer handle-link: Node target: (T is link-target-local) do
+  Node trap: "click" do: { _ in
+    purr-ui navigate: T.page;
+  };
+
+  let Is-active = perform purr-ui-navigation.watch-selector(T.page location-selector);
+  self set-boolean: "data-active" to: (Is-active as purr-variable) in: Node;
+end
+

@@ -1,5 +1,7 @@
 {
   "name": "crochet.debug.tracing",
+  "title": "Tracing debugging",
+  "description": "Support for ad-hoc debugging by capturing details of a program's execution in a trace.",
   "target": "*",
   "native_sources": ["native/trace.js", "native/reflection.js"],
   "sources": [
@@ -17,7 +19,15 @@
   ],
   "dependencies": ["crochet.core", "crochet.debug"],
   "capabilities": {
-    "requires": ["crochet.debug/internal"],
-    "provides": ["tracing"]
+    "requires": [],
+    "provides": [
+      {
+        "name": "tracing",
+        "title": "Trace Crochet's execution",
+        "description": "Allows access to the tracing functionality in Crochet. This capability should NEVER be granted outside of debugging environments, as it may leak sensitive data.",
+        "risk": "high"
+      }
+    ],
+    "trusted": ["crochet.debug/internal"]
   }
 }

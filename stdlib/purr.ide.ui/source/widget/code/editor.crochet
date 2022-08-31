@@ -1,0 +1,15 @@
+% crochet
+
+type widget-code-editor(
+  mode is purr-variable<text>,
+  value is purr-variable<text>,
+) is widget;
+
+command #widget code-editor: (M has to-purr-variable) =
+  new widget-code-editor(
+    mode -> M as purr-variable,
+    value -> "" as purr-variable,
+  );
+
+command widget-code-editor value: (X has to-purr-variable) =
+  new widget-code-editor(self with value -> X as purr-variable);

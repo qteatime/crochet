@@ -1,5 +1,7 @@
 export type PackageMeta = {
   readonly name: string;
+  readonly title: string;
+  readonly description: string;
   readonly target: Target;
   readonly sources: File[];
   readonly native_sources: File[];
@@ -48,6 +50,7 @@ export type Capabilities = {
   readonly requires: Set<Capability>;
   readonly provides: Set<ProvideCapability>;
   readonly optional: Set<Capability>;
+  readonly trusted: Set<Capability>;
 };
 
 export type Asset = {

@@ -1,0 +1,9 @@
+% crochet
+
+abstract renderer;
+
+trait renderer with
+  command Renderer render: widget -> node;
+end
+
+implement renderer for renderer;

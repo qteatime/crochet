@@ -1,5 +1,7 @@
 {
   "name": "crochet.debug",
+  "title": "Debug",
+  "description": "Primitive debugging tools, intended for instrumenting packages with user-defined debugging information.",
   "target": "*",
   "stability": "experimental",
   "sources": [
@@ -13,6 +15,13 @@
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
-    "provides": ["internal"]
+    "provides": [
+      {
+        "name": "internal",
+        "title": "Internal crochet.debug types",
+        "description": "Allows access to internal crochet.debug types and commands. This is required by other standard packages in Crochet; extra care should be taken with non-standard packages requesting this capability.",
+        "risk": "critical"
+      }
+    ]
   }
 }

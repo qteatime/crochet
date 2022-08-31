@@ -1,0 +1,11 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer to-purr-mouse-event: (Ev is dom-event) do
+  let Time = perform logical-time.tick();
+  new purr-mouse-event(
+    time -> Time,
+    button -> Ev mouse-button,
+  );
+end

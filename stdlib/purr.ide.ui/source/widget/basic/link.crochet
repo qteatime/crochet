@@ -1,0 +1,14 @@
+% crochet
+
+type widget-link(content is widget, target is link-target) is widget;
+
+abstract link-target;
+singleton link-target-none is link-target;
+type link-target-local(page is any has purr-ui-page) is link-target;
+
+
+command #widget link: (Content has to-widget) =
+  new widget-link(Content as widget, link-target-none);
+
+command widget-link to: (Page has purr-ui-page) =
+  new widget-link(self with target -> new link-target-local(Page));

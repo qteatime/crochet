@@ -1,0 +1,87 @@
+% crochet
+
+open purr.ide.ui;
+open crochet.concurrency;
+open crochet.debug;
+
+type application-configure(project is purr-project) is purr-application;
+
+command application-configure title = "Configure";
+command application-configure icon = #widget icon: "cog";
+command application-configure description = "View and update the configuration of your project";
+
+enum application-configure-pages =
+  meta-data,
+  capabilities;
+
+command application-configure render-application do
+  #widget tabbed-panel: [
+    #tab id: "meta-data"
+      | header: "Basic information"
+      | content: self basic-info,
+
+    #tab id: "crochet"
+      | header: "Package meta-data"
+      | content: self crochet-package,
+
+    #tab id: "capabilities"
+      | header: "Capabilities"
+      | content: self capabilities,
+
+    #tab id: "dependencies"
+      | header: "Dependencies"
+      | content: self dependencies,
+  ]
+  | layout: #tabbed-panel-layout vertical-left
+  | selected: "meta-data"
+  | commit;
+end
+
+command application-configure title: Title actions: Actions body: Body do
+  #widget flex-column: [
+    #widget flex-row: [
+      pui heading-2: Title
+        | transform
+        | flex-grow: #flex-grow grow,
+      (Actions as widget)
+        | transform
+        | width: #size fit-content,
+    ]
+    | transform
+    | flex-align-items: #flex-align baseline
+    | flex-justify-content: #flex-justify space-between,
+    Body,
+  ]
+  | transform
+  | flex-gap: #text-size base
+  | padding-horizontal: #text-size large-2x
+  | padding-vertical: #text-size base
+  | height: #size fit-content; 
+end
+
+command application-configure action-panel-initial: Initial raw: Raw form: Form save: Save do
+  let Has-changes = Initial zip: Raw with: { I, R in not (I =:= R) };
+  let Is-valid = Form map: { F in F is ok };
+
+  #widget flex-row: [
+    #widget icon-button: (#widget icon: "undo")
+      | on-click: { _ in Initial <- Initial value }
+      | transform
+      | visible: Has-changes,
+
+    #widget icon-button: (#widget icon: "check")
+      | on-click: { _ in
+          Form value
+            | map: { X in Save(X) }
+            | recover: { _ in
+                purr-ui show-modal: "Cannot update the information because some fields contain
+                                     unsupported data.";
+              }
+        }
+      | transform
+      | font-color: #color green-800
+      | visible: (Has-changes zip: Is-valid with: (_ and _)),
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end

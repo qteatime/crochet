@@ -150,6 +150,10 @@ export default (ffi: ForeignInterface) => {
     return ffi.true;
   });
 
+  ffi.defun("text.ascii-chars", (x) => {
+    return ffi.integer(BigInt(ffi.text_to_string(x).length));
+  });
+
   ffi.defun("text.from-lines", (xs) => {
     let result = "";
     let first = true;

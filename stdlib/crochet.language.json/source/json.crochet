@@ -5,6 +5,13 @@
 singleton json;
 type extended-json(serialisation is json-serialisation) is json;
 
+// -- Errors
+abstract json-error;
+type json-error-syntax(reason is text) is json-error;
+
+command json-error-syntax to-formatted-message do
+  self.reason;
+end
 
 // -- Constructors
 command #extended-json bare =
@@ -18,6 +25,20 @@ command #extended-json with-serialisation: (Serialisation is json-serialisation)
 
 
 // -- JSON operations
+
+/// Attempts to parse a piece of JSON text and returns the equivalent Crochet
+/// values for it.
+command json try-parse: (Value is unsafe-arbitrary-text) do
+  let Trusted = Value is text;
+  let Parsed = foreign json.try-parse(Value, false);
+  condition
+    when Parsed.ok =>
+      #result ok: (internal repo: #json-serialisation empty trusted: Trusted reify: Parsed.value);
+
+    otherwise =>
+      #result error: new json-error-syntax(Parsed.reason);
+  end
+end
 
 
 /// Parses a piece of JSON text and returns the equivalent Crochet values

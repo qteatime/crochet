@@ -1,0 +1,78 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+
+command dom-renderer render: (W is widget-reference) do
+  let Node = self render: W.content;
+  self maybe-install-reference: W.reference in: Node;
+  Node;
+end
+
+command dom-renderer maybe-install-reference: (R is reference) in: (Node is extended-dom-node) do
+  self install-reference: R in: Node;
+end
+
+command dom-renderer maybe-install-reference: _ in: _ do
+  nothing;
+end
+
+command dom-renderer install-reference: (R is reference-button) in: (Node is extended-dom-node) do
+  let Button-node = Node.extra;
+  assert dom is-button-element: Button-node;
+
+  Button-node on: "click" do: { Ev in
+    R.clicked publish: (self to-purr-mouse-event: Ev)
+  };
+end
+
+command dom-renderer install-reference: (R is reference-text-input) in: Node do
+  let Input-values = Node.extra;
+
+  R.value <- Input-values.raw value;
+  R.validated-value <- Input-values.validate(Input-values.raw value);
+
+  Input-values.raw stream subscribe: { Value in
+    R.value <- Value;
+  };
+
+  Input-values.validated stream subscribe: { Value in
+    R.validated-value <- Value;
+  };
+end
+
+command dom-renderer install-reference: (R is reference-checkbox) in: Node do
+  let Input-node = Node.extra;
+  assert dom is-input: Input-node;
+
+  R.checked <- Input-node input-checked;
+  Input-node on: "change" do: { _ in R.checked <- Input-node input-checked };
+end
+
+command dom-renderer install-reference: (R is reference-code-editor) in: Node do
+  let Editor = Node.extra;
+  Editor watch-value: { V in R.value <- V };
+end
+
+command dom-renderer install-reference: (R is reference-select-one) in: Node do
+  let Meta = Node.extra;
+  assert Meta is select-one-metadata;
+
+  Meta translate: Meta.input select-value do: { X in R.selected <- X };
+  Meta.input on: "change" do: { _ in
+    Meta translate: Meta.input select-value do: { X in R.selected <- X };
+  };
+end
+
+command dom-renderer install-reference: (R is reference-toggle-button) in: Node do
+  let Button = Node.extra;
+  assert dom is-button-element: Button.node;
+
+  Button.active subscribe: { X in R.active <- X };
+end
+
+command dom-renderer install-reference: (R is reference-toggle-button-group) in: Node do
+  let Value = Node.extra;
+  R.value <- Value value;
+  Value stream subscribe: { X in R.value <- X };
+end

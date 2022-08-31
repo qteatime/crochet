@@ -1,0 +1,8 @@
+% crochet
+
+type widget-vertical-timeline(
+  items is list<widget>,
+) is widget;
+
+command #widget vertical-timeline: (Items is list<X has to-widget>) =
+  new widget-vertical-timeline(Items map: (_ as widget));

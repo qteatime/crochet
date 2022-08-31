@@ -1,5 +1,7 @@
 {
   "name": "crochet.mathematics",
+  "title": "Mathematics",
+  "description": "Extends Crochet's numeric support with common mathematics operations",
   "target": "*",
   "stability": "experimental",
   "native_sources": ["native/trigonometry.js"],

@@ -1,0 +1,228 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer render: (W is widget-button) do
+  let Node = dom make-element: "button" class: "purr-ui-button";
+
+  Node set: "data-style" to: W.style to-enum-text;
+  Node set: "data-kind" to: W.kind to-enum-text;
+  self set-boolean: "disabled" to: W.disabled in: Node;
+    
+  Node append: (self render: W.content);
+  Node on: "click" do: { _ in W.on-click(nothing) } capture;
+
+  self extend: Node with: Node;
+end
+
+command dom-renderer render: (W is widget-text-input) do
+  let Node = dom make-element: "label" class: "purr-ui-text-input";
+  let Label = dom make-element: "div" class: "purr-ui-text-input-label"
+                | append: (self render: W.label);
+  let Input = dom make-element: "input" class: "purr-ui-text-input-control";
+  let Error = dom make-element: "div" class: "purr-ui-input-validation-error";
+
+  let Change-value = {
+    let Current = Input input-value;
+    condition
+      when not (Current =:= Input-value value) =>
+        Input-value <- Current;
+
+      otherwise =>
+        nothing;
+    end
+  };
+
+  let Input-value = #observable-cell with-value: W.value value;
+  Input delay-on: "keydown" do: { _ in Change-value() };
+  Input delay-on: "keyup" do: { _ in Change-value() };
+  Input on: "change" do: { _ in Change-value() };
+
+  let Validated-value = Input-value map: W.validation;
+  W.value subscribe: { X in Input-value <- X };
+
+  self set-input-value: W.value in: Input;
+  self set-property: "type" to: (W.accept map: (self to-input-type: _)) in: Input;
+  self set-property: "placeholder" to: W.placeholder in: Input;
+  self set-boolean: "disabled" to: W.disabled in: Input;
+  self set-boolean: "readonly" to: W.read-only in: Input;
+  self set-property: "data-disabled" to: W.disabled in: Node;
+  self set-property: "data-read-only" to: W.read-only in: Node;
+  self set-boolean: "data-invalid" to: (Validated-value map: { X in X is error } |> _ as purr-variable) in: Node;
+
+  Validated-value stream subscribe: { Value in
+    condition
+      when Value is ok => Error remove-contents;
+      when Value is error => Error replace-contents: (self render: (Value reason as widget));
+    end
+  };
+
+  Node append: Label;
+  Node append: Input;
+  Node append: Error;
+  self extend: Node with: [validated -> Validated-value, raw -> Input-value, validate -> W.validation];
+end
+
+command dom-renderer to-input-type: text-input-accept--telephone = "tel";
+command dom-renderer to-input-type: (X is text-input-accept) = X to-enum-text;
+
+
+command dom-renderer render: (W is widget-checkbox) do
+  let Node = dom make-element: "label" class: "purr-ui-checkbox";
+  let Label = dom make-element: "div" class: "purr-ui-checkbox-label"
+                | append: (self render: W.label);
+  let Input = dom make-element: "input" class: "purr-ui-checkbox-content"
+                | set: "type" to: "checkbox";
+  self set-boolean: "disabled" to: W.disabled in: Input;
+  self set-input-checked: W.checked in: Input;
+  Node append: Input;
+  Node append: Label;
+  self extend: Node with: Input;
+end
+
+
+type select-one-metadata(input is dom-node, choice-map is cell<map<text, A>>);
+
+command select-one-metadata translate: Key do: (F is (A -> nothing)) do
+  condition
+    when self.choice-map value contains-key: Key =>
+      F(self.choice-map value at: Key);
+    
+    otherwise =>
+      nothing;
+  end
+end
+
+command select-one-metadata reverse-translate: Value do
+  self.choice-map value entries
+    | find-first: { Entry in Entry value =:= Value }
+    | map: { X in X key }
+    | value-or-default: "";
+end
+
+command select-one-metadata associate: Key with: Value do
+  self.choice-map <- self.choice-map value at: Key put: Value;
+  self;
+end
+
+command select-one-metadata reset do
+  self.choice-map <- #map empty;
+  self;
+end
+
+command dom-renderer render: (W is widget-select-one) do
+  let Node = dom make-element: "label" class: "purr-ui-select-one";
+  let Label = dom make-element: "div" class: "purr-ui-select-one-label"
+                | append: (self render: W.label);
+  let Input = dom make-element: "select" class: "purr-ui-select-one-content";
+  
+  self set-boolean: "disabled" to: W.disabled in: Input;
+  self set-boolean: "data-disabled" to: W.disabled in: Node;
+  self set-boolean: "readonly" to: W.read-only in: Input;
+  
+  let Choices = #cell with-value: #map empty;
+  let Meta = new select-one-metadata(input -> Input, choice-map -> Choices);
+  W.options subscribe: (self render-select-options: _ input: Input selected: W.selected meta: Meta);
+
+  Node append: Label;
+  Node append: Input;
+
+  self extend: Node with: Meta;
+end
+
+command dom-renderer render-select-options: Options input: Input selected: Selected meta: Meta do
+  Input remove-contents;
+  Meta reset;
+
+  for Option in Options enumerate do
+    let Node = self render-select-option: Option value index: Option index to-text meta: Meta;
+    Input append: Node;
+  end
+
+  Selected subscribe: { Value in
+    let Key = Meta reverse-translate: Value;
+    Input set-select-value: Key;
+  };
+end
+
+command dom-renderer render-select-option: (X is select-option-pickable) index: Index meta: Meta do
+  let Node = dom make-element: "option"
+              | set: "value" to: Index
+              | append: (dom make-text: X.label);
+  Meta associate: Index with: X.value;        
+  Node;
+end
+
+command dom-renderer render-select-option: (X is select-option-group) index: Index meta: Meta do
+  let Node = dom make-element: "optgroup"
+              | set: "label" to: X.label;
+  for Child in X.items enumerate do
+    let To-append = self render-select-option: Child value
+                         index: "[Index].[Child index to-text]" flatten-into-plain-text
+                         meta: Meta;
+    Node append: To-append;
+  end
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-toggle-button) do
+  let Node = dom make-element: "div" class: "purr-ui-button purr-ui-toggle-button";
+
+  let Is-active = #observable-cell with-value: W.active value;
+  W.active subscribe: (Is-active <- _);
+
+  Node set: "data-kind" to: W.kind to-enum-text;
+  self set-boolean: "disabled" to: W.disabled in: Node;
+  self set-boolean: "data-active" to: (Is-active as purr-variable) in: Node;
+  
+  let Content = dom make-element: "div" class: "purr-ui-toggle-button-idle"
+                  | append: (self render: W.content);
+  let Active = dom make-element: "div" class: "purr-ui-toggle-button-active"
+                | append: (self render: W.active-content);
+  Node append: Content | append: Active;
+
+  
+  Node on: "click" do: { Ev in
+    Is-active <- not (Is-active value);
+  };
+
+  self extend: Node with: [node -> Node, active -> Is-active];
+end
+
+
+command dom-renderer render: (W is widget-toggle-button-group) do
+  let Node = dom make-element: "div" class: "purr-ui-toggle-button-group";
+  
+  let Value = #observable-cell with-value: W.value value;
+  W.value subscribe: (Value <- _);
+
+  for Child in W.items do
+    Node append: (self render: Child value: Value);
+  end
+
+  self extend: Node with: Value;
+end
+
+command dom-renderer render: (W is toggle-button-group-child) value: Value do
+  let Node = dom make-element: "div" class: "purr-ui-button purr-ui-toggle-button";
+
+  let Is-active = Value map: { X in X =:= W.value };
+
+  Node set: "data-kind" to: W.button.kind to-enum-text;
+  self set-boolean: "disabled" to: W.button.disabled in: Node;
+  self set-boolean: "data-active" to: (Is-active as purr-variable) in: Node;
+  
+  let Content = dom make-element: "div" class: "purr-ui-toggle-button-idle"
+                  | append: (self render: W.button.content);
+  let Active = dom make-element: "div" class: "purr-ui-toggle-button-active"
+                | append: (self render: W.button.active-content);
+  Node append: Content | append: Active;
+
+  Node on: "click" do: { Ev in
+    Value <- W.value;
+  };
+
+  Node;
+end

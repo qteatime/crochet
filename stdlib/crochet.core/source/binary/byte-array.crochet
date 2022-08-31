@@ -1,0 +1,56 @@
+% crochet
+
+/// A fixed, immutable sequence of byte-size values.
+///
+/// Byte arrays are fast representations of binary data.
+type byte-array = foreign core.byte-array;
+
+/// A transient, mutable byte-array.
+type mutable-byte-array(array is byte-array) is byte-array;
+
+command package byte-buffer: (X is byte-array) = X;
+command package byte-buffer: (X is mutable-byte-array) = X.array;
+
+
+command #byte-array allocate: (Size is integer)
+requires
+  positive :: Size > 0
+=
+  foreign byte.allocate(Size);
+
+
+command #byte-array from: (Bytes is list<integer>)
+requires
+  all-bytes :: (Bytes all: { X in (X >= 0) and (X <= 255) })
+=
+  foreign byte.from-list(Bytes);
+
+
+command byte-array update: (F is (mutable-byte-array -> any)) do
+  let Array = new mutable-byte-array(foreign byte.clone(package byte-buffer: self));
+  F(Array);
+  foreign byte.clone(Array.array);
+end
+
+command byte-array count-bytes =
+  foreign byte.size(package byte-buffer: self);
+
+
+command byte-array at: (Offset is integer)
+requires
+  bounded :: (Offset >= 1) and (Offset <= self count-bytes)
+=
+  foreign byte.at(package byte-buffer: self, Offset);
+
+
+command mutable-byte-array at: (Offset is integer) put: (Byte is integer)
+requires
+  bounded :: (Offset >= 1) and (Offset <= self count-bytes),
+  byte :: (Byte >= 0) and (Byte <= 255)
+do
+  foreign byte.put(self.array, Offset, Byte);
+  self;
+end
+
+command mutable-byte-array read-only =
+  self.array;

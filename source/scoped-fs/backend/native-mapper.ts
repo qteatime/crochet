@@ -14,6 +14,10 @@ export class NativeFSMapper extends ScopedFSBackend {
     return `fs(${this.root})`;
   }
 
+  equals(other: ScopedFSBackend): boolean {
+    return other instanceof NativeFSMapper && other.root === this.root;
+  }
+
   async read(path0: string) {
     const path = Path.resolve(this.root, path0);
     if (!path.startsWith(this.root)) {

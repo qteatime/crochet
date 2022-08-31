@@ -129,6 +129,10 @@ export function string(x: any): Valid<string> {
   }
 }
 
+export function anything(x: any): Valid<any> {
+  return new Ok(x);
+}
+
 export function bigint(x: any): Valid<bigint> {
   if (typeof x === "bigint") {
     return new Ok(x);

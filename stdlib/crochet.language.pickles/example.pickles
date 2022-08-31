@@ -1,0 +1,44 @@
+% pickles/1
+
+module crochet.package
+
+let Stability =
+  "experimental" | "stable" | "frozen" | "deprecated";
+
+let Target =
+  match Text with
+    when "*" => constant "any";
+    when "browser" => constant "browser";
+    when "node" => constant "node";
+  end;
+
+let File(Category) =
+  { filename: Text
+  , target: constant "any"
+  , mime: constant "text/plain"
+  , category: Category
+  }
+| { filename: Text at filename
+  , target: Target at target
+  , mime: constant "text/plain"
+  , category: Category };
+
+let Asset =
+  { filename: Text at path
+  , target: constant "any"
+  , mime: Text at mime
+  , category: constant "assets"
+  };
+
+let Package = {
+  name: Text at name,
+  target: Target at target,
+  title: (Text at title) ?? "",
+  description: (Text at description) ?? "",
+  stability: (Stability at stability) ?? "unknown",
+  files: [
+    ...(List(File(constant "sources")) at sources),
+    ...(List(File(constant "native sources")) at "native_sources"),
+    ...(List(Asset) at assets),
+  ]
+};

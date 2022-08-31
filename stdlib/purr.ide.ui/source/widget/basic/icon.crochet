@@ -1,0 +1,27 @@
+% crochet
+
+open crochet.text.regex;
+
+type widget-thin-icon(name is text) is widget;
+type widget-solid-icon(name is text) is widget;
+
+
+command #widget thin-icon: (Name is static-text)
+requires
+  valid-name :: package is-valid-icon-name: Name
+do
+  new widget-thin-icon(Name);
+end
+
+command #widget icon: (Name is static-text)
+requires
+  valid-name :: package is-valid-icon-name: Name
+do
+  new widget-solid-icon(Name);
+end
+
+
+command package is-valid-icon-name: (Name is static-text) do
+  let Valid-re = regex from-text: "^\[a-z\\-\]+$" | compile;
+  Valid-re can-match: Name;
+end

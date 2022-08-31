@@ -84,6 +84,7 @@ export interface ISignal {
 export class Crochet {
   readonly trusted = new Set<Package.Package>();
   readonly registered_packages: Map<string, Package.Package> = new Map();
+  readonly _on_error: ((error: any) => void)[] = [];
 
   constructor(
     readonly tokens: { universe: string; packages: Map<string, string> },
@@ -110,12 +111,14 @@ export class Crochet {
       "crochet.text.regex",
       "crochet.time",
       "crochet.ui.agata",
+      "crochet.unsafe.wrapper.dom",
       "crochet.wrapper.browser.web-apis",
       "crochet.wrapper.node.file-system",
       "crochet.wrapper.node.http",
       "crochet.wrapper.node.io",
       "crochet.wrapper.node.os",
       "crochet.wrapper.node.shell",
+      "purr.ide.ui", // temporary, until agata is stable
     ]);
   }
 
@@ -143,6 +146,16 @@ export class Crochet {
 
   trust(pkg: Package.Package) {
     this.trusted.add(pkg);
+  }
+
+  on_error(listener: (error: any) => void) {
+    this._on_error.push(listener);
+  }
+
+  notify_error(error: any) {
+    for (const listener of this._on_error) {
+      listener(error);
+    }
   }
 
   read_package(name: string) {
@@ -194,7 +207,9 @@ export class BootedCrochet {
   readonly universe: VM.Universe;
 
   constructor(readonly crochet: Crochet, readonly graph: Package.PackageGraph) {
-    this.universe = VM.make_universe(crochet.tokens.universe);
+    this.universe = VM.make_universe(crochet.tokens.universe, (error) => {
+      this.crochet.notify_error(error);
+    });
   }
 
   async initialise(root: string, safe_mode: boolean) {

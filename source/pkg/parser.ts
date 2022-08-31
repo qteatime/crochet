@@ -30,6 +30,7 @@ function set<T>(x: AnySpec<T>) {
 
 export const target_spec = anyOf([
   map_spec(equal("*"), () => target_any()),
+  map_spec(equal("any"), () => target_any()),
   map_spec(equal("node"), () => target_node()),
   map_spec(equal("browser"), () => target_web()),
 ]);
@@ -45,7 +46,10 @@ export const file_spec = anyOf([
   ),
 ]);
 
-export const capability_spec = map_spec(string, capability);
+export const capability_spec = anyOf([
+  map_spec(string, capability),
+  spec({ name: string, reason: string }, (x) => capability(x.name)),
+]);
 
 export const capability_provide_spec = anyOf([
   spec(
@@ -65,6 +69,7 @@ export const capabilities_spec = spec(
     requires: set(capability_spec),
     provides: set(capability_provide_spec),
     optional: optional(set(capability_spec), new Set<Capability>()),
+    trusted: optional(set(capability_spec), new Set<Capability>()),
   },
   (x) => capabilities(x)
 );
@@ -100,7 +105,10 @@ export const asset_spec = anyOf([
 export const package_spec = spec(
   {
     name: string,
+    title: optional(string, ""),
+    description: optional(string, ""),
     target: optional(target_spec, target_any()),
+    stability: optional(string, "unknown"),
     sources: array(file_spec),
     native_sources: optional(array(file_spec), []),
     dependencies: optional(array(dependency_spec), []),
@@ -111,6 +119,7 @@ export const package_spec = spec(
         requires: new Set<Capability>(),
         provides: new Set<ProvideCapability>(),
         optional: new Set<Capability>(),
+        trusted: new Set<Capability>(),
       })
     ),
   },

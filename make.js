@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 const execSync = require("child_process").execSync;
+const Path = require("path");
+const FS = require("fs");
 
 class World {
   constructor() {
@@ -58,6 +60,17 @@ function exec(command, opts) {
 
 const w = new World();
 
+w.task("install-deps", [], () => {
+  exec(`npm install`);
+  const stdlib = Path.join(__dirname, "stdlib");
+  for (const dir of FS.readdirSync(stdlib)) {
+    console.log("=> at", `stdlib/${dir}`);
+    if (FS.existsSync(Path.join(stdlib, dir, "package.json"))) {
+      exec(`npm install`, { cwd: Path.join(stdlib, dir) });
+    }
+  }
+}).with_doc("Install all dependencies for the project");
+
 w.task("build-grammar", [], () => {
   exec(
     `node tools/lingua.js source/grammar/crochet.lingua > source/generated/crochet-grammar.ts`
@@ -78,6 +91,8 @@ w.task("build-browser", ["build-grammar", "build-ts", "package-stdlib"], () => {
 
 w.task("build-stdlib", [], () => {
   exec(`npm run build-stdlib`);
+  exec(`npm run bundle-codemirror`);
+  exec(`npm run bundle-lingua`);
 }).with_doc("Compiles the TypeScript stdlib source to JavaScript");
 
 w.task("package-stdlib", ["build-stdlib"], async () => {
@@ -85,11 +100,19 @@ w.task("package-stdlib", ["build-stdlib"], async () => {
   await require("./build/node-cli/archive").generate_stdlib_archives();
 }).with_doc("Creates proper package files for all of the stdlib");
 
-w.task("build", ["build-browser"], () => {}).with_doc(
+w.task("build-purr", [], () => {
+  FS.copyFileSync(
+    Path.join(__dirname, "www/crochet.js"),
+    Path.join(__dirname, "tools/purr/www/crochet.js")
+  );
+  exec(`npm run build-tools-ts`);
+}).with_doc("Builds the Purr tool");
+
+w.task("build", ["build-browser", "build-purr"], () => {}).with_doc(
   "Builds a complete Crochet system"
 );
 
-w.task("test", ["build", "run-tests"], () => {}).with_doc(
+w.task("test", ["install-deps", "build", "run-tests"], () => {}).with_doc(
   "Builds Crochet and runs all tests"
 );
 

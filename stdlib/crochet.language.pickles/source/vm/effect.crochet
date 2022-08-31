@@ -1,0 +1,19 @@
+% crochet
+
+effect pickles-evaluation with
+  raise(error is pickles-error); // -> any
+end
+
+handler pickles-fail-fast with
+  on pickles-evaluation.raise(Error) do
+    panic message: Error to-panic-message tag: "pickles-exception" data: [error -> Error];
+  end
+end
+
+handler pickles-reify-errors with
+  on pickles-evaluation.raise(Error) do
+    Error;
+  end
+end
+
+default handler pickles-fail-fast;

@@ -1,0 +1,53 @@
+% crochet
+
+type widget-button(
+  content is widget,
+  style is button-style,
+  kind is button-kind,
+  disabled is purr-variable<boolean>,
+  on-click is (any -> nothing), // FIXME: support proper events
+) is widget;
+
+enum button-style =
+  standard,
+  primary,
+  dangerous,
+  clear;
+
+enum button-kind =
+  text,
+  icon,
+  card;
+
+command #widget button: (Content has to-widget) =
+  new widget-button(
+    content -> Content as widget,
+    style -> #button-style standard,
+    kind -> #button-kind text,
+    disabled -> false as purr-variable,
+    on-click -> { _ in nothing },
+  );
+
+command widget-button content: (Content has to-widget) =
+  new widget-button(self with content -> Content as widget);
+
+command widget-button style: (Style is button-style) =
+  new widget-button(self with style -> Style);
+
+command widget-button disabled: (X has to-purr-variable) =
+  new widget-button(self with disabled -> X as purr-variable);
+
+command widget-button kind: (X is button-kind) =
+  new widget-button(self with kind -> X);
+
+command widget-button on-click: (F is (any -> nothing)) =
+  new widget-button(self with on-click -> F capture);
+
+
+command #widget icon-button: (Icon has to-widget) =
+  #widget button: Icon
+    | kind: #button-kind icon;
+
+command #widget card-button: Items =
+  #widget button: (#widget card: Items)
+    | kind: #button-kind card;

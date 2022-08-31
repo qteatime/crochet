@@ -1,5 +1,7 @@
 {
   "name": "crochet.time",
+  "title": "Time",
+  "description": "Provides support for working with dates, points in time, and durations.",
   "target": "*",
   "stability": "experimental",
   "native_sources": ["native/time.js"],
@@ -16,7 +18,9 @@
     "provides": [
       {
         "name": "wall-clock",
-        "description": "Access to the system's wall-clock."
+        "title": "High-precision clock",
+        "description": "Allows access to the current system time, with milliseconds precision. Because of the Spectre vulnerability, extra care needs to be taken when granting this capability, as it might allow packages to read sensitive data that would be otherwise protected in Crochet. Most packages can request a lower precision clock instead.",
+        "risk": "high"
       }
     ]
   }

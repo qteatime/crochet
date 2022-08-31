@@ -1,0 +1,169 @@
+% crochet
+
+open crochet.concurrency;
+
+effect pickles-tracing with
+  enter-span(Location is any); // -> pickles-trace-span
+  exit-span(Span is pickles-trace-span); // -> nothing
+  trace-result(Result is any); // -> Result
+  trace-error(Error is pickles-error); // -> pickles-error
+  trace-traverse(Path is ast-path, Input is any, Result is any); // -> Result
+  trace-invoke(Parser is pickles-value, Arguments is list<pickles-value>, Input is any); // -> nothing
+  trace-return(Parser is pickles-value, Arguments is list<pickles-value>, Input is any, Result is any); // -> Result
+end
+
+handler pickles-tracing-disabled with
+  on pickles-tracing.enter-span(_) => continue with root-span;
+  on pickles-tracing.exit-span(_) => continue with nothing;
+  on pickles-tracing.trace-result(X) => continue with X;
+  on pickles-tracing.trace-error(X) => continue with X;
+  on pickles-tracing.trace-traverse(_, _, X) => continue with X;
+  on pickles-tracing.trace-invoke(_, _, _) => continue with nothing;
+  on pickles-tracing.trace-return(_, _, _, _) => continue with nothing;
+end
+
+default handler pickles-tracing-disabled;
+
+
+handler pickles-tracing trace-all: (Tracer is pickles-tracer) do
+  let Next-id = #cell with-value: 1;
+  let Span-stack = #cell with-value: [root-span];
+with
+  on pickles-tracing.enter-span(Location) do
+    let Id = Next-id value;
+    Next-id <- Id + 1;
+    let Parent = Span-stack value first;
+    let Span = new pickles-trace-span(Parent, Id, Location);
+    Span-stack <- Span-stack value prepend: Span;
+    continue with Span;
+  end
+
+  on pickles-tracing.exit-span(Span) do
+    assert Span-stack value first =:= Span;
+    Span-stack <- Span-stack value rest;
+    continue with nothing;
+  end
+
+  on pickles-tracing.trace-result(Result) do
+    Tracer add-event: new pickles-trace-event-result(Span-stack value first, Result);
+    continue with Result;
+  end
+
+  on pickles-tracing.trace-error(Error) do
+    Tracer add-event: new pickles-trace-event-error(Span-stack value first, Error);
+    continue with Error;
+  end
+
+  on pickles-tracing.trace-traverse(Path, Input, Result) do
+    Tracer add-event: new pickles-trace-event-traverse(Span-stack value first, Path, Input, Result);
+    continue with Result;
+  end
+
+  on pickles-tracing.trace-invoke(Parser, Arguments, Input) do
+    Tracer add-event: new pickles-trace-event-invoke(Span-stack value first, Parser, Arguments, Input);
+    continue with nothing;
+  end
+
+  on pickles-tracing.trace-return(Parser, Arguments, Input, Result) do
+    Tracer add-event: new pickles-trace-event-return(Span-stack value first, Parser, Arguments, Input, Result);
+    continue with Result;
+  end
+end
+
+
+type pickles-trace-span(
+  parent, // pickles-trace-span or nothing
+  id is integer,
+  global location is any,
+);
+
+local define root-span = new pickles-trace-span(nothing, 0, nothing);
+
+type pickles-tracer(
+  events is event-stream<pickles-trace-event>,
+);
+
+command #pickles-tracer make =
+  new pickles-tracer(events -> #event-stream empty);
+
+command pickles-tracer events =
+  self.events listener;
+
+command pickles-tracer add-event: (Event is pickles-trace-event) do
+  self.events publish: Event;
+  self;
+end
+
+command #pickles-tracer span: (Location is any) do: (F is (() -> A)) do
+  let Span = perform pickles-tracing.enter-span(Location);
+  let Result = F();
+  condition
+    when Result is error => perform pickles-tracing.trace-error(Result reason);
+    when Result is ok => perform pickles-tracing.trace-result(Result value);
+    otherwise => nothing;
+  end
+  perform pickles-tracing.exit-span(Span);
+  Result;
+end
+
+command #pickles-tracer traversed: Path in: Input result: Result =
+  perform pickles-tracing.trace-traverse(Path, Input, Result);
+
+command #pickles-tracer invoke: Parser with: Arguments input: Input do: (F is (() -> A)) do
+  let Span = perform pickles-tracing.enter-span(Parser);
+  perform pickles-tracing.trace-invoke(Parser, Arguments, Input);
+  let Result = F();
+  perform pickles-tracing.trace-return(Parser, Arguments, Input, Result);
+  perform pickles-tracing.exit-span(Span);
+  Result;
+end
+
+
+abstract pickles-trace-event;
+
+// A first-class parser was invoked
+type pickles-trace-event-invoke(
+  global location is pickles-trace-span,
+  global parser is pickles-value,
+  global arguments is list<pickles-value>,
+  input is any,
+) is pickles-trace-event;
+
+command pickles-trace-event-invoke input = self.input as unknown;
+
+// A first-class parser returned
+type pickles-trace-event-return(
+  global location is pickles-trace-span,
+  global parser is pickles-value,
+  global arguments is list<pickles-value>,
+  input is any,
+  result is any,
+) is pickles-trace-event;
+
+command pickles-trace-event-return input = self.input as unknown;
+command pickles-trace-event-return result = self.result as unknown;
+
+// VM finished parsing successfully
+type pickles-trace-event-result(
+  global location is pickles-trace-span,
+  data is any,
+) is pickles-trace-event;
+
+command pickles-trace-event-result data = self.data as unknown;
+
+// An error occurred during parsing
+type pickles-trace-event-error(
+  global location is pickles-trace-span,
+  global error is pickles-error,
+) is pickles-trace-event;
+
+// Traversing a data structure
+type pickles-trace-event-traverse(
+  global location is pickles-trace-span,
+  global path is ast-path,
+  input is any,
+  value is any,
+) is pickles-trace-event;
+
+command pickles-trace-event-traverse input = self.input as unknown;
+command pickles-trace-event-traverse value = self.value as unknown;

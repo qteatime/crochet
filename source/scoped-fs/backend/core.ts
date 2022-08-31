@@ -5,6 +5,10 @@ export abstract class ScopedFSBackend {
   abstract name: string;
   abstract read(path: string): Promise<Buffer>;
 
+  equals(other: ScopedFSBackend): boolean {
+    return false;
+  }
+
   write(path: string, data: Buffer): Promise<void> {
     throw new Error(
       `Cannot write to ${path} in read-only file system ${this.name}.`
@@ -31,12 +35,13 @@ export abstract class ScopedFSBackend {
     if (typeof module.exports.default === "function") {
       return module.exports.default;
     } else {
-      throw new Error(
+      console.warn(
         [
           `Native module ${path} in ${this.name}`,
           `does not expose a function in 'exports.default'.`,
         ].join("")
       );
+      return (ffi) => {};
     }
   }
 }

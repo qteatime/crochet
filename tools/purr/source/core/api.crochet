@@ -1,0 +1,100 @@
+% crochet
+
+open purr.ide.ui;
+open crochet.debug;
+
+command purr projects =
+  purr driver projects list
+    | fold-from: []
+      with: { Projects, Meta in
+        package metadata-to-project: Meta
+          | map: { X in Projects append: X }
+          | map-error: { Error in
+              transcript tag: "corrupted-project" inspect: [meta -> Meta, error -> Error];
+              Error;
+            }
+          | value-or-default: Projects;
+      };
+
+command purr ask-for-project do
+  let Maybe-project = package metadata-to-project: purr driver projects import;
+  Maybe-project map: { Project in 
+    let Driver = Project.id;
+    Driver update-meta: (package serialise-changes: Project) changelog: [
+      [operation -> "migrated-metadata"]
+    ];
+    Project;
+  };
+end
+
+command purr open-project: (Project is purr-project) =
+  purr-ui navigate: new purr-project-page(Project);
+
+command purr update-project: (Changeset is purr-project-changeset) =
+  perform purr-project-state.update-project(Changeset);
+
+command purr update-cover-image: (Project is purr-project) =
+  perform purr-project-state.update-cover-image(Project);
+
+command purr remove-cover-image: (Project is purr-project) =
+  perform purr-project-state.remove-cover-image(Project);
+
+command purr add-capability: (Capability is crochet-package-requested-capability) to: (Project is purr-project) do
+  perform purr-project-state.add-requested-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr add-capability: (Capability is crochet-package-provided-capability) to: (Project is purr-project) do
+  perform purr-project-state.add-provided-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr remove-capability: (Capability is crochet-package-requested-capability) from: (Project is purr-project) do
+  perform purr-project-state.remove-requested-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr remove-capability: (Capability is crochet-package-provided-capability) from: (Project is purr-project) do
+  perform purr-project-state.remove-provided-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr update-capability: (Capability is crochet-package-requested-capability) in: (Project is purr-project) do
+  perform purr-project-state.update-requested-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr update-capability: (Capability is crochet-package-provided-capability) in: (Project is purr-project) do
+  perform purr-project-state.update-provided-capability(Project, Capability);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr project: (Project is purr-project) add-dependency: (Dependency is crochet-package-dependency) do
+  perform purr-project-state.add-dependency(Project, Dependency);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr project: (Project is purr-project) update-dependency: (Dependency is crochet-package-dependency) do
+  perform purr-project-state.update-dependency(Project, Dependency);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr project: (Project is purr-project) remove-dependency: (Dependency is crochet-package-dependency) do
+  perform purr-project-state.remove-dependency(Project, Dependency);
+  perform purr-project-state.refresh();
+  self;
+end
+
+command purr current-project =
+  perform purr-project-state.current-project();
+
+command purr driver =
+  perform purr-driver.get-driver();

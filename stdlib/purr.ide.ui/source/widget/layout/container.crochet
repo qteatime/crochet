@@ -1,0 +1,6 @@
+% crochet
+
+type widget-container(contents is list<widget>) is widget;
+
+command #widget container: (Content is list<X has to-widget>) =
+  new widget-container(Content map: (_ as widget));

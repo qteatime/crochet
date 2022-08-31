@@ -1,0 +1,39 @@
+% crochet
+
+effect purr-ui-presentation with
+  commit(widget is widget); // -> rendered-widget
+  show(widget is widget); // -> nothing
+  show-modal(widget is widget, config is modal-configuration); // -> purr-modal
+  close-modal(modal is purr-modal); // -> nothing
+end
+
+capability ui-control;
+
+singleton purr-ui;
+protect type purr-ui with ui-control;
+protect global purr-ui with ui-control;
+
+
+command purr-ui show: (Widget has to-widget) do
+  perform purr-ui-presentation.show(Widget as widget | commit);
+  self;
+end
+
+command purr-ui show-modal: (Widget has to-widget) do
+  perform purr-ui-presentation.show-modal(Widget as widget | commit, modal-configuration-message-box);
+end
+
+command purr-ui slide-in: (Widget has to-widget) direction: (Direction is slide-in-direction) do
+  perform purr-ui-presentation.show-modal(Widget as widget | commit, new modal-configuration-slide-in(Direction));
+  self;
+end
+
+command purr-ui make-router: (Router is router) do
+  perform purr-ui-navigation.make-router(Router);
+end
+
+
+command purr-ui navigate: (Page has purr-ui-page) do
+  perform purr-ui-navigation.navigate(Page render-page as widget | commit, Page);
+  self;
+end

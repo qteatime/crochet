@@ -31,3 +31,12 @@ command list as set = #set from: self;
 
 /// Converts a [type:list] to a [type:map]
 command list as map = #map from: list;
+
+
+/// Converts a [type:map] to a [type:record]
+command map as record
+requires
+  textual-keys :: self keys all: { X in X is text }
+do
+  foreign conversion.map-to-record(self entries map: { X in [X key, X value] });
+end

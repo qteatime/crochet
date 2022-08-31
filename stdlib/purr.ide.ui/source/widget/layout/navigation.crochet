@@ -1,0 +1,22 @@
+% crochet
+
+type widget-navigation(items is list<navigation-child>) is widget;
+
+abstract navigation-child;
+type navigation-child-header(content is widget) is navigation-child;
+type navigation-child-link(link is widget-link) is navigation-child;
+
+
+command #widget navigation: (Items is list) do
+  new widget-navigation(Items map: (package to-navigation-child: _));
+end
+
+command package to-navigation-child: (X is navigation-child) = X;
+command package to-navigation-child: (X is widget-link) = #navigation-child link: X;
+command package to-navigation-child: (X is text) = #navigation-child header: X;
+
+command #navigation-child header: (X has to-widget) =
+  new navigation-child-header(X as widget);
+
+command #navigation-child link: (X is widget-link) =
+  new navigation-child-link(X);

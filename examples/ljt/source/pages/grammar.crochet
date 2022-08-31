@@ -1,0 +1,163 @@
+% crochet
+
+open crochet.concurrency;
+open purr.ide.ui;
+open crochet.debug;
+
+type grammar-editor(state is ljt-app);
+
+implement to-widget for grammar-editor;
+command grammar-editor as widget do
+  let Code-ref = #reference code-editor: "code";
+  let Input = Code-ref value map: (untaint make-trusted: _);
+  Input stream subscribe: { X in self.state.code <- X };
+
+  #widget flex-column: [
+    #widget code-editor: "javascript"
+      | value: self.state.code value
+      | reference: Code-ref
+      | transform
+      | border-radius: #border-radius square
+      | flex-grow: #flex-grow grow,
+
+    #widget tabbed-panel: [
+      #tab id: "ast"
+        | header: "Syntax tree"
+        | content: (
+            #widget container: [
+              self.state.ast map: (self grammar-editor-ast: _)
+            ]
+            | transform
+            | overflow: #overflow auto
+            | padding: (1.0 as root-em)
+          ),
+
+      #tab id: "types"
+        | header: "Types"
+        | content: (
+            #widget container: [
+              self.state.ast map: (self grammar-editor-types: _)
+            ]
+            | transform
+            | overflow: #overflow auto
+            | padding: (1.0 as root-em)
+          ),
+    ]
+    | selected: "ast"
+    | transform 
+    | background-color: #color background
+    | height: (50.0 as percent)
+    | minimum-height: (20.0 as root-em)
+    | overflow: #overflow hidden,
+  ];
+end
+
+command grammar-editor grammar-editor-ast: (Error is error) do
+  Error reason as widget  
+    | transform
+    | font-family: #font-family monospace
+    | font-color: #color red-700
+    | white-space: #text-whitespace preserve-and-wrap
+end
+
+command grammar-editor grammar-editor-ast: (Ast is ok) do
+  #widget lenses: Ast value
+end
+
+
+command grammar-editor grammar-editor-types: error =
+  "(Could not parse the Ljt grammar)";
+
+command grammar-editor grammar-editor-types: (Ast is ok) do
+  #widget flex-column: (
+    (Ast value).declarations map: (self render-type: _)
+  )
+  | transform
+  | flex-gap: (3.0 as root-em);
+end
+
+command grammar-editor render-type: (T is declaration--type) do
+  #widget flex-column: [
+    (T.name.name as widget)
+      | transform
+      | font-size: #text-size large
+      | font-weight: #font-weight medium,
+
+    "at line [T.info position line to-text]" as widget
+      | transform
+      | font-size: #text-size extra-small
+      | font-color: #color text-secondary
+      | font-family: #font-family monospace
+      | white-space: #text-whitespace preserve-and-wrap
+      | margin-bottom: (0.5 as root-em)
+      | padding-left: (1.5 as root-em),
+
+    #widget flex-column: (
+      (T.fields map: (self render-field: _))
+    )
+    | transform
+    | padding-left: (1.5 as root-em)
+    | width: #size fit-content,
+  ]
+  | transform
+  | flex-gap: (0.25 as root-em);
+end
+
+command grammar-editor render-type: (T is declaration--union) do
+  #widget flex-column: [
+    "union [T.name.name]" as widget
+      | transform
+      | font-size: #text-size large
+      | font-weight: #font-weight medium,
+    
+    "at line [T.info position line to-text]" as widget
+      | transform
+      | font-size: #text-size extra-small
+      | font-color: #color text-secondary
+      | font-family: #font-family monospace
+      | white-space: #text-whitespace preserve-and-wrap
+      | margin-bottom: (0.5 as root-em)
+      | padding-left: (1.5 as root-em),
+
+    #widget flex-column: (
+      T.declarations map: (self render-type: _)
+    )
+    | transform
+    | flex-gap: (3.0 as root-em)
+    | padding-left: (1.5 as root-em)
+    | border-left: (1 as pixels) style: #border-style solid color: #color border,
+  ]
+  | transform
+  | flex-gap: (0.25 as root-em);
+end
+
+command grammar-editor render-field: (F is field) do
+  #widget flex-row: [
+    F.name.name as widget
+      | transform
+      | font-weight: #font-weight semi-bold,
+
+    (self render-type-expr: F.typ)
+      | as widget
+      | transform
+      | white-space: #text-whitespace no-wrap
+  ]
+  | transform
+  | flex-wrap: #flex-wrap no-wrap
+  | flex-gap: (3.0 as root-em)
+  | flex-justify-content: #flex-justify space-between
+  | padding-vertical: (0.5 as root-em)
+  | border-bottom: (1 as pixels) style: #border-style solid color: #color border;
+end
+
+command grammar-editor render-type-expr: (T is type-expr--named) =
+  T.name.name;
+
+command grammar-editor render-type-expr: (T is type-expr--list) =
+  "[self render-type-expr: T.typ]\[\]";
+
+command grammar-editor render-type-expr: (T is type-expr--map) =
+  "[self render-type-expr: T.key] -> [self render-type-expr: T.value]";
+
+command grammar-editor render-type-expr: (T is type-expr--optional) =
+  "[self render-type-expr: T.typ]?";

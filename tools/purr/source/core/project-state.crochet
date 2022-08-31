@@ -1,0 +1,175 @@
+% crochet
+
+open crochet.concurrency;
+
+effect purr-project-state with
+  current-project(); // -> observable-cell<purr-project>
+  refresh(); // -> nothing
+  update-project(Changeset is purr-project-changeset); // -> result<purr-project, purr-changeset-error>
+  update-cover-image(Project is purr-project); // -> nothing
+  remove-cover-image(Project is purr-project); // -> nothing
+
+  add-requested-capability(
+    Current is purr-project,
+    Capability is crochet-package-requested-capability
+  ); // -> nothing
+  add-provided-capability(
+    Current is purr-project,
+    Capability is crochet-package-provided-capability
+  ); // -> nothing
+  remove-requested-capability(
+    Current is purr-project,
+    Capability is crochet-package-requested-capability
+  ); // -> nothing
+  remove-provided-capability(
+    Current is purr-project,
+    Capability is crochet-package-provided-capability
+  ); // -> nothing
+  update-requested-capability(
+    Current is purr-project,
+    Capability is crochet-package-requested-capability
+  ); // -> nothing
+  update-provided-capability(
+    Current is purr-project,
+    Capability is crochet-package-provided-capability
+  ); // -> nothing
+
+  add-dependency(Current is purr-project, Dependency is crochet-package-dependency); // -> nothing
+  update-dependency(Current is purr-project, Dependency is crochet-package-dependency); // -> nothing
+  remove-dependency(Current is purr-project, Dependency is crochet-package-dependency); // -> nothing
+end
+
+handler purr-project-state project: Initial do
+  let Project = #observable-cell with-value: Initial;
+  let Read-only-project = Project read-only;
+with
+  on purr-project-state.current-project() =>
+    continue with Read-only-project;
+
+  on purr-project-state.refresh() do
+    let New-project = package metadata-to-project: (Project value).id;
+    New-project map: { P in Project <- P };
+    continue with nothing;
+  end
+
+  on purr-project-state.remove-cover-image(New-project) do
+    condition
+      when Project value =:= New-project do
+        let Driver = (Project value).id;
+        Driver remove-cover-image;
+        let Image = Driver read-cover-image;
+        Project <- new purr-project-crochet(Project value with cover -> Image);
+        continue with nothing;
+      end
+
+      // TODO: proper error handling
+      otherwise =>
+        continue with nothing;
+    end
+  end
+
+  on purr-project-state.add-requested-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver add-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.add-provided-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver add-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.update-requested-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver update-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.update-provided-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver update-capability: Capability;
+    continue with nothing;
+  end  
+
+  on purr-project-state.remove-requested-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver remove-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.remove-provided-capability(Current, Capability) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver remove-capability: Capability;
+    continue with nothing;
+  end
+
+  on purr-project-state.add-dependency(Current, Dependency) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver add-dependency: Dependency;
+    continue with nothing;
+  end
+
+  on purr-project-state.update-dependency(Current, Dependency) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver update-dependency: Dependency;
+    continue with nothing;
+  end
+
+  on purr-project-state.remove-dependency(Current, Dependency) do
+    assert Project value =:= Current;
+    let Driver = (Project value).id;
+    Driver remove-dependency: Dependency;
+    continue with nothing;
+  end
+
+  on purr-project-state.update-cover-image(New-project) do
+    condition
+      when Project value =:= New-project do
+        let Driver = (Project value).id;
+        Driver update-cover-image;
+        let Image = Driver read-cover-image;
+        Project <- new purr-project-crochet(Project value with cover -> Image);
+        continue with nothing;
+      end
+
+      // TODO: proper error handling
+      otherwise =>
+        continue with nothing;
+    end
+  end
+
+  on purr-project-state.update-project(Changeset) do
+    condition
+      when Project value =:= Changeset.from do
+        let Result = Changeset apply;
+        condition
+          when Result is ok do
+            let Driver = (Project value).id;
+            let Change = Result value;
+            Driver update-meta: (package serialise-changes: Change.value) changelog: Change.log;
+            Project <- Change.value;
+            continue with #result ok: Change.value;
+          end
+
+          otherwise do
+            continue with Result;
+          end
+        end
+      end
+
+      otherwise =>
+        continue with #result error: (
+          #purr-changeset-error diverged: Project value from: Changeset
+        );
+    end
+  end
+end

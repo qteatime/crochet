@@ -1,0 +1,45 @@
+% crochet
+
+type widget-app-frame(
+  header is widget,
+  body is widget,
+  footer is widget
+);
+
+implement to-widget for widget-app-frame;
+command widget-app-frame as widget do
+  #widget container: [
+    self.header,
+    self.body
+      | transform
+      | flex-grow: #flex-grow grow
+      | background-color: #color background-dark-1
+      | overflow: #overflow auto,
+    self.footer
+  ]
+  | transform
+  | display: #display flex
+  | flex-layout: #flex-layout column
+  | flex-align-content: #flex-align stretch
+  | flex-justify-content: #flex-justify stretch
+  | height: #size fill;
+end
+
+command #widget app-frame: (Body has to-widget) =
+  #widget app-frame body: Body;
+
+command #widget app-frame =
+  new widget-app-frame(
+    header -> #widget space,
+    body -> #widget space,
+    footer -> #widget space,
+  );
+
+command widget-app-frame body: (X has to-widget) =
+  new widget-app-frame(self with body -> X as widget);
+
+command widget-app-frame header: (X has to-widget) =
+  new widget-app-frame(self with header -> X as widget);
+
+command widget-app-frame footer: (X has to-widget) =
+  new widget-app-frame(self with footer -> X as widget);

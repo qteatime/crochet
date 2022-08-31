@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crochet</title>
+    <link rel="stylesheet" href="crochet.css" />
+  </head>
+  <body>
+    <div id="crochet-container">
+      <div id="crochet" class="crochet-loading agata-full-screen">
+        <div class="crochet-loading-screen">Loading...</div>
+      </div>
+    </div>
+    <script id="crochet-config" type="text/plain">
+      {{crochet_config}}
+    </script>
+    <script src="crochet.js"></script>
+    <script>
+      void (async function () {
+        const config_root = document.querySelector("#crochet-config");
+        const config = JSON.parse(config_root.textContent);
+        config_root.remove();
+        const root = document.querySelector("#crochet");
+        try {
+          const fs = new Crochet.BrowserFS();
+          for (const pkg of config.packages) {
+            switch (pkg.tag) {
+              case "http":
+                await fs.add_endpoint(pkg.name, pkg.path);
+                break;
+              case "archive":
+                await fs.add_archive(pkg.name, pkg.path, pkg.hash);
+                break;
+              default:
+                throw new Error(`invalid package tag ${pkg.tag}`);
+            }
+          }
+
+          const crochet = new Crochet.CrochetForBrowser(
+            {
+              universe: config.token,
+              packages: new Map(config.packages.map((x) => [x.name, x.token])),
+            },
+            fs,
+            new Set(config.capabilities),
+            false
+          );
+          crochet.crochet.on_error((error) => notify_error(error));
+          await crochet.boot_from_package(
+            config.root_package,
+            Crochet.Package.target_web()
+          );
+          root.classList.remove("crochet-loading");
+          for (const child of root.children) {
+            child.remove();
+          }
+
+          const purr = await Purr.connect(config.session_id);
+
+          await crochet
+            .run("main-html: _ driver: _", [
+              crochet.ffi.box(root),
+              crochet.ffi.box(purr),
+            ])
+            .catch((_) => null);
+        } catch (error) {
+          notify_error(error);
+        }
+
+        function notify_error(error) {
+          console.error(error);
+          const element = document.createElement("div");
+          element.className = "crochet-error";
+          element.appendChild(document.createTextNode(error.message));
+          root.appendChild(element);
+        }
+      })();
+    </script>
+  </body>
+</html>

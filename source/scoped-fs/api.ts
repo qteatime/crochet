@@ -11,6 +11,14 @@ export class ScopedFS {
     readonly is_trusted = false
   ) {}
 
+  equals(other: ScopedFS): boolean {
+    return (
+      other.name === this.name &&
+      other.backend.equals(this.backend) &&
+      other.is_trusted === this.is_trusted
+    );
+  }
+
   async read(path: string): Promise<Buffer> {
     if (!is_relative(path)) {
       throw new Error(

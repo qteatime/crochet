@@ -1,5 +1,7 @@
 {
   "name": "crochet.ui.agata",
+  "title": "Agata",
+  "description": "A UI library for modern desktop-like/phone-like applications",
   "target": "*",
   "native_sources": [
     "native/dom.js",
@@ -107,10 +109,30 @@
   "capabilities": {
     "requires": [],
     "provides": [
-      "network",
-      "ui-control",
-      "arbitrary-fonts",
-      "arbitrary-dom-widgets"
+      {
+        "name": "network",
+        "title": "Make internet requests",
+        "description": "Allows creating widgets that make network requests (e.g.: a image that's loaded from a URL). While the uses are restricted, extra care should be taken if you're concerned about privacy or exfiltration of sensitive data.",
+        "risk": "medium"
+      },
+      {
+        "name": "ui-control",
+        "title": "Control Agata's UI",
+        "description": "Allows replacing widgets, showing modal messages, and navigating to different pages. This should generally only be granted to your application, unless you have a very good reason to grant it to other packages.",
+        "risk": "high"
+      },
+      {
+        "name": "arbitrary-fonts",
+        "title": "Load arbitrary fonts",
+        "description": "Allow loading and using arbitrary font files. This can be abused to create confusing interfaces and similar social attacks, because glyphs in the font are unpredictable.",
+        "risk": "high"
+      },
+      {
+        "name": "arbitrary-dom-widgets",
+        "title": "Create widgets from the Browser's DOM",
+        "description": "Allows creating widgets based on arbitrary DOM elements in the Browser. Because Browsers have a different security model, Crochet cannot guarantee any of its security properties if this capability is granted.",
+        "risk": "critical"
+      }
     ],
     "optional": []
   }

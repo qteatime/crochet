@@ -1,0 +1,58 @@
+% crochet
+
+open purr.ide.ui;
+
+command pui heading-1: (X has to-widget) =
+  (X as widget)
+    | transform
+    | font-weight: #font-weight medium
+    | font-size: #text-size large-3x;
+
+command pui heading-2: (X has to-widget) =
+  (X as widget)
+    | transform
+    | font-weight: #font-weight medium
+    | font-size: #text-size large-2x;
+
+command pui heading-3: (X has to-widget) =
+  (X as widget)
+    | transform
+    | font-weight: #font-weight medium
+    | font-size: #text-size extra-large;
+
+command pui heading-4: (X has to-widget) =
+  (X as widget)
+    | transform
+    | font-weight: #font-weight medium
+    | font-size: #text-size large;
+
+command pui heading-5: (X has to-widget) =
+  (X as widget)
+    | transform
+    | font-weight: #font-weight medium
+    | font-size: #text-size base;
+
+command pui secondary-text: (X has to-widget) =
+  (X as widget)
+    | transform
+    | font-color: #color text-secondary;
+
+command pui ellipsis-text: (X has to-widget) =
+  (X as widget)
+    | transform
+    | overflow: #overflow hidden
+    | white-space: #text-whitespace no-wrap
+    | text-overflow: #text-overflow ellipsis;
+
+command pui chip: (X has to-widget) color: (C is color) =
+  (X as widget)
+    | transform
+    | border-radius: (10.0 as root-em)
+    | padding-horizontal: (0.75 as root-em)
+    | padding-vertical: (0.1 as root-em)
+    | font-size: #text-size extra-small
+    | background-color: C
+    | text-transform: #text-transform uppercase
+    | font-weight: #font-weight medium
+    | width: #size fit-content
+    | height: #size fit-content;

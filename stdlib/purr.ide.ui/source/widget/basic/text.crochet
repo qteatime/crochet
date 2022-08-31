@@ -1,0 +1,10 @@
+% crochet
+
+type widget-text(contents is text) is widget;
+
+command #widget text: (X is text) =
+  new widget-text(X);
+
+command #widget text: (X is interpolation) =
+  new widget-text(X flatten-into-plain-text);
+

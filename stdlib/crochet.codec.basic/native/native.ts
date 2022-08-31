@@ -11,6 +11,15 @@ export default (ffi: ForeignInterface) => {
     );
   });
 
+  ffi.defun("base64.encode-bytes", (x0) => {
+    return ffi.text(Buffer.from(ffi.to_uint8_array(x0)).toString("base64"));
+  });
+
+  ffi.defun("base64.decode-bytes", (x0) => {
+    const buffer = Buffer.from(ffi.text_to_string(x0), "base64");
+    return ffi.byte_array(new Uint8Array(buffer.buffer));
+  });
+
   ffi.defun("hex.encode", (x) => {
     return ffi.text(Buffer.from(ffi.text_to_string(x)).toString("hex"));
   });

@@ -1,0 +1,28 @@
+% crochet
+
+type widget-title-bar(
+  action-button is widget,
+  title is widget,
+  middle is widget,
+  right is widget
+) is widget;
+
+command #widget title-bar: (Title has to-widget) =
+  new widget-title-bar(
+    action-button -> #widget space,
+    title -> Title as widget,
+    middle -> #widget space,
+    right -> #widget space
+  );
+
+command widget-title-bar title: (Title has to-widget) =
+  new widget-title-bar(self with title -> Title as widget);
+
+command widget-title-bar action-button: (X has to-widget) =
+  new widget-title-bar(self with action-button -> X as widget);
+
+command widget-title-bar middle: (X has to-widget) =
+  new widget-title-bar(self with middle -> X as widget);
+
+command widget-title-bar right: (X has to-widget) =
+  new widget-title-bar(self with right -> X as widget);

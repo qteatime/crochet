@@ -1,0 +1,88 @@
+% crochet
+
+type purr-changeset(
+  from is any,
+  changes is list<purr-change>
+);
+
+abstract purr-change;
+
+trait purr-change with
+  command Self apply: (Value is A) -> change-result<A>;
+end
+
+abstract change-result;
+type change-result--changed(value is A, audit-log is record) is change-result;
+type change-result--failed(reason is purr-change-error) is change-result;
+singleton change-result--noop is change-result;
+
+command #change-result updated: Value audit-log: (Log is record) =
+  new change-result--changed(Value, Log);
+
+command #change-result no-op =
+  change-result--noop;
+
+command #change-result failed: (Reason is purr-change-error) =
+  new change-result--failed(Reason);
+
+command #change-result compare: L and: R then: (F is (() -> change-result)) =
+  condition
+    when L =:= R => #change-result no-op;
+    otherwise => F();
+  end;
+
+abstract purr-change-error;
+
+abstract purr-changeset-error;
+type purr-changeset-error--failed(
+  changeset is purr-changeset,
+  change is purr-change,
+  target is any,
+  reason is purr-change-error
+) is purr-changeset-error;
+
+type purr-changeset-error--diverged(
+  changeset is purr-changeset,
+  current is any
+) is purr-changeset-error;
+
+command #purr-changeset-error diverged: Current from: (Changeset is purr-changeset) =
+  new purr-changeset-error--diverged(
+    changeset -> Changeset,
+    current -> Current,
+  );
+
+command purr-changeset apply do
+  self.changes
+    | fold-from: (#result ok: [changeset -> self, value -> self.from, log -> []])
+      with: { MContext, Change in
+        MContext then: { Context in
+          let Result = Change apply: Context.value;
+          package apply-change: Change result: Result context: Context;
+        };
+      }
+end
+
+command package apply-change: Change result: (R is change-result--changed) context: Ctx do
+  let Type-info = foreign reflection.get-type-info(Change);
+  #result ok: [
+    Ctx with
+      value -> R.value,
+      log -> Ctx.log append: [
+        operation -> "updated",
+        change -> Type-info,
+        details -> R.audit-log,
+      ]
+  ];
+end
+
+command package apply-change: _ result: change-result--noop context: Ctx =
+  #result ok: Ctx;
+
+command package apply-change: Change result: (R is change-result--failed) context: Ctx =
+  #result error: new purr-changeset-error--failed(
+                   changeset -> Ctx.changeset,
+                   change -> Change,
+                   target -> Ctx.value,
+                   reason -> R.reason
+                 );

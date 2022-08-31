@@ -1,0 +1,59 @@
+% crochet
+
+type widget-card(
+  contents is list<card-child>,
+  style is purr-variable<card-style>
+) is widget;
+
+enum card-style =
+  narrow,
+  fluid;
+
+abstract card-child;
+type card-child-content(content is widget) is card-child;
+type card-child-header(content is widget) is card-child;
+type card-child-body(content is widget) is card-child;
+type card-child-meta(content is widget) is card-child;
+type card-child-media(content is widget) is card-child;
+type card-child-footer(content is widget) is card-child;
+type card-child-action(content is widget) is card-child;
+
+command #widget card: (Xs is list) =
+  new widget-card(
+    contents -> Xs map: (package to-card-child: _),
+    style -> #card-style narrow as purr-variable
+  );
+
+command #widget fluid-card: (Xs is list) =
+  new widget-card(
+    contents -> Xs map: (package to-card-child: _),
+    style -> #card-style fluid as purr-variable
+  );
+
+command widget-card style: (Style has to-purr-variable) =
+  new widget-card(self with style -> Style as purr-variable);
+
+
+command package to-card-child: (X is card-child) = X;
+
+command #card-child header: (X has to-widget) =
+  new card-child-header(X as widget);
+
+command #card-child meta: (X has to-widget) =
+  new card-child-meta(X as widget);
+
+command #card-child body: (X has to-widget) =
+  new card-child-body(X as widget);
+
+command #card-child media: (X has to-widget) =
+  new card-child-media(X as widget);
+
+command #card-child content: (X has to-widget) =
+  new card-child-content(X as widget);
+
+command #card-child footer: (X has to-widget) =
+  new card-child-footer(X as widget);
+
+command #card-child action: (X has to-widget) =
+  new card-child-action(X as widget);
+

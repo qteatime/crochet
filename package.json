@@ -7,15 +7,19 @@
   "scripts": {
     "build": "node make.js build",
     "build-ts": "tsc -p .",
+    "build-tools-ts": "tsc -p tools",
     "build-targets": "webpack",
     "build-stdlib": "tsc -p stdlib",
     "build-grammar": "node make.js build-grammar",
     "build-browser": "browserify -e build/targets/browser/index.js -o www/crochet.js -s Crochet",
+    "bundle-codemirror": "browserify -e stdlib/purr.ide.ui/npm-native/code-mirror.js -o stdlib/purr.ide.ui/native/code-mirror.js -s CodeMirror",
+    "bundle-lingua": "browserify -e stdlib/crochet.text.parsing.lingua/native/lingua-ohm.js -o stdlib/crochet.text.parsing.lingua/native/lingua-ohm.bundle.js -s Lingua_Ohm",
     "test": "node make.js run-tests",
     "benchmark": "node make.js benchmark"
   },
   "dependencies": {
     "@types/codemirror": "^5.60.5",
+    "@types/glob": "^7.2.0",
     "@types/ws": "^8.2.3",
     "electron": "^17.4.11",
     "express": "^4.17.1",
@@ -28,7 +32,7 @@
     "@types/node": "^14.14.20",
     "@types/uuid": "^8.3.1",
     "browserify": "^17.0.0",
-    "glob": "^7.2.0",
+    "glob": "^7.2.3",
     "typescript": "^4.1.3",
     "webpack-cli": "^4.5.0"
   }

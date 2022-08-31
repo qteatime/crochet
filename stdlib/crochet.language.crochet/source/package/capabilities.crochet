@@ -1,0 +1,10 @@
+% crochet
+
+type crochet-capability-name(name is text);
+type crochet-capability(source is crochet-package-name, name is crochet-capability-name);
+
+type crochet-capabilities(
+  required is list<crochet-capability>,
+  provided is list<crochet-capability-name>,
+  optional is list<crochet-capability>,
+);

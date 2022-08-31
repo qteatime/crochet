@@ -239,7 +239,13 @@ export class Thread {
     } catch (error: any) {
       const trace = StackTrace.collect_trace(this.state.activation);
       const formatted_trace = StackTrace.format_entries(trace);
-      throw new CrochetEvaluationError(error, trace, formatted_trace);
+      const crochet_error = new CrochetEvaluationError(
+        error,
+        trace,
+        formatted_trace
+      );
+      this.state.universe.notify_error(crochet_error);
+      throw crochet_error;
     }
   }
 

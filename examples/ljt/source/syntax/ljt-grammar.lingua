@@ -1,0 +1,81 @@
+type Module(info: Interval, declarations: Declaration[])
+
+type Declaration =
+  | Type(info: Interval, name: Name, fields: Field[])
+  | Union(info: Interval, name: Name, declarations: Declaration[])
+
+type Field(info: Interval, name: Name, typ: Type_Expr)
+
+type Type_Expr =
+  | Named(info: Interval, name: Name)
+  | List(info: Interval, typ: Type_Expr)
+  | Map(info: Interval, key: Type_Expr, value: Type_Expr)
+  | Optional(info: Interval, typ: Type_Expr)
+
+type Name(name: Text)
+
+
+grammar Ljt_Grammar : Module {
+  Module =
+    | header xs:Declaration* end
+      -> Module(meta, xs)
+
+  Declaration =
+    | TypeDeclaration
+    | UnionDeclaration
+
+  TypeDeclaration =
+    | type_ n:Name "{" xs:Field* "}"
+      -> Declaration.Type(meta, n, xs)
+
+  UnionDeclaration =
+    | union_ n:Name "{" xs:TypeDeclaration* "}"
+      -> Declaration.Union(meta, n, xs)
+
+  Field =
+    | field_ n:Name ":" t:Type_Expr ";"
+      -> Field(meta, n, t)
+
+  Type_Expr =
+    | k:Type_Expr_List "->" v:Type_Expr_List
+      -> Type_Expr.Map(meta, k, v)
+    | Type_Expr_List
+
+  Type_Expr_List =
+    | t:Type_Expr "[]"
+      -> Type_Expr.List(meta, t)
+    | t:Type_Expr "?"
+      -> Type_Expr.Optional(meta, t)
+    | Type_Expr_Primary
+
+  Type_Expr_Primary =
+    | n:Name
+      -> Type_Expr.Named(meta, n)
+    | "(" t:Type_Expr ")"
+      -> t
+
+  Name =
+    | n:name
+      -> Name(n)
+
+  // -- Lexical --
+  token header (a file header) = space* "%" hs* "ljt/0" nl
+  token hs = " " | "\t"
+  token nl = "\r\n" | "\n" | "\r"
+  token line = (~nl any)*
+  token comment (a comment) = "//" "~/" line
+  space += comment
+
+  token name_start = "a".."z" | "A".."Z"
+  token name_rest = "a".."z" | "A".."Z" | "-" | "0".."9"
+  token name = name_start name_rest*
+
+  kw<w> = x:w ~name_rest -> x
+
+  type_ = kw<"type">
+  union_ = kw<"union">
+  field_ = kw<"field">
+
+  reserved =
+    | type_ | union_ | field_
+}

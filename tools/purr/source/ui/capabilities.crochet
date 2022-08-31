@@ -1,0 +1,127 @@
+% crochet
+
+open crochet.concurrency;
+open purr.ide.ui;
+
+command pui requested-capability-reason: (X is crochet-package-requested-capability) =
+  condition
+    when X reason is-empty => "(The package did not include a reason for requesting this capability)";
+    otherwise => "The package's reason: [X reason]";
+  end;
+
+command pui capability-summary: (Capability is crochet-package-provided-capability) do
+  #widget flex-column: [
+    #widget flex-row: [
+      (Capability title as widget)
+        | transform
+        | font-color: (pui risk-color: Capability risk)
+        | font-weight: #font-weight medium
+        | font-size: #text-size extra-large,
+
+      pui capability-risk: Capability risk,
+    ]
+    | transform
+    | flex-gap: (1.0 as root-em)
+    | flex-align-items: #flex-align center,
+
+    (Capability qualified-name as widget)
+      | transform
+      | font-family: #font-family monospace
+      | font-size: #text-size small,
+  ]
+  | transform
+  | flex-gap: (0.25 as root-em);
+end
+
+command pui requested-capability: (X is crochet-package-requested-capability) do
+  let Library = #crochet-library shared-instance;
+  let Capability = Library lookup-details: X;
+
+  #widget flex-column: [
+    pui capability-summary: Capability,
+
+    #widget space
+      | transform
+      | height: (0.5 as root-em),
+
+    (Capability description as widget)
+      | transform
+      | font-color: #color text-secondary,
+
+    #widget space
+      | transform
+      | height: (1.0 as root-em),
+
+    ((pui requested-capability-reason: X) as widget)
+      | transform
+      | font-size: #text-size small
+      | font-color: #color text-secondary,
+  ]
+  | transform
+  | flex-gap: (0.25 as root-em);
+end
+
+command pui capability-risk: (X is crochet-capability-risk) =
+  (X to-enum-text as widget)
+    | transform
+    | border-radius: (10.0 as root-em)
+    | padding-horizontal: (0.75 as root-em)
+    | padding-vertical: (0.1 as root-em)
+    | font-size: #text-size extra-small
+    | background-color: (pui risk-background-color: X)
+    | text-transform: #text-transform uppercase
+    | font-weight: #font-weight medium
+    | width: #size fit-content;
+
+command pui risk-color: crochet-capability-risk--low = #color text;
+command pui risk-color: crochet-capability-risk--medium = #color yellow-600;
+command pui risk-color: crochet-capability-risk--high = #color red-600;
+command pui risk-color: crochet-capability-risk--critical = #color red-800;
+command pui risk-color: crochet-capability-risk--unknown = #color text;
+
+command pui risk-background-color: crochet-capability-risk--low = #color neutral-200;
+command pui risk-background-color: crochet-capability-risk--medium = #color yellow-200;
+command pui risk-background-color: crochet-capability-risk--high = #color red-200;
+command pui risk-background-color: crochet-capability-risk--critical = #color red-300;
+command pui risk-background-color: crochet-capability-risk--unknown = #color neutral-200;
+
+
+local singleton pui-cap;
+type pui-request-capabilities(
+  global widget is widget,
+  global selected is observable-cell<set<crochet-package-requested-capability>>
+);
+
+implement to-widget for pui-request-capabilities;
+
+command pui request-capabilities: (Xs is list<crochet-package-requested-capability>) do
+  let Selected = #observable-cell with-value: #set empty;
+  new pui-request-capabilities(
+    widget -> #widget flex-column: (Xs map: (#pui-request-capabilities render: _ selected: _)),
+    selected -> Selected
+  );
+end
+
+command #pui-request-capabilities render: (X is crochet-package-requested-capability) selected: (S is observable-cell) do
+  let Name = "grant-capability:[X name]" flatten-into-plain-text;
+  let Ref = #reference checkbox: Name;
+  Ref checked map: { Checked in
+    condition
+      when Checked and S value contains: X => S <- S value remove: X;
+      when not Checked => S <- S value add: X;
+      otherwise => nothing;
+    end
+  };
+
+  #widget flex-row: [
+    #widget checkbox: Name
+      | reference: Ref,
+
+    pui requested-capability: X
+      | transform
+      | flex-grow: #flex-grow grow,
+  ]
+  | transform
+  | flex-align: #flex-align start
+  | flex-gap: (1.0 as root-em);
+end

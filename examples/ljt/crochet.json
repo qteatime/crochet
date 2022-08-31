@@ -1,0 +1,40 @@
+{
+  "name": "crochet.language.ljt",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/main.crochet",
+    "source/syntax/ljt-grammar.lingua",
+    "source/vm/vm.crochet",
+    "source/pages/main.crochet",
+    "source/pages/grammar.crochet",
+    "source/pages/encode.crochet",
+    "source/pages/decode.crochet",
+    "source/ui/core.crochet",
+    "source/ui/hex.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.parsing.lingua",
+    "purr.ide.ui",
+    "crochet.concurrency",
+    "crochet.codec.basic",
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": [
+      "purr.ide.ui/ui-control",
+      "crochet.core/untainting",
+      "crochet.core/trapping-errors"
+    ],
+    "provides": []
+  },
+  "config": {
+    "electron": {
+      "window": {
+        "width": 1280,
+        "height": 720
+      }
+    }
+  }
+}

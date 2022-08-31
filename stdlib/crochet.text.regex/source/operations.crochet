@@ -1,7 +1,7 @@
 % crochet
 
 /// True if the regex can match the given text, anywhere (unless pinned).
-command compiled-regex-pattern can-match: (Text is text) -> boolean =
+command compiled-regex-pattern can-match: (Text is unsafe-arbitrary-text) -> boolean =
   foreign re.test(self.code, self.flags to-text, Text)
 test
   assert (regex from-text: "ca." | compile | can-match: "cat");
@@ -9,7 +9,7 @@ test
 end
 
 /// Returns the first successful match in the text, if one exists.
-command compiled-regex-pattern search-first: (Text is text) -> result<regex-match, regex-error> do
+command compiled-regex-pattern search-first: (Text is unsafe-arbitrary-text) -> result<regex-match, regex-error> do
   let Result = foreign re.search(self.code, self.flags to-text, Text);
   condition
     when Result is nothing => #result error: regex-matched-nothing;
@@ -42,7 +42,7 @@ test
 end
 
 /// Returns all non-overlapping matches in the text.
-command compiled-regex-pattern search-all: (Text is text) -> list<regex-match> do
+command compiled-regex-pattern search-all: (Text is unsafe-arbitrary-text) -> list<regex-match> do
   let Result = foreign re.search-all(self.code, self.flags to-text, Text);
   Result map: { X in new regex-match(X) };
 test
@@ -71,7 +71,7 @@ test
 end
 
 /// Replaces the first match with `Text` in the `Corpus`.
-command compiled-regex-pattern search-first: (Corpus is text) replace-by: (Text is text) -> text do
+command compiled-regex-pattern substitute-first-by: (Text is text) in: (Corpus is unsafe-arbitrary-text) -> text do
   foreign re.replace(self.code, self.flags to-text, Text, Corpus)
 test
   let R1 = regex from-text: "(.)at" | compile;
@@ -83,7 +83,7 @@ test
 end
 
 /// Replaces all non-overlapping matches with `Text` in `Corpus`.
-command compiled-regex-pattern substitute-all-by: (Text is text) in: (Corpus is text) -> text do
+command compiled-regex-pattern substitute-all-by: (Text is text) in: (Corpus is unsafe-arbitrary-text) -> text do
   foreign re.replace-all(self.code, self.flags to-text, Text, Corpus);
 test
   let R1 = regex from-text: "(.)at" | compile;

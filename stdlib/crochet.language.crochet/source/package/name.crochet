@@ -1,0 +1,12 @@
+% crochet
+
+type crochet-package-name(segments is list<text>);
+
+command #crochet-package-name parse: (Text is text) do
+  package-name-grammar parse: Text
+    | map: { Xs in new crochet-package-name(Xs) };
+end
+
+command crochet-package-name to-text =
+  #text join: self.segments with: "."
+    | flatten-into-plain-text;

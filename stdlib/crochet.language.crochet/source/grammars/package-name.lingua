@@ -1,0 +1,11 @@
+grammar package_name_grammar : text[] {
+  root =
+    | Xs:nonemptyListOf<segment, "."> end
+      -> Xs
+
+  segment =
+    | segment_token
+
+  token segment_token =
+    | ("a".."z" | "0".."9" | "-")+
+}

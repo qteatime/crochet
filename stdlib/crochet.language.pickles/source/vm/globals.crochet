@@ -1,0 +1,100 @@
+% crochet
+
+local define pickles-globals = lazy [
+  new pickles-native-parser(
+    name -> "Text",
+    body -> { X in
+      condition
+        when X is text => #result ok: X;
+        otherwise => #result error: new pickles-error--invalid-type("Text", X);
+      end
+    }
+  ),
+
+  new pickles-native-parser(
+    name -> "Integer",
+    body -> { X in
+      condition
+        when X is integer => #result ok: X;
+        when X is text => #integer try-parse: X
+                            | map-error: { _ in new pickles-error--invalid-type("Integer", X) };
+        otherwise => #result error: new pickles-error--invalid-type("Integer", X);
+      end
+    }
+  ),
+
+  new pickles-native-parser(
+    name -> "Float-64bit",
+    body -> { X in
+      condition
+        when X is float-64bit => #result ok: X;
+        when X is text => #float-64bit try-parse: X
+                            | map-error: { _ in new pickles-error--invalid-type("Float", X) };
+        otherwise => #result error: new pickles-error--invalid-type("Float", X);
+      end
+    }
+  ),
+
+  new pickles-native-parser(
+    name -> "Boolean",
+    body -> { X in
+      condition
+        when X is boolean => #result ok: X;
+        when X =:= "true" => #result ok: true;
+        when X =:= "false" => #result ok: false;
+        otherwise => #result error: new pickles-error--invalid-type("Boolean", X);
+      end
+    }
+  ),
+
+  new pickles-native-parser(
+    name -> "Nothing",
+    body -> { X in
+      condition
+        when X is nothing => #result ok: nothing;
+        otherwise => #result error: new pickles-error--invalid-type("Nothing", X);
+      end
+    }
+  ),
+
+  new pickles-native-parser(
+    name -> "Anything",
+    body -> { X in #result ok: X }
+  ),
+
+  new pickles-native-function(
+    name -> "List",
+    formals -> ["X"],
+    body -> { Parser in 
+      new pickles-native-parser(
+        name -> "List([Parser text-representation])" flatten-into-plain-text,
+        body -> { Xs in
+          condition
+            when Xs is list =>
+              Xs enumerate
+                | fold-from: (#result ok: [])
+                  with: { Previous, X in
+                    Previous then: { PreviousList in
+                      Parser parse: X value
+                        | map: { XResult in PreviousList append: XResult }
+                        | map-error: { E in new pickles-error--invalid-list(Parser, Xs, X index, E) };
+                    };
+                  };
+            
+            otherwise =>
+              #result error: new pickles-error--invalid-type("List", Xs);
+          end
+        }
+      )
+    }
+  ),
+];
+
+local define global-environment = lazy (
+  (force pickles-globals)
+    | fold-from: #environment empty with: { Env, Entry in
+        Env define: Entry.name as: Entry
+      }
+);
+
+command #pickles-vm globals = force global-environment;

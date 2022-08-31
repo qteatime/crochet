@@ -1,0 +1,14 @@
+% crochet
+
+type crochet-package(
+  name is crochet-package-name,
+  title is text,
+  description is text,
+  stability is package-stability,
+  target is crochet-package-target,
+  native-sources is list<crochet-file>,
+  sources is list<crochet-file>,
+  assets is list<crochet-file>,
+  dependencies is list<crochet-dependency>,
+  capabilities is crochet-capabilities
+)

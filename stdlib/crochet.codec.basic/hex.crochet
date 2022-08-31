@@ -41,6 +41,18 @@ test
     === "a";
 end
 
+command hex to-text-aligned do
+  condition
+    when self.x is-empty => "";
+    when (self.x ascii count-characters % 2) =/= 0 => "0[self.x]" flatten-into-plain-text;
+    otherwise => self.x;
+  end
+test
+  assert (#hex encode: 64) to-text-aligned =:= "40";
+  assert (#hex encode: 9) to-text-aligned =:= "09";
+  assert (#hex encode: "") to-text-aligned =:= "";
+end
+
 command hex to-integer =
   foreign hex.decode-int(self.x)
 test

@@ -1,0 +1,624 @@
+% crochet
+
+// -- Universe definition
+abstract ljt-type;
+singleton t-bool is ljt-type;
+singleton t-int8 is ljt-type;
+singleton t-int16 is ljt-type;
+singleton t-int32 is ljt-type;
+singleton t-uint8 is ljt-type;
+singleton t-uint16 is ljt-type;
+singleton t-uint32 is ljt-type;
+singleton t-integer is ljt-type;
+singleton t-float32 is ljt-type;
+singleton t-float64 is ljt-type;
+singleton t-text is ljt-type;
+
+type t-lazy(thunk is thunk) is ljt-type;
+type t-array(item is ljt-type) is ljt-type;
+type t-map(key is ljt-type, value is ljt-type) is ljt-type;
+type t-tuple(fields is list<text>, types is list<ljt-type>) is ljt-type;
+type t-optional(item is ljt-type) is ljt-type;
+type t-choice(types is map<integer, ljt-tagged>) is ljt-type;
+type t-tagged(name is text, tag is integer, typ is ljt-type) is ljt-type;
+
+
+abstract ljt-value;
+type v-bool(value is boolean) is ljt-value;
+type v-int8(value is integer) is ljt-value;
+type v-int16(value is integer) is ljt-value;
+type v-int32(value is integer) is ljt-value;
+type v-uint8(value is integer) is ljt-value;
+type v-uint16(value is integer) is ljt-value;
+type v-uint32(value is integer) is ljt-value;
+type v-integer(value is integer) is ljt-value;
+type v-float32(value is float-64bit) is ljt-value;
+type v-float64(value is float-64bit) is ljt-value;
+type v-text(value is text) is ljt-value;
+
+type v-array(typ is ljt-type, values is list<ljt-value>) is ljt-value;
+type v-map(typ is ljt-type, value is map<ljt-value, ljt-value>) is ljt-value;
+type v-tuple(typ is ljt-type, values is list<ljt-value>) is ljt-value;
+type v-tagged(typ is ljt-type, tag is integer, value is ljt-value) is ljt-value;
+type v-choice(typ is ljt-type, value is v-tagged) is ljt-value;
+
+abstract v-optional is ljt-value;
+type v-just(typ is ljt-type, value is ljt-value) is v-optional;
+type v-none(typ is ljt-type) is v-optional;
+
+
+// -- Environments
+type ljt-env(
+  parent, // nothing or ljt-env
+  bindings is cell<map<text, ljt-type>>,
+);
+
+command #ljt-env empty =
+  new ljt-env(
+    parent -> nothing,
+    bindings -> #cell with-value: #map empty
+  );
+
+command ljt-env clone =
+  new ljt-env(
+    parent -> self,
+    bindings -> #cell with-value: #map empty
+  );
+
+command ljt-env bindings =
+  condition
+    when self.parent is nothing => self.bindings value;
+    otherwise => self.parent bindings merge: self.bindings value;
+  end;
+
+command ljt-env at: Key put: Value
+requires
+  not-defined :: not (self.bindings value contains-key: Key)
+do
+  self.bindings <- self.bindings value at: Key put: Value;
+  self;
+end
+
+open crochet.debug;
+command ljt-env lookup: Key do
+  condition
+    when self.bindings value contains-key: Key =>
+      self.bindings value at: Key;
+
+    when not (self.parent is nothing) =>
+      self.parent lookup: Key;
+
+    when self.parent is nothing =>
+      panic message: "undefined [Key]" tag: "ljt:lookup" data: [env -> self bindings entries];
+  end
+end
+
+
+// -- Names
+type qualified-name(segments is list<text>);
+
+command #qualified-name empty =
+  new qualified-name([]);
+
+command qualified-name append: (Name is text) =
+  new qualified-name(self.segments append: Name);
+
+command qualified-name to-text =
+  #text join: self.segments with: "."
+    | flatten-into-plain-text;
+
+
+// -- VM
+type ljt-vm(
+  globals is ljt-env,
+  types is cell<map<text, ljt-type>>,
+  tag-map is cell<map<integer, ljt-type>>,
+  next-tag is cell<integer>,
+);
+
+command #ljt-vm make do
+  new ljt-vm(
+    globals -> force ljt-globals,
+    types -> #cell with-value: #map empty,
+    tag-map -> #cell with-value: #map empty,
+    next-tag -> #cell with-value: 1,
+  );
+end
+
+command ljt-vm next-tag do
+  let Tag = self.next-tag value;
+  self.next-tag <- Tag + 1;
+  Tag;
+end
+
+command ljt-vm all-types do
+  self.types value values;
+end
+
+command ljt-vm lookup-type: (Name is text) =
+  self.types value at: Name;
+
+command ljt-vm lookup-tag: (Tag is integer) =
+  self.types value at: Tag;
+
+command ljt-vm add-type: (Type is t-tagged)
+requires
+  new-type :: not (self.types value contains-key: Type.name),
+  new-tag :: not (self.tag-map value contains-key: Type.tag)
+do
+  self.types <- self.types value at: Type.name put: Type;
+  self.tag-map <- self.tag-map value at: Type.tag put: Type;
+  self;
+end
+
+command ljt-vm load-module: (Module is module) do
+  let Env = self.globals clone;
+  let Namespace = #qualified-name empty;
+  for Declaration in Module.declarations do
+    self load-declaration: Declaration namespace: Namespace env: Env;
+  end
+  self;
+end
+
+command ljt-vm load-declaration: (Declaration is declaration--type) namespace: Ns env: Env do
+  let Fields = Declaration.fields map: (self evaluate-field: _ env: Env);
+  let Type = new t-tagged(
+    name -> (Ns append: Declaration.name.name) to-text,
+    tag -> self next-tag,
+    typ -> new t-tuple(
+      fields -> Fields map: { X in X.name },
+      types -> Fields map: { X in X.field-type }
+    )
+  );
+  Env at: Declaration.name.name put: Type;
+  self add-type: Type;
+  Type;
+end
+
+command ljt-vm load-declaration: (Declaration is declaration--union) namespace: Parent-ns env: Parent-env do
+  let Env = Parent-env clone;
+  let Ns = Parent-ns append: Declaration.name.name;
+  let Tag = self next-tag;
+  let Types = Declaration.declarations map: (self load-declaration: _ namespace: Ns env: Env);
+  let Type-map = Types fold-from: #map empty with: { M, T in M at: T.tag put: T };
+  let Type = new t-tagged(
+    name -> Ns to-text,
+    tag -> Tag,
+    typ -> new t-choice(Type-map)
+  );
+  Parent-env at: Declaration.name.name put: Type;
+  self add-type: Type;
+  Type;
+end
+
+command ljt-vm evaluate-field: (Field is field) env: Env do
+  let Type = self evaluate-type-expr: Field.typ env: Env;
+  [
+    name -> Field.name.name,
+    field-type -> Type,
+  ];
+end
+
+command ljt-vm evaluate-type-expr: (T is type-expr--named) env: Env =
+  new t-lazy(lazy Env lookup: T.name.name);
+
+command ljt-vm evaluate-type-expr: (T is type-expr--list) env: Env =
+  new t-array(self evaluate-type-expr: T.typ env: Env);
+
+command ljt-vm evaluate-type-expr: (T is type-expr--map) env: Env =
+  new t-map(
+    key -> self evaluate-type-expr: T.key env: Env,
+    value -> self evaluate-type-expr: T.value env: Env,
+  );
+
+command ljt-vm evaluate-type-expr: (T is type-expr--optional) env: Env =
+  new t-optional(
+    typ -> self evaluate-type-expr: T.typ env: Env
+  );
+
+
+// -- Globals
+define ljt-globals = lazy (
+  #ljt-env empty
+    | at: "Boolean" put: t-bool
+    | at: "Int8" put: t-int8
+    | at: "Int16" put: t-int16
+    | at: "Int32" put: t-int32
+    | at: "UInt8" put: t-uint8
+    | at: "UInt16" put: t-uint16
+    | at: "UInt32" put: t-uint32
+    | at: "Integer" put: t-integer
+    | at: "Float32" put: t-float32
+    | at: "Float64" put: t-float64
+    | at: "Text" put: t-text
+);
+
+
+// -- Serialisation
+type ljt-encoder(
+  encoder is cell<binary-encoder>
+);
+
+command ljt-vm encode: (Value is ljt-value) do
+  let Encoder = new ljt-encoder(#cell with-value: #binary-encoder empty);
+
+  (Encoder encode: Value).encoder value as byte-array;
+end
+
+command ljt-vm try-encode: (Value is ljt-value) do
+  trap errors-in: { self encode: Value };
+end
+
+
+command ljt-encoder encode: (X is v-bool) do
+  self.encoder <- self.encoder value append-boolean: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-bool(true))
+    =:= (#byte-array from: [0x01]);
+
+  assert (#ljt-vm make encode: new v-bool(false))
+    =:= (#byte-array from: [0x00]);
+end
+
+command ljt-encoder encode: (X is v-int8) do
+  self.encoder <- self.encoder value append-integer-8bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-int8(-1))
+    =:= (#byte-array from: [0xff]);
+
+  assert (#ljt-vm make encode: new v-int8(0))
+    =:= (#byte-array from: [0x00]);
+
+  assert (#ljt-vm make-encode: new v-int8(1))
+    =:= (#byte-array from: [0x01]);
+end
+
+command ljt-encoder encode: (X is v-int16) do
+  self.encoder <- self.encoder value append-integer-16bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-int16(-1))
+    =:= (#byte-array from: [0xff, 0xff]);
+
+  assert (#ljt-vm make encode: new v-int16(0))
+    =:= (#byte-array from: [0x00, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-int16(1))
+    =:= (#byte-array from: [0x01, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-int16(300))
+    =:= (#byte-array from: [0x2c, 0x01]);
+end
+
+command ljt-encoder encode: (X is v-int32) do
+  self.encoder <- self.encoder value append-integer-32bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-int32(-1))
+    =:= (#byte-array from: [0xff, 0xff, 0xff, 0xff]);
+
+  assert (#ljt-vm make encode: new v-int32(0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-int32(1))
+    =:= (#byte-array from: [0x01, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-int32(300))
+    =:= (#byte-array from: [0x2c, 0x01, 0x00, 0x00]);  
+end
+
+command ljt-encoder encode: (X is v-uint8) do
+  self.encoder <- self.encoder value append-unsigned-integer-8bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-uint8(0))
+    =:= (#byte-array from: [0x00]);
+
+  assert (#ljt-vm make-encode: new v-uint8(1))
+    =:= (#byte-array from: [0x01]);
+
+  assert (#ljt-vm make-encode: new v-uint8(255))
+    =:= (#byte-array from: [0xff]);
+end
+
+command ljt-encoder encode: (X is v-uint16) do
+  self.encoder <- self.encoder value append-unsigned-integer-16bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-uint16(0))
+    =:= (#byte-array from: [0x00, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-uint16(1))
+    =:= (#byte-array from: [0x01, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-uint16(65_535))
+    =:= (#byte-array from: [0xff, 0xff]);
+end
+
+command ljt-encoder encode: (X is v-uint32) do
+  self.encoder <- self.encoder value append-unsigned-integer-32bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-uint32(0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-uint32(1))
+    =:= (#byte-array from: [0x01, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-uint32(300))
+    =:= (#byte-array from: [0x2c, 0x01, 0x00, 0x00]);
+
+  assert (#ljt-vm make-encode: new v-uint32((2 ** 32) - 1))
+    =:= (#byte-array from: [0xff, 0xff, 0xff, 0xff]);
+end
+
+command ljt-encoder encode: (X is v-float32) do
+  self.encoder <- self.encoder value append-float-32bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-float64) do
+  self.encoder <- self.encoder value append-float-64bit: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-integer) do
+  self.encoder <- self.encoder value append: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-text) do
+  self.encoder <- self.encoder value append: X.value;
+  self;
+end
+
+command ljt-encoder encode: (X is v-array) do
+  self encode: new v-uint32(X.values count);
+  for Value in X.values do
+    self encode: Value;
+  end
+  self;
+end
+
+command ljt-encoder encode: (X is v-map) do
+  self encode: new v-uint32(X.value count);
+  for Pair in X.value entries do
+    self encode: Pair key;
+    self encode: Pair value;
+  end
+  self;
+end
+
+command ljt-encoder encode: (X is v-tuple) do
+  for Value in X.values do
+    self encode: Value;
+  end
+  self;
+end
+
+command ljt-encoder encode: (X is v-tagged) do
+  self encode: new v-uint32(X.tag);
+  self encode: X.value;
+end
+
+command ljt-encoder encode: (X is v-choice) do
+  self encode: new v-uint32(X.value.tag);
+  self encode: X.value.value;
+end
+
+command ljt-encoder encode: (X is v-just) do
+  self encode: new v-bool(true);
+  self encode: X.value;
+end
+
+command ljt-encoder encode: (X is v-none) do
+  self encode: new v-bool(false);
+end
+
+
+// -- Parsing
+type ljt-decoder(
+  vm is ljt-vm,
+  decoder is cell<binary-decoder>,
+  value is any,
+);
+
+abstract ljt-decoder-error;
+type ljt-decoder-error--decode-failed(state is ljt-decoder, error is any);
+
+command ljt-vm decode: (View is byte-array-view) with: (Type is ljt-type) do
+  let Decoder = new ljt-decoder(
+    vm -> self,
+    decoder -> #cell with-value: (#binary-decoder from: View),
+    value -> nothing,
+  );
+
+  Decoder decode-with: Type;
+end
+
+command ljt-vm decode: (Bytes is byte-array) with: Type =
+  self decode: Bytes view with: Type;
+
+command ljt-vm try-decode: View with: (Type is ljt-type) do
+  trap errors-in: { self decode: View with: Type };
+end
+
+command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next, error>)) do
+  let Origin = self.decoder value;
+  let Result = F(self.decoder value);
+  condition
+    when Result is ok do
+      self.decoder <- Result value next;
+      Result value value;
+    end
+
+    when Result is error =>
+      panic message: "Failed to decode" tag: "ljt-decoder" data: [state -> self, original-state -> Origin];
+  end
+end
+
+command ljt-decoder decode-with: t-bool =
+  new v-bool(self do-step: (_ take-boolean));
+
+command ljt-decoder decode-with: t-int8 =
+  new v-int8(self do-step: (_ take-integer-8bit));
+
+command ljt-decoder decode-with: t-int16 =
+  new v-int16(self do-step: (_ take-integer-16bit));
+
+command ljt-decoder decode-with: t-int32 =
+  new v-int32(self do-step: (_ take-integer-32bit));
+
+command ljt-decoder decode-with: t-uint8 =
+  new v-uint8(self do-step: (_ take-unsigned-integer-8bit));
+
+command ljt-decoder decode-with: t-uint16 =
+  new v-uint16(self do-step: (_ take-unsigned-integer-16bit));
+
+command ljt-decoder decode-with: t-uint32 =
+  new v-uint32(self do-step: (_ take-unsigned-integer-32bit));
+
+command ljt-decoder decode-with: t-float32 =
+  new v-float32(self do-step: (_ take-float-32bit));
+
+command ljt-decoder decode-with: t-float64 =
+  new v-float64(self do-step: (_ take-float-64bit));
+
+command ljt-decoder decode-with: t-integer =
+  new v-integer(self do-step: (_ take-integer));
+
+command ljt-decoder decode-with: t-text =
+  new v-text(self do-step: (_ take-text));
+
+command ljt-decoder decode-with: (T is t-lazy) =
+  self decode-with: (force T.thunk);
+
+command ljt-decoder decode-with: (T is t-array) do
+  let Size = self do-step: (_ take-unsigned-integer-32bit);
+  condition
+    when Size =:= 0 => new v-array(T, []);
+    otherwise do
+      let Items = 
+        for Index in 1 to: Size do
+          self decode-with: T.item;
+        end;
+      new v-array(T, Items);
+    end
+  end
+end
+
+command ljt-decoder decode-with: (T is t-map) do
+  let Size = self do-step: (_ take-unsigned-integer-32bit);
+  condition
+    when Size =:= 0 => new v-map(T, #map empty);
+    otherwise do
+      let Entries =
+        for Index in 1 to: Size do
+          let Key = self decode-with: T.key;
+          let Value = self decode-with: T.value;
+          #association key: Key value: Value;
+        end;
+      let Map = #map from: Entries;
+      new v-map(T, Map);
+    end
+  end
+end
+
+command ljt-decoder decode-with: (T is t-tuple) do
+  let Values =
+    for Type in T.types do
+      self decode-with: Type;
+    end;
+  new v-tuple(T, Values);
+end
+
+command ljt-decoder decode-with: (T is t-tagged) do
+  let Tag = self do-step: (_ take-unsigned-integer-32bit);
+  assert T.tag =:= Tag;
+  let Value = self decode-with: T.typ;
+  new v-tagged(T, Tag, Value);
+end
+
+command ljt-decoder decode-with: (T is t-choice) do
+  let Tag = self do-step: (_ take-unsigned-integer-32bit);
+  let Type = T.types at: Tag;
+  let Value = self decode-with: Type.typ;
+  new v-choice(T, new v-tagged(Type, Tag, Value));
+end
+
+command ljt-decoder decode-with: (T is t-optional) do
+  let Has-value = self do-step: (_ take-boolean);
+  condition
+    when Has-value do
+      let Value = self decode-with: T.item;
+      new v-just(T, Value);
+    end
+
+    otherwise => new v-none(T);
+  end
+end
+
+
+// -- Traits
+implement equality for ljt-value;
+command ljt-value === ljt-value = false;
+
+command (A is v-bool) === (B is v-bool) = A.value === B.value;
+command (A is v-int8) === (B is v-int8) = A.value === B.value;
+command (A is v-int16) === (B is v-int16) = A.value === B.value;
+command (A is v-int32) === (B is v-int32) = A.value === B.value;
+command (A is v-uint8) === (B is v-uint8) = A.value === B.value;
+command (A is v-uint16) === (B is v-uint16) = A.value === B.value;
+command (A is v-uint32) === (B is v-uint32) = A.value === B.value;
+command (A is v-float32) === (B is v-float32) = A.value === B.value;
+command (A is v-float64) === (B is v-float64) = A.value === B.value;
+command (A is v-integer) === (B is v-integer) = A.value === B.value;
+command (A is v-text) === (B is v-integer) = A.value === B.value;
+
+command (A is v-array) === (B is v-array) =
+  condition
+    when A.values count =/= B.values count => false;
+    otherwise => A.values zip: B.values with: (_ === _) | all-true;
+  end;
+
+command (A is v-map) === (B is v-map) do
+  condition
+    when (A.value count =/= B.value count) => false;
+    otherwise do
+      A.value entries
+        | all: { E in 
+            condition
+              when B contains-key: E key => A value === (B at: E key);
+              otherwise => false;
+            end
+          }
+    end
+  end
+end
+
+command (A is v-tuple) === (B is v-tuple) do
+  condition
+    when A.values count =:= B.values count =>
+      A.values zip: B.values with: (_ === _) | all-true;
+
+    otherwise =>
+      false;
+  end
+end
+
+command (A is v-tagged) === (B is v-tagged) =
+  condition
+    when A.tag =:= B.tag => A.value === B.value;
+    otherwise => false;
+  end;
+
+command (A is v-choice) === (B is v-choice) =
+  A.value === B.value;
+
+command (A is v-just) === (B is v-just) =
+  A.value === B.value;
+
+command v-none === v-none =
+  true;

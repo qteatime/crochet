@@ -1,0 +1,23 @@
+% crochet
+
+type widget-category-section(
+  title is widget,
+  actions is widget,
+  body is widget,
+) is widget;
+
+command #widget category-section =
+  new widget-category-section(
+    title -> #widget space,
+    actions -> #widget space,
+    body -> #widget space,
+  );
+
+command widget-category-section title: (X has to-widget) =
+  new widget-category-section(self with title -> X as widget);
+
+command widget-category-section actions: (X has to-widget) =
+  new widget-category-section(self with actions -> X as widget);
+
+command widget-category-section body: (X has to-widget) =
+  new widget-category-section(self with body -> X as widget);

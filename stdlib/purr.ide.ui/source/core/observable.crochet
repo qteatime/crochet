@@ -1,0 +1,53 @@
+% crochet
+
+open crochet.concurrency;
+
+abstract purr-variable;
+
+type purr-variable-reactive(value is observable-cell<X>) is purr-variable;
+type purr-variable-immutable(value is A) is purr-variable;
+
+
+trait to-purr-variable with
+  command X as purr-variable -> purr-variable;
+end
+
+implement to-purr-variable for observable-cell;
+command observable-cell as purr-variable =
+  new purr-variable-reactive(self);
+
+implement to-purr-variable for any;
+command any as purr-variable =
+  new purr-variable-immutable(self);
+
+
+command purr-variable-reactive value =
+  self.value value;
+
+command purr-variable-immutable value =
+  self.value;
+
+
+command purr-variable-reactive map: (F is (A -> B)) =
+  new purr-variable-reactive(self.value map: F);
+
+command purr-variable-immutable map: (F is (A -> B)) =
+  new purr-variable-immutable(F(self.value));
+
+
+command purr-variable-reactive subscribe: (F is (A -> nothing)) do
+  F(self.value value);
+  self.value stream subscribe: F;
+end
+
+command purr-variable-immutable subscribe: (F is (A -> nothing)) do
+  F(self.value);
+  nothing;
+end
+
+
+command purr-variable-reactive unsubscribe: X =
+  self.value unsubscribe: X;
+
+command purr-variable-immutable unsubscribe: nothing =
+  self;

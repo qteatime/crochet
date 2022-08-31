@@ -1,0 +1,5 @@
+% crochet
+
+abstract purr-file;
+
+type purr-file-binary(mime is text, bytes is byte-array) is purr-file;

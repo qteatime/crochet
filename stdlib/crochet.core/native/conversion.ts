@@ -1,4 +1,4 @@
-import type { ForeignInterface } from "../../../build/crochet";
+import type { CrochetValue, ForeignInterface } from "../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
   function parse_colour(colour: string) {
@@ -32,5 +32,13 @@ export default (ffi: ForeignInterface) => {
         ["alpha", ffi.integer(BigInt(x.alpha))],
       ])
     );
+  });
+
+  ffi.defun("conversion.map-to-record", (entries0) => {
+    const entries = ffi.list_to_array(entries0).map((entry) => {
+      const [k, v] = ffi.list_to_array(entry);
+      return [ffi.text_to_string(k), v] as [string, CrochetValue];
+    });
+    return ffi.record(new Map(entries));
   });
 };

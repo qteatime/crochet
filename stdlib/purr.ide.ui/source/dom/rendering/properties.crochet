@@ -1,0 +1,235 @@
+% crochet
+
+command dom-renderer context: _ to-property: (X is root-em) =
+  "[X.value to-text]rem" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is em) =
+  "[X.value to-text]em" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is pixels) =
+  "[X.value to-text]px" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is percent) =
+  "[X.value to-text]%" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is viewport-width) =
+  "[X.value to-text]vw" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is viewport-height) =
+  "[X.value to-text]vh" flatten-into-plain-text;
+
+
+
+command dom-renderer context: _ to-property: color--transparent = "transparent";
+command dom-renderer context: _ to-property: (X is color) = "var(--color-[X to-enum-text])" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: size--zero = "0px";
+command dom-renderer context: _ to-property: size--pixel = "1px";
+command dom-renderer context: _ to-property: size--auto = "auto";
+command dom-renderer context: _ to-property: size--fit-content = "fit-content";
+command dom-renderer context: _ to-property: size--minimum-content = "min-content";
+command dom-renderer context: _ to-property: size--maximum-content = "max-content";
+command dom-renderer context: _ to-property: size--extra-small = "0.5rem";
+command dom-renderer context: _ to-property: size--small = "0.75rem";
+command dom-renderer context: _ to-property: size--base = "1rem";
+command dom-renderer context: _ to-property: size--large = "1.25rem";
+command dom-renderer context: _ to-property: size--extra-large = "1.5rem";
+command dom-renderer context: _ to-property: size--large-2x = "2rem";
+command dom-renderer context: _ to-property: size--large-3x = "3rem";
+command dom-renderer context: _ to-property: size--large-4x = "4rem";
+command dom-renderer context: _ to-property: size--large-5x = "5rem";
+command dom-renderer context: _ to-property: size--large-6x = "6rem";
+command dom-renderer context: _ to-property: size--large-7x = "7rem";
+command dom-renderer context: _ to-property: size--large-8x = "8rem";
+command dom-renderer context: _ to-property: size--large-9x = "9rem";
+command dom-renderer context: _ to-property: size--columns-1 = "calc((1/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-2 = "calc((2/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-3 = "calc((3/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-4 = "calc((4/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-5 = "calc((5/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-6 = "calc((6/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-7 = "calc((7/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-8 = "calc((8/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-9 = "calc((9/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-10 = "calc((10/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-11 = "calc((11/12) * 100%)";
+command dom-renderer context: _ to-property: size--columns-12 = "100%";
+command dom-renderer context: _ to-property: size--fill = "100%";
+command dom-renderer context: C to-property: size--screen =
+  condition
+    when ["width", "min-width", "max-width"] contains: C => "100vw";
+    when ["height", "min-height", "max-height"] contains: C => "100vh";
+    otherwise => "100%";
+  end;
+command dom-renderer context: _ to-property: size--small-screen = "640px";
+command dom-renderer context: _ to-property: size--medium-screen = "728px";
+command dom-renderer context: _ to-property: size--large-screen = "1024px";
+command dom-renderer context: _ to-property: size--extra-large-screen = "1280px";
+
+command dom-renderer context: _ to-property: text-size--extra-small = "0.75rem";
+command dom-renderer context: _ to-property: text-size--small = "0.9rem";
+command dom-renderer context: _ to-property: text-size--base = "1rem";
+command dom-renderer context: _ to-property: text-size--large = "1.1rem";
+command dom-renderer context: _ to-property: text-size--extra-large = "1.25rem";
+command dom-renderer context: _ to-property: text-size--large-2x = "2rem";
+command dom-renderer context: _ to-property: text-size--large-3x = "3rem";
+command dom-renderer context: _ to-property: text-size--large-4x = "4rem";
+command dom-renderer context: _ to-property: text-size--large-5x = "5rem";
+command dom-renderer context: _ to-property: text-size--large-6x = "6rem";
+command dom-renderer context: _ to-property: text-size--large-7x = "7rem";
+command dom-renderer context: _ to-property: text-size--large-8x = "8rem";
+command dom-renderer context: _ to-property: text-size--large-9x = "9rem";
+
+command dom-renderer context: _ to-property: line-size--none = "0px";
+command dom-renderer context: _ to-property: line-size--pixel = "1px";
+command dom-renderer context: _ to-property: line-size--thin = "2px";
+command dom-renderer context: _ to-property: line-size--thick = "4px";
+
+command dom-renderer context: _ to-property: flex-layout--row = "row";
+command dom-renderer context: _ to-property: flex-layout--row-reverse = "row-reverse";
+command dom-renderer context: _ to-property: flex-layout--column = "column";
+command dom-renderer context: _ to-property: flex-layout--column-reverse = "column-reverse";
+
+command dom-renderer context: _ to-property: flex-wrap--no-wrap = "nowrap";
+command dom-renderer context: _ to-property: flex-wrap--wrap = "wrap";
+command dom-renderer context: _ to-property: flex-wrap--wrap-reverse = "wrap-reverse";
+
+command dom-renderer context: _ to-property: flex-align--normal = "normal";
+command dom-renderer context: _ to-property: flex-align--flex-start = "flex-start";
+command dom-renderer context: _ to-property: flex-align--flex-end = "flex-end";
+command dom-renderer context: _ to-property: flex-align--center = "center";
+command dom-renderer context: _ to-property: flex-align--stretch = "stretch";
+command dom-renderer context: _ to-property: flex-align--baseline = "baseline";
+
+command dom-renderer context: _ to-property: flex-justify--normal = "normal";
+command dom-renderer context: _ to-property: flex-justify--flex-start = "flex-start";
+command dom-renderer context: _ to-property: flex-justify--flex-end = "flex-end";
+command dom-renderer context: _ to-property: flex-justify--center = "center";
+command dom-renderer context: _ to-property: flex-justify--left = "left";
+command dom-renderer context: _ to-property: flex-justify--right = "right";
+command dom-renderer context: _ to-property: flex-justify--baseline = "baseline";
+command dom-renderer context: _ to-property: flex-justify--space-between = "space-between";
+command dom-renderer context: _ to-property: flex-justify--space-around = "space-around";
+command dom-renderer context: _ to-property: flex-justify--space-evenly = "space-evenly";
+command dom-renderer context: _ to-property: flex-justify--stretch = "stretch";
+
+command dom-renderer context: _ to-property: border-radius--square = "0px";
+command dom-renderer context: _ to-property: border-radius--rounded = "0.25rem";
+command dom-renderer context: _ to-property: border-radius--fully-rounded = "100%";
+
+command dom-renderer context: _ to-property: border-style--solid = "solid";
+command dom-renderer context: _ to-property: border-style--dashed = "dashed";
+command dom-renderer context: _ to-property: border-style--dotted = "dotted";
+command dom-renderer context: _ to-property: border-style--double = "double";
+command dom-renderer context: _ to-property: border-style--hidden = "hidden";
+command dom-renderer context: _ to-property: border-style--none = "none";
+
+command dom-renderer context: _ to-property: font-family--serif = "var(--font-family-serif)";
+command dom-renderer context: _ to-property: font-family--sans-serif = "var(--font-family-sans-serif)";
+command dom-renderer context: _ to-property: font-family--monospace = "var(--font-family-monospace)";
+command dom-renderer context: _ to-property: font-family--display = "var(--font-family-display)";
+command dom-renderer context: _ to-property: font-family--body = "var(--font-family-body)";
+
+command dom-renderer context: _ to-property: font-weight--thin = "100";
+command dom-renderer context: _ to-property: font-weight--extra-light = "200";
+command dom-renderer context: _ to-property: font-weight--light = "300";
+command dom-renderer context: _ to-property: font-weight--regular = "400";
+command dom-renderer context: _ to-property: font-weight--medium = "500";
+command dom-renderer context: _ to-property: font-weight--semi-bold = "600";
+command dom-renderer context: _ to-property: font-weight--bold = "700";
+command dom-renderer context: _ to-property: font-weight--extra-bold = "800";
+command dom-renderer context: _ to-property: font-weight--black = "900";
+
+command dom-renderer context: _ to-property: font-style--normal = "normal";
+command dom-renderer context: _ to-property: font-style--italic = "italic";
+
+command dom-renderer context: _ to-property: object-fit--contain = "contain";
+command dom-renderer context: _ to-property: object-fit--cover = "cover";
+command dom-renderer context: _ to-property: object-fit--fill = "fill";
+command dom-renderer context: _ to-property: object-fit--none = "none";
+command dom-renderer context: _ to-property: object-fit--scale-down = "scale-down";
+
+command dom-renderer context: _ to-property: object-position--top = "top";
+command dom-renderer context: _ to-property: object-position--top-right = "top right";
+command dom-renderer context: _ to-property: object-position--right = "right";
+command dom-renderer context: _ to-property: object-position--bottom-right = "bottom right";
+command dom-renderer context: _ to-property: object-position--bottom = "bottom";
+command dom-renderer context: _ to-property: object-position--bottom-left = "bottom left";
+command dom-renderer context: _ to-property: object-position--left = "left";
+command dom-renderer context: _ to-property: object-position--center = "center";
+
+command dom-renderer context: _ to-property: overflow--auto = "auto";
+command dom-renderer context: _ to-property: overflow--hidden = "hidden";
+command dom-renderer context: _ to-property: overflow--clip = "clip";
+command dom-renderer context: _ to-property: overflow--visible = "visible";
+command dom-renderer context: _ to-property: overflow--scroll = "scroll";
+
+command dom-renderer context: _ to-property: position--static = "static";
+command dom-renderer context: _ to-property: position--sticky = "sticky";
+
+command dom-renderer context: _ to-property: text-align--left = "left";
+command dom-renderer context: _ to-property: text-align--center = "center";
+command dom-renderer context: _ to-property: text-align--right = "right";
+command dom-renderer context: _ to-property: text-align--at-start = "start";
+command dom-renderer context: _ to-property: text-align--at-end = "end";
+
+command dom-renderer context: _ to-property: text-decoration--underline = "underline";
+command dom-renderer context: _ to-property: text-decoration--overline = "overline";
+command dom-renderer context: _ to-property: text-decoration--line-through = "line-through";
+command dom-renderer context: _ to-property: text-decoration--none = "none";
+
+command dom-renderer context: _ to-property: text-decoration-style--solid = "solid";
+command dom-renderer context: _ to-property: text-decoration-style--double = "double";
+command dom-renderer context: _ to-property: text-decoration-style--dotted = "dotted";
+command dom-renderer context: _ to-property: text-decoration-style--dashed = "dashed";
+command dom-renderer context: _ to-property: text-decoration-style--wavy = "wavy";
+
+command dom-renderer context: _ to-property: text-transform--uppercase = "uppercase";
+command dom-renderer context: _ to-property: text-transform--lowercase = "lowercase";
+command dom-renderer context: _ to-property: text-transform--capitalize = "capitalize";
+command dom-renderer context: _ to-property: text-transform--none = "none";
+
+command dom-renderer context: _ to-property: (X is text-overflow) = X to-enum-text;
+
+command dom-renderer context: _ to-property: text-whitespace--collapse = "normal";
+command dom-renderer context: _ to-property: text-whitespace--no-wrap = "nowrap";
+command dom-renderer context: _ to-property: text-whitespace--preserve = "pre";
+command dom-renderer context: _ to-property: text-whitespace--preserve-lines = "pre-line";
+command dom-renderer context: _ to-property: text-whitespace--preserve-and-wrap = "pre-wrap";
+
+command dom-renderer context: _ to-property: text-word-break--normal = "normal";
+command dom-renderer context: _ to-property: text-word-break--words = "break-words";
+command dom-renderer context: _ to-property: text-word-break--all = "break-all";
+
+command dom-renderer context: _ to-property: text-letter-spacing--tight = "-0.02em";
+command dom-renderer context: _ to-property: text-letter-spacing--normal = "auto";
+command dom-renderer context: _ to-property: text-letter-spacing--wide = "0.02em";
+
+command dom-renderer context: _ to-property: text-line-height--fit = "1em";
+command dom-renderer context: _ to-property: text-line-height--comfortable = "1.5em";
+command dom-renderer context: _ to-property: text-line-height--double = "2em";
+
+command dom-renderer context: _ to-property: display--block = "block";
+command dom-renderer context: _ to-property: display--inline = "inline";
+command dom-renderer context: _ to-property: display--inline-block = "inline-block";
+command dom-renderer context: _ to-property: display--flex = "flex";
+
+command dom-renderer context: _ to-property: flex-grow--no = "0";
+command dom-renderer context: _ to-property: flex-grow--grow = "1";
+command dom-renderer context: _ to-property: flex-shrink--no = "0";
+command dom-renderer context: _ to-property: flex-shrink--shrink = "1";
+
+command dom-renderer context: _ to-property: (X is visibility) = X to-enum-text;
+
+command dom-renderer context: _ to-property: (X is aspect-ratio) =
+  "[X.width to-text]/[X.height to-text]" flatten-into-plain-text;
+
+command dom-renderer context: _ to-property: (X is table-style) =
+  X to-enum-text;
+
+command dom-renderer to-property: (X is true) = "true";
+command dom-renderer to-property: (X is false) = "false";
+command dom-renderer to-property: (X is integer) = X to-text;
+command dom-renderer to-property: (X is float-64bit) = X to-text;
+command dom-renderer to-property: (X is text) = X;
+command dom-renderer to-property: (X is 'enum) = X to-enum-text;

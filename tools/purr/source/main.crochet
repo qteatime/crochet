@@ -1,0 +1,29 @@
+% crochet
+  
+open purr.ide.ui;
+
+singleton purr;
+protect type purr with internal;
+protect global purr with internal;
+
+
+command main-html: Root driver: Driver-box do
+  let Driver = new purr-driver(Driver-box);
+  let Crochet-library = #crochet-library empty;
+
+  handle
+    perform crochet-library.refresh(Driver crochet-library find-all-packages);
+    let Router = purr-ui make-router: package purr-router;
+    purr-ui show: Router;
+  with
+    use logical-time;
+    use purr-ui-dom-renderer root: Root;
+    use purr-driver connect: Driver;
+    use crochet-library-shared library: Crochet-library;
+  end
+end
+
+command package purr-router =
+  #router basic: "purr"
+    | accepts: #purr-page all
+    | initial-page: purr-welcome-page;

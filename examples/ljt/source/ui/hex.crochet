@@ -1,0 +1,49 @@
+% crochet
+
+open crochet.codec.basic;
+open purr.ide.ui;
+
+command package view: View get-uint8-hex: Offset default: Default do
+  condition
+    when Offset <= View count-bytes =>
+      #hex encode: (View unsigned-integer-8bit-at: Offset) | to-text-aligned;
+    
+    otherwise =>
+      Default;
+  end
+end
+
+command ljt-ui hex-view: (Bytes is byte-array) do
+  let Rows = Bytes view chunks-of-size: 16
+              | enumerate
+              | map: { X in
+                  let Offset = (X index - 1) * 16;
+                  let Sections = X value
+                                  | chunks-of-size: 4
+                                  | map: { View in
+                                      (1 to: 4) map: (package view: View get-uint8-hex: _ default: "")
+                                    }
+                                  | intersperse: [#widget space | transform | width: (0.25 as root-em)]
+                                  | flat-map: { X in X };
+                  [
+                    #table-cell header: (
+                      "0x[#hex encode: Offset | to-text-aligned]" flatten-into-plain-text
+                    ),
+                  ] ++ Sections
+                };
+
+  #widget table: Rows
+    | sticky-header: [
+        #widget space,
+        "00", "01", "02", "03",
+        #widget space,
+        "04", "05", "06", "07",
+        #widget space,
+        "08", "09", "0a", "0b",
+        #widget space,
+        "0c", "0d", "0e", "0f"
+      ]
+    | transform
+    | font-family: #font-family monospace
+    | font-size: #text-size small;
+end

@@ -1,0 +1,6 @@
+% crochet
+
+type widget-flow(contents is list<widget>) is widget;
+
+command #widget flow: (Content is list<X has to-widget>) =
+  new widget-flow(Content map: (_ as widget));

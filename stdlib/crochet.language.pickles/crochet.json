@@ -1,0 +1,38 @@
+{
+  "name": "crochet.language.pickles",
+  "title": "Pickles",
+  "description": "A small language for parsing structured data with complex normalisation rules",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/syntax/grammar.lingua",
+    "source/syntax/ast.crochet",
+
+    "source/vm/application.crochet",
+    "source/vm/effect.crochet",
+    "source/vm/environment.crochet",
+    "source/vm/errors.crochet",
+    "source/vm/globals.crochet",
+    "source/vm/intrinsics.crochet",
+    "source/vm/literal.crochet",
+    "source/vm/module.crochet",
+    "source/vm/parsing.crochet",
+    "source/vm/text-representation.crochet",
+    "source/vm/traversal.crochet",
+    "source/vm/vm.crochet",
+    "source/vm/tracing.crochet",
+
+    "source/api.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.parsing.lingua",
+    "crochet.language.json",
+    "crochet.concurrency"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  },
+  "assets": []
+}

@@ -1,0 +1,5 @@
+% crochet
+
+singleton widget-space is widget;
+
+command #widget space = widget-space;

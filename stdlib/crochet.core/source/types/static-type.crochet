@@ -1,0 +1,4 @@
+% crochet
+
+command static-type accepts-in-hierarchy: (Value is any) =
+  foreign types.is-instance(self, Value);

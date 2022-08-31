@@ -2,6 +2,10 @@
 
 type base64(x is text);
 
+command #base64 decode: (Text is text)
+requires bytes-only :: Text is-ascii // FIXME: proper base64 validation
+  = new base64(Text);
+
 command #base64 encode: (Text is text)
 requires bytes-only :: Text is-ascii
 do
@@ -17,6 +21,15 @@ test
     === "YQ==";
 end
 
+command #base64 encode: (Bytes is byte-array) =
+  new base64(foreign base64.encode-bytes(Bytes));
+
+command base64 to-encoded-text =
+  self.x;
+
+command base64 to-byte-array =
+  foreign base64.decode-bytes(self.x);
+
 command base64 to-text =
   foreign base64.decode(self.x)
 test
@@ -30,7 +43,8 @@ test
     === "a";
 end
 
-command base64 === (That is base64) = self.x === That.x;
+command base64 === (That is base64) =
+  self.x === That.x;
 
 test "decode(encode(X)) === X" do
   assert (#base64 encode: "It was a dark, stormy night" | to-text)

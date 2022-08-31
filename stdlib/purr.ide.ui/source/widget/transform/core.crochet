@@ -1,0 +1,13 @@
+% crochet
+
+type widget-transform(contents is widget, options is option-list<transform-option>) is widget;
+abstract transform-option is option;
+
+command widget transform =
+  new widget-transform(
+    contents -> self,
+    options -> #option-list empty,
+  );
+
+command widget-transform add-option: (Option is transform-option) =
+  new widget-transform(self with options -> self.options add: Option);

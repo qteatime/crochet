@@ -1,3 +1,14 @@
+/* temporary hack until fonts are made into assets */
+@import url("/fonts/roboto.css");
+@import url("/fonts/fa-solid.css");
+@import url("/fonts/fa-regular.css");
+@import url("/fontawesome.min.css");
+
+html,
+body {
+  margin: 0;
+}
+
 .crochet-error {
   white-space: pre-wrap;
   font-family: monospace;
@@ -14,4 +25,6 @@
   padding: 3em;
   align-items: center;
   overflow: auto;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
 }

@@ -1,0 +1,222 @@
+% crochet
+
+open purr.ide.ui;
+open crochet.concurrency;
+open crochet.debug;
+
+command application-configure crochet-package do
+  let Project = purr current-project;
+  let Name = #reference text-input: "name";
+  let Target = #reference select-one: "target";
+  let Stability = #reference select-one: "stability";
+  let Initial = #observable-cell with-value: [
+                 name -> Project value meta name,
+                 target -> Project value meta target,
+                 stability -> Project value meta stability,
+               ];
+  Project stream subscribe: { X in
+    Initial <- [
+      name -> X meta name,
+      target -> X meta target,
+      stability -> X meta stability,
+    ]
+  };
+
+  let Form = Name validated-value zip: Target selected and: Stability selected
+             with: { N, T, S in
+               N map: { N in [name -> N, target -> T, stability -> S] }
+             };
+  let Raw-form = Name value zip: Target selected and: Stability selected
+                 with: { N, T, S in
+                   [name -> N, target -> T, stability -> S]
+                 };
+
+  self
+    title: "Crochet package"
+    actions: (
+      self action-panel-initial: Initial
+           raw: Raw-form
+           form: Form
+           save: { Changes in
+            purr update-project: (
+              Project value changeset           
+                | meta: { M in M name: Changes.name
+                                | target: Changes.target 
+                                | stability: Changes.stability }
+            );
+           }
+    )
+    body: (
+      #widget flex-column: [
+        #widget flex-column: [
+          #widget text-input: "Name"
+            | value: (Initial map: { X in X.name })
+            | placeholder: "name.your.project"
+            | validation: { X in
+                #crochet-package try-parse-name: X
+                  | map-error: { _ in 
+                      #widget flex-column: [
+                        "
+                        Name segments must start with a lowercase letter ('a' to 'z'),
+                        and may only contain lowercase letters, digits ('0' to '9'),
+                        and hyphens ('-'). A name can be made out of multiple segments
+                        separated by a dot ('.');
+                        ",
+                        "
+                        E.g.: 'name.your.project'
+                        "
+                      ]
+                    }
+              }
+            | reference: Name,
+          pui secondary-text: "
+            Names are conventially written in a \"reverse domain\" format.
+            E.g.: if you own a domain like \"cute-games.com\", you could
+            use a name like \"com.cute-games.my-project-name\".
+          "
+            | transform
+            | font-size: #text-size small
+        ]
+        | transform
+        | flex-gap: (0.5 as root-em),
+
+        #widget flex-column: [
+          #widget select-one: "Target platform"
+            | options: [
+                #select-option label: "Any platform" value: #crochet-package-target any,
+                #select-option label: "Web Browsers" value: #crochet-package-target browser,
+                #select-option label: "Node.js" value: #crochet-package-target node,
+              ]
+            | selected: (Initial map: { X in X.target })
+            | reference: Target,
+        ]
+        | transform
+        | flex-gap: (0.5 as root-em),
+
+        #widget flex-column: [
+          #widget select-one: "API stability"
+            | options: [
+                #select-option label: "Unknown" value: #crochet-package-stability unknown,
+                #select-option label: "Experimental" value: #crochet-package-stability experimental,
+                #select-option label: "Stable" value: #crochet-package-stability stable,
+                #select-option label: "Frozen" value: #crochet-package-stability frozen,
+                #select-option label: "Deprecated" value: #crochet-package-stability deprecated,
+              ]
+            | selected: (Initial map: { X in X.stability })
+            | reference: Stability
+        ]
+      ]
+      | transform
+      | flex-gap: (1.5 as root-em)
+    );
+end
+
+
+command application-configure basic-info do
+  let Title = #reference text-input: "title";
+  let Description = #reference text-input: "description";
+  let Project = purr current-project;
+
+  let Initial = #observable-cell with-value: [
+    title -> Project value title,
+    description -> Project value description,
+  ];
+  Project stream subscribe: { X in Initial <- [title -> X title, description -> X description]};
+  let Raw-form = Title value zip: Description value with: { T, D in [title -> T, description -> D]};
+  let Form = Raw-form map: { F in
+    #result ok: [
+      title -> untaint make-trusted: F.title,
+      description -> untaint make-trusted: F.description
+    ]
+  };
+  
+  self
+    title: "Basic information"
+    actions: (
+      self action-panel-initial: Initial
+           raw: Raw-form
+           form: Form
+           save: { Changes in
+             purr update-project: (
+               Project value changeset
+                 | title: Changes.title
+                 | description: Changes.description
+                 | meta: { M in M title: Changes.title | description: Changes.description }
+             );
+           }
+    )
+    body: (
+      #widget flex-row: [
+        #widget flex-column: [
+          #widget text-input: "Title"
+            | value: (Initial map: { X in X.title })
+            | placeholder: "Your Great Project"
+            | reference: Title,
+
+          #widget text-input: "Description"
+            | value: (Initial map: { X in X.description})
+            | placeholder: "Does this and that and that other thing"
+            | reference: Description,
+        ]
+        | transform
+        | flex-gap: (1.5 as root-em),
+
+        #widget flex-column: [
+          ("Cover image" as widget)
+            | transform
+            | font-weight: #font-weight medium,
+
+          #widget flex-column: [
+            (Project map: { X in self render-cover: X cover }) as widget
+              | transform
+              | width: #size fill
+          ]
+          | transform
+          | background-color: #color neutral-900
+          | width: #size fill
+          | aspect-ratio: (#aspect-ratio width: 16 height: 9)
+          | border-radius: #border-radius rounded
+          | overflow: #overflow hidden
+          | flex-align-items: #flex-align center
+          | flex-justify-content: #flex-justify stretch
+          | border: #line-size pixel style: #border-style solid color: #color border,
+          
+          Project map: { X in self cover-image-actions: X cover }
+        ]
+        | transform
+        | flex-gap: (0.5 as root-em)
+        | maximum-width: (24.0 as root-em),
+      ]
+      | transform
+      | flex-gap: (3.0 as root-em)
+    );
+end
+
+command application-configure cover-image-actions: (X is error) =
+  pui action-button: "Add cover image"
+    | icon: "images"
+    | on-click: { _ in purr update-cover-image: purr current-project value }
+    | as widget
+    | transform
+    | width: #size fill;
+
+command application-configure cover-image-actions: (X is ok) =
+  #widget flex-column: [
+    pui action-button: "Replace cover image"
+      | icon: "images"
+      | on-click: { _ in purr update-cover-image: purr current-project value },
+
+    pui action-button: "Remove cover image"
+      | icon: "times"
+      | on-click: { _ in purr remove-cover-image: purr current-project value },
+  ]
+  | transform
+  | flex-gap: (0.5 as root-em);
+
+command application-configure render-cover: (X is error) =
+  #widget space;
+
+command application-configure render-cover: (X is ok) =
+  #widget image: (#image mime: (X value).mime bytes: (X value).bytes)
+    | transform
+    | width: #size fill;

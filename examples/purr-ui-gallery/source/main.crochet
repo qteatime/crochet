@@ -1,0 +1,434 @@
+% crochet
+  
+open crochet.concurrency;
+open purr.ide.ui;
+
+singleton purr;
+
+command main-html: Root do
+  handle
+    purr-ui show: purr run;
+    purr-ui navigate: #pages choose;
+  with
+    use logical-time;
+    use purr-ui-dom-renderer root: Root;
+  end
+end
+
+enum pages =
+  choose,
+  tabs,
+  cards,
+  sections,
+  buttons,
+  text-input,
+  dividers,
+  breadcrumbs,
+  lenses,
+  checkboxes,
+  panel;
+
+command purr side-bar do
+  purr menu
+    | transform
+    | maximum-width: #size columns-4
+    | height: #size fill;
+end
+
+command purr run do
+  let Router = purr-ui make-router: (#router basic: "root" | accepts: (pages lower-bound to: pages upper-bound));
+
+  #widget app-frame
+    | header: (
+        #widget title-bar: "Purr"
+          | action-button: (
+              #widget icon-button: (#widget icon: "bars")
+                | style: #button-style clear
+                | on-click: { _ in
+                    purr-ui slide-in: purr side-bar direction: #slide-in-direction from-left;
+                  }
+            )
+      )
+    | footer: "Some footer"
+    | body: (
+        #widget flex-row: [
+          purr menu,
+          Router
+            | transform
+            | flex-grow: #flex-grow grow
+        ]
+        | transform
+        | flex-align-items: #flex-align stretch
+        | flex-gap: #text-size base
+      );
+end
+
+implement purr-ui-page for pages;
+implement purr-ui-page for pages--choose;
+implement purr-ui-page for pages--tabs;
+implement purr-ui-page for pages--cards;
+implement purr-ui-page for pages--sections;
+implement purr-ui-page for pages--buttons;
+implement purr-ui-page for pages--dividers;
+implement purr-ui-page for pages--breadcrumbs;
+implement purr-ui-page for pages--lenses;
+implement purr-ui-page for pages--text-input;
+implement purr-ui-page for pages--checkboxes;
+implement purr-ui-page for pages--panel;
+
+command purr menu =
+  #widget navigation: [
+    "Basic",
+    #widget link: "Choose" | to: #pages choose,
+    #widget link: "Dividers" | to: #pages dividers,
+
+    "Layout",
+    #widget link: "Tabs" | to: #pages tabs,
+    #widget link: "Cards" | to: #pages cards,
+    #widget link: "Sections" | to: #pages sections,
+    #widget link: "Breadcrumbs" | to: #pages breadcrumbs,
+    #widget link: "Panels" | to: #pages panel,
+
+    "Input",
+    #widget link: "Buttons" | to: #pages buttons,
+    #widget link: "Text input" | to: #pages text-input,
+    #widget link: "Checkboxes" | to: #pages checkboxes,
+
+    "Code",
+    #widget link: "Lenses" | to: #pages lenses,
+  ];
+
+command pages--panel render-page do
+  #widget flex-row: [
+    #widget left-panel: "left"
+      | transform
+      | width: (10.0 as root-em),
+
+    #widget flex-column: [
+      #widget top-panel: "top"
+        | transform
+        | height: (10.0 as root-em),
+
+      #widget bottom-panel: "bottom"
+        | transform
+        | height: (10.0 as root-em),
+    ]
+    | transform
+    | flex-grow: #flex-grow grow,
+
+    #widget right-panel: "right"
+      | transform
+      | width: (10.0 as root-em),
+  ]
+  | transform
+  | flex-gap: #text-size base
+  | flex-align-items: #flex-align stretch
+  | flex-justify-content: #flex-justify stretch;
+end
+
+command pages--lenses render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Single perspective"
+      | body: (#widget lens: [1, 2, 3] perspective: default-perspective),
+
+    #widget category-section
+      | title: "All perspectives"
+      | body: (#widget lenses: [1, 2, 3]),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--breadcrumbs render-page =
+  #widget category-section
+    | title: "Breadcrumbs"
+    | body: (
+        #widget breadcrumbs: [
+          #widget flex-row: [#widget icon: "home", #widget space | transform | width: #text-size base, "Home"],
+          #widget link: "Sections" | to: #pages sections,
+          #widget link: "Breadcrumbs" | to: self
+        ]
+      );
+
+command pages--choose render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Choose"
+      | body: (
+          do
+            let V = #observable-cell with-value: nothing;
+            #widget flex-column: [
+              #widget flex-row: [
+                #widget button: "A" | on-click: { _ in V <- "A" },
+                #widget button: "B" | on-click: { _ in V <- "B" },
+                #widget button: "1" | on-click: { _ in V <- 1 },
+                #widget button: "true" | on-click: { _ in V <- true }
+              ],
+
+              #widget given: V
+                | when: { X in X =:= "A" } show: { _ in "Hello A" }
+                | when: { X in X =:= "B" } show: { _ in "Hello B" }
+                | when: #integer show: { I in "Hello an integer: [I]" }
+                | default: { _ in "Not here" },
+            ]
+          end
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--tabs render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Tabs"
+      | body: (
+          #widget tabbed-panel: [
+            #tab id: "code"
+              | header: "Code"
+              | content: "A",
+            #tab id: "test"
+              | header: "Test"
+              | content: "B",
+            #tab id: "browser"
+              | header: "Browser"
+              | content: "C",
+          ]
+          | selected: "code"
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--cards render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Cards"
+      | body: (
+          #widget flex-row: [
+            #widget card: [
+              #card-child header: "The Sun",
+              #card-child media: (#widget image: (package assets at: "assets/sun.png")),
+              #card-child body: "Some text goes here and it can keep going on and on and on."
+            ],
+
+            #widget card: [
+              #card-child header: "Core",
+              #card-child meta: (
+                #widget flex-row: [
+                  "crochet.core",
+                  "experimental"
+                ]
+                | transform
+                | flex-justify-content: #flex-justify space-between
+              ),
+              #card-child body: "Some text goes here and it can keep going on and on and on.",
+              #card-child footer: (
+                #widget flex-row: [ 
+                  #widget icon-button: (#widget icon: "heart"),
+                  #widget icon-button: (#widget icon: "download"),
+                  #widget space | transform | flex-grow: #flex-grow grow,
+                  #widget button: "View package"
+                ]
+                | transform
+                | flex-gap: #text-size extra-small
+              )
+            ],
+
+            #widget card: [
+              #card-child header: "Core",
+              #card-child meta: (
+                #widget flex-row: [
+                  "crochet.core",
+                  "experimental"
+                ]
+                | transform
+                | flex-justify-content: #flex-justify space-between
+              ),
+              #card-child content: #widget divider,
+              #card-child body: "Some text goes here and it can keep going on and on and on.",
+              #card-child action: (
+                #widget button: "Install package"
+              )
+            ],
+          ]
+          | transform
+          | flex-align-items: #flex-align stretch
+          | flex-gap: #text-size base
+          | flex-wrap: #flex-wrap wrap
+        ),
+
+    #widget category-section
+      | title: "Fluid cards"
+      | body: (
+          #widget fluid-card: [
+            #card-child header: (
+              #widget flex-row: [
+                ("Json" as widget)
+                  | transform
+                  | flex-grow: #flex-grow grow,
+                #widget icon-button: (#widget icon: "pen")
+                  | transform
+                  | font-size: #text-size base,
+                #widget icon-button: (#widget icon: "copy")
+                  | transform
+                  | font-size: #text-size base,
+              ]
+              | transform
+              | flex-gap: #text-size extra-small
+              | flex-justify-content: #flex-justify space-between
+              | flex-align-items: #flex-align baseline
+            ),
+            #card-child media: (#widget image: (package assets at: "assets/sun.png"))
+          ]
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--sections render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Recent projects"
+      | actions: (#widget button: "See all" | style: #button-style clear)
+      | body: (
+          "Contents go here yay"
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+
+command pages--checkboxes render-page do
+  let Disable = #reference checkbox: "disable";
+  #widget category-section
+    | title: "Checkboxes"
+    | body: (
+        #widget flex-column: [
+          #widget checkbox: "Disable editing"
+            | reference: Disable,
+
+          #widget text-input: "Edit this!"
+            | disabled: Disable checked,
+        ]
+      );
+end
+
+command pages--text-input render-page do
+  let Text = #reference text-input: "text";
+  let Name = Text value map: { X in
+              (untaint make-trusted: X) ascii to-upper-case to-text
+             };
+  #widget category-section
+    | title: "Text input"
+    | body: (
+        #widget flex-column: [
+          #widget text-input: "Your name"
+            | reference: Text,
+
+          #widget text-input: "You've typed"
+            | value: Name
+            | disabled: (Name map: { X in not X is-empty }),
+
+          "Hello, [Name]"
+        ]
+        | transform
+        | flex-gap: #text-size base
+      );
+end
+
+command pages--buttons render-page do
+  let Clicks = #reference buttons: "clicks";
+  let N = Clicks clicked map: { _ in 1 }
+            |> #observable-cell from-stream: _ initial-value: 0
+            |> _ fold-with: { S, X in S push: (S state + X) };
+  #widget flex-column: [
+    #widget category-section
+      | title: "Using references"
+      | body: [
+          #widget button: "You've clicked me [N] times!"
+            | reference: Clicks
+        ],
+
+    #widget category-section
+      | title: "Buttons"
+      | body: (#widget flex-row: [
+          #widget button: "Button",
+          #widget icon-button: (#widget icon: "heart")
+            | on-click: { _ in purr-ui show-modal: ("Hello there friend!") },
+        ] | transform | flex-gap: #text-size base),
+
+    #widget category-section
+      | title: "Toggle buttons"
+      | body: (
+          #widget flex-row: [
+            #widget toggle-button: "A"
+              | when-active: "B",
+
+            #widget toggle-icon-button: (#widget icon: "microphone")
+              | when-active: (#widget icon: "microphone-slash"),
+          ] | transform | flex-gap: #text-size base
+        ),
+
+    #widget category-section
+      | title: "Button groups"
+      | body: (
+          do
+            let View = #reference toggle-button-group: "view" initial-value: "";
+            #widget flex-column: [
+              #widget toggle-button-group: [
+                #toggle-button-group-child icon-button: (#widget icon: "list") value: "Lists",
+                #toggle-button-group-child icon-button: (#widget icon: "border-all") value: "Grid",
+                #toggle-button-group-child icon-button: (#widget icon: "image") value: "Single"
+              ]
+              | value: "Lists"
+              | reference: View,
+
+              "Current view: [View value]"
+            ]
+          end
+        )
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;
+end
+
+command pages--dividers render-page =
+  #widget flex-column: [
+    #widget category-section
+      | title: "Dividers"
+      | body: (
+          #widget flex-column: [
+            #widget divider,
+            #widget divider content: "Some text",
+            #widget divider content: "Some text" | alignment: #divider-alignment at-end,
+            #widget divider content: "Some text" | alignment: #divider-alignment at-start,
+          ]
+        ),
+
+    #widget category-section
+      | title: "Vertical dividers"
+      | body: (
+          #widget flex-row: [
+            "a",
+            #widget divider | orientation: #divider-orientation vertical,
+            "b",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical,
+            "c",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-start,
+            "d",
+            #widget divider content: "ok" | orientation: #divider-orientation vertical | alignment: #divider-alignment at-end,
+            "e",
+          ]
+          | transform
+          | minimum-height: #size large-9x
+          | flex-align-items: #flex-align center
+        ),
+  ]
+  | transform
+  | flex-gap: #text-size large-3x
+  | flex-align-items: #flex-align center;

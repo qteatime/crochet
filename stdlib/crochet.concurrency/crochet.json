@@ -1,5 +1,7 @@
 {
   "name": "crochet.concurrency",
+  "title": "Concurrency primitives",
+  "description": "Crochet's standard concurrency primitives, covering actors, reactive streams, promises, and CSP channels.",
   "target": "*",
   "native_sources": ["native/promise.js", "native/timer.js", "native/actor.js"],
   "sources": [
@@ -14,6 +16,13 @@
   "dependencies": ["crochet.core", "crochet.time"],
   "capabilities": {
     "requires": [],
-    "provides": ["wall-clock-timer"]
+    "provides": [
+      {
+        "name": "wall-clock-timer",
+        "title": "High-precision timer",
+        "risk": "high",
+        "description": "Used for getting the current time of the computer, with milliseconds precision. This capability has a high risk because it can be abused to access sensitive data using the Spectre vulnerability. Most packages should request a lower precision timer instead, which has a lower risk."
+      }
+    ]
   }
 }

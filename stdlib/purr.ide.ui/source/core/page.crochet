@@ -1,0 +1,63 @@
+% crochet
+
+trait purr-ui-page with
+  command Self render-page -> widget;
+  command Self location-selector -> any;
+end
+
+command (X has purr-ui-page) location-selector = X;
+
+
+effect purr-ui-navigation with
+  navigate(widget is widget, page is any has purr-ui-page); // -> nothing
+  make-router(router is router); // -> nothing
+  watch-selector(selector is any); // -> observable-cell<boolean>
+end
+
+abstract router;
+
+type basic-router(
+  name is static-text,
+  selectors is list<any>,
+  initial-page, // [page, widget] or nothing
+) is router;
+
+type cached-router(
+  name is static-text,
+  selectors is list<any>,
+  initial-page, // [page, widget] or nothing
+  render-cache is cell<map<X has purr-ui-page, dom-node>>,
+) is router;
+
+
+command router accepts: (Page has purr-ui-page) do
+  let Selector = Page location-selector;
+  self.selectors some: { S in S =:= Selector };
+end
+
+command #router basic: (Name is text) =
+  new basic-router(
+    name -> Name,
+    selectors -> [],
+    initial-page -> nothing,
+  );
+
+command #router cached: (Name is text) =
+  new cached-router(
+    name -> Name,
+    selectors -> [],
+    initial-page -> nothing,
+    render-cache -> #cell with-value: #map empty,
+  );
+
+command basic-router accepts: (Selectors is list<any>) =
+  new basic-router(self with selectors -> Selectors);
+
+command cached-router accepts: (Selectors is list<any>) =
+  new cached-router(self with selectors -> Selectors);
+
+command basic-router initial-page: (Page has purr-ui-page) =
+  new basic-router(self with initial-page -> [page -> Page, widget -> Page render-page as widget | commit]);
+
+command cached-router initial-page: (Page has purr-ui-page) =
+  new cached-router(self with initial-page -> [page -> Page, widget -> Page render-page as widget | commit]);

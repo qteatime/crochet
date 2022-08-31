@@ -1,0 +1,6 @@
+% crochet
+
+type crochet-dependency(
+  name is crochet-package-name,
+  capabilities is list<crochet-capability>,
+);

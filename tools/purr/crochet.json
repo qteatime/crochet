@@ -1,0 +1,69 @@
+{
+  "name": "purr",
+  "description": "Purr: a secure, extensible, and privacy-respecting IDE for any language",
+  "target": "*",
+  "native_sources": ["native/driver.js", "native/reflection.js"],
+  "sources": [
+    "source/main.crochet",
+
+    "source/_lang.crochet/package.crochet",
+
+    "source/core/api.crochet",
+    "source/core/project.crochet",
+    "source/core/project-state.crochet",
+    "source/core/application.crochet",
+    "source/core/changeset.crochet",
+    "source/core/file.crochet",
+
+    "source/services/crochet-library.crochet",
+
+    "source/driver/core.crochet",
+
+    "source/applications/configure/core.crochet",
+    "source/applications/configure/capabilities.crochet",
+    "source/applications/configure/dependencies.crochet",
+    "source/applications/configure/meta.crochet",
+    "source/applications/home/core.crochet",
+    "source/applications/run-crochet/core.crochet",
+
+    "source/ui/core.crochet",
+    "source/ui/section.crochet",
+    "source/ui/typography.crochet",
+    "source/ui/button.crochet",
+    "source/ui/specialised.crochet",
+    "source/ui/capabilities.crochet",
+    "source/ui/package.crochet",
+
+    "source/pages/core.crochet",
+    "source/pages/welcome.crochet",
+    "source/pages/project.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.concurrency",
+    "crochet.time",
+    "crochet.language.pickles",
+    "crochet.language.json",
+    "crochet.text.regex",
+    "purr.ide.ui",
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": ["purr.ide.ui/ui-control", "crochet.core/untainting", "native"],
+    "provides": []
+  },
+  "assets": [
+    {
+      "path": "assets/package.pickles",
+      "mime": "text/plain"
+    }
+  ],
+  "config": {
+    "electron": {
+      "window": {
+        "width": 1280,
+        "height": 720
+      }
+    }
+  }
+}

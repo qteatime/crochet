@@ -1,0 +1,46 @@
+% crochet
+
+open crochet.unsafe.wrapper.dom;
+
+command package render-lens: Doc do
+  let Lens = foreign lens.render(Doc.document);
+  dom from-element: Lens;
+end
+
+command dom-renderer render: (W is widget-lenses-specific) do
+  let Node = dom make-element: "div" class: "purr-ui-lens purr-ui-lens-single";
+  let Representation = foreign repr.show-one(W.value, W.perspective);
+  condition
+    when Representation is nothing do
+      Node classes add: "purr-ui-lens-error";
+      Node append: (dom make-text: "(No representation defined for the perspective)");
+    end
+
+    otherwise do
+      Node append: (package render-lens: Representation);
+    end
+  end
+  Node;
+end
+
+command dom-renderer render: (W is widget-lenses-all) do
+  let Node = dom make-element: "div" class: "purr-ui-lens purr-ui-lens-all";
+  let Representations =
+    (foreign repr.show-all(W.value))
+      |> _ enumerate
+      |> _ map: { X in #tab id: X index
+                        | header: (X value).name
+                        | content: new widget-committed(new dom-rendered-widget(package render-lens: X value)) }
+      |> #widget tabbed-panel: _
+      |> _ selected: 1
+      |> self render: _;
+  Node append: Representations;
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-code-editor) do
+  let Node = dom make-element: "div" class: "purr-ui-code-editor";
+  let Editor = new code-editor-shell(foreign code-mirror.make-editor(dom unbox: Node, [->]));
+  self extend: Node with: Editor;
+end

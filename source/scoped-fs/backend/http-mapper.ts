@@ -9,6 +9,10 @@ export class HttpFsMapper extends ScopedFSBackend {
     return `http(${this.root})`;
   }
 
+  equals(other: ScopedFSBackend): boolean {
+    return other instanceof HttpFsMapper && other.root === this.root;
+  }
+
   async read(path0: string) {
     const path = join_path(this.root, path0);
     const response = await fetch(path);

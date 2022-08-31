@@ -1,0 +1,561 @@
+% crochet
+
+open purr.ide.ui;
+open crochet.concurrency;
+open crochet.debug;
+
+command application-configure dependencies do
+  self
+    title: "Dependencies"
+    actions: #widget space
+    body: self list-dependencies;
+end
+
+command application-configure list-dependencies do
+  purr current-project map: { Project in 
+    pui list: ([
+      pui action-button: "Add a dependency"
+        | icon: "plus"
+        | on-click: { _ in
+            let Modal = purr-ui show-modal: (self add-dependency-close: { Modal close });
+          }
+        | as widget
+        | transform
+        | margin: (1.0 as root-em)
+    ] ++ (Project meta dependencies all map: (self render-dependency: _ project: Project)));
+  };
+end
+
+command application-configure render-dependency: Dependency project: Project do
+  #crochet-library shared-instance lookup-package: Dependency name
+    | map: { Package in
+        let Risk = self dependency-risk: Dependency package: Package project: Project;
+
+        #widget flex-row: [
+          self package-summary: Package risk: Risk,
+
+          #widget flex-row: [
+            #widget icon-button: (#widget icon: "pen")
+              | on-click: { _ in
+                  let Modal = purr-ui show-modal: (self edit-dependency: Dependency project: Project close: { Modal close })
+                },
+            #widget icon-button: (#widget icon: "trash")
+              | on-click: { _ in
+                  purr project: purr current-project value remove-dependency: Dependency;
+                },
+          ]
+          | transform 
+          | flex-gap: (0.5 as root-em)
+          | width: #size fit-content,
+        ]
+        | transform
+        | flex-gap: (1.0 as root-em)
+        | flex-align-items: #flex-align center;
+      }
+    | value-or-default: "Unknown package [Dependency name]";
+end
+
+command application-configure dependency-risk: Dependency package: Package project: Project do
+  let Library = #crochet-library shared-instance;
+  let Use-set = #set from: (Project meta capabilities requested | map: (_ name));
+  let Using = Package capabilities provided
+                | keep-if: { X in Use-set contains: X qualified-name };
+  let Trusted = Package capabilities trusted
+                  | map: (Library lookup-details: _);
+  let Granting = Dependency capabilities
+                  | map: (Library lookup-details: _);
+  let Known-risks = (Using ++ Trusted ++ Granting) map: (_ risk);
+
+  ([#crochet-capability-risk low] ++ Known-risks)
+    | maximum;
+end
+
+command application-configure render-dependency: Dependency package: Package capability: Capability do
+  let Granted = Dependency capabilities some: { X in X name =:= Capability name };
+
+  #widget flex-row: [
+    #widget checkbox: ""
+      | checked: Granted,
+
+    #widget flex-column: [
+      (pui secondary-text: (self dependency-capability-kind: Capability))
+        | transform
+        | font-weight: #font-weight semi-bold
+        | font-size: #text-size small
+        | text-transform: #text-transform uppercase,    
+
+      self dependency-capability-summary: Capability
+    ]
+    | transform
+    | flex-gap: (0.25 as root-em)
+    | flex-grow: #flex-grow grow
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | flex-align-items: #flex-align center;
+end
+
+command application-configure dependency-capability-kind: (Capability is crochet-package-requested-capability) =
+  Capability kind to-enum-text;
+
+command application-configure dependency-capability-kind: (Capability is crochet-package-provided-capability) =
+  "provided";
+
+
+command application-configure dependency-capability-summary: (Capability is crochet-package-requested-capability) do
+  pui capability-summary: (Library lookup-details: Capability);
+end
+
+command application-configure dependency-capability-summary: (Capability is crochet-package-provided-capability) do
+  pui capability-summary: Capability;
+end
+
+
+local type dependency-editor-state(
+  state is observable-cell<crochet-package-dependency>,
+  package is result<crochet-package, not-found>,
+  project is purr-project-crochet,
+  library is crochet-library,
+);
+
+command application-configure edit-dependency: Dependency project: Project close: Close do
+  let Library = #crochet-library shared-instance;
+  let Package = Library lookup-package: Dependency name;
+  let State = new dependency-editor-state(
+    state -> #observable-cell with-value: Dependency,
+    package -> Package,
+    project -> Project,
+    library -> Library,
+  );
+  let Risk = State.state map: { Dependency in
+    Package
+      | map: (self dependency-risk: Dependency package: _ project: Project)
+      | value-or-default: #crochet-capability-risk unknown
+  };
+  let Changed = State.state map: { X in not (X serialise =:= Dependency serialise) };
+
+  #widget flex-column: [
+    pui heading-2: "Edit dependency",
+    
+    State summary-header: self,
+
+    #widget button: "Update dependency"
+      | disabled: (Changed map: (not _))
+      | on-click: { _ in
+          purr project: purr current-project value update-dependency: State.state value;
+          Close();
+        },
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-width: (45.0 as root-em)
+  | minimum-height: (25.0 as root-em)
+  | height: (75.0 as viewport-height);
+end
+
+command application-configure tab-title: Title count: (Count is integer) =
+  self tab-title: Title count: (#observable-cell with-value: Count);
+
+command application-configure tab-title: Title count: (Count is observable-cell) do
+  let Badge = Count map: { C in
+                condition
+                  when C > 99 => "99+";
+                  otherwise => C to-text;
+                end
+              };
+  #widget flex-row: [
+    Title,
+    pui chip: Badge color: #color red-800
+      | transform
+      | font-color: #color white
+  ]
+  | transform
+  | flex-wrap: #flex-wrap no-wrap
+  | flex-align-items: #flex-align center
+  | flex-gap: (0.5 as root-em);
+end
+
+local enum capability-kind =
+  required, optional, trusted, unknown;
+
+command dependency-editor-state capabilities do
+  self.state map: { Dependency in
+    condition
+      when self.package is error =>
+        Dependency capabilities
+          | map: { X in [
+              kind -> #capability-kind unknown,
+              value -> self.library lookup-details: X,
+              granted -> true,
+            ] };
+
+      when self.package is ok do
+        let Package = self.package value;
+        let Requested = Package capabilities user-grantable map: { X in
+          [
+            kind -> #capability-kind from-enum-text: X kind to-enum-text,
+            value -> self.library lookup-details: X,
+            granted -> Dependency capabilities some: { C in C name =:= X name }
+          ];
+        };
+        let Trusted = Package capabilities trusted map: { X in
+          [
+            kind -> #capability-kind trusted,
+            value -> self.library lookup-details: X,
+            granted -> true,
+          ]
+        };
+        Requested ++ Trusted;
+      end
+    end
+  };
+end
+
+command dependency-editor-state capabilities-of-kind: Kind =
+  self capabilities
+    | map: (_ keep-if: { C in C.kind =:= Kind });
+
+command dependency-editor-state grants-of-kind: Kind =
+  self capabilities-of-kind: Kind
+    | map: (_ keep-if: { C in C.granted });
+
+command dependency-editor-state edit-capabilities: OCaps do
+  OCaps map: { Capabilities in
+    let Granted = Capabilities partition-by: { C in C.granted };
+  
+    #widget flex-column: [
+      pui list: (Granted satisfying map: (self render-grantable-capability: _)),
+
+      pui heading-3: "Not granted",
+      pui list: (Granted not-satisfying map: (self render-grantable-capability: _)),
+    ]
+    | transform
+    | margin-vertical: (0.5 as root-em)
+    | flex-gap: (1.0 as root-em)
+    | height: #size fit-content
+  }
+  | as widget
+  | transform
+  | overflow: #overflow auto;
+end
+
+command dependency-editor-state render-grantable-capability: Capability do
+  let Checked-ref = #reference checkbox: "granted";
+  let Previous = #cell with-value: Capability.granted;
+  let Updated-dependency = Checked-ref checked stream subscribe: { Checked in
+    condition
+      when Checked =:= Previous value => nothing;
+      otherwise do
+        let Dependency = self.state value;
+        let New-capabilities =
+          condition
+            when Checked => Dependency capabilities-set add: Capability.value qualified-name;
+            when not Checked => Dependency capabilities-set remove: Capability.value qualified-name;
+          end;
+
+        Previous <- Checked;
+        self.state <- 
+          new crochet-package-dependency(
+            Dependency with meta -> [Dependency.meta with capabilities -> New-capabilities values]
+          );
+      end
+    end
+  };
+
+  #widget flex-row: [
+    #widget checkbox: ""
+      | checked: Capability.granted
+      | reference: Checked-ref,
+
+    #widget flex-column: [
+      pui capability-summary: Capability.value,
+      pui secondary-text: Capability.value description,
+    ]
+    | transform
+    | flex-gap: (1.0 as root-em)
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | flex-align-items: #flex-align center;
+end
+
+command dependency-editor-state show-trusted-capabilities do
+  self capabilities-of-kind: #capability-kind trusted
+    | map: { Capabilities in
+        #widget flex-column: [
+          "These capabilities are granted automatically by Crochet when the
+           package is included as part of the Trusted Computing Base in
+           Crochet's standard library",
+
+          pui list: (Capabilities map: { X in self render-capability: X.value })
+        ]
+        | transform
+        | margin-vertical: (0.5 as root-em)
+        | flex-gap: (1.0 as root-em)
+        | height: #size fit-content
+      }
+    | as widget
+    | transform
+    | overflow: #overflow auto;
+end
+
+command dependency-editor-state show-provided-capabilities do
+  #widget container: [
+    self.package map: { Package in 
+      let Used = #set from: (self.project meta capabilities requested map: { C in C name });
+      let Using = Package capabilities provided partition-by: { C in Used contains: C qualified-name };
+
+      #widget flex-column: [
+        "These capabilities are provided by the package to control access
+          to its more dangerous features.",
+
+        pui heading-3: "Using",
+        pui list: (Using satisfying map: (self render-capability: _)),
+
+        pui heading-3: "Not using",
+        pui list: (Using not-satisfying map: (self render-capability: _)),
+      ]
+      | transform
+      | margin-vertical: (0.5 as root-em)
+      | flex-gap: (1.0 as root-em)
+      | height: #size fit-content;
+    }
+    | value-or-default: #widget space
+  ]
+  | transform
+  | overflow: #overflow auto;
+end
+
+command dependency-editor-state render-capability: Capability do
+  #widget flex-column: [
+    pui capability-summary: Capability,
+    pui secondary-text: Capability description,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | flex-align-items: #flex-align center;
+end
+
+local abstract add-dependency-mode;
+local singleton add-dependency-mode--search is add-dependency-mode;
+local type add-dependency-mode--review(dependency is crochet-package) is add-dependency-mode;
+
+command application-configure add-dependency-close: Close do
+  let Mode = #observable-cell with-value: add-dependency-mode--search;
+
+  #widget flex-column: [
+    pui heading-2: "Add a dependency",
+
+    #widget given: Mode
+      | when: #add-dependency-mode--search show: (self add-dependency-search-mode: Mode)
+      | when: #add-dependency-mode--review show: (self add-dependency-review: _ mode: Mode)
+      | transform
+      | height: #size fill
+      | overflow: #overflow hidden,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | maximum-width: (45.0 as root-em)
+  | minimum-height: (25.0 as root-em)
+  | height: (75.0 as viewport-height)
+  | overflow: #overflow hidden;
+end
+
+command application-configure add-dependency-search-mode: Mode do
+  let Library = #crochet-library shared-instance;
+  let ODeps = purr current-project map: { X in X meta dependencies all };
+  let Current-set = ODeps map: { Xs in #set from: (Xs map: (_ name)) };
+  let Input = #observable-cell with-value: "";
+  let Search-ref = #reference text-input: "search";
+  let Filtered-deps = Search-ref value zip: Current-set with: { Value, Added-set in
+    Library search-package-by-text: (untaint make-trusted: Value)
+      | remove-if: { X in Added-set contains: X name };
+  };
+
+  #widget flex-column: [
+    #widget text-input: "Search for a dependency"
+      | placeholder: "Type to search"
+      | value: Input
+      | reference: Search-ref,
+
+    #widget container: [
+      Filtered-deps
+        | map: { Xs in
+            pui list: (Xs slice-to: 50 | map: (self render-add-dependency: _ mode: Mode))
+          }
+        | as widget
+        | transform
+        | height: #size fit-content
+    ]
+    | transform
+    | overflow: #overflow auto,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
+
+command application-configure add-dependency-review: Dependency-mode mode: Mode do
+  let Package = Dependency-mode.dependency;
+  let Initial-dependency = new crochet-package-dependency(
+                            meta -> [
+                              name -> Package name,
+                              capabilities -> [],
+                              target -> "any"
+                            ]
+                          );
+  let Library = #crochet-library shared-instance;
+  let State = new dependency-editor-state(
+    state -> #observable-cell with-value: Initial-dependency,
+    package -> #result ok: Package,
+    project -> purr current-project value,
+    library -> Library
+  );
+
+  #widget flex-row: [
+    #widget icon-button: (#widget icon: "chevron-left")
+      | on-click: { _ in Mode <- add-dependency-mode--search },
+
+    #widget flex-column: [
+      State summary-header: self,
+
+      #widget button: "Add dependency"
+        | on-click: { _ in
+            purr project: purr current-project value add-dependency: State.state value;
+            Mode <- add-dependency-mode--search;
+          }
+    ]
+    | transform
+    | flex-gap: (1.0 as root-em)
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em)
+  | flex-align-items: #flex-align flex-start;
+end
+
+command application-configure render-add-dependency: Package mode: Mode do
+  let Dependency = new crochet-package-dependency(meta -> [
+    name -> Package name,
+    capabilities -> [],
+    target -> "any"
+  ]);
+  let Risk = self dependency-risk: Dependency package: Package project: purr current-project value;
+
+  #widget flex-row: [
+    self package-summary: Package risk: Risk
+      | transform
+      | flex-grow: #flex-grow grow
+      | overflow: #overflow hidden,
+
+    #widget icon-button: (#widget icon: "chevron-right")
+      | on-click: { _ in Mode <- new add-dependency-mode--review(Package) },
+  ]
+  | transform
+  | height: #size fit-content
+  | flex-align-items: #flex-align center
+  | flex-gap: (1.0 as root-em)
+  | overflow: #overflow hidden
+  | flex-wrap: #flex-wrap no-wrap;
+end
+
+command application-configure package-summary: (Package is crochet-package) risk: Risk do
+  #widget flex-column: [
+    #widget flex-row: [
+      pui heading-3: Package name
+        | transform
+        | font-family: #font-family monospace
+        | font-color: (pui risk-color: Risk),
+
+      pui chip: Risk to-enum-text color: (pui risk-background-color: Risk),
+    ]
+    | transform
+    | flex-align-items: #flex-align center
+    | flex-gap: (1.0 as root-em),
+
+    pui secondary-text: Package title
+      |> _ transform
+      |> _ font-size: #text-size extra-small
+      |> pui ellipsis-text: _,
+
+    #widget space
+      | transform
+      | height: (1.0 as root-em),
+
+    pui ellipsis-text: (pui secondary-text: Package description),
+  ]
+  | transform
+  | flex-grow: #flex-grow grow;
+end
+
+command dependency-editor-state summary-header: App do
+  let Risk = self.state map: { Dependency in
+    self.package
+      | map: (App dependency-risk: Dependency package: _ project: self.project)
+      | value-or-default: #crochet-capability-risk unknown
+  };
+
+  #widget flex-column: [
+    #widget flex-column: [
+      #widget flex-row: [
+        pui heading-3: (self.state map: (_ name)),
+        Risk map: { R in pui chip: R to-enum-text color: (pui risk-background-color: R) },
+      ]
+      | transform
+      | flex-align-items: #flex-align center
+      | flex-gap: (1.0 as root-em)
+      | height: #size fit-content,
+
+      pui secondary-text: (self.package map: (_ title) | value-or-default: "")
+        |> pui ellipsis-text: _
+        |> _ transform
+        |> _ font-size: #text-size extra-small,
+      
+      #widget space
+        | transform
+        | height: (1.0 as root-em),
+
+      pui secondary-text: (self.package map: (_ description) | value-or-default: "")
+        | transform
+        | overflow-vertical: #overflow auto,
+    ]
+    | transform
+    | height: (6.0 as root-em),
+
+    #widget tabbed-panel: [
+      #tab id: "required"
+        | header:
+            (App tab-title: "Required" 
+                 count: (self grants-of-kind: #capability-kind required | map: (_ count)))
+        | content: (self edit-capabilities: (self capabilities-of-kind: #capability-kind required)),
+
+      #tab id: "optional"
+        | header:
+            (App tab-title: "Optional" 
+                 count: (self grants-of-kind: #capability-kind optional | map: (_ count)))
+        | content: (self edit-capabilities: (self capabilities-of-kind: #capability-kind optional)),
+
+      #tab id: "trusted"
+        | header:
+            (App tab-title: "Trusted" 
+                 count: (self grants-of-kind: #capability-kind trusted | map: (_ count)))
+        | content: self show-trusted-capabilities,
+      
+      #tab id: "provided"
+        | header:
+            (App tab-title: "Provided"
+                 count: (self.package map: { P in P capabilities provided count } | value-or-default: 0))
+        | content: self show-provided-capabilities,
+
+      #tab id: "unsupported"
+        | header:
+            (App tab-title: "Unknown" 
+                 count: (self grants-of-kind: #capability-kind unknown | map: (_ count)))
+        | content: (self edit-capabilities: (self capabilities-of-kind: #capability-kind unknown)),
+    ]
+    | selected: "required"
+    | transform
+    | flex-grow: #flex-grow grow
+    | overflow: #overflow hidden,
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end

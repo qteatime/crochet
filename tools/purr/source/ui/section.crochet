@@ -1,0 +1,64 @@
+% crochet
+
+open purr.ide.ui;
+
+type pui-highlight-heading(title is widget, sub-title is widget);
+command pui highlight-heading: (Title has to-widget) =
+  new pui-highlight-heading(
+    title -> Title as widget,
+    sub-title -> #widget space
+  );
+
+command pui-highlight-heading sub-title: (X has to-widget) =
+  new pui-highlight-heading(self with sub-title -> X as widget);
+
+implement to-widget for pui-highlight-heading;
+command pui-highlight-heading as widget =
+  #widget flex-column: [
+    pui heading-1: self.title,
+    pui heading-2: self.sub-title
+      |> pui secondary-text: _
+      |> _ transform
+      |> _ font-weight: #font-weight regular,
+  ]
+  | transform
+  | flex-gap: #text-size small
+  | text-align: #text-align center
+  | padding-vertical: #text-size large-3x
+  | height: #size fit-content;
+
+
+command pui action-buttons: (Content is list<X has to-widget>) =
+  #widget flex-column: Content
+    | transform
+    | flex-gap: #text-size extra-small
+    | maximum-width: #size columns-6
+    | height: #size fit-content;
+
+
+command pui list: (Items is list<X has to-widget>) =
+  #widget flex-column: (
+    Items enumerate map: { X in
+      #widget flex-column: [
+        (X value as widget)
+          | transform
+          | padding-vertical: (0.8 as root-em)
+          | padding-horizontal: (1.0 as root-em),
+
+        condition
+          when X index === Items count => #widget space;
+          otherwise =>
+            #widget divider
+              | transform
+              | padding: (0.0 as root-em);
+        end
+      ]
+      | transform
+      | height: #size fit-content
+    }
+  )
+  | transform
+  | background-color: #color background
+  | border-radius: (0.5 as root-em)
+  | overflow: #overflow hidden
+  | height: #size fit-content;

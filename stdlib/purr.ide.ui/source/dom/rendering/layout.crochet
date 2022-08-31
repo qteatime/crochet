@@ -1,0 +1,271 @@
+% crochet
+
+open crochet.concurrency;
+open crochet.unsafe.wrapper.dom;
+
+command dom-renderer render: (W is widget-flow) do
+  let Node = dom make-element: "div" class: "purr-ui-flow";
+  for Child in W.contents do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is widget-container) do
+  let Node = dom make-element: "div" class: "purr-ui-container";
+  for Child in W.contents do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is widget-title-bar) do
+  let Node = dom make-element: "div" class: "purr-ui-title-bar";
+  
+  let Button = dom make-element: "div" class: "purr-ui-title-bar-button";
+  Button append: (self render: W.action-button);
+  Node append: Button;
+
+  let Title = dom make-element: "div" class: "purr-ui-title-bar-title";
+  Title append: (self render: W.title);
+  Node append: Title;
+
+  let Middle = dom make-element: "div" class: "purr-ui-title-bar-middle";
+  Middle append: (self render: W.middle);
+  Node append: Middle;
+
+  let Right = dom make-element: "div" class: "purr-ui-title-bar-right";
+  Right append: (self render: W.right);
+  Node append: Right;
+
+  Node;
+end
+
+command dom-renderer render: (W is widget-category-section) do
+  let Node = dom make-element: "div" class: "purr-ui-category-section";
+  let Header = dom make-element: "div" class: "purr-ui-category-section-header";
+  let Title = dom make-element: "div" class: "purr-ui-category-section-title"
+                | append: (self render: W.title);
+  let Actions = dom make-element: "div" class: "purr-ui-category-section-actions"
+                  | append: (self render: W.actions);
+  let Body = dom make-element: "div" class: "purr-ui-category-section-body"
+              | append: (self render: W.body);
+  
+  Node
+    | append: (Header append: Title | append: Actions)
+    | append: Body;
+end
+
+command dom-renderer render: (W is widget-divider) do
+  let Node = dom make-element: "div" class: "purr-ui-divider";
+  self set-property: "data-alignment" to: W.alignment in: Node;
+  self set-property: "data-orientation" to: W.orientation in: Node;
+  let Content = dom make-element: "div" class: "purr-ui-divider-content";
+  Content append: (self render: W.content);
+  Node append: (dom make-element: "div" class: "purr-ui-divider-before");
+  Node append: Content;
+  Node append: (dom make-element: "div" class: "purr-ui-divider-after");
+  Node;
+end
+
+command dom-renderer render: (W is widget-card) do
+  let Node = dom make-element: "div" class: "purr-ui-card";
+  self set-property: "data-style" to: W.style in: Node;
+  for Child in W.contents do
+    Node append: (self render: Child);
+  end
+  Node;
+end
+
+command dom-renderer render: (W is card-child-header) =
+  dom make-element: "div" class: "purr-ui-card-header"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-body) =
+  dom make-element: "div" class: "purr-ui-card-body"
+    | append: (self render: W.content);
+  
+command dom-renderer render: (W is card-child-meta) =
+  dom make-element: "div" class: "purr-ui-card-meta"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-media) =
+  dom make-element: "div" class: "purr-ui-card-media"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-footer) =
+  dom make-element: "div" class: "purr-ui-card-footer"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-content) =
+  dom make-element: "div" class: "purr-ui-card-content"
+    | append: (self render: W.content);
+
+command dom-renderer render: (W is card-child-action) =
+  dom make-element: "div" class: "purr-ui-card-action"
+    | append: (self render: W.content);
+
+
+command dom-renderer render: (W is widget-tabbed-panel) do
+  let Node = dom make-element: "div" class: "purr-ui-tabbed-panel-container";
+  let Header = dom make-element: "div" class: "purr-ui-tabbed-panel-header-container";
+  let Content = dom make-element: "div" class: "purr-ui-tabbed-panel-content-container";
+
+  self set-property: "data-layout" to: W.layout in: Node;
+
+  Node append: Header;
+  Node append: Content;
+
+  let Render-list = W.tabs map: { Tab in
+    let Header-node = dom make-element: "div" class: "purr-ui-tabbed-panel-header";
+    Header-node append: (self render: Tab.header);
+    Header append: Header-node;
+
+    Header-node on: "click" do: { _ in
+      Selected <- Tab.id;
+    };
+
+    let Content-node = dom make-element: "div" class: "purr-ui-tabbed-panel-content";
+    Content-node append: (self render: Tab.content);
+    Content append: Content-node;
+
+    [id -> Tab.id, header -> Header-node, content -> Content-node];
+  };
+
+  let Id-map = Render-list fold-from: #map empty with: { Map, X in
+    assert not (Map contains-key: X.id);
+    Map at: X.id put: X;
+  };
+
+  let Unselect = { X in
+    condition
+      when X is nothing => nothing;
+      otherwise do
+        X.header set: "data-selected" to: "false";
+        X.content set: "data-selected" to: "false";
+      end
+    end
+  };
+
+  let Select = { Id in
+    let Old = Unselect(Current value);
+    condition
+      when Id-map contains-key: Id do
+        let Nodes = Id-map at: Id;
+        Current <- Nodes;
+        Nodes.header set: "data-selected" to: "true";
+        Nodes.content set: "data-selected" to: "true";
+      end
+
+      otherwise do nothing end
+    end
+  };
+
+  let Current = #cell with-value: nothing;
+  let Selected = #observable-cell with-value: nothing;
+  Selected stream subscribe: Select;
+  W.selected subscribe: (Selected <- _);
+
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-navigation) do
+  let Node = dom make-element: "nav" class: "purr-ui-navigation";
+  for Child in W.items do
+    Node append: (self render-nav-child: Child);
+  end
+  Node;
+end
+
+command dom-renderer render-nav-child: (X is navigation-child-header) =
+  dom make-element: "div" class: "purr-ui-navigation-header"
+    | append: (self render: X.content);
+
+command dom-renderer render-nav-child: (X is navigation-child-link) =
+  dom make-element: "div" class: "purr-ui-navigation-link"
+    | append: (self render: X.link);
+
+
+local type breadcrumb-separator(content is widget);
+command dom-renderer render: (W is widget-breadcrumbs) do
+  let Node = dom make-element: "div" class: "purr-ui-breadcrumbs";
+  let Items = W.items intersperse: new breadcrumb-separator(W.separator);
+  for Child in Items do
+    Node append: (self render-breadcrumb-item: Child);
+  end
+  Node;
+end
+
+command dom-renderer render-breadcrumb-item: (W is breadcrumb-separator) =
+  dom make-element: "div" class: "purr-ui-breadcrumbs-separator"
+    | append: (self render: W.content);
+
+command dom-renderer render-breadcrumb-item: (W is widget) =
+  dom make-element: "div" class: "purr-ui-breadcrumbs-item"
+    | append: (self render: W);
+
+
+command dom-renderer render: (W is widget-vertical-timeline) do
+  let Node = dom make-element: "ul" class: "purr-ui-vertical-timeline";
+  for Child in W.items do
+    let Child-node = dom make-element: "li" class: "purr-ui-vertical-timeline-item";
+    Child-node append: (self render: Child);
+    Node append: Child-node;
+  end
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-panel) do
+  let Node = dom make-element: "div" class: "purr-ui-panel";
+  self set-property: "data-anchor" to: W.anchor in: Node;
+  Node append: (self render: W.contents);
+  Node;
+end
+
+
+command dom-renderer render: (W is widget-table) do
+  let Node = dom make-element: "table" class: "purr-ui-table";
+  self set-property: "data-style" to: W.style in: Node;
+
+  self render-table-header: W.header in: Node;
+  let Body = dom make-element: "tbody" class: "purr-ui-table-body";
+  Node append: Body;
+
+  for Row in W.rows do
+    let Row-node = dom make-element: "tr" class: "purr-ui-table-row";
+    Body append: Row-node;
+    for Cell in Row.cells do
+      self render-table-cell: Cell in: Row-node;
+    end
+  end
+
+  Node;
+end
+
+command dom-renderer render-table-header: table-header-none in: _ do
+  nothing;
+end
+
+command dom-renderer render-table-header: (H is table-header-sticky) in: Table do
+  let Header = dom make-element: "thead" class: "purr-ui-table-sticky-header";
+  Table append: Header;
+  let Header-row = dom make-element: "tr" class: "purr-ui-table-row";
+  Header append: Header-row;
+  for Cell in H.cells do
+    self render-table-cell: Cell in: Header-row;
+  end
+end
+
+command dom-renderer render-table-cell: (C is table-cell-header) in: Row do
+  let Node = dom make-element: "th" class: "purr-ui-table-header-cell";
+  Node append: (self render: C.content);
+  Row append: Node;
+end
+
+command dom-renderer render-table-cell: (C is table-cell-data) in: Row do
+  let Node = dom make-element: "td" class: "purr-ui-table-data-cell";
+  Node append: (self render: C.content);
+  Row append: Node;
+end

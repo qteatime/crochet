@@ -1,0 +1,30 @@
+% crochet
+
+type widget-reference(
+  content is widget,
+  reference is reference
+) is widget;
+
+command widget reference: (Ref is reference-widget) =
+  new widget-reference(self, Ref);
+
+command widget-button reference: (Ref is reference-button) =
+  new widget-reference(self, Ref);
+
+command widget-text-input reference: (Ref is reference-text-input) =
+  new widget-reference(self, Ref);
+
+command widget-checkbox reference: (Ref is reference-checkbox) =
+  new widget-reference(self, Ref);
+
+command widget-select-one reference: (Ref is reference-select-one) =
+  new widget-reference(self, Ref);
+
+command widget-code-editor reference: (Ref is reference-code-editor) =
+  new widget-reference(self, Ref);
+
+command widget-toggle-button reference: (Ref is reference-toggle-button) =
+  new widget-reference(self, Ref);
+
+command widget-toggle-button-group reference: (Ref is reference-toggle-button-group) =
+  new widget-reference(self, Ref);

@@ -1,0 +1,14 @@
+% crochet
+
+abstract option;
+
+type option-list(
+  options is list<option>,
+);
+
+command #option-list empty =
+  new option-list([]);
+
+command option-list add: (Option is option) =
+  new option-list(self.options remove-if: { X in X key =:= Option key } | append: Option);
+

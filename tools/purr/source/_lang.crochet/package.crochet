@@ -1,0 +1,284 @@
+% crochet
+
+open crochet.language.json;
+open crochet.language.pickles;
+open crochet.text.regex;
+
+type crochet-package(meta is any);
+
+// Parsing and serialisation
+define package-parser = lazy (
+  pickles from-schema: (package assets at: "assets/package.pickles" | read-as-text)
+    | lookup-module: "package"
+    | lookup: "Package"
+);
+
+command #crochet-package try-parse: (Json is text) -> result<crochet-package, any> do
+  json try-parse: Json
+    | then: { X in (force package-parser) parse: X }
+    | map: { X in new crochet-package(X) };
+end
+
+command crochet-package serialise =
+  self.meta;
+
+command crochet-package-requested-capability serialise =
+  self.meta;
+
+command crochet-package-provided-capability serialise =
+  self.meta;
+
+command crochet-package-dependency serialise =
+  self.meta;
+
+
+// Changesets
+type crochet-package-changeset(
+  from is crochet-package,
+  changes is list<crochet-package-change>,
+) is purr-changeset;
+
+abstract crochet-package-change is purr-change;
+type crochet-package-change--name(value is text) is crochet-package-change;
+type crochet-package-change--target(value is crochet-package-target) is crochet-package-change;
+type crochet-package-change--title(value is text) is crochet-package-change;
+type crochet-package-change--description(value is text) is crochet-package-change;
+type crochet-package-change--stability(value is crochet-package-stability) is crochet-package-change;
+
+command package change: (P is crochet-package) path: Path old: G new: V update: F =
+  #change-result compare: G() and: V() then: {
+    #change-result
+      updated: new crochet-package(P with meta -> F(P.meta))
+      audit-log: [
+        path -> Path,
+        value -> V(),
+      ]
+  };
+
+
+command crochet-package-change--name apply: (P is crochet-package) =
+  package change: P path: "name"
+          old: { P.meta.name } new: { self.value }
+          update: { M in [M with name -> self.value] };
+
+command crochet-package-change--target apply: (P is crochet-package) =
+  package change: P path: "target"
+          old: { P.meta.target }
+          new: { self.value to-enum-text }
+          update: { M in [M with target -> self.value to-enum-text] };
+
+command crochet-package-change--stability apply: (P is crochet-package) =
+  package change: P path: "stability"
+          old: { P.meta.stability }
+          new: { self.value to-enum-text }
+          update: { M in [M with stability -> self.value to-enum-text] };
+
+command crochet-package-change--title apply: (P is crochet-package) =
+  package change: P path: "title"
+          old: { P.meta.title } new: { self.value }
+          update: { M in [M with title -> self.value] };
+
+command crochet-package-change--description apply: (P is crochet-package) =
+  package change: P path: "description"
+          old: { P.meta.description } new: {self.value}
+          update: { M in [M with description -> self.value] };
+
+
+
+command crochet-package changeset =
+  new crochet-package-changeset(
+    from -> self,
+    changes -> [],
+  );
+
+command crochet-package-changeset append: (X is crochet-package-change) =
+  new crochet-package-changeset(self with changes -> self.changes append: X);
+
+command crochet-package-changeset name: (Value is text) =
+  self append: new crochet-package-change--name(Value);
+
+command crochet-package-changeset target: (Target is crochet-package-target) =
+  self append: new crochet-package-change--target(Target);
+
+command crochet-package-changeset title: (X is text) =
+  self append: new crochet-package-change--title(X);
+
+command crochet-package-changeset description: (X is text) =
+  self append: new crochet-package-change--description(X);
+
+command crochet-package-changeset stability: (X is crochet-package-stability) =
+  self append: new crochet-package-change--stability(X);
+
+
+// Types and accessors
+enum crochet-package-stability = 
+  experimental, stable, frozen, deprecated, unknown;
+
+enum crochet-package-target =
+  any, browser, node;
+
+command crochet-package name = self.meta.name;
+command crochet-package title = self.meta.title;
+command crochet-package description = self.meta.description;
+
+command crochet-package target =
+  #crochet-package-target from-enum-text: self.meta.target;
+
+command crochet-package stability =
+  #crochet-package-stability from-enum-text: self.meta.stability;
+
+command crochet-package capabilities =
+  new crochet-package-capabilities(self.meta.name, self.meta.capabilities);
+
+command crochet-package sources =
+  new crochet-package-sources(self.meta.sources, self.meta."native_sources");
+
+command crochet-package dependencies =
+  new crochet-package-dependencies(self.meta.dependencies);
+
+type crochet-package-capabilities(pkg is text, meta is any);
+
+enum crochet-capability-risk =
+  low, medium, high, critical, unknown;
+
+enum crochet-capability-kind =
+  required, optional, trusted;
+
+command crochet-package-capabilities requested =
+  self strictly-required
+    ++ self optional
+    ++ self trusted;
+
+command crochet-package-capabilities provided =
+  self.meta.provides
+    | map: { X in new crochet-package-provided-capability(self.pkg, X) };
+
+command crochet-package-capabilities strictly-required =
+  self.meta."requires"
+    map: { X in new crochet-package-requested-capability(#crochet-capability-kind required, X) };
+
+command crochet-package-capabilities optional =
+  self.meta.optional
+    map: { X in new crochet-package-requested-capability(#crochet-capability-kind optional, X) };
+
+command crochet-package-capabilities trusted =
+  self.meta.trusted
+    map: { X in new crochet-package-requested-capability(#crochet-capability-kind trusted, X) };
+
+command crochet-package-capabilities user-grantable =
+  self strictly-required ++ self optional;
+
+
+type crochet-package-requested-capability(kind is crochet-capability-kind, meta is any);
+
+command crochet-package-requested-capability name =
+  self.meta.name;
+
+command crochet-package-requested-capability reason =
+  self.meta.reason;
+
+command crochet-package-requested-capability kind =
+  self.kind;
+
+
+type crochet-package-provided-capability(pkg is text, meta is any);
+
+command crochet-package-provided-capability name =
+  self.meta.name;
+
+command crochet-package-provided-capability package-name =
+  self.pkg;
+
+command crochet-package-provided-capability qualified-name =
+  condition
+    when self package-name is-empty => self name;
+    otherwise => "[self package-name]/[self name]" flatten-into-plain-text;
+  end;
+
+command crochet-package-provided-capability title =
+  self.meta.title;
+
+command crochet-package-provided-capability description =
+  self.meta.description;
+
+command crochet-package-provided-capability risk =
+  #crochet-capability-risk from-enum-text: self.meta.risk;
+
+
+type crochet-package-sources(
+  crochet is list<any>,
+  native is list<any>
+);
+
+enum crochet-package-source-kind =
+  crochet, native;
+
+type crochet-package-source(global kind is crochet-package-source-kind, meta is any);
+
+command crochet-package-sources crochet =
+  self.crochet map: { X in new crochet-package-source(#crochet-package-source-kind crochet, X) };
+
+command crochet-package-sources native =
+  self.native map: { X in new crochet-package-source(#crochet-package-source-kind native, X) };
+
+command crochet-package-sources all =
+  self.crochet ++ self.native;
+
+
+command crochet-package-source id = self.meta.filename;
+command crochet-package-source target = #crochet-package-target from-enum-text: self.meta.target;
+
+// Name validation
+local define package-name-re = lazy (
+  regex from-text: "^\[a-z\]\[a-z0-9\\-\]*(?:\\.\[a-z\]\[a-z0-9\\-\]*)*$"
+    | compile
+);
+
+type crochet-package-error-invalid-name(name is unsafe-arbitrary-text);
+
+command #crochet-package try-parse-name: (Name is unsafe-arbitrary-text) do
+  let Re = force package-name-re;
+  Re search-first: Name
+    | map: (_ matched-text)
+    | map-error: { _ in new crochet-package-error-invalid-name(Name) };
+end
+
+local define capability-name-re = lazy (
+  regex from-text: "^\[a-z\]\[a-zA-Z0-9\\-\]*$"
+    | compile
+);
+
+type crochet-package-error-invalid-capability-name(name is unsafe-arbitrary-text);
+
+command #crochet-package try-parse-capability-name: (Name is unsafe-arbitrary-text) do
+  let Re = force capability-name-re;
+  Re search-first: Name
+    | map: (_ matched-text)
+    | map-error: { _ in new crochet-package-error-invalid-capability-name(Name) };
+end
+
+type crochet-package-dependencies(meta is any);
+
+command crochet-package-dependencies all =
+  self.meta map: { X in new crochet-package-dependency(X) };
+
+
+type crochet-package-dependency(meta is any);
+
+command crochet-package-dependency name =
+  self.meta.name;
+
+command crochet-package-dependency capabilities =
+  self.meta.capabilities map: { X in
+    new crochet-package-requested-capability(
+      #crochet-capability-kind required,
+      [name -> X, reason -> ""]
+    )
+  };
+
+command crochet-package-dependency capabilities-set =
+  #set from: self.meta.capabilities;
+
+command crochet-package-dependency target =
+  #crochet-package-target from-enum-text: self.target;
+

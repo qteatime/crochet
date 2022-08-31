@@ -303,11 +303,11 @@ command regex-pattern between: (Prefix is regex-pattern) and: (Suffix is regex-p
 
 // -- Convenience constructors
 command regex letter =
-  new regex-character-class("w")
+  (regex character-between: "a" and: "z") or (regex character-between: "A" and: "Z")
 test
   let Re = regex letter compile;
   assert Re can-match: "a";
-  assert Re can-match: "g";
+  assert Re can-match: "A";
   assert not (Re can-match: "0");
 end
 

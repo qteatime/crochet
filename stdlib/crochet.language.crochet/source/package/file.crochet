@@ -1,0 +1,17 @@
+% crochet
+
+type crochet-file-id(id is text);
+
+command #crochet-file-id parse: (Text is text) =
+  new crochet-file-id(Text);
+
+command crochet-file-id to-text =
+  self.id;
+
+
+type crochet-file(
+  id is file-id,
+  path is text,
+  mime-type is text,
+  target is crochet-package-target,
+);

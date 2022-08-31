@@ -136,6 +136,20 @@ command ok value-or-reason = self value;
 command error value-or-reason = self reason;
 
 
+type result-validation-failed(value is A, label is any);
+
+/// Promotes an ok value to a failure if a validation fails.
+command ok validate: (F is (A -> boolean)) label: Label =
+  condition
+    when F(self value) => self;
+    otherwise => new error(new result-validation-failed(self value, Label));
+  end;
+
+command error validate: _ label: _ =
+  self;
+
+
+
 // -- Combining results
 
 /// Returns `That` if given a successful `self`. Otherwise

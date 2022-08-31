@@ -110,3 +110,35 @@ command interval source -> text
 /// really suitable for much else.
 command interval annotated-source -> text
   = foreign lingua.interval-annotated-source(self.ohm-interval);
+
+
+// -- Primitive parsing functions
+local define primitives = lazy #map from: [
+  parse-text -> { X in
+    foreign lingua.parse-text(X);
+  },
+  parse-integer -> { X in
+    #integer try-parse: X | value-or-panic: "not an integer";
+  },
+  parse-float -> { X in
+    #float-64bit try-parse: X | value-or-panic: "not a float";
+  },
+  parse-boolean -> { X in
+    condition
+      when X =:= "true" => true;
+      when X =:= "false" => false;
+    end
+  },
+  flatten-list -> { Xs in
+    Xs flat-map: { X in
+      condition
+        when X is list => X;
+        otherwise => [X];
+      end
+    }
+  },
+];
+
+
+command #lingua primitive: Name =
+  (force primitives) at: Name;

@@ -1,0 +1,131 @@
+% crochet
+
+open crochet.language.json;
+
+
+effect purr-driver with
+  get-driver(); // -> purr-driver
+end
+
+handler purr-driver connect: Driver with
+  on purr-driver.get-driver() => continue with Driver;
+end
+
+type purr-driver(driver is unknown);
+type purr-driver-crochet-library(driver is unknown);
+type purr-driver-projects(driver is unknown);
+type purr-driver-crochet-project(driver is unknown, id is text);
+
+command purr-driver projects =
+  new purr-driver-projects(self.driver);
+
+command purr-driver crochet-library =
+  new purr-driver-crochet-library(self.driver);
+
+
+command purr-driver-crochet-library find-all-packages do
+  let Packages = foreign driver.crochet-library.find-all-packages(self.driver);
+  Packages
+    | fold-from: [] with: { List, Meta in
+        #crochet-package try-parse: Meta
+          | map: (List append: _)
+          | value-or-default: List;
+      };
+end
+
+
+command purr-driver-projects list do
+  let Projects = foreign driver.projects.list(self.driver);
+  Projects map: { X in new purr-driver-crochet-project(self.driver, X) };
+end
+
+command purr-driver-projects import do
+  let Project = foreign driver.projects.import(self.driver);
+  new purr-driver-crochet-project(self.driver, Project);
+end
+
+command purr-driver-crochet-project read-metadata =
+  foreign driver.projects.read-metadata(self.driver, self.id);
+
+command purr-driver-crochet-project update-meta: Meta changelog: (Log is list) do
+  foreign driver.projects.update-meta(
+    self.driver,
+    self.id,
+    json serialise: Meta,
+    json serialise: Log,
+  );
+  self;
+end
+
+command purr-driver-crochet-project update-linked-meta: Meta changelog: (Log is list) do
+  foreign driver.projects.update-linked-meta(
+    self.driver,
+    self.id,
+    json serialise: Meta,
+    json serialise: Log,
+  );
+  self;
+end
+
+command purr-driver-crochet-project update-cover-image do
+  foreign driver.projects.update-cover-image(self.driver, self.id);
+  self;
+end
+
+command purr-driver-crochet-project remove-cover-image do
+  foreign driver.projects.remove-cover-image(self.driver, self.id);
+  self;
+end
+
+command purr-driver-crochet-project read-cover-image do
+  let Result = foreign driver.projects.read-cover-image(self.driver, self.id);
+  condition
+    when Result is nothing => #result error: not-found;
+    otherwise => #result ok: new purr-file-binary(mime -> Result.mime, bytes -> Result.data);
+  end
+end
+
+command purr-driver-crochet-project add-capability: (Capability is crochet-package-requested-capability) do
+  foreign driver.projects.add-capability(self.driver, self.id, json serialise: Capability serialise, Capability kind to-enum-text);
+  self;
+end
+
+command purr-driver-crochet-project add-capability: (Capability is crochet-package-provided-capability) do
+  foreign driver.projects.add-provided-capability(self.driver, self.id, json serialise: Capability serialise);
+  self;
+end
+
+command purr-driver-crochet-project remove-capability: (Capability is crochet-package-requested-capability) do
+  foreign driver.projects.remove-capability(self.driver, self.id, Capability name, Capability kind to-enum-text);
+  self;
+end
+
+command purr-driver-crochet-project remove-capability: (Capability is crochet-package-provided-capability) do
+  foreign driver.projects.remove-provided-capability(self.driver, self.id, Capability name);
+  self;
+end
+
+command purr-driver-crochet-project update-capability: (Capability is crochet-package-requested-capability) do
+  foreign driver.projects.update-capability(self.driver, self.id, Capability name, Capability reason, Capability kind to-enum-text);
+  self;
+end
+
+command purr-driver-crochet-project update-capability: (Capability is crochet-package-provided-capability) do
+  foreign driver.projects.update-provided-capability(self.driver, self.id, json serialise: Capability serialise);
+  self;
+end
+
+command purr-driver-crochet-project remove-dependency: (Dependency is crochet-package-dependency) do
+  foreign driver.projects.remove-dependency(self.driver, self.id, Dependency name);
+  self;
+end
+
+command purr-driver-crochet-project update-dependency: (Dependency is crochet-package-dependency) do
+  foreign driver.projects.update-dependency(self.driver, self.id, json serialise: Dependency serialise);
+  self;
+end
+
+command purr-driver-crochet-project add-dependency: (Dependency is crochet-package-dependency) do
+  foreign driver.projects.add-dependency(self.driver, self.id, json serialise: Dependency serialise);
+  self;
+end

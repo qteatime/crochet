@@ -1,5 +1,7 @@
 {
   "name": "crochet.network.types",
+  "title": "Network types",
+  "description": "Reading and writing common network types, such as URLs",
   "target": "*",
   "native_sources": ["native/url.js"],
   "sources": [

@@ -1,0 +1,169 @@
+% crochet
+
+abstract dom-node;
+type dom-node-simple(box is unknown) is dom-node;
+type dom-element(box is unknown) is dom-node;
+type dom-fragment(box is unknown) is dom-node;
+
+type dom-class-list(element is dom-element);
+type dom-subscriber(element is dom-element, name is text, listener is unknown);
+type dom-event(box is unknown);
+
+
+command dom-node append: (Node is dom-node) do
+  foreign dom.append-node(self.box, Node.box);
+  self;
+end
+
+command dom-node prepend: (Node is dom-node) do
+  foreign dom.prepend-node(self.box, Node);
+  self;
+end
+
+command dom-node remove-contents do
+  foreign dom.remove-contents(self.box);
+  self;
+end
+
+command dom-node replace-contents: (Node is dom-node) do
+  self remove-contents | append: Node;
+end
+
+command dom-node detach do
+  foreign dom.detach-node(self.box);
+  self;
+end
+
+
+command dom-element set: (Attribute is text) to: (Value is text) do
+  foreign dom.set-attribute(self.box, Attribute, Value);
+  self;
+end
+
+command dom-element unset: (Attribute is text) do
+  foreign dom.unset-attribute(self.box, Attribute);
+  self;
+end
+
+command dom-element set-style: (Style is record) do
+  foreign dom.set-style(self.box, Style);
+  self;
+end
+
+command dom-element set-style: (Name is text) to: (Value is text) do
+  foreign dom.set-style-property(self.box, Name, Value);
+  self;
+end
+
+
+command dom-element classes =
+  new dom-class-list(self);
+
+command dom-class-list add: (Name is text) do
+  foreign dom.add-class(self.element.box, Name);
+  self;
+end
+
+command dom-class-list remove: (Name is text) do
+  foreign dom.remove-class(self.element.box, Name);
+  self;
+end
+
+command dom-class-list toggle: (Name is text) do
+  foreign dom.toggle-class(self.element.box, Name);
+  self;
+end
+
+
+command dom-element delay-on: (Event is text) do: (Handler is (dom-event -> nothing)) do
+  let Fun = { Ev in Handler(new dom-event(Ev)) } capture;
+  let Ref = foreign dom.add-delay-listener(self.box, Event, Fun);
+  new dom-subscriber(self, Event, Ref);
+end
+
+command dom-element on: (Event is text) do: (Handler is (dom-event -> nothing)) do
+  let Fun = { Ev in Handler(new dom-event(Ev)) } capture;
+  let Ref = foreign dom.add-listener(self.box, Event, Fun);
+  new dom-subscriber(self, Event, Ref);
+end
+
+command dom-element trap: (Event is text) do: (Handler is (dom-event -> nothing)) do
+  let Fun = { Ev in Handler(new dom-event(Ev)) } capture;
+  let Ref = foreign dom.trap-listener(self.box, Event, Fun);
+  new dom-subscriber(self, Event, Ref);
+end
+
+command dom-subscriber unsubscribe do
+  foreign dom.remove-listener(self.element.box, self.name, self.listener);
+  self;
+end
+
+
+command dom-node add-css: (Css is text) do
+  foreign dom.add-css(self.box, Css);
+  self;
+end
+
+command dom-element attach-closed-shadow do
+  new dom-node-simple(foreign dom.attach-shadow(self.box, "closed"));
+end
+
+command dom-element attach-open-shadow do
+  new dom-node-simple(foreign dom.attach-shadow(self.box, "open"));
+end
+
+
+command dom-event mouse-button =
+  foreign ev.mouse-button(self.box);
+
+
+command dom-element query-selector: (Selector is text) do
+  let Result = foreign dom.query-selector(self.box, Selector);
+  condition
+    when Result is nothing => #result error: not-found;
+    otherwise => #result ok: new dom-element(Result);
+  end
+end
+
+
+command dom-element input-value
+requires input :: dom is-input: self
+do
+  foreign dom.input-value(self.box);
+end
+
+command dom-element set-input-value: (Value is text)
+requires input :: dom is-input: self
+do
+  foreign dom.set-input-value(self.box, Value);
+  self;
+end
+
+command dom-element select-value
+requires select :: self is-select
+do
+  foreign dom.select-value(self.box);
+end
+
+command dom-element set-select-value: (Value is text)
+requires select :: self is-select
+do
+  foreign dom.set-select-value(self.box, Value);
+end
+
+command dom-element input-checked
+requires input :: dom is-input: self
+do
+  foreign dom.input-checked(self.box);
+end
+
+command dom-element set-input-checked: (Value is boolean)
+requires input :: dom is-input: self
+do
+  foreign dom.set-input-checked(self.box, Value);
+  self;
+end
+
+
+command dom-element is-select =
+  foreign dom.is-select(self.box);
