@@ -145,7 +145,7 @@ local type value-editor(
 
 command value-editor label: Label value: (V is v-bool) set: F do
   let Ref = #reference checkbox: "";
-  Ref checked stream subscribe: { X in F(new v-bool(X)) };
+  Ref checked changes subscribe: { X in F(new v-bool(X)) };
 
   #widget checkbox: "[Label] : Boolean"
     | checked: V.value
@@ -154,9 +154,10 @@ end
 
 command value-editor label: Label value: (V is v-int8) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream
+  Ref validated-value changes
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-int8(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-int8(X)) };
 
   #widget text-input: "[Label] : Int8"
     | value: V.value to-text
@@ -168,9 +169,10 @@ end
 
 command value-editor label: Label value: (V is v-int16) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream 
+  Ref validated-value changes 
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-int16(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-int16(X)) };
 
   #widget text-input: "[Label] : Int16"
     | value: V.value to-text
@@ -182,9 +184,10 @@ end
 
 command value-editor label: Label value: (V is v-int32) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream
+  Ref validated-value changes
     | keep-if: { X in X is ok}
-    | subscribe: { X in F(new v-int32(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-int32(X)) };
 
   #widget text-input: "[Label] : Int32"
     | value: V.value to-text
@@ -196,9 +199,10 @@ end
 
 command value-editor label: Label value: (V is v-uint8) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream
+  Ref validated-value changes
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-uint8(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-uint8(X)) };
 
   #widget text-input: "[Label] : UInt8"
     | value: V.value to-text
@@ -210,9 +214,10 @@ end
 
 command value-editor label: Label value: (V is v-uint16) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream 
+  Ref validated-value changes 
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-uint16(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-uint16(X)) };
 
   #widget text-input: "[Label] : UInt16"
     | value: V.value to-text
@@ -224,9 +229,10 @@ end
 
 command value-editor label: Label value: (V is v-uint32) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream 
+  Ref validated-value changes 
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-uint32(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-uint32(X)) };
 
   #widget text-input: "[Label] : UInt32"
     | value: V.value to-text
@@ -238,9 +244,10 @@ end
 
 command value-editor label: Label value: (V is v-integer) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream 
+  Ref validated-value changes 
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-integer(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-integer(X)) };
 
   #widget text-input: "[Label] : Integer"
     | value: V.value to-text
@@ -252,9 +259,10 @@ end
 // TODO: restrict these to 32bit inputs as they'll be truncated by the encoder
 command value-editor label: Label value: (V is v-float32) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream 
+  Ref validated-value changes 
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-float32(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-float32(X)) };
 
   #widget flex-column: [
     #widget text-input: "[Label] : Float32"
@@ -274,9 +282,10 @@ end
 
 command value-editor label: Label value: (V is v-float64) set: F do
 let Ref = #reference text-input: "";
-  Ref validated-value stream 
+  Ref validated-value changes 
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-float64(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-float64(X)) };
 
   #widget flex-column: [
     #widget text-input: "[Label] : Float64"
@@ -297,9 +306,10 @@ end
 open crochet.debug;
 command value-editor label: Label value: (V is v-text) set: F do
   let Ref = #reference text-input: "";
-  Ref validated-value stream
+  Ref validated-value changes
     | keep-if: { X in X is ok }
-    | subscribe: { X in F(new v-text(X value)) };
+    | map: (_ value)
+    | subscribe: { X in F(new v-text(X)) };
 
   #widget text-input: "[Label] : Text"
     | validation: { X in #result ok: (untaint make-trusted: X) }
@@ -308,6 +318,8 @@ end
 
 command value-editor label: Label value: (V is v-array) set: F do
   let Current = #observable-cell with-value: V;
+  Current changes-by: (_ === _)
+    | subscribe: { V in F(V) };
   
 
   #widget flex-column: [
@@ -324,7 +336,7 @@ command value-editor label: Label value: (V is v-array) set: F do
         let Setter = { N in 
           let V = Current value;
           condition
-            when (V.values at: X index) =:= N => nothing;
+            when (V.values at: X index) === N => nothing;
             otherwise do
               Current <- new v-array(V with values -> V.values at: X index put: N);
             end
@@ -398,7 +410,32 @@ command value-editor label: Label value: (V is v-tagged) set: F do
 end
 
 command value-editor label: Label value: (V is v-choice) set: F do
-  self label: Label value: V.value set: F;
+  let Ref = #reference select-one: "type";
+  let Current = #observable-cell with-value: V;
+  Current changes-by: (_ === _)
+    | subscribe: { V in F(V) };
+  Ref selected changes
+    | subscribe: { T in Current <- new v-choice(V.typ, package default-value: T) };
+
+  Current map: { V in 
+    #widget flex-column: [
+      #widget select-one: "Sub-type"
+        | options: (V.typ.types values map: { T in
+            #select-option label: T.name value: T;
+          })
+        | selected: V.value.typ
+        | reference: Ref,
+      
+      self label: Label value: V.value set: { New in
+        condition
+          when New === V.value => nothing;
+          otherwise => Current <- new v-choice(V.typ, New);
+        end
+      }
+    ]
+    | transform
+    | flex-gap: (0.5 as root-em)
+  };
 end
 
 command value-editor label: Label value: (V is v-optional) set: F do
@@ -467,6 +504,6 @@ command package default-value: (T is t-array) = new v-array(T, []);
 command package default-value: (T is t-map) = new v-map(T, #map empty);
 command package default-value: (T is t-tuple) = new v-tuple(T, T.types map: (self default-value: _));
 command package default-value: (T is t-tagged) = new v-tagged(T, T.tag, self default-value: T.typ);
-command package default-value: (T is t-choice) = new v-choice(T, self default-value: T.types first);
+command package default-value: (T is t-choice) = new v-choice(T, self default-value: T.types values first);
 command package default-value: (T is t-optional) = new v-none(T);
 command package default-value: (T is t-lazy) = self default-value: (force T.thunk);

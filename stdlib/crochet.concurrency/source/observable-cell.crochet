@@ -145,3 +145,16 @@ command zipped-observable-cell stream =
 command zipped-observable-cell value =
   self.result value;
 
+
+command observable-cell changes-by: (F is ((A, B) -> boolean)) do
+  self stream fold-from: self value with: { State, Value in
+    condition
+      when not F(State state, Value) => State push: Value;
+      otherwise => State skip;
+    end
+  };
+end
+
+command observable-cell changes do
+  self changes-by: { A, B in A =:= B };
+end

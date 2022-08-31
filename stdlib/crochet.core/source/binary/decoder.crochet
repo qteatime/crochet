@@ -54,7 +54,7 @@ command binary-decoder take-integer-32bit =
     | map: (package result: _ decoder: self skip: 4);
 
 command binary-decoder take-unsigned-integer-8bit =
-  trap errors-in: { self.view unsigned-integer-8bit-at: self.offset little-endian: true }
+  trap errors-in: { self.view unsigned-integer-8bit-at: self.offset }
     | map: (package result: _ decoder: self skip: 1);
 
 command binary-decoder take-unsigned-integer-16bit =

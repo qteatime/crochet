@@ -179,10 +179,13 @@ command decoding-editor render-value: (V is v-text) =
 command decoding-editor render-value: (V is v-array) =
   self type: "Array" value: (
     #widget flex-column: (
-      V.values map: (self render-value: _)
-        | transform
-        | padding: (0.5 as root-em)
-        | border-bottom: (1 as pixels) style: #border-style solid color: #color border
+      V.values map: { X in 
+        self render-value: X
+          | as widget
+          | transform
+          | padding: (0.5 as root-em)
+          | border-bottom: (1 as pixels) style: #border-style solid color: #color border
+      }
     )
     | transform
     | height: #size fit-content
@@ -211,8 +214,11 @@ command decoding-editor render-value: (V is v-tuple) =
     }
   );
 
+command decoding-editor render-value: (V is v-choice) =
+  self render-value: V.value;
+
 command decoding-editor render-value: (V is v-tagged) =
-  self type: "[V.typ.name] ([#hex encode: V.tag | to-text-aligned])" value: (
+  self type: "[V.typ.name] (0x[#hex encode: V.tag | to-text-aligned])" value: (
     self render-value: V.value
   );
 
