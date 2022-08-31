@@ -249,7 +249,13 @@ function do_simple_value(
     }
     case Tag.BYTE_ARRAY: {
       assert_tag(Tag.BYTE_ARRAY, x);
-      return `<byte-array: ${x.payload.length} bytes>`;
+      const first_bytes = Array.from(x.payload)
+        .slice(0, 16)
+        .map((x) => x.toString(16).padStart(2, "0"))
+        .join(" ");
+      const suffix = x.payload.byteLength > 16 ? "..." : "";
+
+      return `<byte-array: ${first_bytes}${suffix}, ${x.payload.length} bytes>`;
     }
     default:
       throw unreachable(x.tag, `Value ${x}`);

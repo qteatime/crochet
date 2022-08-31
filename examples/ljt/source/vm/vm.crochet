@@ -243,7 +243,7 @@ type ljt-encoder(
 command ljt-vm encode: (Value is ljt-value) do
   let Encoder = new ljt-encoder(#cell with-value: #binary-encoder empty);
 
-  (Encoder encode: Value).encoder as byte-array;
+  (Encoder encode: Value).encoder value as byte-array;
 end
 
 

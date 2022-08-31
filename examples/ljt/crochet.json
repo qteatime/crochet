@@ -8,13 +8,16 @@
     "source/vm/vm.crochet",
     "source/pages/main.crochet",
     "source/pages/grammar.crochet",
-    "source/pages/encode.crochet"
+    "source/pages/encode.crochet",
+    "source/ui/core.crochet",
+    "source/ui/hex.crochet"
   ],
   "dependencies": [
     "crochet.core",
     "crochet.text.parsing.lingua",
     "purr.ide.ui",
     "crochet.concurrency",
+    "crochet.codec.basic",
     "crochet.debug"
   ],
   "capabilities": {

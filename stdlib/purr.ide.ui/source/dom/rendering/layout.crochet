@@ -223,3 +223,49 @@ command dom-renderer render: (W is widget-panel) do
   Node append: (self render: W.contents);
   Node;
 end
+
+
+command dom-renderer render: (W is widget-table) do
+  let Node = dom make-element: "table" class: "purr-ui-table";
+  self set-property: "data-style" to: W.style in: Node;
+
+  self render-table-header: W.header in: Node;
+  let Body = dom make-element: "tbody" class: "purr-ui-table-body";
+  Node append: Body;
+
+  for Row in W.rows do
+    let Row-node = dom make-element: "tr" class: "purr-ui-table-row";
+    Body append: Row-node;
+    for Cell in Row.cells do
+      self render-table-cell: Cell in: Row-node;
+    end
+  end
+
+  Node;
+end
+
+command dom-renderer render-table-header: table-header-none in: _ do
+  nothing;
+end
+
+command dom-renderer render-table-header: (H is table-header-sticky) in: Table do
+  let Header = dom make-element: "thead" class: "purr-ui-table-sticky-header";
+  Table append: Header;
+  let Header-row = dom make-element: "tr" class: "purr-ui-table-row";
+  Header append: Header-row;
+  for Cell in H.cells do
+    self render-table-cell: Cell in: Header-row;
+  end
+end
+
+command dom-renderer render-table-cell: (C is table-cell-header) in: Row do
+  let Node = dom make-element: "th" class: "purr-ui-table-header-cell";
+  Node append: (self render: C.content);
+  Row append: Node;
+end
+
+command dom-renderer render-table-cell: (C is table-cell-data) in: Row do
+  let Node = dom make-element: "td" class: "purr-ui-table-data-cell";
+  Node append: (self render: C.content);
+  Row append: Node;
+end

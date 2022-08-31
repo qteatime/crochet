@@ -5,45 +5,55 @@ type mutable-byte-array-view(view is unknown) is byte-array-view;
 
 // -- Constructors
 command byte-array view =
-  new byte-array-view(foreign byte.view(self));
-
-
-command byte-array view-slice-from: (From is integer) to: (To is integer)
-requires
-  positive :: From > 0,
-  growing :: To >= From
-=
-  new byte-array-view(foreign byte.view-slice(self, From, To));
-
-
-command byte-array view-slice-from: (From is integer) 
-requires
-  positive :: From > 0
-=
-  new byte-array-view(foreign byte.view-slice-from(self, From));
-
+  new byte-array-view(foreign byte.view(package byte-buffer: self));
 
 command mutable-byte-array view =
-  new mutable-byte-array-view(foreign byte.view(self));
+  new mutable-byte-array-view(foreign byte.view(package byte-buffer: self));
 
-
-command mutable-byte-array view-slice-from: (From is integer) to: (To is integer)
-requires
-  positive :: From > 0,
-  growing :: To >= From
-=
-  new mutable-byte-array-view(foreign byte.view-slice(self, From, To));
-
-
-command mutable-byte-array view-slice-from: (From is integer) 
-requires
-  positive :: From > 0
-=
-  new mutable-byte-array-view(foreign byte.view-slice-from(self, From));
-
+command byte-array-view as byte-array =
+  foreign byte.view-to-array(self.view);
 
 command byte-array-view count-bytes =
   foreign byte.view-size(self.view);
+
+
+// -- Chunking
+command byte-array-view slice-from: (From is integer)
+requires
+  positive-index :: From > 0,
+  in-bounds :: From <= self count-bytes
+do
+  new byte-array-view(foreign byte.view-slice-from(self.view, From));
+end
+
+command byte-array-view take: (Bytes is integer)
+requires
+  non-negative-size :: Bytes >= 0,
+  in-bounds :: Bytes <= self count-bytes
+do
+  new byte-array-view(foreign byte.view-take(self.view, Bytes));
+end
+
+command byte-array-view chunks-of-size: (Size is integer) do
+  let Chunks = (self count-bytes / Size) ceiling as integer;
+  let Go = { N, View, Result in
+    condition
+      when N === 0 =>
+        Result;
+
+      when N === 1 do
+        let Take-size = lesser-of: Size and: View count-bytes;
+        Result append: (View take: Take-size);
+      end
+
+      otherwise do
+        Go(N - 1, View slice-from: Size + 1, Result append: (View take: Size));
+      end
+    end
+  };
+
+  Go(Chunks, self, []);
+end
 
 
 // -- Reading
@@ -60,13 +70,13 @@ command byte-array-view integer-32bit-at: (Offset is integer) little-endian: (LE
   foreign byte.get-int32(self.view, Offset, LE);
 
 command byte-array-view unsigned-integer-8bit-at: (Offset is integer) =
-  foreign byte.get-int8(self.view, Offset);
+  foreign byte.get-uint8(self.view, Offset);
 
 command byte-array-view usigned-integer-16bit-at: (Offset is integer) little-endian: (LE is boolean) =
-  foreign byte.get-int16(self.view, Offset, LE);
+  foreign byte.get-uint16(self.view, Offset, LE);
 
 command byte-array-view unsigned-integer-32bit-at: (Offset is integer) little-endian: (LE is boolean) =
-  foreign byte.get-int32(self.view, Offset, LE);
+  foreign byte.get-uint32(self.view, Offset, LE);
 
 command byte-array-view float-32bit-at: (Offset is float-64bit) little-endian: (LE is boolean) =
   foreign byte.get-float32(self.view, Offset, LE);
@@ -90,13 +100,13 @@ command mutable-byte-array-view put-integer-32bit: (X is integer) at: (Offset is
   foreign byte.set-int32(self.view, Offset, X, LE);
 
 command mutable-byte-array-view put-unsigned-integer-8bit: (X is integer) at: (Offset is integer) =
-  foreign byte.set-int8(self.view, Offset, X);
+  foreign byte.set-uint8(self.view, Offset, X);
 
 command mutable-byte-array-view put-usigned-integer-16bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
-  foreign byte.set-int16(self.view, Offset, X, LE);
+  foreign byte.set-uint16(self.view, Offset, X, LE);
 
 command mutable-byte-array-view put-unsigned-integer-32bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
-  foreign byte.set-int32(self.view, Offset, X, LE);
+  foreign byte.set-uint32(self.view, Offset, X, LE);
 
 command mutable-byte-array-view put-float-32bit: (X is float-64bit) at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.set-float32(self.view, Offset, X, LE);

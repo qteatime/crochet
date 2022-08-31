@@ -21,6 +21,14 @@ test
   assert not "🌷" is-ascii;
 end
 
+/// The number of ASCII characters in this view
+command ascii-view count-characters =
+  foreign text.ascii-chars(self.text)
+test
+  assert "" ascii count-characters =:= 0;
+  assert "1234" ascii count-characters =:= 4;
+end
+
 /// Converts any upper-case ASCII letter to its lower-case equivalent.
 command ascii-view to-lower-case
   = new ascii-view(foreign text.to-lower(self.text))

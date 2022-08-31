@@ -224,6 +224,9 @@ command dom-renderer context: _ to-property: (X is visibility) = X to-enum-text;
 command dom-renderer context: _ to-property: (X is aspect-ratio) =
   "[X.width to-text]/[X.height to-text]" flatten-into-plain-text;
 
+command dom-renderer context: _ to-property: (X is table-style) =
+  X to-enum-text;
+
 command dom-renderer to-property: (X is true) = "true";
 command dom-renderer to-property: (X is false) = "false";
 command dom-renderer to-property: (X is integer) = X to-text;

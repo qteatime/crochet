@@ -104,17 +104,25 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(new DataView(ba.buffer));
   });
 
-  ffi.defun("byte.view-slice", (ba0, from0, to0) => {
-    const ba = ffi.to_uint8_array(ba0);
+  ffi.defun("byte.view-slice-from", (view0, from0) => {
+    const view = ffi.unbox_typed(DataView, view0);
     const from = ffi.integer_to_bigint(from0);
-    const to = ffi.integer_to_bigint(to0);
-    return ffi.box(new DataView(ba.buffer, Number(from), Number(to)));
+    return ffi.box(
+      new DataView(view.buffer, view.byteOffset + Number(from) - 1)
+    );
   });
 
-  ffi.defun("byte.view-slice-from", (ba0, from0) => {
-    const ba = ffi.to_uint8_array(ba0);
-    const from = ffi.integer_to_bigint(from0);
-    return ffi.box(new DataView(ba.buffer, Number(from)));
+  ffi.defun("byte.view-take", (view0, count0) => {
+    const view = ffi.unbox_typed(DataView, view0);
+    const count = Number(ffi.integer_to_bigint(count0));
+    return ffi.box(new DataView(view.buffer, view.byteOffset, Number(count)));
+  });
+
+  ffi.defun("byte.from-list", (list0) => {
+    const list = ffi
+      .list_to_array(list0)
+      .map((x) => Number(ffi.integer_to_bigint(x)));
+    return ffi.byte_array(new Uint8Array(list));
   });
 
   ffi.defun("byte.allocate", (size) => {
@@ -154,6 +162,20 @@ export default (ffi: ForeignInterface) => {
       ffi.integer_to_bigint(v)
     );
     return ffi.nothing;
+  });
+
+  ffi.defun("byte.view-to-array", (x0) => {
+    const view = ffi.unbox_typed(DataView, x0);
+    if (view.byteOffset === 0 && view.byteLength === view.buffer.byteLength) {
+      const array = new Uint8Array(view.buffer);
+      return ffi.byte_array(array);
+    } else {
+      const array = new Uint8Array(view.byteLength);
+      for (let i = 0; i < array.length; ++i) {
+        array[i] = view.getUint8(i);
+      }
+      return ffi.byte_array(array);
+    }
   });
 
   // Reading

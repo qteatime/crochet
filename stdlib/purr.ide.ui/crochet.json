@@ -79,6 +79,7 @@
     "source/widget/layout/breadcrumbs.crochet",
     "source/widget/layout/vertical-timeline.crochet",
     "source/widget/layout/panel.crochet",
+    "source/widget/layout/table.crochet",
 
     "source/widget/transform/background.crochet",
     "source/widget/transform/border.crochet",

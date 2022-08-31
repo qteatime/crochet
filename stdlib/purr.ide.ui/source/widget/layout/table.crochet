@@ -1,0 +1,60 @@
+% crochet
+
+type widget-table(
+  header is table-header,
+  rows is list<table-row>,
+  style is purr-variable<table-style>,
+) is widget;
+
+enum table-style =
+  simple,
+  clear;
+
+abstract table-header;
+singleton table-header-none is table-header;
+type table-header-sticky(cells is list<table-cell>) is table-header;
+
+type table-row(cells is list<table-cell>);
+
+abstract table-cell;
+type table-cell-data(content is widget) is table-cell;
+type table-cell-header(content is widget) is table-cell;
+
+
+command #widget table: (Rows is list<list<X>>) =
+  new widget-table(
+    header -> table-header-none,
+    rows -> Rows map: (package to-table-row: _),
+    style -> #table-style simple as purr-variable,
+  );
+
+command widget-table no-header =
+  new widget-table(self with header -> table-header-none);
+
+command widget-table sticky-header: (Cells is list<X>) =
+  new widget-table(self with header -> new table-header-sticky(Cells map: (package to-table-header-cell: _)));
+
+command widget-table style: (Style has to-purr-variable) =
+  new widget-table(self with style -> Style as purr-variable);
+
+
+command package to-table-row: (Cells is list<X>) =
+  new table-row(Cells map: (package to-table-cell: _));
+
+command package to-table-cell: (X has to-widget) =
+  new table-cell-data(X as widget);
+
+command package to-table-cell: (X is table-cell) =
+  X;
+
+command package to-table-header-cell: (X has to-widget) =
+  new table-cell-header(X as widget);
+
+command package to-table-header-cell: (X is table-cell) =
+  X;
+
+command #table-cell data: (X has to-widget) =
+  new table-cell-data(X as widget);
+
+command #table-cell header: (X has to-widget) =
+  new table-cell-header(X as widget);
