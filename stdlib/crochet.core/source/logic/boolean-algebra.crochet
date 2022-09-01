@@ -32,3 +32,43 @@ test "not boolean" do
   assert (not true) =:= false;
   assert (not false) =:= true;
 end
+
+
+/// Logical conjunction, the right operand is evaluated
+/// only if the left operand is true.
+command true and-also: (F is (() -> boolean)) = F();
+command false and-also: (F is (() -> boolean)) = false;
+
+test "boolean and-also: {boolean}" do
+  assert (true and-also: {true}) =:= true;
+  assert (true and-also: {false}) =:= false;
+  assert (false and-also: {true}) =:= false;
+  assert (false and-also: {false}) =:= false;
+  assert (false and-also: {panic message: "no!"}) =:= false;
+end
+
+/// Logical disjunction, the right operand is evaluated
+/// only if the left operand is false.
+command true or-else: (F is (() -> boolean)) = true;
+command false or-else: (F is (() -> boolean)) = F();
+
+test "boolean or-else: {boolean}" do
+  assert (true or-else: {true}) =:= true;
+  assert (true or-else: {false}) =:= true;
+  assert (true or-else: {panic message: "no!"}) =:= true;
+  assert (false or-else: {true}) =:= true;
+  assert (false or-else: {false}) =:= false;
+end
+
+/// Logical implication, the right operand is evaluated
+/// only if the left operand is true.
+command true implies: (F is (() -> boolean)) = F();
+command false implies: (F is (() -> boolean)) = true;
+
+test "boolean implies: {boolean}" do
+  assert (true implies: {true}) =:= true;
+  assert (true implies: {false}) =:= false;
+  assert (false implies: {true}) =:= true;
+  assert (false implies: {false}) =:= true;
+  assert (false implies: {panic message: "no!"}) =:= true;
+end
