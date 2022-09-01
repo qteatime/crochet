@@ -1,8 +1,8 @@
 % crochet
 
 type binary-decoder(
-  view is byte-array-view,
-  offset is integer,
+  global view is byte-array-view,
+  global offset is integer,
 );
 
 type binary-decoder-next(

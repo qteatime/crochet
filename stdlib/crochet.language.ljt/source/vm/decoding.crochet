@@ -3,7 +3,6 @@
 type ljt-decoder(
   vm is ljt-vm,
   decoder is cell<binary-decoder>,
-  value is any,
 );
 
 abstract ljt-decoder-error;
@@ -13,7 +12,6 @@ command ljt-vm decode: (View is byte-array-view) with: (Type is ljt-type) do
   let Decoder = new ljt-decoder(
     vm -> self,
     decoder -> #cell with-value: (#binary-decoder from: View),
-    value -> nothing,
   );
 
   Decoder decode-with: Type;
@@ -22,11 +20,7 @@ end
 command ljt-vm decode: (Bytes is byte-array) with: Type =
   self decode: Bytes view with: Type;
 
-command ljt-vm try-decode: View with: (Type is ljt-type) do
-  trap errors-in: { self decode: View with: Type };
-end
-
-command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next, error>)) do
+command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next, error>)) type: (Type is ljt-type) do
   let Origin = self.decoder value;
   let Result = F(self.decoder value);
   condition
@@ -36,50 +30,57 @@ command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next
     end
 
     when Result is error =>
-      panic message: "Failed to decode" tag: "ljt-decoder" data: [state -> self, original-state -> Origin];
+      #ljt-error raise: new ljt-error--decoding-failed(
+        decoder -> Type,
+        decoder-view -> Origin,
+        reason -> decoding-failed-reason--couldnt-read-bytes,
+        vm -> self.vm,
+      );
   end
 end
 
 command ljt-decoder decode-with: t-bool =
-  new v-bool(self do-step: (_ take-boolean));
+  new v-bool(self do-step: (_ take-boolean) type: t-bool);
 
 command ljt-decoder decode-with: t-int8 =
-  new v-int8(self do-step: (_ take-integer-8bit));
+  new v-int8(self do-step: (_ take-integer-8bit) type: t-int8);
 
 command ljt-decoder decode-with: t-int16 =
-  new v-int16(self do-step: (_ take-integer-16bit));
+  new v-int16(self do-step: (_ take-integer-16bit) type: t-int16);
 
 command ljt-decoder decode-with: t-int32 =
-  new v-int32(self do-step: (_ take-integer-32bit));
+  new v-int32(self do-step: (_ take-integer-32bit) type: t-int32);
 
 command ljt-decoder decode-with: t-uint8 =
-  new v-uint8(self do-step: (_ take-unsigned-integer-8bit));
+  new v-uint8(self do-step: (_ take-unsigned-integer-8bit) type: t-uint8);
 
 command ljt-decoder decode-with: t-uint16 =
-  new v-uint16(self do-step: (_ take-unsigned-integer-16bit));
+  new v-uint16(self do-step: (_ take-unsigned-integer-16bit) type: t-uint16);
 
 command ljt-decoder decode-with: t-uint32 =
-  new v-uint32(self do-step: (_ take-unsigned-integer-32bit));
+  new v-uint32(self do-step: (_ take-unsigned-integer-32bit) type: t-uint32);
 
 command ljt-decoder decode-with: t-float32 =
-  new v-float32(self do-step: (_ take-float-32bit));
+  new v-float32(self do-step: (_ take-float-32bit) type: t-float32);
 
 command ljt-decoder decode-with: t-float64 =
-  new v-float64(self do-step: (_ take-float-64bit));
+  new v-float64(self do-step: (_ take-float-64bit) type: t-float64);
 
 command ljt-decoder decode-with: t-integer =
-  new v-integer(self do-step: (_ take-integer));
+  new v-integer(self do-step: (_ take-integer) type: t-integer);
 
 command ljt-decoder decode-with: t-text =
-  new v-text(self do-step: (_ take-text));
+  new v-text(self do-step: (_ take-text) type: t-text);
 
 command ljt-decoder decode-with: (T is t-lazy) =
   self decode-with: (force T.thunk);
 
 command ljt-decoder decode-with: (T is t-array) do
-  let Size = self do-step: (_ take-unsigned-integer-32bit);
+  let Size = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
   condition
-    when Size =:= 0 => new v-array(T, []);
+    when Size =:= 0 =>
+      new v-array(T, []);
+
     otherwise do
       let Items = 
         for Index in 1 to: Size do
@@ -91,9 +92,11 @@ command ljt-decoder decode-with: (T is t-array) do
 end
 
 command ljt-decoder decode-with: (T is t-map) do
-  let Size = self do-step: (_ take-unsigned-integer-32bit);
+  let Size = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
   condition
-    when Size =:= 0 => new v-map(T, #map empty);
+    when Size =:= 0 =>
+      new v-map(T, #map empty);
+
     otherwise do
       let Entries =
         for Index in 1 to: Size do
@@ -116,21 +119,46 @@ command ljt-decoder decode-with: (T is t-tuple) do
 end
 
 command ljt-decoder decode-with: (T is t-tagged) do
-  let Tag = self do-step: (_ take-unsigned-integer-32bit);
-  assert T.tag =:= Tag;
+  let Tag = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
+  not (T.tag =:= Tag) 
+    | implies: {
+        #ljt-error raise: new ljt-error--decoding-failed(
+          decoder -> T,
+          decoder-view -> self.decoder value,
+          reason -> new decoding-failed-reason--unexpected-tag(
+            tag -> Tag,
+            expected -> T.tag,
+          ),
+          vm -> self.vm,
+        );
+      };
+
   let Value = self decode-with: T.typ;
   new v-tagged(T, Tag, Value);
 end
 
 command ljt-decoder decode-with: (T is t-choice) do
-  let Tag = self do-step: (_ take-unsigned-integer-32bit);
+  let Tag = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
+  not (T.types contains-key: Tag)
+    | implies: {
+        #ljt-error raise: new ljt-error--decoding-failed(
+          decoder -> T,
+          decoder-view -> self.decoder value,
+          reason -> new decoding-failed-reason--not-in-union(
+            tag -> Tag,
+            types -> T.types,
+          ),
+          vm -> self.vm,
+        );
+      };
+
   let Type = T.types at: Tag;
   let Value = self decode-with: Type.typ;
   new v-choice(T, new v-tagged(Type, Tag, Value));
 end
 
 command ljt-decoder decode-with: (T is t-optional) do
-  let Has-value = self do-step: (_ take-boolean);
+  let Has-value = self do-step: (_ take-boolean) type: t-bool;
   condition
     when Has-value do
       let Value = self decode-with: T.item;

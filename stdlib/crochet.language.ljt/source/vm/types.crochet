@@ -99,10 +99,10 @@ command t-lazy short-representation =
 command t-array short-representation =
   "[self.item short-representation]\[\]" flatten-into-plain-text;
 
-command t-map text-representation = 
-  "([self.key short-representation] -> [self.value text-representation])" flatten-into-plain-text;
+command t-map short-representation = 
+  "([self.key short-representation] -> [self.value short-representation])" flatten-into-plain-text;
 
-command t-tuple text-representation do
+command t-tuple short-representation do
   let Pairs = self.fields zip: self.types with: { Field, Type in
     "[Field]: [Type short-representation];";
   };
