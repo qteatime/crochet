@@ -20,6 +20,9 @@ end
 command ljt-vm decode: (Bytes is byte-array) with: Type =
   self decode: Bytes view with: Type;
 
+command ljt-vm try-decode: Bytes with: Type =
+  ljt try: {self decode: Bytes with: Type};
+
 command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next, error>)) type: (Type is ljt-type) do
   let Origin = self.decoder value;
   let Result = F(self.decoder value);

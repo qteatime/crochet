@@ -1,5 +1,6 @@
 % crochet
 
+open crochet.language.ljt;
 open crochet.codec.basic;
 open purr.ide.ui;
 

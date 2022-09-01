@@ -1,5 +1,6 @@
 % crochet
 
+open crochet.language.ljt;
 open crochet.concurrency;
 open purr.ide.ui;
 open crochet.codec.basic;
@@ -17,7 +18,7 @@ command decoding-editor as widget do
 end
 
 command decoding-editor maybe-render: (X is error) =
-  "(Could not construct a LJT VM from the grammar)"
+  "Could not construct a LJT VM from the grammar:\n\n[X reason to-panic-message flatten-into-plain-text]"
     | as widget
     | transform
     | padding: (1.0 as root-em);
@@ -52,7 +53,7 @@ command decoding-editor type-selector: Vm selected: S output: Cell do
   let Options = Vm all-types 
                   | keep-if: { T in
                       condition
-                        when T is t-tagged => T.typ is t-tuple;
+                        when T is t-tagged => T typ is t-tuple;
                         otherwise => false;
                       end
                     }
@@ -111,8 +112,18 @@ command decoding-editor render-tab: X do
     );
 end
 
-command decoding-editor maybe-render-value: (Error is error) =
-  "Could not decode the binary data";
+command decoding-editor maybe-render-value: (Error is error) do
+  #widget flex-column: [
+    "Could not decode the binary data",
+    Error reason to-panic-message as widget
+      | transform
+      | font-family: #font-family monospace
+      | font-color: #color red-700
+      | white-space: #text-whitespace preserve-and-wrap
+  ]
+  | transform
+  | flex-gap: (1.0 as root-em);
+end
 
 command decoding-editor maybe-render-value: (Value is ok) =
   #widget container: [
@@ -134,40 +145,40 @@ command decoding-editor type: T value: V =
 
 command decoding-editor render-value: (V is v-bool) =
   condition
-    when V.value => self type: "Boolean" value: "true";
+    when V value => self type: "Boolean" value: "true";
     otherwise => self type: "Boolean" value: "false";
   end;
 
 command decoding-editor render-value: (V is v-int8) =
-  self type: "Int8" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-int16) =
-  self type: "Int16" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-int32) =
-  self type: "Int32" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-uint8) =
-  self type: "UInt8" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-uint16) =
-  self type: "UInt16" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-uint32) =
-  self type: "UInt32" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-integer) =
-  self type: "Integer" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-float32) =
-  self type: "Float32" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-float64) =
-  self type: "Float64" value: V.value to-text;
+  self type: V codec short-representation value: V value to-text;
 
 command decoding-editor render-value: (V is v-text) =
-  self type: "Text" value: (
-    #widget container: [V.value]
+  self type: V codec short-representation value: (
+    #widget container: [V value]
     | transform
     | font-family: #font-family monospace
     | padding: (1.0 as root-em)
@@ -177,9 +188,9 @@ command decoding-editor render-value: (V is v-text) =
   );
 
 command decoding-editor render-value: (V is v-array) =
-  self type: "Array" value: (
+  self type: V codec short-representation value: (
     #widget flex-column: (
-      V.values map: { X in 
+      V values map: { X in 
         self render-value: X
           | as widget
           | transform
@@ -192,9 +203,9 @@ command decoding-editor render-value: (V is v-array) =
   );
 
 command decoding-editor render-value: (V is v-map) =
-  self type: "Map" value: (
+  self type: V codec short-representation value: (
     #widget table: (
-      V.value entries map: { Entry in
+      V value entries map: { Entry in
         [
           self render-value: Entry key,
           self render-value: Entry value,
@@ -206,7 +217,7 @@ command decoding-editor render-value: (V is v-map) =
 
 command decoding-editor render-value: (V is v-tuple) =
   #widget table: (
-    V.typ.fields zip: V.values with: { Field, Value in
+    V typ fields zip: V.values with: { Field, Value in
       [
         #table-cell header: Field,
         self render-value: Value,
@@ -215,15 +226,15 @@ command decoding-editor render-value: (V is v-tuple) =
   );
 
 command decoding-editor render-value: (V is v-choice) =
-  self render-value: V.value;
+  self render-value: V value;
 
 command decoding-editor render-value: (V is v-tagged) =
-  self type: "[V.typ.name] (0x[#hex encode: V.tag | to-text-aligned])" value: (
-    self render-value: V.value
+  self type: V codec short-representation value: (
+    self render-value: V value
   );
 
 command decoding-editor render-value: (V is v-just) =
-  self type: "T?" value: (self render-value: V.value);
+  self type: V codec short-representation value: (self render-value: V.value);
 
 command decoding-editor render-value: (V is v-none) =
-  self type: "T?" value: "None";
+  self type: V codec short-representation value: "None";

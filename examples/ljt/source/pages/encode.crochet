@@ -1,5 +1,6 @@
 % crochet
 
+open crochet.language.ljt;
 open crochet.concurrency;
 open purr.ide.ui;
 open crochet.debug;
@@ -61,7 +62,7 @@ end
 command encoding-editor render-value: (X is encoding-value-unknown) values: Values vm: Vm do
   let Cell = #observable-cell with-value: t-bool;
   Cell stream subscribe: { Type in
-    let Value = package default-value: Type;
+    let Value = Type default-value;
     Values <- Values value map: { I in
       condition
         when X =:= I => new encoding-value-ok(Type, Value);
@@ -83,7 +84,7 @@ command encoding-editor render-value: (X is encoding-value-ok) values: Values vm
 
   #widget flex-row: [
     #widget card: [
-      #card-child header: X.encoder.name,
+      #card-child header: X.encoder name,
       #card-child body: (
         new value-editor(
           original -> X,
@@ -148,7 +149,7 @@ command value-editor label: Label value: (V is v-bool) set: F do
   Ref checked changes subscribe: { X in F(new v-bool(X)) };
 
   #widget checkbox: "[Label] : Boolean"
-    | checked: V.value
+    | checked: V value
     | reference: Ref;
 end
 
@@ -160,7 +161,7 @@ command value-editor label: Label value: (V is v-int8) set: F do
     | subscribe: { X in F(new v-int8(X)) };
 
   #widget text-input: "[Label] : Int8"
-    | value: V.value to-text
+    | value: V value to-text
     | validation: { X in #integer try-parse: (untaint make-trusted: X) 
                            | validate: { X in (X >= -128) and (X <= 127) } label: "int8"
                            | map-error: { _ in "Int8 ranges from -128 to 127 (inclusive)"} }
@@ -190,7 +191,7 @@ command value-editor label: Label value: (V is v-int32) set: F do
     | subscribe: { X in F(new v-int32(X)) };
 
   #widget text-input: "[Label] : Int32"
-    | value: V.value to-text
+    | value: V value to-text
     | validation: { X in #integer try-parse: (untaint make-trusted: X) 
                            | validate: { X in (X >= -2_147_483_648) and (X <= 2_147_483_647) } label: "int32"
                            | map-error: { _ in "Int32 ranges from -2 147 483 648 to 2 147 483 647 (inclusive)"} }
@@ -205,7 +206,7 @@ command value-editor label: Label value: (V is v-uint8) set: F do
     | subscribe: { X in F(new v-uint8(X)) };
 
   #widget text-input: "[Label] : UInt8"
-    | value: V.value to-text
+    | value: V value to-text
     | validation: { X in #integer try-parse: (untaint make-trusted: X) 
                            | validate: { X in (X >= 0) and (X <= 255) } label: "uint8"
                            | map-error: { _ in "UInt8 ranges from 0 to 255 (inclusive)"} }
@@ -220,7 +221,7 @@ command value-editor label: Label value: (V is v-uint16) set: F do
     | subscribe: { X in F(new v-uint16(X)) };
 
   #widget text-input: "[Label] : UInt16"
-    | value: V.value to-text
+    | value: V value to-text
     | validation: { X in #integer try-parse: (untaint make-trusted: X) 
                            | validate: { X in (X >= 0) and (X < 65_535) } label: "uint16"
                            | map-error: { _ in "UInt16 ranges from 0 to 65 535 (inclusive)"} }
@@ -235,7 +236,7 @@ command value-editor label: Label value: (V is v-uint32) set: F do
     | subscribe: { X in F(new v-uint32(X)) };
 
   #widget text-input: "[Label] : UInt32"
-    | value: V.value to-text
+    | value: V value to-text
     | validation: { X in #integer try-parse: (untaint make-trusted: X) 
                            | validate: { X in (X >= 0) and (X < 4_294_967_295) } label: "uint32"
                            | map-error: { _ in "UInt32 ranges from 0 to 4 294 967 295 (inclusive)"} }
@@ -250,7 +251,7 @@ command value-editor label: Label value: (V is v-integer) set: F do
     | subscribe: { X in F(new v-integer(X)) };
 
   #widget text-input: "[Label] : Integer"
-    | value: V.value to-text
+    | value: V value to-text
     | validation: { X in #integer try-parse: (untaint make-trusted: X) 
                            | map-error: { _ in "Not a valid integer value"} }
     | reference: Ref;
@@ -266,7 +267,7 @@ command value-editor label: Label value: (V is v-float32) set: F do
 
   #widget flex-column: [
     #widget text-input: "[Label] : Float32"
-      | value: V.value to-text
+      | value: V value to-text
       | validation: { X in #float-64bit try-parse: (untaint make-trusted: X) 
                             | map-error: { _ in "Not a valid float32 value"} }
       | reference: Ref,
@@ -289,7 +290,7 @@ let Ref = #reference text-input: "";
 
   #widget flex-column: [
     #widget text-input: "[Label] : Float64"
-      | value: V.value to-text
+      | value: V value to-text
       | validation: { X in #float-64bit try-parse: (untaint make-trusted: X) 
                             | map-error: { _ in "Not a valid float64 value"} }
       | reference: Ref,
@@ -324,46 +325,73 @@ command value-editor label: Label value: (V is v-array) set: F do
 
   #widget flex-column: [
     "[Label] : Array",
-    #widget button: "Add value"
-      | on-click: { _ in
-          let V = Current value;
-          let New = new v-array(V with values -> V.values append: (package default-value: V.typ.item));
-          Current <- New;
-        },
 
-    Current map: { C in 
-      #widget flex-column: (C.values enumerate map: { X in
-        let Setter = { N in 
+    #widget dynamic: { Surface in
+      let Next-id = #cell with-value: 1;
+      let Id-map = #cell with-value: #map empty;
+
+      let Get-index = { Id in
+        let Value = Id-map value at: Id;
+        (Current value) values enumerate
+          | find-first: { V in V =:= Value }
+          | map: (_ index);
+      };
+
+      let Add = { Value in
+        let Id = Next-id value;
+        Next-id <- Id + 1;
+        Id-map <- Id-map at: Id put: Value;
+
+        let Setter = { New in
+          let Index = Get-index(Id);
           let V = Current value;
-          condition
-            when (V.values at: X index) === N => nothing;
-            otherwise do
-              Current <- new v-array(V with values -> V.values at: X index put: N);
-            end
-          end
+          Current <- new v-array(V with values -> V values at: Index put: N);
         };
-        #widget flex-row: [
-          #widget icon-button: (#widget icon: "trash")
-            | on-click: { _ in
-                let V = Current value;
-                Current <- new v-array(V with values -> V.values remove-at: X index);
-              },
 
-          self label: X index to-text value: X value set: Setter
-            | as widget
+        #widget dynamic: { Item-surface in 
+          let Widget = (
+            #widget flex-row: [
+              #widget icon-button: (#widget icon: "trash")
+                | on-click: { _ in
+                    Item-surface remove-contents;
+                    let Index = Get-index(Id);
+                    let V = Current value;
+                    Current <- new v-array(V with values -> V values remove-at: Index);
+                  },
+
+              self label: "" value: X value set: Setter
+                | as widget
+                | transform
+                | padding: (0.5 as root-em)
+            ]
             | transform
             | border-bottom: (1 as pixels) style: #border-style solid color: #color border
-            | padding: (0.5 as root-em)
-        ]
-        | transform
-        | flex-align-items: #flex-align flex-start
-        | flex-gap: (1.0 as root-em)
-        | flex-wrap: #flex-wrap no-wrap
-        | height: #size fit-content
-      })
-      | transform
-      | flex-gap: (0.5 as root-em)
+            | flex-align-items: #flex-align flex-start
+            | flex-gap: (1.0 as root-em)
+            | flex-wrap: #flex-wrap no-wrap
+            | height: #size fit-content
+            );
+
+          Item-surface replace-contents: Widget;
+        }
+      };
+
+      Surface append: (
+        #widget button: "Add value"
+          | on-click: { _ in
+              let V = Current value;
+              Current <- new v-array(V with values -> V values append: (package default-value: V codec item));
+            }
+      );
+
+      for Value in V values do
+        Add(Value);
+      end
     }
+    | transform
+    | flex-layout: #flex-layout column
+    | height: #size fill
+    | flex-gap: (1.0 as root-em),
   ]
   | transform
   | flex-gap: (0.25 as root-em);
@@ -377,10 +405,10 @@ command value-editor label: Label value: (V is v-tuple) set: F do
   let Current = #cell with-value: V;
 
   #widget flex-column: (
-    V.typ.fields zip: V.values enumerate with: { Field, Entry in
+    V codec fields zip: V values enumerate with: { Field, Entry in
       let Setter = { X in
         let V = Current value;
-        Current <- new v-tuple(V with values -> V.values at: Entry index put: X);
+        Current <- new v-tuple(V with values -> V values at: Entry index put: X);
         F(Current value);
       };
       (self label: Field value: Entry value set: Setter)
@@ -396,12 +424,12 @@ end
 
 command value-editor label: Label value: (V is v-tagged) set: F do
   #widget flex-column: [
-    V.typ.name as widget
+    V codec name as widget
       | transform
       | font-weight: #font-weight bold
       | font-size: #text-size large,
 
-    self label: "" value: V.value set: { X in
+    self label: "" value: V value set: { X in
       F(new v-tagged(V with value -> X))
     },
   ]
@@ -415,21 +443,21 @@ command value-editor label: Label value: (V is v-choice) set: F do
   Current changes-by: (_ === _)
     | subscribe: { V in F(V) };
   Ref selected changes
-    | subscribe: { T in Current <- new v-choice(V.typ, package default-value: T) };
+    | subscribe: { T in Current <- new v-choice(V codec, package default-value: T) };
 
   Current map: { V in 
     #widget flex-column: [
       #widget select-one: "Sub-type"
-        | options: (V.typ.types values map: { T in
-            #select-option label: T.name value: T;
+        | options: (V codec types values map: { T in
+            #select-option label: T name value: T;
           })
-        | selected: V.value.typ
+        | selected: V value codec
         | reference: Ref,
       
-      self label: Label value: V.value set: { New in
+      self label: Label value: V value set: { New in
         condition
-          when New === V.value => nothing;
-          otherwise => Current <- new v-choice(V.typ, New);
+          when New === V value => nothing;
+          otherwise => Current <- new v-choice(V codec, New);
         end
       }
     ]
@@ -452,7 +480,7 @@ command value-editor label: Label value: (V is v-optional) set: F do
             #widget checkbox: ""
               | checked: true,
 
-            self label: "" value: X.value set: F,
+            self label: "" value: X value set: F,
           ]
           | transform
           | flex-align-items: #flex-align flex-start
@@ -478,32 +506,13 @@ command encoding-editor type-selector: Vm output: Cell do
   let Options = Vm all-types 
                   | keep-if: { T in
                       condition
-                        when T is t-tagged => T.typ is t-tuple;
+                        when T is t-tagged => T typ is t-tuple;
                         otherwise => false;
                       end
                     }
-                  | map: { T in #select-option label: T.name value: T };
+                  | map: { T in #select-option label: T name value: T };
   #widget select-one: "Choose a type to encode"
     | options: Options
     | reference: Choice-ref;
 end
 
-
-command package default-value: t-bool = new v-bool(false);
-command package default-value: t-int8 = new v-int8(0);
-command package default-value: t-int16 = new v-int16(0);
-command package default-value: t-int32 = new v-int32(0);
-command package default-value: t-uint8 = new v-uint8(0);
-command package default-value: t-uint16 = new v-uint16(0);
-command package default-value: t-uint32 = new v-uint32(0);
-command package default-value: t-float32 = new v-float32(0.0);
-command package default-value: t-float64 = new v-float64(0.0);
-command package default-value: t-integer = new v-integer(0);
-command package default-value: t-text = new v-text("");
-command package default-value: (T is t-array) = new v-array(T, []);
-command package default-value: (T is t-map) = new v-map(T, #map empty);
-command package default-value: (T is t-tuple) = new v-tuple(T, T.types map: (self default-value: _));
-command package default-value: (T is t-tagged) = new v-tagged(T, T.tag, self default-value: T.typ);
-command package default-value: (T is t-choice) = new v-choice(T, self default-value: T.types values first);
-command package default-value: (T is t-optional) = new v-none(T);
-command package default-value: (T is t-lazy) = self default-value: (force T.thunk);

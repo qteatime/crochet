@@ -1,10 +1,37 @@
 % crochet
 
+effect deferred-evaluation with
+  defer(codec is thunk); // -> ljt-type
+  resolve(); // -> nothing
+end
+
+handler deferred-evaluation do
+  let Deferred = #cell with-value: [];
+with
+  on deferred-evaluation.defer(T) do
+    let Type = new t-lazy(T);
+    Deferred <- Deferred value append: Type;
+    continue with Type;
+  end
+
+  on deferred-evaluation.resolve() do
+    for Type in Deferred value do
+      Type materialise;
+    end
+  end
+end
+
+
 command ljt-vm load-module: (Module is module) do
   let Env = self.globals clone;
   let Namespace = #qualified-name empty;
-  for Declaration in Module.declarations do
-    self load-declaration: Declaration namespace: Namespace env: Env;
+  handle 
+    for Declaration in Module.declarations do
+      self load-declaration: Declaration namespace: Namespace env: Env;
+    end
+    perform deferred-evaluation.resolve();
+  with
+    use deferred-evaluation;
   end
   self;
 end
@@ -49,7 +76,7 @@ command ljt-vm evaluate-field: (Field is field) env: Env do
 end
 
 command ljt-vm evaluate-type-expr: (T is type-expr--named) env: Env =
-  new t-lazy(lazy Env lookup: T.name.name);
+  perform deferred-evaluation.defer(lazy Env lookup: T.name.name);
 
 command ljt-vm evaluate-type-expr: (T is type-expr--list) env: Env =
   new t-array(self evaluate-type-expr: T.typ env: Env);

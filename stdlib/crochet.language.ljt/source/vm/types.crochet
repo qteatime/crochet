@@ -14,12 +14,15 @@ singleton t-float64 is ljt-type;
 singleton t-text is ljt-type;
 
 type t-lazy(thunk is thunk) is ljt-type;
-type t-array(item is ljt-type) is ljt-type;
-type t-map(key is ljt-type, value is ljt-type) is ljt-type;
-type t-tuple(fields is list<text>, types is list<ljt-type>) is ljt-type;
-type t-optional(item is ljt-type) is ljt-type;
-type t-choice(types is map<integer, ljt-tagged>) is ljt-type;
-type t-tagged(name is text, tag is integer, typ is ljt-type) is ljt-type;
+type t-array(global item is ljt-type) is ljt-type;
+type t-map(global key is ljt-type, global value is ljt-type) is ljt-type;
+type t-tuple(global fields is list<text>, global types is list<ljt-type>) is ljt-type;
+type t-optional(global item is ljt-type) is ljt-type;
+type t-choice(global types is map<integer, ljt-tagged>) is ljt-type;
+type t-tagged(global name is text, global tag is integer, global typ is ljt-type) is ljt-type;
+
+
+command t-lazy materialise = force self.thunk;
 
 
 // -- Equality
@@ -132,7 +135,7 @@ command t-float32 default-value = new v-float32(0.0);
 command t-float64 default-value = new v-float64(0.0);
 command t-text default-value = new v-text("");
 
-command t-lazy default-value = (force self) default-value;
+command t-lazy default-value = (force self.thunk) default-value;
 command t-array default-value = new v-array(self, []);
 command t-map default-value = new v-map(self, #map empty);
 command t-tuple default-value = new v-tuple(self, self.types map: (_ default-value));

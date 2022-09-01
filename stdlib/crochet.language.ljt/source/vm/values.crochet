@@ -1,26 +1,26 @@
 % crochet
 
 abstract ljt-value;
-type v-bool(value is boolean) is ljt-value;
-type v-int8(value is integer) is ljt-value;
-type v-int16(value is integer) is ljt-value;
-type v-int32(value is integer) is ljt-value;
-type v-uint8(value is integer) is ljt-value;
-type v-uint16(value is integer) is ljt-value;
-type v-uint32(value is integer) is ljt-value;
-type v-integer(value is integer) is ljt-value;
-type v-float32(value is float-64bit) is ljt-value;
-type v-float64(value is float-64bit) is ljt-value;
-type v-text(value is text) is ljt-value;
+type v-bool(global value is boolean) is ljt-value;
+type v-int8(global value is integer) is ljt-value;
+type v-int16(global value is integer) is ljt-value;
+type v-int32(global value is integer) is ljt-value;
+type v-uint8(global value is integer) is ljt-value;
+type v-uint16(global value is integer) is ljt-value;
+type v-uint32(global value is integer) is ljt-value;
+type v-integer(global value is integer) is ljt-value;
+type v-float32(global value is float-64bit) is ljt-value;
+type v-float64(global value is float-64bit) is ljt-value;
+type v-text(global value is text) is ljt-value;
 
-type v-array(typ is ljt-type, values is list<ljt-value>) is ljt-value;
-type v-map(typ is ljt-type, value is map<ljt-value, ljt-value>) is ljt-value;
-type v-tuple(typ is ljt-type, values is list<ljt-value>) is ljt-value;
-type v-tagged(typ is ljt-type, tag is integer, value is ljt-value) is ljt-value;
-type v-choice(typ is ljt-type, value is v-tagged) is ljt-value;
+type v-array(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
+type v-map(typ is ljt-type, global value is map<ljt-value, ljt-value>) is ljt-value;
+type v-tuple(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
+type v-tagged(typ is ljt-type, global tag is integer, global value is ljt-value) is ljt-value;
+type v-choice(typ is ljt-type, global value is v-tagged) is ljt-value;
 
 abstract v-optional is ljt-value;
-type v-just(typ is ljt-type, value is ljt-value) is v-optional;
+type v-just(typ is ljt-type, global value is ljt-value) is v-optional;
 type v-none(typ is ljt-type) is v-optional;
 
 
