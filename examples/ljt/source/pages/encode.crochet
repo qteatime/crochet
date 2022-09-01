@@ -146,7 +146,7 @@ local type value-editor(
 
 command value-editor label: Label value: (V is v-bool) set: F do
   let Ref = #reference checkbox: "";
-  Ref checked changes subscribe: { X in F(new v-bool(X)) };
+  Ref checked changes subscribe: { X in F(t-bool make: X) };
 
   #widget checkbox: "[Label] : Boolean"
     | checked: V value
@@ -158,7 +158,7 @@ command value-editor label: Label value: (V is v-int8) set: F do
   Ref validated-value changes
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-int8(X)) };
+    | subscribe: { X in F(t-int8 make: X) };
 
   #widget text-input: "[Label] : Int8"
     | value: V value to-text
@@ -173,7 +173,7 @@ command value-editor label: Label value: (V is v-int16) set: F do
   Ref validated-value changes 
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-int16(X)) };
+    | subscribe: { X in F(t-int16 make: X) };
 
   #widget text-input: "[Label] : Int16"
     | value: V.value to-text
@@ -188,7 +188,7 @@ command value-editor label: Label value: (V is v-int32) set: F do
   Ref validated-value changes
     | keep-if: { X in X is ok}
     | map: (_ value)
-    | subscribe: { X in F(new v-int32(X)) };
+    | subscribe: { X in F(t-int32 make: X) };
 
   #widget text-input: "[Label] : Int32"
     | value: V value to-text
@@ -203,7 +203,7 @@ command value-editor label: Label value: (V is v-uint8) set: F do
   Ref validated-value changes
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-uint8(X)) };
+    | subscribe: { X in F(t-uint8 make: X) };
 
   #widget text-input: "[Label] : UInt8"
     | value: V value to-text
@@ -218,7 +218,7 @@ command value-editor label: Label value: (V is v-uint16) set: F do
   Ref validated-value changes 
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-uint16(X)) };
+    | subscribe: { X in F(t-uint16 make: X) };
 
   #widget text-input: "[Label] : UInt16"
     | value: V value to-text
@@ -233,7 +233,7 @@ command value-editor label: Label value: (V is v-uint32) set: F do
   Ref validated-value changes 
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-uint32(X)) };
+    | subscribe: { X in F(t-uint32 make: X) };
 
   #widget text-input: "[Label] : UInt32"
     | value: V value to-text
@@ -248,7 +248,7 @@ command value-editor label: Label value: (V is v-integer) set: F do
   Ref validated-value changes 
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-integer(X)) };
+    | subscribe: { X in F(t-integer make: X) };
 
   #widget text-input: "[Label] : Integer"
     | value: V value to-text
@@ -263,7 +263,7 @@ command value-editor label: Label value: (V is v-float32) set: F do
   Ref validated-value changes 
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-float32(X)) };
+    | subscribe: { X in F(t-float32 make: X) };
 
   #widget flex-column: [
     #widget text-input: "[Label] : Float32"
@@ -286,7 +286,7 @@ let Ref = #reference text-input: "";
   Ref validated-value changes 
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-float64(X)) };
+    | subscribe: { X in F(t-float64 make: X) };
 
   #widget flex-column: [
     #widget text-input: "[Label] : Float64"
@@ -310,7 +310,7 @@ command value-editor label: Label value: (V is v-text) set: F do
   Ref validated-value changes
     | keep-if: { X in X is ok }
     | map: (_ value)
-    | subscribe: { X in F(new v-text(X)) };
+    | subscribe: { X in F(t-text make: X) };
 
   #widget text-input: "[Label] : Text"
     | validation: { X in #result ok: (untaint make-trusted: X) }
@@ -318,6 +318,7 @@ command value-editor label: Label value: (V is v-text) set: F do
 end
 
 command value-editor label: Label value: (V is v-array) set: F do
+  let Type = V codec;
   let Current = #observable-cell with-value: V;
   Current changes-by: (_ === _)
     | subscribe: { V in F(V) };
@@ -333,54 +334,61 @@ command value-editor label: Label value: (V is v-array) set: F do
       let Get-index = { Id in
         let Value = Id-map value at: Id;
         (Current value) values enumerate
-          | find-first: { V in V =:= Value }
+          | find-first: { V in V value =:= Value }
           | map: (_ index);
       };
 
       let Add = { Value in
         let Id = Next-id value;
         Next-id <- Id + 1;
-        Id-map <- Id-map at: Id put: Value;
+        Id-map <- Id-map value at: Id put: Value;
 
         let Setter = { New in
-          let Index = Get-index(Id);
+          let Index = Get-index(Id) value;
           let V = Current value;
-          Current <- new v-array(V with values -> V values at: Index put: N);
+          Id-map <- Id-map value at: Id put: New;
+          Current <- Type make: (V values at: Index put: New);
         };
 
-        #widget dynamic: { Item-surface in 
-          let Widget = (
-            #widget flex-row: [
-              #widget icon-button: (#widget icon: "trash")
-                | on-click: { _ in
-                    Item-surface remove-contents;
-                    let Index = Get-index(Id);
-                    let V = Current value;
-                    Current <- new v-array(V with values -> V values remove-at: Index);
-                  },
+        let Widget =
+          #widget dynamic: { Item-surface in 
+            let Widget = (
+              #widget flex-row: [
+                #widget icon-button: (#widget icon: "trash")
+                  | on-click: { _ in
+                      Item-surface replace-contents: #widget space;
+                      let Index = Get-index(Id) value;
+                      Id-map <- Id-map value remove-at: Id;
+                      let V = Current value;
+                      Current <- Type make: (V values remove-at: Index);
+                    },
 
-              self label: "" value: X value set: Setter
-                | as widget
-                | transform
-                | padding: (0.5 as root-em)
-            ]
-            | transform
-            | border-bottom: (1 as pixels) style: #border-style solid color: #color border
-            | flex-align-items: #flex-align flex-start
-            | flex-gap: (1.0 as root-em)
-            | flex-wrap: #flex-wrap no-wrap
-            | height: #size fit-content
-            );
+                self label: "" value: Value set: Setter
+                  | as widget
+                  | transform
+                  | padding: (0.5 as root-em)
+              ]
+              | transform
+              | border-bottom: (1 as pixels) style: #border-style solid color: #color border
+              | flex-align-items: #flex-align flex-start
+              | flex-gap: (1.0 as root-em)
+              | flex-wrap: #flex-wrap no-wrap
+              | height: #size fit-content
+              );
 
-          Item-surface replace-contents: Widget;
-        }
+            Item-surface replace-contents: Widget;
+          };
+
+        Surface append: Widget;
       };
 
       Surface append: (
         #widget button: "Add value"
           | on-click: { _ in
               let V = Current value;
-              Current <- new v-array(V with values -> V values append: (package default-value: V codec item));
+              let New-value = V codec item default-value;
+              Current <- (Type make: (V values append: New-value));
+              Add(New-value);
             }
       );
 
@@ -403,12 +411,13 @@ end
 
 command value-editor label: Label value: (V is v-tuple) set: F do
   let Current = #cell with-value: V;
+  let Type = V codec;
 
   #widget flex-column: (
     V codec fields zip: V values enumerate with: { Field, Entry in
       let Setter = { X in
         let V = Current value;
-        Current <- new v-tuple(V with values -> V values at: Entry index put: X);
+        Current <- Type make: (V values at: Entry index put: X);
         F(Current value);
       };
       (self label: Field value: Entry value set: Setter)
@@ -430,7 +439,7 @@ command value-editor label: Label value: (V is v-tagged) set: F do
       | font-size: #text-size large,
 
     self label: "" value: V value set: { X in
-      F(new v-tagged(V with value -> X))
+      F(V codec make: X);
     },
   ]
   | transform
@@ -443,7 +452,7 @@ command value-editor label: Label value: (V is v-choice) set: F do
   Current changes-by: (_ === _)
     | subscribe: { V in F(V) };
   Ref selected changes
-    | subscribe: { T in Current <- new v-choice(V codec, package default-value: T) };
+    | subscribe: { T in Current <- V codec make: T default-value };
 
   Current map: { V in 
     #widget flex-column: [
@@ -457,7 +466,7 @@ command value-editor label: Label value: (V is v-choice) set: F do
       self label: Label value: V value set: { New in
         condition
           when New === V value => nothing;
-          otherwise => Current <- new v-choice(V codec, New);
+          otherwise => Current <- V codec make: New;
         end
       }
     ]

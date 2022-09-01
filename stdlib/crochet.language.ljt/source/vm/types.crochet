@@ -142,3 +142,76 @@ command t-tuple default-value = new v-tuple(self, self.types map: (_ default-val
 command t-optional default-value = new v-none(self);
 command t-choice default-value = new v-choice(self, self.types values first default-value);
 command t-tagged default-value = new v-tagged(self, self.tag, self.typ default-value);
+
+
+// -- Constructors
+command t-bool make: (X is boolean) =
+  new v-bool(X);
+
+command t-int8 make: (X is integer)
+requires 
+  in-bounds :: (X >= -128) and (X <= 127)
+= new v-int8(X);
+
+command t-int16 make: (X is integer)
+requires
+  in-bounds :: (X >= -32_768) and (X <= 32_767)
+= new v-int16(X);
+
+command t-int32 make: (X is integer)
+requires
+  in-bounds :: (X >= -2_147_483_648) and (X <= 2_147_483_647)
+= new v-int32(X);
+
+command t-uint8 make: (X is integer)
+requires
+  in-bounds :: (X >= 0) and (X <= 255)
+= new v-uint8(X);
+
+command t-uint16 make: (X is integer)
+requires
+  in-bounds :: (X >= 0) and (X <= 65_535)
+= new v-uint16(X);
+
+command t-uint32 make: (X is integer)
+requires
+  in-bounds :: (X >= 0) and (X <= 4_294_967_295)
+= new v-uint32(X);
+
+// FIXME: check bounds
+command t-float32 make: (X is float-64bit) =
+  new v-float32(X);
+
+command t-float64 make: (X is float-64bit) =
+  new v-float64(X);
+
+command t-integer make: (X is integer) =
+  new v-integer(X);
+
+command t-text make: (X is text) =
+  new v-text(X);
+
+command t-lazy make: X =
+  self materialise make: X;
+
+// FIXME: type check
+command t-array make: (Xs is list) =
+  new v-array(self, Xs);
+
+command t-map make: (M is map) =
+  new v-map(self, M);
+
+command t-tuple make: (Values is list) =
+  new v-tuple(self, Values);
+
+command t-tagged make: Value =
+  new v-tagged(self, self.tag, Value);
+
+command t-optional make: (Value is error) = 
+  new v-none(self);
+
+command t-optional make: (Value is ok) =
+  new v-just(self, Value value);
+
+command t-choice make: Value =
+  new v-choice(self, Value);

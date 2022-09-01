@@ -130,7 +130,7 @@ command ljt-decoder decode-with: (T is t-tagged) do
           decoder-view -> self.decoder value,
           reason -> new decoding-failed-reason--unexpected-tag(
             tag -> Tag,
-            expected -> T.tag,
+            expected-tag -> T.tag,
           ),
           vm -> self.vm,
         );

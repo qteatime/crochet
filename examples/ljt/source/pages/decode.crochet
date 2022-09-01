@@ -57,7 +57,7 @@ command decoding-editor type-selector: Vm selected: S output: Cell do
                         otherwise => false;
                       end
                     }
-                  | map: { T in #select-option label: T.name value: T };
+                  | map: { T in #select-option label: T name value: T };
   #widget select-one: "Choose a type to decode"
     | options: Options
     | selected: S
@@ -217,7 +217,7 @@ command decoding-editor render-value: (V is v-map) =
 
 command decoding-editor render-value: (V is v-tuple) =
   #widget table: (
-    V typ fields zip: V.values with: { Field, Value in
+    V codec fields zip: V values with: { Field, Value in
       [
         #table-cell header: Field,
         self render-value: Value,
@@ -234,7 +234,7 @@ command decoding-editor render-value: (V is v-tagged) =
   );
 
 command decoding-editor render-value: (V is v-just) =
-  self type: V codec short-representation value: (self render-value: V.value);
+  self type: V codec short-representation value: (self render-value: V value);
 
 command decoding-editor render-value: (V is v-none) =
   self type: V codec short-representation value: "None";
