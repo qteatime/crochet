@@ -1,0 +1,90 @@
+% crochet
+
+abstract ljt-value;
+type v-bool(value is boolean) is ljt-value;
+type v-int8(value is integer) is ljt-value;
+type v-int16(value is integer) is ljt-value;
+type v-int32(value is integer) is ljt-value;
+type v-uint8(value is integer) is ljt-value;
+type v-uint16(value is integer) is ljt-value;
+type v-uint32(value is integer) is ljt-value;
+type v-integer(value is integer) is ljt-value;
+type v-float32(value is float-64bit) is ljt-value;
+type v-float64(value is float-64bit) is ljt-value;
+type v-text(value is text) is ljt-value;
+
+type v-array(typ is ljt-type, values is list<ljt-value>) is ljt-value;
+type v-map(typ is ljt-type, value is map<ljt-value, ljt-value>) is ljt-value;
+type v-tuple(typ is ljt-type, values is list<ljt-value>) is ljt-value;
+type v-tagged(typ is ljt-type, tag is integer, value is ljt-value) is ljt-value;
+type v-choice(typ is ljt-type, value is v-tagged) is ljt-value;
+
+abstract v-optional is ljt-value;
+type v-just(typ is ljt-type, value is ljt-value) is v-optional;
+type v-none(typ is ljt-type) is v-optional;
+
+
+// Equality
+implement equality for ljt-value;
+command (A is v-bool) === (B is v-bool) = A.value === B.value;
+command (A is v-int8) === (B is v-int8) = A.value === B.value;
+command (A is v-int16) === (B is v-int16) = A.value === B.value;
+command (A is v-int32) === (B is v-int32) = A.value === B.value;
+command (A is v-uint8) === (B is v-uint8) = A.value === B.value;
+command (A is v-uint16) === (B is v-uint16) = A.value === B.value;
+command (A is v-uint32) === (B is v-uint32) = A.value === B.value;
+command (A is v-float32) === (B is v-float32) = A.value === B.value;
+command (A is v-float64) === (B is v-float64) = A.value === B.value;
+command (A is v-integer) === (B is v-integer) = A.value === B.value;
+command (A is v-text) === (B is v-integer) = A.value === B.value;
+
+command (A is v-array) === (B is v-array) =
+  (A.values count === B.values count)
+    | and-also: {A.values zip: B.values with: (_ === _) | all-true};
+
+command (A is v-map) === (B is v-map) =
+  (A.value count === B.value count)
+    | and-also: {
+        A.value entries all: { Entry in
+          B contains-key: Entry key
+            | and-also: {Entry value === B at: Entry key};
+        }
+      };
+
+command (A is v-tuple) === (B is v-tuple) =
+  (A.values count === B.values count)
+    | and-also: {A.values zip: B.values with: (_ === _) | all-true};
+
+command (A is v-tagged) === (B is v-tagged) =
+  (A.tag === B.tag) and-also: {A.value === B.value};
+
+command (A is v-choice) === (B is v-choice) =
+  A.value === B.value;
+
+command (A is v-just) === (B is v-just) =
+  A.value === B.value;
+
+command v-none === v-none =
+  true;
+
+
+command v-bool codec = t-bool;
+command v-int8 codec = t-int8;
+command v-int16 codec = t-int16;
+command v-int32 codec = t-int32;
+command v-uint8 codec = t-uint8;
+command v-uint16 codec = t-uint16;
+command v-uint32 codec = t-uint32;
+command v-integer codec = t-integer;
+command v-float32 codec = t-float32;
+command v-float64 codec = t-float64;
+command v-text codec = t-text;
+
+command v-array codec = self.typ;
+command v-map codec = self.typ;
+command v-tuple codec = self.typ;
+command v-tagged codec = self.typ;
+command v-choice codec = self.typ;
+
+command v-just codec = self.typ;
+command v-none codec = self.typ;

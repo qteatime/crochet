@@ -1,0 +1,141 @@
+% crochet
+
+abstract ljt-type;
+singleton t-bool is ljt-type;
+singleton t-int8 is ljt-type;
+singleton t-int16 is ljt-type;
+singleton t-int32 is ljt-type;
+singleton t-uint8 is ljt-type;
+singleton t-uint16 is ljt-type;
+singleton t-uint32 is ljt-type;
+singleton t-integer is ljt-type;
+singleton t-float32 is ljt-type;
+singleton t-float64 is ljt-type;
+singleton t-text is ljt-type;
+
+type t-lazy(thunk is thunk) is ljt-type;
+type t-array(item is ljt-type) is ljt-type;
+type t-map(key is ljt-type, value is ljt-type) is ljt-type;
+type t-tuple(fields is list<text>, types is list<ljt-type>) is ljt-type;
+type t-optional(item is ljt-type) is ljt-type;
+type t-choice(types is map<integer, ljt-tagged>) is ljt-type;
+type t-tagged(name is text, tag is integer, typ is ljt-type) is ljt-type;
+
+
+// -- Equality
+implement equality for ljt-type;
+command (X is ljt-type) === (Y is ljt-type) = X =:= Y;
+
+command (X is t-lazy) === (Y is t-lazy) =
+  (force X) === (force Y);
+
+command (X is t-array) === (Y is t-array) =
+  X.item === Y.item;
+
+command (X is t-map) === (Y is t-map) =
+  (X.key === Y.key) and-also: {X.value === Y.value};
+
+command (X is t-tuple) === (Y is t-tuple) =
+  X.types === Y.types;
+
+command (X is t-optional) === (Y is t-optional) =
+  X.item === Y.item;
+
+command (X is t-choice) === (Y is t-choice) =
+  X.types === Y.types;
+
+command (X is t-tagged) === (Y is t-tagged) =
+  (X.tag === Y.tag) and-also: {X.typ === Y.typ};
+
+
+// -- Representation
+command t-bool text-representation = "Boolean";
+command t-int8 text-representation = "Int8";
+command t-int16 text-representation = "Int16";
+command t-int32 text-representation = "Int32";
+command t-uint8 text-representation = "UInt8";
+command t-uint16 text-representation = "UInt16";
+command t-uint32 text-representation = "UInt32";
+command t-integer text-representation = "Integer";
+command t-float32 text-representation = "Float32";
+command t-float64 text-representation = "Float64";
+command t-text text-representation = "Text";
+
+command t-lazy text-representation =
+  (force self.thunk) text-representation;
+
+command t-array text-representation =
+  "[self.item text-representation]\[\]" flatten-into-plain-text;
+
+command t-map text-representation = 
+  "([self.key text-representation] -> [self.value text-representation])" flatten-into-plain-text;
+
+command t-tuple text-representation do
+  let Pairs = self.fields zip: self.types with: { Field, Type in
+    "[Field]: [Type text-representation];";
+  };
+  "{[#text join: Pairs with: " "]}" flatten-into-plain-text;
+end
+
+command t-optional text-representation =
+  "[self.item text-representation]?" flatten-into-plain-text;
+
+command t-choice text-representation do
+  let Types = self.types values map: (_ text-representation);
+  "union {[#text join: Types with: "; "]}" flatten-into-plain-text;
+end
+
+command t-tagged text-representation =
+  "type [self.name]([self.tag to-text]) [self.typ text-representation]"
+    | flatten-into-plain-text;
+
+
+command ljt-type short-representation =
+  self text-representation;
+
+command t-lazy short-representation =
+  (force self.thunk) short-representation;
+
+command t-array short-representation =
+  "[self.item short-representation]\[\]" flatten-into-plain-text;
+
+command t-map text-representation = 
+  "([self.key short-representation] -> [self.value text-representation])" flatten-into-plain-text;
+
+command t-tuple text-representation do
+  let Pairs = self.fields zip: self.types with: { Field, Type in
+    "[Field]: [Type short-representation];";
+  };
+  "{[#text join: Pairs with: " "]}" flatten-into-plain-text;
+end
+
+command t-optional short-representation =
+  "[self.item short-representation]?" flatten-into-plain-text;
+
+command t-tagged short-representation =
+  "[self.name]([self.tag to-text])" flatten-into-plain-text;
+
+command t-choice short-representation =
+  self.name;
+
+
+// -- Default values
+command t-bool default-value = new v-bool(false);
+command t-int8 default-value = new v-int8(0);
+command t-int16 default-value = new v-int16(0);
+command t-int32 default-value = new v-int32(0);
+command t-uint8 default-value = new v-uint8(0);
+command t-uint16 default-value = new v-uint16(0);
+command t-uint32 default-value = new v-uint32(0);
+command t-integer default-value = new v-integer(0);
+command t-float32 default-value = new v-float32(0.0);
+command t-float64 default-value = new v-float64(0.0);
+command t-text default-value = new v-text("");
+
+command t-lazy default-value = (force self) default-value;
+command t-array default-value = new v-array(self, []);
+command t-map default-value = new v-map(self, #map empty);
+command t-tuple default-value = new v-tuple(self, self.types map: (_ default-value));
+command t-optional default-value = new v-none(self);
+command t-choice default-value = new v-choice(self, self.types values first default-value);
+command t-tagged default-value = new v-tagged(self, self.tag, self.typ default-value);

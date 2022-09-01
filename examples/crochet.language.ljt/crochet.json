@@ -1,0 +1,27 @@
+{
+  "name": "crochet.language.ljt",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/syntax/ljt-grammar.lingua",
+    "source/vm/decoding.crochet",
+    "source/vm/encoding.crochet",
+    "source/vm/environment.crochet",
+    "source/vm/error.crochet",
+    "source/vm/evaluation.crochet",
+    "source/vm/globals.crochet",
+    "source/vm/name.crochet",
+    "source/vm/types.crochet",
+    "source/vm/values.crochet",
+    "source/vm/vm.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.parsing.lingua",
+    "crochet.debug"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}

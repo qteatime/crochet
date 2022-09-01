@@ -1,0 +1,54 @@
+% crochet
+
+type ljt-env(
+  parent, // nothing or ljt-env
+  bindings is cell<map<text, ljt-type>>,
+);
+
+command #ljt-env empty =
+  new ljt-env(
+    parent -> nothing,
+    bindings -> #cell with-value: #map empty
+  );
+
+command ljt-env clone =
+  new ljt-env(
+    parent -> self,
+    bindings -> #cell with-value: #map empty
+  );
+
+command ljt-env bindings =
+  condition
+    when self.parent is nothing => self.bindings value;
+    otherwise => self.parent bindings merge: self.bindings value;
+  end;
+
+command ljt-env at: Key put: Value do
+  condition
+    when self.bindings value contains-key: Key do
+      #ljt-error raise: new ljt-error--duplicated-binding(Key, Value, self);
+      self;
+    end
+
+    otherwise do
+      self.bindings <- self.bindings value at: Key put: Value;
+      self;
+    end
+  end
+end
+
+command ljt-env lookup: Key =
+  self lookup: Key origin: self;
+
+command ljt-env lookup: Key origin: Origin do
+  condition
+    when self.bindings value contains-key: Key =>
+      self.bindings value at: Key;
+
+    when not (self.parent is nothing) =>
+      self.parent lookup: Key origin: Origin;
+
+    when self.parent is nothing =>
+      #ljt-error raise: new ljt-error--no-binding(Key, Origin);
+  end
+end

@@ -1,0 +1,142 @@
+% crochet
+
+type ljt-decoder(
+  vm is ljt-vm,
+  decoder is cell<binary-decoder>,
+  value is any,
+);
+
+abstract ljt-decoder-error;
+type ljt-decoder-error--decode-failed(state is ljt-decoder, error is any);
+
+command ljt-vm decode: (View is byte-array-view) with: (Type is ljt-type) do
+  let Decoder = new ljt-decoder(
+    vm -> self,
+    decoder -> #cell with-value: (#binary-decoder from: View),
+    value -> nothing,
+  );
+
+  Decoder decode-with: Type;
+end
+
+command ljt-vm decode: (Bytes is byte-array) with: Type =
+  self decode: Bytes view with: Type;
+
+command ljt-vm try-decode: View with: (Type is ljt-type) do
+  trap errors-in: { self decode: View with: Type };
+end
+
+command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next, error>)) do
+  let Origin = self.decoder value;
+  let Result = F(self.decoder value);
+  condition
+    when Result is ok do
+      self.decoder <- Result value next;
+      Result value value;
+    end
+
+    when Result is error =>
+      panic message: "Failed to decode" tag: "ljt-decoder" data: [state -> self, original-state -> Origin];
+  end
+end
+
+command ljt-decoder decode-with: t-bool =
+  new v-bool(self do-step: (_ take-boolean));
+
+command ljt-decoder decode-with: t-int8 =
+  new v-int8(self do-step: (_ take-integer-8bit));
+
+command ljt-decoder decode-with: t-int16 =
+  new v-int16(self do-step: (_ take-integer-16bit));
+
+command ljt-decoder decode-with: t-int32 =
+  new v-int32(self do-step: (_ take-integer-32bit));
+
+command ljt-decoder decode-with: t-uint8 =
+  new v-uint8(self do-step: (_ take-unsigned-integer-8bit));
+
+command ljt-decoder decode-with: t-uint16 =
+  new v-uint16(self do-step: (_ take-unsigned-integer-16bit));
+
+command ljt-decoder decode-with: t-uint32 =
+  new v-uint32(self do-step: (_ take-unsigned-integer-32bit));
+
+command ljt-decoder decode-with: t-float32 =
+  new v-float32(self do-step: (_ take-float-32bit));
+
+command ljt-decoder decode-with: t-float64 =
+  new v-float64(self do-step: (_ take-float-64bit));
+
+command ljt-decoder decode-with: t-integer =
+  new v-integer(self do-step: (_ take-integer));
+
+command ljt-decoder decode-with: t-text =
+  new v-text(self do-step: (_ take-text));
+
+command ljt-decoder decode-with: (T is t-lazy) =
+  self decode-with: (force T.thunk);
+
+command ljt-decoder decode-with: (T is t-array) do
+  let Size = self do-step: (_ take-unsigned-integer-32bit);
+  condition
+    when Size =:= 0 => new v-array(T, []);
+    otherwise do
+      let Items = 
+        for Index in 1 to: Size do
+          self decode-with: T.item;
+        end;
+      new v-array(T, Items);
+    end
+  end
+end
+
+command ljt-decoder decode-with: (T is t-map) do
+  let Size = self do-step: (_ take-unsigned-integer-32bit);
+  condition
+    when Size =:= 0 => new v-map(T, #map empty);
+    otherwise do
+      let Entries =
+        for Index in 1 to: Size do
+          let Key = self decode-with: T.key;
+          let Value = self decode-with: T.value;
+          #association key: Key value: Value;
+        end;
+      let Map = #map from: Entries;
+      new v-map(T, Map);
+    end
+  end
+end
+
+command ljt-decoder decode-with: (T is t-tuple) do
+  let Values =
+    for Type in T.types do
+      self decode-with: Type;
+    end;
+  new v-tuple(T, Values);
+end
+
+command ljt-decoder decode-with: (T is t-tagged) do
+  let Tag = self do-step: (_ take-unsigned-integer-32bit);
+  assert T.tag =:= Tag;
+  let Value = self decode-with: T.typ;
+  new v-tagged(T, Tag, Value);
+end
+
+command ljt-decoder decode-with: (T is t-choice) do
+  let Tag = self do-step: (_ take-unsigned-integer-32bit);
+  let Type = T.types at: Tag;
+  let Value = self decode-with: Type.typ;
+  new v-choice(T, new v-tagged(Type, Tag, Value));
+end
+
+command ljt-decoder decode-with: (T is t-optional) do
+  let Has-value = self do-step: (_ take-boolean);
+  condition
+    when Has-value do
+      let Value = self decode-with: T.item;
+      new v-just(T, Value);
+    end
+
+    otherwise => new v-none(T);
+  end
+end
