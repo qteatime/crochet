@@ -17,6 +17,8 @@ import { random_uuid } from "../utils/uuid";
 import * as Build from "./build";
 import * as Electron from "electron";
 
+const tools_root = Path.join(__dirname, "../../tools");
+
 function read_crochet(file: string) {
   const source = FS.readFileSync(file, "utf-8");
   const ast = Crochet.compiler.parse(source, file);
@@ -580,8 +582,14 @@ void (async function main() {
         return await run(args, options);
       case "run-web":
         return await run_web(args, options);
+
+      // -- Specialised tools
       case "gui":
         return await run_purr(options);
+      case "ljtc":
+        return await run([Path.join(tools_root, "ljtc/crochet.json")], options);
+
+      // -- Services
       case "docs":
         return await show_docs(args, options);
       case "test":

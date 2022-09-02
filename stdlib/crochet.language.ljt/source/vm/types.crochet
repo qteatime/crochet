@@ -19,8 +19,11 @@ type t-map(global key is ljt-type, global value is ljt-type) is ljt-type;
 type t-tuple(global fields is list<text>, global types is list<ljt-type>) is ljt-type;
 type t-optional(global item is ljt-type) is ljt-type;
 type t-choice(global types is map<integer, ljt-tagged>) is ljt-type;
-type t-tagged(global name is text, global tag is integer, global typ is ljt-type) is ljt-type;
+type t-tagged(name is qualified-name, global tag is integer, global typ is ljt-type) is ljt-type;
 
+command t-tagged name = self.name to-text;
+command t-tagged qualified-name = self.name;
+command t-tagged base-name = self qualified-name base-name;
 
 command t-lazy materialise = force self.thunk;
 
@@ -89,7 +92,7 @@ command t-choice text-representation do
 end
 
 command t-tagged text-representation =
-  "type [self.name]([self.tag to-text]) [self.typ text-representation]"
+  "type [self name]([self.tag to-text]) [self.typ text-representation]"
     | flatten-into-plain-text;
 
 
@@ -116,10 +119,10 @@ command t-optional short-representation =
   "[self.item short-representation]?" flatten-into-plain-text;
 
 command t-tagged short-representation =
-  "[self.name]([self.tag to-text])" flatten-into-plain-text;
+  "[self name]([self.tag to-text])" flatten-into-plain-text;
 
 command t-choice short-representation =
-  self.name;
+  "TODO";
 
 
 // -- Default values

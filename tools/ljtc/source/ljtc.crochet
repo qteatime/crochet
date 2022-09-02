@@ -1,0 +1,34 @@
+% crochet
+
+open crochet.wrapper.node.file-system;
+open crochet.wrapper.node.io;
+open crochet.wrapper.node.os;
+open crochet.language.ljt;
+
+local define compiler-table = lazy (#map from: [
+  "ts" -> { Vm in #ts-compiler from-vm: Vm }
+]);
+
+command main: Args do
+  Args count =/= 2
+    | implies: {
+        terminal write-line: "Usage: crochet ljtc -- ts <file>";
+        process exit: 1;
+      };
+
+  let Compiler-key = Args first;
+  let File = Args second;
+  let Compiler = (force compiler-table) at: Compiler-key;
+
+  let Schema = file-system file: (#path from-text: File)
+                |> _ read-text
+                |> untaint make-trusted: _;
+
+
+  let Ast = ljt parse: Schema;
+  let Vm = #ljt-vm make load-module: Ast;
+  let Code = Compiler(Vm) generate;
+
+  terminal write-line: Code;
+  nothing;
+end

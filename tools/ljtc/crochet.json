@@ -1,0 +1,24 @@
+{
+  "name": "crochet.language.ljt.compiler",
+  "target": "*",
+  "native_sources": [],
+  "sources": ["source/translation/typescript.crochet", "source/ljtc.crochet"],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.regex",
+    "crochet.language.ljt",
+    "crochet.wrapper.node.io",
+    "crochet.wrapper.node.file-system",
+    "crochet.wrapper.node.os"
+  ],
+  "capabilities": {
+    "requires": [
+      "crochet.wrapper.node.io/terminal",
+      "crochet.wrapper.node.file-system/file-system",
+      "crochet.wrapper.node.os/process",
+      "crochet.core/untainting"
+    ],
+    "provides": []
+  },
+  "assets": [{ "path": "assets/prelude.ts", "mime": "text/typescript" }]
+}

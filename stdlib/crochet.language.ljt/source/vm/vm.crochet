@@ -33,13 +33,13 @@ command ljt-vm lookup-tag: (Tag is integer) =
   self.types value at: Tag;
 
 command ljt-vm add-type: (Type is t-tagged) do
-  self.types value contains-key: Type.name
+  self.types value contains-key: Type name
     | implies: {#ljt-error raise: new ljt-error--duplicated-type(Type, self)};
 
-  self.tag-map value contains-key: Type.tag
-    | implies: {#ljt-error raise: new ljt-error--duplicated-tag(Type.tag, Type, self)};
+  self.tag-map value contains-key: Type tag
+    | implies: {#ljt-error raise: new ljt-error--duplicated-tag(Type tag, Type, self)};
 
-  self.types <- self.types value at: Type.name put: Type;
-  self.tag-map <- self.tag-map value at: Type.tag put: Type;
+  self.types <- self.types value at: Type name put: Type;
+  self.tag-map <- self.tag-map value at: Type tag put: Type;
   self;
 end

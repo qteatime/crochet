@@ -39,7 +39,7 @@ end
 command ljt-vm load-declaration: (Declaration is declaration--type) namespace: Ns env: Env do
   let Fields = Declaration.fields map: (self evaluate-field: _ env: Env);
   let Type = new t-tagged(
-    name -> (Ns append: Declaration.name.name) to-text,
+    name -> Ns append: Declaration.name.name,
     tag -> self next-tag,
     typ -> new t-tuple(
       fields -> Fields map: { X in X.name },
@@ -58,7 +58,7 @@ command ljt-vm load-declaration: (Declaration is declaration--union) namespace: 
   let Types = Declaration.declarations map: (self load-declaration: _ namespace: Ns env: Env);
   let Type-map = Types fold-from: #map empty with: { M, T in M at: T.tag put: T };
   let Type = new t-tagged(
-    name -> Ns to-text,
+    name -> Ns,
     tag -> Tag,
     typ -> new t-choice(Type-map)
   );
