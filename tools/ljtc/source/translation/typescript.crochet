@@ -164,8 +164,8 @@ command ts-compiler generate: T kind: (K is t-tuple) extends: E do
 
   "
   export class [self ts-id: T base-name] [Extends-suffix] {
-    static readonly tag: [T tag to-text];
-    readonly tag: [T tag to-text];
+    static readonly tag = [T tag to-text];
+    readonly tag = [T tag to-text];
 
     constructor([#text join: Constructor-args with: ", "]) {
       [Super]
