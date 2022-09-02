@@ -89,5 +89,5 @@ command ljt-vm evaluate-type-expr: (T is type-expr--map) env: Env =
 
 command ljt-vm evaluate-type-expr: (T is type-expr--optional) env: Env =
   new t-optional(
-    typ -> self evaluate-type-expr: T.typ env: Env
+    item -> self evaluate-type-expr: T.typ env: Env
   );
