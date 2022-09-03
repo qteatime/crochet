@@ -209,10 +209,10 @@ command ljt-encoder encode: (X is v-array) do
   end
   self;
 test
-  assert (#ljt-vm make encode: new v-array(t-uint8, []))
+  assert (#ljt-vm make encode: new v-array(new t-array(t-uint8), []))
     =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]); // size only
 
-  assert (#ljt-vm make encode: new v-array(t-uint8, [new v-uint8(0), new v-uint8(0x80), new v-uint8(0xff)]))
+  assert (#ljt-vm make encode: new v-array(new t-array(t-uint8), [new v-uint8(0), new v-uint8(0x80), new v-uint8(0xff)]))
     =:= (#byte-array from: [ 0x03, 0x00, 0x00, 0x00 // size
                            , 0x00, 0x80, 0xff
                            ]);
