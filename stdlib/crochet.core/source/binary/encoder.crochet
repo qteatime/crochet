@@ -64,7 +64,7 @@ command binary-encoder append-float-32bit: (X is float-64bit) do
 end
 
 command binary-encoder append-float-64bit: (X is float-64bit) do
-  let Bytes = new mutable-byte-array(#byte-array allocate: 4);
+  let Bytes = new mutable-byte-array(#byte-array allocate: 8);
   Bytes view put-float-64bit: X at: 1 little-endian: true;
   new binary-encoder(self.buffers append: Bytes read-only);
 end
