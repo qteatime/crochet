@@ -324,7 +324,7 @@ export default (ffi: ForeignInterface) => {
     const view = ffi.unbox_typed(DataView, view0);
     view.setFloat32(
       Number(ffi.integer_to_bigint(offset)) - 1,
-      Number(ffi.integer_to_bigint(value)),
+      ffi.float_to_number(value),
       ffi.to_js_boolean(le)
     );
     return ffi.nothing;
@@ -334,7 +334,7 @@ export default (ffi: ForeignInterface) => {
     const view = ffi.unbox_typed(DataView, view0);
     view.setFloat64(
       Number(ffi.integer_to_bigint(offset)) - 1,
-      Number(ffi.integer_to_bigint(value)),
+      ffi.float_to_number(value),
       ffi.to_js_boolean(le)
     );
     return ffi.nothing;
