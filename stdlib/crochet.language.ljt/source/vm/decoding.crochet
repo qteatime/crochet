@@ -43,45 +43,191 @@ command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next
 end
 
 command ljt-decoder decode-with: t-bool =
-  new v-bool(self do-step: (_ take-boolean) type: t-bool);
+  new v-bool(self do-step: (_ take-boolean) type: t-bool)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x01]) with: t-bool)
+    === new v-bool(true);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00]) with: t-bool)
+    === new v-bool(false);
+end
 
 command ljt-decoder decode-with: t-int8 =
-  new v-int8(self do-step: (_ take-integer-8bit) type: t-int8);
+  new v-int8(self do-step: (_ take-integer-8bit) type: t-int8)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0xff]) with: t-int8)
+    === new v-int8(-1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00]) with: t-int8)
+    === new v-int8(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01]) with: t-int8)
+    === new v-int8(1);
+end
 
 command ljt-decoder decode-with: t-int16 =
-  new v-int16(self do-step: (_ take-integer-16bit) type: t-int16);
+  new v-int16(self do-step: (_ take-integer-16bit) type: t-int16)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0xff, 0xff]) with: t-int16)
+    === new v-int16(-1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00]) with: t-int16)
+    === new v-int16(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01, 0x00]) with: t-int16)
+    === new v-int16(1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x2c, 0x01]) with: t-int16)
+    === new v-int16(300);
+end
 
 command ljt-decoder decode-with: t-int32 =
-  new v-int32(self do-step: (_ take-integer-32bit) type: t-int32);
+  new v-int32(self do-step: (_ take-integer-32bit) type: t-int32)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0xff, 0xff, 0xff, 0xff]) with: t-int32)
+    === new v-int32(-1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00]) with: t-int32)
+    === new v-int32(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01, 0x00, 0x00, 0x00]) with: t-int32)
+    === new v-int32(1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x2c, 0x01, 0x00, 0x00]) with: t-int32)
+    === new v-int32(300);
+end
 
 command ljt-decoder decode-with: t-uint8 =
-  new v-uint8(self do-step: (_ take-unsigned-integer-8bit) type: t-uint8);
+  new v-uint8(self do-step: (_ take-unsigned-integer-8bit) type: t-uint8)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00]) with: t-uint8)
+    === new v-uint8(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01]) with: t-uint8)
+    === new v-uint8(1);
+  
+  assert (#ljt-vm make decode: (#byte-array from: [0xff]) with: t-uint8)
+    === new v-uint8(255);
+end
 
 command ljt-decoder decode-with: t-uint16 =
-  new v-uint16(self do-step: (_ take-unsigned-integer-16bit) type: t-uint16);
+  new v-uint16(self do-step: (_ take-unsigned-integer-16bit) type: t-uint16)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00]) with: t-uint16)
+    === new v-uint16(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01, 0x00]) with: t-uint16)
+    === new v-uint16(1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0xff, 0xff]) with: t-uint16)
+    === new v-uint16(65_535);
+end
 
 command ljt-decoder decode-with: t-uint32 =
-  new v-uint32(self do-step: (_ take-unsigned-integer-32bit) type: t-uint32);
+  new v-uint32(self do-step: (_ take-unsigned-integer-32bit) type: t-uint32)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00]) with: t-uint32)
+    === new v-uint32(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01, 0x00, 0x00, 0x00]) with: t-uint32)
+    === new v-uint32(1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0xff, 0xff, 0xff, 0xff]) with: t-uint32)
+    === new v-uint32((2 ** 32) - 1);
+end
 
 command ljt-decoder decode-with: t-float32 =
-  new v-float32(self do-step: (_ take-float-32bit) type: t-float32);
+  new v-float32(self do-step: (_ take-float-32bit) type: t-float32)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00]) with: t-float32)
+    === new v-float32(0.0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x80, 0x3f]) with: t-float32)
+    === new v-float32(1.0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x80, 0xbf]) with: t-float32)
+    === new v-float32(-1.0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x20, 0x7a, 0x44]) with: t-float32)
+    === new v-float32(1_000.5);
+end
 
 command ljt-decoder decode-with: t-float64 =
-  new v-float64(self do-step: (_ take-float-64bit) type: t-float64);
+  new v-float64(self do-step: (_ take-float-64bit) type: t-float64)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) with: t-float64)
+    === new v-float64(0.0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f]) with: t-float64)
+    === new v-float64(1.0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xbf]) with: t-float64)
+    === new v-float64(-1.0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0xcd, 0xcc, 0xcc, 0xcc, 0xcc, 0x40, 0x8f, 0x40]) with: t-float64)
+    === new v-float64(1_000.1);
+end
 
 command ljt-decoder decode-with: t-integer =
-  new v-integer(self do-step: (_ take-integer) type: t-integer);
+  new v-integer(self do-step: (_ take-integer) type: t-integer)
+test
+  assert (#ljt-vm make decode: (
+    #byte-array from: [0x00,  0x01, 0x00, 0x00, 0x00,  0x00]
+  ) with: t-integer) === new v-integer(0);
+
+  assert (#ljt-vm make decode: (
+    #byte-array from: [0x00,  0x01, 0x00, 0x00, 0x00,  0x01]
+  ) with: t-integer) === new v-integer(1);
+
+  assert (#ljt-vm make decode: (
+    #byte-array from: [0x01,  0x01, 0x00, 0x00, 0x00,  0x01]
+  ) with: t-integer) === new v-integer(-1);
+
+  assert (#ljt-vm make decode: (
+    #byte-array from: [ 0x00
+                      , 0x0b, 0x00, 0x00, 0x00
+                      , 0x66, 0x1e, 0xfd, 0xf2, 0xe3, 0xb1, 0x9f, 0x7c, 0x04, 0x5f, 0x15
+                      ]
+  ) with: t-integer) === new v-integer(123_456_789_123_456_789_123_456_789);
+end
 
 command ljt-decoder decode-with: t-text =
-  new v-text(self do-step: (_ take-text) type: t-text);
+  new v-text(self do-step: (_ take-text) type: t-text)
+test
+  assert (#ljt-vm make decode: (
+    #byte-array from: [0x00, 0x00, 0x00, 0x00]
+  ) with: t-text) === new v-text("");
+
+  assert (#ljt-vm make decode: (
+    #byte-array from: [ 0x05, 0x00, 0x00, 0x00 // size: 5
+                      , 0x68, 0x65, 0x6c, 0x6c, 0x6f // utf-8 bytes
+                      ]
+  ) with: t-text) === new v-text("hello");
+
+  assert (#ljt-vm make decode: (
+    #byte-array from: [ 0x0a, 0x00, 0x00, 0x00
+                      , 0xf0, 0x9f, 0x98, 0xba, 0xe2, 0x9d, 0xa4, 0xef, 0xb8, 0x8f
+                      ]
+  ) with: t-text) === new v-text("😺❤️");
+end
 
 command ljt-decoder decode-with: t-bytes do
   let Bytes = self do-step: (_ take-bytes) type: t-bytes;
   new v-bytes(Bytes);
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00]) with: t-bytes)
+    === new v-bytes(#byte-array from: []);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x02, 0x00, 0x00, 0x00,  0xca, 0xfe]) with: t-bytes)
+    === new v-bytes(#byte-array from: [0xca, 0xfe]);
 end
 
 command ljt-decoder decode-with: (T is t-lazy) =
-  self decode-with: (force T.thunk);
+  self decode-with: (force T.thunk)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x01]) with: new t-lazy(lazy t-bool))
+    === new v-bool(true);
+end
 
 command ljt-decoder decode-with: (T is t-array) do
   let Size = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
@@ -97,6 +243,12 @@ command ljt-decoder decode-with: (T is t-array) do
       new v-array(T, Items);
     end
   end
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00]) with: new t-array(t-uint8))
+    === new v-array(new t-array(t-uint8), []);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x03, 0x00, 0x00, 0x00, 0x00, 0x80, 0xff]) with: new t-array(t-uint8))
+    === new v-array(new t-array(t-uint8), [new v-uint8(0), new v-uint8(0x80), new v-uint8(0xff)]);
 end
 
 command ljt-decoder decode-with: (T is t-map) do
@@ -116,6 +268,23 @@ command ljt-decoder decode-with: (T is t-map) do
       new v-map(T, Map);
     end
   end
+test
+  let T = new t-map(t-uint8, t-bool);
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00]) with: T)
+    === new v-map(T, #map empty);
+
+  assert (#ljt-vm make decode: (
+    #byte-array from: [ 0x03, 0x00, 0x00, 0x00 // size
+                      , 0x00, 0x01  // key value
+                      , 0x80, 0x00 
+                      , 0xff, 0x01
+                      ]
+  ) with: T) === new v-map(T,
+    #map empty
+      | at: new v-uint8(0x00) put: new v-bool(true)
+      | at: new v-uint8(0x80) put: new v-bool(false)
+      | at: new v-uint8(0xff) put: new v-bool(true),
+  );
 end
 
 command ljt-decoder decode-with: (T is t-tuple) do
