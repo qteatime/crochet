@@ -12,6 +12,7 @@ type v-integer(global value is integer) is ljt-value;
 type v-float32(global value is float-64bit) is ljt-value;
 type v-float64(global value is float-64bit) is ljt-value;
 type v-text(global value is text) is ljt-value;
+type v-bytes(global value is byte-array) is ljt-value;
 
 type v-array(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
 type v-map(typ is ljt-type, global value is map<ljt-value, ljt-value>) is ljt-value;
@@ -37,6 +38,7 @@ command (A is v-float32) === (B is v-float32) = A.value === B.value;
 command (A is v-float64) === (B is v-float64) = A.value === B.value;
 command (A is v-integer) === (B is v-integer) = A.value === B.value;
 command (A is v-text) === (B is v-integer) = A.value === B.value;
+command (A is v-bytes) === (B is v-bytes) = A.value === B.value;
 
 command (A is v-array) === (B is v-array) =
   (A.values count === B.values count)
@@ -79,6 +81,7 @@ command v-integer codec = t-integer;
 command v-float32 codec = t-float32;
 command v-float64 codec = t-float64;
 command v-text codec = t-text;
+command v-bytes codec = t-bytes;
 
 command v-array codec = self.typ;
 command v-map codec = self.typ;

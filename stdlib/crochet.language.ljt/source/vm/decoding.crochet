@@ -75,6 +75,11 @@ command ljt-decoder decode-with: t-integer =
 command ljt-decoder decode-with: t-text =
   new v-text(self do-step: (_ take-text) type: t-text);
 
+command ljt-decoder decode-with: t-bytes do
+  let Bytes = self do-step: (_ take-bytes) type: t-bytes;
+  new v-bytes(Bytes);
+end
+
 command ljt-decoder decode-with: (T is t-lazy) =
   self decode-with: (force T.thunk);
 

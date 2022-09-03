@@ -12,6 +12,7 @@ singleton t-integer is ljt-type;
 singleton t-float32 is ljt-type;
 singleton t-float64 is ljt-type;
 singleton t-text is ljt-type;
+singleton t-bytes is ljt-type;
 
 type t-lazy(thunk is thunk) is ljt-type;
 type t-array(global item is ljt-type) is ljt-type;
@@ -66,6 +67,7 @@ command t-integer text-representation = "Integer";
 command t-float32 text-representation = "Float32";
 command t-float64 text-representation = "Float64";
 command t-text text-representation = "Text";
+command t-bytes text-representation = "Raw-bytes";
 
 command t-lazy text-representation =
   (force self.thunk) text-representation;
@@ -137,6 +139,7 @@ command t-integer default-value = new v-integer(0);
 command t-float32 default-value = new v-float32(0.0);
 command t-float64 default-value = new v-float64(0.0);
 command t-text default-value = new v-text("");
+command t-bytes default-value = new v-bytes(#byte-array allocate: 0);
 
 command t-lazy default-value = (force self.thunk) default-value;
 command t-array default-value = new v-array(self, []);
@@ -193,6 +196,9 @@ command t-integer make: (X is integer) =
 
 command t-text make: (X is text) =
   new v-text(X);
+
+command t-bytes make: (X is byte-array) =
+  new v-bytes(X);
 
 command t-lazy make: X =
   self materialise make: X;

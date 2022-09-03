@@ -13,4 +13,5 @@ define ljt-globals = lazy (
     | at: "Float32" put: t-float32
     | at: "Float64" put: t-float64
     | at: "Text" put: t-text
+    | at: "Raw-bytes" put: t-bytes
 );
