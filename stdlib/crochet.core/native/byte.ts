@@ -347,7 +347,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map<string, CrochetValue>([
         ["value", ffi.integer(value.value)],
-        ["size", ffi.float_64(value.size)],
+        ["size", ffi.integer(BigInt(value.size))],
       ])
     );
   });
@@ -362,7 +362,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map([
         ["value", ffi.text(value.value)],
-        ["size", ffi.float_64(value.size)],
+        ["size", ffi.integer(BigInt(value.size))],
       ])
     );
   });
@@ -377,7 +377,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map([
         ["value", ffi.byte_array(value.value)],
-        ["size", ffi.float_64(value.size)],
+        ["size", ffi.integer(BigInt(value.size))],
       ])
     );
   });
