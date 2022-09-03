@@ -36,7 +36,7 @@ test
   assert (#ljt-vm make encode: new v-int8(0))
     =:= (#byte-array from: [0x00]);
 
-  assert (#ljt-vm make-encode: new v-int8(1))
+  assert (#ljt-vm make encode: new v-int8(1))
     =:= (#byte-array from: [0x01]);
 end
 
@@ -50,10 +50,10 @@ test
   assert (#ljt-vm make encode: new v-int16(0))
     =:= (#byte-array from: [0x00, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-int16(1))
+  assert (#ljt-vm make encode: new v-int16(1))
     =:= (#byte-array from: [0x01, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-int16(300))
+  assert (#ljt-vm make encode: new v-int16(300))
     =:= (#byte-array from: [0x2c, 0x01]);
 end
 
@@ -67,10 +67,10 @@ test
   assert (#ljt-vm make encode: new v-int32(0))
     =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-int32(1))
+  assert (#ljt-vm make encode: new v-int32(1))
     =:= (#byte-array from: [0x01, 0x00, 0x00, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-int32(300))
+  assert (#ljt-vm make encode: new v-int32(300))
     =:= (#byte-array from: [0x2c, 0x01, 0x00, 0x00]);  
 end
 
@@ -81,10 +81,10 @@ test
   assert (#ljt-vm make encode: new v-uint8(0))
     =:= (#byte-array from: [0x00]);
 
-  assert (#ljt-vm make-encode: new v-uint8(1))
+  assert (#ljt-vm make encode: new v-uint8(1))
     =:= (#byte-array from: [0x01]);
 
-  assert (#ljt-vm make-encode: new v-uint8(255))
+  assert (#ljt-vm make encode: new v-uint8(255))
     =:= (#byte-array from: [0xff]);
 end
 
@@ -95,10 +95,10 @@ test
   assert (#ljt-vm make encode: new v-uint16(0))
     =:= (#byte-array from: [0x00, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-uint16(1))
+  assert (#ljt-vm make encode: new v-uint16(1))
     =:= (#byte-array from: [0x01, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-uint16(65_535))
+  assert (#ljt-vm make encode: new v-uint16(65_535))
     =:= (#byte-array from: [0xff, 0xff]);
 end
 
@@ -109,34 +109,87 @@ test
   assert (#ljt-vm make encode: new v-uint32(0))
     =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-uint32(1))
+  assert (#ljt-vm make encode: new v-uint32(1))
     =:= (#byte-array from: [0x01, 0x00, 0x00, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-uint32(300))
+  assert (#ljt-vm make encode: new v-uint32(300))
     =:= (#byte-array from: [0x2c, 0x01, 0x00, 0x00]);
 
-  assert (#ljt-vm make-encode: new v-uint32((2 ** 32) - 1))
+  assert (#ljt-vm make encode: new v-uint32((2 ** 32) - 1))
     =:= (#byte-array from: [0xff, 0xff, 0xff, 0xff]);
 end
 
 command ljt-encoder encode: (X is v-float32) do
   self.encoder <- self.encoder value append-float-32bit: X.value;
   self;
+test
+  assert (#ljt-vm make encode: new v-float32(0.0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make encode: new v-float32(1.0))
+    =:= (#byte-array from: [0x00, 0x00, 0x80, 0x3f]);
+
+  assert (#ljt-vm make encode: new v-float32(-1.0))
+    =:= (#byte-array from: [0x00, 0x00, 0x80, 0xbf]);
+
+  assert (#ljt-vm make encode: new v-float32(1_000.1))
+    =:= (#byte-array from: [0x66, 0x06, 0x7a, 0x44]);
 end
 
 command ljt-encoder encode: (X is v-float64) do
   self.encoder <- self.encoder value append-float-64bit: X.value;
   self;
+test
+  assert (#ljt-vm make encode: new v-float64(0.0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make encode: new v-float64(1.0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f]);
+
+  assert (#ljt-vm make encode: new v-float64(-1.0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xbf]);
+
+  assert (#ljt-vm make encode: new v-float64(1_000.1))
+    =:= (#byte-array from: [0xcd, 0xcc, 0xcc, 0xcc, 0xcc, 0x40, 0x8f, 0x40]);
 end
 
 command ljt-encoder encode: (X is v-integer) do
   self.encoder <- self.encoder value append: X.value;
   self;
+test
+  assert (#ljt-vm make encode: new v-integer(0))
+    =:= (#byte-array from: [ 0x00 // sign (+)
+                           , 0x01, 0x00, 0x00, 0x00 // size: 0
+                           , 0x00 // bytes
+                           ]);
+  
+  assert (#ljt-vm make encode: new v-integer(1))
+    =:= (#byte-array from: [0x00, 0x01, 0x00, 0x00, 0x00, 0x01]);
+
+  assert (#ljt-vm make encode: new v-integer(-1))
+    =:= (#byte-array from: [0x01, 0x01, 0x00, 0x00, 0x00, 0x01]);
+
+  assert (#ljt-vm make encode: new v-integer(123_456_789_123_456_789_123_456_789))
+    =:= (#byte-array from: [0x00, 0x0b, 0x00, 0x00, 0x00, 0x66, 0x1e, 0xfd, 0xf2, 0xe3, 0xb1, 0x9f, 0x7c, 0x04, 0x5f, 0x15]);
 end
 
 command ljt-encoder encode: (X is v-text) do
   self.encoder <- self.encoder value append: X.value;
   self;
+test
+  assert (#ljt-vm make encode: new v-text(""))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]);
+  
+  assert (#ljt-vm make encode: new v-text("hello"))
+    =:= (#byte-array from: [ 0x05, 0x00, 0x00, 0x00 // size: 5
+                           , 0x68, 0x65, 0x6c, 0x6c, 0x6f // utf-8 bytes
+                           ]);
+
+  assert (#ljt-vm make encode: new v-text("😺❤️"))
+    =:= (#byte-array from: [ 0x0a, 0x00, 0x00, 0x00
+                           , 0xf0, 0x9f, 0x98, 0xba, 0xe2, 0x9d, 0xa4, 0xef, 0xb8, 0x8f
+                           ]);
+end
 
 command ljt-encoder encode: (X is v-bytes) do
   self.encoder <- self.encoder value append: X.value;
@@ -155,6 +208,14 @@ command ljt-encoder encode: (X is v-array) do
     self encode: Value;
   end
   self;
+test
+  assert (#ljt-vm make encode: new v-array(t-uint8, []))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]); // size only
+
+  assert (#ljt-vm make encode: new v-array(t-uint8, [new v-uint8(0), new v-uint8(0x80), new v-uint8(0xff)]))
+    =:= (#byte-array from: [ 0x03, 0x00, 0x00, 0x00 // size
+                           , 0x00, 0x80, 0xff
+                           ]);
 end
 
 command ljt-encoder encode: (X is v-map) do
@@ -164,6 +225,23 @@ command ljt-encoder encode: (X is v-map) do
     self encode: Pair value;
   end
   self;
+test
+  let M1 = new v-map(new t-map(t-uint8, t-bool), #map empty);
+  assert (#ljt-vm make encode: M1)
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]); // size only
+
+  let M2 = new v-map(new t-map(t-uint8, t-bool), 
+    #map empty
+      | at: new v-uint8(0x00) put: new v-bool(true)
+      | at: new v-uint8(0x80) put: new v-bool(false)
+      | at: new v-uint8(0xff) put: new v-bool(true),
+  );
+  assert (#ljt-vm make encode: M2)
+    =:= (#byte-array from: [ 0x03, 0x00, 0x00, 0x00 // size
+                           , 0x00, 0x01  // key value
+                           , 0x80, 0x00 
+                           , 0xff, 0x01
+                           ]);
 end
 
 command ljt-encoder encode: (X is v-tuple) do
@@ -171,23 +249,57 @@ command ljt-encoder encode: (X is v-tuple) do
     self encode: Value;
   end
   self;
+test
+  let T = new t-tuple(["x", "y"], [t-uint8, t-uint8]);
+  assert (#ljt-vm make encode: new v-tuple(T, [new v-uint8(0x00), new v-uint8(0xff)]))
+    =:= (#byte-array from: [0x00, 0xff]);
 end
 
 command ljt-encoder encode: (X is v-tagged) do
   self encode: new v-uint32(X.tag);
   self encode: X.value;
+test
+  let T1 = new t-tuple(["x", "y"], [t-uint8, t-uint8]);
+  let T2 = new t-tagged(new qualified-name(["point-2d"]), 1, T1);
+  assert (#ljt-vm make encode: new v-tagged(T2, 1, new v-tuple(T1, [new v-uint8(0x00), new v-uint8(0xff)])))
+    =:= (#byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+                           , 0x00, 0xff
+                           ]);
 end
 
 command ljt-encoder encode: (X is v-choice) do
   self encode: new v-uint32(X.value.tag);
   self encode: X.value.value;
+test
+  let Tr1 = new t-tuple(["x"], [t-uint8]);
+  let Tt1 = new t-tagged(new qualified-name(["op", "push"]), 1, Tr1);
+
+  let Tr2 = new t-tuple([], []);
+  let Tt2 = new t-tagged(new qualified-name(["op", "inc"]), 2, Tr2);
+
+  let Tc = new t-choice(#map empty | at: 1 put: Tt1 | at: 2 put: Tt2);
+
+  assert (#ljt-vm make encode: new v-choice(Tc, new v-tagged(Tt1, 1, new v-tuple(Tr1, [new v-uint8(0xff)]))))
+    =:= (#byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+                           , 0xff
+                           ]);
+
+  assert (#ljt-vm make encode: new v-choice(Tc, new v-tagged(Tt2, 2, new v-tuple(Tr2, []))))
+    =:= (#byte-array from: [ 0x02, 0x00, 0x00, 0x00 // global tag
+                           ]);
 end
 
 command ljt-encoder encode: (X is v-just) do
   self encode: new v-bool(true);
   self encode: X.value;
+test
+  assert (#ljt-vm make encode: new v-just(t-uint8, new v-uint8(0xff)))
+    =:= (#byte-array from: [0x01, 0xff]);
 end
 
 command ljt-encoder encode: (X is v-none) do
   self encode: new v-bool(false);
+test
+  assert (#ljt-vm make encode: new v-none(t-uint8))
+    =:= (#byte-array from: [0x00]);
 end
