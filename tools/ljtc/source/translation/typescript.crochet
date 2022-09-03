@@ -18,8 +18,7 @@ command ts-compiler generate do
   let Prelude = package assets at: "assets/prelude.ts" | read-as-text;
   let Types = self.vm root-types map: (self generate: _);
 
-  "
-// This file was generated from a LJT schema.
+  "// This file was generated from a LJT schema.
 [Prelude]
 
 [#text join: Types with: "\n\n"]
@@ -164,8 +163,8 @@ command ts-compiler generate: T kind: (K is t-tuple) extends: E do
 
   "
   export class [self ts-id: T base-name] [Extends-suffix] {
-    static readonly tag = [T tag to-text];
-    readonly tag = [T tag to-text];
+    static readonly $tag = [T tag to-text];
+    readonly $tag = [T tag to-text];
 
     constructor([#text join: Constructor-args with: ", "]) {
       [Super]
@@ -196,13 +195,13 @@ command ts-compiler generate: T kind: (K is t-choice) do
 
   export abstract class [Parent] {
     static decode($d: _Decoder): [self ts-id: T base-name] {
-      const tag = $d.peek((v) => v.getUint32(0, true));
+      const $tag = $d.peek((v) => v.getUint32(0, true));
 
-      switch (tag) {
+      switch ($tag) {
         [#text join: Variant-cases with: "\n"]
 
         default:
-          throw new Error(`Unknown tag ${tag} in union [T name]`);
+          throw new Error(`Unknown tag ${$tag} in union [T name]`);
       }
     }
   }
