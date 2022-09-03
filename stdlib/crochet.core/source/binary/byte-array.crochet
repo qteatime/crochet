@@ -54,3 +54,8 @@ end
 
 command mutable-byte-array read-only =
   self.array;
+
+
+implement equality for byte-array;
+command (A is byte-array) === (B is byte-array) =
+  A =:= B;
