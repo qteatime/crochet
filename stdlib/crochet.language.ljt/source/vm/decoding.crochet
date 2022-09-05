@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.data.collection;
+
 type ljt-decoder(
   vm is ljt-vm,
   decoder is cell<binary-decoder>,
@@ -255,7 +257,7 @@ command ljt-decoder decode-with: (T is t-map) do
   let Size = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
   condition
     when Size =:= 0 =>
-      new v-map(T, #map empty);
+      new v-map(T, #equality-map empty);
 
     otherwise do
       let Entries =
@@ -264,14 +266,14 @@ command ljt-decoder decode-with: (T is t-map) do
           let Value = self decode-with: T.value;
           #association key: Key value: Value;
         end;
-      let Map = #map from: Entries;
+      let Map = #equality-map from: Entries;
       new v-map(T, Map);
     end
   end
 test
   let T = new t-map(t-uint8, t-bool);
   assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00]) with: T)
-    === new v-map(T, #map empty);
+    === new v-map(T, #equality-map empty);
 
   assert (#ljt-vm make decode: (
     #byte-array from: [ 0x03, 0x00, 0x00, 0x00 // size
@@ -280,7 +282,7 @@ test
                       , 0xff, 0x01
                       ]
   ) with: T) === new v-map(T,
-    #map empty
+    #equality-map empty
       | at: new v-uint8(0x00) put: new v-bool(true)
       | at: new v-uint8(0x80) put: new v-bool(false)
       | at: new v-uint8(0xff) put: new v-bool(true),

@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.data.collection;
+
 abstract ljt-value;
 type v-bool(global value is boolean) is ljt-value;
 type v-int8(global value is integer) is ljt-value;
@@ -15,7 +17,7 @@ type v-text(global value is text) is ljt-value;
 type v-bytes(global value is byte-array) is ljt-value;
 
 type v-array(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
-type v-map(typ is ljt-type, global value is map<ljt-value, ljt-value>) is ljt-value;
+type v-map(typ is ljt-type, global value is equality-map<ljt-value, ljt-value>) is ljt-value;
 type v-tuple(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
 type v-tagged(typ is ljt-type, global tag is integer, global value is ljt-value) is ljt-value;
 type v-choice(typ is ljt-type, global value is v-tagged) is ljt-value;
@@ -27,6 +29,8 @@ type v-none(typ is ljt-type) is v-optional;
 
 // Equality
 implement equality for ljt-value;
+command ljt-value === ljt-value = false;
+
 command (A is v-bool) === (B is v-bool) = A.value === B.value;
 command (A is v-int8) === (B is v-int8) = A.value === B.value;
 command (A is v-int16) === (B is v-int16) = A.value === B.value;
@@ -49,7 +53,7 @@ command (A is v-map) === (B is v-map) =
     | and-also: {
         A.value entries all: { Entry in
           B.value contains-key: Entry key
-            | and-also: {Entry value === B at: Entry key};
+            | and-also: {Entry value === (B.value at: Entry key)};
         }
       };
 

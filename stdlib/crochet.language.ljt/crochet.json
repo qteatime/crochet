@@ -18,6 +18,7 @@
   ],
   "dependencies": [
     "crochet.core",
+    "crochet.data.collection",
     "crochet.text.parsing.lingua",
     "crochet.debug"
   ],

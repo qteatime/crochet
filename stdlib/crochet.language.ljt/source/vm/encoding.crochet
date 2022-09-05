@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.data.collection;
+
 type ljt-encoder(
   encoder is cell<binary-encoder>
 );
@@ -226,12 +228,12 @@ command ljt-encoder encode: (X is v-map) do
   end
   self;
 test
-  let M1 = new v-map(new t-map(t-uint8, t-bool), #map empty);
+  let M1 = new v-map(new t-map(t-uint8, t-bool), #equality-map empty);
   assert (#ljt-vm make encode: M1)
     =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00]); // size only
 
   let M2 = new v-map(new t-map(t-uint8, t-bool), 
-    #map empty
+    #equality-map empty
       | at: new v-uint8(0x00) put: new v-bool(true)
       | at: new v-uint8(0x80) put: new v-bool(false)
       | at: new v-uint8(0xff) put: new v-bool(true),

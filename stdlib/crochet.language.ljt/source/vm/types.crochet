@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.data.collection;
+
 abstract ljt-type;
 singleton t-bool is ljt-type;
 singleton t-int8 is ljt-type;
@@ -143,7 +145,7 @@ command t-bytes default-value = new v-bytes(#byte-array allocate: 0);
 
 command t-lazy default-value = (force self.thunk) default-value;
 command t-array default-value = new v-array(self, []);
-command t-map default-value = new v-map(self, #map empty);
+command t-map default-value = new v-map(self, #equality-map empty);
 command t-tuple default-value = new v-tuple(self, self.types map: (_ default-value));
 command t-optional default-value = new v-none(self);
 command t-choice default-value = new v-choice(self, self.types values first default-value);
@@ -207,7 +209,7 @@ command t-lazy make: X =
 command t-array make: (Xs is list) =
   new v-array(self, Xs);
 
-command t-map make: (M is map) =
+command t-map make: (M is equality-map) =
   new v-map(self, M);
 
 command t-tuple make: (Values is list) =
