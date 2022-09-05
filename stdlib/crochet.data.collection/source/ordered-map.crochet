@@ -1,0 +1,253 @@
+% crochet
+
+// Keys must implement total-ordering, Values must implement equality!
+type ordered-map(pairs is list<association<Key, Value>>);
+
+// -- Constructors
+command #ordered-map from: (Pairs is list<association<Key, Value>>) do
+  Pairs fold-from: #ordered-map empty
+        with: { Map, Pair in Map at: Pair key put: Pair value };
+test
+  assert (#ordered-map from: [#association key: 1 value: true, #association key: 2 value: false])
+    === (#ordered-map empty | at: 1 put: true | at: 2 put: false);
+  assert (#ordered-map from: []) === #ordered-map empty;
+end
+
+command #ordered-map from: (Map is map) =
+  #ordered-map from: Map entries;
+
+command #ordered-map empty =
+  new ordered-map([]);
+
+// -- Views
+command ordered-map keys =
+  self.pairs map: (_ key)
+test
+  assert (#ordered-map from: [#association key: 2 value: 1, #association key: 1 value: true]) keys
+    === [1, 2];
+end
+
+command ordered-map values =
+  self.pairs map: (_ value)
+test
+  assert (#ordered-map from: [#association key: 2 value: 1, #association key: 1 value: true] | values)
+    === [true, 1];
+end
+
+command ordered-map entries =
+  self.pairs
+test
+  assert (#ordered-map from: [#association key: 2 value: 1, #association key: 1 value: true] | entries)
+    === [
+      #association key: 1 value: true,
+      #association key: 2 value: 1,
+    ];
+end
+
+// -- Trait implementations
+implement container for ordered-map;
+
+command ordered-map contains: (Value has equality) =
+  self values some: (_ === Value)
+test
+  let M = #ordered-map from: [#association key: 1 value: (#result ok: 2)];
+  assert M contains: (#result ok: 2);
+  assert not (M contains: (#result ok: 1));
+end
+
+
+implement countable-container for ordered-map;
+
+command ordered-map count =
+  self.pairs count
+test
+  assert #ordered-map empty count === 0;
+  assert (#ordered-map empty at: 1 put: 1 | count) === 1;
+  assert (#ordered-map empty at: 1 put: true | at: 2 put: true | count) === 2;
+  assert (#ordered-map empty at: 1 put: true | at: 1 put: false | count) === 1;
+end
+
+
+implement mapped-container for ordered-map;
+
+command ordered-map at: (Key has total-ordering)
+requires key-exists :: self contains-key: Key
+do
+  self entries find-first: { Pair in Pair key === Key }
+    | value-or-panic: "internal: key not found"
+    | value;
+test
+  assert (#ordered-map empty | at: 1 put: 2 | at: 1) === 2;
+  assert (#ordered-map empty | at: 1 put: 2 | at: 3 put: 4 | at: 3) === 4;
+end
+
+command ordered-map contains-key: (Key has total-ordering) do
+  self entries some: { Pair in Pair key === Key };
+test
+  assert not (#ordered-map empty contains-key: 1);
+  assert (#ordered-map empty | at: 1 put: 2 | contains-key: 1);
+  assert (#ordered-map empty | at: 1 put: 2 | at: 3 put: 4 | contains-key: 3);
+  assert not (#ordered-map empty | at: 1 put: 2 | at: 3 put: 4 | contains-key: 5);
+end
+
+
+implement mergeable-mapped-container for ordered-map;
+
+command ordered-map merge: (That is ordered-map) do
+  That entries fold-from: self
+               with: { Map, Entry in Map at: Entry key put: Entry value };
+test
+  let M1 = #ordered-map empty at: 1 put: true | at: 2 put: false;
+  let M2 = #ordered-map empty at: 3 put: 0;
+  
+  assert (#ordered-map empty merge: M1) === M1;
+  assert (M1 merge: #ordered-map empty) === M1;
+  assert (M1 merge: M1) === M1;
+  assert (M1 merge: M2) === (M1 at: 3 put: 0);
+end
+
+
+implement modifiable-mapped-container for ordered-map;
+
+command ordered-map at: (Key has total-ordering) put: (Value has equality) do
+  let Inserted = #cell with-value: false;
+  let Entries = self entries
+                  | fold-from: []
+                    with: { Result, Entry in
+                      condition
+                        when Inserted value =>
+                          Result append: Entry;
+
+                        when Key < Entry key do
+                          Inserted <- true;
+                          Result
+                            | append: (#association key: Key value: Value)
+                            | append: Entry;
+                        end
+
+                        when Key === Entry key do
+                          Inserted <- true;
+                          Result
+                            | append: (#association key: Key value: Value);
+                        end
+
+                        otherwise =>
+                          Result append: Entry;
+                      end
+                    };
+  
+  condition
+    when not (Inserted value) =>
+      new ordered-map(Entries append: (#association key: Key value: Value));
+
+    otherwise =>
+      new ordered-map(Entries);
+  end
+test
+  assert (#ordered-map empty | at: 1 put: 2 | entries) ===
+    [#association key: 1 value: 2];
+    
+  assert (#ordered-map empty | at: 1 put: 2 | at: 2 put: 3 | entries)
+    === [
+      #association key: 1 value: 2,
+      #association key: 2 value: 3,
+    ];
+
+  assert (#ordered-map empty | at: 1 put: 2 | at: 1 put: 3 | at: -1 put: 0 | entries)
+    === [
+      #association key: -1 value: 0,
+      #association key: 1 value: 3,
+    ];
+end
+
+command ordered-map remove-at: (Key has total-ordering) do
+  let Entries = self entries remove-if: { Pair in Pair key === Key };
+  new ordered-map(Entries);
+test
+  assert (#ordered-map empty | remove-at: 1 | entries) === [];
+  assert (#ordered-map empty | at: 1 put: 2 | remove-at: 1 | entries) === [];
+  assert (#ordered-map empty | at: 0 put: -1 | at: 1 put: 2 | at: 3 put: 4 | remove-at: 1 | entries)
+    === [
+      #association key: 0 value: -1,
+      #association key: 3 value: 4
+    ];
+end
+
+
+implement chainable-collection for ordered-map;
+
+command ordered-map flat-map: (Fun is (association<K1, V1> -> ordered-map<K2, V2>)) -> ordered-map<K2, V2> do
+  self entries fold-from: #ordered-map empty with: { Map, Entry in
+    Map merge: Fun(Entry);
+  };
+test
+  let M = #ordered-map empty | at: 1 put: 2 | at: 3 put: 4;
+  let F = { X in #ordered-map empty | at: X key put: X value | at: X value put: X key };
+  
+  assert (#ordered-map from: [] | flat-map: F | entries) === [];
+
+  assert (M flat-map: F | entries)
+    === [
+      #association key: 1 value: 2,
+      #association key: 2 value: 1,
+      #association key: 3 value: 4,
+      #association key: 4 value: 3,
+    ];
+end
+
+
+implement filterable-collection for ordered-map;
+
+command ordered-map keep-if: (Predicate is (association<K, V> -> boolean)) -> ordered-map<K, V> do
+  new ordered-map(self entries keep-if: Predicate);
+test
+  let M = #ordered-map empty | at: 1 put: 2 | at: 2 put: 3 | at: 3 put: 4;
+  assert (#ordered-map empty keep-if: { X in X key > 1} | entries) === [];
+  assert (M keep-if: { X in X key > 1 } | entries) === [
+    #association key: 2 value: 3,
+    #association key: 3 value: 4,
+  ];
+end
+
+
+implement foldable-collection for ordered-map;
+
+command ordered-map fold-from: Initial with: (Combine is ((A, association<K, V>) -> A)) do
+  self entries fold-from: Initial with: Combine;
+test
+  let F = { A, X in A + X value };
+  assert (#ordered-map empty fold-from: 0 with: F) === 0;
+  assert (#ordered-map empty | at: 0 put: 1 | fold-from: 0 with: F) === (0 + 1);
+  assert (#ordered-map empty | at: 0 put: 1 | at: 1 put: 2 | at: 2 put: 3 | fold-from: 0 with: F) === (0 + 1 + 2 + 3);
+end
+
+
+implement mappable-collection for ordered-map;
+
+command ordered-map map: (Fun is (association<K, V> -> V2)) do
+  new ordered-map(self entries map: { Pair in
+    let Value = Fun(Pair);
+    assert Value has equality;
+    #association key: Pair key value: Value;
+  });
+test
+  let F = { X in X value + 1 };
+  assert (#ordered-map empty map: F | entries) === [];
+  assert (#ordered-map empty | at: 0 put: 1 | at: 1 put: 2 | at: 2 put: 3 | map: F | entries) === [
+    #association key: 0 value: 2,
+    #association key: 1 value: 3,
+    #association key: 2 value: 4,
+  ];
+end
+
+
+implement equality for ordered-map;
+
+command (X is ordered-map<K, V>) === (Y is ordered-map<K, V>) =
+  (X count === Y count)
+    | and-also: { X entries === Y entries };
+
+
+// -- Conversions
+command map as ordered-map = #ordered-map from: self;
+command list as ordered-map = #ordered-map from: self;

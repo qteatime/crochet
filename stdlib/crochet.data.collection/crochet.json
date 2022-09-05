@@ -1,0 +1,11 @@
+{
+  "name": "crochet.data.collection",
+  "target": "*",
+  "native_sources": [],
+  "sources": ["source/ordered-map.crochet"],
+  "dependencies": ["crochet.core"],
+  "capabilities": {
+    "requires": [],
+    "provides": []
+  }
+}
