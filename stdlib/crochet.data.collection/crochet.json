@@ -2,7 +2,7 @@
   "name": "crochet.data.collection",
   "target": "*",
   "native_sources": [],
-  "sources": ["source/ordered-map.crochet"],
+  "sources": ["source/equality-map.crochet"],
   "dependencies": ["crochet.core"],
   "capabilities": {
     "requires": [],
