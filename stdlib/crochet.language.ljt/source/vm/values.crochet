@@ -45,10 +45,12 @@ command (A is v-text) === (B is v-text) = A.value === B.value;
 command (A is v-bytes) === (B is v-bytes) = A.value === B.value;
 
 command (A is v-array) === (B is v-array) =
+  (A.typ === B.typ) and
   (A.values count === B.values count)
     | and-also: {A.values zip: B.values with: (_ === _) | all-true};
 
 command (A is v-map) === (B is v-map) =
+  (A.typ === B.typ) and
   (A.value count === B.value count)
     | and-also: {
         A.value entries all: { Entry in
@@ -58,20 +60,22 @@ command (A is v-map) === (B is v-map) =
       };
 
 command (A is v-tuple) === (B is v-tuple) =
+  (A.typ === B.typ) and
   (A.values count === B.values count)
     | and-also: {A.values zip: B.values with: (_ === _) | all-true};
 
 command (A is v-tagged) === (B is v-tagged) =
+  (A.typ === B.typ) and
   (A.tag === B.tag) and-also: {A.value === B.value};
 
 command (A is v-choice) === (B is v-choice) =
-  A.value === B.value;
+  (A.typ === B.typ) and (A.value === B.value);
 
 command (A is v-just) === (B is v-just) =
-  A.value === B.value;
+  (A.typ === B.typ) and (A.value === B.value);
 
-command v-none === v-none =
-  true;
+command (A is v-none) === (B is v-none) =
+  A.typ === B.typ;
 
 
 command v-bool codec = t-bool;
