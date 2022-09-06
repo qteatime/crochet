@@ -16,8 +16,32 @@ command ljt-vm decode: (View is byte-array-view) with: (Type is ljt-type) do
     decoder -> #cell with-value: (#binary-decoder from: View),
   );
 
-  Decoder decode-with: Type;
+  Decoder
+    | assert-tag: Type
+    | decode-with: Type;
 end
+
+
+command ljt-decoder assert-tag: (Type is t-tagged) do
+  let Tag = self do-step: (_ take-unsigned-integer-32bit) type: Type;
+  not (Type tag =:= Tag)
+    | implies: {
+        #ljt-error raise: new ljt-error--decoding-failed(
+          decoder -> Type,
+          decoder-view -> self.decoder value,
+          reason -> new decoding-failed-reason--unexpected-tag(
+            tag -> Tag,
+            expected-tag -> Type tag,
+          ),
+          vm -> self.vm,
+        );
+      };
+  self;
+end
+
+command ljt-decoder assert-tag: (Type is ljt-type) =
+  self;
+
 
 command ljt-vm decode: (Bytes is byte-array) with: Type =
   self decode: Bytes view with: Type;
@@ -321,20 +345,6 @@ test
 end
 
 command ljt-decoder decode-with: (T is t-record) do
-  let Tag = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
-  not (T.tag =:= Tag) 
-    | implies: {
-        #ljt-error raise: new ljt-error--decoding-failed(
-          decoder -> T,
-          decoder-view -> self.decoder value,
-          reason -> new decoding-failed-reason--unexpected-tag(
-            tag -> Tag,
-            expected-tag -> T.tag,
-          ),
-          vm -> self.vm,
-        );
-      };
-
   let Value = self decode-with: T.values;
   new v-record(T,Value);
 test
@@ -345,6 +355,11 @@ test
                       , 0x00, 0xff
                       ]
   ) with: T2) === (T2 make: [new v-uint8(0x00), new v-uint8(0xff)]);
+
+  // Untagged if not top-level
+  let T3 = new t-tuple(["v"], [T2]);
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0xff]) with: T3) // <x> <y>
+    === (T3 make: [T2 make: [new v-uint8(0x00), new v-uint8(0xff)]]);
 end
 
 command ljt-decoder decode-with: (T is t-variant) do
@@ -364,23 +379,14 @@ command ljt-decoder decode-with: (T is t-variant) do
 
   let Value = self decode-with: T.values;
   new v-variant(T, Value);
+test
+  let Tt = new t-tuple(["x", "y"], [t-uint8, t-uint8]);
+  let Tv = new t-variant(new qualified-name(["op", "add"]), 0, Tt);
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0xff]) with: Tv) // <tag> <x> <y>
+    === (Tv make: [new v-uint8(0x00), new v-uint8(0xff)]);
 end
 
 command ljt-decoder decode-with: (T is t-choice) do
-  let Tag = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
-  not (T.tag =:= Tag)
-    | implies: {
-        #ljt-error raise: new ljt-error--decoding-failed(
-          decoder -> T,
-          decoder-view -> self.decoder value,
-          reason -> new decoding-failed-reason--unexpected-tag(
-            tag -> Tag,
-            expected-tag -> T.variant-tag,
-          ),
-          vm -> self.vm,
-        );
-      };
-
   let Variant = self do-peek: (_ take-unsigned-integer-8bit) type: t-uint8;
   (Variant < 0) or (Variant >= T variants count)
     | implies: {
@@ -419,6 +425,11 @@ test
                       , 0x01                   // variant tag
                       ]
   ) with: Tc) === (Tc make: (Tv2 make: []));
+
+  // Untagged if not top-level
+  let Ttop = new t-tuple(["v"], [Tc]);
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0xff]) with: Ttop) // <variant tag> <x>
+    === (Ttop make: [Tc make: (Tv1 make: [new v-uint8(0xff)])]);
 end
 
 command ljt-decoder decode-with: (T is t-optional) do

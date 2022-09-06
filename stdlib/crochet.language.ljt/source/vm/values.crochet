@@ -19,13 +19,16 @@ type v-bytes(global value is byte-array) is ljt-value;
 type v-array(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
 type v-map(typ is ljt-type, global value is equality-map<ljt-value, ljt-value>) is ljt-value;
 type v-tuple(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
-type v-record(typ is ljt-type, global value is v-tuple) is ljt-value;
-type v-choice(typ is ljt-type, global value is v-variant) is ljt-value;
-type v-variant(typ is ljt-type, global value is v-tuple) is ljt-value;
 
 abstract v-optional is ljt-value;
 type v-just(typ is ljt-type, global value is ljt-value) is v-optional;
 type v-none(typ is ljt-type) is v-optional;
+
+abstract v-tagged is ljt-value;
+type v-record(typ is ljt-type, global value is v-tuple) is v-tagged;
+type v-choice(typ is ljt-type, global value is v-variant) is v-tagged;
+
+type v-variant(typ is ljt-type, global value is v-tuple) is ljt-value;
 
 
 // Equality
