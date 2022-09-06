@@ -295,13 +295,13 @@ command ljt-encoder encode: (X is v-just) do
   self encode: new v-bool(true);
   self encode: X.value;
 test
-  assert (#ljt-vm make encode: new v-just(t-uint8, new v-uint8(0xff)))
+  assert (#ljt-vm make encode: new v-just(new t-optional(t-uint8), new v-uint8(0xff)))
     =:= (#byte-array from: [0x01, 0xff]);
 end
 
 command ljt-encoder encode: (X is v-none) do
   self encode: new v-bool(false);
 test
-  assert (#ljt-vm make encode: new v-none(t-uint8))
+  assert (#ljt-vm make encode: new v-none(new t-optional(t-uint8)))
     =:= (#byte-array from: [0x00]);
 end
