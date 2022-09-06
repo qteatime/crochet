@@ -55,7 +55,7 @@ implement equality for ljt-type;
 command (X is ljt-type) === (Y is ljt-type) = X =:= Y;
 
 command (X is t-lazy) === (Y is t-lazy) =
-  (force X) === (force Y);
+  (force X.thunk) === (force Y.thunk);
 
 command (X is t-array) === (Y is t-array) =
   X.item === Y.item;
