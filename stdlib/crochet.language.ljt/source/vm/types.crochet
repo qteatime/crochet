@@ -47,6 +47,10 @@ command t-tagged name = self.name to-text;
 command t-tagged qualified-name = self.name;
 command t-tagged base-name = self qualified-name base-name;
 
+command t-variant name = self.name to-text;
+command t-variant qualified-name = self.name;
+command t-variant base-name = self qualified-name base-name;
+
 command t-lazy materialise = force self.thunk;
 
 

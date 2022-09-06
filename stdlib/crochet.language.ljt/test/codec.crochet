@@ -14,8 +14,6 @@ type Block {
 
 ";
 
-open crochet.debug;
-
 test "decode(encode(X)) === X" do
   let Ast = ljt parse: schema;
   let Vm = #ljt-vm make load-module: Ast;
