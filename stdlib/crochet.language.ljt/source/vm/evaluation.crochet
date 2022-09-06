@@ -38,10 +38,10 @@ end
 
 command ljt-vm load-declaration: (Declaration is declaration--type) namespace: Ns env: Env do
   let Fields = Declaration.fields map: (self evaluate-field: _ env: Env);
-  let Type = new t-tagged(
+  let Type = new t-record(
     name -> Ns append: Declaration.name.name,
     tag -> self next-tag,
-    typ -> new t-tuple(
+    values -> new t-tuple(
       fields -> Fields map: { X in X.name },
       types -> Fields map: { X in X.field-type }
     )
@@ -51,16 +51,30 @@ command ljt-vm load-declaration: (Declaration is declaration--type) namespace: N
   Type;
 end
 
+command ljt-vm load-variant: Variant namespace: Ns env: Env do
+  let Declaration = Variant value;
+  let Fields = Declaration.fields map: (self evaluate-field: _ env: Env);
+  let Type = new t-variant(
+    name -> Ns append: Declaration.name.name,
+    variant-tag -> Variant index - 1,
+    values -> new t-tuple(
+      fields -> Fields map: { X in X.name },
+      types -> Fields map: { X in X.field-type }
+    )
+  );
+  Env at: Declaration.name.name put: Type;
+  Type;
+end
+
 command ljt-vm load-declaration: (Declaration is declaration--union) namespace: Parent-ns env: Parent-env do
   let Env = Parent-env clone;
   let Ns = Parent-ns append: Declaration.name.name;
   let Tag = self next-tag;
-  let Types = Declaration.declarations map: (self load-declaration: _ namespace: Ns env: Env);
-  let Type-map = Types fold-from: #map empty with: { M, T in M at: T.tag put: T };
-  let Type = new t-tagged(
+  let Variants = Declaration.declarations enumerate map: (self load-variant: _ namespace: Ns env: Env);
+  let Type = new t-choice(
     name -> Ns,
     tag -> Tag,
-    typ -> new t-choice(Type-map)
+    variants -> Variants
   );
   Parent-env at: Declaration.name.name put: Type;
   self add-type: Type;

@@ -98,10 +98,10 @@ command decoding-failed-reason--couldnt-read-bytes to-panic-message =
 
 type decoding-failed-reason--not-in-union(
   global tag is integer,
-  global types is map<integer, ljt-type>,
+  global types is list<ljt-type>,
 ) is decoding-failed-reason;
 
 command decoding-failed-reason--not-in-union to-panic-message do
-  let Valid-tags = self.types values map: (_ short-representation);
+  let Valid-tags = self.types map: (_ short-representation);
   "The tag [self.tag to-text] is not accepted by the union { [#text join: Valid-tags with: ", "] }";
 end

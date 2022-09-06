@@ -257,37 +257,51 @@ test
     =:= (#byte-array from: [0x00, 0xff]);
 end
 
-command ljt-encoder encode: (X is v-tagged) do
-  self encode: new v-uint32(X.tag);
-  self encode: X.value;
+command ljt-encoder encode: (X is v-record) do
+  self encode: new v-uint32(X.typ tag);
+  self encode: X value;
 test
   let T1 = new t-tuple(["x", "y"], [t-uint8, t-uint8]);
-  let T2 = new t-tagged(new qualified-name(["point-2d"]), 1, T1);
-  assert (#ljt-vm make encode: new v-tagged(T2, 1, new v-tuple(T1, [new v-uint8(0x00), new v-uint8(0xff)])))
-    =:= (#byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+  let T2 = new t-record(new qualified-name(["point-2d"]), 1, T1);
+  assert (#ljt-vm make encode: (T2 make: [new v-uint8(0x00), new v-uint8(0xff)]))
+    === (#byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+                           , 0x00, 0xff
+                           ]);
+end
+
+command ljt-encoder encode: (X is v-variant) do
+  self encode: new v-uint8(X.typ variant-tag);
+  self encode: X value;
+test
+  let Tt = new t-tuple(["x"], [t-uint8, t-uint8]);
+  let Tv = new t-variant(new qualified-name(["value"]), 1, Tt);
+  assert (#ljt-vm make encode: (Tv make: [new v-uint8(0x00), new v-uint8(0xff)]))
+    === (#byte-array from: [ 0x01 // variant tag
                            , 0x00, 0xff
                            ]);
 end
 
 command ljt-encoder encode: (X is v-choice) do
-  self encode: new v-uint32(X.value.tag);
-  self encode: X.value.value;
+  self encode: new v-uint32(X.typ tag);
+  self encode: X value;
 test
   let Tr1 = new t-tuple(["x"], [t-uint8]);
-  let Tt1 = new t-tagged(new qualified-name(["op", "push"]), 1, Tr1);
+  let Tv1 = new t-variant(new qualified-name(["op", "push"]), 0, Tr1);
 
   let Tr2 = new t-tuple([], []);
-  let Tt2 = new t-tagged(new qualified-name(["op", "inc"]), 2, Tr2);
+  let Tv2 = new t-variant(new qualified-name(["op", "inc"]), 1, Tr2);
 
-  let Tc = new t-choice(#map empty | at: 1 put: Tt1 | at: 2 put: Tt2);
+  let Tc = new t-choice(new qualified-name(["op"]), 1, [Tv1, Tv2]);
 
-  assert (#ljt-vm make encode: new v-choice(Tc, new v-tagged(Tt1, 1, new v-tuple(Tr1, [new v-uint8(0xff)]))))
+  assert (#ljt-vm make encode: (Tc make: (Tv1 make: [new v-uint8(0xff)])))
     =:= (#byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+                           , 0x00                   // variant tag
                            , 0xff
                            ]);
 
-  assert (#ljt-vm make encode: new v-choice(Tc, new v-tagged(Tt2, 2, new v-tuple(Tr2, []))))
-    =:= (#byte-array from: [ 0x02, 0x00, 0x00, 0x00 // global tag
+  assert (#ljt-vm make encode: (Tc make: (Tv2 make: [])))
+    =:= (#byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+                           , 0x01                   // variant tag
                            ]);
 end
 

@@ -20,9 +20,28 @@ type t-lazy(thunk is thunk) is ljt-type;
 type t-array(global item is ljt-type) is ljt-type;
 type t-map(global key is ljt-type, global value is ljt-type) is ljt-type;
 type t-tuple(global fields is list<text>, global types is list<ljt-type>) is ljt-type;
+
+abstract t-tagged is ljt-type;
+type t-record(
+  name is qualified-name,
+  global tag is integer,
+  global values is t-tuple,
+) is t-tagged;
+
+type t-choice(
+  name is qualified-name,
+  global tag is integer,
+  global variants is list<t-variant>
+) is t-tagged;
+
+type t-variant(
+  name is qualified-name,
+  global variant-tag is integer,
+  global values is t-tuple,
+) is ljt-type;
+
 type t-optional(global item is ljt-type) is ljt-type;
-type t-choice(global types is map<integer, ljt-tagged>) is ljt-type;
-type t-tagged(name is qualified-name, global tag is integer, global typ is ljt-type) is ljt-type;
+
 
 command t-tagged name = self.name to-text;
 command t-tagged qualified-name = self.name;
@@ -44,17 +63,24 @@ command (X is t-array) === (Y is t-array) =
 command (X is t-map) === (Y is t-map) =
   (X.key === Y.key) and-also: {X.value === Y.value};
 
-command (X is t-tuple) === (Y is t-tuple) =
-  X.types === Y.types;
-
 command (X is t-optional) === (Y is t-optional) =
   X.item === Y.item;
 
-command (X is t-choice) === (Y is t-choice) =
-  X.types === Y.types;
+command (X is t-tuple) === (Y is t-tuple) =
+  X fields count === Y fields count
+    | and-also: { X types === Y types };
 
-command (X is t-tagged) === (Y is t-tagged) =
-  (X.tag === Y.tag) and-also: {X.typ === Y.typ};
+command (X is t-record) === (Y is t-record) =
+  (X tag === Y tag)
+    | and-also: { X values === Y values };
+
+command (X is t-choice) === (Y is t-choice) =
+  (X.tag === Y.tag)
+    | and-also: { X variants === Y variants };
+
+command (X is t-variant) === (Y is t-variant) =
+  X variant-tag === Y variant-tag
+    | and-also: { X values === Y values };
 
 
 // -- Representation
@@ -80,24 +106,25 @@ command t-array text-representation =
 command t-map text-representation = 
   "([self.key text-representation] -> [self.value text-representation])" flatten-into-plain-text;
 
-command t-tuple text-representation do
-  let Pairs = self.fields zip: self.types with: { Field, Type in
-    "[Field]: [Type text-representation];";
-  };
-  "{[#text join: Pairs with: " "]}" flatten-into-plain-text;
-end
-
 command t-optional text-representation =
   "[self.item text-representation]?" flatten-into-plain-text;
 
-command t-choice text-representation do
-  let Types = self.types values map: (_ text-representation);
-  "union {[#text join: Types with: "; "]}" flatten-into-plain-text;
+command t-tuple text-representation do
+  let Pairs = self fields zip: self types with: { F, T in "[F]: [T text-representation]" };
+  "{[#text join: Pairs with: "; "]}";
 end
 
-command t-tagged text-representation =
-  "type [self name]([self.tag to-text]) [self.typ text-representation]"
-    | flatten-into-plain-text;
+command t-choice text-representation do
+  let Types = self variants values map: (_ text-representation);
+  "union [self name]([self tag to-text]) {[#text join: Types with: "; "]}" flatten-into-plain-text;
+end
+
+command t-record text-representation do
+  "type [self name]([self tag to-text])" flatten-into-plain-text;
+end
+
+command t-variant text-representation =
+  "[self record base-name]([self variant-tag to-text])";
 
 
 command ljt-type short-representation =
@@ -122,11 +149,6 @@ end
 command t-optional short-representation =
   "[self.item short-representation]?" flatten-into-plain-text;
 
-command t-tagged short-representation =
-  "[self name]([self.tag to-text])" flatten-into-plain-text;
-
-command t-choice short-representation =
-  "TODO";
 
 
 // -- Default values
@@ -148,9 +170,10 @@ command t-array default-value = new v-array(self, []);
 command t-map default-value = new v-map(self, #equality-map empty);
 command t-tuple default-value = new v-tuple(self, self.types map: (_ default-value));
 command t-optional default-value = new v-none(self);
-command t-choice default-value = new v-choice(self, self.types values first default-value);
-command t-tagged default-value = new v-tagged(self, self.tag, self.typ default-value);
 
+command t-record default-value = new v-record(self, self values default-value);
+command t-choice default-value = new v-choice(self, self variants first default-value);
+command t-variant default-value = new v-variant(self, self values default-value);
 
 // -- Constructors
 command t-bool make: (X is boolean) =
@@ -215,14 +238,17 @@ command t-map make: (M is equality-map) =
 command t-tuple make: (Values is list) =
   new v-tuple(self, Values);
 
-command t-tagged make: Value =
-  new v-tagged(self, self.tag, Value);
-
 command t-optional make: (Value is error) = 
   new v-none(self);
 
 command t-optional make: (Value is ok) =
   new v-just(self, Value value);
 
-command t-choice make: Value =
+command t-record make: (Values is list) =
+  new v-record(self, self values make: Values);
+
+command t-choice make: (Value is v-variant) =
   new v-choice(self, Value);
+
+command t-variant make: (Values is list) =
+  new v-variant(self, self values make: Values);

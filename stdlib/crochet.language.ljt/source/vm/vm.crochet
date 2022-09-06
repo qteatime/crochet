@@ -12,7 +12,7 @@ command #ljt-vm make do
     globals -> force ljt-globals,
     types -> #cell with-value: #map empty,
     tag-map -> #cell with-value: #map empty,
-    next-tag -> #cell with-value: 1,
+    next-tag -> #cell with-value: 0,
   );
 end
 

@@ -44,6 +44,24 @@ command ljt-decoder do-step: (F is (binary-decoder -> result<binary-decoder-next
   end
 end
 
+command ljt-decoder do-peek: (F is (binary-decoder -> result<binary-decoder-next, error>)) type: (Type is ljt-type) do
+  let Origin = self.decoder value;
+  let Result = F(self.decoder value);
+  condition
+    when Result is ok do
+      Result value value;
+    end
+
+    when Result is error =>
+      #ljt-error raise: new ljt-error--decoding-failed(
+        decoder -> Type,
+        decoder-view -> Origin,
+        reason -> decoding-failed-reason--couldnt-read-bytes,
+        vm -> self.vm,
+      );
+  end
+end
+
 command ljt-decoder decode-with: t-bool =
   new v-bool(self do-step: (_ take-boolean) type: t-bool)
 test
@@ -302,7 +320,7 @@ test
   ) with: T) === new v-tuple(T, [new v-uint8(0x00), new v-uint8(0xff)]);
 end
 
-command ljt-decoder decode-with: (T is t-tagged) do
+command ljt-decoder decode-with: (T is t-record) do
   let Tag = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
   not (T.tag =:= Tag) 
     | implies: {
@@ -317,55 +335,90 @@ command ljt-decoder decode-with: (T is t-tagged) do
         );
       };
 
-  let Value = self decode-with: T.typ;
-  new v-tagged(T, Tag, Value);
+  let Value = self decode-with: T.values;
+  new v-record(T,Value);
 test
   let T1 = new t-tuple(["x", "y"], [t-uint8, t-uint8]);
-  let T2 = new t-tagged(new qualified-name(["point-2d"]), 1, T1);
+  let T2 = new t-record(new qualified-name(["point-2d"]), 1, T1);
   assert (#ljt-vm make decode: (
     #byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
                       , 0x00, 0xff
                       ]
-  ) with: T2) === new v-tagged(T2, 1, new v-tuple(T1, [new v-uint8(0x00), new v-uint8(0xff)]));
+  ) with: T2) === (T2 make: [new v-uint8(0x00), new v-uint8(0xff)]);
+end
+
+command ljt-decoder decode-with: (T is t-variant) do
+  let Tag = self do-step: (_ take-unsigned-integer-8bit) type: t-uint8;
+  not (T.variant-tag =:= Tag)
+    | implies: {
+        #ljt-error raise: new ljt-error--decoding-failed(
+          decoder -> T,
+          decoder-view -> self.decoder value,
+          reason -> new decoding-failed-reason--unexpected-tag(
+            tag -> Tag,
+            expected-tag -> T.variant-tag,
+          ),
+          vm -> self.vm,
+        );
+      };
+
+  let Value = self decode-with: T.values;
+  new v-variant(T, Value);
 end
 
 command ljt-decoder decode-with: (T is t-choice) do
   let Tag = self do-step: (_ take-unsigned-integer-32bit) type: t-uint32;
-  not (T.types contains-key: Tag)
+  not (T.tag =:= Tag)
+    | implies: {
+        #ljt-error raise: new ljt-error--decoding-failed(
+          decoder -> T,
+          decoder-view -> self.decoder value,
+          reason -> new decoding-failed-reason--unexpected-tag(
+            tag -> Tag,
+            expected-tag -> T.variant-tag,
+          ),
+          vm -> self.vm,
+        );
+      };
+
+  let Variant = self do-peek: (_ take-unsigned-integer-8bit) type: t-uint8;
+  (Variant < 0) or (Variant >= T variants count)
     | implies: {
         #ljt-error raise: new ljt-error--decoding-failed(
           decoder -> T,
           decoder-view -> self.decoder value,
           reason -> new decoding-failed-reason--not-in-union(
             tag -> Tag,
-            types -> T.types,
+            types -> T variants,
           ),
           vm -> self.vm,
         );
       };
 
-  let Type = T.types at: Tag;
-  let Value = self decode-with: Type.typ;
-  new v-choice(T, new v-tagged(Type, Tag, Value));
+  let Type = T variants at: (Variant + 1);
+  let Value = self decode-with: Type;
+  new v-choice(T, Value);
 test
   let Tr1 = new t-tuple(["x"], [t-uint8]);
-  let Tt1 = new t-tagged(new qualified-name(["op", "push"]), 1, Tr1);
+  let Tv1 = new t-variant(new qualified-name(["op", "push"]), 0, Tr1);
 
   let Tr2 = new t-tuple([], []);
-  let Tt2 = new t-tagged(new qualified-name(["op", "inc"]), 2, Tr2);
+  let Tv2 = new t-variant(new qualified-name(["op", "inc"]), 1, Tr2);
 
-  let Tc = new t-choice(#map empty | at: 1 put: Tt1 | at: 2 put: Tt2);
+  let Tc = new t-choice(new qualified-name(["op"]), 1, [Tv1, Tv2]);
 
   assert (#ljt-vm make decode: (
     #byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+                      , 0x00                   // variant tag
                       , 0xff
                       ]
-  ) with: Tc) === new v-choice(Tc, new v-tagged(Tt1, 1, new v-tuple(Tr1, [new v-uint8(0xff)])));
+  ) with: Tc) === (Tc make: (Tv1 make: [new v-uint8(0xff)]));
 
   assert (#ljt-vm make decode: (
-    #byte-array from: [ 0x02, 0x00, 0x00, 0x00 // global tag
+    #byte-array from: [ 0x01, 0x00, 0x00, 0x00 // global tag
+                      , 0x01                   // variant tag
                       ]
-  ) with: Tc) === new v-choice(Tc, new v-tagged(Tt2, 2, new v-tuple(Tr2, [])));
+  ) with: Tc) === (Tc make: (Tv2 make: []));
 end
 
 command ljt-decoder decode-with: (T is t-optional) do

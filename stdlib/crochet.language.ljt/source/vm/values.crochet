@@ -19,8 +19,9 @@ type v-bytes(global value is byte-array) is ljt-value;
 type v-array(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
 type v-map(typ is ljt-type, global value is equality-map<ljt-value, ljt-value>) is ljt-value;
 type v-tuple(typ is ljt-type, global values is list<ljt-value>) is ljt-value;
-type v-tagged(typ is ljt-type, global tag is integer, global value is ljt-value) is ljt-value;
-type v-choice(typ is ljt-type, global value is v-tagged) is ljt-value;
+type v-record(typ is ljt-type, global value is v-tuple) is ljt-value;
+type v-choice(typ is ljt-type, global value is v-variant) is ljt-value;
+type v-variant(typ is ljt-type, global value is v-tuple) is ljt-value;
 
 abstract v-optional is ljt-value;
 type v-just(typ is ljt-type, global value is ljt-value) is v-optional;
@@ -64,12 +65,17 @@ command (A is v-tuple) === (B is v-tuple) =
   (A.values count === B.values count)
     | and-also: {A.values zip: B.values with: (_ === _) | all-true};
 
-command (A is v-tagged) === (B is v-tagged) =
-  (A.typ === B.typ) and
-  (A.tag === B.tag) and-also: {A.value === B.value};
+command (A is v-record) === (B is v-record) =
+  (A.typ === B.typ)
+    | and-also: { A value === B value };
 
 command (A is v-choice) === (B is v-choice) =
-  (A.typ === B.typ) and (A.value === B.value);
+  A.typ === B.typ
+    | and-also: { A value === B value };
+
+command (A is v-variant) === (B is v-variant) =
+  A.typ === B.typ
+    | and-also: { A value === B value };
 
 command (A is v-just) === (B is v-just) =
   (A.typ === B.typ) and (A.value === B.value);
@@ -94,8 +100,9 @@ command v-bytes codec = t-bytes;
 command v-array codec = self.typ;
 command v-map codec = self.typ;
 command v-tuple codec = self.typ;
-command v-tagged codec = self.typ;
+command v-record codec = self.typ;
 command v-choice codec = self.typ;
+command v-variant codec = self.typ;
 
 command v-just codec = self.typ;
 command v-none codec = self.typ;
