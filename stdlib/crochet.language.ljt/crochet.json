@@ -14,7 +14,8 @@
     "source/vm/types.crochet",
     "source/vm/values.crochet",
     "source/vm/vm.crochet",
-    "source/main.crochet"
+    "source/main.crochet",
+    "test/codec.crochet"
   ],
   "dependencies": [
     "crochet.core",

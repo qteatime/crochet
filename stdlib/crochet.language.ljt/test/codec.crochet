@@ -1,0 +1,46 @@
+% crochet
+
+local define schema = "% ljt/0
+
+union Op {
+  type Add {}
+  type Push { field value: Int8; }
+}
+
+type Block {
+  field ops: Op\[\];
+  field name: Text?;
+}
+
+";
+
+open crochet.debug;
+
+test "decode(encode(X)) === X" do
+  let Ast = ljt parse: schema;
+  let Vm = #ljt-vm make load-module: Ast;
+  let TBlock = Vm lookup-type: "Block";
+  let TOp = Vm lookup-type: "Op";
+
+  let Data = TBlock make: [
+    new t-array(TOp) make: [
+      TOp tag: 1 make: [new v-int8(10)],
+      TOp tag: 1 make: [new v-int8(20)],
+      TOp tag: 0 make: []
+    ],
+    new t-optional(t-text) make: (#result ok: new v-text("add"))
+  ];
+
+  assert (Vm encode: Data) === (#byte-array from: [
+    0x01, 0x00, 0x00, 0x00, // Block tag
+    0x03, 0x00, 0x00, 0x00, // array size
+      0x01, 10, // Op.Push(10)
+      0x01, 20, // Op.Push(20)
+      0x00,     // Op.Add()
+    0x01, // Just(...)
+      0x03, 0x00, 0x00, 0x00, // text size
+      0x61, 0x64, 0x64        // "add"
+  ]);
+
+  assert (Vm decode: (Vm encode: Data) with: TBlock) === Data;
+end
