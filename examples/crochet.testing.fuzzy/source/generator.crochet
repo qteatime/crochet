@@ -1,0 +1,265 @@
+% crochet
+
+open crochet.random;
+
+abstract arbitrary;
+type arbitrary-constant(global value is any) is arbitrary;
+singleton arbitrary-boolean is arbitrary;
+type arbitrary-integer(global minimum is integer, global maximum is integer) is arbitrary;
+type arbitrary-float-64bit(global minimum is float-64bit, global maximum is float-64bit) is arbitrary;
+type arbitrary-text(global allowed is list<text>) is arbitrary;
+type arbitrary-choice(global choices is list<arbitrary>) is arbitrary;
+type arbitrary-list(global item is arbitrary) is arbitrary;
+type arbitrary-lazy(thunk is thunk<arbitrary>) is arbitrary;
+type arbitrary-record(global record is map<text, arbitrary>) is arbitrary;
+type arbitrary-unshaped-record(global item is arbitrary) is arbitrary;
+
+type generator-state(
+  global seed is integer,
+  global random is mutable-random,
+  global size is integer,
+);
+
+command #generator-state with-seed: (Seed is integer) =
+  new generator-state(
+    seed -> Seed,
+    random -> #random with-seed: Seed | mutable,
+    size -> 20,
+  );
+
+command #generator-state with-random-seed =
+  #generator-state with-seed: (#random with-random-seed | mutable | between: 0 and: (2**32));
+
+command generator-state resize: (New-size is integer)
+requires
+  non-negative :: New-size >= 0
+do
+  new generator-state(self with size -> New-size);
+end
+
+
+type fuzzy-property(
+  global name is text,
+  global parameters is list<arbitrary>,
+  global body is function
+);
+
+command #fuzzy-property name: (Name is text) =
+  new fuzzy-property(Name, [], {true});
+
+command fuzzy-property given: (Params is list<arbitrary>) =
+  new fuzzy-property(self with parameters -> Params map: (_ as arbitrary));
+
+command fuzzy-property then: (Test is function) =
+  new fuzzy-property(self with body -> Test);
+
+
+singleton fuzzy;
+
+command fuzzy generate: (Arbitrary has to-arbitrary) =
+  (Arbitrary as arbitrary) generate: #generator-state with-random-seed;
+
+trait to-arbitrary with
+  command Self as arbitrary -> arbitrary;
+end
+
+implement to-arbitrary for arbitrary;
+command arbitrary as arbitrary =
+  self;
+
+implement to-arbitrary for #nothing;
+command #nothing as arbitrary =
+  new arbitrary-constant(nothing);
+
+implement to-arbitrary for #boolean;
+command #boolean as arbitrary =
+  arbitrary-boolean;
+
+implement to-arbitrary for #integer;
+command #integer as arbitrary =
+  new arbitrary-integer((2**128) negate, 2**128);
+
+implement to-arbitrary for #float-64bit;
+command #float-64bit as arbitrary =
+  new arbitrary-float-64bit((2.0**52) negate, 2.0**52);
+
+implement to-arbitrary for #text;
+command #text as arbitrary =
+  new arbitrary-text([" ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]);
+
+implement to-arbitrary for thunk;
+command thunk as arbitrary =
+  new arbitrary-lazy(self);
+
+command (A is arbitrary) or (B is arbitrary) =
+  new arbitrary-choice([A, B]);
+
+command #arbitrary constant: Value =
+  new arbitrary-constant(Value);
+
+command #arbitrary primitive =
+  new arbitrary-choice([
+    #nothing as arbitrary,
+    #boolean as arbitrary,
+    #integer as arbitrary,
+    #float-64bit as arbitrary,
+    #text as arbitrary,
+  ]);
+
+command #arbitrary between: (Min is integer) and: (Max is integer)
+requires growing :: (Max >= Min)
+=
+  new arbitrary-integer(Min, Max);
+
+command #arbitrary between: (Min is float-64bit) and: (Max is float-64bit)
+requires growing :: (Max >= Min)
+=
+  new arbitrary-float-64bit(Min, Max);
+
+command #arbitrary list: (Item has to-arbitrary) =
+  new arbitrary-list(Item as arbitrary);
+
+command #arbitrary record: Record =
+  #map from: Record
+    |> _ map: { Pair in Pair value as arbitrary }
+    |> { X in new arbitrary-record(X) };
+
+command #arbitrary unshaped-record: (Item has to-arbitrary) =
+  new arbitrary-unshaped-record(Item as arbitrary);
+
+
+command arbitrary-constant generate: _State =
+  self value;
+
+command arbitrary-lazy generate: State =
+  (force self.thunk) generate: State;
+
+command arbitrary-boolean generate: State =
+  State random choose: [true, false];
+
+local enum numeric-strategy =
+  zero,
+  low,
+  high,
+  from-zero,
+  from-zero-positive,
+  from-zero-negative,
+  unbounded;
+
+local enum rounding-strategy =
+  no-rounding,
+  nearest,
+  few-fractional-digits;
+
+command arbitrary-integer generate: State do
+  let Range = package reshape-numeric-range: self minimum and: self maximum state: State;
+  State random between: Range.min and: Range.max;
+end
+
+command arbitrary-float-64bit generate: State do
+  let Range = package reshape-numeric-range: self minimum and: self maximum state: State;
+  Range.min + (State random uniform * (Range.max - Range.min))
+    |> package reshape-fractional: _ state: State;
+end
+
+command package reshape-fractional: N state: State do
+  let Strategy = State random choose: (rounding-strategy lower-bound to: rounding-strategy upper-bound);
+  condition
+    when Strategy is rounding-strategy.no-rounding => N;
+    when Strategy is rounding-strategy.nearest => N round;
+    when Strategy is rounding-strategy.few-fractional-digits do
+      let Point = 10 ** (State random between: 1 and: 4);
+      (N * Point) round / Point;
+    end
+  end
+end
+
+command package reshape-numeric-range: Min and: Max state: State do
+  let Strategy = State random choose: (numeric-strategy lower-bound to: numeric-strategy upper-bound);
+  condition
+    when Strategy is numeric-strategy.zero =>
+      [
+        min -> 0,
+        max -> 0
+      ];
+
+    when Strategy is numeric-strategy.low =>
+      [
+        min -> Min,
+        max -> lesser-of: (Min + State size) and: Max
+      ];
+
+    when Strategy is numeric-strategy.high =>
+      [
+        min -> greater-of: (Max - State size) and: Min,
+        max -> Max
+      ];
+
+    when Strategy is numeric-strategy.from-zero =>
+      [
+        min -> greater-of: Min and: State size negate,
+        max -> lesser-of: Max and: State size
+      ];
+
+    when Strategy is numeric-strategy.from-zero-positive =>
+      [
+        min -> 0 clamp-between: Min and: Max,
+        max -> State size clamp-between: 0 and: Max,
+      ];
+
+    when Strategy is numeric-strategy.from-zero-negative =>
+      [
+        min -> State size negate clamp-between: Min and: 0,
+        max -> 0 clamp-between: Min and: Max,
+      ];
+
+    when Strategy is numeric-strategy.unbounded =>
+      [min -> Min, max -> Max];
+  end
+end
+
+command arbitrary-text generate: State do
+  let Size = State random between: 0 and: State size;
+  condition
+    when Size === 0 => "";
+    otherwise => 
+      1 to: Size
+        | map: { _ in State random choose: self allowed }
+        | as interpolation
+        | flatten-into-plain-text;
+  end
+end
+
+command arbitrary-choice generate: State =
+  (State random choose: self choices) generate: State;
+
+command arbitrary-list generate: State do
+  let Size = State random between: 0 and: State size;
+  condition
+    when Size === 0 => [];
+    otherwise do
+      let Sub-state = State resize: (Size divided-by: 2);
+      1 to: Size 
+        | map: { _ in self item generate: Sub-state };
+    end
+  end
+end
+
+command arbitrary-unshaped-record generate: State do
+  let Size = State random between: 0 and: State size;
+  condition
+    when Size === 0 => [->];
+    otherwise do
+      let Sub-state = State resize: (Size divided-by: 2);
+      let Keys = #arbitrary list: #text | generate: State;
+      let Pairs = Keys map: { Key in #association key: Key value: (self item generate: Sub-state) };
+      #map from: Pairs | as record;
+    end
+  end
+end
+
+command arbitrary-record generate: State do
+  self record
+    | map: { X in X value generate: State }
+    | as record;
+end
