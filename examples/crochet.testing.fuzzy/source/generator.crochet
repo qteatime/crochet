@@ -7,7 +7,8 @@ type arbitrary-constant(global value is any) is arbitrary;
 singleton arbitrary-boolean is arbitrary;
 type arbitrary-integer(global minimum is integer, global maximum is integer) is arbitrary;
 type arbitrary-float-64bit(global minimum is float-64bit, global maximum is float-64bit) is arbitrary;
-type arbitrary-text(global allowed is list<text>) is arbitrary;
+type arbitrary-character-range(global from-codepoint is integer, global to-codepoint is integer) is arbitrary;
+type arbitrary-text(global characters is arbitrary) is arbitrary;
 type arbitrary-choice(global choices is list<arbitrary>) is arbitrary;
 type arbitrary-list(global item is arbitrary) is arbitrary;
 type arbitrary-lazy(thunk is thunk<arbitrary>) is arbitrary;
@@ -36,6 +37,9 @@ requires
 do
   new generator-state(self with size -> New-size);
 end
+
+command generator-state downsize =
+  self resize: (self size divided-by: 2);
 
 
 type fuzzy-property(
@@ -76,26 +80,154 @@ command #boolean as arbitrary =
   arbitrary-boolean;
 
 implement to-arbitrary for #integer;
-command #integer as arbitrary =
-  new arbitrary-integer((2**128) negate, 2**128);
+command #integer as arbitrary = #arbitrary integer;
 
 implement to-arbitrary for #float-64bit;
-command #float-64bit as arbitrary =
-  new arbitrary-float-64bit((2.0**52) negate, 2.0**52);
+command #float-64bit as arbitrary = #arbitrary float-64bit;
 
 implement to-arbitrary for #text;
 command #text as arbitrary =
-  new arbitrary-text([" ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]);
+  #arbitrary ascii-visible-text;
 
 implement to-arbitrary for thunk;
 command thunk as arbitrary =
   new arbitrary-lazy(self);
+
+
+command (A is arbitrary-choice) or (B is arbitrary-choice) =
+  new arbitrary-choice(A choices ++ B choices);
+
+command (A is arbitrary-choice) or (B is arbitrary) =
+  new arbitrary-choice(A choices append: B);
+
+command (A is arbitrary) or (B is arbitrary-choice) =
+  new arbitrary-choice(B choices prepend: A);
 
 command (A is arbitrary) or (B is arbitrary) =
   new arbitrary-choice([A, B]);
 
 command #arbitrary constant: Value =
   new arbitrary-constant(Value);
+
+// Numeric
+command #arbitrary unsigned-integer-8bit =
+  new arbitrary-integer(0, 255);
+
+command #arbitrary unsigned-integer-16bit =
+  new arbitrary-integer(0, (2**16) - 1);
+
+command #arbitrary unsigned-integer-32bit =
+  new arbitrary-integer(0, (2**32) - 1);
+
+command #arbitrary unsigned-integer-64bit =
+  new arbitrary-integer(0, (2**64) - 1);
+
+command #arbitrary integer-8bit do
+  let Mid = (2**8) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary integer-16bit do
+  let Mid = (2**16) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary integer-32bit do
+  let Mid = (2**32) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary integer-64bit do
+  let Mid = (2**64) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary positive-integer =
+  new arbitrary-integer(0, 2**128);
+
+command #arbitrary negative-integer =
+  new arbitrary-integer((2**128) negate, 0);
+
+command #arbitrary integer =
+  new arbitrary-integer((2**128) negate, 2**128);
+
+command #arbitrary float-64bit =
+  new arbitrary-float-64bit((2.0**52) negate, 2.0**52);
+
+command #arbitrary numeric =
+  #arbitrary integer
+    or #arbitrary float-64bit;
+
+// Text
+command #arbitrary ascii-letters =
+  new arbitrary-choice([
+    new arbitrary-character-range(65, 90), // A..Z
+    new arbitrary-character-range(97, 122), // a..z
+  ]);
+
+command #arbitrary ascii-digits =
+  new arbitrary-choice([
+    new arbitrary-character-range(48, 57), // 0..9
+  ]);
+
+command #arbitrary ascii-symbols =
+  new arbitrary-choice([
+    new arbitrary-character-range(33, 47), // ! .. /
+    new arbitrary-character-range(58, 64), // : .. @
+    new arbitrary-character-range(91, 96), // [ .. `
+    new arbitrary-character-range(123, 126), // { .. ~
+  ]);
+
+command #arbitrary ascii-visible-character =
+  #arbitrary ascii-digits
+    or #arbitrary ascii-letters
+    or #arbitrary ascii-symbols
+    or (#arbitrary constant: " ");
+
+command #arbitrary ascii-any-character =
+  new arbitrary-character-range(0, 127);
+
+command #arbitrary latin1-symbol =
+  new arbitrary-choice([
+    new arbitrary-character-range(161, 172), // ¡ .. ¬
+    new arbitrary-character-range(174, 191), // ® .. ¿
+    new arbitrary-constant("×"),
+    new arbitrary-constant("÷"),
+  ]);
+
+command #arbitrary latin1-letter =
+  new arbitrary-choice([
+    new arbitrary-character-range(192, 214), // À .. Ö
+    new arbitrary-character-range(216, 246), // Ø .. ö
+    new arbitrary-character-range(248, 255), // ø .. ÿ
+  ]);
+
+command #arbitrary latin1-visible-character =
+  #arbitrary ascii-visible-character
+    or #arbitrary latin1-symbol
+    or #arbitrary latin1-letter;
+
+command #arbitrary latin1-any-character =
+  new arbitrary-character-range(0, 255);
+
+command #arbitrary unicode-any-character =
+  new arbitrary-character-range(0, 0x10FFFF);
+
+command #arbitrary ascii-visible-text =
+  new arbitrary-text(#arbitrary ascii-visible-character);
+
+command #arbitrary latin1-visible-text =
+  new arbitrary-text(#arbitrary latin1-visible-character);
+
+command #arbitrary ascii-any-text =
+  new arbitrary-text(#arbitrary ascii-any-character);
+
+command #arbitrary latin1-any-text =
+  new arbitrary-text(#arbitrary latin1-any-character);
+
+command #arbitrary unicode-any-text =
+  new arbitrary-text(#arbitrary unicode-any-character);
+
 
 command #arbitrary primitive =
   new arbitrary-choice([
@@ -105,6 +237,11 @@ command #arbitrary primitive =
     #float-64bit as arbitrary,
     #text as arbitrary,
   ]);
+
+command #arbitrary character-from-codepoint: (Min is integer) to: (Max is integer)
+requires in-bounds :: (Min >= 0) and (Max >= Min) and (Max <= 0x10FFFF)
+=
+  new arbitrary-character-range(Min, Max);
 
 command #arbitrary between: (Min is integer) and: (Max is integer)
 requires growing :: (Max >= Min)
@@ -222,12 +359,19 @@ command arbitrary-text generate: State do
   let Size = State random between: 0 and: State size;
   condition
     when Size === 0 => "";
-    otherwise => 
+    otherwise do
+      let Sub-state = State downsize;
       1 to: Size
-        | map: { _ in State random choose: self allowed }
+        | map: { _ in self characters generate: Sub-state }
         | as interpolation
         | flatten-into-plain-text;
+    end
   end
+end
+
+command arbitrary-character-range generate: State do
+  let Codepoint = State random between: self from-codepoint and: self to-codepoint;
+  #text from-code-points: [Codepoint];
 end
 
 command arbitrary-choice generate: State =
@@ -238,7 +382,7 @@ command arbitrary-list generate: State do
   condition
     when Size === 0 => [];
     otherwise do
-      let Sub-state = State resize: (Size divided-by: 2);
+      let Sub-state = State downsize;
       1 to: Size 
         | map: { _ in self item generate: Sub-state };
     end
@@ -250,7 +394,7 @@ command arbitrary-unshaped-record generate: State do
   condition
     when Size === 0 => [->];
     otherwise do
-      let Sub-state = State resize: (Size divided-by: 2);
+      let Sub-state = State downsize;
       let Keys = #arbitrary list: #text | generate: State;
       let Pairs = Keys map: { Key in #association key: Key value: (self item generate: Sub-state) };
       #map from: Pairs | as record;
