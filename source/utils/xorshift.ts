@@ -54,7 +54,7 @@ export class XorShift {
   }
 
   random_integer(min: number, max: number) {
-    return min + Math.floor(this.random() * (max - min));
+    return min + Math.round(this.random() * (max - min));
   }
 
   random_choice<A>(xs: A[]): A | null {
