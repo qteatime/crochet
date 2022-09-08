@@ -2,6 +2,52 @@
 
 open crochet.random;
 
+type fuzzy-parameters(
+  generator is generator-state,  // State to start with
+  global maximum-successes is integer,  // Upper bound of tests to run
+  global maximum-skips is integer, // Upper bound on tests skipped
+);
+
+abstract fuzzy-result;
+type fuzzy-result-pass(
+  global parameters is fuzzy-parameters,
+  global property is fuzzy-property,
+  global passed is integer,
+  global skipped is integer,
+) is fuzzy-result;
+
+type fuzzy-result-failed(
+  global parameters is fuzzy-parameters,
+  global property is fuzzy-property,
+  global counter-example is list<any>,
+  global passed is integer,
+  global skipped is integer,
+) is fuzzy-result;
+
+type fuzzy-result-gave-up(
+  global parameters is fuzzy-parameters,
+  global property is fuzzy-property,
+  global passed is integer,
+  global skipped is integer,
+) is fuzzy-result;
+
+effect fuzzy-execution with
+  get-parameters(); // -> fuzzy-parameters
+end
+
+handler default-fuzzy-execution with
+  on fuzzy-execution.get-parameters() do
+    continue with new fuzzy-parameters(
+      generator -> #generator-state with-random-seed,
+      maximum-successes -> 100,
+      maximum-skips -> 20,
+    );
+  end
+end
+
+default handler default-fuzzy-execution;
+
+
 abstract arbitrary;
 type arbitrary-constant(global value is any) is arbitrary;
 singleton arbitrary-boolean is arbitrary;
@@ -41,27 +87,72 @@ end
 command generator-state downsize =
   self resize: (self size divided-by: 2);
 
+singleton fuzzy-trivial-filter;
+command fuzzy-trivial-filter apply: _ = true;
 
 type fuzzy-property(
   global name is text,
   global parameters is list<arbitrary>,
+  global pre-condition,
   global body is function
 );
 
 command #fuzzy-property name: (Name is text) =
-  new fuzzy-property(Name, [], {true});
+  new fuzzy-property(
+    name -> Name,
+    parameters -> [],
+    pre-condition -> fuzzy-trivial-filter,
+    body -> {true}
+  );
 
 command fuzzy-property given: (Params is list<arbitrary>) =
   new fuzzy-property(self with parameters -> Params map: (_ as arbitrary));
 
+command fuzzy-property if: (Predicate is function) =
+  new fuzzy-property(self with pre-condition -> Predicate);
+
 command fuzzy-property then: (Test is function) =
   new fuzzy-property(self with body -> Test);
+
+command fuzzy-property check do
+  let Params = perform fuzzy-execution.get-parameters();
+  let Gen = Params.generator;
+
+  let Go = { Passed, Skipped in
+    condition
+      when Skipped === Params maximum-skips => 
+        new fuzzy-result-gave-up(Params, self, Passed, Skipped);
+
+      when Passed === Params maximum-successes => 
+        new fuzzy-result-pass(Params, self, Passed, Skipped);
+
+      otherwise do
+        let Args = self.parameters map: (_ generate: Gen);
+        condition
+          when not (self.pre-condition apply: Args) =>
+            Go(Passed, Skipped + 1);
+
+          when self.body apply: Args =>
+            Go(Passed + 1, Skipped);
+
+          otherwise =>
+            new fuzzy-result-failed(Params, self, Args, Passed, Skipped);
+        end
+      end
+    end
+  };
+
+  Go(0, 0);
+end
 
 
 singleton fuzzy;
 
 command fuzzy generate: (Arbitrary has to-arbitrary) =
   (Arbitrary as arbitrary) generate: #generator-state with-random-seed;
+
+command fuzzy property: (Name is text) =
+  #fuzzy-property name: Name;
 
 trait to-arbitrary with
   command Self as arbitrary -> arbitrary;
