@@ -5,4 +5,6 @@ handler low-entropy-random-source with
     continue with (foreign random.random-seed());
 end
 
+default handler low-entropy-random-source;
+
 protect handler low-entropy-random-source with randomness-source;
