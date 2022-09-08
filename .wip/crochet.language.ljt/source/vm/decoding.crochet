@@ -21,6 +21,8 @@ command ljt-vm decode: (View is byte-array-view) with: (Type is ljt-type) do
     | decode-with: Type;
 end
 
+command ljt-decoder assert-tag: (Type is t-lazy) =
+  self assert-tag: Type materialise;
 
 command ljt-decoder assert-tag: (Type is t-tagged) do
   let Tag = self do-step: (_ take-unsigned-integer-32bit) type: Type;

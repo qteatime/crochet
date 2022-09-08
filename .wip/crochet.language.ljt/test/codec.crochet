@@ -42,3 +42,18 @@ test "decode(encode(X)) === X" do
 
   assert (Vm decode: (Vm encode: Data) with: TBlock) === Data;
 end
+
+test "Decoding with a lazy type still asserts tags" do
+  let Ast = ljt parse: schema;
+  let Vm = #ljt-vm make load-module: Ast;
+  let TOp = Vm lookup-type: "Op";
+
+  let V = TOp tag: 1 make: [new v-int8(10)];
+  assert (Vm encode: V) === (#byte-array from: [
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 10
+  ]);
+
+  assert (Vm decode: (Vm encode: V) with: TOp) === V;
+  assert (Vm decode: (Vm encode: V) with: new t-lazy(lazy TOp)) === V;
+end
