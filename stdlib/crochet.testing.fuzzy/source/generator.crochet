@@ -57,14 +57,19 @@ type arbitrary-character-range(global from-codepoint is integer, global to-codep
 type arbitrary-text(global characters is arbitrary) is arbitrary;
 type arbitrary-choice(global choices is list<arbitrary>) is arbitrary;
 type arbitrary-list(global item is arbitrary) is arbitrary;
+type arbitrary-fixed-list(global size is integer, global item is arbitrary) is arbitrary;
+type arbitrary-tuple(global items is list<arbitrary>) is arbitrary;
 type arbitrary-lazy(thunk is thunk<arbitrary>) is arbitrary;
 type arbitrary-record(global record is map<text, arbitrary>) is arbitrary;
 type arbitrary-unshaped-record(global item is arbitrary) is arbitrary;
+type arbitrary-transform(global instance is arbitrary, global transformation is (A -> B)) is arbitrary;
+type arbitrary-chain(global instance is arbitrary, global transformation is (A -> arbitrary)) is arbitrary;
 
 type generator-state(
   global seed is integer,
   global random is mutable-random,
   global size is integer,
+  next-integer is cell<integer>,
 );
 
 command #generator-state with-seed: (Seed is integer) =
@@ -72,10 +77,17 @@ command #generator-state with-seed: (Seed is integer) =
     seed -> Seed,
     random -> #random with-seed: Seed | mutable,
     size -> 20,
+    next-integer -> #cell with-value: 1,
   );
 
 command #generator-state with-random-seed =
   #generator-state with-seed: (#random with-random-seed | mutable | between: 0 and: (2**32));
+
+command generator-state unique-integer do
+  let Value = self.next-integer value;
+  self.next-integer <- Value + 1;
+  Value;
+end
 
 command generator-state resize: (New-size is integer)
 requires
@@ -182,8 +194,10 @@ command #text as arbitrary =
 
 implement to-arbitrary for thunk;
 command thunk as arbitrary =
-  new arbitrary-lazy(self);
+  new arbitrary-lazy(lazy (force self) as arbitrary);
 
+command #arbitrary choice: (Items is list<X has to-arbitrary>) =
+  new arbitrary-choice(Items map: (_ as arbitrary));
 
 command (A is arbitrary-choice) or (B is arbitrary-choice) =
   new arbitrary-choice(A choices ++ B choices);
@@ -199,6 +213,9 @@ command (A is arbitrary) or (B is arbitrary) =
 
 command #arbitrary constant: Value =
   new arbitrary-constant(Value);
+
+command #arbitrary boolean =
+  arbitrary-boolean;
 
 // Numeric
 command #arbitrary unsigned-integer-8bit =
@@ -346,6 +363,12 @@ requires growing :: (Max >= Min)
 
 command #arbitrary list: (Item has to-arbitrary) =
   new arbitrary-list(Item as arbitrary);
+
+command #arbitrary fixed-list: (Item has to-arbitrary) size: (Size is integer)
+requires
+  non-negative :: Size >= 0
+=
+  new arbitrary-fixed-list(Size, Item as arbitrary);
 
 command #arbitrary record: Record =
   #map from: Record
@@ -497,4 +520,39 @@ command arbitrary-record generate: State do
   self record
     | map: { X in X value generate: State }
     | as record;
+end
+
+command arbitrary map: (F is (A -> B)) =
+  new arbitrary-transform(self, F);
+
+command arbitrary-transform generate: State do
+  let Value = self instance generate: State;
+  (self transformation)(Value);
+end
+
+command arbitrary then: (F is (A -> arbitrary)) =
+  new arbitrary-chain(self, F);
+
+command arbitrary-chain generate: State do
+  let Value0 = self instance generate: State;
+  let New-instance = (self transformation)(Value0);
+  New-instance generate: State;
+end
+
+command arbitrary-fixed-list generate: State do
+  let Sub-state = State downsize;
+  condition
+    when self size === 0 => [];
+    otherwise =>
+      1 to: self size
+        | map: { _ in self item generate: Sub-state };
+  end
+end
+
+command #arbitrary tuple: (Items is list<X has to-arbitrary>) =
+  new arbitrary-tuple(Items map: (_ as arbitrary));
+
+command arbitrary-tuple generate: State do
+  let Sub-state = State downsize;
+  self items map: (_ generate: Sub-state);
 end
