@@ -394,7 +394,7 @@ command ljt-decoder decode-with: (T is t-choice) do
           decoder -> T,
           decoder-view -> self.decoder value,
           reason -> new decoding-failed-reason--not-in-union(
-            tag -> Tag,
+            tag -> Variant,
             types -> T variants,
           ),
           vm -> self.vm,

@@ -1,0 +1,182 @@
+% crochet
+
+open crochet.testing.fuzzy;
+open crochet.data.collection;
+
+singleton ljt-arbitrary is arbitrary;
+
+singleton ljt-arbitrary-codec is ljt-arbitrary;
+singleton ljt-arbitrary-primitive-codec is ljt-arbitrary-codec;
+type ljt-arbitrary-lazy-codec(item is arbitrary) is ljt-arbitrary-codec;
+type ljt-arbitrary-array-codec(item is arbitrary) is ljt-arbitrary-codec;
+type ljt-arbitrary-map-codec(key is arbitrary, value is arbitrary) is ljt-arbitrary-codec;
+type ljt-arbitrary-tuple-codec(items is arbitrary) is ljt-arbitrary-codec;
+type ljt-arbitrary-record-codec(items is arbitrary) is ljt-arbitrary-codec;
+type ljt-arbitrary-choice-codec(items is arbitrary) is ljt-arbitrary-codec;
+
+
+// -- Generating types from nothing
+command ljt-arbitrary-primitive-codec generate: State =
+  State random choose: [
+    t-bool,
+    t-int8,
+    t-int16,
+    t-int32,
+    t-uint8,
+    t-uint32,
+    t-integer,
+    t-float32,
+    t-float64,
+    t-text,
+    t-bytes,
+  ];
+
+command #ljt-arbitrary lazy-codec: (Item has to-arbitrary) =
+  new ljt-arbitrary-lazy-codec(Item as arbitrary);
+
+command ljt-arbitrary-lazy-codec generate: State =
+  new t-lazy(lazy self.item generate: State);
+
+command #ljt-arbitrary array-codec: (Item has to-arbitrary) =
+  new ljt-arbitrary-array-codec(Item as arbitrary);
+
+command ljt-arbitrary-array-codec generate: State =
+  new t-array(self.item generate: State);
+
+command #ljt-arbitrary map-codec-key: (Key has to-arbitrary) value: (Value has to-arbitrary) =
+  new ljt-arbitrary-map-codec(Key as arbitrary, Value as arbitrary);
+
+command ljt-arbitrary-map-codec generate: State =
+  new t-map(self.key generate: State, self.value generate: State);
+
+command #ljt-arbitrary tuple-codec: (Item has to-arbitrary) =
+  new ljt-arbitrary-tuple-codec(Item as arbitrary);
+
+command ljt-arbitrary-tuple-codec generate: State do
+  let Size = State random between: 0 and: State size;
+  condition
+    when Size === 0 => new
+      t-tuple([], []);
+
+    otherwise do
+      let Sub-state = State downsize;
+      let Types = 1 to: Size | map: { _ in self.items generate: Sub-state };
+      let Fields = 1 to: Size | map: (_ to-text);
+      new t-tuple(Fields, Types);
+    end
+  end
+end
+
+command #ljt-arbitrary record-codec: (Items has to-arbitrary) =
+  new ljt-arbitrary-record-codec(#ljt-arbitrary tuple-codec: Items);
+
+command ljt-arbitrary-record-codec generate: State do
+  let Tag = State unique-integer;
+  let Name = "Record-[Tag to-text]" flatten-into-plain-text;
+  let Sub-state = State downsize;
+  let Tuple = self.items generate: Sub-state;
+  new t-record(new qualified-name([Name]), Tag, Tuple);
+end
+
+command #ljt-arbitrary choice-codec: (Items has to-arbitrary) =
+  new ljt-arbitrary-choice-codec(#ljt-arbitrary tuple-codec: Items);
+
+command ljt-arbitrary-choice-codec generate: State do
+  let Tag = State unique-integer;
+  let Name = "Union-[Tag to-text]" flatten-into-plain-text;
+  let Total-variants = State random between: 1 and: (greater-of: 1 and: State size);
+  let Sub-state = State downsize;
+  let Variants = 1 to: Total-variants
+                  | map: { I in
+                      let Variant-name = "Variant-[I to-text]" flatten-into-plain-text;
+                      let Tuple = self.items generate: Sub-state;
+                      new t-variant(new qualified-name([Name, Variant-name]), I - 1, Tuple);
+                    };
+  new t-choice(new qualified-name([Name]), Tag, Variants);
+end
+
+command #ljt-arbitrary any-codec =
+  #arbitrary choice: [
+    ljt-arbitrary-primitive-codec,
+    #ljt-arbitrary lazy-codec: (lazy #ljt-arbitrary any-codec),
+    #ljt-arbitrary array-codec: (lazy #ljt-arbitrary any-codec),
+    #ljt-arbitrary map-codec-key: (lazy #ljt-arbitrary any-codec) value: (lazy #ljt-arbitrary any-codec),
+    #ljt-arbitrary tuple-codec: (lazy #ljt-arbitrary any-codec),
+    #ljt-arbitrary record-codec: (lazy #ljt-arbitrary any-codec),
+    #ljt-arbitrary choice-codec: (lazy #ljt-arbitrary any-codec),
+  ];
+
+
+// -- Generating values from types
+implement to-arbitrary for ljt-type;
+
+command t-bool as arbitrary =
+  #arbitrary boolean map: { X in new v-bool(X) };
+
+command t-int8 as arbitrary =
+  #arbitrary integer-8bit map: { X in new v-int8(X) };
+
+command t-int16 as arbitrary =
+  #arbitrary integer-16bit map: { X in new v-int16(X) };
+
+command t-int32 as arbitrary =
+  #arbitrary integer-32bit map: { X in new v-int32(X) };
+
+command t-uint8 as arbitrary =
+  #arbitrary unsigned-integer-8bit map: { X in new v-uint8(X) };
+
+command t-uint16 as arbitrary =
+  #arbitrary unsigned-integer-16bit map: { X in new v-uint16(X) };
+
+command t-uint32 as arbitrary =
+  #arbitrary unsigned-integer-32bit map: { X in new v-uint32(X) };
+
+command t-integer as arbitrary =
+  #arbitrary integer map: { X in new v-integer(X) };
+
+command t-float32 as arbitrary =
+  #arbitrary float-64bit map: { X in new v-float32(X) }; // FIXME: generate the right size of floats
+
+command t-float64 as arbitrary =
+  #arbitrary float-64bit map: { X in new v-float64(X) };
+
+command t-text as arbitrary =
+  #arbitrary unicode-any-text map: { X in new v-text(X) };
+
+command t-bytes as arbitrary =
+  #arbitrary list: #arbitrary unsigned-integer-8bit
+    | map: { X in new v-bytes(#byte-array from: X) };
+
+command t-lazy as arbitrary =
+  self materialise as arbitrary;
+
+command t-array as arbitrary =
+  #arbitrary list: (self item as arbitrary)
+    | map: { X in new v-array(self, X) };
+
+command t-map as arbitrary =
+  #arbitrary unsigned-integer-8bit then: { Size in
+    #arbitrary record: [
+      key -> #arbitrary fixed-list: self key size: Size,
+      value -> #arbitrary fixed-list: self value size: Size,
+    ]
+    | map: { X in
+        new v-map(self, #equality-map from: (X.key zip: X.value with: (#association key: _ value: _)))
+      };
+  };
+
+command t-tuple as arbitrary =
+  #arbitrary tuple: (self types)
+    | map: { X in new v-tuple(self, X) };
+
+command t-record as arbitrary =
+  self values as arbitrary
+    | map: { X in new v-record(self, X) };
+
+command t-choice as arbitrary =
+  #arbitrary choice: self variants
+    | map: { X in new v-choice(self, X) };
+
+command t-variant as arbitrary =
+  self values as arbitrary
+    | map: { X in new v-variant(self, X) };

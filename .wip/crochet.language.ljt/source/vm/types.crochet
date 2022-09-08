@@ -122,7 +122,7 @@ command t-tuple text-representation do
 end
 
 command t-choice text-representation do
-  let Types = self variants values map: (_ text-representation);
+  let Types = self variants map: (_ text-representation);
   "union [self name]([self tag to-text]) {[#text join: Types with: "; "]}" flatten-into-plain-text;
 end
 
@@ -131,7 +131,7 @@ command t-record text-representation do
 end
 
 command t-variant text-representation =
-  "[self record base-name]([self variant-tag to-text])";
+  "[self base-name]([self variant-tag to-text])";
 
 
 command ljt-type short-representation =

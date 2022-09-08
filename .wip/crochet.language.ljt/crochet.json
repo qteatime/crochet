@@ -15,13 +15,16 @@
     "source/vm/values.crochet",
     "source/vm/vm.crochet",
     "source/main.crochet",
-    "test/codec.crochet"
+    "test/generators.crochet",
+    "test/codec.crochet",
+    "test/fuzzy-codec.crochet"
   ],
   "dependencies": [
     "crochet.core",
     "crochet.data.collection",
     "crochet.text.parsing.lingua",
-    "crochet.debug"
+    "crochet.debug",
+    "crochet.testing.fuzzy"
   ],
   "capabilities": {
     "requires": [],
