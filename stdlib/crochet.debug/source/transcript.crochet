@@ -20,5 +20,5 @@ end
 
 /// Writes an interpolation to the debugging transcript.
 command transcript tag: Tag write: (X is interpolation) do
-  self write: (X flatten-into-plain-text) tag: Tag;
+  self tag: Tag write: (X flatten-into-plain-text);
 end

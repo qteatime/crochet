@@ -6,6 +6,7 @@ open crochet.data.collection;
 singleton ljt-arbitrary is arbitrary;
 
 singleton ljt-arbitrary-codec is ljt-arbitrary;
+singleton ljt-arbitrary-any-codec is ljt-arbitrary;
 singleton ljt-arbitrary-primitive-codec is ljt-arbitrary-codec;
 type ljt-arbitrary-lazy-codec(item is arbitrary) is ljt-arbitrary-codec;
 type ljt-arbitrary-array-codec(item is arbitrary) is ljt-arbitrary-codec;
@@ -96,15 +97,29 @@ command ljt-arbitrary-choice-codec generate: State do
 end
 
 command #ljt-arbitrary any-codec =
-  #arbitrary choice: [
-    ljt-arbitrary-primitive-codec,
-    #ljt-arbitrary lazy-codec: (lazy #ljt-arbitrary any-codec),
-    #ljt-arbitrary array-codec: (lazy #ljt-arbitrary any-codec),
-    #ljt-arbitrary map-codec-key: (lazy #ljt-arbitrary any-codec) value: (lazy #ljt-arbitrary any-codec),
-    #ljt-arbitrary tuple-codec: (lazy #ljt-arbitrary any-codec),
-    #ljt-arbitrary record-codec: (lazy #ljt-arbitrary any-codec),
-    #ljt-arbitrary choice-codec: (lazy #ljt-arbitrary any-codec),
-  ];
+  ljt-arbitrary-any-codec;
+
+
+local enum codec-choice =
+  primitive, lazy-codec, array, map, tuple, record, choice;
+
+command ljt-arbitrary-any-codec generate: State do
+  let Codec = State random choose: (codec-choice lower-bound to: codec-choice upper-bound);
+  let T = condition
+            when State size === 0 => ljt-arbitrary-primitive-codec;
+            otherwise => State random choose: [ljt-arbitrary-primitive-codec, self];
+          end;
+  let Sub-state = State downsize;
+  condition
+    when Codec is codec-choice.primitive => ljt-arbitrary-primitive-codec generate: Sub-state;
+    when Codec is codec-choice.lazy-codec => (#ljt-arbitrary lazy-codec: T) generate: Sub-state;
+    when Codec is codec-choice.array => (#ljt-arbitrary array-codec: T) generate: Sub-state;
+    when Codec is codec-choice.map => (#ljt-arbitrary map-codec-key: T value: T) generate: Sub-state;
+    when Codec is codec-choice.tuple => (#ljt-arbitrary tuple-codec: T) generate: Sub-state;
+    when Codec is codec-choice.record => (#ljt-arbitrary record-codec: T) generate: Sub-state;
+    when Codec is codec-choice.choice => (#ljt-arbitrary choice-codec: T) generate: Sub-state;
+  end
+end
 
 
 // -- Generating values from types
@@ -135,7 +150,8 @@ command t-integer as arbitrary =
   #arbitrary integer map: { X in new v-integer(X) };
 
 command t-float32 as arbitrary =
-  #arbitrary float-64bit map: { X in new v-float32(X) }; // FIXME: generate the right size of floats
+  #arbitrary between: (2.0**16) negate and: (2.0 ** 16)
+    | map: { X in new v-float32(X) }; // FIXME: generate the right size of floats
 
 command t-float64 as arbitrary =
   #arbitrary float-64bit map: { X in new v-float64(X) };
@@ -147,6 +163,7 @@ command t-bytes as arbitrary =
   #arbitrary list: #arbitrary unsigned-integer-8bit
     | map: { X in new v-bytes(#byte-array from: X) };
 
+open crochet.debug;
 command t-lazy as arbitrary =
   self materialise as arbitrary;
 

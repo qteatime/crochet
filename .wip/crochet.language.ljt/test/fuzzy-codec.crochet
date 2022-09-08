@@ -4,19 +4,15 @@ open crochet.testing.fuzzy;
 open crochet.debug;
 
 test "decode(encode(V)) === V" do
-  let State = #generator-state with-seed: 2816628842 | resize: 3;
-  transcript tag: "generator" inspect: State;
-  let Params = #fuzzy-parameters defaults | generator: State | maximum-successes: 10;
+  let State = #generator-state with-random-seed | resize: 5;
+  transcript tag: "decode(encode(V)) seed" inspect: State seed;
+  let Params = #fuzzy-parameters defaults | generator: State | maximum-successes: 25;
   fuzzy property: "decode(encode(V)) === V"
     | given: [#ljt-arbitrary any-codec, #arbitrary constant: State]
     | then: { Codec, State in
-        transcript tag: "start" inspect: [codec -> Codec];
         let Value = Codec as arbitrary | generate: State;
-        transcript tag: "value" inspect: [->];
         let Encoded = #ljt-vm make encode: Value;
-        transcript tag: "encoded" inspect: [->];
         let Decoded = #ljt-vm make decode: Encoded with: Codec;
-        transcript tag: "decoded" inspect: [->];
         Decoded === Value;
       }
     | check-with-parameters: Params;
