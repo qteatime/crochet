@@ -175,8 +175,7 @@ command fuzzy-property check-with-parameters: Params do
   condition
     when Result is fuzzy-result-pass => Result report-to-transcript;
     otherwise do
-      Result report-to-transcript;
-      panic message: "[self name] failed" tag: "fuzzy:error" data: Result;
+      panic message: "[self name] failed after [Result passed to-text] tests" tag: "fuzzy:error" data: Result;
     end
   end
 end

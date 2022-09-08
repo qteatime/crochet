@@ -4,9 +4,8 @@ open crochet.testing.fuzzy;
 open crochet.debug;
 
 test "decode(encode(V)) === V" do
-  let State = #generator-state with-random-seed | resize: 5;
-  transcript tag: "decode(encode(V)) seed" inspect: State seed;
-  let Params = #fuzzy-parameters defaults | generator: State | maximum-successes: 25;
+  let State = #generator-state with-random-seed | resize: 20;
+  let Params = #fuzzy-parameters defaults | generator: State | maximum-successes: 100;
   fuzzy property: "decode(encode(V)) === V"
     | given: [#ljt-arbitrary any-codec, #arbitrary constant: State]
     | then: { Codec, State in

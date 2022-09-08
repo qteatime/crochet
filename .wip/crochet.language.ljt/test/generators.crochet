@@ -150,7 +150,7 @@ command t-integer as arbitrary =
   #arbitrary integer map: { X in new v-integer(X) };
 
 command t-float32 as arbitrary =
-  #arbitrary between: (2.0**16) negate and: (2.0 ** 16)
+  #arbitrary between: (2.0**8) negate and: (2.0**8)
     | map: { X in new v-float32(X) }; // FIXME: generate the right size of floats
 
 command t-float64 as arbitrary =
@@ -172,15 +172,11 @@ command t-array as arbitrary =
     | map: { X in new v-array(self, X) };
 
 command t-map as arbitrary =
-  #arbitrary unsigned-integer-8bit then: { Size in
-    #arbitrary record: [
-      key -> #arbitrary fixed-list: self key size: Size,
-      value -> #arbitrary fixed-list: self value size: Size,
-    ]
-    | map: { X in
-        new v-map(self, #equality-map from: (X.key zip: X.value with: (#association key: _ value: _)))
+  #arbitrary list: (#arbitrary tuple: [self key, self value])
+    | map: { Xs in
+        let Pairs = Xs map: { X in #association key: X first value: X second };
+        new v-map(self, #equality-map from: Pairs);
       };
-  };
 
 command t-tuple as arbitrary =
   #arbitrary tuple: (self types)

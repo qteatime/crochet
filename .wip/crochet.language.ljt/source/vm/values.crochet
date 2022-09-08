@@ -42,8 +42,13 @@ command (A is v-int32) === (B is v-int32) = A.value === B.value;
 command (A is v-uint8) === (B is v-uint8) = A.value === B.value;
 command (A is v-uint16) === (B is v-uint16) = A.value === B.value;
 command (A is v-uint32) === (B is v-uint32) = A.value === B.value;
-command (A is v-float32) === (B is v-float32) = (A.value >= (B.value - 0.1)) and (A.value <= (B.value + 0.1));
-command (A is v-float64) === (B is v-float64) = (A.value >= (B.value - 0.01)) and (A.value <= (B.value + 0.01));
+
+command (A is v-float32) === (B is v-float32) =
+  (A.value >= (B.value - 0.1)) and (A.value <= (B.value + 0.1));
+
+command (A is v-float64) === (B is v-float64) =
+  (A.value >= (B.value - 0.01)) and (A.value <= (B.value + 0.01));
+
 command (A is v-integer) === (B is v-integer) = A.value === B.value;
 command (A is v-text) === (B is v-text) = A.value === B.value;
 command (A is v-bytes) === (B is v-bytes) = A.value === B.value;
