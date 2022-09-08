@@ -118,12 +118,13 @@ export function simple_value(x: CrochetValue): string {
 function do_simple_value(
   x: CrochetValue,
   depth: number,
-  visited: Set<CrochetValue>
+  visited0: Set<CrochetValue>
 ): string {
+  const visited = new Set([...visited0]);
   if (!is_primitive(x) && visited.has(x)) {
     return "[circular]";
   }
-  if (depth > 5) {
+  if (depth > 10) {
     return "(...)";
   }
   visited.add(x);
