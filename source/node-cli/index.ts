@@ -550,7 +550,7 @@ function make_filter(pattern: string | null) {
     return (x: string) => true;
   } else {
     const re = new RegExp(
-      pattern.replace(/[^\w\d\*]/g, "\\$1").replace(/\*/g, ".*?")
+      pattern.replace(/([^\w\d\*])/g, "\\$1").replace(/\*/g, ".*?")
     );
     return (x: string) => re.test(x);
   }
