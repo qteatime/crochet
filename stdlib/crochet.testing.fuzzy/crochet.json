@@ -3,7 +3,7 @@
   "target": "*",
   "native_sources": [],
   "sources": ["source/generator.crochet"],
-  "dependencies": ["crochet.core", "crochet.random"],
+  "dependencies": ["crochet.core", "crochet.random", "crochet.debug"],
   "capabilities": {
     "requires": [],
     "provides": []

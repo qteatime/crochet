@@ -31,6 +31,26 @@ type fuzzy-result-gave-up(
   global skipped is integer,
 ) is fuzzy-result;
 
+open crochet.debug;
+command fuzzy-result-pass report-to-transcript =
+  transcript tag: "fuzzy:OK"
+             write: "[self property name] passed [self passed to-text] tests (skipped [self skipped to-text])";
+
+command fuzzy-result-gave-up report-to-transcript =
+  transcript tag: "fuzzy:GAVE-UP"
+             write: "[self property name] exhausted after [self passed to-text] tests (skipped [self skipped to-text])";
+
+command fuzzy-result-failed report-to-transcript do
+  transcript tag: "fuzzy:ERROR"
+             write: "[self property name] failed after [self passed to-text] tests (skipped [self skipped to-text])";
+  transcript tag: "fuzzy:ERROR"
+             inspect: [
+               counter-example -> self counter-example,
+               seed -> self.parameters.generator.seed
+             ];
+end
+
+
 effect fuzzy-execution with
   get-parameters(); // -> fuzzy-parameters
 end
@@ -46,6 +66,27 @@ handler default-fuzzy-execution with
 end
 
 default handler default-fuzzy-execution;
+
+
+command #fuzzy-parameters defaults =
+  new fuzzy-parameters(
+    generator -> #generator-state with-random-seed,
+    maximum-successes -> 100,
+    maximum-skips -> 20,
+  );
+
+command fuzzy-parameters generator: (Gen is generator-state) =
+  new fuzzy-parameters(self with generator -> Gen);
+
+command fuzzy-parameters maximum-successes: (X is integer)
+requires non-negative :: X >= 0
+=
+  new fuzzy-parameters(self with maximum-successes -> X);
+
+command fuzzy-parameters maximum-skips: (X is integer)
+requires non-negative :: X >= 0
+=
+  new fuzzy-parameters(self with maximum-skips -> X);
 
 
 abstract arbitrary;
@@ -126,10 +167,22 @@ command fuzzy-property if: (Predicate is function) =
 command fuzzy-property then: (Test is function) =
   new fuzzy-property(self with body -> Test);
 
-command fuzzy-property check do
-  let Params = perform fuzzy-execution.get-parameters();
-  let Gen = Params.generator;
+command fuzzy-property check =
+  self check-with-parameters: (perform fuzzy-execution.get-parameters());
 
+command fuzzy-property check-with-parameters: Params do
+  let Result = self run-with-parameters: Params;
+  condition
+    when Result is fuzzy-result-pass => Result report-to-transcript;
+    otherwise do
+      Result report-to-transcript;
+      panic tag: "fuzzy:error" message: "[self name] failed";
+    end
+  end
+end
+
+command fuzzy-property run-with-parameters: Params do
+  let Gen = Params.generator;
   let Go = { Passed, Skipped in
     condition
       when Skipped === Params maximum-skips => 
@@ -194,7 +247,7 @@ command #text as arbitrary =
 
 implement to-arbitrary for thunk;
 command thunk as arbitrary =
-  new arbitrary-lazy(lazy (force self) as arbitrary);
+  new arbitrary-lazy(self);
 
 command #arbitrary choice: (Items is list<X has to-arbitrary>) =
   new arbitrary-choice(Items map: (_ as arbitrary));
@@ -383,7 +436,7 @@ command arbitrary-constant generate: _State =
   self value;
 
 command arbitrary-lazy generate: State =
-  (force self.thunk) generate: State;
+  (force self.thunk) as arbitrary | generate: State;
 
 command arbitrary-boolean generate: State =
   State random choose: [true, false];
