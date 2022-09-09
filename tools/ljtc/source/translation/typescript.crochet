@@ -28,6 +28,7 @@ local define hyphen-re = lazy (
 );
 
 local define reserved-set = lazy (#set from: [
+  "arguments",
   "break",
   "case",
   "catch",
