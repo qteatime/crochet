@@ -157,7 +157,7 @@ command t-float64 as arbitrary =
   #arbitrary float-64bit map: { X in new v-float64(X) };
 
 command t-text as arbitrary =
-  #arbitrary unicode-any-text map: { X in new v-text(X) };
+  #arbitrary latin1-visible-text map: { X in new v-text(X) };
 
 command t-bytes as arbitrary =
   #arbitrary list: #arbitrary unsigned-integer-8bit
