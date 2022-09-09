@@ -22,6 +22,17 @@
           ".crochet"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "crochet-ljt",
+        "aliases": [
+          "LJT",
+          "ljt"
+        ],
+        "extensions": [
+          ".ljt"
+        ],
+        "configuration": "./ljt/language-configuration.json"
       }
     ],
     "grammars": [
@@ -29,6 +40,11 @@
         "language": "crochet",
         "scopeName": "source.crochet",
         "path": "./syntaxes/crochet.tmLanguage.json"
+      },
+      {
+        "language": "crochet-ljt",
+        "scopeName": "source.crochet-ljt",
+        "path": "./ljt/syntax.tmLanguage.json"
       }
     ]
   }
