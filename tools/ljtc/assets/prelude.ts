@@ -24,13 +24,13 @@ export class _Decoder {
   }
 
   i16() {
-    const value = this.view.getInt16(this.offset);
+    const value = this.view.getInt16(this.offset, true);
     this.offset += 2;
     return value;
   }
 
   i32() {
-    const value = this.view.getInt32(this.offset);
+    const value = this.view.getInt32(this.offset, true);
     this.offset += 4;
     return value;
   }
@@ -42,25 +42,25 @@ export class _Decoder {
   }
 
   ui16() {
-    const value = this.view.getUint16(this.offset);
+    const value = this.view.getUint16(this.offset, true);
     this.offset += 2;
     return value;
   }
 
   ui32() {
-    const value = this.view.getUint32(this.offset);
+    const value = this.view.getUint32(this.offset, true);
     this.offset += 4;
     return value;
   }
 
   f32() {
-    const value = this.view.getFloat32(this.offset);
+    const value = this.view.getFloat32(this.offset, true);
     this.offset += 4;
     return value;
   }
 
   f64() {
-    const value = this.view.getFloat64(this.offset);
+    const value = this.view.getFloat64(this.offset, true);
     this.offset += 8;
     return value;
   }
@@ -89,7 +89,7 @@ export class _Decoder {
     const size = this.ui32();
     const result = new Array(size);
     for (let i = 0; i < size; ++i) {
-      result.push(f());
+      result[i] = f();
     }
     return result;
   }
