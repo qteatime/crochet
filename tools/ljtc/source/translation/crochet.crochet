@@ -185,6 +185,10 @@ command crochet-compiler generate: (T is t-record) root: Root do
                       otherwise => "";
                     end;
   let Projections = Fields map: { F in self box: "self.[self to-id: F.name]" with: F.codec };
+  let New-affix = condition
+                    when Field-names is-empty => [prefix -> "", suffix -> ""];
+                    otherwise => [prefix -> "new ", suffix -> "([#text join: Field-names with: ", "])"];
+                  end;
 
   "
 type [Name][self type-params: Type-params] is [Root];
@@ -192,7 +196,7 @@ type [Name][self type-params: Type-params] is [Root];
 command #[Name] tag = [T tag to-text];
 
 command #[Name] [Make-prefix][#text join: Make-params with: " "] do
-  new [Name]([#text join: Field-names with: ", "]);
+  new [Name][New-affix.suffix];
 end
 
 command #[Name] codec =
@@ -231,6 +235,10 @@ command crochet-compiler generate: (T is t-variant) root: Root do
                       otherwise => "";
                     end;
   let Projections = Fields map: { F in self box: "self.[self to-id: F.name]" with: F.codec };
+  let New-affix = condition
+                    when Field-names is-empty => [prefix -> "", suffix -> ""];
+                    otherwise => [prefix -> "new ", suffix -> "([#text join: Field-names with: ", "])"];
+                  end;
 
   [
     name -> Name,
@@ -241,7 +249,7 @@ type [Name][self type-params: Type-params] is [Root];
 command #[Name] tag = [T variant-tag to-text];
 
 command #[Name] [Make-prefix][#text join: Make-params with: " "] do
-  new [Name]([#text join: Field-names with: ", "]);
+  new [Name][New-affix.suffix];
 end
 
 command #[Name] codec =

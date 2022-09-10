@@ -2,7 +2,7 @@ interface _DecoderMethod {
   decode(decoder: _Decoder): any;
 }
 
-class _Decoder {
+export class _Decoder {
   private offset: number = 0;
 
   constructor(readonly view: DataView) {}
