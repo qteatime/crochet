@@ -265,3 +265,14 @@ requires
 
 command t-variant make: (Values is list) =
   new v-variant(self, self values make: Values);
+
+
+// -- Constructing types themselves
+command #t-array item: T = new t-array(T);
+command #t-map key: K value: V = new t-map(K, V);
+command #t-optional item: T = new t-optional(T);
+command #t-tuple fields: F types: T = new t-tuple(F, T);
+command #t-lazy thunk: T = new t-lazy(T);
+command #t-record name: N tag: T tuple: V = new t-record(new qualified-name(N), T, V);
+command #t-choice name: N tag: T variants: V = new t-choice(new qualified-name(N), T, V);
+command #t-variant name: N tag: T tuple: V = new t-variant(new qualified-name(N), T, V);

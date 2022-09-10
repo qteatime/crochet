@@ -114,6 +114,7 @@ command ts-compiler ts-type: t-integer = "bigint";
 command ts-compiler ts-type: t-float32 = "Float32";
 command ts-compiler ts-type: t-float64 = "number";
 command ts-compiler ts-type: t-text = "string";
+command ts-compiler ts-type: t-bytes = "Uint8Array";
 
 command ts-compiler ts-type: (T is t-lazy) =
   self ts-type: T materialise;

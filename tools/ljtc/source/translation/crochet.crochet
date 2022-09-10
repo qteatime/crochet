@@ -1,0 +1,257 @@
+% crochet
+
+open crochet.language.ljt;
+open crochet.text.regex;
+
+type crochet-compiler(vm is ljt-vm, prefix is text);
+
+command #crochet-compiler from-vm: (Vm is ljt-vm) prefix: Prefix =
+  new crochet-compiler(Vm, Prefix);
+
+local define dot-re = lazy (regex from-text: "\\." | compile);
+local define reserved-set = lazy (#set from: [
+  "relation","predicate","when","do","command","action","type","enum",
+  "define","singleton","goto","call","let","return","fact","forget","new",
+  "search","if","simulate","true","false","not","and","or","is","self","as",
+  "event","quiescence","for","until","in","foreign","on","always","match",
+  "then","else","condition","end","with","prelude","rank","tags","abstract",
+  "lazy","force","context","sample","of","open","local","test","assert",
+  "requires","ensures","nothing","handle","effect","continue","perform","has",
+  "trait","implement","public","capability","protect","global","otherwise",
+  "handler","default","use","alias","true","false"
+]);
+
+command crochet-compiler to-id: (Id0 is text) do
+  let Id1 = Id0 ascii to-lower-case to-text;
+  let Id = (force dot-re) substitute-all-by: "--" in: Id1;
+  condition
+    when (force reserved-set) contains: Id => "'[Id]" flatten-into-plain-text;
+    otherwise => Id;
+  end
+end
+
+command crochet-compiler to-keyword: (Id0 is text) do
+  let Id1 = Id0 ascii to-lower-case to-text;
+  "[Id1]:" flatten-into-plain-text;
+end
+
+command crochet-compiler to-variable: (Id is text) =
+  self to-id: Id | ascii | to-upper-case | to-text;
+
+command crochet-compiler to-prefixed-id: (Id is text) =
+  self to-prefixed-id: Id prefix: self.prefix;
+
+command crochet-compiler to-prefixed-id: (Id is text) prefix: Prefix =
+  condition
+    when self.prefix is-empty => self to-id: Id;
+    otherwise => self to-id: ("[Prefix]--[Id]" flatten-into-plain-text);
+  end;
+
+command crochet-compiler to-text: (X is text) do
+  "\"[X]\"";
+end
+
+command crochet-compiler to-list: (X is list<text>) do
+  "\[[#text join: X with: ", "]\]";
+end
+
+command crochet-compiler to-type: t-bool = "boolean";
+command crochet-compiler to-type: t-int8 = "integer";
+command crochet-compiler to-type: t-int16 = "integer";
+command crochet-compiler to-type: t-int32 = "integer";
+command crochet-compiler to-type: t-uint8 = "integer";
+command crochet-compiler to-type: t-uint16 = "integer";
+command crochet-compiler to-type: t-uint32 = "integer";
+command crochet-compiler to-type: t-integer = "integer";
+command crochet-compiler to-type: t-float32 = "float-64bit";
+command crochet-compiler to-type: t-float64 = "float-64bit";
+command crochet-compiler to-type: t-text = "text";
+command crochet-compiler to-type: t-bytes = "byte-array";
+command crochet-compiler to-type: (T is t-lazy) = self to-type: T materialise;
+command crochet-compiler to-type: (T is t-array) = "list<[self to-type: T item]>";
+command crochet-compiler to-type: (T is t-map) = "equality-map<[self to-type: T key], [self to-type: T value]>";
+command crochet-compiler to-type: (T is t-tuple) = "record";
+command crochet-compiler to-type: (T is t-optional) = "result<[self to-type: T item], not-found>";
+command crochet-compiler to-type: (T is t-choice) = "[self to-prefixed-id: T name]";
+command crochet-compiler to-type: (T is t-record) = "[self to-prefixed-id: T name]";
+command crochet-compiler to-type: (T is t-variant) = "[self to-prefixed-id: T name]";
+
+command crochet-compiler to-codec: t-bool = "t-bool";
+command crochet-compiler to-codec: t-int8 = "t-int8";
+command crochet-compiler to-codec: t-int16 = "t-int16";
+command crochet-compiler to-codec: t-int32 = "t-int32";
+command crochet-compiler to-codec: t-uint8 = "t-uint8";
+command crochet-compiler to-codec: t-uint16 = "t-uint16";
+command crochet-compiler to-codec: t-uint32 = "t-uint32";
+command crochet-compiler to-codec: t-integer = "t-integer";
+command crochet-compiler to-codec: t-float32 = "t-float32";
+command crochet-compiler to-codec: t-float64 = "t-float64";
+command crochet-compiler to-codec: t-text = "t-text";
+command crochet-compiler to-codec: t-bytes = "t-bytes";
+command crochet-compiler to-codec: (T is t-lazy) = self to-codec: T materialise;
+command crochet-compiler to-codec: (T is t-array) = "(#t-array item: ([self to-codec: T item]))";
+command crochet-compiler to-codec: (T is t-map) = "(#t-map key: ([self to-codec: T key]) value: ([self to-codec: T value]))";
+command crochet-compiler to-codec: (T is t-optional) = "(#t-optional item: ([self to-codec: T item]))";
+command crochet-compiler to-codec: (T is t-tuple) do
+  let Fields = T fields map: (self to-text: _);
+  let Types = T types map: (self to-codec: _);
+  "(#t-tuple fields: [self to-list: Fields] types: [self to-list: Types])";
+end
+command crochet-compiler to-codec: (T is t-record) =
+  "(#[self to-prefixed-id: T name] codec)";
+command crochet-compiler to-codec: (T is t-choice) =
+  "(#[self to-prefixed-id: T name] codec)";
+command crochet-compiler to-codec: (T is t-variant) =
+  "(#[self to-prefixed-id: T name] codec)";
+
+command crochet-compiler box: X with: t-bool = "(t-bool make: ([X]))";
+command crochet-compiler box: X with: t-int8 = "(t-int8 make: ([X]))";
+command crochet-compiler box: X with: t-int16 = "(t-int16 make: ([X]))";
+command crochet-compiler box: X with: t-int32 = "(t-int32 make: ([X]))";
+command crochet-compiler box: X with: t-uint8 = "(t-uint8 make: ([X]))";
+command crochet-compiler box: X with: t-uint16 = "(t-uint16 make: ([X]))";
+command crochet-compiler box: X with: t-uint32 = "(t-uint32 make: ([X]))";
+command crochet-compiler box: X with: t-integer = "(t-integer make: ([X]))";
+command crochet-compiler box: X with: t-float32 = "(t-float32 make: ([X]))";
+command crochet-compiler box: X with: t-float64 = "(t-float64 make: ([X]))";
+command crochet-compiler box: X with: t-text = "(t-text make: ([X]))";
+command crochet-compiler box: X with: t-bytes = "(t-bytes make: ([X]))";
+command crochet-compiler box: X with: (T is t-lazy) = self box: X with: T materialise;
+command crochet-compiler box: X with: (T is t-array) =
+  "(#t-array item: ([self to-codec: T item]) | make: (([X]) map: { A in [self box: "A" with: T item] }))";
+command crochet-compiler box: X with: (T is t-map) =
+  "(do
+    let ME = ([X]) entries map: { ME in #association key: ([self box: "ME key" with: T key]) value: ([self box: "ME value" with: T value]) };
+    (#t-map key: ([self to-codec: T item]) value: ([self to-codec: T value]) | make: (#equality-map from: ME));
+   end)";
+command crochet-compiler box: X with: (T is t-optional) =
+  "(#t-optional item: ([self to-codec: T item]) | make: ([X] | map: { A in [self box: "A" with: T item] }))";
+command crochet-compiler box: X with: (T is t-record) = "([X] to-ljt)";
+command crochet-compiler box: X with: (T is t-choice) = "([X] to-ljt)";
+command crochet-compiler box: X with: (T is t-variant) = "([X] to-ljt)";
+
+
+command crochet-compiler to-expanded-codec: (T is t-record) do
+  let Segments = T qualified-name segments map: (self to-text: _);
+  "(#t-record name: [self to-list: Segments] tag: [T tag to-text] tuple: [self to-codec: T values])";
+end
+command crochet-compiler to-expanded-codec: (T is t-choice) do
+  let Segments = T qualified-name segments map: (self to-text: _);
+  let Variants = T variants map: (self to-codec: _);
+  "(#t-choice name: [self to-list: Segments] tag: [T tag to-text] variants: [self to-list: Variants])";
+end
+command crochet-compiler to-expanded-codec: (T is t-variant) do
+  let Segments = T qualified-name segments map: (self to-text: _);
+  "(#t-variant name: [self to-list: Segments] tag: [T variant-tag to-text] tuple: [self to-codec: T values])";
+end
+
+command crochet-compiler type-params: (Xs is list) do
+  condition
+    when Xs is-empty => "";
+    otherwise => "([#text join: Xs with: ", "])";
+  end
+end
+
+command crochet-compiler generate do
+  let Root = self to-id: self.prefix;
+  let Types = self.vm all-types map: (self generate: _ root: Root);
+
+  "% crochet
+// This file was generated from a LJT schema.
+
+open crochet.language.ljt;
+open crochet.data.collection;
+
+abstract [Root];
+
+command #[Root] encode: (X is [Root]) =
+  #ljt-vm make encode: X to-ljt;
+
+command #[Root] decode: (X is byte-array) with: T =
+  #ljt-vm make decode: X with: T codec;
+
+[#text join: Types with: "\n\n"]
+  ";
+end
+
+command crochet-compiler generate: (T is t-record) root: Root do
+  let Name = self to-prefixed-id: T name;
+  let Fields = T values fields zip: T values types with: { Name, Type in [name -> Name, codec -> Type] };
+  let Type-params = Fields map: { F in "global [self to-id: F.name] is [self to-type: F.codec]" };
+  let Make-params = Fields map: { F in "[self to-keyword: F.name] [self to-variable: F.name]" };
+  let Field-names = Fields map: { F in self to-variable: F.name };
+  let Make-prefix = condition
+                      when Make-params is-empty => "make";
+                      otherwise => "";
+                    end;
+  let Projections = Fields map: { F in self box: "self.[self to-id: F.name]" with: F.codec };
+
+  "
+type [Name][self type-params: Type-params] is [Root];
+
+command #[Name] tag = [T tag to-text];
+
+command #[Name] [Make-prefix][#text join: Make-params with: " "] do
+  new [Name]([#text join: Field-names with: ", "]);
+end
+
+command #[Name] codec =
+  [self to-expanded-codec: T];
+
+command [Name] to-ljt =
+  #[Name] codec make: [self to-list: Projections];
+  "
+end
+
+command crochet-compiler generate: (T is t-choice) root: Root do
+  let Name = self to-prefixed-id: T name;
+  let Variants = T variants map: (self generate: _ root: Name);
+  
+
+  "
+abstract [Name] is [Root];
+
+command #[Name] tag = [T tag to-text];
+
+command #[Name] codec =
+  [self to-expanded-codec: T];
+
+[#text join: (Variants map: { X in X.code }) with: "\n\n"]
+  "
+end
+
+command crochet-compiler generate: (T is t-variant) root: Root do
+  let Name = self to-prefixed-id: T base-name prefix: Root;
+  let Fields = T values fields zip: T values types with: { Name, Type in [name -> Name, codec -> Type] };
+  let Type-params = Fields map: { F in "global [self to-id: F.name] is [self to-type: F.codec]" };
+  let Make-params = Fields map: { F in "[self to-keyword: F.name] [self to-variable: F.name]" };
+  let Field-names = Fields map: { F in self to-variable: F.name };
+  let Make-prefix = condition
+                      when Make-params is-empty => "make";
+                      otherwise => "";
+                    end;
+  let Projections = Fields map: { F in self box: "self.[self to-id: F.name]" with: F.codec };
+
+  [
+    name -> Name,
+    tag -> T variant-tag,
+    code -> "
+type [Name][self type-params: Type-params] is [Root];
+
+command #[Name] tag = [T variant-tag to-text];
+
+command #[Name] [Make-prefix][#text join: Make-params with: " "] do
+  new [Name]([#text join: Field-names with: ", "]);
+end
+
+command #[Name] codec =
+  [self to-expanded-codec: T];
+
+command [Name] to-ljt =
+  #[Root] codec tag: [T variant-tag to-text] make: [self to-list: Projections];
+
+command [Name] to-variant-ljt =
+  #[Name] codec make: [self to-list: Projections];
+  "
+  ];
+end
