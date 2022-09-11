@@ -120,10 +120,10 @@ command crochet-compiler box: X with: (T is t-lazy) = self box: X with: T materi
 command crochet-compiler box: X with: (T is t-array) =
   "(#t-array item: ([self to-codec: T item]) | make: (([X]) map: { A in [self box: "A" with: T item] }))";
 command crochet-compiler box: X with: (T is t-map) =
-  "(do
+  "{
     let ME = ([X]) entries map: { ME in #association key: ([self box: "ME key" with: T key]) value: ([self box: "ME value" with: T value]) };
-    (#t-map key: ([self to-codec: T item]) value: ([self to-codec: T value]) | make: (#equality-map from: ME));
-   end)";
+    (#t-map key: ([self to-codec: T key]) value: ([self to-codec: T value]) | make: (#equality-map from: ME));
+   }()";
 command crochet-compiler box: X with: (T is t-optional) =
   "(#t-optional item: ([self to-codec: T item]) | make: ([X] | map: { A in [self box: "A" with: T item] }))";
 command crochet-compiler box: X with: (T is t-record) = "([X] to-ljt)";
