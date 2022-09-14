@@ -1,0 +1,247 @@
+% crochet
+
+// Keys and Values must implement equality!
+// Entries are retrieved in insertion order
+type equality-map(pairs is list<association<Key, Value>>);
+
+// -- Constructors
+command #equality-map from: (Pairs is list<association<Key, Value>>) do
+  Pairs fold-from: #equality-map empty
+        with: { Map, Pair in Map at: Pair key put: Pair value };
+test
+  assert (#equality-map from: [#association key: 1 value: true, #association key: 2 value: false])
+    === (#equality-map empty | at: 1 put: true | at: 2 put: false);
+  assert (#equality-map from: []) === #equality-map empty;
+end
+
+command #equality-map from: (Map is map) =
+  #equality-map from: Map entries;
+
+command #equality-map empty =
+  new equality-map([]);
+
+// -- Views
+command equality-map keys =
+  self.pairs map: (_ key)
+test
+  assert (#equality-map from: [#association key: 2 value: 1, #association key: 1 value: true]) keys
+    === [2, 1];
+end
+
+command equality-map values =
+  self.pairs map: (_ value)
+test
+  assert (#equality-map from: [#association key: 2 value: 1, #association key: 1 value: true] | values)
+    === [1, true];
+end
+
+command equality-map entries =
+  self.pairs
+test
+  assert (#equality-map from: [#association key: 2 value: 1, #association key: 1 value: true] | entries)
+    === [
+      #association key: 2 value: 1,
+      #association key: 1 value: true,
+    ];
+end
+
+// -- Trait implementations
+implement container for equality-map;
+
+command equality-map contains: (Value has equality) =
+  self values some: (_ === Value)
+test
+  let M = #equality-map from: [#association key: 1 value: (#result ok: 2)];
+  assert M contains: (#result ok: 2);
+  assert not (M contains: (#result ok: 1));
+end
+
+
+implement countable-container for equality-map;
+
+command equality-map count =
+  self.pairs count
+test
+  assert #equality-map empty count === 0;
+  assert (#equality-map empty at: 1 put: 1 | count) === 1;
+  assert (#equality-map empty at: 1 put: true | at: 2 put: true | count) === 2;
+  assert (#equality-map empty at: 1 put: true | at: 1 put: false | count) === 1;
+end
+
+
+implement mapped-container for equality-map;
+
+command equality-map at: (Key has equality)
+requires key-exists :: self contains-key: Key
+do
+  self entries find-first: { Pair in Pair key === Key }
+    | value-or-panic: "internal: key not found"
+    | value;
+test
+  assert (#equality-map empty | at: 1 put: 2 | at: 1) === 2;
+  assert (#equality-map empty | at: 1 put: 2 | at: 3 put: 4 | at: 3) === 4;
+end
+
+command equality-map contains-key: (Key has equality) do
+  self entries some: { Pair in Pair key === Key };
+test
+  assert not (#equality-map empty contains-key: 1);
+  assert (#equality-map empty | at: 1 put: 2 | contains-key: 1);
+  assert (#equality-map empty | at: 1 put: 2 | at: 3 put: 4 | contains-key: 3);
+  assert not (#equality-map empty | at: 1 put: 2 | at: 3 put: 4 | contains-key: 5);
+end
+
+
+implement mergeable-mapped-container for equality-map;
+
+command equality-map merge: (That is equality-map) do
+  That entries fold-from: self
+               with: { Map, Entry in Map at: Entry key put: Entry value };
+test
+  let M1 = #equality-map empty at: 1 put: true | at: 2 put: false;
+  let M2 = #equality-map empty at: 3 put: 0;
+  
+  assert (#equality-map empty merge: M1) === M1;
+  assert (M1 merge: #equality-map empty) === M1;
+  assert (M1 merge: M1) === M1;
+  assert (M1 merge: M2) === (M1 at: 3 put: 0);
+end
+
+
+implement modifiable-mapped-container for equality-map;
+
+command equality-map at: (Key has equality) put: (Value has equality) do
+  let Inserted = #cell with-value: false;
+  let Entries = self entries map: { Entry in
+    condition
+      when Entry key === Key do
+        Inserted <- true;
+        #association key: Key value: Value;
+      end
+
+      otherwise => Entry;
+    end
+  };
+
+  condition
+    when not (Inserted value) =>
+      new equality-map(Entries append: (#association key: Key value: Value));
+
+    otherwise =>
+      new equality-map(Entries);
+  end
+test
+  assert (#equality-map empty | at: 1 put: 2 | entries) ===
+    [#association key: 1 value: 2];
+    
+  assert (#equality-map empty | at: 1 put: 2 | at: 2 put: 3 | entries)
+    === [
+      #association key: 1 value: 2,
+      #association key: 2 value: 3,
+    ];
+
+  assert (#equality-map empty | at: 1 put: 2 | at: 1 put: 3 | at: -1 put: 0 | at: 1 put: 4 | entries)
+    === [
+      #association key: 1 value: 4,
+      #association key: -1 value: 0,
+    ];
+end
+
+command equality-map remove-at: (Key has total-ordering) do
+  let Entries = self entries remove-if: { Pair in Pair key === Key };
+  new equality-map(Entries);
+test
+  assert (#equality-map empty | remove-at: 1 | entries) === [];
+  assert (#equality-map empty | at: 1 put: 2 | remove-at: 1 | entries) === [];
+  assert (#equality-map empty | at: 0 put: -1 | at: 1 put: 2 | at: 3 put: 4 | remove-at: 1 | entries)
+    === [
+      #association key: 0 value: -1,
+      #association key: 3 value: 4
+    ];
+end
+
+
+implement chainable-collection for equality-map;
+
+command equality-map flat-map: (Fun is (association<K1, V1> -> equality-map<K2, V2>)) -> equality-map<K2, V2> do
+  self entries fold-from: #equality-map empty with: { Map, Entry in
+    Map merge: Fun(Entry);
+  };
+test
+  let M = #equality-map empty | at: 1 put: 2 | at: 3 put: 4;
+  let F = { X in #equality-map empty | at: X key put: X value | at: X value put: X key };
+  
+  assert (#equality-map from: [] | flat-map: F | entries) === [];
+
+  assert (M flat-map: F | entries)
+    === [
+      #association key: 1 value: 2,
+      #association key: 2 value: 1,
+      #association key: 3 value: 4,
+      #association key: 4 value: 3,
+    ];
+end
+
+
+implement filterable-collection for equality-map;
+
+command equality-map keep-if: (Predicate is (association<K, V> -> boolean)) -> equality-map<K, V> do
+  new equality-map(self entries keep-if: Predicate);
+test
+  let M = #equality-map empty | at: 1 put: 2 | at: 2 put: 3 | at: 3 put: 4;
+  assert (#equality-map empty keep-if: { X in X key > 1} | entries) === [];
+  assert (M keep-if: { X in X key > 1 } | entries) === [
+    #association key: 2 value: 3,
+    #association key: 3 value: 4,
+  ];
+end
+
+
+implement foldable-collection for equality-map;
+
+command equality-map fold-from: Initial with: (Combine is ((A, association<K, V>) -> A)) do
+  self entries fold-from: Initial with: Combine;
+test
+  let F = { A, X in A + X value };
+  assert (#equality-map empty fold-from: 0 with: F) === 0;
+  assert (#equality-map empty | at: 0 put: 1 | fold-from: 0 with: F) === (0 + 1);
+  assert (#equality-map empty | at: 0 put: 1 | at: 1 put: 2 | at: 2 put: 3 | fold-from: 0 with: F) === (0 + 1 + 2 + 3);
+end
+
+
+implement mappable-collection for equality-map;
+
+command equality-map map: (Fun is (association<K, V> -> V2)) do
+  new equality-map(self entries map: { Pair in
+    let Value = Fun(Pair);
+    assert Value has equality;
+    #association key: Pair key value: Value;
+  });
+test
+  let F = { X in X value + 1 };
+  assert (#equality-map empty map: F | entries) === [];
+  assert (#equality-map empty | at: 0 put: 1 | at: 1 put: 2 | at: 2 put: 3 | map: F | entries) === [
+    #association key: 0 value: 2,
+    #association key: 1 value: 3,
+    #association key: 2 value: 4,
+  ];
+end
+
+
+implement equality for equality-map;
+
+command (X is equality-map<K, V>) === (Y is equality-map<K, V>) =
+  (X count === Y count)
+    | and-also: {
+        X entries all: { Pair in
+          condition
+            when Y contains-key: Pair key => (Y at: Pair key) === Pair value;
+            otherwise => false;
+          end
+        };
+      };
+
+
+// -- Conversions
+command map as equality-map = #equality-map from: self;
+command list as equality-map = #equality-map from: self;

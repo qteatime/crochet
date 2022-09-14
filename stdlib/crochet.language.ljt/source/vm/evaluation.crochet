@@ -1,0 +1,107 @@
+% crochet
+
+effect deferred-evaluation with
+  defer(codec is thunk); // -> ljt-type
+  resolve(); // -> nothing
+end
+
+handler deferred-evaluation do
+  let Deferred = #cell with-value: [];
+with
+  on deferred-evaluation.defer(T) do
+    let Type = new t-lazy(T);
+    Deferred <- Deferred value append: Type;
+    continue with Type;
+  end
+
+  on deferred-evaluation.resolve() do
+    for Type in Deferred value do
+      Type materialise;
+    end
+  end
+end
+
+
+command ljt-vm load-module: (Module is module) do
+  let Env = self.globals clone;
+  let Namespace = #qualified-name empty;
+  handle 
+    for Declaration in Module.declarations do
+      self load-declaration: Declaration namespace: Namespace env: Env;
+    end
+    perform deferred-evaluation.resolve();
+  with
+    use deferred-evaluation;
+  end
+  self;
+end
+
+command ljt-vm load-declaration: (Declaration is declaration--type) namespace: Ns env: Env do
+  let Fields = Declaration.fields map: (self evaluate-field: _ env: Env);
+  let Type = new t-record(
+    name -> Ns append: Declaration.name.name,
+    tag -> self next-tag,
+    values -> new t-tuple(
+      fields -> Fields map: { X in X.name },
+      types -> Fields map: { X in X.field-type }
+    )
+  );
+  Env at: Declaration.name.name put: Type;
+  self add-type: Type;
+  Type;
+end
+
+command ljt-vm load-variant: Variant namespace: Ns env: Env do
+  let Declaration = Variant value;
+  let Fields = Declaration.fields map: (self evaluate-field: _ env: Env);
+  let Type = new t-variant(
+    name -> Ns append: Declaration.name.name,
+    variant-tag -> Variant index - 1,
+    values -> new t-tuple(
+      fields -> Fields map: { X in X.name },
+      types -> Fields map: { X in X.field-type }
+    )
+  );
+  Env at: Declaration.name.name put: Type;
+  Type;
+end
+
+command ljt-vm load-declaration: (Declaration is declaration--union) namespace: Parent-ns env: Parent-env do
+  let Env = Parent-env clone;
+  let Ns = Parent-ns append: Declaration.name.name;
+  let Tag = self next-tag;
+  let Variants = Declaration.declarations enumerate map: (self load-variant: _ namespace: Ns env: Env);
+  let Type = new t-choice(
+    name -> Ns,
+    tag -> Tag,
+    variants -> Variants
+  );
+  Parent-env at: Declaration.name.name put: Type;
+  self add-type: Type;
+  Type;
+end
+
+command ljt-vm evaluate-field: (Field is field) env: Env do
+  let Type = self evaluate-type-expr: Field.typ env: Env;
+  [
+    name -> Field.name.name,
+    field-type -> Type,
+  ];
+end
+
+command ljt-vm evaluate-type-expr: (T is type-expr--named) env: Env =
+  perform deferred-evaluation.defer(lazy Env lookup: T.name.name);
+
+command ljt-vm evaluate-type-expr: (T is type-expr--list) env: Env =
+  new t-array(self evaluate-type-expr: T.typ env: Env);
+
+command ljt-vm evaluate-type-expr: (T is type-expr--map) env: Env =
+  new t-map(
+    key -> self evaluate-type-expr: T.key env: Env,
+    value -> self evaluate-type-expr: T.value env: Env,
+  );
+
+command ljt-vm evaluate-type-expr: (T is type-expr--optional) env: Env =
+  new t-optional(
+    item -> self evaluate-type-expr: T.typ env: Env
+  );

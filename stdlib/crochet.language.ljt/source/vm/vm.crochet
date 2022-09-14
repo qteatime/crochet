@@ -1,0 +1,45 @@
+% crochet
+
+type ljt-vm(
+  globals is ljt-env,
+  types is cell<map<text, ljt-type>>,
+  tag-map is cell<map<integer, ljt-type>>,
+  next-tag is cell<integer>,
+);
+
+command #ljt-vm make do
+  new ljt-vm(
+    globals -> force ljt-globals,
+    types -> #cell with-value: #map empty,
+    tag-map -> #cell with-value: #map empty,
+    next-tag -> #cell with-value: 0,
+  );
+end
+
+command ljt-vm next-tag do
+  let Tag = self.next-tag value;
+  self.next-tag <- Tag + 1;
+  Tag;
+end
+
+command ljt-vm all-types do
+  self.types value values;
+end
+
+command ljt-vm lookup-type: (Name is text) =
+  self.types value at: Name;
+
+command ljt-vm lookup-tag: (Tag is integer) =
+  self.types value at: Tag;
+
+command ljt-vm add-type: (Type is t-tagged) do
+  self.types value contains-key: Type name
+    | implies: {#ljt-error raise: new ljt-error--duplicated-type(Type, self)};
+
+  self.tag-map value contains-key: Type tag
+    | implies: {#ljt-error raise: new ljt-error--duplicated-tag(Type tag, Type, self)};
+
+  self.types <- self.types value at: Type name put: Type;
+  self.tag-map <- self.tag-map value at: Type tag put: Type;
+  self;
+end

@@ -1,0 +1,39 @@
+% crochet
+
+open crochet.wrapper.node.file-system;
+open crochet.wrapper.node.io;
+open crochet.wrapper.node.os;
+open crochet.language.ljt;
+
+local define compiler-table = lazy (#map from: [
+  "ts" -> { Vm, _Opts in #ts-compiler from-vm: Vm },
+  "crochet" -> { Vm, Opts in #crochet-compiler from-vm: Vm prefix: Opts.prefix }
+]);
+
+command main: Args do
+  Args count < 2
+    | implies: {
+        terminal write-line: "Usage: crochet ljtc -- (ts|crochet) <file> {prefix}";
+        process exit: 1;
+      };
+
+  let Compiler-key = Args first;
+  let File = Args second;
+  let Prefix = condition
+                 when Args count < 3 => "ljt-schema";
+                 otherwise => Args third;
+               end;
+  let Compiler = (force compiler-table) at: Compiler-key;
+
+  let Schema = file-system file: (#path from-text: File)
+                |> _ read-text
+                |> untaint make-trusted: _;
+
+
+  let Ast = ljt parse: Schema;
+  let Vm = #ljt-vm make load-module: Ast;
+  let Code = Compiler(Vm, [prefix -> Prefix]) generate;
+
+  terminal write-line: Code;
+  nothing;
+end

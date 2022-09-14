@@ -1,0 +1,25 @@
+% crochet
+
+open crochet.testing.fuzzy;
+open crochet.debug;
+
+test "decode(encode(V)) === V" do
+  let State = #generator-state with-random-seed | resize: 20;
+  let Params = #fuzzy-parameters defaults | generator: State | maximum-successes: 100;
+  let Codec = #ljt-arbitrary any-codec then: { T in
+    #arbitrary record: [
+      codec -> #arbitrary constant: T,
+      value -> (T as arbitrary)
+    ];
+  };
+  fuzzy property: "decode(encode(V)) === V"
+    | given: [Codec, #arbitrary constant: State]
+    | then: { Codec, State in
+        let Type = Codec.codec;
+        let Value = Codec.value;
+        let Encoded = #ljt-vm make encode: Value;
+        let Decoded = #ljt-vm make decode: Encoded with: Type;
+        Decoded === Value;
+      }
+    | check-with-parameters: Params;
+end

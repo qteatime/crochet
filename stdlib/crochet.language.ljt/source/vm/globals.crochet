@@ -1,0 +1,17 @@
+% crochet
+
+define ljt-globals = lazy (
+  #ljt-env empty
+    | at: "Boolean" put: t-bool
+    | at: "Int8" put: t-int8
+    | at: "Int16" put: t-int16
+    | at: "Int32" put: t-int32
+    | at: "Uint8" put: t-uint8
+    | at: "Uint16" put: t-uint16
+    | at: "Uint32" put: t-uint32
+    | at: "Integer" put: t-integer
+    | at: "Float32" put: t-float32
+    | at: "Float64" put: t-float64
+    | at: "Text" put: t-text
+    | at: "Raw-bytes" put: t-bytes
+);

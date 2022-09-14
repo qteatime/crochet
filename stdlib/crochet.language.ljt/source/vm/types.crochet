@@ -1,0 +1,278 @@
+% crochet
+
+open crochet.data.collection;
+
+abstract ljt-type;
+singleton t-bool is ljt-type;
+singleton t-int8 is ljt-type;
+singleton t-int16 is ljt-type;
+singleton t-int32 is ljt-type;
+singleton t-uint8 is ljt-type;
+singleton t-uint16 is ljt-type;
+singleton t-uint32 is ljt-type;
+singleton t-integer is ljt-type;
+singleton t-float32 is ljt-type;
+singleton t-float64 is ljt-type;
+singleton t-text is ljt-type;
+singleton t-bytes is ljt-type;
+
+type t-lazy(thunk is thunk) is ljt-type;
+type t-array(global item is ljt-type) is ljt-type;
+type t-map(global key is ljt-type, global value is ljt-type) is ljt-type;
+type t-tuple(global fields is list<text>, global types is list<ljt-type>) is ljt-type;
+
+abstract t-tagged is ljt-type;
+type t-record(
+  name is qualified-name,
+  global tag is integer,
+  global values is t-tuple,
+) is t-tagged;
+
+type t-choice(
+  name is qualified-name,
+  global tag is integer,
+  global variants is list<t-variant>
+) is t-tagged;
+
+type t-variant(
+  name is qualified-name,
+  global variant-tag is integer,
+  global values is t-tuple,
+) is ljt-type;
+
+type t-optional(global item is ljt-type) is ljt-type;
+
+
+command t-tagged name = self.name to-text;
+command t-tagged qualified-name = self.name;
+command t-tagged base-name = self qualified-name base-name;
+
+command t-variant name = self.name to-text;
+command t-variant qualified-name = self.name;
+command t-variant base-name = self qualified-name base-name;
+
+command t-lazy materialise = force self.thunk;
+
+
+// -- Equality
+implement equality for ljt-type;
+command (X is ljt-type) === (Y is ljt-type) = X =:= Y;
+
+command (X is t-lazy) === (Y is ljt-type) =
+  X materialise === Y;
+
+command (X is ljt-type) === (Y is t-lazy) =
+  X === Y materialise;
+
+command (X is t-array) === (Y is t-array) =
+  X.item === Y.item;
+
+command (X is t-map) === (Y is t-map) =
+  (X.key === Y.key) and-also: {X.value === Y.value};
+
+command (X is t-optional) === (Y is t-optional) =
+  X.item === Y.item;
+
+command (X is t-tuple) === (Y is t-tuple) =
+  X fields count === Y fields count
+    | and-also: { X types === Y types };
+
+command (X is t-record) === (Y is t-record) =
+  (X tag === Y tag)
+    | and-also: { X values === Y values };
+
+command (X is t-choice) === (Y is t-choice) =
+  (X.tag === Y.tag)
+    | and-also: { X variants === Y variants };
+
+command (X is t-variant) === (Y is t-variant) =
+  X variant-tag === Y variant-tag
+    | and-also: { X values === Y values };
+
+
+// -- Representation
+command t-bool text-representation = "Boolean";
+command t-int8 text-representation = "Int8";
+command t-int16 text-representation = "Int16";
+command t-int32 text-representation = "Int32";
+command t-uint8 text-representation = "Uint8";
+command t-uint16 text-representation = "Uint16";
+command t-uint32 text-representation = "Uint32";
+command t-integer text-representation = "Integer";
+command t-float32 text-representation = "Float32";
+command t-float64 text-representation = "Float64";
+command t-text text-representation = "Text";
+command t-bytes text-representation = "Raw-bytes";
+
+command t-lazy text-representation =
+  (force self.thunk) text-representation;
+
+command t-array text-representation =
+  "[self.item text-representation]\[\]" flatten-into-plain-text;
+
+command t-map text-representation = 
+  "([self.key text-representation] -> [self.value text-representation])" flatten-into-plain-text;
+
+command t-optional text-representation =
+  "[self.item text-representation]?" flatten-into-plain-text;
+
+command t-tuple text-representation do
+  let Pairs = self fields zip: self types with: { F, T in "[F]: [T text-representation]" };
+  "{[#text join: Pairs with: "; "]}";
+end
+
+command t-choice text-representation do
+  let Types = self variants map: (_ text-representation);
+  "union [self name]([self tag to-text]) {[#text join: Types with: "; "]}" flatten-into-plain-text;
+end
+
+command t-record text-representation do
+  "type [self name]([self tag to-text])" flatten-into-plain-text;
+end
+
+command t-variant text-representation =
+  "[self base-name]([self variant-tag to-text])";
+
+
+command ljt-type short-representation =
+  self text-representation;
+
+command t-lazy short-representation =
+  (force self.thunk) short-representation;
+
+command t-array short-representation =
+  "[self.item short-representation]\[\]" flatten-into-plain-text;
+
+command t-map short-representation = 
+  "([self.key short-representation] -> [self.value short-representation])" flatten-into-plain-text;
+
+command t-tuple short-representation do
+  let Pairs = self.fields zip: self.types with: { Field, Type in
+    "[Field]: [Type short-representation];";
+  };
+  "{[#text join: Pairs with: " "]}" flatten-into-plain-text;
+end
+
+command t-optional short-representation =
+  "[self.item short-representation]?" flatten-into-plain-text;
+
+
+
+// -- Default values
+command t-bool default-value = new v-bool(false);
+command t-int8 default-value = new v-int8(0);
+command t-int16 default-value = new v-int16(0);
+command t-int32 default-value = new v-int32(0);
+command t-uint8 default-value = new v-uint8(0);
+command t-uint16 default-value = new v-uint16(0);
+command t-uint32 default-value = new v-uint32(0);
+command t-integer default-value = new v-integer(0);
+command t-float32 default-value = new v-float32(0.0);
+command t-float64 default-value = new v-float64(0.0);
+command t-text default-value = new v-text("");
+command t-bytes default-value = new v-bytes(#byte-array allocate: 0);
+
+command t-lazy default-value = (force self.thunk) default-value;
+command t-array default-value = new v-array(self, []);
+command t-map default-value = new v-map(self, #equality-map empty);
+command t-tuple default-value = new v-tuple(self, self.types map: (_ default-value));
+command t-optional default-value = new v-none(self);
+
+command t-record default-value = new v-record(self, self values default-value);
+command t-choice default-value = new v-choice(self, self variants first default-value);
+command t-variant default-value = new v-variant(self, self values default-value);
+
+// -- Constructors
+command t-bool make: (X is boolean) =
+  new v-bool(X);
+
+command t-int8 make: (X is integer)
+requires 
+  in-bounds :: (X >= -128) and (X <= 127)
+= new v-int8(X);
+
+command t-int16 make: (X is integer)
+requires
+  in-bounds :: (X >= -32_768) and (X <= 32_767)
+= new v-int16(X);
+
+command t-int32 make: (X is integer)
+requires
+  in-bounds :: (X >= -2_147_483_648) and (X <= 2_147_483_647)
+= new v-int32(X);
+
+command t-uint8 make: (X is integer)
+requires
+  in-bounds :: (X >= 0) and (X <= 255)
+= new v-uint8(X);
+
+command t-uint16 make: (X is integer)
+requires
+  in-bounds :: (X >= 0) and (X <= 65_535)
+= new v-uint16(X);
+
+command t-uint32 make: (X is integer)
+requires
+  in-bounds :: (X >= 0) and (X <= 4_294_967_295)
+= new v-uint32(X);
+
+// FIXME: check bounds
+command t-float32 make: (X is float-64bit) =
+  new v-float32(X);
+
+command t-float64 make: (X is float-64bit) =
+  new v-float64(X);
+
+command t-integer make: (X is integer) =
+  new v-integer(X);
+
+command t-text make: (X is text) =
+  new v-text(X);
+
+command t-bytes make: (X is byte-array) =
+  new v-bytes(X);
+
+command t-lazy make: X =
+  self materialise make: X;
+
+// FIXME: type check
+command t-array make: (Xs is list) =
+  new v-array(self, Xs);
+
+command t-map make: (M is equality-map) =
+  new v-map(self, M);
+
+command t-tuple make: (Values is list) =
+  new v-tuple(self, Values);
+
+command t-optional make: (Value is error) = 
+  new v-none(self);
+
+command t-optional make: (Value is ok) =
+  new v-just(self, Value value);
+
+command t-record make: (Values is list) =
+  new v-record(self, self values make: Values);
+
+command t-choice make: (Value is v-variant) =
+  new v-choice(self, Value);
+
+command t-choice tag: (Tag is integer) make: (Values is list)
+requires
+  in-bounds :: (Tag >= 0) and (Tag < self variants count)
+=
+  new v-choice(self, self variants at: (Tag + 1) | make: Values);
+
+command t-variant make: (Values is list) =
+  new v-variant(self, self values make: Values);
+
+
+// -- Constructing types themselves
+command #t-array item: T = new t-array(T);
+command #t-map key: K value: V = new t-map(K, V);
+command #t-optional item: T = new t-optional(T);
+command #t-tuple fields: F types: T = new t-tuple(F, T);
+command #t-lazy thunk: T = new t-lazy(T);
+command #t-record name: N tag: T tuple: V = new t-record(new qualified-name(N), T, V);
+command #t-choice name: N tag: T variants: V = new t-choice(new qualified-name(N), T, V);
+command #t-variant name: N tag: T tuple: V = new t-variant(new qualified-name(N), T, V);

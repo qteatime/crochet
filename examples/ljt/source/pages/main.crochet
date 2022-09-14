@@ -1,5 +1,6 @@
 % crochet
 
+open crochet.language.ljt;
 open crochet.concurrency;
 open purr.ide.ui;
 open crochet.debug;
@@ -18,12 +19,12 @@ type ljt-file(name is text, decoder is ljt-type, content is byte-array);
 implement purr-ui-page for pages--main;
 command pages--main render-page do
   let Code = #observable-cell with-value: "";
-  let Ast = Code map: (ljt-grammar parse: _);
+  let Ast = Code map: (ljt try-parse: _);
   let Vm = Ast map: { Maybe-ast in
     condition
       when Maybe-ast is error => Maybe-ast;
       when Maybe-ast is ok =>
-        #result ok: (#ljt-vm make | load-module: Maybe-ast value);
+        ljt try: { #ljt-vm make | load-module: Maybe-ast value };
     end
   };
   let App = new ljt-app(

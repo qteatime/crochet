@@ -1,0 +1,107 @@
+% crochet
+
+abstract ljt-error;
+
+command #ljt-error raise: (Error is ljt-error) =
+  perform ljt-error.raise(Error);
+
+
+effect ljt-error with
+  raise(error is ljt-error); // -> any
+end
+
+handler ljt-fail-fast with
+  on ljt-error.raise(Error) do
+    panic message: Error to-panic-message tag: "ljt-error" data: [error -> Error];
+  end
+end
+
+default handler ljt-fail-fast;
+
+
+type ljt-error--syntax-error(
+  global input is text,
+  global message is text,
+) is ljt-error;
+
+command ljt-error--syntax-error to-panic-message =
+  "Could not parse the LJT schema:\n\n[self message]";
+
+
+type ljt-error--duplicated-binding(
+  global name is text,
+  global value is any,
+  environment is ljt-env
+) is ljt-error;
+
+command ljt-error--duplicated-binding to-panic-message =
+  "Binding [self.name] is already defined.";
+
+
+type ljt-error--no-binding(
+  global name is text,
+  environment is ljt-env
+) is ljt-error;
+
+command ljt-error--no-binding to-panic-message =
+  "No binding [self.name] found.";
+
+
+type ljt-error--duplicated-type(
+  global new-type is t-tagged,
+  vm is ljt-vm
+) is ljt-error;
+
+command ljt-error--duplicated-type to-panic-message =
+  "Type [self.new-type short-representation] is already defined.";
+
+
+type ljt-error--duplicated-tag(
+  global tag is integer,
+  global offending-type is t-tagged,
+  vm is ljt-vm,
+) is ljt-error;
+
+command ljt-error--duplicated-tag to-panic-message do
+  let Type = self.vm.tag-map value at: self.tag;
+  "Type [self.offending-type short-representation] has tag [self.tag to-text], but that's already taken by type [Type short-representation]";
+end
+
+
+type ljt-error--decoding-failed(
+  global decoder is ljt-type,
+  global decoder-view is binary-decoder,
+  global reason is decoding-failed-reason,
+  vm is ljt-vm,
+) is ljt-error;
+
+command ljt-error--decoding-failed to-panic-message =
+  "Failed to decode [self.decoder short-representation] at offset [self.decoder-view offset to-text]: [self.reason to-panic-message]";
+
+
+abstract decoding-failed-reason;
+
+type decoding-failed-reason--unexpected-tag(
+  global tag is integer,
+  global expected-tag is integer,
+) is decoding-failed-reason;
+
+command decoding-failed-reason--unexpected-tag to-panic-message =
+  "Expected tag [self.expected-tag to-text], but got [self.tag to-text]";
+
+
+singleton decoding-failed-reason--couldnt-read-bytes is decoding-failed-reason;
+
+command decoding-failed-reason--couldnt-read-bytes to-panic-message =
+  "Could not read the necessary bytes from the decoder view.";
+
+
+type decoding-failed-reason--not-in-union(
+  global tag is integer,
+  global types is list<ljt-type>,
+) is decoding-failed-reason;
+
+command decoding-failed-reason--not-in-union to-panic-message do
+  let Valid-tags = self.types map: (_ short-representation);
+  "The tag [self.tag to-text] is not accepted by the union { [#text join: Valid-tags with: ", "] }";
+end

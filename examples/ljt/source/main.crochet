@@ -1,9 +1,9 @@
 % crochet
   
+open crochet.language.ljt;
 open crochet.concurrency;
 open purr.ide.ui;
 
-singleton ljt;
 enum pages = main;
 
 

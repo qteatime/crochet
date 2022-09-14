@@ -1,0 +1,610 @@
+% crochet
+
+open crochet.random;
+
+type fuzzy-parameters(
+  generator is generator-state,  // State to start with
+  global maximum-successes is integer,  // Upper bound of tests to run
+  global maximum-skips is integer, // Upper bound on tests skipped
+);
+
+abstract fuzzy-result;
+type fuzzy-result-pass(
+  global parameters is fuzzy-parameters,
+  global property is fuzzy-property,
+  global passed is integer,
+  global skipped is integer,
+) is fuzzy-result;
+
+type fuzzy-result-failed(
+  global parameters is fuzzy-parameters,
+  global property is fuzzy-property,
+  global counter-example is list<any>,
+  global passed is integer,
+  global skipped is integer,
+) is fuzzy-result;
+
+type fuzzy-result-gave-up(
+  global parameters is fuzzy-parameters,
+  global property is fuzzy-property,
+  global passed is integer,
+  global skipped is integer,
+) is fuzzy-result;
+
+open crochet.debug;
+command fuzzy-result-pass report-to-transcript =
+  transcript tag: "fuzzy:OK"
+             write: "[self property name] passed [self passed to-text] tests (skipped [self skipped to-text])";
+
+command fuzzy-result-gave-up report-to-transcript =
+  transcript tag: "fuzzy:GAVE-UP"
+             write: "[self property name] exhausted after [self passed to-text] tests (skipped [self skipped to-text])";
+
+command fuzzy-result-failed report-to-transcript do
+  transcript tag: "fuzzy:ERROR"
+             write: "[self property name] failed after [self passed to-text] tests (skipped [self skipped to-text])";
+  transcript tag: "fuzzy:ERROR"
+             inspect: [
+               counter-example -> self counter-example,
+               seed -> self.parameters.generator.seed
+             ];
+end
+
+
+effect fuzzy-execution with
+  get-parameters(); // -> fuzzy-parameters
+end
+
+handler default-fuzzy-execution with
+  on fuzzy-execution.get-parameters() do
+    continue with new fuzzy-parameters(
+      generator -> #generator-state with-random-seed,
+      maximum-successes -> 100,
+      maximum-skips -> 20,
+    );
+  end
+end
+
+default handler default-fuzzy-execution;
+
+
+command #fuzzy-parameters defaults =
+  new fuzzy-parameters(
+    generator -> #generator-state with-random-seed,
+    maximum-successes -> 100,
+    maximum-skips -> 20,
+  );
+
+command fuzzy-parameters generator: (Gen is generator-state) =
+  new fuzzy-parameters(self with generator -> Gen);
+
+command fuzzy-parameters maximum-successes: (X is integer)
+requires non-negative :: X >= 0
+=
+  new fuzzy-parameters(self with maximum-successes -> X);
+
+command fuzzy-parameters maximum-skips: (X is integer)
+requires non-negative :: X >= 0
+=
+  new fuzzy-parameters(self with maximum-skips -> X);
+
+
+abstract arbitrary;
+type arbitrary-constant(global value is any) is arbitrary;
+singleton arbitrary-boolean is arbitrary;
+type arbitrary-integer(global minimum is integer, global maximum is integer) is arbitrary;
+type arbitrary-float-64bit(global minimum is float-64bit, global maximum is float-64bit) is arbitrary;
+type arbitrary-character-range(global from-codepoint is integer, global to-codepoint is integer) is arbitrary;
+type arbitrary-text(global characters is arbitrary) is arbitrary;
+type arbitrary-choice(global choices is list<arbitrary>) is arbitrary;
+type arbitrary-list(global item is arbitrary) is arbitrary;
+type arbitrary-fixed-list(global size is integer, global item is arbitrary) is arbitrary;
+type arbitrary-tuple(global items is list<arbitrary>) is arbitrary;
+type arbitrary-lazy(thunk is thunk<arbitrary>) is arbitrary;
+type arbitrary-record(global record is map<text, arbitrary>) is arbitrary;
+type arbitrary-unshaped-record(global item is arbitrary) is arbitrary;
+type arbitrary-transform(global instance is arbitrary, global transformation is (A -> B)) is arbitrary;
+type arbitrary-chain(global instance is arbitrary, global transformation is (A -> arbitrary)) is arbitrary;
+
+type generator-state(
+  global seed is integer,
+  global random is mutable-random,
+  global size is integer,
+  next-integer is cell<integer>,
+);
+
+command #generator-state with-seed: (Seed is integer) =
+  new generator-state(
+    seed -> Seed,
+    random -> #random with-seed: Seed | mutable,
+    size -> 20,
+    next-integer -> #cell with-value: 1,
+  );
+
+command #generator-state with-random-seed =
+  #generator-state with-seed: (#random with-random-seed | mutable | between: 0 and: (2**32));
+
+command generator-state unique-integer do
+  let Value = self.next-integer value;
+  self.next-integer <- Value + 1;
+  Value;
+end
+
+command generator-state resize: (New-size is integer)
+requires
+  non-negative :: New-size >= 0
+do
+  new generator-state(self with size -> New-size);
+end
+
+command generator-state downsize =
+  self resize: (self size divided-by: 2);
+
+singleton fuzzy-trivial-filter;
+command fuzzy-trivial-filter apply: _ = true;
+
+type fuzzy-property(
+  global name is text,
+  global parameters is list<arbitrary>,
+  global pre-condition,
+  global body is function
+);
+
+command #fuzzy-property name: (Name is text) =
+  new fuzzy-property(
+    name -> Name,
+    parameters -> [],
+    pre-condition -> fuzzy-trivial-filter,
+    body -> {true}
+  );
+
+command fuzzy-property given: (Params is list<arbitrary>) =
+  new fuzzy-property(self with parameters -> Params map: (_ as arbitrary));
+
+command fuzzy-property if: (Predicate is function) =
+  new fuzzy-property(self with pre-condition -> Predicate);
+
+command fuzzy-property then: (Test is function) =
+  new fuzzy-property(self with body -> Test);
+
+command fuzzy-property check =
+  self check-with-parameters: (perform fuzzy-execution.get-parameters());
+
+command fuzzy-property check-with-parameters: Params do
+  let Result = self run-with-parameters: Params;
+  condition
+    when Result is fuzzy-result-pass => Result report-to-transcript;
+    otherwise do
+      panic message: "[self name] failed after [Result passed to-text] tests" tag: "fuzzy:error" data: Result;
+    end
+  end
+end
+
+command fuzzy-property run-with-parameters: Params do
+  let Gen = Params.generator;
+  let Go = { Passed, Skipped in
+    condition
+      when Skipped === Params maximum-skips => 
+        new fuzzy-result-gave-up(Params, self, Passed, Skipped);
+
+      when Passed === Params maximum-successes => 
+        new fuzzy-result-pass(Params, self, Passed, Skipped);
+
+      otherwise do
+        let Args = self.parameters map: (_ generate: Gen);
+        condition
+          when not (self.pre-condition apply: Args) =>
+            Go(Passed, Skipped + 1);
+
+          when self.body apply: Args =>
+            Go(Passed + 1, Skipped);
+
+          otherwise =>
+            new fuzzy-result-failed(Params, self, Args, Passed, Skipped);
+        end
+      end
+    end
+  };
+
+  Go(0, 0);
+end
+
+
+singleton fuzzy;
+
+command fuzzy generate: (Arbitrary has to-arbitrary) =
+  (Arbitrary as arbitrary) generate: #generator-state with-random-seed;
+
+command fuzzy property: (Name is text) =
+  #fuzzy-property name: Name;
+
+trait to-arbitrary with
+  command Self as arbitrary -> arbitrary;
+end
+
+implement to-arbitrary for arbitrary;
+command arbitrary as arbitrary =
+  self;
+
+implement to-arbitrary for #nothing;
+command #nothing as arbitrary =
+  new arbitrary-constant(nothing);
+
+implement to-arbitrary for #boolean;
+command #boolean as arbitrary =
+  arbitrary-boolean;
+
+implement to-arbitrary for #integer;
+command #integer as arbitrary = #arbitrary integer;
+
+implement to-arbitrary for #float-64bit;
+command #float-64bit as arbitrary = #arbitrary float-64bit;
+
+implement to-arbitrary for #text;
+command #text as arbitrary =
+  #arbitrary ascii-visible-text;
+
+implement to-arbitrary for thunk;
+command thunk as arbitrary =
+  new arbitrary-lazy(self);
+
+command #arbitrary choice: (Items is list<X has to-arbitrary>) =
+  new arbitrary-choice(Items map: (_ as arbitrary));
+
+command (A is arbitrary-choice) or (B is arbitrary-choice) =
+  new arbitrary-choice(A choices ++ B choices);
+
+command (A is arbitrary-choice) or (B is arbitrary) =
+  new arbitrary-choice(A choices append: B);
+
+command (A is arbitrary) or (B is arbitrary-choice) =
+  new arbitrary-choice(B choices prepend: A);
+
+command (A is arbitrary) or (B is arbitrary) =
+  new arbitrary-choice([A, B]);
+
+command #arbitrary constant: Value =
+  new arbitrary-constant(Value);
+
+command #arbitrary boolean =
+  arbitrary-boolean;
+
+// Numeric
+command #arbitrary unsigned-integer-8bit =
+  new arbitrary-integer(0, 255);
+
+command #arbitrary unsigned-integer-16bit =
+  new arbitrary-integer(0, (2**16) - 1);
+
+command #arbitrary unsigned-integer-32bit =
+  new arbitrary-integer(0, (2**32) - 1);
+
+command #arbitrary unsigned-integer-64bit =
+  new arbitrary-integer(0, (2**64) - 1);
+
+command #arbitrary integer-8bit do
+  let Mid = (2**8) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary integer-16bit do
+  let Mid = (2**16) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary integer-32bit do
+  let Mid = (2**32) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary integer-64bit do
+  let Mid = (2**64) divided-by: 2;
+  new arbitrary-integer(Mid negate, Mid - 1);
+end
+
+command #arbitrary positive-integer =
+  new arbitrary-integer(0, 2**128);
+
+command #arbitrary negative-integer =
+  new arbitrary-integer((2**128) negate, 0);
+
+command #arbitrary integer =
+  new arbitrary-integer((2**128) negate, 2**128);
+
+command #arbitrary float-64bit =
+  new arbitrary-float-64bit((2.0**52) negate, 2.0**52);
+
+command #arbitrary numeric =
+  #arbitrary integer
+    or #arbitrary float-64bit;
+
+// Text
+command #arbitrary ascii-letters =
+  new arbitrary-choice([
+    new arbitrary-character-range(65, 90), // A..Z
+    new arbitrary-character-range(97, 122), // a..z
+  ]);
+
+command #arbitrary ascii-digits =
+  new arbitrary-choice([
+    new arbitrary-character-range(48, 57), // 0..9
+  ]);
+
+command #arbitrary ascii-symbols =
+  new arbitrary-choice([
+    new arbitrary-character-range(33, 47), // ! .. /
+    new arbitrary-character-range(58, 64), // : .. @
+    new arbitrary-character-range(91, 96), // [ .. `
+    new arbitrary-character-range(123, 126), // { .. ~
+  ]);
+
+command #arbitrary ascii-visible-character =
+  #arbitrary ascii-digits
+    or #arbitrary ascii-letters
+    or #arbitrary ascii-symbols
+    or (#arbitrary constant: " ");
+
+command #arbitrary ascii-any-character =
+  new arbitrary-character-range(0, 127);
+
+command #arbitrary latin1-symbol =
+  new arbitrary-choice([
+    new arbitrary-character-range(161, 172), // ¡ .. ¬
+    new arbitrary-character-range(174, 191), // ® .. ¿
+    new arbitrary-constant("×"),
+    new arbitrary-constant("÷"),
+  ]);
+
+command #arbitrary latin1-letter =
+  new arbitrary-choice([
+    new arbitrary-character-range(192, 214), // À .. Ö
+    new arbitrary-character-range(216, 246), // Ø .. ö
+    new arbitrary-character-range(248, 255), // ø .. ÿ
+  ]);
+
+command #arbitrary latin1-visible-character =
+  #arbitrary ascii-visible-character
+    or #arbitrary latin1-symbol
+    or #arbitrary latin1-letter;
+
+command #arbitrary latin1-any-character =
+  new arbitrary-character-range(0, 255);
+
+command #arbitrary unicode-any-character =
+  new arbitrary-character-range(0, 0x10FFFF);
+
+command #arbitrary ascii-visible-text =
+  new arbitrary-text(#arbitrary ascii-visible-character);
+
+command #arbitrary latin1-visible-text =
+  new arbitrary-text(#arbitrary latin1-visible-character);
+
+command #arbitrary ascii-any-text =
+  new arbitrary-text(#arbitrary ascii-any-character);
+
+command #arbitrary latin1-any-text =
+  new arbitrary-text(#arbitrary latin1-any-character);
+
+command #arbitrary unicode-any-text =
+  new arbitrary-text(#arbitrary unicode-any-character);
+
+
+command #arbitrary primitive =
+  new arbitrary-choice([
+    #nothing as arbitrary,
+    #boolean as arbitrary,
+    #integer as arbitrary,
+    #float-64bit as arbitrary,
+    #text as arbitrary,
+  ]);
+
+command #arbitrary character-from-codepoint: (Min is integer) to: (Max is integer)
+requires in-bounds :: (Min >= 0) and (Max >= Min) and (Max <= 0x10FFFF)
+=
+  new arbitrary-character-range(Min, Max);
+
+command #arbitrary between: (Min is integer) and: (Max is integer)
+requires growing :: (Max >= Min)
+=
+  new arbitrary-integer(Min, Max);
+
+command #arbitrary between: (Min is float-64bit) and: (Max is float-64bit)
+requires growing :: (Max >= Min)
+=
+  new arbitrary-float-64bit(Min, Max);
+
+command #arbitrary list: (Item has to-arbitrary) =
+  new arbitrary-list(Item as arbitrary);
+
+command #arbitrary fixed-list: (Item has to-arbitrary) size: (Size is integer)
+requires
+  non-negative :: Size >= 0
+=
+  new arbitrary-fixed-list(Size, Item as arbitrary);
+
+command #arbitrary record: Record =
+  #map from: Record
+    |> _ map: { Pair in Pair value as arbitrary }
+    |> { X in new arbitrary-record(X) };
+
+command #arbitrary unshaped-record: (Item has to-arbitrary) =
+  new arbitrary-unshaped-record(Item as arbitrary);
+
+
+command arbitrary-constant generate: _State =
+  self value;
+
+command arbitrary-lazy generate: State =
+  (force self.thunk) as arbitrary | generate: State;
+
+command arbitrary-boolean generate: State =
+  State random choose: [true, false];
+
+local enum numeric-strategy =
+  zero,
+  low,
+  high,
+  from-zero,
+  from-zero-positive,
+  from-zero-negative,
+  unbounded;
+
+local enum rounding-strategy =
+  no-rounding,
+  nearest,
+  few-fractional-digits;
+
+command arbitrary-integer generate: State do
+  let Range = package reshape-numeric-range: self minimum and: self maximum state: State;
+  State random between: Range.min and: Range.max;
+end
+
+command arbitrary-float-64bit generate: State do
+  let Range = package reshape-numeric-range: self minimum and: self maximum state: State;
+  Range.min + (State random uniform * (Range.max - Range.min))
+    |> package reshape-fractional: _ state: State;
+end
+
+command package reshape-fractional: N state: State do
+  let Strategy = State random choose: (rounding-strategy lower-bound to: rounding-strategy upper-bound);
+  condition
+    when Strategy is rounding-strategy.no-rounding => N;
+    when Strategy is rounding-strategy.nearest => N round;
+    when Strategy is rounding-strategy.few-fractional-digits do
+      let Point = 10 ** (State random between: 1 and: 4);
+      (N * Point) round / Point;
+    end
+  end
+end
+
+command package reshape-numeric-range: Min and: Max state: State do
+  let Strategy = State random choose: (numeric-strategy lower-bound to: numeric-strategy upper-bound);
+  condition
+    when Strategy is numeric-strategy.zero =>
+      [
+        min -> 0,
+        max -> 0
+      ];
+
+    when Strategy is numeric-strategy.low =>
+      [
+        min -> Min,
+        max -> lesser-of: (Min + State size) and: Max
+      ];
+
+    when Strategy is numeric-strategy.high =>
+      [
+        min -> greater-of: (Max - State size) and: Min,
+        max -> Max
+      ];
+
+    when Strategy is numeric-strategy.from-zero =>
+      [
+        min -> greater-of: Min and: State size negate,
+        max -> lesser-of: Max and: State size
+      ];
+
+    when Strategy is numeric-strategy.from-zero-positive =>
+      [
+        min -> 0 clamp-between: Min and: Max,
+        max -> State size clamp-between: 0 and: Max,
+      ];
+
+    when Strategy is numeric-strategy.from-zero-negative =>
+      [
+        min -> State size negate clamp-between: Min and: 0,
+        max -> 0 clamp-between: Min and: Max,
+      ];
+
+    when Strategy is numeric-strategy.unbounded =>
+      [min -> Min, max -> Max];
+  end
+end
+
+command arbitrary-text generate: State do
+  let Size = State random between: 0 and: State size;
+  condition
+    when Size === 0 => "";
+    otherwise do
+      let Sub-state = State downsize;
+      1 to: Size
+        | map: { _ in self characters generate: Sub-state }
+        | as interpolation
+        | flatten-into-plain-text;
+    end
+  end
+end
+
+command arbitrary-character-range generate: State do
+  let Codepoint = State random between: self from-codepoint and: self to-codepoint;
+  #text from-code-points: [Codepoint];
+end
+
+command arbitrary-choice generate: State =
+  (State random choose: self choices) generate: State;
+
+command arbitrary-list generate: State do
+  let Size = State random between: 0 and: State size;
+  condition
+    when Size === 0 => [];
+    otherwise do
+      let Sub-state = State downsize;
+      1 to: Size 
+        | map: { _ in self item generate: Sub-state };
+    end
+  end
+end
+
+command arbitrary-unshaped-record generate: State do
+  let Size = State random between: 0 and: State size;
+  condition
+    when Size === 0 => [->];
+    otherwise do
+      let Sub-state = State downsize;
+      let Keys = #arbitrary list: #text | generate: State;
+      let Pairs = Keys map: { Key in #association key: Key value: (self item generate: Sub-state) };
+      #map from: Pairs | as record;
+    end
+  end
+end
+
+command arbitrary-record generate: State do
+  self record
+    | map: { X in X value generate: State }
+    | as record;
+end
+
+command arbitrary map: (F is (A -> B)) =
+  new arbitrary-transform(self, F);
+
+command arbitrary-transform generate: State do
+  let Value = self instance generate: State;
+  (self transformation)(Value);
+end
+
+command arbitrary then: (F is (A -> arbitrary)) =
+  new arbitrary-chain(self, F);
+
+command arbitrary-chain generate: State do
+  let Value0 = self instance generate: State;
+  let New-instance = (self transformation)(Value0);
+  New-instance generate: State;
+end
+
+command arbitrary-fixed-list generate: State do
+  let Sub-state = State downsize;
+  condition
+    when self size === 0 => [];
+    otherwise =>
+      1 to: self size
+        | map: { _ in self item generate: Sub-state };
+  end
+end
+
+command #arbitrary tuple: (Items is list<X has to-arbitrary>) =
+  new arbitrary-tuple(Items map: (_ as arbitrary));
+
+command arbitrary-tuple generate: State do
+  let Sub-state = State downsize;
+  self items map: (_ generate: Sub-state);
+end

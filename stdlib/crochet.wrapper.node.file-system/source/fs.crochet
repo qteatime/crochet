@@ -98,6 +98,10 @@ command inode resolve do
   end
 end
 
+command inode overwrite-file do
+  foreign fs.touch-overwrite-file(self.path to-text);
+  self to-file;
+end
 
 
 command file append-text: (Text is text) do
@@ -115,6 +119,14 @@ command file read-text =
 
 command file write-text: (Text is text) do
   foreign fs.write-file-text(self.path to-text, Text);
+  self;
+end
+
+command file read-bytes =
+  foreign fs.read-file-bytes(self.path to-text);
+
+command file write-bytes: (Bytes is byte-array) do
+  foreign fs.write-file-bytes(self.path to-text, Bytes);
   self;
 end
 

@@ -71,6 +71,11 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("fs.touch-overwrite-file", (path) => {
+    FS.writeFileSync(ffi.text_to_string(path), "");
+    return ffi.nothing;
+  });
+
   ffi.defun("fs.mkdir-tmp", (path) => {
     const result = FS.mkdtempSync(ffi.text_to_string(path));
     return ffi.text(result);
@@ -113,6 +118,16 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("fs.write-file-text", (path, data) => {
     FS.writeFileSync(ffi.text_to_string(path), ffi.text_to_string(data));
+    return ffi.nothing;
+  });
+
+  ffi.defun("fs.read-file-bytes", (path) => {
+    const data = FS.readFileSync(ffi.text_to_string(path));
+    return ffi.byte_array(new Uint8Array(data.buffer));
+  });
+
+  ffi.defun("fs.write-file-bytes", (path, data) => {
+    FS.writeFileSync(ffi.text_to_string(path), ffi.to_uint8_array(data));
     return ffi.nothing;
   });
 

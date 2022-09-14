@@ -18,3 +18,4 @@ _build
 tools/purr/www/*.css
 tools/purr/www/*.js
 tools/purr/www/fonts
+tools/ljtc/assets/*.js

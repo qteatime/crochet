@@ -42,13 +42,13 @@ test
   let Items = [1, 2, 3, 4];
 
   let Res1 = Random choose: Items;
-  assert Res1 value =:= 2;
+  assert Res1 value =:= 3;
 
   let Res2 = Res1 random choose: Items;
-  assert Res2 value =:= 1;
+  assert Res2 value =:= 2;
 
   let Res3 = Res2 random choose: Items;
-  assert Res3 value =:= 3;
+  assert Res3 value =:= 4;
 end
 
 /// Returns one item of the given (non-empty) list, along with a new list
@@ -67,16 +67,16 @@ test
   let Random = #random xor-shift: 20;
   let Items = [1, 2, 3, 4];
   let Res1 = Random choose-and-tear: Items;
-  assert Res1 value === new random-choice(2, [1, 3, 4]);
+  assert Res1 value === new random-choice(3, [1, 2, 4]);
 
   let Res2 = Res1.random choose-and-tear: Res1 value new-list;
-  assert Res2 value === new random-choice(1, [3, 4]);
+  assert Res2 value === new random-choice(1, [2, 4]);
 
   let Res3 = Res2.random choose-and-tear: Res2 value new-list;
-  assert Res3 value === new random-choice(3, [4]);
+  assert Res3 value === new random-choice(4, [2]);
 
   let Res4 = Res3.random choose-and-tear: Res3 value new-list;
-  assert Res4 value === new random-choice(4, []);
+  assert Res4 value === new random-choice(2, []);
 end
 
 /// Returns one item of the given (non-empty) list, considering the weights

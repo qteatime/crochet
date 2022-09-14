@@ -27,7 +27,7 @@ test
   assert (Random between: 1 and: 20) =:= 12;
   assert (Random.random value).seed =:= 1280857507;
 
-  assert (Random between: 1 and: 20) =:= 4;
+  assert (Random between: 1 and: 20) =:= 5;
   assert (Random.random value).seed =:= 439257055;
 end
 
@@ -40,9 +40,9 @@ test
   let Random = (#random xor-shift: 20) mutable;
   let Items = [1, 2, 3, 4];
 
-  assert (Random choose: Items) =:= 2;
-  assert (Random choose: Items) =:= 1;
   assert (Random choose: Items) =:= 3;
+  assert (Random choose: Items) =:= 2;
+  assert (Random choose: Items) =:= 4;
 end
 
 /// Returns one item of the given (non-empty) list, along with a new list
@@ -56,16 +56,16 @@ test
   let Items = [1, 2, 3, 4];
 
   let Res1 = Random choose-and-tear: Items;
-  assert Res1 === new random-choice(2, [1, 3, 4]);
+  assert Res1 === new random-choice(3, [1, 2, 4]);
 
   let Res2 = Random choose-and-tear: Res1 new-list;
-  assert Res2 === new random-choice(1, [3, 4]);
+  assert Res2 === new random-choice(1, [2, 4]);
 
   let Res3 = Random choose-and-tear: Res2 new-list;
-  assert Res3 === new random-choice(3, [4]);
+  assert Res3 === new random-choice(4, [2]);
 
   let Res4 = Random choose-and-tear: Res3 new-list;
-  assert Res4 === new random-choice(4, []);
+  assert Res4 === new random-choice(2, []);
 end
 
 /// Returns one item of the given (non-empty) list, considering the weights
@@ -95,5 +95,5 @@ command mutable-random shuffle: (Items is list<A>) -> list<A> do
     | map: (_ second);
 test
   let Random = (#random xor-shift: 20) mutable;
-  assert (Random shuffle: [1, 2, 3, 4, 5, 6]) =:= [6, 2, 1, 3, 4, 5];
+  assert (Random shuffle: [1, 2, 3, 4, 5, 6]) =:= [6, 2, 1, 3, 5, 4];
 end

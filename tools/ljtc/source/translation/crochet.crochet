@@ -1,0 +1,282 @@
+% crochet
+
+open crochet.language.ljt;
+open crochet.text.regex;
+
+type crochet-compiler(vm is ljt-vm, prefix is text);
+
+command #crochet-compiler from-vm: (Vm is ljt-vm) prefix: Prefix =
+  new crochet-compiler(Vm, Prefix);
+
+local define dot-re = lazy (regex from-text: "\\." | compile);
+local define reserved-set = lazy (#set from: [
+  "relation","predicate","when","do","command","action","type","enum",
+  "define","singleton","goto","call","let","return","fact","forget","new",
+  "search","if","simulate","true","false","not","and","or","is","self","as",
+  "event","quiescence","for","until","in","foreign","on","always","match",
+  "then","else","condition","end","with","prelude","rank","tags","abstract",
+  "lazy","force","context","sample","of","open","local","test","assert",
+  "requires","ensures","nothing","handle","effect","continue","perform","has",
+  "trait","implement","public","capability","protect","global","otherwise",
+  "handler","default","use","alias","true","false"
+]);
+
+command crochet-compiler to-id: (Id0 is text) do
+  let Id1 = Id0 ascii to-lower-case to-text;
+  let Id = (force dot-re) substitute-all-by: "--" in: Id1;
+  condition
+    when (force reserved-set) contains: Id => "'[Id]" flatten-into-plain-text;
+    otherwise => Id;
+  end
+end
+
+command crochet-compiler to-keyword: (Id0 is text) do
+  let Id1 = Id0 ascii to-lower-case to-text;
+  "[Id1]:" flatten-into-plain-text;
+end
+
+command crochet-compiler to-variable: (Id is text) =
+  self to-id: Id | ascii | to-upper-case | to-text;
+
+command crochet-compiler to-prefixed-id: (Id is text) =
+  self to-prefixed-id: Id prefix: self.prefix;
+
+command crochet-compiler to-prefixed-id: (Id is text) prefix: Prefix =
+  condition
+    when self.prefix is-empty => self to-id: Id;
+    otherwise => self to-id: ("[Prefix]--[Id]" flatten-into-plain-text);
+  end;
+
+command crochet-compiler to-text: (X is text) do
+  "\"[X]\"";
+end
+
+command crochet-compiler to-list: (X is list<text>) do
+  "\[[#text join: X with: ", "]\]";
+end
+
+
+command crochet-compiler to-type: t-bool = "boolean";
+command crochet-compiler to-type: t-int8 = "integer";
+command crochet-compiler to-type: t-int16 = "integer";
+command crochet-compiler to-type: t-int32 = "integer";
+command crochet-compiler to-type: t-uint8 = "integer";
+command crochet-compiler to-type: t-uint16 = "integer";
+command crochet-compiler to-type: t-uint32 = "integer";
+command crochet-compiler to-type: t-integer = "integer";
+command crochet-compiler to-type: t-float32 = "float-64bit";
+command crochet-compiler to-type: t-float64 = "float-64bit";
+command crochet-compiler to-type: t-text = "text";
+command crochet-compiler to-type: t-bytes = "byte-array";
+command crochet-compiler to-type: (T is t-lazy) = self to-type: T materialise;
+command crochet-compiler to-type: (T is t-array) = "list<[self to-type: T item]>";
+command crochet-compiler to-type: (T is t-map) = "equality-map<[self to-type: T key], [self to-type: T value]>";
+command crochet-compiler to-type: (T is t-tuple) = "record";
+command crochet-compiler to-type: (T is t-optional) = "result<[self to-type: T item], not-found>";
+command crochet-compiler to-type: (T is t-choice) = "[self to-prefixed-id: T name]";
+command crochet-compiler to-type: (T is t-record) = "[self to-prefixed-id: T name]";
+command crochet-compiler to-type: (T is t-variant) = "[self to-prefixed-id: T name]";
+
+
+command crochet-compiler encode: F type: t-bool =
+  "E do: (_ append-boolean: ([F]));";
+
+command crochet-compiler encode: F type: t-int8 =
+  "E do: (_ append-integer-8bit: ([F]));";
+
+command crochet-compiler encode: F type: t-int16 =
+  "E do: (_ append-integer-16bit: ([F]));";
+
+command crochet-compiler encode: F type: t-int32 =
+  "E do: (_ append-integer-32bit: ([F]));";
+
+command crochet-compiler encode: F type: t-uint8 =
+  "E do: (_ append-unsigned-integer-8bit: ([F]));";
+
+command crochet-compiler encode: F type: t-uint16 =
+  "E do: (_ append-unsigned-integer-16bit: ([F]));";
+
+command crochet-compiler encode: F type: t-uint32 =
+  "E do: (_ append-unsigned-integer-32bit: ([F]));";
+
+command crochet-compiler encode: F type: t-integer =
+  "E do: (_ append: ([F]));";
+
+command crochet-compiler encode: F type: t-float32 =
+  "E do: (_ append-float-32bit: ([F]));";
+
+command crochet-compiler encode: F type: t-float64 =
+  "E do: (_ append-float-64bit: ([F]));";
+
+command crochet-compiler encode: F type: t-text =
+  "E do: (_ append: ([F]));";
+
+command crochet-compiler encode: F type: t-bytes =
+  "E do: (_ append: ([F]));";
+
+command crochet-compiler encode: F type: (T is t-array) =
+  "
+  E do: (_ append-unsigned-integer-32bit: ([F]) count);
+  for V in ([F]) do
+    [self encode: "V" type: T item]
+  end
+  ";
+
+command crochet-compiler encode: F type: (T is t-map) =
+  "
+  E do: (_ append-unsigned-integer-32bit: ([F]) count);
+  for Pair in ([F]) entries do
+    [self encode: "Pair key" type: T key]
+    [self encode: "Pair value" type: T value]
+  end
+  ";
+
+command crochet-compiler encode: F type: (T is t-tuple) do
+  let Encs = T enumerate values map: { V in
+    self encode: "(([F]) at: [V index])" type: V value;
+  };
+  #text join: Encs with: "\n";
+end
+
+command crochet-compiler encode: F type: (T is t-lazy) =
+  self encode: F type: T materialise;
+
+command crochet-compiler encode: F type: t-record =
+  "([F]) encode: E;";
+
+command crochet-compiler encode: F type: t-choice =
+  "([F]) encode: E;";
+
+command crochet-compiler encode: F type: t-variant =
+  "([F]) encode: E;";
+
+
+command crochet-compiler type-params: (Xs is list) do
+  condition
+    when Xs is-empty => "";
+    otherwise => "([#text join: Xs with: ", "])";
+  end
+end
+
+command crochet-compiler generate do
+  let Root = self to-id: self.prefix;
+  let Types = self.vm all-types map: (self generate: _ root: Root);
+
+  "% crochet
+// This file was generated from a LJT schema.
+
+open crochet.language.ljt;
+open crochet.data.collection;
+
+local type mutable-encoder(
+  encoder is cell<binary-encoder>,
+);
+
+command mutable-encoder do: (F is (binary-encoder -> binary-encoder)) do
+  self.encoder <- F(self.encoder value);
+  self;
+end
+
+abstract [Root];
+
+command #[Root] encode: (X is [Root]) do
+  let Encoder = new mutable-encoder(#cell with-value: #binary-encoder empty);
+  X encode-tag: Encoder;
+  X encode: Encoder;
+  Encoder.encoder value as byte-array;
+end
+
+[#text join: Types with: "\n\n"]
+  ";
+end
+
+command crochet-compiler generate: (T is t-record) root: Root do
+  let Name = self to-prefixed-id: T name;
+  let Fields = T values fields zip: T values types with: { Name, Type in [name -> Name, codec -> Type] };
+  let Type-params = Fields map: { F in "global [self to-id: F.name] is [self to-type: F.codec]" };
+  let Make-params = Fields map: { F in "[self to-keyword: F.name] [self to-variable: F.name]" };
+  let Field-names = Fields map: { F in self to-variable: F.name };
+  let Make-prefix = condition
+                      when Make-params is-empty => "make";
+                      otherwise => "";
+                    end;
+  let New-affix = condition
+                    when Field-names is-empty => [prefix -> "", suffix -> ""];
+                    otherwise => [prefix -> "new ", suffix -> "([#text join: Field-names with: ", "])"];
+                  end;
+  let Encoders = Fields map: { F in self encode: "self.[self to-id: F.name]" type: F.codec };
+
+  "
+type [Name][self type-params: Type-params] is [Root];
+
+command #[Name] tag = [T tag to-text];
+
+command #[Name] [Make-prefix][#text join: Make-params with: " "] do
+  new [Name][New-affix.suffix];
+end
+
+command [Name] encode-tag: (E is mutable-encoder) do
+  E do: (_ append-unsigned-integer-32bit: [T tag to-text]);
+  self;
+end
+
+command [Name] encode: (E is mutable-encoder) do
+  [#text join: Encoders with: "\n"]
+end
+  "
+end
+
+command crochet-compiler generate: (T is t-choice) root: Root do
+  let Name = self to-prefixed-id: T name;
+  let Variants = T variants map: (self generate: _ root: Name);
+  
+
+  "
+abstract [Name] is [Root];
+
+command #[Name] tag = [T tag to-text];
+
+command [Name] encode-tag: (E is mutable-encoder) do
+  E do: (_ append-unsigned-integer-32bit: [T tag to-text]);
+  self;
+end
+
+[#text join: (Variants map: { X in X.code }) with: "\n\n"]
+  "
+end
+
+command crochet-compiler generate: (T is t-variant) root: Root do
+  let Name = self to-prefixed-id: T base-name prefix: Root;
+  let Fields = T values fields zip: T values types with: { Name, Type in [name -> Name, codec -> Type] };
+  let Type-params = Fields map: { F in "global [self to-id: F.name] is [self to-type: F.codec]" };
+  let Make-params = Fields map: { F in "[self to-keyword: F.name] [self to-variable: F.name]" };
+  let Field-names = Fields map: { F in self to-variable: F.name };
+  let Make-prefix = condition
+                      when Make-params is-empty => "make";
+                      otherwise => "";
+                    end;
+  let New-affix = condition
+                    when Field-names is-empty => [prefix -> "", suffix -> ""];
+                    otherwise => [prefix -> "new ", suffix -> "([#text join: Field-names with: ", "])"];
+                  end;
+  let Encoders = Fields map: { F in self encode: "self.[self to-id: F.name]" type: F.codec };
+
+  [
+    name -> Name,
+    tag -> T variant-tag,
+    code -> "
+type [Name][self type-params: Type-params] is [Root];
+
+command #[Name] tag = [T variant-tag to-text];
+
+command #[Name] [Make-prefix][#text join: Make-params with: " "] do
+  new [Name][New-affix.suffix];
+end
+
+command [Name] encode: (E is mutable-encoder) do
+  E do: (_ append-unsigned-integer-8bit: [T variant-tag to-text]);
+  [#text join: Encoders with: "\n"]
+end
+  "
+  ];
+end

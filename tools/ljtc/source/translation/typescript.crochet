@@ -1,0 +1,325 @@
+% crochet
+
+open crochet.language.ljt;
+open crochet.text.regex;
+
+
+type ts-compiler(vm is ljt-vm);
+
+command #ts-compiler from-vm: (Vm is ljt-vm) =
+  new ts-compiler(Vm);
+
+command ts-compiler generate do
+  let Prelude = package assets at: "assets/prelude.ts" | read-as-text;
+  let Types = self.vm all-types map: (self generate: _);
+
+  "// This file was generated from a LJT schema.
+[Prelude]
+
+[#text join: Types with: "\n\n"]
+  "
+  | flatten-into-plain-text;
+end
+
+
+local define hyphen-re = lazy (
+  regex from-text: "\\-"
+    | compile
+);
+
+local define reserved-set = lazy (#set from: [
+  "arguments",
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "debugger",
+  "default",
+  "delete",
+  "do",
+  "else",
+  "export",
+  "extends",
+  "false",
+  "finally",
+  "for",
+  "function",
+  "if",
+  "import",
+  "in",
+  "instanceof",
+  "new",
+  "null",
+  "return",
+  "static",
+  "super",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "typeof",
+  "var",
+  "void",
+  "while",
+  "with",
+  "yield",
+  "let",
+  "enum",
+  "implements",
+  "interface",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "abstract",
+  "boolean",
+  "byte",
+  "char",
+  "double",
+  "final",
+  "float",
+  "goto",
+  "int",
+  "long",
+  "native",
+  "short",
+  "synchronized",
+  "throws",
+  "transient",
+  "volatile",
+  "type",
+  "readonly",
+  "namespace"
+]);
+
+command ts-compiler ts-id: (Name0 is text) do
+  let Name = (force hyphen-re) substitute-all-by: "_" in: Name0;
+  condition
+    when (force reserved-set) contains: Name => "_[Name]" flatten-into-plain-text;
+    otherwise => Name;
+  end
+end
+
+command ts-compiler ts-type: t-bool = "boolean";
+command ts-compiler ts-type: t-int8 = "Int8";
+command ts-compiler ts-type: t-int16 = "Int16";
+command ts-compiler ts-type: t-int32 = "Int32";
+command ts-compiler ts-type: t-uint8 = "UInt8";
+command ts-compiler ts-type: t-uint16 = "UInt16";
+command ts-compiler ts-type: t-uint32 = "UInt32";
+command ts-compiler ts-type: t-integer = "bigint";
+command ts-compiler ts-type: t-float32 = "Float32";
+command ts-compiler ts-type: t-float64 = "number";
+command ts-compiler ts-type: t-text = "string";
+command ts-compiler ts-type: t-bytes = "Uint8Array";
+
+command ts-compiler ts-type: (T is t-lazy) =
+  self ts-type: T materialise;
+
+command ts-compiler ts-type: (T is t-array) =
+  "([self ts-type: T item])\[\]";
+
+command ts-compiler ts-type: (T is t-map) =
+  "Map<[self ts-type: T key], [self ts-type: T value]>";
+
+command ts-compiler ts-type: (T is t-tuple) do
+  panic message: "Unwrapped t-tuple type found" data: [codec -> T];
+end
+
+command ts-compiler ts-type: (T is t-optional) =
+  "([self ts-type: T item]) | null";
+
+command ts-compiler ts-type: (T is t-choice) do
+  let Choices = T variants map: (self ts-type: _);
+  "([#text join: Choices with: " | "])";
+end
+
+command ts-compiler ts-type: (T is t-record) =
+  self ts-id: T name;
+
+command ts-compiler ts-type: (T is t-variant) =
+  self ts-id: T name;
+
+
+command ts-compiler generate: (T is t-record) do
+  let Fields = T values fields zip: T values types with: { Fn, Ft in [name -> Fn, codec -> Ft] };
+  let Constructor-args = Fields map: { F in "readonly [self ts-id: F.name]: [self ts-type: F.codec]"};
+  let Field-decoders = Fields map: { F in self generate-field: F.name decode: F.codec };
+  let Field-names = T values fields map: (self ts-id: _);
+
+  "
+  export class [self ts-id: T base-name] {
+    static readonly $tag = [T tag to-text];
+    readonly $tag = [T tag to-text];
+
+    constructor([#text join: Constructor-args with: ", "]) {}
+
+    static decode($d: _Decoder) {
+      const $tag = $d.ui32();
+      if ($tag !== [T tag to-text]) {
+        throw new Error(`Invalid tag ${$tag} for [T name]: expected [T tag to-text]`);
+      }
+      return [self ts-id: T base-name].$do_decode($d);
+    }
+
+    static $do_decode($d: _Decoder) {
+      [#text join: Field-decoders with: "\n"]
+      return new [self ts-id: T base-name]([#text join: Field-names with: ", "]);
+    }
+  }
+  "
+end
+
+command ts-compiler generate: (T is t-choice) do
+  let Choice-names = T variants map: (_ name) | map: (self ts-id: _);
+  let Tag-names = T variants map: (_ base-name) | map: (self ts-id: _);
+  let Parent = "[self ts-id: T base-name]$Base";
+  let Variant-cases = T variants map: { Variant in
+    "case [Variant variant-tag to-text]: return [self ts-id: Variant name].decode($d);"
+  };
+  let Variant-defs = T variants map: (self generate-variant: _ extends: Parent);
+
+  "
+  export type [self ts-id: T base-name] = [#text join: Choice-names with: " | "];
+
+  export abstract class [Parent] {
+    static decode($d: _Decoder): [self ts-id: T base-name] {
+      const $tag = $d.ui32();
+      if ($tag !== [T tag to-text]) {
+        throw new Error(`Invalid tag ${$tag} for [T name]: expected [T tag to-text]`);
+      }
+      return [Parent].$do_decode($d);
+    }
+
+    static $do_decode($d: _Decoder): [self ts-id: T base-name] {
+      const $tag = $d.peek((v) => v.getUint8(0));
+
+      switch ($tag) {
+        [#text join: Variant-cases with: "\n"]
+
+        default:
+          throw new Error(`Unknown tag ${$tag} in union [T name]`);
+      }
+    }
+  }
+
+  export namespace [self ts-id: T base-name] {
+    export const enum $Tags {
+      [#text join: Tag-names with: ","]
+    }
+
+    [#text join: Variant-defs with: "\n\n"]
+  }
+  "
+end
+
+command ts-compiler generate-variant: (T is t-variant) extends: Parent do
+  let Fields = T values fields zip: T values types with: { Fn, Ft in [name -> Fn, codec -> Ft] };
+  let Constructor-args = Fields map: { F in "readonly [self ts-id: F.name]: [self ts-type: F.codec]"};
+  let Field-decoders = Fields map: { F in self generate-field: F.name decode: F.codec };
+  let Field-names = T values fields map: (self ts-id: _);
+
+  "
+  export class [self ts-id: T base-name] extends [Parent] {
+    static readonly $tag = $Tags.[self ts-id: T base-name];
+    readonly $tag = $Tags.[self ts-id: T base-name];
+
+    constructor([#text join: Constructor-args with: ", "]) {
+      super();
+    }
+
+    static decode($d: _Decoder) {
+      return [self ts-id: T base-name].$do_decode($d);
+    }
+
+    static $do_decode($d: _Decoder) {
+      const $tag = $d.ui8();
+      if ($tag !== [T variant-tag to-text]) {
+        throw new Error(`Invalid tag ${$tag} for [T name]: expected [T variant-tag to-text]`);
+      }
+
+      [#text join: Field-decoders with: "\n"]
+      return new [self ts-id: T base-name]([#text join: Field-names with: ", "]);
+    }
+  }
+  "
+end
+
+
+command ts-compiler generate-field: Field decode: t-bool =
+  "const [self ts-id: Field] = $d.bool();";
+
+command ts-compiler generate-field: Field decode: t-int8 =
+  "const [self ts-id: Field] = $d.i8();";
+
+command ts-compiler generate-field: Field decode: t-int16 =
+  "const [self ts-id: Field] = $d.i16();";
+
+command ts-compiler generate-field: Field decode: t-int32 =
+  "const [self ts-id: Field] = $d.i32();";
+
+command ts-compiler generate-field: Field decode: t-uint8 =
+  "const [self ts-id: Field] = $d.ui8();";
+
+command ts-compiler generate-field: Field decode: t-uint16 =
+  "const [self ts-id: Field] = $d.ui16();";
+
+command ts-compiler generate-field: Field decode: t-uint32 =
+  "const [self ts-id: Field] = $d.ui32();";
+
+command ts-compiler generate-field: Field decode: t-float32 =
+  "const [self ts-id: Field] = $d.f32();";
+
+command ts-compiler generate-field: Field decode: t-float64 =
+  "const [self ts-id: Field] = $d.f64();";
+
+command ts-compiler generate-field: Field decode: t-integer =
+  "const [self ts-id: Field] = $d.bigint();";
+
+command ts-compiler generate-field: Field decode: t-text =
+  "const [self ts-id: Field] = $d.text();";
+
+command ts-compiler generate-field: Field decode: (T is t-lazy) =
+  self generate-field: Field decode: T materialise;
+
+command ts-compiler generate-field: Field decode: (T is t-array) do
+  "
+  const [self ts-id: Field] = $d.array(() => {
+    [self generate-field: "item" decode: T item];
+    return item;
+  });
+  ";
+end
+
+command ts-compiler generate-field: Field decode: (T is t-map) do
+  "
+  const [self ts-id: Field] = $d.map(
+    () => {
+      [self generate-field: "key" decode: T key];
+      return key;
+    },
+    () => {
+      [self generate-field: "value" decode: T value];
+      return value;
+    }
+  );
+  "
+end
+
+command ts-compiler generate-field: Field decode: (T is t-optional) do
+  "
+  const [self ts-id: Field] = $d.optional(() => {
+    [self generate-field: "item" decode: T item];
+    return item;
+  });
+  ";
+end
+
+command ts-compiler generate-field: Field decode: (T is t-record) =
+  "const [self ts-id: Field] = [self ts-id: T name].$do_decode($d);";
+
+command ts-compiler generate-field: Field decode: (T is t-choice) =
+  "const [self ts-id: Field] = [self ts-id: T name]$Base.$do_decode($d);";

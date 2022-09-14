@@ -1,0 +1,38 @@
+% crochet
+
+singleton ljt;
+
+command ljt try-parse: (Input is text) -> result<module, ljt-error--syntax-error> =
+  (ljt-grammar parse: Input)
+    | map-error: { Error in
+        new ljt-error--syntax-error(
+          input -> Input,
+          message -> Error,
+        );
+      };
+
+command ljt parse: (Input is text) -> module do
+  let Result = self try-parse: Input;
+  condition  
+    when Result is ok =>
+      Result value;
+
+    otherwise =>
+      panic message: Result reason to-panic-message tag: "ljt-error" data: [error -> Result reason];
+  end
+end
+
+command ljt handle-errors-with: Handler in: Block do
+  handle
+    let Result = Block();
+    #result ok: Result;
+  with
+    on ljt-error.raise(Error0) do
+      let Error = Handler(Error0, { Value in continue with Value });
+      #result error: Error;
+    end
+  end
+end
+
+command ljt try: Block =
+  ljt handle-errors-with: { E, _ in E } in: Block;

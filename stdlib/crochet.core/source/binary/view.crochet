@@ -72,16 +72,16 @@ command byte-array-view integer-32bit-at: (Offset is integer) little-endian: (LE
 command byte-array-view unsigned-integer-8bit-at: (Offset is integer) =
   foreign byte.get-uint8(self.view, Offset);
 
-command byte-array-view usigned-integer-16bit-at: (Offset is integer) little-endian: (LE is boolean) =
+command byte-array-view unsigned-integer-16bit-at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.get-uint16(self.view, Offset, LE);
 
 command byte-array-view unsigned-integer-32bit-at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.get-uint32(self.view, Offset, LE);
 
-command byte-array-view float-32bit-at: (Offset is float-64bit) little-endian: (LE is boolean) =
+command byte-array-view float-32bit-at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.get-float32(self.view, Offset, LE);
 
-command byte-array-view float-64bit-at: (Offset is float-64bit) little-endian: (LE is boolean) =
+command byte-array-view float-64bit-at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.get-float64(self.view, Offset, LE);
 
     
@@ -102,7 +102,7 @@ command mutable-byte-array-view put-integer-32bit: (X is integer) at: (Offset is
 command mutable-byte-array-view put-unsigned-integer-8bit: (X is integer) at: (Offset is integer) =
   foreign byte.set-uint8(self.view, Offset, X);
 
-command mutable-byte-array-view put-usigned-integer-16bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
+command mutable-byte-array-view put-unsigned-integer-16bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.set-uint16(self.view, Offset, X, LE);
 
 command mutable-byte-array-view put-unsigned-integer-32bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =

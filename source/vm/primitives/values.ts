@@ -1,5 +1,6 @@
 import { CrochetCapability, CrochetPackage, CrochetProtectedValue } from "..";
 import * as IR from "../../ir";
+import * as Types from "./types";
 import { clone_map, zip, zip3 } from "../../utils/utils";
 import { ErrArbitrary } from "../errors";
 import {
@@ -190,7 +191,7 @@ export function has_type(type: CrochetType, value: CrochetValue) {
 }
 
 export function has_trait(trait: CrochetTrait, value: CrochetValue) {
-  return value.type.traits.has(trait);
+  return Types.has_trait(trait, value.type);
 }
 
 export function instantiate(type: CrochetType, values: CrochetValue[]) {

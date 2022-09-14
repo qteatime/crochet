@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "LJT",
+  "patterns": [
+    {
+      "name": "keyword.control.ljt",
+      "match": "(?<![a-zA-Z0-9\\-\\.\\^'])(type|union|field)(?![a-zA-Z0-9\\-:])"
+    },
+    {
+      "name": "constant.language.ljt",
+      "match": "(?<![a-zA-Z0-9\\-])(Uint8|Uint16|Uint32|Int8|Int16|Int32|Text|Integer|Float32|Float64|Boolean)(?![a-zA-Z0-9_])"
+    },
+    {
+      "name": "comment.line.heading.ljt",
+      "match": "^%[ \t]*ljt/0"
+    },
+    {
+      "name": "entity.name.ljt",
+      "match": "(?<![a-zA-Z0-9\\-])[A-Z][a-zA-Z0-9\\-]*|_"
+    },
+    {
+      "name": "comment.line",
+      "match": "//.*"
+    }
+  ],
+  "scopeName": "source.crochet-ljt"
+}

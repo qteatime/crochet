@@ -63,7 +63,7 @@ grammar Ljt_Grammar : Module {
   token hs = " " | "\t"
   token nl = "\r\n" | "\n" | "\r"
   token line = (~nl any)*
-  token comment (a comment) = "//" "~/" line
+  token comment (a comment) = "//" line
   space += comment
 
   token name_start = "a".."z" | "A".."Z"

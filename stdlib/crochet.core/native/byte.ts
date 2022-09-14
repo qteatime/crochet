@@ -324,7 +324,7 @@ export default (ffi: ForeignInterface) => {
     const view = ffi.unbox_typed(DataView, view0);
     view.setFloat32(
       Number(ffi.integer_to_bigint(offset)) - 1,
-      Number(ffi.integer_to_bigint(value)),
+      ffi.float_to_number(value),
       ffi.to_js_boolean(le)
     );
     return ffi.nothing;
@@ -334,7 +334,7 @@ export default (ffi: ForeignInterface) => {
     const view = ffi.unbox_typed(DataView, view0);
     view.setFloat64(
       Number(ffi.integer_to_bigint(offset)) - 1,
-      Number(ffi.integer_to_bigint(value)),
+      ffi.float_to_number(value),
       ffi.to_js_boolean(le)
     );
     return ffi.nothing;
@@ -347,7 +347,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map<string, CrochetValue>([
         ["value", ffi.integer(value.value)],
-        ["size", ffi.float_64(value.size)],
+        ["size", ffi.integer(BigInt(value.size))],
       ])
     );
   });
@@ -362,7 +362,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map([
         ["value", ffi.text(value.value)],
-        ["size", ffi.float_64(value.size)],
+        ["size", ffi.integer(BigInt(value.size))],
       ])
     );
   });
@@ -377,7 +377,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.record(
       new Map([
         ["value", ffi.byte_array(value.value)],
-        ["size", ffi.float_64(value.size)],
+        ["size", ffi.integer(BigInt(value.size))],
       ])
     );
   });

@@ -1,0 +1,16 @@
+% crochet
+
+type qualified-name(global segments is list<text>);
+
+command #qualified-name empty =
+  new qualified-name([]);
+
+command qualified-name append: (Name is text) =
+  new qualified-name(self segments append: Name);
+
+command qualified-name to-text =
+  #text join: self segments with: "."
+    | flatten-into-plain-text;
+
+command qualified-name base-name =
+  self.segments last;
