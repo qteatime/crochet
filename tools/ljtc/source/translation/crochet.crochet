@@ -150,6 +150,20 @@ command crochet-compiler encode: F type: t-choice =
 command crochet-compiler encode: F type: t-variant =
   "([F]) encode: E;";
 
+command crochet-compiler encode: F type: t-optional =
+  "
+  condition
+    when ([F]) is ok do
+      E do: (_ append-boolean: true);
+      ([F]) encode: E;
+    end
+
+    when ([F]) is error do
+      E do: (_ append-boolean: false);
+    end
+  end
+  ";
+
 
 command crochet-compiler type-params: (Xs is list) do
   condition
