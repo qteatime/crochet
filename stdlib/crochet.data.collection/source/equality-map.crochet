@@ -1,6 +1,6 @@
 % crochet
 
-// Keys and Values must implement equality!
+// Keys must implement equality!
 // Entries are retrieved in insertion order
 type equality-map(pairs is list<association<Key, Value>>);
 
@@ -110,7 +110,7 @@ end
 
 implement modifiable-mapped-container for equality-map;
 
-command equality-map at: (Key has equality) put: (Value has equality) do
+command equality-map at: (Key has equality) put: Value do
   let Inserted = #cell with-value: false;
   let Entries = self entries map: { Entry in
     condition
@@ -214,7 +214,6 @@ implement mappable-collection for equality-map;
 command equality-map map: (Fun is (association<K, V> -> V2)) do
   new equality-map(self entries map: { Pair in
     let Value = Fun(Pair);
-    assert Value has equality;
     #association key: Pair key value: Value;
   });
 test
