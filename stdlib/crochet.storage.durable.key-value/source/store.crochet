@@ -12,10 +12,36 @@ command kv-storage try-at: (Key is text) do
   let Partition = package to-key: self.location;
   let Result = perform kv-storage.lookup(Partition, Key);
   Result map: { X in self.serialisation parse: X };
+test
+  let Store = kv-store for: package;
+  handle
+    assert (Store try-at: "hello") === (#result ok: 1.0);
+    assert (Store try-at: "world") === (#result error: kve-not-found);
+  with
+    on kv-storage.lookup(Partition, Key) do
+      condition
+        when Key =:= "hello" => continue with #result ok: "1";
+        when Key =:= "world" => continue with #result error: kve-not-found;
+      end
+    end
+  end
 end
 
 command kv-storage has: (Key is text) do
   (self try-at: Key) is ok;
+test
+  let Store = kv-store for: package;
+  handle
+    assert (Store has: "hello") === true;
+    assert (Store has: "world") === false;
+  with
+    on kv-storage.lookup(Partition, Key) do
+      condition
+        when Key =:= "hello" => continue with #result ok: "1";
+        when Key =:= "world" => continue with #result error: kve-not-found;
+      end
+    end
+  end
 end
 
 command kv-storage at: (Key is text) do
@@ -27,6 +53,17 @@ command kv-storage at: (Key is text) try-put: Value do
   let Partition = package to-key: self.location;
   let Data = self.serialisation serialise: Value;
   perform kv-storage.store(Partition, Key, Data);
+test
+  let Store = kv-store for: package;
+  handle
+    assert (Store at: "hello" put: 1.0) is kv-storage;
+  with
+    on kv-storage.store(Partition, Key, Value) do
+      assert Key =:= "hello";
+      assert Value =:= "1";
+      continue with #result ok: nothing;
+    end
+  end
 end
 
 command kv-storage at: (Key is text) put: Value do
@@ -37,4 +74,13 @@ end
 command kv-storage remove-at: (Key is text) do
   let Partition = package to-key: self.location;
   perform kv-storage.delete(Partition, Key);
+test
+  let Store = kv-store for: package;
+  handle
+    assert (Store remove-at: "hello");
+  with
+    on kv-storage.delete(Partition, Key) do
+      assert Key =:= "hello";
+    end
+  end
 end

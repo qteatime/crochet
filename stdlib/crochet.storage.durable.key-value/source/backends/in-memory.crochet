@@ -1,0 +1,25 @@
+% crochet
+
+handler kv-in-memory-backend do
+  let Storage = #cell with-value: #map empty;
+with
+  on kv-storage.lookup(Partition, Key) do
+    let Real-key = [Partition, Key];
+    condition
+      when Storage value contains-key: Real-key => #result ok: (Storage value at: Real-key);
+      otherwise => #result error: kve-not-found;
+    end
+  end
+
+  on kv-storage.store(Partition, Key, Value) do
+    Storage <- Storage value at: [Partition, Key] put: Value;
+    continue with #reuslt ok: nothing;
+  end
+
+  on kv-storage.delete(Partition, Key) do
+    Storage <- Storage value remove-at: [Partition, Key];
+    continue with nothing;
+  end
+end
+
+protect handler kv-in-memory-backend with key-value-backend;

@@ -1,0 +1,14 @@
+% crochet
+
+test "Read what you write" do
+  handle
+    let Store = kv-store for: package;
+    assert (Store try-at: "hello") === (#result error: kve-not-found);
+    Store at: "hello" put: "world";
+    assert (Store try-at: "hello") === (#result ok: "world");
+    Store remove-at: "hello";
+    assert (Store try-at: "hello") === (#result error: kve-not-found);
+  with
+    use kv-in-memory-backend;
+  end
+end

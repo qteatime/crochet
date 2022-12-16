@@ -14,6 +14,7 @@
     "crochet.mathematics",
     "crochet.network.types",
     "crochet.random",
+    "crochet.storage.durable.key-value",
     "crochet.text.parsing.lingua",
     "crochet.text.regex",
     "crochet.time"

@@ -16,7 +16,9 @@
     {
       "filename": "source/backends/local-storage.crochet",
       "target": "browser"
-    }
+    },
+    "source/backends/in-memory.crochet",
+    "test/operations.crochet"
   ],
   "dependencies": [
     "crochet.core",
