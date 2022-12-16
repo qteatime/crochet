@@ -1,0 +1,7 @@
+% crochet
+
+abstract kv-error;
+
+singleton kve-not-found is kv-error;
+singleton kve-unknown-error is kv-error;
+singleton kve-quota-exceeded is kv-error;

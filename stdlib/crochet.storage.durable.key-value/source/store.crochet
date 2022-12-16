@@ -1,0 +1,40 @@
+% crochet
+
+type kv-storage(location is (any has kv-location), serialisation is (any has kv-serialisation));
+
+effect kv-storage with
+  lookup(partition is text, key is text); // -> result<text, kv-error>
+  store(partition is text, key is text, value is text); // -> result<boolean, kv-error>
+  delete(partition is text, key is text); // -> result<nothing, kv-error>
+end
+
+command kv-storage try-at: (Key is text) do
+  let Partition = package to-key: self.location;
+  let Result = perform kv-storage.lookup(Partition, Key);
+  Result map: { X in self.serialisation parse: X };
+end
+
+command kv-storage has: (Key is text) do
+  (self try-at: Key) is ok;
+end
+
+command kv-storage at: (Key is text) do
+  self try-at: Key
+    | value-or-panic: "Key not found" data: [key -> Key];
+end
+
+command kv-storage at: (Key is text) try-put: Value do
+  let Partition = package to-key: self.location;
+  let Data = self.serialisation serialise: Value;
+  perform kv-storage.store(Partition, Key, Data);
+end
+
+command kv-storage at: (Key is text) put: Value do
+  assert (self at: Key try-put: Value) is ok;
+  self;
+end
+
+command kv-storage remove-at: (Key is text) do
+  let Partition = package to-key: self.location;
+  perform kv-storage.delete(Partition, Key);
+end

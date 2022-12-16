@@ -1,0 +1,29 @@
+% crochet
+
+handler kv-local-storage-backend with
+  on kv-storage.lookup(Partition, Key) do
+    let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
+    let Result = foreign local-storage.lookup(Real-key);
+    condition
+      when Result is nothing => continue with #result error: kve-not-found;
+      otherwise => continue with #result ok: Result;
+    end
+  end
+
+  on kv-storage.store(Partition, Key, Value) do
+    let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
+    let Result = foreign local-storage.store(Real-key, Value);
+    condition
+      when Result is nothing => continue with #result ok: nothing;
+      when Result =:= "unknown-error" => continue with #result error: kve-unknown-error;
+      when Result =:= "quota-exceeded" => continue with #result error: kve-quota-exceeded;
+    end
+  end
+
+  on kv-storage.delete(Partition, Key) do
+    let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
+    continue with (foreign local-storage.delete(Real-key));
+  end
+end
+
+protect handler kv-local-storage-backend with key-value-backend;

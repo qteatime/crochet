@@ -1,0 +1,24 @@
+% crochet
+
+open crochet.language.json;
+
+
+singleton kv-store;
+
+/// Allows creating key/value storages of unbounded size. High risk.
+capability key-value-storage;
+protect global kv-store with key-value-storage;
+protect type kv-store with key-value-storage;
+
+/// Allows setting up storage backends for the whole application. High risk.
+/// This should only ever be granted to applications.
+capability key-value-backend;
+
+command kv-store for: (Location has kv-location) =
+  self for: Location serialisation: (#kv-json-serialisation extended: (#extended-json defaults));
+
+command kv-store for: (Location has kv-location) serialisation: (Serialisation has kv-serialisation) =
+  new kv-storage(
+    location -> Location,
+    serialisation -> Serialisation,
+  );

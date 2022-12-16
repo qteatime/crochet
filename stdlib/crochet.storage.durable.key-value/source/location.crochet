@@ -1,0 +1,23 @@
+% crochet
+
+type kv-store-location(package is any-package, key is text);
+
+command #kv-store-location for: (Package is any-package) key: (Key is text) =
+  new kv-store-location(package -> Package, key -> Key);
+
+
+trait kv-location with
+  command package to-key: Self -> text;
+end
+
+implement kv-location for any-package;
+
+command package to-key: (Package is any-package) =
+  "pkg:[Package name]" flatten-into-plain-text;
+  // FIXME: this is not strong enough. Packages need an less-forgeable stable ID
+
+implement kv-location for kv-store-location;
+
+command package to-key: (Location is kv-store-location) =
+  "loc:[Package name]:[Key]" flatten-into-plain-text;
+

@@ -1,0 +1,29 @@
+{
+  "name": "crochet.storage.durable.key-value",
+  "target": "*",
+  "native_sources": [
+    {
+      "filename": "native/local-storage.js",
+      "target": "browser"
+    }
+  ],
+  "sources": [
+    "source/main.crochet",
+    "source/error.crochet",
+    "source/location.crochet",
+    "source/serialisation.crochet",
+    "source/store.crochet",
+    {
+      "filename": "source/backends/local-storage.crochet",
+      "target": "browser"
+    }
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.language.json"
+  ],
+  "capabilities": {
+    "requires": [],
+    "provides": ["key-value-storage", "key-value-backend"]
+  }
+}
