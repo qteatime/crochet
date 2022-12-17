@@ -1,5 +1,17 @@
 % crochet
 
+/// Provides a storage backend that lives entirely in memory.
+/// 
+/// This works much like a mutable map that's globally accessible in the
+/// application, but still stores values at least segregated by packages.
+///
+/// As an in-memory storage, this backend is transient, and values stored
+/// will be gone once the handler goes out of scope, which may happen before
+/// the application closes depending on what code the handler applies to.
+///
+/// Performance-wise, this backend provides similar complexity to the
+/// regular `map` type in Crochet, with amortised constant time for
+/// lookup, storage, and deletion.
 handler kv-in-memory-backend do
   let Storage = #cell with-value: #map empty;
 with
@@ -18,7 +30,7 @@ with
 
   on kv-storage.delete(Partition, Key) do
     Storage <- Storage value remove-at: [Partition, Key];
-    continue with nothing;
+    continue with #result ok: nothing;
   end
 end
 

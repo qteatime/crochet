@@ -1,0 +1,27 @@
+% crochet
+
+open crochet.language.json;
+
+/// Stores values as JSON text.
+///
+/// This serialiser supports Crochet's extended JSON, which provides additional
+/// serialisation for user types and common types like integer, not part of the
+/// JSON specification itself.
+type kv-json-serialisation(strategy is json);
+
+/// Constructs a JSON serialiser that's based only on the JSON specification.
+/// Does not support common Crochet types like integers or maps.
+command #kv-json-serialisation plain =
+  new kv-json-serialisation(json);
+
+/// Constructs a JSON serialiser that's based on the given [type:extended-json]
+/// type. This allows the serialiser to support Crochet's common types, like
+/// integers and maps, as well as custom user types using the JSON derivation.
+command #kv-json-serialisation extended: (Json is extended-json) =
+  new kv-json-serialisation(Json);
+
+
+implement kv-serialisation for kv-json-serialisation;
+
+command kv-json-serialisation serialise: Value = self.strategy serialise: Value;
+command kv-json-serialisation parse: Json = self.strategy parse: Json;

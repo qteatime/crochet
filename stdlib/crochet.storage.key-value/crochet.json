@@ -11,8 +11,11 @@
     "source/main.crochet",
     "source/error.crochet",
     "source/location.crochet",
-    "source/serialisation.crochet",
+    "source/serialisation/core.crochet",
+    "source/serialisation/json.crochet",
+    "source/serialisation/text.crochet",
     "source/store.crochet",
+    "source/backends/core.crochet",
     {
       "filename": "source/backends/local-storage.crochet",
       "target": "browser"

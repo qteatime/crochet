@@ -1,9 +1,23 @@
 % crochet
 
+/// The root for all errors originating from key-value storage operations.
 abstract kv-error;
 
+/// The requested key was not found in the storage.
 singleton kve-not-found is kv-error;
+
+/// An unhandled error happened in the storage backend, the operation was
+/// most likely not carried out, but it's hard to know what the state of
+/// the storage is after this error.
 singleton kve-unknown-error is kv-error;
+
+/// Raised when trying to write to the storage, but the value size exceeds
+/// the storage limit. The value has not been written to the storage at this
+/// point, and any subsequent attempts of writing it, without making the
+/// necessary space for it, will raise this same error.
+///
+/// The specific quota and amount of space necessary are not provided by
+/// the underlying storage, and thus not provided here either.
 singleton kve-quota-exceeded is kv-error;
 
 implement equality for kv-error;

@@ -1,0 +1,14 @@
+% crochet
+
+/// Stores only textual values, with no changes to them.
+///
+/// This is not really a serialisation, but rather a filter to guarantee
+/// we don't try to store non-textual values in the storage. It's cheaper
+/// since we don't have to parse or serialise the values here, but it's
+/// also limited to storing only pieces of text.
+singleton kv-no-serialisation;
+
+implement kv-serialisation for kv-no-serialisation;
+
+command kv-no-serialisation serialise: (X is text) = X;
+command kv-no-serialisation parse: (X is text) = X;

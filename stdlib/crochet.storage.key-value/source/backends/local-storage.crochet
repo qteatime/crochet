@@ -1,5 +1,14 @@
 % crochet
 
+/// Provides a storage backend based on the
+/// [link:Web Storage API | https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API],
+/// more specifically the LocalStorage one. This means that data stored with
+/// this backend is:
+///
+///   - Tied to the origin (e.g.: "http://example.com") running the webpage;
+///   - Persisted even after the application exits;
+///   - Has a storage quota of 5MB.
+///
 handler kv-local-storage-backend with
   on kv-storage.lookup(Partition, Key) do
     let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
@@ -22,7 +31,8 @@ handler kv-local-storage-backend with
 
   on kv-storage.delete(Partition, Key) do
     let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
-    continue with (foreign local-storage.delete(Real-key));
+    foreign local-storage.delete(Real-key);
+    continue with #result ok: nothing;
   end
 end
 

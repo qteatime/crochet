@@ -1,14 +1,17 @@
 % crochet
 
+/// A partitioned view of a larger, shared key/value storage, with specific
+/// serialisation strategy.
+///
+/// See [type:kv-store] for an overview of this package's approach to key/value
+/// storage.
+///
+/// This type provides an interface similar to map, but is global and mutable.
 type kv-storage(location is (any has kv-location), serialisation is (any has kv-serialisation));
 
-effect kv-storage with
-  lookup(partition is text, key is text); // -> result<text, kv-error>
-  store(partition is text, key is text, value is text); // -> result<boolean, kv-error>
-  delete(partition is text, key is text); // -> result<nothing, kv-error>
-end
 
-command kv-storage try-at: (Key is text) do
+/// Returns the value associated with `Key`, if one exists.
+command kv-storage try-at: (Key is text) -> result<any, kve-not-found> do
   let Partition = package to-key: self.location;
   let Result = perform kv-storage.lookup(Partition, Key);
   Result map: { X in self.serialisation parse: X };
@@ -27,7 +30,8 @@ test
   end
 end
 
-command kv-storage has: (Key is text) do
+/// True if the storage has a value associated with the given `Key`.
+command kv-storage has: (Key is text) -> boolean do
   (self try-at: Key) is ok;
 test
   let Store = kv-store for: package;
@@ -44,19 +48,24 @@ test
   end
 end
 
-command kv-storage at: (Key is text) do
+/// Returns the value associated with `Key`. Panics if it doesn't exist.
+command kv-storage at: (Key is text) -> any do
   self try-at: Key
-    | value-or-panic: "Key not found" data: [key -> Key];
+    | value-or-panic: "key not found" data: [key -> Key];
 end
 
-command kv-storage at: (Key is text) try-put: Value do
+/// Associates `Key` with the given `Value`. Might fail due to problems with
+/// the underlying storage, or because there's no space left in the storage
+/// to write the value.
+command kv-storage at: (Key is text) try-put: Value -> result<kv-storage, kv-error> do
   let Partition = package to-key: self.location;
   let Data = self.serialisation serialise: Value;
-  perform kv-storage.store(Partition, Key, Data);
+  perform kv-storage.store(Partition, Key, Data)
+    | map: { _ in self };
 test
   let Store = kv-store for: package;
   handle
-    assert (Store at: "hello" put: 1.0) is kv-storage;
+    assert (Store at: "hello" try-put: 1.0) is ok;
   with
     on kv-storage.store(Partition, Key, Value) do
       assert Key =:= "hello";
@@ -66,21 +75,37 @@ test
   end
 end
 
-command kv-storage at: (Key is text) put: Value do
-  assert (self at: Key try-put: Value) is ok;
-  self;
+/// Associates `Key` with the given `Value`. Panics if there are problems
+/// with the underlying storage, or if there's no space left to write the
+/// value.
+command kv-storage at: (Key is text) put: Value -> kv-storage do
+  self at: Key try-put: Value
+    | value-or-panic: "store failed" data: [key -> Key];
 end
 
-command kv-storage remove-at: (Key is text) do
+/// Removes the value associated with `Key`. Succeeds even if there's no
+/// association, but might fail if there are problems with the underlying
+/// storage.
+command kv-storage try-remove-at: (Key is text) -> result<kv-storage, kv-error> do
   let Partition = package to-key: self.location;
-  perform kv-storage.delete(Partition, Key);
+  perform kv-storage.delete(Partition, Key)
+    | map: { _ in self };
 test
   let Store = kv-store for: package;
   handle
-    assert (Store remove-at: "hello");
+    assert (Store try-remove-at: "hello") is ok;
   with
     on kv-storage.delete(Partition, Key) do
       assert Key =:= "hello";
+      continue with #result ok: nothing;
     end
   end
+end
+
+/// Removes the value associated with `Key`. Succeeds even if there's no
+/// association, but might panic if there are problems with the underlying
+/// storage.
+command kv-storage remove-at: (Key is text) -> kv-storage do
+  self try-remove-at: Key
+    | value-or-panic: "remove failed" data: [key -> Key];
 end
