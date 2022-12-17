@@ -14,22 +14,22 @@ open crochet.language.json;
 ///
 /// Storages handled here have the following properties:
 ///
-///   - They're `secure`: you can only access the storages to which you
-///     have a "key" for (see [trait:kv-location]). These keys use the
-///     same idea of capability security as the rest of Crochet, so it's
-///     not possible for another package to forge keys to your package's
-///     storage.
+/// - They're `secure`: you can only access the storages to which you
+///   have a "key" for (see [trait:kv-location]). These keys use the
+///   same idea of capability security as the rest of Crochet, so it's
+///   not possible for another package to forge keys to your package's
+///   storage.
 ///
-///   - They're `partitioned`: although the place where the data is stored
-///     is shared, this place is divided into many different smaller
-///     storages, which are addressed by a capability-secure key
-///     (see [trait:kv-location]). Data in one storage cannot be seen from,
-///     or interfere with, another storage.
+/// - They're `partitioned`: although the place where the data is stored
+///   is shared, this place is divided into many different smaller
+///   storages, which are addressed by a capability-secure key
+///   (see [trait:kv-location]). Data in one storage cannot be seen from,
+///   or interfere with, another storage.
 ///
-///   - They're `shared`: the partitioned storages exist within a larger
-///     storage location (e.g.: a single file, a single database). Wherever
-///     usage quotas apply, they apply to the entire storage, not to each
-///     partition.
+/// - They're `shared`: the partitioned storages exist within a larger
+///   storage location (e.g.: a single file, a single database). Wherever
+///   usage quotas apply, they apply to the entire storage, not to each
+///   partition.
 ///
 ///
 /// ## Serialisation
@@ -42,7 +42,7 @@ open crochet.language.json;
 /// of only using text (see [type:kv-no-serialisation]).
 ///
 /// You can pick one of the serialisation strategies when constructing a
-/// new storage (see [command: _ for: _ serialisation: _]). If you don't
+/// new storage (see [command:_ for: _ serialisation: _]). If you don't
 /// provide one, the default is using Crochet's [type:extended-json], which
 /// also supports things like integers and maps, as well as custom types
 /// that use the JSON derivation.

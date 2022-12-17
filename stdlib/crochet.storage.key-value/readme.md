@@ -69,6 +69,6 @@ Each partition is defined by a type implementing [trait:kv-location]. Every pack
 
 Storage backends are an implementation of the [effect:kv-storage] effect. This defines backends in terms of essential operations on a text-only key/value store. Performance and space considerations are up to each backend, but implementations are required to guarantee atomicity.
 
-Because storage backends only handle text, it's necessary to serialise values and parse them if we want to support storing complex data. This is handled by implementing [trait:kv-serialisation]. By default partitioned storages use a [type:extended-json] serialisation, provided by the [type:kv-json-serialisation] type, but it's possible to also provide an extended JSON instance that supports the application's own custom types (e.g.: those using `@| derive: "json"`).
+Because storage backends only handle text, it's necessary to serialise values and parse them if we want to support storing complex data. This is handled by implementing [trait:kv-serialisation]. By default partitioned storages use a [type:crochet.language.json/extended-json] serialisation, provided by the [type:kv-json-serialisation] type, but it's possible to also provide an extended JSON instance that supports the application's own custom types (e.g.: those using `@| derive: "json"`).
 
-These serialisation strategies are specified when constructing each partitioned storage, by using the [command: kv-store for: _ serialisation: _] command.
+These serialisation strategies are specified when constructing each partitioned storage, by using the [command:_ for: _ serialisation: _] command.
