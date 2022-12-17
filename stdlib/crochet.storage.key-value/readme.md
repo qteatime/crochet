@@ -5,7 +5,7 @@ This package allows associating unique names with Crochet values, and keeping th
 
 ## Example
 
-    open crochet.storage.durable.key-value;
+    open crochet.storage.key-value;
 
     type game(name is text, level is integer);
 

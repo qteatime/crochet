@@ -1,5 +1,5 @@
 {
-  "name": "crochet.storage.durable.key-value",
+  "name": "crochet.storage.key-value",
   "target": "*",
   "native_sources": [
     {
