@@ -1,0 +1,45 @@
+% crochet
+
+/// Provides a storage backend based on the
+/// [link:Web Storage API | https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API],
+/// more specifically the LocalStorage one. This means that data stored with
+/// this backend is:
+///
+///   - Tied to the origin (e.g.: "http://example.com") running the webpage;
+///   - Persisted even after the application exits;
+///   - Has a storage quota of 5MB.
+///
+handler kv-local-storage-backend with
+  on kv-storage.lookup(Partition, Key) do
+    let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
+    let Result = foreign local-storage.lookup(Real-key);
+    condition
+      when Result is nothing => continue with #result error: kve-not-found;
+      otherwise => continue with #result ok: Result;
+    end
+  end
+
+  on kv-storage.store(Partition, Key, Value) do
+    let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
+    let Result = foreign local-storage.store(Real-key, Value);
+    condition
+      when Result is nothing => continue with #result ok: nothing;
+      when Result =:= "unknown-error" => continue with #result error: kve-unknown-error;
+      when Result =:= "quota-exceeded" => continue with #result error: kve-quota-exceeded;
+    end
+  end
+
+  on kv-storage.delete(Partition, Key) do
+    let Real-key = "[Partition]::[Key]" flatten-into-plain-text;
+    foreign local-storage.delete(Real-key);
+    continue with #result ok: nothing;
+  end
+
+  on kv-storage.count(Partition) do
+    let Prefix = "[Partition]::" flatten-into-plain-text;
+    let Count = local-storage.count(Prefix);
+    continue with #result ok: Count;
+  end
+end
+
+protect handler kv-local-storage-backend with key-value-backend;

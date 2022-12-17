@@ -1,0 +1,58 @@
+% crochet
+
+/// Allows installing a storage backend for the whole application. High risk.
+///
+/// This allows installing one of the storage backend handlers. There's usually
+/// no reason to grant this handler to other pieces of code besides your
+/// application, as there's a risk they would override your application's
+/// expectations on storage.
+capability key-value-backend;
+
+/// Defines a storage backend in terms of which operations it needs to support.
+///
+/// The backend is allowed to make its own decisions about the time and space
+/// guarantees of these operations (e.g.: it's fine for lookups to take more
+/// than constant time, or for storage to pad smaller stored values with empty
+/// bytes), though it's useful for users if such deviations of the norm are
+/// properly documented, so they can make informed trade-offs.
+///
+/// There are a few laws that the backend should comply with, however:
+///
+///   - All operations are **atomic**. If process A executes `store(P, K, X)`,
+///     then process B is not allowed to see it through `lookup(P, K)` until
+///     that store operation fully commits the value. Partially written values
+///     should not be returned.
+///
+///   - A lookup shall see the last write before it: If `store(P, K, X)` has
+///     happened, then `lookup(P, K)` must always return `X`.
+///
+///   - A lookup shall not return `not-found` if the value exists, but the
+///     backend happens to have used it as a sentinel for something else. The
+///     only cases where a lookup is allowed to fail are
+///     "the key has never been written" or "the key has been deleted".
+effect kv-storage with
+  /// Returns the latest value associated with `key`, if one exists.
+  lookup(partition is text, key is text); // -> result<text, kv-error>
+
+  /// Associates `key` with `value`. From that point on all lookups on that key
+  /// must return the new value, until it's either updated or removed.
+  ///
+  /// Stores are allowed to fail if there's no space for writing the value,
+  /// but are not allowed to fail if the key already exists---it must use a
+  /// "last write wins" strategy.
+  store(partition is text, key is text, value is text); // -> result<nothing, kv-error>
+
+  /// Removes the association with `key`. From that point on all lookups on that
+  /// key will return `not-found`, until it's written again.
+  ///
+  /// Deletions must succeed even if `key` is not found in the storage, but
+  /// are allowed to fail for other storage-specific things (e.g.: storage is
+  /// not reachable).
+  delete(partition is text, key is text); // -> result<nothing, kv-error>
+
+  /// Returns the number of keys in this partition.
+  ///
+  /// This is expected to be linear on the number of keys in the storage,
+  /// however a backend might optimise it.
+  count(partition is text); // -> result<integer, kv-error>
+end

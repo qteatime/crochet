@@ -107,6 +107,7 @@ export class Crochet {
       "crochet.network.types",
       "crochet.novella",
       "crochet.random",
+      "crochet.storage.key-value",
       "crochet.text.parsing.lingua",
       "crochet.text.regex",
       "crochet.time",

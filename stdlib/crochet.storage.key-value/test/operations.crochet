@@ -1,0 +1,56 @@
+% crochet
+
+test "Read what you write" do
+  handle
+    let Store = kv-store for: package;
+    assert (Store try-at: "hello") === (#result error: kve-not-found);
+    Store at: "hello" put: "world";
+    assert (Store try-at: "hello") === (#result ok: "world");
+    Store remove-at: "hello";
+    assert (Store try-at: "hello") === (#result error: kve-not-found);
+  with
+    use kv-in-memory-backend;
+  end
+end
+
+test "Keys are partitioned" do
+  handle
+    let StoreA = kv-store for: (#kv-store-location for: package key: "a");
+    let StoreB = kv-store for: (#kv-store-location for: package key: "b");
+    let StoreC = kv-store for: package;
+    assert StoreA count === 0;
+    assert StoreB count === 0;
+    assert StoreC count === 0;
+
+    StoreA at: "x" put: "a";
+    assert StoreA count === 1;
+    assert StoreB count === 0;
+    assert StoreC count === 0;
+
+    StoreB at: "x" put: "b";
+    assert StoreA count === 1;
+    assert StoreB count === 1;
+    assert StoreC count === 0;
+
+    StoreC at: "x" put: "c";
+    assert StoreA count === 1;
+    assert StoreB count === 1;
+    assert StoreC count === 1;
+
+    assert (StoreA at: "x") === "a";
+    assert (StoreB at: "x") === "b";
+    assert (StoreC at: "x") === "c";
+
+    StoreA remove-at: "x";
+    assert StoreA count === 0;
+    assert StoreB count === 1;
+    assert StoreC count === 1;
+
+    StoreC at: "y" put: "y";
+    assert StoreA count === 0;
+    assert StoreB count === 1;
+    assert StoreC count === 2;
+  with
+    use kv-in-memory-backend;
+  end
+end

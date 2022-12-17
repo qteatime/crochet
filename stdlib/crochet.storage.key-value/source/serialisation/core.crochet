@@ -1,0 +1,18 @@
+% crochet
+
+/// An interface for custom serialisation plugins for the stored values.
+///
+/// The key/value store only supports text keys, so, in order to support
+/// custom values, one must provide a way of "encoding" those values in
+/// text. This trait allows that by requiring a command to conver to text,
+/// [command:_ serialise: _], and one to convert from text,
+/// [command:_ parse: _].
+///
+/// We expect that the law `Value === (x parse: (x serialise: Value))` holds.
+trait kv-serialisation with
+  /// Returns a text-based encoding of an arbitrary Crochet value.
+  command Self serialise: Value -> unsafe-arbitrary-text;
+
+  /// Reconstructs a value from its text-based encoding.
+  command Self parse: unsafe-arbitrary-text -> Value;
+end

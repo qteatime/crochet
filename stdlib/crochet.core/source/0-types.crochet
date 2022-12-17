@@ -473,11 +473,9 @@ trait container with
   command Container contains: Value -> boolean;
 end
 
-/// A type has a [trait:countable-container] if it has a [trait:container] with a known,
+/// A type has a [trait:countable-container] if it has a known,
 /// finite number of items.
 trait countable-container with
-  requires trait container;
-
   /// The number of items that exist within the container.
   command Container count -> integer;
 
@@ -530,6 +528,10 @@ trait modifiable-mapped-container with
   /// Updates values associated with the given [Key] by applying the provided
   /// [Transformation] to them.
   command Container at: Key update: Transformation;
+
+  /// Updates the values associated with the given [Key] by applying the provided
+  /// [Transformation] to them, if they exist. Otherwise stores [Default].
+  command Container at: Key default: Default update: Transformation;
 
   /// Removes any value associated with the given [Key] from the [Container].
   command Container remove-at: Key;

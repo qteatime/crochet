@@ -1,0 +1,84 @@
+% crochet
+
+open crochet.language.json;
+
+/// A secure, partitioned, shared key/value storage.
+///
+/// The [type:kv-store] type is the entry-point for all key/value storages
+/// provided by this package. A key/value storage is some location where
+/// you can associate textual keys with textual values. The interface to
+/// those is [type:kv-storage], which you construct through this type.
+///
+///
+/// ## Properties
+///
+/// Storages handled here have the following properties:
+///
+/// - They're `secure`: you can only access the storages to which you
+///   have a "key" for (see [trait:kv-location]). These keys use the
+///   same idea of capability security as the rest of Crochet, so it's
+///   not possible for another package to forge keys to your package's
+///   storage.
+///
+/// - They're `partitioned`: although the place where the data is stored
+///   is shared, this place is divided into many different smaller
+///   storages, which are addressed by a capability-secure key
+///   (see [trait:kv-location]). Data in one storage cannot be seen from,
+///   or interfere with, another storage.
+///
+/// - They're `shared`: the partitioned storages exist within a larger
+///   storage location (e.g.: a single file, a single database). Wherever
+///   usage quotas apply, they apply to the entire storage, not to each
+///   partition.
+///
+///
+/// ## Serialisation
+///
+/// Further, while the backing storage only supports textual values, this
+/// package allows complex values to be automatically encoded and decoded
+/// in a textual format. The handling of this transformation is carried by
+/// types implementing [trait:kv-serialisation]. This package itself provides
+/// a JSON-based storage (see [type:kv-json-serialisation]), and the choice
+/// of only using text (see [type:kv-no-serialisation]).
+///
+/// You can pick one of the serialisation strategies when constructing a
+/// new storage (see [command:_ for: _ serialisation: _]). If you don't
+/// provide one, the default is using Crochet's [type:extended-json], which
+/// also supports things like integers and maps, as well as custom types
+/// that use the JSON derivation.
+/// 
+///
+/// ## Backing storage
+///
+/// Storage operations depend on a backing storage, which is provided by
+/// an implementation of [effect:kv-storage]. This package provides two
+/// of them: [handler:kv-in-memory-backend] and [handler:kv-local-storage-backend].
+///
+singleton kv-store;
+
+/// Allows constructing key/value storages. Medium risk.
+///
+/// The storages use a single shared location (see [type:kv-store]). While they
+/// cannot see values in other storages, or interfere with them, there's a
+/// global usage quota that is used up when values are stored. Malicious or
+/// malfunctioning packages could flood the storage, leaving no space for
+/// your application data.
+capability key-value-storage;
+protect global kv-store with key-value-storage;
+protect type kv-store with key-value-storage;
+
+
+// -- Constructors
+
+/// Constructs a new key/value storage partition at the specified location,
+/// using the default [type:extended-json] serialisation.
+command kv-store for: (Location has kv-location) =
+  self for: Location serialisation: (#kv-json-serialisation extended: (#extended-json defaults));
+
+/// Constructs a new key/value storage partition at the specified location,
+/// using the provided [trait:kv-serialisation] serialisation strategy.
+command kv-store for: (Location has kv-location) serialisation: (Serialisation has kv-serialisation) =
+  new kv-storage(
+    location -> Location,
+    serialisation -> Serialisation,
+  );

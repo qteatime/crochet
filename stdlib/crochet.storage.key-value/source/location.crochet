@@ -1,0 +1,63 @@
+% crochet
+
+/// Allows a package to define a partitioning key for shared storage. Critical.
+///
+/// This capability grants access to implementing the [trait:kv-location],
+/// which is used to provide a capability-secure way of partitioning the
+/// shared key/value storage. Code that requests this capability must, then,
+/// be carefully audited to make sure that its [trait:kv-location]
+/// implementations cannot conflict with others, as that would break the
+/// security guarantees of the storage.
+capability key-value-location;
+
+/// A way of providing strong capabilities for partitioning shared storage.
+///
+/// The [trait:kv-location] trait allows a capability-secure object to
+/// stand-in for a partition name, by turning that partition into an unique
+/// but stable textual key. That is, we expect all calls of `package to-key: X`
+/// to return the same key for the same `X` value, even across application
+/// restarts.
+/// 
+/// In order to provide an implementation of [trait:kv-location], the package
+/// must nab a [capability:key-value-location] capability. That's because you
+/// need to audit its implementation to make sure the key it generates cannot
+/// conflict with any other implementers of [trait:kv-location].
+trait kv-location with
+  /// Returns a unique, stable identifier for a storage partition
+  command package to-key: Self -> text;
+end
+
+protect trait kv-location with key-value-location;
+
+
+/// An extended partition key that allows a package to have multiple storages.
+///
+/// The `key` in this type must be an unique, stable value through the
+/// package. Because the `package` portion already partitions the storage
+/// across Crochet packages, even if different packages specify the same
+/// `key`, they'll still refer to different storages.
+type kv-store-location(package is any-package, key is text);
+
+/// Constructs an extended partition key for the `Package`. Note that
+/// `key` must be unique and stable through the package, so it always
+/// refers to the same storage location.
+command #kv-store-location for: (Package is any-package) key: (Key is text) =
+  new kv-store-location(package -> Package, key -> Key);
+
+
+
+
+implement kv-location for any-package;
+
+command package to-key: (Package is any-package) =
+  "pkg:[Package name]" flatten-into-plain-text;
+  // FIXME: This is not strong enough. Packages need an less-forgeable stable ID.
+  //        Currently this is "fine" because Crochet does not support installing
+  //        dependencies, thus provenance is not a thing we have to worry
+  //        about yet, but this will need to change once that capability exists.
+
+implement kv-location for kv-store-location;
+
+command package to-key: (Location is kv-store-location) =
+  "loc:[Location.package name]:[Location.key]" flatten-into-plain-text;
+
