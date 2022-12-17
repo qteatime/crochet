@@ -49,4 +49,10 @@ effect kv-storage with
   /// are allowed to fail for other storage-specific things (e.g.: storage is
   /// not reachable).
   delete(partition is text, key is text); // -> result<nothing, kv-error>
+
+  /// Returns the number of keys in this partition.
+  ///
+  /// This is expected to be linear on the number of keys in the storage,
+  /// however a backend might optimise it.
+  count(partition is text); // -> result<integer, kv-error>
 end

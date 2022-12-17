@@ -10,6 +10,49 @@
 type kv-storage(location is (any has kv-location), serialisation is (any has kv-serialisation));
 
 
+// -- Countable container
+implement countable-container for kv-storage;
+
+/// Returns the number of entries in this storage partition. Might fail if there
+/// are problems with the underlying storage.
+command kv-storage try-count do
+  let Partition = package to-key: self.location;
+  perform kv-storage.count(Partition);
+test
+  let LocationB = #kv-store-location for: package key: "b";
+  let StoreA = kv-store for: package;
+  let StoreB = kv-store for: LocationB;
+  handle
+    assert (StoreA try-count) === (#result ok: 2);
+    assert (StoreB try-count) === (#result error: kve-unknown-error);
+  with
+    on kv-storage.count(P) do
+      condition
+        when P =:= (package to-key: package) =>
+          continue with #result ok: 2;
+
+        when P =:= (package to-key: LocationB) =>
+          continue with #result error: kve-unknown-error;
+      end
+    end
+  end
+end
+
+/// Returns the number of entries in this storage partition.
+command kv-storage count -> integer do
+  self try-count
+    | value-or-panic: "count failed";
+end
+
+/// True if there are no entries in this storage partition.
+command kv-storage is-empty -> boolean do
+  self count === 0;
+end
+
+
+// -- Mapped container
+implement mapped-container for kv-storage;
+
 /// Returns the value associated with `Key`, if one exists.
 command kv-storage try-at: (Key is text) -> result<any, kve-not-found> do
   let Partition = package to-key: self.location;
@@ -31,13 +74,13 @@ test
 end
 
 /// True if the storage has a value associated with the given `Key`.
-command kv-storage has: (Key is text) -> boolean do
+command kv-storage contains-key: (Key is text) -> boolean do
   (self try-at: Key) is ok;
 test
   let Store = kv-store for: package;
   handle
-    assert (Store has: "hello") === true;
-    assert (Store has: "world") === false;
+    assert (Store contains-key: "hello") === true;
+    assert (Store contains-key: "world") === false;
   with
     on kv-storage.lookup(Partition, Key) do
       condition
@@ -53,6 +96,17 @@ command kv-storage at: (Key is text) -> any do
   self try-at: Key
     | value-or-panic: "key not found" data: [key -> Key];
 end
+
+/// Returns the value associated with `Key`, or the provided default if no
+/// values for the key exist.
+command kv-storage at: (Key is text) default: Default -> any do
+  self try-at: Key
+    | value-or-default: Default;
+end
+
+
+// -- Modifiable mapped container
+implement modifiable-mapped-container for kv-storage;
 
 /// Associates `Key` with the given `Value`. Might fail due to problems with
 /// the underlying storage, or because there's no space left in the storage
@@ -81,6 +135,26 @@ end
 command kv-storage at: (Key is text) put: Value -> kv-storage do
   self at: Key try-put: Value
     | value-or-panic: "store failed" data: [key -> Key];
+end
+
+/// Updates a value in the storage, if it exists, by applying a function to
+/// it.
+command kv-storage at: (Key is text) update: (Update is (A -> A)) -> kv-storage do
+  let Value = self try-at: Key;
+  condition
+    when Value is ok => self at: Key put: Update(Value value);
+    otherwise => self;
+  end
+end
+
+/// Updates a value in the storage, if it exists, by applying a function to
+/// it. Otherwise stores the given default value.
+command kv-storage at: (Key is text) default: Default update: (Update is (A -> A)) -> kv-storage do
+  let Value = self try-at: Key;
+  condition
+    when Value is ok => self at: Key put: Update(Value value);
+    otherwise => self at: Key put: Default;
+  end
 end
 
 /// Removes the value associated with `Key`. Succeeds even if there's no

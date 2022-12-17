@@ -34,6 +34,12 @@ handler kv-local-storage-backend with
     foreign local-storage.delete(Real-key);
     continue with #result ok: nothing;
   end
+
+  on kv-storage.count(Partition) do
+    let Prefix = "[Partition]::" flatten-into-plain-text;
+    let Count = local-storage.count(Prefix);
+    continue with #result ok: Count;
+  end
 end
 
 protect handler kv-local-storage-backend with key-value-backend;

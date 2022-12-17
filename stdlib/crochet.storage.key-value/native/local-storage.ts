@@ -37,4 +37,16 @@ export default (ffi: ForeignInterface) => {
     localStorage.removeItem(key);
     return ffi.nothing;
   });
+
+  ffi.defun("local-storage.count", (prefix0) => {
+    const prefix = ffi.text_to_string(prefix0);
+    let count = 0;
+    for (let i = 0; i < localStorage.length; ++i) {
+      const key = localStorage.key(i);
+      if (key != null && key.startsWith(prefix)) {
+        count += 1;
+      }
+    }
+    return ffi.integer(BigInt(count));
+  });
 };
