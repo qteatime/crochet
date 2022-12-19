@@ -1,5 +1,7 @@
 % crochet
 
+open crochet.text.regex;
+
 /// Allows a package to define a partitioning key for shared storage. Critical.
 ///
 /// This capability grants access to implementing the [trait:kv-location],
@@ -41,10 +43,25 @@ type kv-store-location(package is any-package, key is text);
 /// Constructs an extended partition key for the `Package`. Note that
 /// `key` must be unique and stable through the package, so it always
 /// refers to the same storage location.
-command #kv-store-location for: (Package is any-package) key: (Key is text) =
+command #kv-store-location for: (Package is any-package) key: (Key is text)
+requires
+  valid-key :: (force re-valid-key) can-match: Key
+=
   new kv-store-location(package -> Package, key -> Key);
 
+local define re-valid-key = lazy (
+  regex from-text: "^\[a-zA-Z\\-\\_0-9\]+$"
+    | compile
+);
 
+test "valid keys" do
+  let Re = force re-valid-key;
+  assert Re can-match: "this-is-a-key";
+  assert Re can-match: "t";
+  assert not (Re can-match: "this-is:a-key");
+  assert not (Re can-match: "");
+  assert not (Re can-match: "this-is-a-key ");
+end
 
 
 implement kv-location for any-package;

@@ -25,7 +25,8 @@
   ],
   "dependencies": [
     "crochet.core",
-    "crochet.language.json"
+    "crochet.language.json",
+    "crochet.text.regex"
   ],
   "capabilities": {
     "requires": [],
