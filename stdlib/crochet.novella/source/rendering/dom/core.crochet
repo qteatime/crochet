@@ -36,6 +36,11 @@ command nvl-web-renderer-config setup do
   };
   self.root add-class: "novella-root";
   self.root append: Screen;
+  
+  let Css = package assets at: "assets/novella.css" | read-as-text;
+  let Css-node = nvl-dom make-css: Css;
+  Screen append: Css-node;
+
   let Renderer = new nvl-web-renderer(
     config -> self,
     screen -> Screen,

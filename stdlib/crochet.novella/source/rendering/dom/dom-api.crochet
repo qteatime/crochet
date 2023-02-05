@@ -4,6 +4,9 @@ singleton nvl-dom;
 type nvl-dom-node(box is unknown);
 
 
+command nvl-dom make-css: (Css is text) =
+  new nvl-dom-node(foreign dom.make-css(Css));
+
 command nvl-dom make: (Tag is text) class: (Class is text) =
   new nvl-dom-node(foreign dom.make(Tag, Class));
 

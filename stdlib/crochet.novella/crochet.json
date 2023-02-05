@@ -35,5 +35,11 @@
     "requires": [],
     "provides": [],
     "optional": []
-  }
+  },
+  "assets": [
+    {
+      "path": "assets/novella.css",
+      "mime": "text/css"
+    }
+  ]
 }

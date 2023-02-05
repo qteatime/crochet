@@ -162,6 +162,15 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(element);
   });
 
+  ffi.defun("dom.make-css", (css0) => {
+    const css = ffi.text_to_string(css0);
+    const node = document.createElement("style");
+    node.setAttribute("type", "text/css");
+    node.setAttribute("media", "screen");
+    node.appendChild(document.createTextNode(css));
+    return ffi.box(node);
+  });
+
   ffi.defun("dom.text", (text) => {
     const node = document.createTextNode(ffi.text_to_string(text));
     return ffi.box(node);
