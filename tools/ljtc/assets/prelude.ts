@@ -11,6 +11,10 @@ export class _Decoder {
 
   constructor(readonly view: DataView) {}
 
+  get remaining_bytes() {
+    return this.view.byteLength - (this.view.byteOffset + this.offset);
+  }
+
   peek<A>(f: (view: DataView) => A) {
     return f(
       new DataView(this.view.buffer, this.view.byteOffset + this.offset)
@@ -91,12 +95,15 @@ export class _Decoder {
 
   bytes() {
     const size = this.ui32();
-    const result = [];
-    for (let i = 0; i < size; ++i) {
+    if (size > this.remaining_bytes) {
+      throw new Error(`Invalid size ${size}`);
+    }
+    const result = new Uint8Array(size);
+    for (let i = 0; i < result.length; ++i) {
       result[i] = this.view.getUint8(this.offset + i);
     }
     this.offset += size;
-    return new Uint8Array(result);
+    return result;
   }
 
   array<T>(f: () => T): T[] {
