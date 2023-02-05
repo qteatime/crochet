@@ -148,39 +148,40 @@ type interpolation = foreign core.interpolation;
 
 // -- The functions
 
-/// The type of any applicable function.
 type function = foreign core.function;
-
-/// Functions that take no arguments.
 type function-0 = foreign core.function-0;
-
-/// Functions that take one argument.
 type function-1 = foreign core.function-1;
-
-/// Functions that take two arguments.
 type function-2 = foreign core.function-2;
-
-/// Functions that take three arguments.
 type function-3 = foreign core.function-3;
-
-/// Functions that take four arguments.
 type function-4 = foreign core.function-4;
-
-/// Functions that take five arguments.
 type function-5 = foreign core.function-5;
-
-/// Functions that take six arguments.
 type function-6 = foreign core.function-6;
-
-/// Functions that take seven arguments.
 type function-7 = foreign core.function-7;
-
-/// Functions that take eight arguments.
 type function-8 = foreign core.function-8;
-
-/// Functions that take nine arguments.
 type function-9 = foreign core.function-9;
-
+type function-10 = foreign core.function-10;
+type function-11 = foreign core.function-11;
+type function-12 = foreign core.function-12;
+type function-13 = foreign core.function-13;
+type function-14 = foreign core.function-14;
+type function-15 = foreign core.function-15;
+type function-16 = foreign core.function-16;
+type function-17 = foreign core.function-17;
+type function-18 = foreign core.function-18;
+type function-19 = foreign core.function-19;
+type function-20 = foreign core.function-20;
+type function-21 = foreign core.function-21;
+type function-22 = foreign core.function-22;
+type function-23 = foreign core.function-23;
+type function-24 = foreign core.function-24;
+type function-25 = foreign core.function-25;
+type function-26 = foreign core.function-26;
+type function-27 = foreign core.function-27;
+type function-28 = foreign core.function-28;
+type function-29 = foreign core.function-29;
+type function-30 = foreign core.function-30;
+type function-31 = foreign core.function-31;
+type function-32 = foreign core.function-32;
 
 /// The type of lazy expressions.
 ///

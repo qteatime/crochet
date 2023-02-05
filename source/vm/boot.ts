@@ -219,7 +219,7 @@ export function make_universe(
   );
   const functions: CrochetType[] = [];
   const native_lambdas: CrochetType[] = [];
-  for (let i = 0; i < 10; ++i) {
+  for (let i = 0; i <= 32; ++i) {
     const lambda = new CrochetType(
       null,
       `function-${i}`,
