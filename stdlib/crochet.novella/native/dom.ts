@@ -454,7 +454,7 @@ export default (ffi: ForeignInterface) => {
         ev.stopPropagation();
         ev.preventDefault();
         return;
-      } else if (ev.key === "Backspace") {
+      } else if (ev.key === "Backspace" || ev.key === "Escape") {
         if (menu_input.value === "") {
           if (previous_value !== "") {
             previous_value = "";
@@ -481,12 +481,12 @@ export default (ffi: ForeignInterface) => {
 
     render_selection();
     node.appendChild(menu_container);
-    menu_input.addEventListener("keyup", input_listener);
+    document.addEventListener("keyup", input_listener);
     menu_input.focus();
 
     const result = yield ffi.await(deferred.promise);
 
-    menu_input.removeEventListener("keyup", input_listener);
+    document.removeEventListener("keyup", input_listener);
     node.removeChild(menu_container);
 
     return result;
