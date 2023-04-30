@@ -36,7 +36,7 @@ command tsd-compiler generate: (T is t-record) do
     readonly '@name': '[T base-name]';
     readonly '@tag': [T tag to-text];
     readonly '@version': 0;
-    [#text join: Fields with: ";\n"]
+    [#text join: Fields with: ";\n  "]
   }
 
   export function [self ts-id: T base-name](x: {[#text join: Fields with: ","]}): [self ts-id: T base-name] {
@@ -59,21 +59,16 @@ command tsd-compiler generate: (T is t-choice) do
   let Variants = T variants map: (self generate: _ parent: T);
 
   "
-  export interface [Base-name] {
-    readonly '@name': '[T base-name]';
-    readonly '@tag': [T tag to-text];
-    readonly '@version': 0;
-    readonly value: [#text join: Variant-names with: " | "];
-  }
+  export type [Base-name] = [#text join: Variant-names with: " | "];
 
   export namespace [Base-name] {
     export const tag = [T tag to-text];
 
     export const enum $Tags {
-      [#text join: Tag-names with: ",\n      "]
+      [#text join: Tag-names with: ",\n    "]
     }
 
-    [#text join: Variants with: "\n\n"]
+    [#text join: Variants with: "\n\n  "]
   }
   ";
 end
@@ -89,18 +84,19 @@ command tsd-compiler generate: (T is t-variant) parent: Parent do
         '@name': '[Parent base-name]',
         '@tag': [Parent tag to-text],
         '@version': 0,
-        value: {
-          '@variant': [T variant-tag to-text],
-          value: x
-        }
+        '@variant': $Tags.[self ts-id: T base-name],
+        '@variant-name': '[T base-name]',
+        ...x
       }
     }
 
     export interface [self ts-id: T base-name] {
-      readonly '@variant': [T variant-tag to-text];
-      readonly value: {
-        [#text join: Fields with: "\n    "]
-      }
+      readonly '@name': '[Parent base-name]';
+      readonly '@tag': [Parent tag to-text];
+      readonly '@version': 0;
+      readonly '@variant': $Tags.[self ts-id: T base-name];
+      readonly '@variant-name': '[T base-name]';
+      [#text join: Fields with: "\n    "]
     }
   "
 end

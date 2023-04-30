@@ -13,7 +13,7 @@ command json-compiler generate do
   let Schema = [
     magic -> self bytes: self.vm magic,
     version -> self.vm version as float-64bit,
-    records -> self.vm all-types map: (self generate-type: _)
+    entities -> self.vm all-types map: (self generate-type: _)
   ];
 
   json pretty-print: Schema indentation: 2;
@@ -32,6 +32,7 @@ command json-compiler generate-type: (T is t-record) do
   let Tag = T tag as float-64bit;
 
   [
+    'type -> "record",
     name -> T name,
     id -> Tag,
     versions -> [
@@ -45,19 +46,12 @@ command json-compiler generate-type: (T is t-choice) do
   let Variants = T variants map: (self generate-variant: _);
 
   [
+    'type -> "union",
     name -> T name,
     id -> Tag,
     versions -> [
       [
-        fields -> [
-          [
-            name -> "value", 
-            'type -> [
-              op -> "tagged-choice",
-              mapping -> Variants
-            ]
-          ]
-        ]
+        variants -> Variants
       ]
     ]
   ]
@@ -68,11 +62,8 @@ command json-compiler generate-variant: (T is t-variant) do
   let Tag = T variant-tag as float-64bit;
 
   [
-    tag -> Tag,
-    'type -> [
-      op -> "tuple",
-      fields -> Fields
-    ]
+    name -> T base-name,
+    fields -> Fields
   ];
 end
 
@@ -149,6 +140,6 @@ command json-compiler generate-op: (T is t-record) =
 
 command json-compiler generate-op: (T is t-choice) =
   [
-    op -> "record",
+    op -> "union",
     id -> T tag as float-64bit
   ];
