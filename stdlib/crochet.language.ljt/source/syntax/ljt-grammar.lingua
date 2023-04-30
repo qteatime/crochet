@@ -1,4 +1,6 @@
-type Module(info: Interval, declarations: Declaration[])
+type Module(info: Interval, schema: Schema, declarations: Declaration[])
+
+type Schema(magic: Text, version: Integer)
 
 type Declaration =
   | Type(info: Interval, name: Name, fields: Field[])
@@ -17,8 +19,12 @@ type Name(name: Text)
 
 grammar Ljt_Grammar : Module {
   Module =
-    | header xs:Declaration* end
-      -> Module(meta, xs)
+    | header s:Schema xs:Declaration* end
+      -> Module(meta, s, xs)
+
+  Schema =
+    | schema_ t:text version_ v:integer
+      -> Schema(t, v)
 
   Declaration =
     | TypeDeclaration
@@ -70,12 +76,40 @@ grammar Ljt_Grammar : Module {
   token name_rest = "a".."z" | "A".."Z" | "-" | "0".."9"
   token name = name_start name_rest*
 
+
+  token hex_digit = "0".."9" | "a".."f" | "A".."F"
+
+  token text_character =
+    | "\\" escape_sequence
+    | ~("\"") any
+  
+  token escape_sequence =
+    | "u" hex_digit hex_digit hex_digit hex_digit
+    | "x" hex_digit hex_digit
+    | any
+
+  token t_text (a piece of text) =
+    | "\"" text_character* "\""
+  
+  text =
+    | x:t_text -> @parse_text(x)
+
+  token dec_digit = "0".."9" | "_"
+
+  token t_integer (an integer) =
+    | ~"_" "-"? dec_digit+
+
+  integer =
+    | x:t_integer -> @parse_integer(x)
+
   kw<w> = x:w ~name_rest -> x
 
   type_ = kw<"type">
   union_ = kw<"union">
   field_ = kw<"field">
+  schema_ = kw<"schema">
+  version_ = kw<"version">
 
   reserved =
-    | type_ | union_ | field_
+    | type_ | union_ | field_ | schema_ | version_
 }

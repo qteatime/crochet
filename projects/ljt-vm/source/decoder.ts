@@ -243,6 +243,14 @@ function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
       return version.reify(result);
     }
 
+    case "tuple": {
+      const result = Object.create(null);
+      for (const [field, extractor] of op.fields) {
+        result[field] = do_decode(extractor, decoder, schema);
+      }
+      return result;
+    }
+
     case "tagged-choice": {
       const tag = decoder.uint8();
       const extractor = op.mapping.get(tag);

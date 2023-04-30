@@ -363,6 +363,19 @@ function do_encode(
       return encoder;
     }
 
+    case "tuple": {
+      if (value == null || typeof value !== "object") {
+        throw new Error(`Expected record`);
+      }
+      for (const [key, type] of op.fields) {
+        if (!(key in value)) {
+          throw new Error(`Missing field ${key}`);
+        }
+        do_encode((value as any)[key], type, encoder, schema);
+      }
+      return encoder;
+    }
+
     case "tagged-choice": {
       if (
         value == null ||

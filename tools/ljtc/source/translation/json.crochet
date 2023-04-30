@@ -1,0 +1,148 @@
+% crochet
+
+open crochet.language.ljt;
+open crochet.language.json;
+open crochet.text.regex;
+
+type json-compiler(vm is ljt-vm);
+
+command #json-compiler from-vm: (Vm is ljt-vm) =
+  new json-compiler(Vm);
+
+command json-compiler generate do
+  let Schema = [
+    magic -> self bytes: self.vm magic,
+    version -> self.vm version as float-64bit,
+    records -> self.vm all-types map: (self generate-type: _)
+  ];
+
+  json pretty-print: Schema indentation: 2;
+end
+
+command json-compiler bytes: X =
+  #binary-encoder empty
+    | append: X
+    | as byte-array
+    | as list
+    | drop: 4 // the encoded size is not relevant
+    | map: (_ as float-64bit);
+
+command json-compiler generate-type: (T is t-record) do
+  let Fields = T values fields zip: T values types with: (self generate-field: _ type: _);
+  let Tag = T tag as float-64bit;
+
+  [
+    name -> T name,
+    id -> Tag,
+    versions -> [
+      [fields -> Fields]
+    ]
+  ];
+end
+
+command json-compiler generate-type: (T is t-choice) do
+  let Tag = T tag as float-64bit;
+  let Variants = T variants map: (self generate-variant: _);
+
+  [
+    name -> T name,
+    id -> Tag,
+    versions -> [
+      [
+        fields -> [
+          [name -> "value", 'type -> Variants]
+        ]
+      ]
+    ]
+  ]
+end
+
+command json-compiler generate-variant: (T is t-variant) do
+  let Fields = T values fields zip: T values types with: (self generate-field: _ type: _);
+  let Tag = T variant-tag as float-64bit;
+
+  [
+    tag -> Tag,
+    'type -> [
+      op -> "tuple",
+      fields -> Fields
+    ]
+  ];
+end
+
+command json-compiler generate-field: F type: T do
+  [
+    name -> F,
+    'type -> self generate-op: T
+  ];
+end
+
+command json-compiler generate-op: t-bool =
+  [op -> "bool"];
+
+command json-compiler generate-op: t-int8 =
+  [op -> "int8"];
+
+command json-compiler generate-op: t-int16 =
+  [op -> "int16"];
+
+command json-compiler generate-op: t-int32 =
+  [op -> "int32"];
+
+command json-compiler generate-op: t-uint8 =
+  [op -> "uint8"];
+
+command json-compiler generate-op: t-uint16 =
+  [op -> "uint16"];
+
+command json-compiler generate-op: t-uint32 =
+  [op -> "uint32"];
+
+command json-compiler generate-op: t-float32 =
+  [op -> "float32"];
+
+command json-compiler generate-op: t-float64 =
+  [op -> "float64"];
+
+command json-compiler generate-op: t-integer =
+  [op -> "integer"];
+
+command json-compiler generate-op: t-text =
+  [op -> "text"];
+
+command json-compiler generate-op: t-bytes =
+  [op -> "bytes"];
+
+command json-compiler generate-op: (T is t-lazy) =
+  self generate-op: T materialise;
+
+command json-compiler generate-op: (T is t-array) =
+  [
+    op -> "array",
+    items -> self generate-op: T item,
+  ];
+
+command json-compiler generate-op: (T is t-map) =
+  [
+    op -> "map",
+    keys -> self generate-op: T key,
+    values -> self generate-op: T value,
+  ];
+
+command json-compiler generate-op: (T is t-optional) =
+  [
+    op -> "optional",
+    value -> self generate-op: T item,
+  ];
+
+command json-compiler generate-op: (T is t-record) =
+  [
+    op -> "record",
+    id -> T tag as float-64bit,
+  ];
+
+command json-compiler generate-op: (T is t-choice) =
+  [
+    op -> "record",
+    id -> T tag as float-64bit
+  ];

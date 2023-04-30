@@ -125,6 +125,11 @@ export default (ffi: ForeignInterface) => {
     return ffi.byte_array(new Uint8Array(list));
   });
 
+  ffi.defun("byte.to-list", (bytes0) => {
+    const x = ffi.to_uint8_array(bytes0);
+    return ffi.list(Array.from(x).map((x) => ffi.integer(BigInt(x))));
+  });
+
   ffi.defun("byte.allocate", (size) => {
     const ba = new Uint8Array(Number(ffi.integer_to_bigint(size)));
     return ffi.byte_array(ba);

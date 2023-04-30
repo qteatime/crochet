@@ -16,4 +16,5 @@ export type Op =
   | { op: "map"; keys: Op; values: Op }
   | { op: "optional"; value: Op }
   | { op: "record"; id: number }
+  | { op: "tuple"; fields: [string, Op][] }
   | { op: "tagged-choice"; mapping: Map<number, Op> };

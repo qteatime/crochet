@@ -36,6 +36,13 @@ const top: (_: any) => Op = T.tagged_choice<Op, Op["op"]>("op", {
     op: T.constant("record" as const),
     id: T.int,
   }),
+  tuple: T.spec({
+    op: T.constant("tuple" as const),
+    fields: T.seq2(
+      T.list_of(T.spec({ name: T.str, type: T.lazy((x) => top(x)) })),
+      (xs) => xs.map((x) => [x.name, x.type] as [string, Op])
+    ),
+  }),
   "tagged-choice": T.spec({
     op: T.constant("tagged-choice" as const),
     mapping: T.seq2(

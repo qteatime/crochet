@@ -143,9 +143,9 @@ w.task("benchmark", ["build"], () => {
 }).with_doc("Runs all Crochet benchmarks");
 
 // -- LJT
-w.task("ljt:compile", [], () => {
+w.task("ljt:build", [], () => {
   tsc("projects/ljt-vm");
-})
+}).with_doc("Builds the LJT VM");
 
 
 // -- Other
