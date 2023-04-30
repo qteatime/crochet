@@ -210,6 +210,8 @@ export class Encoder {
 
 export function encode(value: unknown, schema: Schema, root: number) {
   const encoder = new Encoder();
+  encoder.raw_bytes(schema.magic);
+  encoder.uint32(schema.version);
   return do_encode(
     value,
     { op: "record", id: root },

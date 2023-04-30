@@ -149,9 +149,20 @@ export class Decoder {
   }
 }
 
-export function decode(bytes: Uint8Array, schema: Schema, root: number) {
+export function decode(bytes: Uint8Array, schema: Schema) {
   const decoder = new Decoder(new DataView(bytes.buffer));
-  return do_decode({ op: "record", id: root }, decoder, schema);
+  const magic = decoder.raw_bytes(schema.magic.length);
+  if (!byte_equals(magic, schema.magic)) {
+    throw new Error(`Invalid schema magic header: ${bytes_to_hex(magic)}`);
+  }
+  const version = decoder.uint32();
+  if (version > schema.version) {
+    throw new Error(
+      `Encoded version (${version}) is higher than the schema version (${schema.version}). Decoding is not possible.`
+    );
+  }
+  const tag = decoder.peek((d) => d.uint32());
+  return do_decode({ op: "record", id: tag }, decoder, schema);
 }
 
 function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
