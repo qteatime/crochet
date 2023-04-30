@@ -95,6 +95,9 @@ local define reserved-set = lazy (#set from: [
   "namespace"
 ]);
 
+command ts-compiler reserved-set = reserved-set;
+
+
 command ts-compiler ts-id: (Name0 is text) do
   let Name = (force hyphen-re) substitute-all-by: "_" in: Name0;
   condition

@@ -50,7 +50,13 @@ command json-compiler generate-type: (T is t-choice) do
     versions -> [
       [
         fields -> [
-          [name -> "value", 'type -> Variants]
+          [
+            name -> "value", 
+            'type -> [
+              op -> "tagged-choice",
+              mapping -> Variants
+            ]
+          ]
         ]
       ]
     ]

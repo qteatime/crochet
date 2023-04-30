@@ -91,6 +91,7 @@ export function parse(json: unknown) {
       );
       version_id += 1;
     }
+    schema.add(record);
   }
   return schema;
 }

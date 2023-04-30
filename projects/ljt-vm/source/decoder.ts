@@ -149,7 +149,7 @@ export class Decoder {
   }
 }
 
-export function decode(bytes: Uint8Array, schema: Schema) {
+export function decode(bytes: Uint8Array, schema: Schema, root: number) {
   const decoder = new Decoder(new DataView(bytes.buffer));
   const magic = decoder.raw_bytes(schema.magic.length);
   if (!byte_equals(magic, schema.magic)) {
@@ -162,6 +162,9 @@ export function decode(bytes: Uint8Array, schema: Schema) {
     );
   }
   const tag = decoder.peek((d) => d.uint32());
+  if (tag !== root) {
+    throw new Error(`Unexpected record ${tag}`);
+  }
   return do_decode({ op: "record", id: tag }, decoder, schema);
 }
 

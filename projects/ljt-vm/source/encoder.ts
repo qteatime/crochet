@@ -370,7 +370,7 @@ function do_encode(
         throw new Error(`Expected record`);
       }
       for (const [key, type] of op.fields) {
-        if (!(key in value)) {
+        if (!(key in <any>value)) {
           throw new Error(`Missing field ${key}`);
         }
         do_encode((value as any)[key], type, encoder, schema);
@@ -391,6 +391,7 @@ function do_encode(
       if (serialiser == null) {
         throw new Error(`Invalid variant tag ${tag}`);
       }
+      encoder.uint8(tag);
       return do_encode((value as any)["value"], serialiser, encoder, schema);
     }
 

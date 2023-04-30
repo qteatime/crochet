@@ -8,13 +8,14 @@ open crochet.language.ljt;
 local define compiler-table = lazy (#map from: [
   "ts" -> { Vm, _Opts in #ts-compiler from-vm: Vm },
   "crochet" -> { Vm, Opts in #crochet-compiler from-vm: Vm prefix: Opts.prefix },
-  "json" -> { Vm, _Opts in #json-compiler from-vm: Vm }
+  "ts-types" -> { Vm, _Opts in #tsd-compiler from-vm: Vm },
+  "json" -> { Vm, _Opts in #json-compiler from-vm: Vm },
 ]);
 
 command main: Args do
   Args count < 2
     | implies: {
-        terminal write-line: "Usage: crochet ljtc -- (ts|crochet|json) <file> {prefix}";
+        terminal write-line: "Usage: crochet ljtc -- (ts|crochet|json|ts-types) <file> {prefix}";
         process exit: 1;
       };
 
