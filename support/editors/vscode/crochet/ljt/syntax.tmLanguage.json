@@ -4,7 +4,7 @@
   "patterns": [
     {
       "name": "keyword.control.ljt",
-      "match": "(?<![a-zA-Z0-9\\-\\.\\^'])(type|union|field)(?![a-zA-Z0-9\\-:])"
+      "match": "(?<![a-zA-Z0-9\\-\\.\\^'])(type|union|field|schema|version)(?![a-zA-Z0-9\\-:])"
     },
     {
       "name": "constant.language.ljt",
