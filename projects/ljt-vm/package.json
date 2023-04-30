@@ -1,0 +1,16 @@
+{
+  "name": "@qteatime/ljt-vm",
+  "version": "0.1.0",
+  "description": "An implementation of the LJT binary serialisation format.",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qteatime/crochet.git"
+  },
+  "author": "Q.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qteatime/crochet/issues"
+  },
+  "homepage": "https://github.com/qteatime/crochet#readme"
+}

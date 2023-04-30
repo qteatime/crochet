@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const execSync = require("child_process").execSync;
+const execFile = require("child_process").execFileSync;
 const Path = require("path");
 const FS = require("fs");
 
@@ -56,6 +57,19 @@ class Task {
 function exec(command, opts) {
   console.log("$>", command);
   execSync(command, { stdio: ["inherit", "inherit", "inherit"], ...opts });
+}
+
+function exec_file(command, args, opts) {
+  console.log("$>", command, ...args);
+  execFile(command, args, {
+    stdio: ["inherit", "inherit", "inherit"],
+    ...opts,
+  });
+}
+
+function tsc(project) {
+  const file = Path.join(__dirname, "node_modules/typescript/bin/tsc");
+  exec_file("node", [file, "-p", project]);
 }
 
 const w = new World();
@@ -127,6 +141,14 @@ w.task("run-tests", [], () => {
 w.task("benchmark", ["build"], () => {
   exec("node --expose-gc build/test/benchmarks/run.js");
 }).with_doc("Runs all Crochet benchmarks");
+
+// -- LJT
+w.task("ljt:compile", [], () => {
+  tsc("projects/ljt-vm");
+})
+
+
+// -- Other
 
 w.task("help", [], () => {
   console.log(`Available tasks:\n`);
