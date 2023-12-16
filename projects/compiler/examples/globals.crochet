@@ -1,0 +1,4 @@
+% crochet/1
+
+define some-long-name = 1;
+define other = some.namespace/their-global;

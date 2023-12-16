@@ -1,8 +1,8 @@
 % crochet/1
 
 abstract root;
-type point2d(x is integer, y is integer);
-type point3d(x, y, z);
+type point-2d(x is integer, y is integer);
+type point-3d(x, y, z);
 singleton time;
 
 union expr {
@@ -16,3 +16,10 @@ define is-integer = 1 is integer;
 define is-exact-integer = 1 is =integer;
 define is-namespaced = 1 is crochet.core/integer;
 define is-complex-name = 1 is #expr.num;
+
+define p1 = new point-2d(1, 2);
+define p2 = new point-3d(x -> 4, z -> 10, y -> 20);
+define expr = new expr.add(new expr.num(10), new expr.num(20));
+define expr2 = new expr.add(expr with y -> new expr.num(32));
+define x = expr.y.x;
+

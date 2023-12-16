@@ -6,6 +6,28 @@ type CModule(
 type CDecl =
   | Define(info: Interval, name: Text, value: CExpr)
   | Type(info: Interval, declaration: CType_Decl)
+  | Method(info: Interval, signature: CSignature, value: CExpr)
+
+
+// -- Method
+type CSignature =
+  | Unary(info: Interval, name: Text, input: CParam, output: CType)
+  | Binary(info: Interval, name: Text, left: CParam, right: CParam, output: CType)
+  | Keyword(info: Interval, receiver: CParam, keywords: CKeywordPart[], output: CType)
+  | Selfless_Keyword(info: Interval, keywords: CKeywordPart[], output: CType)
+
+type CParam =
+  | Typed(info: Interval, name: Text, xtype: CType)
+  | Untyped(info: Interval, name: Text)
+  | Unnamed(info: Interval, xtype: CType)
+
+type CKeywordPart(info: Interval, keyword: Text, param: CParam)
+
+type CESignature =
+  | Unary(info: Interval, name: Text, input: CExpr)
+  | Binary(info: Interval, name: Text, left: CExpr, right: CExpr)
+  | Keyword(info: Interval, receiver: CExpr, keywords: CEKeywordPart[])
+  | Selfless_Keyword(info: Interval, keywords: CEKeywordPart[], output: CType)
 
 
 // -- Type
@@ -21,18 +43,27 @@ type CType_Mod =
   | Singleton()
 
 type CType =
-  | Named(info: Interval, names: Text[])
-  | Namespaced(info: Interval, space: Text[], name: Text[])
+  | Ref(info: Interval, ref: CTyperef)
   | Unknown(info: Interval)
   | Static(info: Interval, xtype: CType)
   | Exact(info: Interval, xtype: CType)
 
+type CTyperef =
+  | Named(info: Interval, names: Text[])
+  | Namespaced(info: Interval, space: Text[], names: Text[])
 
 // -- Expr
 type CExpr =
   | Const(info: Interval, value: CConst)
+  | Global(info: Interval, space: (Text[])?, name: Text)
   | Type(info: Interval, xtype: CType)
-  | HasType(info: Interval, value: CExpr, xtype: CType)
+  | Has_Type(info: Interval, value: CExpr, xtype: CType)
+  | New(info: Interval, struct: CTyperef, fields: CExpr[])
+  | New_Named(info: Interval, struct: CTyperef, fields: CField_Expr[])
+  | Extend(info: Interval, value: CExpr, struct: CTyperef, fields: CField_Expr[])
+  | Project(info: Interval, value: CExpr, field: Text)
+
+type CField_Expr(info: Interval, name: Text, value: CExpr)
 
 type CConst =
   | Int(info: Interval, value: Integer)
@@ -59,7 +90,7 @@ grammar Crochet_Grammar : Module {
   DType =
     | abstract_ n:name ";"                                                      -> CType_Decl.Void(meta, CType_Mod.Abstract(), n)
     | singleton_ n:name ";"                                                     -> CType_Decl.Void(meta, CType_Mod.Singleton(), n)
-    | type_ n:name "(" fs:ListOf<TypeField, ","> ","? ")" ";"                   -> CType_Decl.Record(meta, n, fs)
+    | type_ n:name "(" fs:CommaList<TypeField> ")" ";"                          -> CType_Decl.Record(meta, n, fs)
     | union_ n:name "{" xs:DType* "}"                                           -> CType_Decl.Union(meta, n, xs)
 
   TypeField =
@@ -69,7 +100,7 @@ grammar Crochet_Grammar : Module {
     | is_ t:Type                                                                -> t
     |                                                                           -> CType.Unknown(meta)
 
-  
+
   Type =
     | TPrefix
 
@@ -79,10 +110,15 @@ grammar Crochet_Grammar : Module {
     | TPrim
 
   TPrim =
-    | s:TNs "/" n:TNs                                                           -> CType.Namespaced(meta, s, n)
-    | n:TNs                                                                     -> CType.Named(meta, n)
+    | x:Typeref                                                                 -> CType.Ref(meta, x)
+    | "(" t:Type ")"                                                            -> t
 
   TNs = NonemptyListOf<atom, ".">
+
+  Typeref =
+    | s:TNs "/" n:TNs                                                           -> CTyperef.Namespaced(meta, s, n)
+    | n:TNs                                                                     -> CTyperef.Named(meta, n)
+
 
   // == EXPRESSIONS ============================================================
   Expr =
@@ -92,12 +128,27 @@ grammar Crochet_Grammar : Module {
     | EHasType
 
   EHasType =
-    | v:EPrim is_ t:Type                                                        -> CExpr.HasType(meta, v, t)
+    | v:EMember is_ t:Type                                                      -> CExpr.Has_Type(meta, v, t)
+    | EMember
+
+  EMember =
+    | o:EMember "." p:name                                                      -> CExpr.Project(meta, o, p)
     | EPrim
 
+  ENew =
+    | new_ r:Typeref "(" e:EPrim with_ xs:CommaList1<FieldExpr> ")"             -> CExpr.Extend(meta, e, r, xs)
+    | new_ r:Typeref "(" xs:CommaList<FieldExpr> ")"                            -> CExpr.New_Named(meta, r, xs)
+    | new_ r:Typeref "(" xs:CommaList<Expr> ")"                                 -> CExpr.New(meta, r, xs)
+
+  FieldExpr =
+    | a:name "->" v:EBasic                                                      -> CField_Expr(meta, a, v)
+
   EPrim =
+    | s:TNs "/" a:name                                                          -> CExpr.Global(meta, s, a)
+    | a:name                                                                    -> CExpr.Global(meta, null, a)
     | l:literal                                                                 -> CExpr.Const(meta, l)
     | "#" t:TPrim                                                               -> CExpr.Type(meta, t)
+    | x:ENew                                                                    -> x
     | "(" e:Expr ")"                                                            -> e
 
 
@@ -108,6 +159,13 @@ grammar Crochet_Grammar : Module {
     | x:boolean                                                                 -> CConst.Bool(meta, x)
     | x:text                                                                    -> CConst.Text(meta, x)
 
+
+  // == HIGHER-ORDER ===========================================================
+  CommaList<T> =
+    | xs:ListOf<T, ","> ","?            -> xs
+
+  CommaList1<T> =
+    | xs:NonemptyListOf<T, ","> ","?    -> xs
 
   // == LEXICAL ================================================================
   token header (a file header) =
@@ -232,6 +290,7 @@ grammar Crochet_Grammar : Module {
   as_ = kw<"as">
   static_ = kw<"static">
   foreign_ = kw<"foreign">
+  with_ = kw<"with">
 
   reserved =
     | define_
@@ -247,4 +306,5 @@ grammar Crochet_Grammar : Module {
     | as_
     | static_
     | foreign_
+    | with_
 }
