@@ -73,6 +73,9 @@ type CExpr =
   | Invoke(info: Interval, signature: CESignature)
   | Self(info: Interval)
 
+  | List(info: Interval, values: CExpr[])
+  | Cons(info: Interval, head: CExpr[], tail: CExpr)
+
 type CField_Expr(info: Interval, name: Text, value: CExpr)
 
 type CConst =
@@ -80,6 +83,7 @@ type CConst =
   | Bool(info: Interval, value: Boolean)
   | Float(info: Interval, value: Float_64bit)
   | Text(info: Interval, value: Text)
+  | Nothing(info: Interval)
 
 
 grammar Crochet_Grammar : Module {
@@ -221,8 +225,12 @@ grammar Crochet_Grammar : Module {
     | l:literal                                                                 -> CExpr.Const(meta, l)
     | "#" t:TPrim                                                               -> CExpr.Type(meta, t)
     | x:ENew                                                                    -> x
-    | x:EDo                                                                     -> x
+    | x:EList                                                                   -> x
     | "(" e:Expr ")"                                                            -> e
+
+  EList =
+    | "[" xs:NonemptyListOf<Expr, ","> "," "..." t:Expr "]"                     -> CExpr.Cons(meta, xs, t)
+    | "[" xs:CommaList<Expr> "]"                                                -> CExpr.List(meta, xs)
 
 
   // == CONSTANTS ==============================================================
@@ -231,6 +239,7 @@ grammar Crochet_Grammar : Module {
     | x:integer                                                                 -> CConst.Int(meta, x)
     | x:boolean                                                                 -> CConst.Bool(meta, x)
     | x:text                                                                    -> CConst.Text(meta, x)
+    | nothing_                                                                  -> CConst.Nothing(meta)
 
 
   // == HIGHER-ORDER ===========================================================
@@ -363,6 +372,7 @@ grammar Crochet_Grammar : Module {
   static_ = kw<"static">
   foreign_ = kw<"foreign">
   with_ = kw<"with">
+  nothing_ = kw<"nothing">
 
   reserved =
     | define_
@@ -379,4 +389,5 @@ grammar Crochet_Grammar : Module {
     | static_
     | foreign_
     | with_
+    | nothing_
 }
