@@ -1,0 +1,12 @@
+% crochet
+
+singleton syntax;
+
+command syntax parse: (Input is text) -> cmodule do
+  let Result = crochet-grammar parse: Input;
+  condition
+    when Result is ok => Result value;
+    otherwise =>
+      panic message: Result reason tag: "syntax-error";
+  end
+end

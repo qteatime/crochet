@@ -1,0 +1,28 @@
+{
+  "name": "compiler",
+  "target": "*",
+  "native_sources": [],
+  "sources": [
+    "source/syntax/crochet-grammar.lingua",
+    "source/syntax/syntax.crochet",
+    "source/main.crochet"
+  ],
+  "dependencies": [
+    "crochet.core",
+    "crochet.text.parsing.lingua",
+    "crochet.text.regex",
+    "crochet.debug",
+    "crochet.wrapper.node.io",
+    "crochet.wrapper.node.file-system",
+    "crochet.wrapper.node.os"
+  ],
+  "capabilities": {
+    "requires": [
+      "crochet.wrapper.node.io/terminal",
+      "crochet.wrapper.node.file-system/file-system",
+      "crochet.wrapper.node.os/process",
+      "crochet.core/untainting"
+    ],
+    "provides": []
+  }
+}

@@ -1,0 +1,23 @@
+% crochet
+  
+open crochet.wrapper.node.file-system;
+open crochet.wrapper.node.io;
+open crochet.wrapper.node.os;
+open crochet.debug;
+
+command main: (Args is list) do
+  Args count < 1
+    | implies: {
+        terminal write-line: "Usage: crochetc -- <file>";
+        process exit: 1;
+      };
+
+  let File = Args first;
+  let Source = file-system file: (#path from-text: File)
+                |> _ read-text
+                |> untaint make-trusted: _;
+
+  let Ast = syntax parse: Source;
+  transcript tag: "ast" inspect: Ast;
+  nothing;
+end

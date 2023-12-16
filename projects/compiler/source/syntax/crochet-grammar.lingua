@@ -1,0 +1,250 @@
+type CModule(
+  info: Interval,
+  declarations: CDecl[]
+)
+
+type CDecl =
+  | Define(info: Interval, name: Text, value: CExpr)
+  | Type(info: Interval, declaration: CType_Decl)
+
+
+// -- Type
+type CType_Decl =
+  | Void(info: Interval, modifier: CType_Mod, name: Text)
+  | Record(info: Interval, name: Text, fields: CType_Field[])
+  | Union(info: Interval, name: Text, subtypes: CType_Decl[])
+
+type CType_Field(info: Interval, name: Text, xtype: CType)
+
+type CType_Mod =
+  | Abstract()
+  | Singleton()
+
+type CType =
+  | Named(info: Interval, names: Text[])
+  | Namespaced(info: Interval, space: Text[], name: Text[])
+  | Unknown(info: Interval)
+  | Static(info: Interval, xtype: CType)
+  | Exact(info: Interval, xtype: CType)
+
+
+// -- Expr
+type CExpr =
+  | Const(info: Interval, value: CConst)
+  | Type(info: Interval, xtype: CType)
+  | HasType(info: Interval, value: CExpr, xtype: CType)
+
+type CConst =
+  | Int(info: Interval, value: Integer)
+  | Bool(info: Interval, value: Boolean)
+  | Float(info: Interval, value: Float_64bit)
+  | Text(info: Interval, value: Text)
+
+
+grammar Crochet_Grammar : Module {
+  Module =
+    | header xs:Declaration* end                                                -> CModule(meta, xs)
+
+  Declaration =
+    | DDefine
+    | DType
+
+
+  // == GLOBALS ================================================================
+  DDefine =
+    | define_ n:name "=" e:EBasic ";"                                           -> CDecl.Define(meta, n, e)
+
+
+  // == Types ==================================================================
+  DType =
+    | abstract_ n:name ";"                                                      -> CType_Decl.Void(meta, CType_Mod.Abstract(), n)
+    | singleton_ n:name ";"                                                     -> CType_Decl.Void(meta, CType_Mod.Singleton(), n)
+    | type_ n:name "(" fs:ListOf<TypeField, ","> ","? ")" ";"                   -> CType_Decl.Record(meta, n, fs)
+    | union_ n:name "{" xs:DType* "}"                                           -> CType_Decl.Union(meta, n, xs)
+
+  TypeField =
+    | n:name t:TFSuffix                                                         -> CType_Field(meta, n, t)
+
+  TFSuffix =
+    | is_ t:Type                                                                -> t
+    |                                                                           -> CType.Unknown(meta)
+
+  
+  Type =
+    | TPrefix
+
+  TPrefix =
+    | "#" t:TPrim                                                               -> CType.Static(meta, t)
+    | "=" t:TPrim                                                               -> CType.Exact(meta, t)
+    | TPrim
+
+  TPrim =
+    | s:TNs "/" n:TNs                                                           -> CType.Namespaced(meta, s, n)
+    | n:TNs                                                                     -> CType.Named(meta, n)
+
+  TNs = NonemptyListOf<atom, ".">
+
+  // == EXPRESSIONS ============================================================
+  Expr =
+    | EBasic
+
+  EBasic =
+    | EHasType
+
+  EHasType =
+    | v:EPrim is_ t:Type                                                        -> CExpr.HasType(meta, v, t)
+    | EPrim
+
+  EPrim =
+    | l:literal                                                                 -> CExpr.Const(meta, l)
+    | "#" t:TPrim                                                               -> CExpr.Type(meta, t)
+    | "(" e:Expr ")"                                                            -> e
+
+
+  // == CONSTANTS ==============================================================
+  literal =
+    | x:float                                                                   -> CConst.Float(meta, x)
+    | x:integer                                                                 -> CConst.Int(meta, x)
+    | x:boolean                                                                 -> CConst.Bool(meta, x)
+    | x:text                                                                    -> CConst.Text(meta, x)
+
+
+  // == LEXICAL ================================================================
+  token header (a file header) =
+    | "%" hs* "crochet/1" 
+
+  token line =
+    | (~newline any)*
+
+  token hs =
+    | " " | "\t"
+
+  token newline =
+    | "\r\n" | "\r" | "\n"
+
+  token comment (a comment) =
+    | "//" line
+
+  space += comment
+
+
+  // -- Names ------------------------------------------------------------------
+  token atom_start = "a".."z"
+  token atom_rest = "a".."z" | "-" | "0".."9"
+  token atom (an atom) = atom_start atom_rest*
+
+  token variable_start = "A".."Z"
+  token variable_rest = "A".."Z" | "a".."z" | "-" | "0".."9"
+  token variable (a variable) =
+    | variable_start variable_rest*
+    | "_"
+
+  name (a name) = ~reserved n:atom -> n
+  name_part (a command name part) = ~reserved n:atom ~":" -> n
+  token keyword (a keyword) = atom ":"
+
+
+  // -- Boolean ----------------------------------------------------------------
+  boolean =
+    | b:t_boolean   -> @parse_boolean(b)
+
+  token t_boolean =
+    | true_
+    | false_
+
+
+  // -- Numbers ----------------------------------------------------------------
+  token dec_digit = "0".."9" | "_"
+  token hex_digit = "0".."9" | "a".."f" | "A".."F"
+  token ehex_digit = hex_digit | "_"
+
+  token t_integer (an integer) =
+    | ~"_" "0x" ehex_digit+
+    | ~"_" "-"? dec_digit+
+
+  integer = x:t_integer -> @parse_integer(x)
+
+  token t_float (a floating point number) =
+    | ~"_" "-"? dec_digit+ "." dec_digit+
+
+  float = x:t_float -> @parse_float(x)
+
+
+  // -- Text -------------------------------------------------------------------
+  token text_character =
+    | "\\" escape_sequence
+    | ~("\"" | "[" | "]") any
+
+  token escape_sequence =
+    | "u" hex_digit hex_digit hex_digit hex_digit
+    | "x" hex_digit hex_digit
+    | any
+
+  token t_text (a text) =
+    | "\"" text_character* "\""
+  
+  text = x:t_text -> @parse_text(x)
+
+
+  // -- Operators --------------------------------------------------------------
+  token binary_op (a binary operator) =
+    | t_binary_op ~(symbol | atom_rest)
+    | and_
+    | or_
+
+  token symbol =
+    | "+" | "-" | ">" | "<" | "*" | "=" | "|" | "^" | "~" | "!" | "@" | "#" | "%" | "&"
+
+  token t_binary_op =
+    | "++" | "+"
+    | "-" | "->"
+    | "<-" | "<<" | "<=" | "<"
+    | ">>" | ">=" | ">"
+    | "===" | "=/="
+    | "**" | "*"
+    | "%"
+    | "/"
+
+  token prefix_op =
+    | not_
+
+  
+  // -- Special tokens ---------------------------------------------------------
+  kw<w> = x:w ~atom_rest -> x
+
+  define_ = kw<"define">
+  command_ = kw<"command">
+  abstract_ = kw<"abstract">
+  singleton_ = kw<"singleton">
+  type_ = kw<"type">
+  union_ = kw<"union">
+  self_ = kw<"self">
+  is_ = kw<"is">
+  not_ = kw<"not">
+  and_ = kw<"and">
+  or_ = kw<"or">
+  true_ = kw<"true">
+  false_ = kw<"false">
+  new_ = kw<"new">
+  do_ = kw<"do">
+  end_ = kw<"end">
+  let_ = kw<"let">
+  as_ = kw<"as">
+  static_ = kw<"static">
+  foreign_ = kw<"foreign">
+
+  reserved =
+    | define_
+    | command_
+    | abstract_ | singleton_ | type_ | union_
+    | is_
+    | not_ | or_ | and_
+    | true_ | false_
+    | self_
+    | new_
+    | do_ | end_
+    | let_
+    | as_
+    | static_
+    | foreign_
+}

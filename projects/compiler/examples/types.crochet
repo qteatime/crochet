@@ -1,0 +1,18 @@
+% crochet/1
+
+abstract root;
+type point2d(x is integer, y is integer);
+type point3d(x, y, z);
+singleton time;
+
+union expr {
+  type num(x is integer);
+  type add(x is expr, y is expr);
+  type sub(x is expr, y is expr);
+}
+
+define some-value = #expr;
+define is-integer = 1 is integer;
+define is-exact-integer = 1 is =integer;
+define is-namespaced = 1 is crochet.core/integer;
+define is-complex-name = 1 is #expr.num;

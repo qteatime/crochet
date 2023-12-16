@@ -1,0 +1,20 @@
+% crochet/1
+
+define a = 1;
+define some-name-long = 100;
+define hex-10 = 0xA;
+define negative = -100_000_000;
+
+define float = 1_000.99;
+define negative-float = -1000_000.00;
+
+define text = "some text goes here";
+define multiline-text = "text
+                         may
+                         also
+                         span
+                         multiple
+                         lines";
+
+define bool-true = true;
+define bool-false = false;

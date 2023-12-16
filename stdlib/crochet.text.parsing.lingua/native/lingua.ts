@@ -15,11 +15,7 @@ if (
   ohm_util = require("ohm-js/src/util");
 }
 
-import type {
-  CrochetValue,
-  ForeignInterface,
-  Machine,
-} from "../../../build/crochet";
+import type { CrochetValue, ForeignInterface, Machine } from "../../../build/crochet";
 
 export default (ffi: ForeignInterface) => {
   function to_array(x: CrochetValue | unknown[]) {
@@ -28,10 +24,7 @@ export default (ffi: ForeignInterface) => {
     } else if (ffi.is_list(x)) {
       return ffi.list_to_array(x);
     } else {
-      throw ffi.panic(
-        "invalid-type",
-        `Expected native array or list, got ${x}`
-      );
+      throw ffi.panic("invalid-type", `Expected native array or list, got ${x}`);
     }
   }
 
@@ -139,10 +132,7 @@ export default (ffi: ForeignInterface) => {
     return ffi.box(function (this: Ohm.Node, ...args: Ohm.Node[]) {
       const self = this;
       const fn = function* (): Machine<CrochetValue> {
-        return yield ffi.apply(lambda, [
-          ffi.box(self),
-          ...args.map((x) => x.visit()),
-        ]);
+        return yield ffi.apply(lambda, [ffi.box(self), ...args.map((x) => x.visit())]);
       };
       const value = ffi.run_synchronous(fn);
       return value;
@@ -193,6 +183,16 @@ export default (ffi: ForeignInterface) => {
     if (!/^"/.test(x) || !/"$/.test(x)) {
       throw new Error(`Invalid string`);
     }
-    return ffi.text(JSON.parse(x));
+    return ffi.text(JSON.parse(x.trim().replace(/\r\n|\r|\n/g, "\\\\n")));
+  });
+
+  ffi.defun("lingua.parse-integer", (x0) => {
+    const x = ffi.text_to_string(x0);
+    return ffi.integer(BigInt(x.replace(/_/g, "")));
+  });
+
+  ffi.defun("lingua.parse-float", (x0) => {
+    const x = ffi.text_to_string(x0);
+    return ffi.float_64(Number(x.replace(/_/g, "")));
   });
 };

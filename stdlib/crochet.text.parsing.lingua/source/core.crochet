@@ -118,10 +118,10 @@ local define primitives = lazy #map from: [
     foreign lingua.parse-text(X);
   },
   parse-integer -> { X in
-    #integer try-parse: X | value-or-panic: "not an integer";
+    foreign lingua.parse-integer(X);
   },
   parse-float -> { X in
-    #float-64bit try-parse: X | value-or-panic: "not a float";
+    foreign lingua.parse-float(X);
   },
   parse-boolean -> { X in
     condition
