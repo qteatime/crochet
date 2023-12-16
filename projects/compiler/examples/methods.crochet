@@ -1,0 +1,12 @@
+% crochet/1
+
+command A unary = 1;
+command A + B = 2;
+command A and: B or: C = 3;
+command do: B = 4;
+command not a = 5;
+
+command (A is =integer) + (B is =integer) -> integer = 1;
+command integer * integer = 3;
+command A + B -> integer = 4;
+
