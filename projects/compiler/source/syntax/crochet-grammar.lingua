@@ -11,6 +11,7 @@ type CDecl =
 
 // -- Method
 type CSignature =
+  | As(info: Interval, param: CParam, xtype: CType)
   | Unary(info: Interval, name: Text, input: CParam, output: CType)
   | Binary(info: Interval, name: Text, left: CParam, right: CParam, output: CType)
   | Keyword(info: Interval, receiver: CParam, keywords: CKeyword_Part[], output: CType)
@@ -24,10 +25,11 @@ type CParam =
 type CKeyword_Part(info: Interval, keyword: Text, param: CParam)
 
 type CESignature =
+  | As(info: Interval, value: CExpr, xtype: CType)
   | Unary(info: Interval, name: Text, input: CExpr)
   | Binary(info: Interval, name: Text, left: CExpr, right: CExpr)
   | Keyword(info: Interval, receiver: CExpr, keywords: CEKeyword_Part[])
-  | Selfless_Keyword(info: Interval, keywords: CEKeyword_Part[], output: CType)
+  | Selfless_Keyword(info: Interval, keywords: CEKeyword_Part[])
 
 type CEKeyword_Part(info: Interval, keyword: Text, value: CExpr)
 
@@ -57,12 +59,19 @@ type CTyperef =
 type CExpr =
   | Const(info: Interval, value: CConst)
   | Global(info: Interval, space: (Text[])?, name: Text)
+
   | Type(info: Interval, xtype: CType)
   | Has_Type(info: Interval, value: CExpr, xtype: CType)
   | New(info: Interval, struct: CTyperef, fields: CExpr[])
   | New_Named(info: Interval, struct: CTyperef, fields: CField_Expr[])
-  | Extend(info: Interval, value: CExpr, struct: CTyperef, fields: CField_Expr[])
+  | New_Extend(info: Interval, value: CExpr, struct: CTyperef, fields: CField_Expr[])
   | Project(info: Interval, value: CExpr, field: Text)
+
+  | Block(info: Interval, exprs: CExpr[])
+  | Let(info: Interval, name: Text, xtype: Type?, value: CExpr)
+  | Variable(info: Interval, name: Text)
+  | Invoke(info: Interval, signature: CESignature)
+  | Self(info: Interval)
 
 type CField_Expr(info: Interval, name: Text, value: CExpr)
 
@@ -115,7 +124,7 @@ grammar Crochet_Grammar : Module {
     | x:Typeref                                                                 -> CType.Ref(meta, x)
     | "(" t:Type ")"                                                            -> t
 
-  TNs = NonemptyListOf<atom, ".">
+  TNs = NonemptyListOf<name, ".">
 
   Typeref =
     | s:TNs "/" n:TNs                                                           -> CTyperef.Namespaced(meta, s, n)
@@ -124,18 +133,19 @@ grammar Crochet_Grammar : Module {
 
   // == METHODS ================================================================
   DMethod =
-    | command_ s:DMSignature "=" e:DMBody                                       -> CDecl.Method(meta, s, e)
+    | command_ s:DMSignature e:DMBody                                           -> CDecl.Method(meta, s, e)
 
   DMBody =
-    | e:EBasic ";"                                                              -> e
+    | e:EDo                                                                     -> e
+    | "=" e:EBasic ";"                                                          -> e
 
   DMSignature =
-    | p:DMParam n:name_part rt:DMRet                                            -> CSignature.Unary(meta, n, p, rt)
+    | p:DMParam n:name rt:DMRet                                                 -> CSignature.Unary(meta, n, p, rt)
     | op:prefix_op p:DMParam rt:DMRet                                           -> CSignature.Unary(meta, op, p, rt)
     | l:DMParam op:binary_op r:DMParam rt:DMRet                                 -> CSignature.Binary(meta, op, l, r, rt)
     | s:DMParam kws:DMSigKeyword+ rt:DMRet                                      -> CSignature.Keyword(meta, s, kws, rt)
     | kws:DMSigKeyword+ rt:DMRet                                                -> CSignature.Selfless_Keyword(meta, kws, rt)
-    | p:DMParam op:as_ t:Type                                                   -> CSignature.Binary(meta, op, p, CParam.Unnamed(meta, CParam.Static(meta, t)), t)
+    | p:DMParam op:as_ t:Type                                                   -> CSignature.As(meta, op, p, t)
 
   DMParam =
     | "(" n:variable is_ t:Type ")"                                             -> CParam.Typed(meta, n, t)
@@ -151,13 +161,43 @@ grammar Crochet_Grammar : Module {
 
   // == EXPRESSIONS ============================================================
   Expr =
+    | let_ n:variable t:ELetType "=" e:EBasic                                   -> CExpr.Let(meta, n, t, e)
+    | EDo
     | EBasic
 
-  EBasic =
-    | EHasType
+  ELetType =
+    | is_ t:Type                                                                -> t
+    |                                                                           -> null
 
-  EHasType =
-    | v:EMember is_ t:Type                                                      -> CExpr.Has_Type(meta, v, t)
+  EDo =
+    | do_ xs:NonemptyListOf<Expr, ";"> ";"? end_                                -> CExpr.Block(meta, xs)
+
+  EBasic =
+    | EInvokeMixfix
+
+  EInvokeMixfix =
+    | s:EInvokeInfix ps:EKeywordPair+                                           -> CExpr.Invoke(meta, CESignature.Keyword(meta, s, ps))
+    | ps:EKeywordPair+                                                          -> CExpr.Invoke(meta, CESignature.Selfless_Keyword(meta, ps))
+    | EInvokeInfix
+
+  EKeywordPair =
+    | kw:keyword e:EInvokeInfix                                                 -> CEKeyword_Part(meta, kw, e)
+
+  EInvokeInfix =
+    | l:EInvokePrePost op:binary_op r:EInvokePrePost                            -> CExpr.Invoke(meta, CESignature.Binary(meta, op, l, r))
+    | l:EInvokePrePost op:as_ t:Type                                            -> CExpr.Invoke(meta, CESignature.As(meta, l, t))
+    | v:EInvokePrePost is_ t:Type                                               -> CExpr.Has_Type(meta, v, t)
+    | EInvokePrePost
+
+  EInvokePrePost =
+    | EInvokePrefix
+    | EInvokePostfix
+
+  EInvokePrefix =
+    | op:prefix_op e:EInvokePostfix                                             -> CExpr.Invoke(meta, CESignature.Unary(meta, op, e))
+    
+  EInvokePostfix =
+    | e:EInvokePostfix n:name                                                   -> CExpr.Invoke(meta, CESignature.Unary(meta, n, e))
     | EMember
 
   EMember =
@@ -165,19 +205,23 @@ grammar Crochet_Grammar : Module {
     | EPrim
 
   ENew =
-    | new_ r:Typeref "(" e:EPrim with_ xs:CommaList1<FieldExpr> ")"             -> CExpr.Extend(meta, e, r, xs)
+    | new_ r:Typeref "(" e:EPrim with_ xs:CommaList1<FieldExpr> ")"             -> CExpr.New_Extend(meta, e, r, xs)
     | new_ r:Typeref "(" xs:CommaList<FieldExpr> ")"                            -> CExpr.New_Named(meta, r, xs)
     | new_ r:Typeref "(" xs:CommaList<Expr> ")"                                 -> CExpr.New(meta, r, xs)
 
   FieldExpr =
     | a:name "->" v:EBasic                                                      -> CField_Expr(meta, a, v)
 
+
   EPrim =
+    | self_                                                                     -> CExpr.Self(meta)
     | s:TNs "/" a:name                                                          -> CExpr.Global(meta, s, a)
     | a:name                                                                    -> CExpr.Global(meta, null, a)
+    | v:variable                                                                -> CExpr.Variable(meta, v)
     | l:literal                                                                 -> CExpr.Const(meta, l)
     | "#" t:TPrim                                                               -> CExpr.Type(meta, t)
     | x:ENew                                                                    -> x
+    | x:EDo                                                                     -> x
     | "(" e:Expr ")"                                                            -> e
 
 
@@ -226,8 +270,7 @@ grammar Crochet_Grammar : Module {
     | variable_start variable_rest*
     | "_"
 
-  name (a name) = ~reserved n:atom -> n
-  name_part (a command name part) = ~reserved n:atom ~":" -> n
+  name (a name) = ~reserved n:atom ~":" -> n
   token keyword (a keyword) = atom ":"
 
 
@@ -297,7 +340,7 @@ grammar Crochet_Grammar : Module {
 
   
   // -- Special tokens ---------------------------------------------------------
-  kw<w> = x:w ~atom_rest -> x
+  kw<w> = x:w ~(atom_rest | ":") -> x
 
   define_ = kw<"define">
   command_ = kw<"command">

@@ -10,3 +10,13 @@ command (A is =integer) + (B is =integer) -> integer = 1;
 command integer * integer = 3;
 command A + B -> integer = 4;
 
+command main: _ do
+  let A = 1 + 2;
+  
+  1 unary;
+  1 and: 2 or: 3;
+  do: 1;
+  not 1;
+  self;
+  A;
+end
