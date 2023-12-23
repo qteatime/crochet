@@ -5538,7 +5538,7 @@ module.exports={
   "_resolved": "https://registry.npmjs.org/ohm-js/-/ohm-js-0.14.0.tgz",
   "_shasum": "ef5dbe33d493407916f8c4c12115161872c2bc0d",
   "_spec": "ohm-js",
-  "_where": "/home/quil/Projects/Palette/fohm",
+  "_where": "/home/niini/Projects/Palette/fohm",
   "author": {
     "name": "Alex Warth",
     "email": "alexwarth@gmail.com",

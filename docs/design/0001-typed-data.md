@@ -2,7 +2,7 @@
 
 |                  |                |
 | ---------------- | -------------- |
-| **Authors**      | Q.             |
+| **Authors**      | Niini          |
 | **Last updated** | 31st July 2021 |
 | **Status**       | Draft          |
 

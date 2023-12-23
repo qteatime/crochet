@@ -99,5 +99,5 @@ port if that one is taken.
 
 ## Licence
 
-Copyright (c) 2021 Q.  
+Copyright (c) 2021 Niini  
 Licensed under the permissive MIT licence.
