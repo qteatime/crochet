@@ -199,17 +199,17 @@ requires
 
 command t-int16 make: (X is integer)
 requires
-  in-bounds :: (X >= -(2**15)) and (X < (2**15))
+  in-bounds :: (X >= (2**15) negate) and (X < (2**15))
 = new v-int16(X);
 
 command t-int32 make: (X is integer)
 requires
-  in-bounds :: (X >= -(2**31)) and (X < (2**31))
+  in-bounds :: (X >= (2**31) negate) and (X < (2**31))
 = new v-int32(X);
 
 command t-int64 make: (X is integer)
 requires
-  in-bounds :: (X >= -(2**63)) and (X < (2**63))
+  in-bounds :: (X >= (2**63) negate) and (X < (2**63))
 = new v-int64(X);
 
 command t-uint8 make: (X is integer)
@@ -224,7 +224,7 @@ requires
 
 command t-uint32 make: (X is integer)
 requires
-  in-bounds :: (X >= 0) and (X < (2**32)
+  in-bounds :: (X >= 0) and (X < (2**32))
 = new v-uint32(X);
 
 command t-uint64 make: (X is integer)
