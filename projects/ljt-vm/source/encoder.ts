@@ -11,21 +11,26 @@ import { byte_equals, bytes_to_hex, unreachable } from "./util";
 export type Int8 = number;
 export type Int16 = number;
 export type Int32 = number;
+export type Int64 = bigint;
 export type UInt8 = number;
 export type UInt16 = number;
 export type UInt32 = number;
+export type UInt64 = bigint;
 export type Float32 = number;
 export type Float64 = number;
 
 const MAX_UINT8 = 2 ** 8;
 const MAX_UINT16 = 2 ** 16;
 const MAX_UINT32 = 2 ** 32;
-const MIN_INT8 = -(MAX_UINT8 / 2);
-const MAX_INT8 = MAX_UINT8 / 2 - 1;
-const MIN_INT16 = -(MAX_UINT16 / 2);
-const MAX_INT16 = MAX_UINT16 / 2 - 1;
-const MIN_INT32 = -(MAX_UINT32 / 2);
-const MAX_INT32 = MAX_UINT32 / 2 - 1;
+const MAX_UINT64 = 2n ** 64n;
+const MIN_INT8 = -(2 ** 7);
+const MAX_INT8 = 2 ** 7 - 1;
+const MIN_INT16 = -(2 ** 16);
+const MAX_INT16 = 2 ** 16 - 1;
+const MIN_INT32 = -(2 ** 31);
+const MAX_INT32 = 2 ** 31 - 1;
+const MIN_INT64 = -(2n ** 63n);
+const MAX_INT64 = 2n ** 63n - 1n;
 
 export class Encoder {
   private buffers: Uint8Array[] = [];
@@ -70,6 +75,18 @@ export class Encoder {
     return this;
   }
 
+  int64(x: Int64) {
+    if (x < MIN_INT64 || x > MAX_INT64) {
+      throw new RangeError(`Invalid int64 value: ${x}`);
+    }
+
+    const a = new Uint8Array(8);
+    const v = new DataView(a.buffer);
+    v.setBigInt64(0, x, true);
+    this.buffers.push(a);
+    return this;
+  }
+
   uint8(x: UInt8) {
     if (x < 0 || x >= MAX_UINT8) {
       throw new RangeError(`Invalid uint8 value: ${x}`);
@@ -102,6 +119,18 @@ export class Encoder {
     const a = new Uint8Array(4);
     const v = new DataView(a.buffer);
     v.setUint32(0, x, true);
+    this.buffers.push(a);
+    return this;
+  }
+
+  uint64(x: Int64) {
+    if (x < 0 || x > MAX_UINT64) {
+      throw new RangeError(`Invalid uint64 value: ${x}`);
+    }
+
+    const a = new Uint8Array(8);
+    const v = new DataView(a.buffer);
+    v.setBigUint64(0, x, true);
     this.buffers.push(a);
     return this;
   }
@@ -179,11 +208,7 @@ export class Encoder {
     return this;
   }
 
-  map<K, V>(
-    x: Map<K, V>,
-    fk: (_: Encoder, k: K) => void,
-    fv: (_: Encoder, v: V) => void
-  ) {
+  map<K, V>(x: Map<K, V>, fk: (_: Encoder, k: K) => void, fv: (_: Encoder, v: V) => void) {
     this.uint32(x.size);
     for (const [k, v] of x.entries()) {
       fk(this, k);
@@ -222,30 +247,15 @@ export function encode(value: unknown, schema: Schema, root: number) {
   const encoder = new Encoder();
   encoder.raw_bytes(schema.magic);
   encoder.uint32(schema.version);
-  return do_encode(
-    value,
-    { op: "record", id: root },
-    encoder,
-    schema
-  ).to_bytes();
+  return do_encode(value, { op: "record", id: root }, encoder, schema).to_bytes();
 }
 
 export function encode_magicless(value: unknown, schema: Schema, root: number) {
   const encoder = new Encoder();
-  return do_encode(
-    value,
-    { op: "record", id: root },
-    encoder,
-    schema
-  ).to_bytes();
+  return do_encode(value, { op: "record", id: root }, encoder, schema).to_bytes();
 }
 
-function do_encode(
-  value: unknown,
-  op: Op,
-  encoder: Encoder,
-  schema: Schema
-): Encoder {
+function do_encode(value: unknown, op: Op, encoder: Encoder, schema: Schema): Encoder {
   switch (op.op) {
     case "bool": {
       if (typeof value !== "boolean") {
@@ -275,6 +285,13 @@ function do_encode(
       return encoder.int32(value);
     }
 
+    case "int64": {
+      if (typeof value !== "bigint") {
+        throw new Error(`Expected bigint, got ${typeof value}`);
+      }
+      return encoder.int64(value);
+    }
+
     case "uint8": {
       if (typeof value !== "number") {
         throw new Error(`Expected number, got ${typeof value}`);
@@ -294,6 +311,13 @@ function do_encode(
         throw new Error(`Expected number, got ${typeof value}`);
       }
       return encoder.uint32(value);
+    }
+
+    case "uint64": {
+      if (typeof value !== "bigint") {
+        throw new Error(`Expected bigint, got ${typeof value}`);
+      }
+      return encoder.uint64(value);
     }
 
     case "integer": {

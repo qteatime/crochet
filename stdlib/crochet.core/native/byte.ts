@@ -107,9 +107,7 @@ export default (ffi: ForeignInterface) => {
   ffi.defun("byte.view-slice-from", (view0, from0) => {
     const view = ffi.unbox_typed(DataView, view0);
     const from = ffi.integer_to_bigint(from0);
-    return ffi.box(
-      new DataView(view.buffer, view.byteOffset + Number(from) - 1)
-    );
+    return ffi.box(new DataView(view.buffer, view.byteOffset + Number(from) - 1));
   });
 
   ffi.defun("byte.view-take", (view0, count0) => {
@@ -119,9 +117,7 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("byte.from-list", (list0) => {
-    const list = ffi
-      .list_to_array(list0)
-      .map((x) => Number(ffi.integer_to_bigint(x)));
+    const list = ffi.list_to_array(list0).map((x) => Number(ffi.integer_to_bigint(x)));
     return ffi.byte_array(new Uint8Array(list));
   });
 
@@ -157,15 +153,11 @@ export default (ffi: ForeignInterface) => {
   });
 
   ffi.defun("byte.at", (x, i) => {
-    return ffi.integer(
-      BigInt(ffi.to_uint8_array(x)[Number(ffi.integer_to_bigint(i)) - 1])
-    );
+    return ffi.integer(BigInt(ffi.to_uint8_array(x)[Number(ffi.integer_to_bigint(i)) - 1]));
   });
 
   ffi.defun("byte.put", (x, i, v) => {
-    ffi.to_uint8_array(x)[Number(ffi.integer_to_bigint(i)) - 1] = Number(
-      ffi.integer_to_bigint(v)
-    );
+    ffi.to_uint8_array(x)[Number(ffi.integer_to_bigint(i)) - 1] = Number(ffi.integer_to_bigint(v));
     return ffi.nothing;
   });
 
@@ -198,20 +190,23 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("byte.get-int16", (view0, offset, le) => {
     const view = ffi.unbox_typed(DataView, view0);
-    const value = view.getInt16(
-      Number(ffi.integer_to_bigint(offset)) - 1,
-      ffi.to_js_boolean(le)
-    );
+    const value = view.getInt16(Number(ffi.integer_to_bigint(offset)) - 1, ffi.to_js_boolean(le));
     return ffi.integer(BigInt(value));
   });
 
   ffi.defun("byte.get-int32", (view0, offset, le) => {
     const view = ffi.unbox_typed(DataView, view0);
-    const value = view.getInt32(
+    const value = view.getInt32(Number(ffi.integer_to_bigint(offset)) - 1, ffi.to_js_boolean(le));
+    return ffi.integer(BigInt(value));
+  });
+
+  ffi.defun("byte.get-int64", (view0, offset, le) => {
+    const view = ffi.unbox_typed(DataView, view0);
+    const value = view.getBigInt64(
       Number(ffi.integer_to_bigint(offset)) - 1,
       ffi.to_js_boolean(le)
     );
-    return ffi.integer(BigInt(value));
+    return ffi.integer(value);
   });
 
   ffi.defun("byte.get-uint8", (view0, offset) => {
@@ -222,57 +217,47 @@ export default (ffi: ForeignInterface) => {
 
   ffi.defun("byte.get-uint16", (view0, offset, le) => {
     const view = ffi.unbox_typed(DataView, view0);
-    const value = view.getUint16(
-      Number(ffi.integer_to_bigint(offset)) - 1,
-      ffi.to_js_boolean(le)
-    );
+    const value = view.getUint16(Number(ffi.integer_to_bigint(offset)) - 1, ffi.to_js_boolean(le));
     return ffi.integer(BigInt(value));
   });
 
   ffi.defun("byte.get-uint32", (view0, offset, le) => {
     const view = ffi.unbox_typed(DataView, view0);
-    const value = view.getUint32(
+    const value = view.getUint32(Number(ffi.integer_to_bigint(offset)) - 1, ffi.to_js_boolean(le));
+    return ffi.integer(BigInt(value));
+  });
+
+  ffi.defun("byte.get-uint64", (view0, offset, le) => {
+    const view = ffi.unbox_typed(DataView, view0);
+    const value = view.getBigUint64(
       Number(ffi.integer_to_bigint(offset)) - 1,
       ffi.to_js_boolean(le)
     );
-    return ffi.integer(BigInt(value));
+    return ffi.integer(value);
   });
 
   ffi.defun("byte.get-float32", (view0, offset, le) => {
     const view = ffi.unbox_typed(DataView, view0);
-    const value = view.getFloat32(
-      Number(ffi.integer_to_bigint(offset)) - 1,
-      ffi.to_js_boolean(le)
-    );
+    const value = view.getFloat32(Number(ffi.integer_to_bigint(offset)) - 1, ffi.to_js_boolean(le));
     return ffi.float_64(value);
   });
 
   ffi.defun("byte.get-float64", (view0, offset, le) => {
     const view = ffi.unbox_typed(DataView, view0);
-    const value = view.getFloat64(
-      Number(ffi.integer_to_bigint(offset)) - 1,
-      ffi.to_js_boolean(le)
-    );
+    const value = view.getFloat64(Number(ffi.integer_to_bigint(offset)) - 1, ffi.to_js_boolean(le));
     return ffi.float_64(value);
   });
 
   // -- Writing
   ffi.defun("byte.set-bool", (view0, offset, value) => {
     const view = ffi.unbox_typed(DataView, view0);
-    write_boolean(
-      view,
-      Number(ffi.integer_to_bigint(offset)) - 1,
-      ffi.to_js_boolean(value)
-    );
+    write_boolean(view, Number(ffi.integer_to_bigint(offset)) - 1, ffi.to_js_boolean(value));
     return ffi.nothing;
   });
 
   ffi.defun("byte.set-int8", (view0, offset, value) => {
     const view = ffi.unbox_typed(DataView, view0);
-    view.setInt8(
-      Number(ffi.integer_to_bigint(offset)) - 1,
-      Number(ffi.integer_to_bigint(value))
-    );
+    view.setInt8(Number(ffi.integer_to_bigint(offset)) - 1, Number(ffi.integer_to_bigint(value)));
     return ffi.nothing;
   });
 
@@ -296,12 +281,19 @@ export default (ffi: ForeignInterface) => {
     return ffi.nothing;
   });
 
+  ffi.defun("byte.set-int64", (view0, offset, value, le) => {
+    const view = ffi.unbox_typed(DataView, view0);
+    view.setBigInt64(
+      Number(ffi.integer_to_bigint(offset)) - 1,
+      ffi.integer_to_bigint(value),
+      ffi.to_js_boolean(le)
+    );
+    return ffi.nothing;
+  });
+
   ffi.defun("byte.set-uint8", (view0, offset, value) => {
     const view = ffi.unbox_typed(DataView, view0);
-    view.setUint8(
-      Number(ffi.integer_to_bigint(offset)) - 1,
-      Number(ffi.integer_to_bigint(value))
-    );
+    view.setUint8(Number(ffi.integer_to_bigint(offset)) - 1, Number(ffi.integer_to_bigint(value)));
     return ffi.nothing;
   });
 
@@ -320,6 +312,16 @@ export default (ffi: ForeignInterface) => {
     view.setUint32(
       Number(ffi.integer_to_bigint(offset)) - 1,
       Number(ffi.integer_to_bigint(value)),
+      ffi.to_js_boolean(le)
+    );
+    return ffi.nothing;
+  });
+
+  ffi.defun("byte.set-uint64", (view0, offset, value, le) => {
+    const view = ffi.unbox_typed(DataView, view0);
+    view.setBigUint64(
+      Number(ffi.integer_to_bigint(offset)) - 1,
+      ffi.integer_to_bigint(value),
       ffi.to_js_boolean(le)
     );
     return ffi.nothing;

@@ -44,9 +44,7 @@ export class Decoder {
   }
 
   fail(code: string, reason: string) {
-    throw new Error(
-      `(${code}): decoding failed at 0x${this.offset.toString(16)}: ${reason}`
-    );
+    throw new Error(`(${code}): decoding failed at 0x${this.offset.toString(16)}: ${reason}`);
   }
 
   int8() {
@@ -63,7 +61,13 @@ export class Decoder {
 
   int32() {
     const value = this.view.getInt32(this.offset, true);
-    this.offset += 32;
+    this.offset += 4;
+    return value;
+  }
+
+  int64() {
+    const value = this.view.getBigInt64(this.offset, true);
+    this.offset += 8;
     return value;
   }
 
@@ -82,6 +86,12 @@ export class Decoder {
   uint32() {
     const value = this.view.getUint32(this.offset, true);
     this.offset += 4;
+    return value;
+  }
+
+  uint64() {
+    const value = this.view.getBigUint64(this.offset, true);
+    this.offset += 8;
     return value;
   }
 
@@ -230,6 +240,9 @@ function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
     case "int32":
       return decoder.int32();
 
+    case "int64":
+      return decoder.int64();
+
     case "uint8":
       return decoder.uint8();
 
@@ -238,6 +251,9 @@ function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
 
     case "uint32":
       return decoder.uint32();
+
+    case "uint64":
+      return decoder.uint64();
 
     case "integer":
       return decoder.bigint();
@@ -295,10 +311,7 @@ function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
       }
       const record = schema.resolve(op.id);
       if (!(record instanceof Record)) {
-        throw decoder.fail(
-          "entity-mismatch",
-          `Expected record, got union: ${op.id}`
-        );
+        throw decoder.fail("entity-mismatch", `Expected record, got union: ${op.id}`);
       }
       const version_tag = decoder.uint32();
       const version = record.version(version_tag);
@@ -318,10 +331,7 @@ function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
       }
       const union = schema.resolve(op.id);
       if (!(union instanceof Union)) {
-        throw decoder.fail(
-          "entity-mismatch",
-          `Expected union, got record: ${op.id}`
-        );
+        throw decoder.fail("entity-mismatch", `Expected union, got record: ${op.id}`);
       }
       const version_tag = decoder.uint32();
       const version = union.version(version_tag);

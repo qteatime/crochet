@@ -38,6 +38,12 @@ command binary-encoder append-integer-32bit: (X is integer) do
   new binary-encoder(self.buffers append: Bytes read-only);
 end
 
+command binary-encoder append-integer-64bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 8);
+  Bytes view put-integer-64bit: X at: 1 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes read-only);
+end
+
 
 command binary-encoder append-unsigned-integer-8bit: (X is integer) do
   let Bytes = new mutable-byte-array(#byte-array allocate: 1);
@@ -56,6 +62,13 @@ command binary-encoder append-unsigned-integer-32bit: (X is integer) do
   Bytes view put-unsigned-integer-32bit: X at: 1 little-endian: true;
   new binary-encoder(self.buffers append: Bytes read-only);
 end
+
+command binary-encoder append-unsigned-integer-64bit: (X is integer) do
+  let Bytes = new mutable-byte-array(#byte-array allocate: 8);
+  Bytes view put-unsigned-integer-64bit: X at: 1 little-endian: true;
+  new binary-encoder(self.buffers append: Bytes read-only);
+end
+
 
 command binary-encoder append-float-32bit: (X is float-64bit) do
   let Bytes = new mutable-byte-array(#byte-array allocate: 4);

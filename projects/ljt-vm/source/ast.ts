@@ -9,9 +9,11 @@ export type Op =
   | { op: "int8" }
   | { op: "int16" }
   | { op: "int32" }
+  | { op: "int64" }
   | { op: "uint8" }
   | { op: "uint16" }
   | { op: "uint32" }
+  | { op: "uint64" }
   | { op: "integer" }
   | { op: "float32" }
   | { op: "float64" }

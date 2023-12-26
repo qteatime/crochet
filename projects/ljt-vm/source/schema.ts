@@ -198,12 +198,16 @@ function size_of_operation(schema: Schema, op: Op): number | null {
       return 2;
     case "int32":
       return 4;
+    case "int64":
+      return 8;
     case "uint8":
       return 1;
     case "uint16":
       return 2;
     case "uint32":
       return 4;
+    case "uint64":
+      return 8;
     case "integer":
       return null;
     case "float32":

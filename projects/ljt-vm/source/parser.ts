@@ -6,14 +6,7 @@
 
 import { Op } from "./ast";
 import * as T from "./deps/object-spec";
-import {
-  Record,
-  Schema,
-  Union,
-  Variant,
-  VersionedRecord,
-  VersionedUnion,
-} from "./schema";
+import { Record, Schema, Union, Variant, VersionedRecord, VersionedUnion } from "./schema";
 import { enumerate, unreachable } from "./util";
 
 const top: (_: any) => Op = T.tagged_choice<Op, Op["op"]>("op", {
@@ -21,9 +14,11 @@ const top: (_: any) => Op = T.tagged_choice<Op, Op["op"]>("op", {
   int8: T.spec({ op: T.constant("int8" as const) }),
   int16: T.spec({ op: T.constant("int16" as const) }),
   int32: T.spec({ op: T.constant("int32" as const) }),
+  int64: T.spec({ op: T.constant("int64" as const) }),
   uint8: T.spec({ op: T.constant("uint8" as const) }),
   uint16: T.spec({ op: T.constant("uint16" as const) }),
   uint32: T.spec({ op: T.constant("uint32" as const) }),
+  uint64: T.spec({ op: T.constant("uint64" as const) }),
   integer: T.spec({ op: T.constant("integer" as const) }),
   float32: T.spec({ op: T.constant("float32" as const) }),
   float64: T.spec({ op: T.constant("float64" as const) }),
@@ -143,9 +138,7 @@ function reify_union(union0: ReturnType<typeof tunion>) {
   const union = new Union(union0.id, union0.name, versions);
   for (const [version_id, version] of enumerate(union0.versions)) {
     const variants: Variant[] = [];
-    versions.push(
-      new VersionedUnion(union.id, version_id, union.name, variants)
-    );
+    versions.push(new VersionedUnion(union.id, version_id, union.name, variants));
     for (const [tag, variant] of enumerate(version.variants)) {
       variants.push(
         new Variant(

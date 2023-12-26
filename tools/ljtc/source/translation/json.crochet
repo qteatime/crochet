@@ -86,6 +86,9 @@ command json-compiler generate-op: t-int16 =
 command json-compiler generate-op: t-int32 =
   [op -> "int32"];
 
+command json-compiler generate-op: t-int64 =
+  [op -> "int64"];
+
 command json-compiler generate-op: t-uint8 =
   [op -> "uint8"];
 
@@ -94,6 +97,9 @@ command json-compiler generate-op: t-uint16 =
 
 command json-compiler generate-op: t-uint32 =
   [op -> "uint32"];
+
+command json-compiler generate-op: t-uint64 =
+  [op -> "uint64"];
 
 command json-compiler generate-op: t-float32 =
   [op -> "float32"];

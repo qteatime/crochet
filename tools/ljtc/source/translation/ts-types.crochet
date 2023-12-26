@@ -15,9 +15,11 @@ command tsd-compiler generate do
 export type Int8 = number;
 export type Int16 = number;
 export type Int32 = number;
+export type Int64 = bigint;
 export type UInt8 = number;
 export type UInt16 = number;
 export type UInt32 = number;
+export type UInt64 = bigint;
 export type Float32 = number;
 export type Float64 = number;
 
@@ -112,9 +114,11 @@ command tsd-compiler ts-type: t-bool = "boolean";
 command tsd-compiler ts-type: t-int8 = "Int8";
 command tsd-compiler ts-type: t-int16 = "Int16";
 command tsd-compiler ts-type: t-int32 = "Int32";
+command tsd-compiler ts-type: t-int64 = "Int64";
 command tsd-compiler ts-type: t-uint8 = "UInt8";
 command tsd-compiler ts-type: t-uint16 = "UInt16";
 command tsd-compiler ts-type: t-uint32 = "UInt32";
+command tsd-compiler ts-type: t-uint64 = "UInt64";
 command tsd-compiler ts-type: t-integer = "bigint";
 command tsd-compiler ts-type: t-float32 = "Float32";
 command tsd-compiler ts-type: t-float64 = "number";

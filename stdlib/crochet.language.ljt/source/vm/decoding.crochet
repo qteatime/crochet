@@ -143,6 +143,22 @@ test
     === new v-int32(300);
 end
 
+command ljt-decoder decode-with: t-int64 =
+  new v-int64(self do-step: (_ take-integer-64bit) type: t-int64)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]) with: t-int64)
+    === new v-int64(-1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) with: t-int64)
+    === new v-int64(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) with: t-int64)
+    === new v-int64(1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x2c, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) with: t-int64)
+    === new v-int64(300);
+end
+
 command ljt-decoder decode-with: t-uint8 =
   new v-uint8(self do-step: (_ take-unsigned-integer-8bit) type: t-uint8)
 test
@@ -180,6 +196,19 @@ test
 
   assert (#ljt-vm make decode: (#byte-array from: [0xff, 0xff, 0xff, 0xff]) with: t-uint32)
     === new v-uint32((2 ** 32) - 1);
+end
+
+command ljt-decoder decode-with: t-uint64 =
+  new v-uint64(self do-step: (_ take-unsigned-integer-64bit) type: t-uint64)
+test
+  assert (#ljt-vm make decode: (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) with: t-uint64)
+    === new v-uint64(0);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) with: t-uint64)
+    === new v-uint64(1);
+
+  assert (#ljt-vm make decode: (#byte-array from: [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]) with: t-uint64)
+    === new v-uint64((2 ** 64) - 1);
 end
 
 command ljt-decoder decode-with: t-float32 =

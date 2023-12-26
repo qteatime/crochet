@@ -69,6 +69,9 @@ command byte-array-view integer-16bit-at: (Offset is integer) little-endian: (LE
 command byte-array-view integer-32bit-at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.get-int32(self.view, Offset, LE);
 
+command byte-array-view integer-64bit-at: (Offset is integer) little-endian: (LE is boolean) =
+  foreign byte.get-int64(self.view, Offset, LE);
+
 command byte-array-view unsigned-integer-8bit-at: (Offset is integer) =
   foreign byte.get-uint8(self.view, Offset);
 
@@ -77,6 +80,9 @@ command byte-array-view unsigned-integer-16bit-at: (Offset is integer) little-en
 
 command byte-array-view unsigned-integer-32bit-at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.get-uint32(self.view, Offset, LE);
+
+command byte-array-view unsigned-integer-64bit-at: (Offset is integer) little-endian: (LE is boolean) =
+  foreign byte.get-uint64(self.view, Offset, LE);
 
 command byte-array-view float-32bit-at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.get-float32(self.view, Offset, LE);
@@ -99,6 +105,9 @@ command mutable-byte-array-view put-integer-16bit: (X is integer) at: (Offset is
 command mutable-byte-array-view put-integer-32bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.set-int32(self.view, Offset, X, LE);
 
+command mutable-byte-array-view put-integer-64bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
+  foreign byte.set-int64(self.view, Offset, X, LE);
+
 command mutable-byte-array-view put-unsigned-integer-8bit: (X is integer) at: (Offset is integer) =
   foreign byte.set-uint8(self.view, Offset, X);
 
@@ -107,6 +116,9 @@ command mutable-byte-array-view put-unsigned-integer-16bit: (X is integer) at: (
 
 command mutable-byte-array-view put-unsigned-integer-32bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.set-uint32(self.view, Offset, X, LE);
+
+command mutable-byte-array-view put-unsigned-integer-64bit: (X is integer) at: (Offset is integer) little-endian: (LE is boolean) =
+  foreign byte.set-uint64(self.view, Offset, X, LE);
 
 command mutable-byte-array-view put-float-32bit: (X is float-64bit) at: (Offset is integer) little-endian: (LE is boolean) =
   foreign byte.set-float32(self.view, Offset, X, LE);

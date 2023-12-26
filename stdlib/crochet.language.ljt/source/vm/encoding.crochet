@@ -89,6 +89,23 @@ test
     =:= (#byte-array from: [0x2c, 0x01, 0x00, 0x00]);  
 end
 
+command ljt-encoder encode: (X is v-int64) do
+  self.encoder <- self.encoder value append-integer-64bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-int64(-1))
+    =:= (#byte-array from: [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
+
+  assert (#ljt-vm make encode: new v-int64(0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make encode: new v-int64(1))
+    =:= (#byte-array from: [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make encode: new v-int64(300))
+    =:= (#byte-array from: [0x2c, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]); 
+end
+
 command ljt-encoder encode: (X is v-uint8) do
   self.encoder <- self.encoder value append-unsigned-integer-8bit: X.value;
   self;
@@ -132,6 +149,23 @@ test
 
   assert (#ljt-vm make encode: new v-uint32((2 ** 32) - 1))
     =:= (#byte-array from: [0xff, 0xff, 0xff, 0xff]);
+end
+
+command ljt-encoder encode: (X is v-uint64) do
+  self.encoder <- self.encoder value append-unsigned-integer-64bit: X.value;
+  self;
+test
+  assert (#ljt-vm make encode: new v-uint64(0))
+    =:= (#byte-array from: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make encode: new v-uint64(1))
+    =:= (#byte-array from: [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make encode: new v-uint64(300))
+    =:= (#byte-array from: [0x2c, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+
+  assert (#ljt-vm make encode: new v-uint64((2 ** 64) - 1))
+    =:= (#byte-array from: [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
 end
 
 command ljt-encoder encode: (X is v-float32) do

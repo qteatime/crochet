@@ -7,9 +7,11 @@ singleton t-bool is ljt-type;
 singleton t-int8 is ljt-type;
 singleton t-int16 is ljt-type;
 singleton t-int32 is ljt-type;
+singleton t-int64 is ljt-type;
 singleton t-uint8 is ljt-type;
 singleton t-uint16 is ljt-type;
 singleton t-uint32 is ljt-type;
+singleton t-uint64 is ljt-type;
 singleton t-integer is ljt-type;
 singleton t-float32 is ljt-type;
 singleton t-float64 is ljt-type;
@@ -95,9 +97,11 @@ command t-bool text-representation = "Boolean";
 command t-int8 text-representation = "Int8";
 command t-int16 text-representation = "Int16";
 command t-int32 text-representation = "Int32";
+command t-int64 text-representation = "Int64";
 command t-uint8 text-representation = "Uint8";
 command t-uint16 text-representation = "Uint16";
 command t-uint32 text-representation = "Uint32";
+command t-uint64 text-representation = "Uint64";
 command t-integer text-representation = "Integer";
 command t-float32 text-representation = "Float32";
 command t-float64 text-representation = "Float64";
@@ -163,9 +167,11 @@ command t-bool default-value = new v-bool(false);
 command t-int8 default-value = new v-int8(0);
 command t-int16 default-value = new v-int16(0);
 command t-int32 default-value = new v-int32(0);
+command t-int64 default-value = new v-int64(0);
 command t-uint8 default-value = new v-uint8(0);
 command t-uint16 default-value = new v-uint16(0);
 command t-uint32 default-value = new v-uint32(0);
+command t-uint64 default-value = new v-uint64(0);
 command t-integer default-value = new v-integer(0);
 command t-float32 default-value = new v-float32(0.0);
 command t-float64 default-value = new v-float64(0.0);
@@ -193,13 +199,18 @@ requires
 
 command t-int16 make: (X is integer)
 requires
-  in-bounds :: (X >= -32_768) and (X <= 32_767)
+  in-bounds :: (X >= -(2**15)) and (X < (2**15))
 = new v-int16(X);
 
 command t-int32 make: (X is integer)
 requires
-  in-bounds :: (X >= -2_147_483_648) and (X <= 2_147_483_647)
+  in-bounds :: (X >= -(2**31)) and (X < (2**31))
 = new v-int32(X);
+
+command t-int64 make: (X is integer)
+requires
+  in-bounds :: (X >= -(2**63)) and (X < (2**63))
+= new v-int64(X);
 
 command t-uint8 make: (X is integer)
 requires
@@ -208,13 +219,18 @@ requires
 
 command t-uint16 make: (X is integer)
 requires
-  in-bounds :: (X >= 0) and (X <= 65_535)
+  in-bounds :: (X >= 0) and (X < (2**16))
 = new v-uint16(X);
 
 command t-uint32 make: (X is integer)
 requires
-  in-bounds :: (X >= 0) and (X <= 4_294_967_295)
+  in-bounds :: (X >= 0) and (X < (2**32)
 = new v-uint32(X);
+
+command t-uint64 make: (X is integer)
+requires
+  in-bounds :: (X >= 0) and (X < (2**64))
+= new v-uint64(X);
 
 // FIXME: check bounds
 command t-float32 make: (X is float-64bit) =
