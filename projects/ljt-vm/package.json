@@ -5,12 +5,12 @@
   "main": "build/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/qteatime/crochet.git"
+    "url": "git+https://github.com/qteatime/kate.git"
   },
-  "author": "Q.",
-  "license": "MIT",
+  "author": "Niini",
+  "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/qteatime/crochet/issues"
+    "url": "https://github.com/qteatime/kate/issues"
   },
-  "homepage": "https://github.com/qteatime/crochet#readme"
+  "homepage": "https://github.com/qteatime/kate#readme"
 }

@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 export type Op =
   | { op: "bool" }
   | { op: "int8" }
@@ -16,5 +22,4 @@ export type Op =
   | { op: "map"; keys: Op; values: Op }
   | { op: "optional"; value: Op }
   | { op: "record"; id: number }
-  | { op: "tuple"; fields: [string, Op][] }
-  | { op: "tagged-choice"; mapping: Map<number, Op> };
+  | { op: "union"; id: number };

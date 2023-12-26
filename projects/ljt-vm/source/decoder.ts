@@ -1,5 +1,11 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 import { Op } from "./ast";
-import { Record, Schema } from "./schema";
+import { Record, Schema, Union } from "./schema";
 import { byte_equals, bytes_to_hex, unreachable } from "./util";
 
 export class Decoder {
@@ -7,9 +13,22 @@ export class Decoder {
 
   constructor(readonly view: DataView) {}
 
+  static from_bytes(bytes: Uint8Array) {
+    return new Decoder(new DataView(bytes.buffer));
+  }
+
   seek(offset: number) {
     this.offset = offset;
     return this;
+  }
+
+  slice(offset: number, size: number) {
+    const bytes = new Uint8Array(this.view.buffer).slice(offset, offset + size);
+    return Decoder.from_bytes(bytes);
+  }
+
+  get current_offset() {
+    return this.view.byteOffset + this.offset;
   }
 
   get remaining_bytes() {
@@ -149,23 +168,52 @@ export class Decoder {
   }
 }
 
+export class SchemaDecoder {
+  private constructor(private schema: Schema, readonly decoder: Decoder) {}
+
+  static from_bytes(bytes: Uint8Array, schema: Schema) {
+    return new SchemaDecoder(schema, Decoder.from_bytes(bytes));
+  }
+
+  clone() {
+    return new SchemaDecoder(this.schema, this.decoder.clone());
+  }
+
+  seek(offset: number) {
+    return new SchemaDecoder(this.schema, this.decoder.seek(offset));
+  }
+
+  slice(offset: number, size: number) {
+    return new SchemaDecoder(this.schema, this.decoder.slice(offset, size));
+  }
+
+  assert_magic() {
+    const magic = this.decoder.raw_bytes(this.schema.magic.length);
+    if (!byte_equals(magic, this.schema.magic)) {
+      throw new Error(`Invalid schema magic header: ${bytes_to_hex(magic)}`);
+    }
+    const version = this.decoder.uint32();
+    if (version > this.schema.version) {
+      throw new Error(
+        `Encoded version (${version}) is higher than the schema version (${this.schema.version}). Decoding is not possible.`
+      );
+    }
+    return this;
+  }
+
+  record(root: number) {
+    const tag = this.decoder.peek((d) => d.uint32());
+    if (tag !== root) {
+      throw new Error(`Unexpected record ${tag}`);
+    }
+    return do_decode({ op: "record", id: tag }, this.decoder, this.schema);
+  }
+}
+
 export function decode(bytes: Uint8Array, schema: Schema, root: number) {
-  const decoder = new Decoder(new DataView(bytes.buffer));
-  const magic = decoder.raw_bytes(schema.magic.length);
-  if (!byte_equals(magic, schema.magic)) {
-    throw new Error(`Invalid schema magic header: ${bytes_to_hex(magic)}`);
-  }
-  const version = decoder.uint32();
-  if (version > schema.version) {
-    throw new Error(
-      `Encoded version (${version}) is higher than the schema version (${schema.version}). Decoding is not possible.`
-    );
-  }
-  const tag = decoder.peek((d) => d.uint32());
-  if (tag !== root) {
-    throw new Error(`Unexpected record ${tag}`);
-  }
-  return do_decode({ op: "record", id: tag }, decoder, schema);
+  const decoder = SchemaDecoder.from_bytes(bytes, schema);
+  decoder.assert_magic();
+  return decoder.record(root);
 }
 
 function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
@@ -246,6 +294,12 @@ function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
         throw decoder.fail("tag-mismatch", `Expected tag: ${op.id}`);
       }
       const record = schema.resolve(op.id);
+      if (!(record instanceof Record)) {
+        throw decoder.fail(
+          "entity-mismatch",
+          `Expected record, got union: ${op.id}`
+        );
+      }
       const version_tag = decoder.uint32();
       const version = record.version(version_tag);
 
@@ -257,28 +311,33 @@ function do_decode(op: Op, decoder: Decoder, schema: Schema): unknown {
       return version.reify(result);
     }
 
-    case "tuple": {
-      const result = Object.create(null);
-      for (const [field, extractor] of op.fields) {
-        result[field] = do_decode(extractor, decoder, schema);
+    case "union": {
+      const tag = decoder.uint32();
+      if (tag !== op.id) {
+        throw decoder.fail("tag-mismatch", `Expected tag: ${op.id}`);
       }
-      return result;
-    }
-
-    case "tagged-choice": {
-      const tag = decoder.uint8();
-      const extractor = op.mapping.get(tag);
-      if (extractor == null) {
+      const union = schema.resolve(op.id);
+      if (!(union instanceof Union)) {
         throw decoder.fail(
-          "unexpected-tag",
-          `Expected one of the tags: ${[...op.mapping.keys()].join(" | ")}`
+          "entity-mismatch",
+          `Expected union, got record: ${op.id}`
         );
       }
-      const value = do_decode(extractor, decoder, schema);
-      return {
-        "@variant": tag,
-        value,
-      };
+      const version_tag = decoder.uint32();
+      const version = union.version(version_tag);
+
+      const variant_tag = decoder.uint32();
+      const variant = version.variant(variant_tag);
+
+      const result = Object.create(null);
+      for (const [field, extractor] of variant.fields) {
+        result[field] = do_decode(extractor, decoder, schema);
+      }
+
+      variant.reify(result);
+      version.reify(result);
+
+      return result;
     }
 
     default:

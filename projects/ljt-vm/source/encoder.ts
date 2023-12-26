@@ -1,5 +1,11 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 import { Op } from "./ast";
-import { Schema } from "./schema";
+import { Record, Schema, Union } from "./schema";
 import { byte_equals, bytes_to_hex, unreachable } from "./util";
 
 export type Int8 = number;
@@ -208,10 +214,24 @@ export class Encoder {
   }
 }
 
+export function magic_size(schema: Schema) {
+  return schema.magic.length + 4; // magic + version
+}
+
 export function encode(value: unknown, schema: Schema, root: number) {
   const encoder = new Encoder();
   encoder.raw_bytes(schema.magic);
   encoder.uint32(schema.version);
+  return do_encode(
+    value,
+    { op: "record", id: root },
+    encoder,
+    schema
+  ).to_bytes();
+}
+
+export function encode_magicless(value: unknown, schema: Schema, root: number) {
+  const encoder = new Encoder();
   return do_encode(
     value,
     { op: "record", id: root },
@@ -356,6 +376,9 @@ function do_encode(
         throw new Error(`Expected record`);
       }
       const record = schema.resolve(op.id);
+      if (!(record instanceof Record)) {
+        throw new Error(`Expected record, got union`);
+      }
       const version = record.find_version(value as any);
       encoder.uint32(version.id);
       encoder.uint32(version.version);
@@ -365,34 +388,31 @@ function do_encode(
       return encoder;
     }
 
-    case "tuple": {
-      if (value == null || typeof value !== "object") {
-        throw new Error(`Expected record`);
-      }
-      for (const [key, type] of op.fields) {
-        if (!(key in <any>value)) {
-          throw new Error(`Missing field ${key}`);
-        }
-        do_encode((value as any)[key], type, encoder, schema);
-      }
-      return encoder;
-    }
-
-    case "tagged-choice": {
+    case "union": {
       if (
         value == null ||
         typeof value !== "object" ||
         typeof (value as any)["@variant"] !== "number"
       ) {
-        throw new Error(`Expected variant`);
+        throw new Error(`Expected union`);
       }
-      const tag = (value as any)["@variant"];
-      const serialiser = op.mapping.get(tag);
-      if (serialiser == null) {
-        throw new Error(`Invalid variant tag ${tag}`);
+      const union = schema.resolve(op.id);
+      if (!(union instanceof Union)) {
+        throw new Error(`Expected union, got record`);
       }
-      encoder.uint8(tag);
-      return do_encode((value as any)["value"], serialiser, encoder, schema);
+      const version = union.find_version(value as any);
+      const variant_tag = (value as any)["@variant"];
+      const variant = version.variant(variant_tag);
+
+      encoder.uint32(version.id);
+      encoder.uint32(version.version);
+      encoder.uint32(variant.tag);
+
+      for (const [field, op] of variant.fields) {
+        do_encode((value as any)[field], op, encoder, schema);
+      }
+
+      return encoder;
     }
 
     default:
