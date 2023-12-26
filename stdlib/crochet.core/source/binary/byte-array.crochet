@@ -59,3 +59,7 @@ command mutable-byte-array read-only =
 implement equality for byte-array;
 command (A is byte-array) === (B is byte-array) =
   A =:= B;
+
+
+command byte-array as list =
+  foreign byte.to-list(package byte-buffer: self);

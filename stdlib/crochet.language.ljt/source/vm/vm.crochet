@@ -1,20 +1,31 @@
 % crochet
 
 type ljt-vm(
+  global magic is text,
+  global version is integer,
   globals is ljt-env,
   types is cell<map<text, ljt-type>>,
   tag-map is cell<map<integer, ljt-type>>,
   next-tag is cell<integer>,
 );
 
-command #ljt-vm make do
+command #ljt-vm magic: Magic version: Version do
   new ljt-vm(
+    magic -> Magic,
+    version -> Version,
     globals -> force ljt-globals,
     types -> #cell with-value: #map empty,
     tag-map -> #cell with-value: #map empty,
     next-tag -> #cell with-value: 0,
   );
 end
+
+command #ljt-vm make =
+  #ljt-vm magic: "" version: 0;
+
+command #ljt-vm from-module: (Module is module) =
+  #ljt-vm magic: Module.schema.magic version: Module.schema.version
+    | load-module: Module;
 
 command ljt-vm next-tag do
   let Tag = self.next-tag value;

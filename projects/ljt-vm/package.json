@@ -1,0 +1,16 @@
+{
+  "name": "@qteatime/ljt-vm",
+  "version": "0.1.0",
+  "description": "An implementation of the LJT binary serialisation format.",
+  "main": "build/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qteatime/kate.git"
+  },
+  "author": "Niini",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/qteatime/kate/issues"
+  },
+  "homepage": "https://github.com/qteatime/kate#readme"
+}

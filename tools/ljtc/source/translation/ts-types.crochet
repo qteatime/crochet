@@ -1,0 +1,149 @@
+% crochet
+
+// Generate TypeScript type definitions
+open crochet.language.ljt;
+open crochet.text.regex;
+
+type tsd-compiler(vm is ljt-vm, ts is ts-compiler);
+
+command #tsd-compiler from-vm: (Vm is ljt-vm) =
+  new tsd-compiler(Vm, #ts-compiler from-vm: Vm);
+
+command tsd-compiler generate do
+  let Types = self.vm all-types map: (self generate: _);
+  "// This file was generated from a LJT schema.
+export type Int8 = number;
+export type Int16 = number;
+export type Int32 = number;
+export type UInt8 = number;
+export type UInt16 = number;
+export type UInt32 = number;
+export type Float32 = number;
+export type Float64 = number;
+
+[#text join: Types with: "\n\n"]
+  "
+  | flatten-into-plain-text;
+end
+
+command tsd-compiler generate: (T is t-record) do
+  let Fields = T values fields zip: T values types with: { Fn, Ft in
+    "readonly [self quote: Fn]: [self ts-type: Ft]";
+  };
+
+  "
+  export interface [self ts-id: T base-name] {
+    readonly '@name': '[T base-name]';
+    readonly '@tag': [T tag to-text];
+    readonly '@version': 0;
+    [#text join: Fields with: ";\n  "]
+  }
+
+  export function [self ts-id: T base-name](x: {[#text join: Fields with: ","]}): [self ts-id: T base-name] {
+    return {
+      '@name': '[T base-name]',
+      '@tag': [T tag to-text],
+      '@version': 0,
+      ...x
+    };
+  }
+
+  [self ts-id: T base-name].tag = [T tag to-text];
+  ";
+end
+
+command tsd-compiler generate: (T is t-choice) do
+  let Variant-names = T variants map: { X in "[self ts-id: T base-name].[self ts-id: X base-name]" };
+  let Tag-names = T variants map: { X in "[self ts-id: X base-name] = [X variant-tag to-text]" };
+  let Base-name = self ts-id: T base-name;
+  let Variants = T variants map: (self generate: _ parent: T);
+
+  "
+  export type [Base-name] = [#text join: Variant-names with: " | "];
+
+  export namespace [Base-name] {
+    export const tag = [T tag to-text];
+
+    export const enum $Tags {
+      [#text join: Tag-names with: ",\n    "]
+    }
+
+    [#text join: Variants with: "\n\n  "]
+  }
+  ";
+end
+
+command tsd-compiler generate: (T is t-variant) parent: Parent do
+  let Fields = T values fields zip: T values types with: { Fn, Ft in
+    "readonly [self quote: Fn]: [self ts-type: Ft]";
+  };
+
+  "
+    export function [self ts-id: T base-name](x: {[#text join: Fields with: ","]}): [self ts-id: Parent base-name] {
+      return {
+        '@name': '[Parent base-name]',
+        '@tag': [Parent tag to-text],
+        '@version': 0,
+        '@variant': $Tags.[self ts-id: T base-name],
+        '@variant-name': '[T base-name]',
+        ...x
+      }
+    }
+
+    export interface [self ts-id: T base-name] {
+      readonly '@name': '[Parent base-name]';
+      readonly '@tag': [Parent tag to-text];
+      readonly '@version': 0;
+      readonly '@variant': $Tags.[self ts-id: T base-name];
+      readonly '@variant-name': '[T base-name]';
+      [#text join: Fields with: "\n    "]
+    }
+  "
+end
+
+
+command tsd-compiler ts-id: X =
+  self.ts ts-id: X;
+
+command tsd-compiler quote: X =
+  "'[X]'";
+
+command tsd-compiler ts-type: t-bool = "boolean";
+command tsd-compiler ts-type: t-int8 = "Int8";
+command tsd-compiler ts-type: t-int16 = "Int16";
+command tsd-compiler ts-type: t-int32 = "Int32";
+command tsd-compiler ts-type: t-uint8 = "UInt8";
+command tsd-compiler ts-type: t-uint16 = "UInt16";
+command tsd-compiler ts-type: t-uint32 = "UInt32";
+command tsd-compiler ts-type: t-integer = "bigint";
+command tsd-compiler ts-type: t-float32 = "Float32";
+command tsd-compiler ts-type: t-float64 = "number";
+command tsd-compiler ts-type: t-text = "string";
+command tsd-compiler ts-type: t-bytes = "Uint8Array";
+
+command tsd-compiler ts-type: _ = "NO";
+
+command tsd-compiler ts-type: (T is t-lazy) =
+  self ts-type: T materialise;
+
+command tsd-compiler ts-type: (T is t-array) =
+  "([self ts-type: T item])\[\]";
+
+command tsd-compiler ts-type: (T is t-map) =
+  "Map<[self ts-type: T key], [self ts-type: T value]>";
+
+command tsd-compiler ts-type: (T is t-tuple) do
+  panic message: "Unwrapped t-tuple type found" data: [codec -> T];
+end
+
+command tsd-compiler ts-type: (T is t-optional) =
+  "([self ts-type: T item]) | null";
+
+command tsd-compiler ts-type: (T is t-choice) =
+  self ts-id: T name;
+
+command tsd-compiler ts-type: (T is t-record) =
+  self ts-id: T name;
+
+command tsd-compiler ts-type: (T is t-variant) =
+  self ts-id: T name;

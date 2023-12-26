@@ -5,12 +5,15 @@
   "sources": [
     "source/translation/typescript.crochet",
     "source/translation/crochet.crochet",
+    "source/translation/json.crochet",
+    "source/translation/ts-types.crochet",
     "source/ljtc.crochet"
   ],
   "dependencies": [
     "crochet.core",
     "crochet.text.regex",
     "crochet.language.ljt",
+    "crochet.language.json",
     "crochet.wrapper.node.io",
     "crochet.wrapper.node.file-system",
     "crochet.wrapper.node.os"
